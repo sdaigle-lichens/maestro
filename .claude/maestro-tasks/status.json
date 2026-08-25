@@ -1,0 +1,155 @@
+{
+  "001-verify-workflow-canvas-interactions.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "002-self-host-the-ui-fonts.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "003-keep-seeded-condition-labels-off-nodes.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "004-install-and-update-the-runtime-from-the-app.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "005-uninstall-the-runtime-from-a-project.md": {
+    "status": "done",
+    "blockedBy": [
+      "004-install-and-update-the-runtime-from-the-app.md"
+    ]
+  },
+  "006-detect-the-repo-instead-of-seeding-backend.md": {
+    "status": "done",
+    "blockedBy": [
+      "004-install-and-update-the-runtime-from-the-app.md"
+    ]
+  },
+  "007-the-claude-bridge-preview-and-run.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "008-port-the-create-routes-onto-the-bridge.md": {
+    "status": "done",
+    "blockedBy": [
+      "007-the-claude-bridge-preview-and-run.md"
+    ]
+  },
+  "009-retire-the-docker-path.md": {
+    "status": "done",
+    "blockedBy": [
+      "005-uninstall-the-runtime-from-a-project.md",
+      "006-detect-the-repo-instead-of-seeding-backend.md",
+      "008-port-the-create-routes-onto-the-bridge.md"
+    ]
+  },
+  "010-fold-maestro-core-into-the-app.md": {
+    "status": "done",
+    "blockedBy": [
+      "009-retire-the-docker-path.md"
+    ]
+  },
+  "011-make-prettier-check-pass.md": {
+    "status": "done",
+    "blockedBy": [
+      "010-fold-maestro-core-into-the-app.md"
+    ]
+  },
+  "012-fold-in-help-servers-read-only-surface.md": {
+    "status": "done",
+    "blockedBy": [
+      "010-fold-maestro-core-into-the-app.md"
+    ]
+  },
+  "013-put-chat-and-stats-behind-the-bridge.md": {
+    "status": "done",
+    "blockedBy": [
+      "007-the-claude-bridge-preview-and-run.md",
+      "012-fold-in-help-servers-read-only-surface.md"
+    ]
+  },
+  "014-delete-help-server-and-re-home-its-docs.md": {
+    "status": "done",
+    "blockedBy": [
+      "013-put-chat-and-stats-behind-the-bridge.md"
+    ]
+  },
+  "015-externalize-the-agent-sdk.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "016-git-init-a-new-marketplace-without-a-shell.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "017-disclose-what-a-run-can-read.md": {
+    "status": "done",
+    "blockedBy": [
+      "015-externalize-the-agent-sdk.md"
+    ]
+  },
+  "018-run-create-authoring-on-the-agent-sdk.md": {
+    "status": "done",
+    "blockedBy": [
+      "015-externalize-the-agent-sdk.md",
+      "016-git-init-a-new-marketplace-without-a-shell.md",
+      "017-disclose-what-a-run-can-read.md"
+    ]
+  },
+  "019-a-live-session-in-the-pane.md": {
+    "status": "done",
+    "blockedBy": [
+      "018-run-create-authoring-on-the-agent-sdk.md"
+    ]
+  },
+  "020-permission-prompts-in-the-pane.md": {
+    "status": "done",
+    "blockedBy": [
+      "019-a-live-session-in-the-pane.md"
+    ]
+  },
+  "021-structured-questions-from-the-agent.md": {
+    "status": "done",
+    "blockedBy": [
+      "020-permission-prompts-in-the-pane.md"
+    ]
+  },
+  "022-hand-off-from-a-create-form-into-the-pane.md": {
+    "status": "done",
+    "blockedBy": [
+      "020-permission-prompts-in-the-pane.md"
+    ]
+  },
+  "023-authorise-a-directory-for-the-session.md": {
+    "status": "done",
+    "blockedBy": [
+      "020-permission-prompts-in-the-pane.md"
+    ]
+  },
+  "024-a-budget-ceiling-you-can-continue-past.md": {
+    "status": "done",
+    "blockedBy": [
+      "019-a-live-session-in-the-pane.md"
+    ]
+  },
+  "025-resume-a-session-started-in-the-terminal.md": {
+    "status": "done",
+    "blockedBy": [
+      "024-a-budget-ceiling-you-can-continue-past.md"
+    ]
+  },
+  "026-rewrite-the-create-skills-for-interactive-sessions.md": {
+    "status": "done",
+    "blockedBy": [
+      "022-hand-off-from-a-create-form-into-the-pane.md"
+    ]
+  },
+  "027-auto-update-the-runtime-bundle.md": {
+    "status": "ready",
+    "blockedBy": [
+      "004-install-and-update-the-runtime-from-the-app.md"
+    ]
+  }
+}
