@@ -1,0 +1,26 @@
+{
+  "extends": "@repo/typescript-config/react.json",
+  "include": [
+    "src/renderer/src/**/*",
+    "src/preload/index.d.ts",
+    "src/shared/**/*",
+    // The renderer-safe surface of src/core, listed one file at a time on purpose. The rest of
+    // that directory imports fs and child_process; naming the two modules that do not is how this
+    // project stays unable to compile a renderer that reached for the barrel. Kept in step with
+    // RENDERER_SAFE in test/isolation.test.ts, which fails on the import rather than the type.
+    "src/core/contracts.ts",
+    "src/core/text.ts",
+    // Only because `contracts.ts` re-exports the config model from it, and a composite project
+    // must list every file in its program. Renderer code imports `contracts`, never this — which
+    // is the distinction RENDERER_SAFE draws and this file cannot.
+    "src/core/types.ts"
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "types": ["vite/client"],
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "bundler"
+  }
+}

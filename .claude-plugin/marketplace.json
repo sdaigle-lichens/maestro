@@ -1,0 +1,19 @@
+{
+  "name": "maestro",
+  "owner": {
+    "name": "Samuel Daigle",
+    "email": "daigles@lichens.ai"
+  },
+  "metadata": {
+    "description": "Marketplace for the Maestro multi-agent orchestrator plugin — desktop app + runtime plugin that turns a project into a Claude Code multi-agent workflow.",
+    "version": "0.1.0",
+    "homepage": "https://github.com/sdaigle-lichens/maestro"
+  },
+  "plugins": [
+    {
+      "name": "maestro",
+      "source": "./plugins/maestro",
+      "description": "Maestro multi-agent orchestrator: install, update and run a project's workflow graph, plus the skills the Maestro desktop app hands off to."
+    }
+  ]
+}

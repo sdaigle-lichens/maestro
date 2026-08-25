@@ -1,0 +1,31 @@
+# Prettier's ignore scope for the whole workspace. The `check` script points here with
+# --ignore-path, so build output and generated code are excluded once, at the root, instead of
+# once per app. Patterns are gitignore syntax; the ones without a slash match at any depth, so
+# they hold whichever directory prettier runs from.
+
+# Dependencies and package-manager state
+node_modules/
+pnpm-lock.yaml
+
+# Build output — `build` rewrites it, so any formatting applied here is undone by the next run
+out/
+dist/
+.output/
+.vite/
+.tanstack/
+.turbo/
+coverage/
+
+# Generated code — owned by its generator, which rewrites it wholesale
+routeTree.gen.ts
+plugins/*/scripts/lib/
+
+# Prose that prettier does not own — documentation, task files and SKILL.md bodies: hand-formatted,
+# read as much in a GitHub blob and a Claude context window as in an editor, and reflowing them
+# would rewrite line breaks that were chosen.
+#
+# EVERY PATTERN IS ROOT-ANCHORED, and that is load-bearing rather than tidy. A bare `skills/`
+# matches at any depth, so it would also swallow apps/maestro/.claude/skills/ — architecture docs
+# that ARE in the enforced set today. The leading slash is what keeps this widening out of the one
+# app prettier is actually policing.
+/plugins/

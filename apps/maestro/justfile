@@ -1,0 +1,49 @@
+# Maestro desktop app — common developer commands.
+# Run `just` from this directory (apps/maestro) to list them.
+# See docs/installation.md and docs/build-app.md for the full explanations.
+
+set shell := ["bash", "-uc"]
+
+# List available recipes
+default:
+    @just --list
+
+# Install workspace dependencies (pnpm needs the full workspace, so this runs from the repo root)
+install:
+    cd ../.. && pnpm install
+
+# Start the app in dev mode, HMR on the renderer, served over http://localhost
+dev:
+    pnpm dev
+
+# Build the main/preload/renderer bundles into out/
+build:
+    pnpm build
+
+# Run the built app the way a real launch does: out/, loaded over file://
+start: build
+    pnpm start
+
+# Rebuild the CJS bundles the maestro plugin's hook scripts require() —
+# run after any edit under src/core/plugin-entries' import graph
+build-plugin-libs:
+    pnpm build:plugin-libs
+
+# Type-check both tsconfig projects (tsconfig.node.json, tsconfig.web.json)
+typecheck:
+    pnpm typecheck
+
+# Check formatting without writing (prettier --check)
+lint:
+    pnpm check
+
+# Fix formatting in place (prettier --write)
+format:
+    pnpm exec prettier --write . --ignore-path ../../.prettierignore
+
+# Run the vitest suite (test/ and test/core/ as one suite)
+test:
+    pnpm test
+
+# typecheck + lint + test — the full pre-PR check
+verify: typecheck lint test

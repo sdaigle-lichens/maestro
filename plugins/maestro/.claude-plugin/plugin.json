@@ -1,0 +1,10 @@
+{
+  "name": "maestro",
+  "version": "0.1.0",
+  "description": "Maestro multi-agent orchestrator: install, update and run a project's workflow graph, plus the skills the Maestro desktop app hands off to (create-skill, create-plugin, create-subagent, create-marketplace, manage-marketplace, update-skill-tags).",
+  "author": {
+    "name": "Samuel Daigle",
+    "email": "daigles@lichens.ai"
+  },
+  "keywords": ["maestro", "orchestrator", "multi-agent", "workflow", "scaffold"]
+}
