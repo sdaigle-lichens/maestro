@@ -64,6 +64,7 @@ const api: MaestroApi = {
     // forwarded as-is, validated on the main side against the current + recent project list.
     status: (projectRoot) => ipcRenderer.invoke(IPC.installStatus, projectRoot),
     run: (projectRoot) => ipcRenderer.invoke(IPC.installRun, projectRoot),
+    autoRefresh: (projectRoot) => ipcRenderer.invoke(IPC.installAutoRefresh, projectRoot),
     uninstallPlan: (projectRoot) => ipcRenderer.invoke(IPC.installUninstallPlan, projectRoot),
     uninstall: (opts, projectRoot) => ipcRenderer.invoke(IPC.installUninstall, opts, projectRoot),
   },

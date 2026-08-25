@@ -113,6 +113,8 @@ export {
   installRuntime,
   installStatus,
   installOrchestratorSkill,
+  refreshStaleRuntime,
+  shippedRuntimeVersion,
   runtimeAssets,
   findRepoRoot,
   findUpPluginRoot,

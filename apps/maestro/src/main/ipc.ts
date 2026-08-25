@@ -30,6 +30,7 @@ import {
   tailSessionLog,
   installStatus,
   installRuntime,
+  refreshStaleRuntime,
   uninstallPlan,
   uninstallRuntime,
   listInstalledPlugins,
@@ -413,6 +414,15 @@ export function registerIpc(): void {
     const root = resolveProjectRoot(viewingRoot);
     if (!root) throw new Error("No project is open.");
     return installRuntime(root);
+  });
+
+  // Task 027. Called on project selection (see ProjectProvider/InstallProvider on the renderer
+  // side) rather than folded into installStatus above: status stays a pure read, this is the one
+  // channel allowed to write as a side effect of "the user looked at a project."
+  ipcMain.handle(IPC.installAutoRefresh, async (_e, viewingRoot?: string): Promise<InstallReport | null> => {
+    const root = resolveProjectRoot(viewingRoot);
+    if (!root) return null;
+    return refreshStaleRuntime(root);
   });
 
   ipcMain.handle(IPC.installUninstallPlan, (_e, viewingRoot?: string): UninstallPlan => {

@@ -20,9 +20,11 @@ import {
   installStatus,
   runtimeAssets,
   findUpPluginRoot,
+  shippedRuntimeVersion,
+  refreshStaleRuntime,
   HOOK_REGISTRATIONS,
 } from "../../src/core/install.js";
-import { writeConfig } from "../../src/core/config.js";
+import { writeConfig, readConfig, writeRuntimeVersion } from "../../src/core/config.js";
 import { defaultish } from "./fixtures/configs.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -407,6 +409,207 @@ describe("staleness", () => {
     const report = await installRuntime(root, PLUGIN_ROOT);
     expect(report.orchestratorSkill.action).toBe("synced");
     expect(report.status.stale).toBe(false);
+  });
+});
+
+describe("runtimeVersion (task 027)", () => {
+  it("shippedRuntimeVersion reads the plugin's own plugin.json version", () => {
+    const manifest = JSON.parse(
+      fs.readFileSync(path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), "utf8")
+    );
+    expect(shippedRuntimeVersion(PLUGIN_ROOT)).toBe(manifest.version);
+  });
+
+  it("writeRuntimeVersion no-ops when maestro.json doesn't exist yet", () => {
+    const root = makeProject("p");
+    expect(writeRuntimeVersion(root, "9.9.9")).toBe(false);
+    expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(false);
+  });
+
+  it("writeRuntimeVersion stamps the field and leaves the rest of the config untouched", () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    const before = readConfig(root)!;
+
+    expect(writeRuntimeVersion(root, "1.2.3")).toBe(true);
+    const after = readConfig(root)!;
+    expect(after.runtimeVersion).toBe("1.2.3");
+    // Everything else — the authored graph — is byte-identical to before the stamp.
+    expect({ ...after, runtimeVersion: undefined }).toEqual({ ...before, runtimeVersion: undefined });
+
+    // A second stamp with the same version writes nothing further.
+    expect(writeRuntimeVersion(root, "1.2.3")).toBe(false);
+  });
+
+  it("installRuntime stamps runtimeVersion when maestro.json already exists", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+
+    const report = await installRuntime(root, PLUGIN_ROOT);
+    expect(report.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
+    expect(report.runtimeVersionUpdated).toBe(true);
+    expect(readConfig(root)!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
+
+    // Re-running with the version already stamped writes nothing further and reports so.
+    const second = await installRuntime(root, PLUGIN_ROOT);
+    expect(second.runtimeVersionUpdated).toBe(false);
+    expect(second.unchanged).toBe(true);
+  });
+
+  it("installRuntime does not create maestro.json just to stamp it", async () => {
+    const root = makeProject("p");
+    const report = await installRuntime(root, PLUGIN_ROOT);
+    expect(report.runtimeVersionUpdated).toBe(false);
+    expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(false);
+  });
+
+  describe("refreshStaleRuntime", () => {
+    it("returns null when there is no maestro.json at all", async () => {
+      const root = makeProject("p");
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT)).toBeNull();
+    });
+
+    it("returns null and writes nothing when the stamped version already matches", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT);
+      const settingsBefore = fs.readFileSync(path.join(root, ".claude", "settings.json"), "utf8");
+
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT)).toBeNull();
+      expect(fs.readFileSync(path.join(root, ".claude", "settings.json"), "utf8")).toBe(settingsBefore);
+    });
+
+    it("never touches a corrupt or non-v3 maestro.json — it's not readConfig()'s blank fallback", async () => {
+      const root = makeProject("p");
+      await installRuntime(root, PLUGIN_ROOT); // an installed runtime, so `installed` alone can't gate it
+      const configPath = path.join(root, ".claude", "maestro.json");
+      fs.writeFileSync(configPath, '{ "not": "valid json", ');
+      const before = fs.readFileSync(configPath, "utf8");
+
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT)).toBeNull();
+      expect(fs.readFileSync(configPath, "utf8")).toBe(before);
+    });
+
+    it("never installs fresh — a config with a stale/missing version but no runtime installed is left alone", async () => {
+      const root = makeProject("p");
+      writeConfig(root, { ...defaultish, runtimeVersion: "0.0.0-nonexistent" });
+
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT)).toBeNull();
+      expect(fs.existsSync(path.join(root, ".claude", "scripts"))).toBe(false);
+    });
+
+    it("refreshes an already-installed project whose stamped version is stale", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT);
+      // Simulate what a project installed before this feature — or under an older plugin version —
+      // looks like: the runtime is present, but the stamp doesn't match what's shipped now.
+      writeConfig(root, { ...readConfig(root)!, runtimeVersion: "0.0.0-older" });
+      fs.writeFileSync(
+        path.join(root, ".claude", "scripts", "maestro-session-log.cjs"),
+        "// stale content from an older release\n"
+      );
+
+      const report = await refreshStaleRuntime(root, PLUGIN_ROOT);
+      expect(report).not.toBeNull();
+      expect(report!.runtimeVersionUpdated).toBe(true);
+      expect(report!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
+      expect(report!.scriptsWritten).toContain(".claude/scripts/maestro-session-log.cjs");
+      expect(readConfig(root)!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
+      // The authored graph is provably unchanged by the refresh — only runtimeVersion differs.
+      expect({ ...readConfig(root)!, runtimeVersion: undefined }).toEqual({ ...defaultish, runtimeVersion: undefined });
+    });
+  });
+});
+
+describe("maestro-check-runtime.cjs", () => {
+  function runCheck(root: string, home: string): { code: number; stdout: string } {
+    try {
+      const stdout = execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
+        encoding: "utf8",
+        env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: home },
+      });
+      return { code: 0, stdout };
+    } catch (e: any) {
+      return { code: e.status, stdout: e.stdout };
+    }
+  }
+
+  function writeInstalledPlugins(home: string, plugins: Record<string, unknown[]>): void {
+    const dir = path.join(home, ".claude", "plugins");
+    fs.mkdirSync(dir, { recursive: true });
+    fs.writeFileSync(path.join(dir, "installed_plugins.json"), JSON.stringify({ version: 1, plugins }, null, 2));
+  }
+
+  it("no-ops when maestro.json is absent, without touching installed_plugins.json", async () => {
+    const root = makeProject("p");
+    await installRuntime(root, PLUGIN_ROOT);
+    const home = path.join(tmp, "home1");
+
+    const { code, stdout } = runCheck(root, home);
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toMatchObject({ ok: false, stale: false });
+  });
+
+  it("no-ops when the maestro plugin isn't installed on this machine", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT);
+    const home = path.join(tmp, "home2");
+    fs.mkdirSync(home, { recursive: true }); // no plugins/installed_plugins.json at all
+
+    const { code, stdout } = runCheck(root, home);
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toMatchObject({ ok: false, stale: false });
+  });
+
+  it("reports stale when the installed plugin's version doesn't match runtimeVersion", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT);
+    writeConfig(root, { ...readConfig(root)!, runtimeVersion: "0.0.0-older" });
+    const home = path.join(tmp, "home3");
+    writeInstalledPlugins(home, {
+      "maestro@maestro": [
+        {
+          scope: "user",
+          version: "9.9.9",
+          installedAt: "2026-01-01T00:00:00.000Z",
+          installPath: "/some/cache/path/maestro/9.9.9",
+        },
+      ],
+    });
+
+    const { code, stdout } = runCheck(root, home);
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toEqual({
+      ok: true,
+      stale: true,
+      installedVersion: "0.0.0-older",
+      runtimeVersion: "9.9.9",
+      pluginRoot: "/some/cache/path/maestro/9.9.9",
+    });
+  });
+
+  it("reports not stale when the versions already match", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT);
+    const stamped = readConfig(root)!.runtimeVersion!;
+    const home = path.join(tmp, "home4");
+    writeInstalledPlugins(home, {
+      "maestro@maestro": [
+        {
+          scope: "user",
+          version: stamped,
+          installedAt: "2026-01-01T00:00:00.000Z",
+          installPath: "/some/cache/path/maestro/" + stamped,
+        },
+      ],
+    });
+
+    const { stdout } = runCheck(root, home);
+    expect(JSON.parse(stdout)).toMatchObject({ ok: true, stale: false });
   });
 });
 

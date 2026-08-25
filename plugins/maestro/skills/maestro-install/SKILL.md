@@ -77,12 +77,13 @@ $ARGUMENTS
 
    This is idempotent and:
    - installs the `maestro` skill at `<projectPath>/.claude/skills/maestro/SKILL.md` — copied whole if absent, otherwise its plugin-owned managed regions (`Maestro:STEPS`, `Maestro:PRINCIPLES`) are re-synced from the template while everything outside them, plus the rendered `Maestro:HANDOFFS` table, is preserved,
-   - copies the runtime scripts (`maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs`, `bash-validation.sh`, `lib/maestro-session.cjs`, `lib/maestro-skill-regions.cjs`) into `<projectPath>/.claude/scripts/`,
+   - copies the runtime scripts (`maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs`, `maestro-check-runtime.cjs`, `bash-validation.sh`, `lib/maestro-session.cjs`, `lib/maestro-tasks.cjs`, `lib/maestro-skill-regions.cjs`) into `<projectPath>/.claude/scripts/`,
    - merges the `bash-validation.sh` PreToolUse Bash hook into `<projectPath>/.claude/settings.json` (preserving other keys), so `.env` reads are blocked,
    - adds an `# Maestro` section to the repo-root `.gitignore` (`git rev-parse --show-toplevel`) ignoring every nested session file across the repo / monorepo via `**/.claude/maestro_session.json`, `**/.claude/maestro_session.log.jsonl`, and `**/.claude/maestro_session_tasks.json`. The `**/` globs match `.claude/` at any depth including the root, so there is no per-project `.claude/.gitignore` to write,
    - seeds `<projectPath>/.claude/maestro.json` **only when it is absent** — six ready-made workflows (`default`, `tdd`, `Refactor`, `Documentation`, `Review`, `Tests`) wired around the `--impl-agents` chain, with `--skill-map`'s skills attached to the matching instances as `referenced_skills`. An existing config is the user's own graph and is never re-seeded.
+   - stamps `<projectPath>/.claude/maestro.json`'s `runtimeVersion` field with the plugin's current `plugin.json` version — the ONE field this script writes into an already-existing config. Nothing else in it is touched. This is what lets the orchestrator's Step 0 (`maestro-check-runtime.cjs`) tell, on a bare terminal session, whether the project's runtime needs refreshing before doing anything else.
 
-   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `setBashHook`, `wroteRepoGitignore`, `seededConfig`, `implAgents`). It does **not** render the skill's handoff table — that is step 4.
+   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `setBashHook`, `wroteRepoGitignore`, `seededConfig`, `implAgents`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the skill's handoff table — that is step 4.
 
    `orchestratorSkill.action` says what happened to `SKILL.md`:
    - `installed` — no skill was present; the template was copied whole.

@@ -63,6 +63,22 @@ export function writeConfig(projectRoot: string, cfg: MaestroConfigV3): string {
   return p;
 }
 
+/**
+ * Stamp `runtimeVersion` into an EXISTING `maestro.json`, leaving every other field untouched.
+ *
+ * No-ops (returns false, writes nothing) when there is no `maestro.json` yet — matching the
+ * "no-op when maestro.json is absent" pattern the runtime hooks already follow — and when the
+ * stamped version already matches, so a project already current from this call's point of view
+ * costs one read and zero writes. This is the one write `install.ts` makes to the config file
+ * itself; it never touches `workflows`/`rules`/anything else the user authored.
+ */
+export function writeRuntimeVersion(projectRoot: string, version: string): boolean {
+  const cfg = readConfig(projectRoot);
+  if (!cfg || cfg.runtimeVersion === version) return false;
+  writeConfig(projectRoot, { ...cfg, runtimeVersion: version });
+  return true;
+}
+
 export type ConfigSlice =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice };

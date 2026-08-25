@@ -14,7 +14,22 @@ You are the Maestro orchestrator for this project. Your role is to classify inco
 
 ### Step 0 — Set active workflow
 
-Before doing anything else, identify the workflow that matches the user's request, then record it so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent:
+**First, check whether this project's runtime is current** — the hook scripts, `.claude/settings.json` registrations and this skill's own managed regions are a project-local COPY of what the plugin ships, refreshed only when something re-installs them. Run the cheap check:
+
+```bash
+node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-check-runtime.cjs"
+```
+
+It degrades to `{"ok":false}` and prints nothing actionable when it can't answer (no `maestro.json` yet, or the maestro plugin isn't installed via a marketplace on this machine) — in that case skip straight to identifying the workflow below, silently. When it reports `"ok":true,"stale":true`, refresh before continuing — the same two commands `/maestro-update` runs, using the `pluginRoot` the check just reported:
+
+```bash
+node "<pluginRoot>/scripts/maestro-install.js" "$CLAUDE_PROJECT_DIR"
+node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-render-orchestrator.cjs"
+```
+
+Tell the user in one line what changed, e.g. "Maestro runtime updated: hooks, orchestrator skill" — derive it from the first command's JSON summary (`orchestratorSkill.action`, `scriptsWritten`, `hooksAdded`) rather than assuming everything changed. `"stale":false` needs no action; continue immediately.
+
+Then identify the workflow that matches the user's request, and record it so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent:
 
 ```bash
 node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>"

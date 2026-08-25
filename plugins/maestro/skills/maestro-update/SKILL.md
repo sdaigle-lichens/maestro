@@ -15,7 +15,7 @@ Refresh the project's Maestro runtime scripts **and the orchestrator skill body*
    node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js" "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
-   This overwrites `.claude/scripts/{maestro-set-session-workflow.cjs,maestro-render-orchestrator.cjs,maestro-task-status.cjs,bash-validation.sh,lib/maestro-session.cjs,lib/maestro-tasks.cjs,lib/maestro-skill-regions.cjs}` with the current plugin versions, so any fixes or new validation steps in a newer plugin release are picked up immediately.
+   This overwrites `.claude/scripts/{maestro-set-session-workflow.cjs,maestro-render-orchestrator.cjs,maestro-task-status.cjs,maestro-check-runtime.cjs,bash-validation.sh,lib/maestro-session.cjs,lib/maestro-tasks.cjs,lib/maestro-skill-regions.cjs}` with the current plugin versions, so any fixes or new validation steps in a newer plugin release are picked up immediately. It also stamps the plugin's current `plugin.json` version into `.claude/maestro.json`'s `runtimeVersion` field — the same field the orchestrator's Step 0 checks (via `maestro-check-runtime.cjs`) to decide whether this refresh needs to run at all.
 
    It **also syncs the orchestrator skill body**: the plugin-owned regions of `.claude/skills/maestro/SKILL.md` (`<!-- Maestro:STEPS -->`, `<!-- Maestro:PRINCIPLES -->`) are rewritten from `templates/maestro/SKILL.md`, so template improvements reach already-installed projects instead of silently drifting. Content **outside** those markers is your own and is never touched, and the rendered `<!-- Maestro:HANDOFFS -->` table is carried across.
 
@@ -40,6 +40,6 @@ Refresh the project's Maestro runtime scripts **and the orchestrator skill body*
 ## Notes
 
 - Hook scripts (`maestro-inject-agent-context.js`, `maestro-subagent-log.js`, `maestro-session-log.js`) run from `${CLAUDE_PLUGIN_ROOT}/scripts/` and are always current — no sync needed for them.
-- Project-copied scripts (`maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs`, `bash-validation.sh`, `lib/maestro-session.cjs`, `lib/maestro-tasks.cjs`, `lib/maestro-skill-regions.cjs`) are what step 1 refreshes.
+- Project-copied scripts (`maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs`, `maestro-check-runtime.cjs`, `bash-validation.sh`, `lib/maestro-session.cjs`, `lib/maestro-tasks.cjs`, `lib/maestro-skill-regions.cjs`) are what step 1 refreshes.
 - The orchestrator's **managed regions** come from the plugin template; the region list lives in `lib/maestro-skill-regions.cjs` (`MANAGED_REGIONS`). To keep customisations across updates, put them outside the markers.
 - `maestro.json` is the source of truth. The `SubagentStart` hook reads it directly at runtime, so subagent skill injection is always current even between `/maestro-update` runs — only the orchestrator's handoff table needs the renderer re-run.

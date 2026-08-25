@@ -189,6 +189,10 @@ export interface InstallReport {
   /** Hook ids added to the project's `.claude/settings.json`. */
   hooksAdded: string[];
   gitignoreUpdated: boolean;
+  /** The plugin.json version this run stamped into `maestro.json`'s `runtimeVersion`. */
+  runtimeVersion: string;
+  /** `runtimeVersion` changed on this run — the project was stamped with an older version or none. */
+  runtimeVersionUpdated: boolean;
   /** True when the run found nothing to do — the idempotent second run. */
   unchanged: boolean;
   warnings: string[];

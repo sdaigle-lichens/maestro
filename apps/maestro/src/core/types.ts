@@ -63,6 +63,17 @@ export interface MaestroConfigV3 {
   workflow_instances: MaestroInstanceV3[];
   workflows: MaestroWorkflowV3[];
   rules: MaestroRuleV3[];
+  /**
+   * The plugin.json `version` of the maestro plugin the last time this project's runtime bundle
+   * (the hook scripts under `.claude/scripts/`, their registration in `.claude/settings.json`, and
+   * the orchestrator skill's managed regions) was installed or refreshed from it.
+   *
+   * The one machine-owned field on this file: `installRuntime()` / `maestro-install.js` stamp it on
+   * every install/update, and it is the ONLY thing either writes here without being asked to — see
+   * `install.ts`'s header. Absent on a project that predates this field, or that has never had its
+   * runtime installed.
+   */
+  runtimeVersion?: string;
 }
 
 export interface MaestroWorkflowsSlice {

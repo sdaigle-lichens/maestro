@@ -305,6 +305,9 @@ export const IPC = {
 
   installStatus: "install:status",
   installRun: "install:run",
+  // Task 027: the cheap runtimeVersion check + refresh, run automatically on project selection.
+  // A separate channel from installRun so `install:status` stays a pure read — see InstallProvider.
+  installAutoRefresh: "install:auto-refresh",
   installUninstallPlan: "install:uninstall-plan",
   installUninstall: "install:uninstall",
 
@@ -481,6 +484,13 @@ export interface MaestroApi {
      * than half-writing) when it cannot proceed — so the caller must go through `callMain`.
      */
     run(projectRoot?: string): Promise<InstallReport>;
+    /**
+     * Task 027: refresh the runtime IFF it's already installed and its stamped `runtimeVersion`
+     * doesn't match what the app ships — the cheap comparison, decoupled from `status()`'s content
+     * hashes, that lets a project already current cost zero file writes. Never installs fresh.
+     * Resolves `null` when there was nothing to refresh (including "not installed at all").
+     */
+    autoRefresh(projectRoot?: string): Promise<InstallReport | null>;
     /**
      * What each level of an uninstall would remove, right now. Reads only — this is what fills
      * the purge confirmation, so it can name the files before anything is deleted.

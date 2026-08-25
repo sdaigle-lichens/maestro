@@ -313,6 +313,7 @@ const STATIC_ASSETS = [
   { src: "scripts/maestro-set-session-workflow.cjs", dest: ".claude/scripts/maestro-set-session-workflow.cjs" },
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
   { src: "scripts/maestro-task-status.cjs", dest: ".claude/scripts/maestro-task-status.cjs" },
+  { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
@@ -392,6 +393,23 @@ try {
     seededConfig = true;
   }
 
+  // Stamp runtimeVersion last, after every file it describes is current on disk. Mirrors
+  // apps/maestro/src/core/install.ts's installRuntime() so both delivery paths produce the same
+  // result — see that file's writeRuntimeVersion for why this no-ops when maestro.json is still
+  // absent (a missing --impl-agents/no-git-repo edge case) rather than half-seeding one here.
+  const { version: runtimeVersion } = JSON.parse(
+    fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8")
+  );
+  let runtimeVersionUpdated = false;
+  if (fs.existsSync(configPath)) {
+    const current = JSON.parse(fs.readFileSync(configPath, "utf8"));
+    if (current.runtimeVersion !== runtimeVersion) {
+      current.runtimeVersion = runtimeVersion;
+      fs.writeFileSync(configPath, JSON.stringify(current, null, 2));
+      runtimeVersionUpdated = true;
+    }
+  }
+
   process.stdout.write(
     JSON.stringify({
       ok: true,
@@ -403,6 +421,8 @@ try {
       wroteRepoGitignore,
       seededConfig,
       implAgents: seededConfig ? implAgents : undefined,
+      runtimeVersion,
+      runtimeVersionUpdated,
     }) + "\n"
   );
 } catch (err) {
