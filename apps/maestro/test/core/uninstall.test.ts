@@ -27,9 +27,13 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
 
 let tmp: string;
+// Passed to every installRuntime() call below so its report-sync step never touches the REAL
+// ~/.claude/maestro-report-defaults.sqlite on whoever runs the suite.
+let REPORTS_DB: string;
 
 beforeEach(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-uninstall-"));
+  REPORTS_DB = path.join(tmp, "report-defaults.sqlite");
 });
 
 afterEach(() => {
@@ -47,7 +51,7 @@ function makeProject(name: string): string {
 async function installed(name = "p"): Promise<string> {
   const root = makeProject(name);
   writeConfig(root, defaultish);
-  await installRuntime(root, PLUGIN_ROOT);
+  await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
   for (const file of ["maestro_session.json", "maestro_session.log.jsonl", "maestro_session_tasks.json"]) {
     fs.writeFileSync(path.join(root, ".claude", file), "{}\n");
   }
@@ -212,7 +216,7 @@ describe("hooks and settings the app did not add", () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify(handEdited, null, 2));
-    await installRuntime(root, PLUGIN_ROOT);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
 
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
     const settings = readSettings(root);
@@ -296,7 +300,7 @@ describe("purge", () => {
   it("leaves the project as it found it — no empty scaffolding, nothing outside .claude", async () => {
     const root = makeProject("p");
     fs.writeFileSync(path.join(root, "README.md"), "# mine\n");
-    await installRuntime(root, PLUGIN_ROOT);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
     // .claude has nothing left in it: no orphaned skills/, scripts/, templates/ or settings.json.
@@ -342,7 +346,7 @@ describe("purge", () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify({ model: "opus" }, null, 2));
-    await installRuntime(root, PLUGIN_ROOT);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
 
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
@@ -451,7 +455,7 @@ describe("install after uninstall", () => {
     const config = readConfig(root);
 
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
-    const report = await installRuntime(root, PLUGIN_ROOT);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
 
     expect(report.hooksAdded.sort()).toEqual(HOOK_REGISTRATIONS.map((h) => h.id).sort());
     expect(report.status.installed).toBe(true);
@@ -463,7 +467,7 @@ describe("install after uninstall", () => {
     const root = await installed();
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
-    const report = await installRuntime(root, PLUGIN_ROOT);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
 
     expect(report.orchestratorSkill.action).toBe("installed");
     expect(report.status.installed).toBe(true);

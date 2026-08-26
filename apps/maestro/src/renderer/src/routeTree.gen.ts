@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as CreateMarketplaceRouteImport } from './routes/create-marketplace'
 import { Route as CreatePluginRouteImport } from './routes/create-plugin'
 import { Route as CreateSkillRouteImport } from './routes/create-skill'
@@ -29,6 +30,11 @@ import { Route as DocsGroupSlugRouteImport } from './routes/docs.$group.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateMarketplaceRoute = CreateMarketplaceRouteImport.update({
@@ -109,6 +115,7 @@ const DocsGroupSlugRoute = DocsGroupSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/create-marketplace': typeof CreateMarketplaceRoute
   '/create-plugin': typeof CreatePluginRoute
   '/create-skill': typeof CreateSkillRoute
@@ -127,6 +134,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/create-marketplace': typeof CreateMarketplaceRoute
   '/create-plugin': typeof CreatePluginRoute
   '/create-skill': typeof CreateSkillRoute
@@ -146,6 +154,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/create-marketplace': typeof CreateMarketplaceRoute
   '/create-plugin': typeof CreatePluginRoute
   '/create-skill': typeof CreateSkillRoute
@@ -166,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agents'
     | '/create-marketplace'
     | '/create-plugin'
     | '/create-skill'
@@ -184,6 +194,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agents'
     | '/create-marketplace'
     | '/create-plugin'
     | '/create-skill'
@@ -202,6 +213,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/agents'
     | '/create-marketplace'
     | '/create-plugin'
     | '/create-skill'
@@ -221,6 +233,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentsRoute: typeof AgentsRoute
   CreateMarketplaceRoute: typeof CreateMarketplaceRoute
   CreatePluginRoute: typeof CreatePluginRoute
   CreateSkillRoute: typeof CreateSkillRoute
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-marketplace': {
@@ -357,6 +377,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentsRoute: AgentsRoute,
   CreateMarketplaceRoute: CreateMarketplaceRoute,
   CreatePluginRoute: CreatePluginRoute,
   CreateSkillRoute: CreateSkillRoute,

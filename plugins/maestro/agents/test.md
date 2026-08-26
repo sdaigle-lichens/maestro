@@ -27,21 +27,6 @@ The project's testing conventions, fixtures, and test commands are provided thro
 4. Run the specific test file to validate, then run the full suite.
 5. Run lint before handing off.
 
-## Mandatory Output Format
-
-Always return a JSON report at the end of your work. Output it as a fenced `json` code block:
-
-```json
-{
-  "subagent": "test",
-  "verdict": "SUCCESS | FAIL",
-  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },
-  "testResult": "<N passed, N failed>",
-  "filesChanged": ["<file1>", "<file2>"],
-  "description": "<summary of what was tested>"
-}
-```
-
 ## Boundaries
 
 **Will:**

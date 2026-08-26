@@ -97,6 +97,25 @@ function ReportCard({ report }: { report: InstallReport }) {
             </li>
           )}
           {report.gitignoreUpdated && <li>Session files added to the repo&rsquo;s .gitignore.</li>}
+          {report.reportsSync.materialized.length > 0 && (
+            <li>
+              Report{report.reportsSync.materialized.length === 1 ? "" : "s"} materialized from the global default:{" "}
+              <span className="font-mono text-(--ink-3)">{report.reportsSync.materialized.join(", ")}</span>
+            </li>
+          )}
+          {report.reportsSync.refreshed.length > 0 && (
+            <li>
+              Report{report.reportsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global default:{" "}
+              <span className="font-mono text-(--ink-3)">{report.reportsSync.refreshed.join(", ")}</span>
+            </li>
+          )}
+          {report.reportsSync.staleCustomized.length > 0 && (
+            <li>
+              Stale but customized — left alone since you edited{" "}
+              {report.reportsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
+              <span className="font-mono text-(--ink-3)">{report.reportsSync.staleCustomized.join(", ")}</span>
+            </li>
+          )}
         </ul>
       )}
     </div>

@@ -49,6 +49,8 @@ export default function DiscoveredDefinitionsList({
   items,
   emptyLabel,
   onTagsChange,
+  selectedId,
+  onSelect,
 }: {
   items: DiscoveredDefinition[];
   /** e.g. "skills" or "agents" — used only in the empty-state sentence. */
@@ -58,6 +60,14 @@ export default function DiscoveredDefinitionsList({
    * reuses this same list component but has nothing to tag, so it keeps its plain two-column table.
    */
   onTagsChange?: (id: string, tags: SkillTag[]) => void;
+  /**
+   * Only the /agents page supplies these. Their presence is what makes rows clickable — the
+   * table's own look (grouping, columns, no status badge) is unchanged either way, since /agents
+   * uses "the exact same list" on purpose. `selectedId` highlights the row across a re-render
+   * (e.g. after the resolved report finishes loading).
+   */
+  selectedId?: string | null;
+  onSelect?: (id: string) => void;
 }) {
   if (items.length === 0) {
     return (
@@ -88,7 +98,13 @@ export default function DiscoveredDefinitionsList({
               </thead>
               <tbody>
                 {group.items.map((item) => (
-                  <tr key={item.id} className={ROW}>
+                  <tr
+                    key={item.id}
+                    className={`${ROW} ${onSelect ? "cursor-pointer" : ""} ${
+                      onSelect && selectedId === item.id ? "bg-(--primary-dim)" : ""
+                    }`}
+                    onClick={onSelect ? () => onSelect(item.id) : undefined}
+                  >
                     <td className="px-4 py-2.5 align-top">
                       <span className="inline-block rounded-md border border-ring bg-(--primary-dim) px-2 py-0.5 font-mono text-[12px] text-primary">
                         {item.id}

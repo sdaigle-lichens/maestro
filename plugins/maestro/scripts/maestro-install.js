@@ -50,6 +50,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
 const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
@@ -350,6 +351,81 @@ function runtimeAssets(pluginRoot) {
   return [...STATIC_ASSETS, ...handoffAssets(pluginRoot)];
 }
 
+// Report sync — mirrors apps/maestro/src/core/report-sync.ts's syncProjectReports() exactly (see
+// that file's header for the full reasoning). Runs on both /maestro-install and /maestro-update,
+// since /maestro-update just re-runs this script. Wrapped by the caller in try/catch: an older
+// `node` on this session's PATH (< 22.5, no node:sqlite) degrades to "nothing synced" rather than
+// failing the install, same as the skill-tags read above.
+function sha256(s) {
+  return crypto.createHash("sha256").update(s).digest("hex");
+}
+
+function syncProjectReports(configPath, projectDir) {
+  const summary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
+  if (!fs.existsSync(configPath)) return summary;
+  const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  if (cfg.version !== 3) return summary;
+
+  let readAgentReportDefault;
+  try {
+    ({ readAgentReportDefault } = require("./lib/maestro-report-defaults.cjs"));
+  } catch {
+    return summary; // no node:sqlite on this node — degrade to nothing synced
+  }
+
+  const reports = { ...(cfg.reports || {}) };
+  const candidateAgents = new Set([...Object.keys(reports), ...(cfg.agents_available || [])]);
+  const reportsDir = path.join(projectDir, ".claude", "reports");
+  let changed = false;
+
+  for (const agentName of candidateAgents) {
+    const entry = reports[agentName];
+    if (entry && !entry.syncedFrom) continue; // hand-authored override — never touched
+
+    const global = readAgentReportDefault(agentName);
+    if (!global) continue;
+
+    const reportId = entry ? entry.id : agentName;
+    const filePath = path.join(reportsDir, `${reportId}.md`);
+    const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+
+    if (onDisk === null) {
+      fs.mkdirSync(reportsDir, { recursive: true });
+      fs.writeFileSync(filePath, global.content);
+      reports[agentName] = { id: reportId, syncedFrom: { version: global.version, hash: sha256(global.content) } };
+      summary.materialized.push(agentName);
+      changed = true;
+      continue;
+    }
+
+    if (!entry) {
+      summary.unchanged.push(agentName);
+      continue;
+    }
+
+    const currentHash = sha256(onDisk);
+    if (currentHash !== entry.syncedFrom.hash) {
+      summary.staleCustomized.push(agentName);
+      continue;
+    }
+
+    if (global.version > entry.syncedFrom.version) {
+      fs.writeFileSync(filePath, global.content);
+      reports[agentName] = { id: reportId, syncedFrom: { version: global.version, hash: sha256(global.content) } };
+      summary.refreshed.push(agentName);
+      changed = true;
+      continue;
+    }
+
+    summary.unchanged.push(agentName);
+  }
+
+  if (changed) {
+    fs.writeFileSync(configPath, JSON.stringify({ ...cfg, reports }, null, 2));
+  }
+  return summary;
+}
+
 try {
   const claudeDir = path.join(projectDir, ".claude");
   const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
@@ -410,6 +486,8 @@ try {
     }
   }
 
+  const reportsSync = syncProjectReports(configPath, projectDir);
+
   process.stdout.write(
     JSON.stringify({
       ok: true,
@@ -423,6 +501,7 @@ try {
       implAgents: seededConfig ? implAgents : undefined,
       runtimeVersion,
       runtimeVersionUpdated,
+      reportsSync,
     }) + "\n"
   );
 } catch (err) {

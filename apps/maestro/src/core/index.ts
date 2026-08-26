@@ -17,6 +17,8 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   MaestroSession,
 } from "./types.js";
 
@@ -108,6 +110,20 @@ export {
 } from "./session-log.js";
 
 export { saveConfig, type SaveResult } from "./save.js";
+
+export {
+  readAgentReportDefault,
+  readReportById,
+  readAllAgentReportDefaults,
+  DEFAULT_REPORT_DEFAULTS_DB_PATH,
+  type ReportDefault,
+} from "./report-defaults.js";
+
+export { resolveReport, type ReportResolution, type ReportSource, type GlobalReportInput } from "./report-resolution.js";
+
+export { syncProjectReports } from "./report-sync.js";
+
+export { getResolvedReport, saveProjectReportOverride } from "./reports.js";
 
 export {
   installRuntime,

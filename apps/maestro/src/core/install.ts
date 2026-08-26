@@ -33,6 +33,7 @@ import { getInstalledPlugins } from "@repo/claude-fs";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readJsonSafe, writeRuntimeVersion } from "./config.js";
+import { syncProjectReports } from "./report-sync.js";
 import type { MaestroConfigV3 } from "./types.js";
 import type { InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
 
@@ -541,8 +542,16 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
  * settings.json — is checked BEFORE the first byte is written, so a rejected install leaves the
  * project exactly as it was and the user can fix the cause and press the button again. Past that
  * point every step is a copy or an append that re-running completes.
+ *
+ * `reportsDbPath` overrides the global report-defaults store the report sync step reads —
+ * exposed only so tests don't touch the real machine's `~/.claude/maestro-report-defaults.sqlite`
+ * (mirrors `skill-tags.ts`'s tests taking an explicit `dbPath`); every real caller omits it.
  */
-export async function installRuntime(projectRoot: string, pluginRoot?: string): Promise<InstallReport> {
+export async function installRuntime(
+  projectRoot: string,
+  pluginRoot?: string,
+  reportsDbPath?: string
+): Promise<InstallReport> {
   if (!projectRoot) throw new Error("No project is open.");
   if (!fs.existsSync(projectRoot)) throw new Error(`${projectRoot} does not exist.`);
   const root = requirePluginRoot(pluginRoot);
@@ -585,6 +594,11 @@ export async function installRuntime(projectRoot: string, pluginRoot?: string): 
   const runtimeVersion = shippedRuntimeVersion(root);
   const runtimeVersionUpdated = writeRuntimeVersion(projectRoot, runtimeVersion);
 
+  // Sync project reports from the global default tier — after maestro.json is guaranteed to
+  // exist in whatever form it's going to (stamped runtimeVersion above), so a reports slice
+  // written here isn't immediately clobbered by writeRuntimeVersion's own read-modify-write.
+  const reportsSync = syncProjectReports(projectRoot, reportsDbPath);
+
   const status = await installStatus(projectRoot, root);
 
   const warnings: string[] = [];
@@ -612,9 +626,12 @@ export async function installRuntime(projectRoot: string, pluginRoot?: string): 
       scriptsWritten.length === 0 &&
       hooksAdded.length === 0 &&
       !gitignoreUpdated &&
-      !runtimeVersionUpdated,
+      !runtimeVersionUpdated &&
+      reportsSync.materialized.length === 0 &&
+      reportsSync.refreshed.length === 0,
     warnings,
     status,
+    reportsSync,
   };
 }
 
@@ -629,7 +646,11 @@ export async function installRuntime(projectRoot: string, pluginRoot?: string): 
  * project selection would install Maestro into every repo a user happens to open in the app,
  * which is not what "close the staleness gap" asked for — only refreshing an existing install is.
  */
-export async function refreshStaleRuntime(projectRoot: string, pluginRoot?: string): Promise<InstallReport | null> {
+export async function refreshStaleRuntime(
+  projectRoot: string,
+  pluginRoot?: string,
+  reportsDbPath?: string
+): Promise<InstallReport | null> {
   const root = requirePluginRoot(pluginRoot);
   // A raw parse, not readConfig()'s blank-on-corrupt fallback: this trigger fires on every project
   // SELECTION, not an explicit user action, so it must never treat "the file is corrupt" the same
@@ -643,5 +664,5 @@ export async function refreshStaleRuntime(projectRoot: string, pluginRoot?: stri
   if (cfg.runtimeVersion === shipped) return null;
   const status = await installStatus(projectRoot, root);
   if (!status.installed) return null;
-  return installRuntime(projectRoot, root);
+  return installRuntime(projectRoot, root, reportsDbPath);
 }

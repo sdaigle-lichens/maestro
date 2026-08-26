@@ -5,16 +5,17 @@
 // there would be describing a machine and a project the user has not chosen yet. So the dashboard
 // is a route like any other, reached from the top bar's hamburger menu.
 //
-// SIX TABS, AND ONE IS NOT LIKE THE OTHERS. Five are pure reads of this machine and the VIEWED
+// FIVE TABS, AND ONE IS NOT LIKE THE OTHERS. Four are pure reads of this machine and the VIEWED
 // project (see `ProjectSelect` below), served by one `data:tools` round trip. Usage Stats is a
 // COMMAND — help-server ran `npx ccusage@latest` on every view of it, downloading and executing a
 // package from the network unannounced. It therefore has no loader data at all: it previews what
 // it would run, shows that, and runs only when the user says so. See src/core/ccusage.ts.
 //
-// Skills used to be a seventh tab here; it now lives at its own top-level `/skills` page (frequent
-// enough to tag, especially with "Update skill tags", to earn a nav slot). This route still reads
-// `data.skills` off the shared `data:tools` payload for nothing — see `ToolsData` — that field is
-// unused here and kept only because narrowing the shared payload per-consumer isn't worth it.
+// Skills and Agents used to be tabs here; each now lives at its own top-level page (`/skills`,
+// `/agents`) once it grew an inline editor that didn't fit a tab any better than a form fits a
+// table. This route still reads `data.skills`/`data.agents` off the shared `data:tools` payload
+// for nothing — see `ToolsData` — those fields are unused here and kept only because narrowing
+// the shared payload per-consumer isn't worth it.
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
@@ -26,7 +27,6 @@ import MarketplaceTab from "../components/tabs/marketplace";
 import CuratedTools from "../components/tabs/curated-tools";
 import UsageStatsTab from "../components/tabs/usage-stats";
 import RulesTab from "../components/tabs/rules-tab";
-import AgentsTab from "../components/tabs/agents-tab";
 import { callMain, type CallResult } from "../utils/call-main";
 import { getToolsData, type ToolsData } from "../utils/tools";
 import { useProject } from "../utils/project-context";
@@ -41,8 +41,9 @@ export const Route = createFileRoute("/tools")({
 
 // Skills moved to its own top-level /skills page (see routes/skills.tsx) — tagging is frequent
 // enough, especially with the "Update skill tags" button, to earn a place in the project nav
-// rather than staying a tab here.
-type TabId = "plugins" | "stats" | "marketplace" | "curated" | "rules" | "agents";
+// rather than staying a tab here. Agents graduated the same way (see routes/agents.tsx): its
+// report editor didn't fit a tab any better than Skills' tag editor did.
+type TabId = "plugins" | "stats" | "marketplace" | "curated" | "rules";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "plugins", label: "Plugins" },
@@ -50,7 +51,6 @@ const TABS: { id: TabId; label: string }[] = [
   { id: "stats", label: "Usage Stats" },
   { id: "curated", label: "Curated Tools" },
   { id: "rules", label: "Rules" },
-  { id: "agents", label: "Agents" },
 ];
 
 function ToolsPage() {
@@ -166,7 +166,6 @@ function ToolsPage() {
           )}
           {tab === "curated" && <CuratedTools plugins={data.curated} />}
           {tab === "rules" && <RulesTab projectRules={data.projectRules} />}
-          {tab === "agents" && <AgentsTab agents={data.agents} />}
         </div>
       </div>
     </div>

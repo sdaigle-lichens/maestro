@@ -24,6 +24,8 @@ import type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   DiscoveredDefinition,
   SkillTag,
   ProjectRule,
@@ -34,6 +36,8 @@ import type {
   RepoDetection,
   InstallStatus,
   InstallReport,
+  ReportSyncSummary,
+  ResolvedReport,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -112,6 +116,8 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   DiscoveredDefinition,
   SkillTag,
   ProjectRule,
@@ -122,6 +128,8 @@ export type {
   RepoDetection,
   InstallStatus,
   InstallReport,
+  ReportSyncSummary,
+  ResolvedReport,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -293,6 +301,14 @@ export const IPC = {
   globalDocContent: "data:global-doc",
   configSave: "config:save",
 
+  // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
+  // global default, else none) — the SAME resolution `report-resolution.ts` gives the
+  // SubagentStart hook, so the page can never show something other than what a run would actually
+  // receive. `reportSave` is a plain file write, no Claude session, no token — same shape as the
+  // /rules save path: it always writes a PROJECT override keyed by the agent's own name.
+  reportGet: "report:get",
+  reportSave: "report:save",
+
   // Set one skill's tags in the global (`~/.claude/maestro-skill-tags.sqlite`) store — see
   // `src/core/skill-tags.ts`. No project involved: a skill's tags are the same in every project.
   skillTagsSet: "skill-tags:set",
@@ -436,6 +452,16 @@ export interface MaestroApi {
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;
+  };
+  /**
+   * The /agents page. `get` resolves what's in effect for one agent — project override, else
+   * global default, else none. `save` is a plain file write (no Claude session, no
+   * `claude:preview`/`run`, no token): it always writes `.claude/reports/<agentName>.md` and
+   * records the entry keyed by that SAME agent name, never an inherited global id.
+   */
+  reports: {
+    get(agentName: string): Promise<ResolvedReport>;
+    save(agentName: string, content: string): Promise<ResolvedReport>;
   };
   /**
    * Skill tags — global, keyed by skill id, edited from the /tools Skills tab. `set` returns the

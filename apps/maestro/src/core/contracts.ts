@@ -20,6 +20,8 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   MaestroSession,
 } from "./types.js";
 
@@ -50,6 +52,17 @@ export interface DiscoveredDefinition {
    * untagged); only skills carry these today, though the type is shared with `discoverAgents`.
    */
   tags: SkillTag[];
+}
+
+/**
+ * What's in effect for one agent, as resolved by `report-resolution.ts` — the /agents page's
+ * right pane renders this directly, and it is exactly what a subagent run through Maestro would
+ * receive (the SubagentStart hook resolves the same way, independently, in plain JS).
+ */
+export interface ResolvedReport {
+  source: "project" | "global" | "none";
+  /** Empty string for "none" — the editor's resting state, never null on the wire. */
+  content: string;
 }
 
 export interface ProjectRule {
@@ -174,6 +187,18 @@ export interface InstallStatus {
   settingsUnreadable: boolean;
 }
 
+/**
+ * What the report sync step (install/update) did to the project's `.claude/reports/` copies,
+ * keyed by outcome rather than by agent — each agent name appears in exactly one list.
+ */
+export interface ReportSyncSummary {
+  materialized: string[];
+  refreshed: string[];
+  /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
+  staleCustomized: string[];
+  unchanged: string[];
+}
+
 /** What an install actually changed on disk. */
 export interface InstallReport {
   projectRoot: string;
@@ -198,6 +223,8 @@ export interface InstallReport {
   warnings: string[];
   /** Recomputed after the writes, so the caller can refresh its badge without a second call. */
   status: InstallStatus;
+  /** What the report sync step did — materialized/refreshed/flagged-as-customized/unchanged. */
+  reportsSync: ReportSyncSummary;
 }
 
 /**

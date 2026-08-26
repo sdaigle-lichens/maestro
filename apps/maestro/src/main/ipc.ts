@@ -50,6 +50,8 @@ import {
   clearInvocations,
   previewUsageStats,
   runUsageStats,
+  getResolvedReport,
+  saveProjectReportOverride,
 } from "../core/index.js";
 import { IPC, IPC_EVENTS } from "../shared/ipc.js";
 import type {
@@ -77,6 +79,7 @@ import type {
   UninstallPlan,
   UninstallReport,
   ProjectState,
+  ResolvedReport,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -355,6 +358,21 @@ export function registerIpc(): void {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");
     return saveConfig(projectRoot, input);
+  });
+
+  // ── reports (/agents page) ──────────────────────────────────────────
+  // Resolution reads whatever project is open; a plain read, never rejects on no project (an
+  // agent with no project open just resolves against the global tier alone).
+  ipcMain.handle(IPC.reportGet, (_e, agentName: string): ResolvedReport => {
+    const projectRoot = currentRoot();
+    return getResolvedReport(projectRoot ?? "", agentName);
+  });
+  // Plain file write — no Claude session, no claude:preview/run, no token. Always writes a
+  // PROJECT override keyed by the agent's own name (see saveProjectReportOverride's header).
+  ipcMain.handle(IPC.reportSave, (_e, agentName: string, content: string): ResolvedReport => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    return saveProjectReportOverride(projectRoot, agentName, content);
   });
 
   // ── skill tags ───────────────────────────────────────────────────────

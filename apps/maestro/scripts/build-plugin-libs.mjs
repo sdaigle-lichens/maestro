@@ -52,6 +52,7 @@ const entries = [
   { name: "maestro-skill-regions", entry: "src/core/plugin-entries/maestro-skill-regions.ts" },
   { name: "maestro-seed", entry: "src/core/plugin-entries/maestro-seed.ts" },
   { name: "maestro-skill-tags", entry: "src/core/plugin-entries/maestro-skill-tags.ts" },
+  { name: "maestro-report-defaults", entry: "src/core/plugin-entries/maestro-report-defaults.ts" },
 ];
 
 for (const { name, entry } of entries) {
