@@ -415,3 +415,6 @@ export {
   applySkillTagsBlock,
   DEFAULT_SKILL_TAGS_DB_PATH,
 } from "./skill-tags.js";
+
+// Agent avatars — global, keyed by agent name, same shape as skill-tags.ts. See ./avatar-store.ts.
+export { getAvatar, setAvatar, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";

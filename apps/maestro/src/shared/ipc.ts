@@ -100,12 +100,17 @@ import type {
   UsageStatsResult,
   UsageStatsView,
   UsageTotals,
+  AvatarCategory,
+  AvatarPartOption,
+  AvatarLayers,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
 // child_process — so a VALUE from it costs the renderer nothing; the tag editor needs the actual
-// seven-entry array to render one toggle per tag, not just the type.
-export { SKILL_TAGS } from "../core/contracts.js";
+// seven-entry array to render one toggle per tag, not just the type. `AVATAR_CATEGORIES`/
+// `AVATAR_PARTS` are here for the same reason: the avatar picker renders one row per category and
+// one swatch per option, not just the types.
+export { SKILL_TAGS, AVATAR_CATEGORIES, AVATAR_PARTS, AVATAR_REQUIRED_CATEGORIES } from "../core/contracts.js";
 
 export type {
   MaestroConfigV3,
@@ -192,6 +197,9 @@ export type {
   UsageStatsResult,
   UsageStatsView,
   UsageTotals,
+  AvatarCategory,
+  AvatarPartOption,
+  AvatarLayers,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -312,6 +320,12 @@ export const IPC = {
   // Set one skill's tags in the global (`~/.claude/maestro-skill-tags.sqlite`) store — see
   // `src/core/skill-tags.ts`. No project involved: a skill's tags are the same in every project.
   skillTagsSet: "skill-tags:set",
+
+  // An agent's cosmetic avatar in the global (`~/.claude/maestro-avatars.sqlite`) store — see
+  // `src/core/avatar-store.ts`. No project involved, and no token: purely cosmetic, keyed by the
+  // agent's name, same as `skillTagsSet` is keyed by skill id.
+  avatarGet: "avatar:get",
+  avatarSet: "avatar:set",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -469,6 +483,14 @@ export interface MaestroApi {
    */
   skillTags: {
     set(skillId: string, tags: SkillTag[]): Promise<SkillTag[]>;
+  };
+  /**
+   * An agent's cosmetic avatar — global, keyed by agent name, edited from the create-subagent form
+   * and the /agents detail pane. `get` resolves null when nothing has been saved for that name yet.
+   */
+  avatar: {
+    get(agentName: string): Promise<AvatarLayers | null>;
+    set(agentName: string, layers: AvatarLayers): Promise<AvatarLayers>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;

@@ -17,6 +17,8 @@ import {
   readAllSkillTags,
   setSkillTags,
   skillMapFromTags,
+  getAvatar,
+  setAvatar,
   discoverProjectRules,
   discoverRuleLibrary,
   discoverProjectTree,
@@ -72,6 +74,7 @@ import type {
   ClaudeRunResult,
   MaestroConfigV3,
   SkillTag,
+  AvatarLayers,
   DiscoveredDefinition,
   ToolsData,
   InstallReport,
@@ -380,6 +383,16 @@ export function registerIpc(): void {
   // back, so the Skills tab renders what's actually on disk rather than its own optimistic guess.
   ipcMain.handle(IPC.skillTagsSet, (_e, skillId: string, tags: SkillTag[]): SkillTag[] => {
     return setSkillTags(skillId, tags);
+  });
+
+  // ── agent avatars ───────────────────────────────────────────────────
+  // Global, keyed by agent name — no project involved, and no token: purely cosmetic. Note these
+  // do NOT call currentRoot() — avatar storage isn't project-scoped.
+  ipcMain.handle(IPC.avatarGet, (_e, agentName: string): AvatarLayers | null => {
+    return getAvatar(agentName);
+  });
+  ipcMain.handle(IPC.avatarSet, (_e, agentName: string, layers: AvatarLayers): AvatarLayers => {
+    return setAvatar(agentName, layers);
   });
 
   // ── tasks ────────────────────────────────────────────────────────────

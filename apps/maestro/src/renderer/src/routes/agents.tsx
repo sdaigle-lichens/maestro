@@ -15,7 +15,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, FileText, Save } from "lucide-react";
+import { AlertTriangle, FileText, Save, Pencil } from "lucide-react";
 import Button from "@repo/ui/button";
 import { Textarea } from "@repo/ui/field";
 import { toast } from "@repo/ui/toast";
@@ -23,9 +23,13 @@ import TopNav from "../components/top-nav";
 import ProjectSelect from "../components/project-select";
 import DiscoveredDefinitionsList from "../components/tabs/discovered-definitions";
 import CreateLink from "../components/tabs/create-link";
+import AvatarCanvas from "../components/avatar/avatar-canvas";
+import AvatarPicker from "../components/avatar/avatar-picker";
+import { defaultAvatarLayers } from "../utils/avatar";
 import { callMain, type CallResult } from "../utils/call-main";
 import { getToolsData, type ToolsData } from "../utils/tools";
 import { useProject } from "../utils/project-context";
+import type { AvatarLayers } from "../../../shared/ipc";
 
 export const Route = createFileRoute("/agents")({
   loader: async () => callMain(() => getToolsData()),
@@ -52,6 +56,12 @@ function AgentsPage() {
   const [source, setSource] = useState<ReportSource>("none");
   const [phase, setPhase] = useState<Phase>("idle");
   const [dirty, setDirty] = useState(false);
+
+  // The agent's saved avatar — null means nothing has been saved for this name yet, in which case
+  // the canvas falls back to a neutral placeholder. `avatarDraft` is only set while editing.
+  const [avatar, setAvatar] = useState<AvatarLayers | null>(null);
+  const [avatarDraft, setAvatarDraft] = useState<AvatarLayers | null>(null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
 
   // Same "adopt the app's current project once it's known" fix as /tools and /skills.
   useEffect(() => {
@@ -93,6 +103,28 @@ function AgentsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selected, viewedRoot]);
 
+  // The avatar is global by agent name, so it does NOT depend on viewedRoot — unlike the report
+  // above, the same agent name has the same look in every project.
+  useEffect(() => {
+    setAvatarDraft(null);
+    if (!selected) {
+      setAvatar(null);
+      return;
+    }
+    let cancelled = false;
+    void callMain(() => window.maestro.avatar.get(selected)).then((res) => {
+      if (cancelled) return;
+      if (!res.ok) {
+        toast(<>Could not load this agent&rsquo;s avatar: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setAvatar(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [selected]);
+
   if (!result.ok) {
     return (
       <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
@@ -130,6 +162,27 @@ function AgentsPage() {
       );
     } finally {
       setPhase("idle");
+    }
+  }
+
+  async function handleSaveAvatar() {
+    if (!selected || !avatarDraft) return;
+    setAvatarSaving(true);
+    try {
+      const res = await callMain(() => window.maestro.avatar.set(selected, avatarDraft));
+      if (!res.ok) {
+        toast(<>Could not save the avatar: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setAvatar(res.value);
+      setAvatarDraft(null);
+      toast(
+        <>
+          Avatar saved for <span className="font-mono text-(--ink)">{selected}</span>.
+        </>
+      );
+    } finally {
+      setAvatarSaving(false);
     }
   }
 
@@ -188,6 +241,45 @@ function AgentsPage() {
                 >
                   Save
                 </Button>
+              </div>
+
+              <div className="flex items-start gap-3 p-3 rounded-lg bg-(--bg-elev) border border-(--line)">
+                <div className="rounded-md border border-(--line) bg-(--bg-2) p-1.5 shrink-0">
+                  <AvatarCanvas layers={avatar ?? defaultAvatarLayers()} size={72} />
+                </div>
+                <div className="flex-1 flex flex-col gap-2 min-w-0">
+                  <div className="text-[11px] text-(--ink-3)">
+                    {avatar ? "Cosmetic avatar — purely visual." : "No avatar saved yet for this agent."}
+                  </div>
+                  {avatarDraft === null ? (
+                    <div>
+                      <Button
+                        variant="secondary"
+                        icon={<Pencil size={13} />}
+                        onClick={() => setAvatarDraft(avatar ?? defaultAvatarLayers())}
+                      >
+                        Customize
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col gap-2">
+                      <AvatarPicker value={avatarDraft} onChange={setAvatarDraft} />
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="primary"
+                          icon={avatarSaving ? undefined : <Save size={13} />}
+                          loading={avatarSaving}
+                          onClick={() => void handleSaveAvatar()}
+                        >
+                          Save avatar
+                        </Button>
+                        <Button variant="ghost" disabled={avatarSaving} onClick={() => setAvatarDraft(null)}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="flex-1 min-h-0 flex flex-col">

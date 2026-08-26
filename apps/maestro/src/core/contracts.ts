@@ -40,6 +40,82 @@ export const SKILL_TAGS = ["backend", "frontend", "mobile", "refactor", "reviewe
 export type SkillTag = (typeof SKILL_TAGS)[number];
 
 /**
+ * The agent avatar picker's part categories, bottom→top in the same order the layers composite in
+ * (`body` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
+ * must stay in agreement with this order.
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `SKILL_TAGS` above:
+ * the renderer needs the actual array to render one row per category, not just the type.
+ */
+export const AVATAR_CATEGORIES = ["body", "head", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
+export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number];
+
+/** body/head/eyes are always rendered (never "none"); the rest may be null. */
+export const AVATAR_REQUIRED_CATEGORIES: readonly AvatarCategory[] = ["body", "head", "eyes"];
+
+export interface AvatarPartOption {
+  id: string;
+  name: string;
+}
+
+/**
+ * Every option per category. Must match the filenames under
+ * `src/renderer/src/assets/avatar/<category>/<id>.png` exactly — `test/core/avatar-parity.test.ts`
+ * pins this against the renderer's asset manifest.
+ */
+export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
+  body: [
+    { id: "male", name: "Male" },
+    { id: "female", name: "Female" },
+    { id: "child", name: "Child" },
+  ],
+  head: [
+    { id: "male", name: "Male" },
+    { id: "female", name: "Female" },
+    { id: "child", name: "Child" },
+  ],
+  eyes: [
+    { id: "human", name: "Human" },
+    { id: "cyclops", name: "Cyclops" },
+    { id: "cyclops2", name: "Cyclops (alt)" },
+  ],
+  hair: [
+    { id: "plain", name: "Plain" },
+    { id: "bangslong", name: "Long Bangs" },
+    { id: "bob", name: "Bob" },
+    { id: "buzzcut", name: "Buzzcut" },
+    { id: "dreadlocks_short", name: "Short Dreadlocks" },
+  ],
+  torso: [
+    { id: "tshirt", name: "T-Shirt" },
+    { id: "tshirt_buttoned", name: "Buttoned Shirt" },
+    { id: "leather_armour", name: "Leather Armor" },
+    { id: "plate_armour", name: "Plate Armor" },
+  ],
+  legs: [
+    { id: "pants", name: "Pants" },
+    { id: "shorts", name: "Shorts" },
+    { id: "skirt_plain", name: "Plain Skirt" },
+    { id: "skirt_legion", name: "Legion Skirt" },
+  ],
+  feet: [
+    { id: "shoes_basic", name: "Shoes" },
+    { id: "boots_basic", name: "Boots" },
+    { id: "sandals", name: "Sandals" },
+    { id: "shoes_ghillies", name: "Ghillie Shoes" },
+  ],
+  hat: [
+    { id: "bandana", name: "Bandana" },
+    { id: "bowler", name: "Bowler Hat" },
+    { id: "crown", name: "Crown" },
+    { id: "barbarian_helmet", name: "Barbarian Helmet" },
+  ],
+};
+
+/** One id per category, or null for an optional category left empty. */
+export type AvatarLayers = Record<AvatarCategory, string | null>;
+
+/**
  * Where an agent/skill was discovered: "project", "user" (global ~/.claude), the bundled
  * Maestro plugin, or an installed plugin's name.
  */

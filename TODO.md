@@ -4,10 +4,10 @@ Use the following skills to complete the task from :
 
 - apps/maestro/.claude/skills/maestro-architecture/SKILL.md
 - apps/maestro/.claude/skills/test-maestro/SKILL.md
-- apps/maestro/.claude/skills/create-skills-architecture/SKILL.md
 
 You can use the /grill-me skill to clarify the plan.
 
+- apps/maestro/.claude/skills/create-skills-architecture/SKILL.md
 - apps/maestro/.claude/skills/workflow-view/SKILL.md
 - .claude/skills/react-flow-canvas-geometry/SKILL.md
 

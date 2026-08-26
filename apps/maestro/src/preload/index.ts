@@ -53,6 +53,10 @@ const api: MaestroApi = {
   skillTags: {
     set: (skillId, tags) => ipcRenderer.invoke(IPC.skillTagsSet, skillId, tags),
   },
+  avatar: {
+    get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),
+    set: (agentName, layers) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers),
+  },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),
     close: (filename) => ipcRenderer.invoke(IPC.tasksClose, filename),
