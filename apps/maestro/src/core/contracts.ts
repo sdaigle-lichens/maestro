@@ -61,21 +61,28 @@ export interface AvatarPartOption {
 /**
  * Every option per category. Must match the filenames under
  * `src/renderer/src/assets/avatar/<category>/<id>.png` exactly — `test/core/avatar-parity.test.ts`
- * pins this against the renderer's asset manifest.
+ * pins this against the renderer's asset manifest. Three exceptions — `torso`, `legs`, `feet` —
+ * whose options are body-variant-aware (male/female cuts of the same garment) rather than one
+ * file per id; see `manifest.ts`'s `BODY_VARIANT_CATEGORIES`/`resolveAvatarUrl`. `hat` is NOT
+ * variant-aware: the upstream pack only ever cut one `adult` size for it.
+ *
+ * No "Child" body/head option: measured by compositing (see the session that added this comment) —
+ * every worn item and the eye layer are cropped and positioned for an ADULT frame, so pairing them
+ * with the child body/head produces severe, not cosmetic, misalignment (oversized torso floating
+ * off the shoulders, eyes rendering down near the chin). The upstream LPC pack has no child-sized
+ * cut for any of those layers, so there is no fix short of dropping the option.
  */
 export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
   body: [
     { id: "male", name: "Male" },
     { id: "female", name: "Female" },
-    { id: "child", name: "Child" },
   ],
   head: [
     { id: "male", name: "Male" },
     { id: "female", name: "Female" },
-    { id: "child", name: "Child" },
   ],
   eyes: [
-    { id: "human", name: "Human" },
+    { id: "brows", name: "Brows" },
     { id: "cyclops", name: "Cyclops" },
     { id: "cyclops2", name: "Cyclops (alt)" },
   ],

@@ -6,7 +6,7 @@ import { Shuffle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import Button from "@repo/ui/button";
 import { AVATAR_CATEGORIES, AVATAR_PARTS, AVATAR_REQUIRED_CATEGORIES, type AvatarCategory, type AvatarLayers } from "../../../../shared/ipc";
-import { AVATAR_LAYER_URLS } from "../../assets/avatar/manifest";
+import { resolveAvatarUrl } from "../../assets/avatar/manifest";
 import { randomAvatarLayers } from "../../utils/avatar";
 import AvatarCanvas from "./avatar-canvas";
 
@@ -69,7 +69,7 @@ export default function AvatarPicker({
                   className={`${SWATCH_BASE} ${value[cat] === opt.id ? SWATCH_ON : SWATCH_OFF}`}
                 >
                   <img
-                    src={AVATAR_LAYER_URLS[cat][opt.id]}
+                    src={resolveAvatarUrl(cat, opt.id, value.body)}
                     alt={opt.name}
                     className="w-full h-full"
                     style={{ imageRendering: "pixelated" }}

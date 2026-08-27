@@ -2,7 +2,7 @@
 // smoothing — the picker's live preview, and the /agents detail pane's saved-avatar display.
 
 import { useEffect, useRef } from "react";
-import { AVATAR_LAYER_URLS, AVATAR_RENDER_ORDER } from "../../assets/avatar/manifest";
+import { AVATAR_RENDER_ORDER, resolveAvatarUrl } from "../../assets/avatar/manifest";
 import type { AvatarLayers } from "../../../../shared/ipc";
 
 const SPRITE_SIZE = 64;
@@ -35,7 +35,7 @@ export default function AvatarCanvas({
     let cancelled = false;
     const urls = AVATAR_RENDER_ORDER.map((cat) => {
       const id = layers[cat];
-      return id ? AVATAR_LAYER_URLS[cat][id] : null;
+      return id ? (resolveAvatarUrl(cat, id, layers.body) ?? null) : null;
     }).filter((url): url is string => url !== null);
 
     void Promise.all(urls.map(loadImage))
