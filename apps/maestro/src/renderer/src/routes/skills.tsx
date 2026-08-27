@@ -17,17 +17,23 @@ import ProjectSelect from "../components/project-select";
 import DiscoveredDefinitionsList from "../components/tabs/discovered-definitions";
 import CreateLink from "../components/tabs/create-link";
 import { callMain, type CallResult } from "../utils/call-main";
-import { getToolsData, type ToolsData, type SkillTag } from "../utils/tools";
+import { getToolsData, type ToolsData } from "../utils/tools";
 import { useProject } from "../utils/project-context";
 import { useSession } from "../utils/session-context";
 
 export const Route = createFileRoute("/skills")({
-  loader: async () => callMain(() => getToolsData()),
+  loader: async () => {
+    const [tools, projectTags] = await Promise.all([
+      callMain(() => getToolsData()),
+      callMain(() => window.maestro.templates.projectTags.list()),
+    ]);
+    return { tools, projectTagCatalog: projectTags.ok ? projectTags.value : [] };
+  },
   component: SkillsPage,
 });
 
 function SkillsPage() {
-  const loaderResult = Route.useLoaderData();
+  const { tools: loaderResult, projectTagCatalog } = Route.useLoaderData();
   const { current, recent } = useProject();
   const session = useSession();
   const [viewedRoot, setViewedRoot] = useState<string | null>(current?.root ?? null);
@@ -70,9 +76,11 @@ function SkillsPage() {
 
   const data = result.value;
 
-  function handleTagsChange(id: string, tags: SkillTag[]) {
+  function handleTagsChange(id: string, next: { projectTags: string[]; agentTypes: string[] }) {
     setResult((prev) =>
-      prev.ok ? { ...prev, value: { ...prev.value, skills: prev.value.skills.map((s) => (s.id === id ? { ...s, tags } : s)) } } : prev
+      prev.ok
+        ? { ...prev, value: { ...prev.value, skills: prev.value.skills.map((s) => (s.id === id ? { ...s, ...next } : s)) } }
+        : prev
     );
   }
 
@@ -128,7 +136,12 @@ function SkillsPage() {
           </div>
 
           <div className="flex flex-col gap-6">
-            <DiscoveredDefinitionsList items={data.skills} emptyLabel="skills" onTagsChange={handleTagsChange} />
+            <DiscoveredDefinitionsList
+              items={data.skills}
+              emptyLabel="skills"
+              projectTagCatalog={projectTagCatalog}
+              onTagsChange={handleTagsChange}
+            />
             <CreateLink to="/create-skill" label="Create a skill" />
           </div>
         </div>

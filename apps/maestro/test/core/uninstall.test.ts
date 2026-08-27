@@ -30,10 +30,13 @@ let tmp: string;
 // Passed to every installRuntime() call below so its report-sync step never touches the REAL
 // ~/.claude/maestro-report-defaults.sqlite on whoever runs the suite.
 let REPORTS_DB: string;
+// Same isolation for the first-install seed's read of the global Project Tags catalog.
+let PROJECT_TAGS_DB: string;
 
 beforeEach(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-uninstall-"));
   REPORTS_DB = path.join(tmp, "report-defaults.sqlite");
+  PROJECT_TAGS_DB = path.join(tmp, "project-tags.sqlite");
 });
 
 afterEach(() => {
@@ -51,7 +54,7 @@ function makeProject(name: string): string {
 async function installed(name = "p"): Promise<string> {
   const root = makeProject(name);
   writeConfig(root, defaultish);
-  await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+  await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
   for (const file of ["maestro_session.json", "maestro_session.log.jsonl", "maestro_session_tasks.json"]) {
     fs.writeFileSync(path.join(root, ".claude", file), "{}\n");
   }
@@ -216,7 +219,7 @@ describe("hooks and settings the app did not add", () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify(handEdited, null, 2));
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
 
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
     const settings = readSettings(root);
@@ -300,11 +303,20 @@ describe("purge", () => {
   it("leaves the project as it found it — no empty scaffolding, nothing outside .claude", async () => {
     const root = makeProject("p");
     fs.writeFileSync(path.join(root, "README.md"), "# mine\n");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
-    // .claude has nothing left in it: no orphaned skills/, scripts/, templates/ or settings.json.
-    expect(filesUnder(path.join(root, ".claude"))).toEqual([]);
+    // .claude has nothing left in it EXCEPT the materialized reports (.claude/reports/*.md) — the
+    // first install now seeds maestro.json immediately, which is what let the report-sync step
+    // materialize a global default's content for each seeded agent that has one. Those files are
+    // report content, not an install artifact — the same reason a hand-authored report override
+    // survives a plain uninstall — so purge (which only removes what THIS install put down as
+    // runtime scaffolding) correctly leaves them alone; no orphaned skills/, scripts/, templates/
+    // or settings.json.
+    expect(filesUnder(path.join(root, ".claude"))).toEqual(
+      expect.arrayContaining(["reports/backend.md", "reports/scribe.md", "reports/test.md"])
+    );
+    expect(filesUnder(path.join(root, ".claude")).filter((f) => !f.startsWith("reports/"))).toEqual([]);
     expect(fs.existsSync(path.join(root, ".claude", "scripts"))).toBe(false);
     expect(fs.existsSync(path.join(root, ".claude", "skills"))).toBe(false);
     expect(fs.existsSync(path.join(root, ".claude", "templates"))).toBe(false);
@@ -346,7 +358,7 @@ describe("purge", () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify({ model: "opus" }, null, 2));
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
 
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
@@ -455,7 +467,7 @@ describe("install after uninstall", () => {
     const config = readConfig(root);
 
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
 
     expect(report.hooksAdded.sort()).toEqual(HOOK_REGISTRATIONS.map((h) => h.id).sort());
     expect(report.status.installed).toBe(true);
@@ -463,17 +475,23 @@ describe("install after uninstall", () => {
     expect(readConfig(root)).toEqual(config); // never left, never rewritten
   });
 
-  it("returns a purged project to a working installation", async () => {
+  it("returns a purged project to a working installation, seeding a fresh config", async () => {
     const root = await installed();
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
 
     expect(report.orchestratorSkill.action).toBe("installed");
     expect(report.status.installed).toBe(true);
     expect(report.status.stale).toBe(false);
     expect(report.status.hooksMissing).toEqual([]);
-    // The config is the one thing a purge does not bring back — it was the user's to delete.
-    expect(report.status.configFile).toBe(false);
+    // A purge deleted the OLD config — it was the user's to delete, and this install can't bring
+    // that back — but install() cannot tell "genuinely first install" apart from "config was
+    // purged": both are simply "no maestro.json yet", and this run seeds a fresh one either way,
+    // same as any other first install (see the "first-install config seeding" describe block in
+    // install.test.ts). The project ends up configured rather than stuck needing a /workflows
+    // visit, which is the intended improvement.
+    expect(report.status.configFile).toBe(true);
+    expect(report.configSeeded).not.toBeNull();
   });
 });

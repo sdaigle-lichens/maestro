@@ -26,8 +26,10 @@ import { buildReadScope } from "./read-scope.js";
 import { enclosingRepo } from "./repo.js";
 import { resolveCreateTarget } from "./scaffold.js";
 import { readAllSkillTags } from "./skill-tags.js";
+import { readAllProjectTags } from "./project-tags.js";
 import { tasksDirFor } from "./tasks.js";
 import { joinOxford } from "./text.js";
+import { AGENT_TYPES, GLOBAL_TAG } from "./contracts.js";
 import type {
   ClaudePreview,
   ClaudeReadScope,
@@ -225,15 +227,24 @@ function buildCreate(projectRoot: string, request: CreateRequest, opts: ResolveO
  */
 async function projectSkillsForTagging(
   projectRoot: string
-): Promise<Array<{ id: string; description: string; tags: string[] }>> {
+): Promise<Array<{ id: string; description: string; projectTags: string[]; agentTypes: string[] }>> {
   const skills = await readSkillsFromDir(path.join(projectRoot, ".claude", "skills"));
   const tagsById = readAllSkillTags();
-  return skills.map((s) => ({ id: s.name, description: s.description, tags: tagsById[s.name] ?? [] })).sort((a, b) => a.id.localeCompare(b.id));
+  return skills
+    .map((s) => ({
+      id: s.name,
+      description: s.description,
+      projectTags: tagsById[s.name]?.projectTags ?? [],
+      agentTypes: tagsById[s.name]?.agentTypes ?? [],
+    }))
+    .sort((a, b) => a.id.localeCompare(b.id));
 }
 
 /** The seeded table's own row format — one line per skill, id/description/tags only. */
-function skillTagsRow(s: { id: string; description: string; tags: string[] }): string {
-  return `| ${s.id} | ${s.description || "(none)"} | ${s.tags.length ? s.tags.join(", ") : "(none)"} |`;
+function skillTagsRow(s: { id: string; description: string; projectTags: string[]; agentTypes: string[] }): string {
+  const projectTags = s.projectTags.length ? s.projectTags.join(", ") : "(none)";
+  const agentTypes = s.agentTypes.length ? s.agentTypes.join(", ") : "(none)";
+  return `| ${s.id} | ${s.description || "(none)"} | ${projectTags} | ${agentTypes} |`;
 }
 
 /**
@@ -247,14 +258,21 @@ async function buildUpdateSkillTags(projectRoot: string): Promise<BuiltRequest> 
   const skillsDir = path.join(projectRoot, ".claude", "skills");
   const table =
     skills.length > 0
-      ? [`| id | description | tags |`, `| --- | --- | --- |`, ...skills.map(skillTagsRow)].join("\n")
+      ? [`| id | description | project tags | agent types |`, `| --- | --- | --- | --- |`, ...skills.map(skillTagsRow)].join("\n")
       : "(no skills found under .claude/skills/)";
+  // The live Project Tags catalog, since it's a dynamic vocabulary the model can't guess — unlike
+  // AGENT_TYPES, which is a fixed union it already knows.
+  const projectTagCatalog = readAllProjectTags();
   return {
     prompt: [
       `The work: for every row below missing a description, propose one from the skill's id/name`,
-      `alone; for every row with a description but no tags, propose tags from the fixed set`,
-      `(backend, frontend, mobile, refactor, reviewer, scribe, test) derived from the description`,
-      `text; for every already-tagged row, re-derive tags the same way and flag any change. A row`,
+      `alone; for every row with a description but no project tags / agent types, propose values`,
+      `for BOTH dimensions, derived from the description text: project tags from exactly this set`,
+      `(${[...projectTagCatalog, GLOBAL_TAG].join(", ")}), agent types from exactly this set`,
+      `(${[...AGENT_TYPES, GLOBAL_TAG].join(", ")}). "${GLOBAL_TAG}" on a dimension means "matches`,
+      `regardless of that dimension" — use it when the skill genuinely applies to every project or`,
+      `every agent type, not as a default. A skill can carry more than one value per dimension; for`,
+      `every already-tagged row, re-derive both dimensions the same way and flag any change. A row`,
       `with no description and no usable signal in its id may be skipped — say so rather than`,
       `guessing. Present the full proposed table and wait for the user to confirm before writing`,
       `anything. Follow the update-skill-tags skill for exactly how to apply what's confirmed.`,

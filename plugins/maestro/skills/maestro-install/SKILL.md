@@ -8,8 +8,8 @@ description: "Installs the Maestro orchestrator into this project from the termi
 One-time setup of Maestro for a project, entirely from a Claude session: scaffold the orchestrator, seed the config, render the handoff table. Nothing here needs the desktop app, a browser, or Docker.
 
 ```
-maestro-install:  analyze repo → offer local skills → scaffold + seed → render → report
-              (impl agents)   (best-fit + consent)   (maestro-install.js)  (maestro-render-orchestrator.cjs)
+maestro-install:  analyze repo → confirm project tags → offer local skills → scaffold + seed → render → report
+              (impl agents)    (catalog + consent)     (best-fit + consent)  (maestro-install.js)  (maestro-render-orchestrator.cjs)
 ```
 
 **When to prefer the desktop app.** `apps/maestro`'s `/install` route does the same install without a session, and its `/workflows` canvas is the only comfortable way to *edit* the graph — this skill seeds a sensible starting graph, it does not let you draw one. Use this skill when there is no desktop app on the machine, or when the user is already in a terminal and wants Maestro on without leaving it.
@@ -29,7 +29,28 @@ $ARGUMENTS
 
    The result is a comma-separated `implAgents` list (e.g. `backend`, `frontend`, `mobile`, or `backend,mobile`). This only sets the *starting* graph — the user can rewire it later in the desktop app's canvas or by hand-editing `maestro.json`.
 
-2. **Offer to attach the repo's local skills to the seeded agents.** This pre-populates the seeded instances so the user doesn't have to hunt for relevant skills. **Skip this step entirely** if `${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists — that's a re-install, and the existing config already owns the user's skill assignments (the seed only applies on a fresh install, and step 3 will not overwrite it).
+2. **Confirm which Project Tags catalog entries this project belongs to.** These are the same categories the Maestro desktop app's `/templates` page's Project Tags tab edits, and (on `/maestro`, after install) what a project can be tagged with to auto-add a matching bundled agent later. **Skip this step entirely** on a re-install (`${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists) — same reasoning as skipping the skills offer below: the seed only applies on a fresh install, and the existing config's `project_tags` is the user's own.
+
+   On a fresh install:
+   - **Read the global catalog** via the generated lib, same try/catch-degrades pattern as the skill-tags read below — an older `node` with no `node:sqlite`, or a catalog that's never been read before (which self-seeds to `backend`/`frontend`/`mobile` on first read), never fails the install:
+
+     ```bash
+     node -e "
+       try {
+         const { readAllProjectTags } = require('${CLAUDE_SKILL_DIR}/../../scripts/lib/maestro-project-tags.cjs');
+         console.log(JSON.stringify(readAllProjectTags()));
+       } catch { console.log('[]'); }
+     "
+     ```
+
+   - **Mark which catalog entries step 1's analysis already supports as evidence** — the entries that appear in the detected `implAgents` (the catalog's seeded `backend`/`frontend`/`mobile` line up with `detect.ts`'s three categories one-for-one; anything else in the catalog has no automatic evidence, same as the Project Tags tab's own "standalone" tags).
+   - **Confirm with the user** via **one `AskUserQuestion`**:
+     - **If the catalog has ≤4 entries**, ask a single **multiSelect** question listing every catalog entry as an option, each description noting `(detected)` for the evidence-supported ones so the user sees why they're suggested — but nothing is pre-ticked; the user picks freely.
+     - **Otherwise** (>4 entries — `AskUserQuestion` options are capped at 4), fall back to the same coarse-consent-plus-freeform-override pattern the skill-map question below uses: options like `Use the detected tags (Recommended)`, `Let me pick from the full catalog`, `Skip — I'll tag it on /maestro afterward`. If the user picks "let me pick", accept a plain-text reply naming the tags (comma-separated), intersected against the catalog.
+     - If the catalog is empty, skip the question silently — there's nothing to offer.
+   - **Assemble the result**: a comma-separated list of the CONFIRMED tags only (e.g. `backend,frontend`) — this is intersected against the live catalog again inside `maestro-install.js`, so an invented tag name in a freeform reply is dropped rather than recorded. Empty if the user skipped.
+
+3. **Offer to attach the repo's local skills to the seeded agents.** This pre-populates the seeded instances so the user doesn't have to hunt for relevant skills. **Skip this step entirely** if `${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists — that's a re-install, and the existing config already owns the user's skill assignments (the seed only applies on a fresh install, and step 4 will not overwrite it).
 
    On a fresh install:
    - **Discover** the project-local skills: each subdirectory of `${CLAUDE_PROJECT_DIR:-.}/.claude/skills/` that contains a `SKILL.md` is one skill. A skill's **id is its directory name**, unless its `SKILL.md` has a frontmatter `name:` field, in which case that wins — this matches exactly how the canvas lists them (`name = frontmatter.name || directory`). **Many project skills are plain-Markdown docs with no YAML frontmatter at all — that is normal; do not skip them.** For relevance, read a short description from the frontmatter `description:` if present, otherwise from the SKILL.md's first heading / first sentence. Ignore user (`~/.claude`) and plugin skills — only the repo's own skills are in scope.
@@ -40,7 +61,7 @@ $ARGUMENTS
      ls -1 "${CLAUDE_PROJECT_DIR:-.}/.claude/skills" 2>/dev/null
      ```
 
-   - **Drop any skill already tagged** in the Maestro desktop app's Skills tab — `maestro-install.js` reads `~/.claude/maestro-skill-tags.sqlite` itself and wires a tagged skill to its matching agent(s) with no `AskUserQuestion` at all, *regardless* of what `--skill-map` in step 3 carries, so best-fit-guessing one is wasted work. Check which discovered skills are already covered before asking about any of them:
+   - **Drop any skill already tagged** in the Maestro desktop app's Skills tab — `maestro-install.js` reads `~/.claude/maestro-skill-tags.sqlite` itself and wires a tagged skill to its matching agent(s) with no `AskUserQuestion` at all, *regardless* of what `--skill-map` in step 4 carries, so best-fit-guessing one is wasted work. Check which discovered skills are already covered before asking about any of them:
 
      ```bash
      node -e "
@@ -65,25 +86,26 @@ $ARGUMENTS
      Then ask a **single `AskUserQuestion`** for consent on the best-fit-guessed skills only (do **not** put individual skills as the options — `AskUserQuestion` requires 2–4 options per question, so a per-skill checklist breaks the moment an agent has 1 or 5+ skills). Use coarse options like: `Attach all (Recommended)`, `Let me drop some`, `Skip — I'll assign on the canvas`. If the user picks "drop some", let them reply in plain text with the skill ids (or skill→agent pairs) to remove, and drop those. If **every** discovered skill was already tagged, or none of the untagged ones are relevant, skip the question silently — there's nothing left to ask about. This prompt only needs coarse consent — the desktop app's canvas is the fine-grained editor afterwards, and a hand-edit to `maestro.json` works too.
    - **Assemble the skill map**: a JSON object of `{ "<agent>": ["<skillId>", …] }` from the CONFIRMED best-fit mapping only — omit the already-tagged skills; `maestro-install.js` adds those itself from the tags store regardless of what this flag carries, so repeating them here would just be redundant, not wrong. Omit agents with no (best-fit) skills. Example: `{"frontend":["react","styling"],"test":["react-testing-library"]}`. If empty (nothing left after dropping the tagged ones), there's nothing to pass. Each `skillId` is the skill's canonical id from the discover step (frontmatter `name` if present, else the directory name) so it lines up with what the canvas lists.
 
-3. **Scaffold and seed.** Run the installer, passing the detected implementation agents and (when non-empty) the best-fit skill map:
+4. **Scaffold and seed.** Run the installer, passing the detected implementation agents, the confirmed project tags, and (when non-empty) the best-fit skill map:
 
    ```bash
    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-install.js" "${CLAUDE_PROJECT_DIR:-.}" \
      --impl-agents "backend,frontend" \
+     --project-tags "backend,frontend" \
      --skill-map '{"frontend":["react"],"test":["react-testing-library"]}'
    ```
 
-   Both flags are optional and affect only a **fresh** seed. Omit `--skill-map` when the map is empty; omit `--impl-agents` only if step 1 genuinely couldn't decide (the seed then falls back to `backend`). The installer unions this map with whatever it reads from the tags store itself — the two sources add up, they don't override each other.
+   All three flags are optional and affect only a **fresh** seed. Omit `--skill-map` when the map is empty; omit `--project-tags` when step 2 recorded nothing; omit `--impl-agents` only if step 1 genuinely couldn't decide (the seed then falls back to `backend`). The installer unions the skill map with whatever it reads from the tags store itself — the two sources add up, they don't override each other — and intersects `--project-tags` against the live catalog itself, so this step's confirmation doesn't have to be perfectly in sync with the store.
 
    This is idempotent and:
    - installs the `maestro` skill at `<projectPath>/.claude/skills/maestro/SKILL.md` — copied whole if absent, otherwise its plugin-owned managed regions (`Maestro:STEPS`, `Maestro:PRINCIPLES`) are re-synced from the template while everything outside them, plus the rendered `Maestro:HANDOFFS` table, is preserved,
    - copies the runtime scripts (`maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs`, `maestro-check-runtime.cjs`, `bash-validation.sh`, `lib/maestro-session.cjs`, `lib/maestro-tasks.cjs`, `lib/maestro-skill-regions.cjs`) into `<projectPath>/.claude/scripts/`,
    - merges the `bash-validation.sh` PreToolUse Bash hook into `<projectPath>/.claude/settings.json` (preserving other keys), so `.env` reads are blocked,
    - adds an `# Maestro` section to the repo-root `.gitignore` (`git rev-parse --show-toplevel`) ignoring every nested session file across the repo / monorepo via `**/.claude/maestro_session.json`, `**/.claude/maestro_session.log.jsonl`, and `**/.claude/maestro_session_tasks.json`. The `**/` globs match `.claude/` at any depth including the root, so there is no per-project `.claude/.gitignore` to write,
-   - seeds `<projectPath>/.claude/maestro.json` **only when it is absent** — six ready-made workflows (`default`, `tdd`, `Refactor`, `Documentation`, `Review`, `Tests`) wired around the `--impl-agents` chain, with `--skill-map`'s skills attached to the matching instances as `referenced_skills`. An existing config is the user's own graph and is never re-seeded.
+   - seeds `<projectPath>/.claude/maestro.json` **only when it is absent** — six ready-made workflows (`default`, `tdd`, `Refactor`, `Documentation`, `Review`, `Tests`) wired around the `--impl-agents` chain, with `--skill-map`'s skills attached to the matching instances as `referenced_skills` and `--project-tags`'s (catalog-intersected) value stamped onto `project_tags`. An existing config is the user's own graph and is never re-seeded.
    - stamps `<projectPath>/.claude/maestro.json`'s `runtimeVersion` field with the plugin's current `plugin.json` version — the ONE field this script writes into an already-existing config. Nothing else in it is touched. This is what lets the orchestrator's Step 0 (`maestro-check-runtime.cjs`) tell, on a bare terminal session, whether the project's runtime needs refreshing before doing anything else.
 
-   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `setBashHook`, `wroteRepoGitignore`, `seededConfig`, `implAgents`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the skill's handoff table — that is step 4.
+   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `setBashHook`, `wroteRepoGitignore`, `seededConfig`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the skill's handoff table — that is step 5.
 
    `orchestratorSkill.action` says what happened to `SKILL.md`:
    - `installed` — no skill was present; the template was copied whole.
@@ -91,18 +113,19 @@ $ARGUMENTS
    - `unchanged` — already in sync.
    - `migrated` — the installed skill predates the managed-region markers, so it could not be synced in place: it was copied to `.claude/skills/maestro/SKILL.md.bak` (path in `.backup`) and replaced with the current template. **Tell the user**, and offer to re-apply any custom prose from the `.bak` file *outside* the managed regions before deleting it.
 
-4. **Render the orchestrator's handoff table** from the config that now exists:
+5. **Render the orchestrator's handoff table** from the config that now exists:
 
    ```bash
    node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-render-orchestrator.cjs"
    ```
 
-   This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 3 — the renderer reads `maestro.json`, and on a fresh install step 3 is what creates it. Report the workflow → success-path rows it produces.
+   This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 4 — the renderer reads `maestro.json`, and on a fresh install step 4 is what creates it. Report the workflow → success-path rows it produces.
 
-5. **Confirm the install.** Summarise:
+6. **Confirm the install.** Summarise:
    - what happened to the orchestrator skill (`orchestratorSkill.action` — including a `migrated` backup if there is one) and whether the bash-validation hook was added to `settings.json`,
    - whether `maestro.json` was seeded (`seededConfig`) and with which implementation chain, or was left alone because the project already had one,
-   - the rendered success paths from step 4,
+   - the recorded project tags (`projectTags`), or that none were recorded — editable afterward from the desktop app's `/maestro` page,
+   - the rendered success paths from step 5,
    - that they invoke the orchestrator manually by running `/maestro`,
    - that the workflow graph is edited in the **Maestro desktop app** (`apps/maestro` — open the project, then `/workflows` for the canvas and `/rules` for rule placement), or by hand-editing `maestro.json` and running `/maestro-update`; and that `/maestro-uninstall` removes Maestro.
 

@@ -22,12 +22,13 @@ import { callMain } from "../utils/call-main";
 
 export const Route = createFileRoute("/templates")({
   loader: async () => {
-    const [reports, agentTypes, projectTags] = await Promise.all([
+    const [reports, agentTypes, projectTags, agentProjectTags] = await Promise.all([
       callMain(() => window.maestro.templates.reports.list()),
       callMain(() => window.maestro.templates.agentTypes.list()),
       callMain(() => window.maestro.templates.projectTags.list()),
+      callMain(() => window.maestro.templates.agentProjectTags.list()),
     ]);
-    return { reports, agentTypes, projectTags };
+    return { reports, agentTypes, projectTags, agentProjectTags };
   },
   component: TemplatesPage,
 });
@@ -41,10 +42,18 @@ const TABS: { id: TabId; label: string }[] = [
 ];
 
 function TemplatesPage() {
-  const { reports, agentTypes, projectTags } = Route.useLoaderData();
+  const { reports, agentTypes, projectTags, agentProjectTags } = Route.useLoaderData();
   const [tab, setTab] = useState<TabId>("reports");
 
-  const failed = !reports.ok ? reports : !agentTypes.ok ? agentTypes : !projectTags.ok ? projectTags : null;
+  const failed = !reports.ok
+    ? reports
+    : !agentTypes.ok
+      ? agentTypes
+      : !projectTags.ok
+        ? projectTags
+        : !agentProjectTags.ok
+          ? agentProjectTags
+          : null;
   if (failed) {
     return (
       <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
@@ -86,7 +95,9 @@ function TemplatesPage() {
 
           {tab === "reports" && reports.ok && <GlobalReportsTab initial={reports.value} />}
           {tab === "agent-types" && agentTypes.ok && <AgentTypesTab initial={agentTypes.value} />}
-          {tab === "project-tags" && projectTags.ok && <ProjectTagsTab initial={projectTags.value} />}
+          {tab === "project-tags" && projectTags.ok && agentProjectTags.ok && (
+            <ProjectTagsTab initial={projectTags.value} initialAgentTags={agentProjectTags.value} />
+          )}
         </div>
       </div>
     </div>

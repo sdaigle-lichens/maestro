@@ -53,7 +53,7 @@ export function getAvatar(agentName: string, dbPath: string = DEFAULT_AVATAR_DB_
   }
 }
 
-/** Rejects (throws) on an invalid category id — same discipline as `setSkillTags`, checked before write. */
+/** Rejects (throws) on an invalid category id — same discipline as `setAgentType`, checked before write. */
 export function setAvatar(
   agentName: string,
   layers: AvatarLayers,

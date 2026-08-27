@@ -81,6 +81,12 @@ export interface MaestroConfigV3 {
    * runtime installed.
    */
   runtimeVersion?: string;
+  /**
+   * Which Project Tags catalog entries this project belongs to. Absent = none recorded yet
+   * (pre-dates this field). Selected once at install (from repo-detection evidence, backend/
+   * frontend/mobile only) and editable afterward from /maestro.
+   */
+  project_tags?: string[];
 }
 
 export interface MaestroWorkflowsSlice {
@@ -92,6 +98,10 @@ export interface MaestroWorkflowsSlice {
 
 export interface MaestroRulesSlice {
   rules: MaestroRuleV3[];
+}
+
+export interface MaestroProjectTagsSlice {
+  project_tags: string[];
 }
 
 /**

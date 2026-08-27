@@ -98,9 +98,9 @@ const SEED_REPORTS: Record<string, string> = {
 };
 
 function openDb(dbPath: string): DatabaseSync {
-  // Unlike skill-tags.ts's store, this can be opened on a machine where `~/.claude` itself
-  // doesn't exist yet (no Claude Code session has ever run there) — `DatabaseSync` doesn't create
-  // parent directories, so this makes the store as robust as the file it's meant to complement.
+  // Can be opened on a machine where `~/.claude` itself doesn't exist yet (no Claude Code session
+  // has ever run there) — `DatabaseSync` doesn't create parent directories, so this makes the
+  // store as robust as the file it's meant to complement.
   fs.mkdirSync(path.dirname(dbPath), { recursive: true });
   const db = new DatabaseSync(dbPath);
   db.exec(`

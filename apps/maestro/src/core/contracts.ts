@@ -20,6 +20,7 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
   MaestroSession,
@@ -28,23 +29,18 @@ export type {
 import type { MaestroConfigV3 } from "./types.js";
 
 /**
- * The seven agents a workflow can seed — backend/frontend/mobile are also a project-type
- * classification, since they name both an implementation stack and the agent that owns it.
- *
- * A literal deliberate exception to "contracts.ts is interfaces only": both the renderer's tag
- * editor and `skillMapFromTags` need the same seven values, and the value has to be a runtime
- * array, not just a type, for the UI to render one toggle per tag. It's still self-contained (no
- * import, nothing that touches `fs`), which is what actually makes a value here renderer-safe.
+ * The sentinel value on either of a skill's two tag dimensions (see `DiscoveredDefinition` below)
+ * meaning "matches regardless of the agent's own value on that dimension" — the same convention
+ * `agent-project-tags.ts` already uses for an agent's own project tag.
  */
-export const SKILL_TAGS = ["backend", "frontend", "mobile", "refactor", "reviewer", "scribe", "test"] as const;
-export type SkillTag = (typeof SKILL_TAGS)[number];
+export const GLOBAL_TAG = "global";
 
 /**
  * The agent avatar picker's part categories, bottom→top in the same order the layers composite in
  * (`body` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
  * must stay in agreement with this order.
  *
- * A literal deliberate exception to "contracts.ts is interfaces only", same as `SKILL_TAGS` above:
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG` above:
  * the renderer needs the actual array to render one row per category, not just the type.
  */
 export const AVATAR_CATEGORIES = ["body", "head", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
@@ -131,10 +127,19 @@ export interface DiscoveredDefinition {
   description: string;
   source: string;
   /**
-   * User-entered tags — which agent(s) this skill belongs to. Always present (empty when
-   * untagged); only skills carry these today, though the type is shared with `discoverAgents`.
+   * Which Project Tags catalog entries this skill applies to, plus `GLOBAL_TAG` for "regardless
+   * of project tag". Always present (empty when untagged, which matches no agent); only skills
+   * carry real values today, though the type is shared with `discoverAgents`.
+   *
+   * Matched against a seeded agent INSTANCE's own stored project tag (`agent-project-tags.ts`),
+   * not the project's raw selected `project_tags` list — see `skillMapFromTags` in `skill-tags.ts`.
    */
-  tags: SkillTag[];
+  projectTags: string[];
+  /**
+   * Which `AGENT_TYPES` this skill applies to, plus `GLOBAL_TAG` for "regardless of agent type".
+   * Matched against a seeded agent instance's own stored type (`agent-types.ts`).
+   */
+  agentTypes: string[];
 }
 
 /**
@@ -162,11 +167,11 @@ export interface ReportDefault {
 
 /**
  * The closed set of agent-type tags the `/templates` page's Agent Types tab assigns one of to each
- * agent, backed by `agent-types.ts`'s own global sqlite store — same mechanism as `SKILL_TAGS`
- * above, but singular per agent (an agent has exactly one type, not a set) and its own closed
- * vocabulary rather than being named after the seven agents themselves.
+ * agent, backed by `agent-types.ts`'s own global sqlite store — singular per agent (an agent has
+ * exactly one type, not a set), unlike a skill's `agentTypes` dimension, which may hold several
+ * plus `GLOBAL_TAG`.
  *
- * A literal deliberate exception to "contracts.ts is interfaces only", same as `SKILL_TAGS`: the
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG`: the
  * renderer needs the actual array to render one Select option per type, not just the type.
  */
 export const AGENT_TYPES = ["developer", "planner", "reviewer", "annotator", "tester"] as const;
@@ -325,6 +330,12 @@ export interface InstallReport {
   runtimeVersion: string;
   /** `runtimeVersion` changed on this run — the project was stamped with an older version or none. */
   runtimeVersionUpdated: boolean;
+  /**
+   * Set on a first install (no `maestro.json` yet), when this run seeded one — the detected
+   * implementation-agent chain and the project tags matched against the live catalog. `null` on
+   * every re-install: an existing config is the user's own and is never re-seeded.
+   */
+  configSeeded: { implAgents: string[]; projectTags: string[] } | null;
   /** True when the run found nothing to do — the idempotent second run. */
   unchanged: boolean;
   warnings: string[];

@@ -44,11 +44,24 @@ var import_node_fs = __toESM(require("node:fs"), 1);
 var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
+
+// src/core/contracts.ts
+var GLOBAL_TAG = "global";
+
+// src/core/skill-tags.ts
 var DEFAULT_SKILL_TAGS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-skill-tags.sqlite");
 function openDb(dbPath) {
+  import_node_fs.default.mkdirSync(import_node_path.default.dirname(dbPath), { recursive: true });
   const db = new import_node_sqlite.DatabaseSync(dbPath);
   db.exec(`
-    CREATE TABLE IF NOT EXISTS skill_tags (
+    CREATE TABLE IF NOT EXISTS skill_project_tags (
+      skill_id TEXT NOT NULL,
+      tag      TEXT NOT NULL,
+      PRIMARY KEY (skill_id, tag)
+    )
+  `);
+  db.exec(`
+    CREATE TABLE IF NOT EXISTS skill_agent_types (
       skill_id TEXT NOT NULL,
       tag      TEXT NOT NULL,
       PRIMARY KEY (skill_id, tag)
@@ -56,28 +69,36 @@ function openDb(dbPath) {
   `);
   return db;
 }
+function readAllFrom(db, table) {
+  const rows = db.prepare(`SELECT skill_id, tag FROM ${table} ORDER BY skill_id, tag`).all();
+  const out = {};
+  for (const row of rows) (out[row.skill_id] ??= []).push(row.tag);
+  return out;
+}
 function readAllSkillTags(dbPath = DEFAULT_SKILL_TAGS_DB_PATH) {
   const db = openDb(dbPath);
   try {
-    const rows = db.prepare("SELECT skill_id, tag FROM skill_tags ORDER BY skill_id, tag").all();
+    const projectTags = readAllFrom(db, "skill_project_tags");
+    const agentTypes = readAllFrom(db, "skill_agent_types");
+    const ids = /* @__PURE__ */ new Set([...Object.keys(projectTags), ...Object.keys(agentTypes)]);
     const out = {};
-    for (const row of rows) {
-      (out[row.skill_id] ??= []).push(row.tag);
-    }
+    for (const id of ids) out[id] = { projectTags: projectTags[id] ?? [], agentTypes: agentTypes[id] ?? [] };
     return out;
   } finally {
     db.close();
   }
 }
-function skillMapFromTags(tagsBySkill, skillIds, knownAgents) {
-  const knownAgentSet = new Set(knownAgents);
+function skillMapFromTags(tagsBySkill, skillIds, agentAttrs) {
   const skillIdSet = new Set(skillIds);
   const map = {};
   for (const skillId of Object.keys(tagsBySkill)) {
     if (!skillIdSet.has(skillId)) continue;
-    for (const tag of tagsBySkill[skillId]) {
-      if (!knownAgentSet.has(tag)) continue;
-      (map[tag] ??= []).push(skillId);
+    const { projectTags, agentTypes } = tagsBySkill[skillId];
+    if (projectTags.length === 0 || agentTypes.length === 0) continue;
+    for (const [agentName, attrs] of Object.entries(agentAttrs)) {
+      const typeMatches = agentTypes.includes(GLOBAL_TAG) || agentTypes.includes(attrs.type);
+      const projectTagMatches = projectTags.includes(GLOBAL_TAG) || projectTags.includes(attrs.projectTag);
+      if (typeMatches && projectTagMatches) (map[agentName] ??= []).push(skillId);
     }
   }
   return map;

@@ -25,6 +25,9 @@ const api: MaestroApi = {
       ipcRenderer.on(IPC_EVENTS.projectChanged, listener);
       return () => ipcRenderer.removeListener(IPC_EVENTS.projectChanged, listener);
     },
+    tags: {
+      set: (tags) => ipcRenderer.invoke(IPC.projectTagsSet, tags),
+    },
   },
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
@@ -42,6 +45,7 @@ const api: MaestroApi = {
     // `src/core/global-docs.ts`.
     globalDocs: () => ipcRenderer.invoke(IPC.globalDocsData),
     globalDoc: (group, slug) => ipcRenderer.invoke(IPC.globalDocContent, group, slug),
+    projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),
@@ -68,9 +72,14 @@ const api: MaestroApi = {
       add: (tag) => ipcRenderer.invoke(IPC.templateProjectTagAdd, tag),
       remove: (tag) => ipcRenderer.invoke(IPC.templateProjectTagRemove, tag),
     },
+    agentProjectTags: {
+      list: () => ipcRenderer.invoke(IPC.templateAgentProjectTagsList),
+      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentProjectTagSave, agentName, tag),
+    },
   },
   skillTags: {
-    set: (skillId, tags) => ipcRenderer.invoke(IPC.skillTagsSet, skillId, tags),
+    setProjectTags: (skillId, tags) => ipcRenderer.invoke(IPC.skillProjectTagsSet, skillId, tags),
+    setAgentTypes: (skillId, tags) => ipcRenderer.invoke(IPC.skillAgentTypesSet, skillId, tags),
   },
   avatar: {
     get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),

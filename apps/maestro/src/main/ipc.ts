@@ -15,7 +15,8 @@ import {
   discoverAgents,
   discoverSkills,
   readAllSkillTags,
-  setSkillTags,
+  setSkillProjectTags,
+  setSkillAgentTypes,
   skillMapFromTags,
   getAvatar,
   setAvatar,
@@ -61,6 +62,11 @@ import {
   readAllProjectTags,
   addProjectTag,
   removeProjectTag,
+  readAllAgentProjectTags,
+  setAgentProjectTag,
+  agentsForProjectTags,
+  GLOBAL_TAG,
+  type AgentAttrs,
 } from "../core/index.js";
 import { IPC, IPC_EVENTS } from "../shared/ipc.js";
 import type {
@@ -80,7 +86,6 @@ import type {
   ScaffoldResult,
   ClaudeRunResult,
   MaestroConfigV3,
-  SkillTag,
   AvatarLayers,
   DiscoveredDefinition,
   ToolsData,
@@ -92,6 +97,7 @@ import type {
   ResolvedReport,
   ReportDefault,
   AgentType,
+  ProjectTagsData,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -193,16 +199,30 @@ function resolveProjectRoot(projectRoot?: string): string {
 }
 
 /**
+ * Every seeded agent name's own two classifications — agent-types.ts's type and
+ * agent-project-tags.ts's project tag — for exactly the agents `implAgents`'s seed will have
+ * instances for. What a skill's `projectTags`/`agentTypes` get matched against; see
+ * `skill-tags.ts`'s `AgentAttrs`. Falls back to `"developer"`/`GLOBAL_TAG` for a name neither
+ * store has ever seen (e.g. a custom impl-agent stack), which matches nothing more specific than a
+ * skill explicitly tagged `global` on that axis.
+ */
+function seededAgentAttrs(implAgents: string[]): Record<string, AgentAttrs> {
+  const types = readAllAgentTypes();
+  const projectTags = readAllAgentProjectTags();
+  const attrs: Record<string, AgentAttrs> = {};
+  for (const name of seededAgentNames(implAgents)) {
+    attrs[name] = { type: types[name] ?? "developer", projectTag: projectTags[name] ?? GLOBAL_TAG };
+  }
+  return attrs;
+}
+
+/**
  * The `SkillMap` a seed for `implAgents` should carry, built from the global skill-tags store —
  * deterministic, no Claude session involved. Bounded to `skills` (this project's discovered set)
- * and to `implAgents`'s seeded agents, per `skillMapFromTags`'s two guards.
+ * and to `implAgents`'s seeded agents' own attributes, per `skillMapFromTags`'s guards.
  */
 function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]) {
-  return skillMapFromTags(
-    readAllSkillTags(),
-    skills.map((s) => s.id),
-    seededAgentNames(implAgents)
-  );
+  return skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), seededAgentAttrs(implAgents));
 }
 
 function announce(state: ProjectState): ProjectState {
@@ -303,6 +323,15 @@ export function registerIpc(): void {
     };
   });
 
+  // `/maestro`'s post-install Project Tags section. No route loader — fetched imperatively, same
+  // as that page's existing `install:status` call.
+  ipcMain.handle(IPC.projectTagsData, (): ProjectTagsData => {
+    const catalog = readAllProjectTags();
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { catalog, selected: [] };
+    return { catalog, selected: readConfig(projectRoot)?.project_tags ?? [] };
+  });
+
   // ── the read-only surface folded in from help-server ──────────────────
   // Two loaders, four tabs and two doc views. help-server ran six server functions for the same
   // screens, two of which each re-read `installed_plugins.json` to compute their own `isInstalled`
@@ -372,6 +401,46 @@ export function registerIpc(): void {
     return saveConfig(projectRoot, input);
   });
 
+  // `/maestro`'s Project Tags checkboxes. Saves the project-tags slice, then unions in any bundled
+  // agent whose stored `agent-project-tags.ts` assignment newly matches one of the ADDED tags —
+  // never on an unchecked one, so unchecking a tag can't silently rip an agent out of a graph the
+  // user has already wired up; that stays a manual /workflows edit.
+  ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    const before = new Set(readConfig(projectRoot)?.project_tags ?? []);
+    await saveConfig(projectRoot, { sliceType: "project-tags", slice: { project_tags: tags } });
+
+    const newlyAdded = tags.filter((t) => !before.has(t));
+    if (newlyAdded.length > 0) {
+      const matchingAgents = agentsForProjectTags(newlyAdded);
+      const current = readConfig(projectRoot);
+      if (current) {
+        const agentsAvailable = new Set(current.agents_available);
+        let changed = false;
+        for (const agent of matchingAgents) {
+          if (!agentsAvailable.has(agent)) {
+            agentsAvailable.add(agent);
+            changed = true;
+          }
+        }
+        if (changed) {
+          await saveConfig(projectRoot, {
+            sliceType: "workflows",
+            slice: {
+              agents_available: Array.from(agentsAvailable),
+              skills_available: current.skills_available,
+              workflow_instances: current.workflow_instances,
+              workflows: current.workflows,
+            },
+          });
+        }
+      }
+    }
+
+    return tags;
+  });
+
   // ── reports (/agents page) ──────────────────────────────────────────
   // Resolution reads whatever project is open; a plain read, never rejects on no project (an
   // agent with no project open just resolves against the global tier alone).
@@ -401,12 +470,21 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.templateProjectTagsList, (): string[] => readAllProjectTags());
   ipcMain.handle(IPC.templateProjectTagAdd, (_e, tag: string): string[] => addProjectTag(tag));
   ipcMain.handle(IPC.templateProjectTagRemove, (_e, tag: string): string[] => removeProjectTag(tag));
+  ipcMain.handle(IPC.templateAgentProjectTagsList, (): Record<string, string> => readAllAgentProjectTags());
+  ipcMain.handle(IPC.templateAgentProjectTagSave, (_e, agentName: string, tag: string): string => {
+    return setAgentProjectTag(agentName, tag);
+  });
 
   // ── skill tags ───────────────────────────────────────────────────────
-  // Global, keyed by skill id — no project involved. Returns the stored (deduped, sorted) tags
-  // back, so the Skills tab renders what's actually on disk rather than its own optimistic guess.
-  ipcMain.handle(IPC.skillTagsSet, (_e, skillId: string, tags: SkillTag[]): SkillTag[] => {
-    return setSkillTags(skillId, tags);
+  // Global, keyed by skill id — no project involved. Two independent dimensions, two independent
+  // setters (mirroring the two independent pill rows in the Skills tab), each returning the stored
+  // (deduped, sorted) values back so the tab renders what's actually on disk rather than its own
+  // optimistic guess.
+  ipcMain.handle(IPC.skillProjectTagsSet, (_e, skillId: string, tags: string[]): string[] => {
+    return setSkillProjectTags(skillId, tags);
+  });
+  ipcMain.handle(IPC.skillAgentTypesSet, (_e, skillId: string, tags: string[]): string[] => {
+    return setSkillAgentTypes(skillId, tags);
   });
 
   // ── agent avatars ───────────────────────────────────────────────────

@@ -32,8 +32,16 @@ import { execFileSync } from "node:child_process";
 import { getInstalledPlugins } from "@repo/claude-fs";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
-import { maestroJsonPath, readJsonSafe, writeRuntimeVersion } from "./config.js";
+import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
 import { syncProjectReports } from "./report-sync.js";
+import { detectImplAgents } from "./detect.js";
+import { discoverSkills } from "./discovery.js";
+import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
+import { defaultV3Config, seededAgentNames } from "./seed.js";
+import { readAllProjectTags, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
+import { readAllAgentTypes } from "./agent-types.js";
+import { readAllAgentProjectTags } from "./agent-project-tags.js";
+import { GLOBAL_TAG } from "./contracts.js";
 import type { MaestroConfigV3 } from "./types.js";
 import type { InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
 
@@ -546,11 +554,14 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
  * `reportsDbPath` overrides the global report-defaults store the report sync step reads —
  * exposed only so tests don't touch the real machine's `~/.claude/maestro-report-defaults.sqlite`
  * (mirrors `skill-tags.ts`'s tests taking an explicit `dbPath`); every real caller omits it.
+ * `projectTagsDbPath` is the same test-isolation escape hatch for the first-install seed's read of
+ * the global Project Tags catalog, below.
  */
 export async function installRuntime(
   projectRoot: string,
   pluginRoot?: string,
-  reportsDbPath?: string
+  reportsDbPath?: string,
+  projectTagsDbPath?: string
 ): Promise<InstallReport> {
   if (!projectRoot) throw new Error("No project is open.");
   if (!fs.existsSync(projectRoot)) throw new Error(`${projectRoot} does not exist.`);
@@ -588,9 +599,35 @@ export async function installRuntime(
 
   const gitignoreUpdated = ensureRepoRootGitignore(findRepoRoot(projectRoot));
 
-  // Stamp last, after the files it describes are actually current on disk. No-ops (and writes
-  // nothing) when maestro.json doesn't exist yet — a project with an authored graph not yet
-  // created has nothing for this to touch; it gets stamped the first time one is.
+  // First install only: no maestro.json yet, so seed one right here instead of waiting for
+  // /workflows' first Save — bringing the app in line with what the terminal `/maestro-install`
+  // path already does today. An existing config, including its own `project_tags`, is the user's
+  // own and is never touched by a re-install — same discipline as `runtimeVersion` and every other
+  // field this function otherwise leaves alone. This is the same computation `main/ipc.ts`'s
+  // `workflowsData` handler already does inline for the `/workflows` bootstrap fallback (kept,
+  // unchanged, as the safety net for a project that somehow reaches `/workflows` with no config
+  // and no install) — intentionally similar, not shared, per this module's own "PORTED" convention.
+  let configSeeded: InstallReport["configSeeded"] = null;
+  if (readConfig(projectRoot) === null) {
+    const detection = detectImplAgents(projectRoot);
+    const skills = await discoverSkills(projectRoot);
+    const types = readAllAgentTypes();
+    const projectTagsByAgent = readAllAgentProjectTags();
+    const agentAttrs: Record<string, AgentAttrs> = {};
+    for (const name of seededAgentNames(detection.implAgents)) {
+      agentAttrs[name] = { type: types[name] ?? "developer", projectTag: projectTagsByAgent[name] ?? GLOBAL_TAG };
+    }
+    const skillMap = skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), agentAttrs);
+    const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
+    const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
+    const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
+    writeConfig(projectRoot, seeded);
+    configSeeded = { implAgents: detection.implAgents, projectTags };
+  }
+
+  // Stamp last, after the files it describes are actually current on disk. The seed step above
+  // guarantees maestro.json exists by this point on a first install, so this always finds one to
+  // stamp now.
   const runtimeVersion = shippedRuntimeVersion(root);
   const runtimeVersionUpdated = writeRuntimeVersion(projectRoot, runtimeVersion);
 
@@ -621,12 +658,14 @@ export async function installRuntime(
     gitignoreUpdated,
     runtimeVersion,
     runtimeVersionUpdated,
+    configSeeded,
     unchanged:
       orchestratorSkill.action === "unchanged" &&
       scriptsWritten.length === 0 &&
       hooksAdded.length === 0 &&
       !gitignoreUpdated &&
       !runtimeVersionUpdated &&
+      configSeeded === null &&
       reportsSync.materialized.length === 0 &&
       reportsSync.refreshed.length === 0,
     warnings,

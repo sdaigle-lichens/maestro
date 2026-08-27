@@ -5,7 +5,7 @@
 // "project" (this project's own `.claude/skills|agents/`), "user" (this machine's `~/.claude/`),
 // "maestro" (bundled with Maestro itself), or a plugin's name (from a marketplace).
 
-import type { DiscoveredDefinition, SkillTag } from "../../utils/tools";
+import type { DiscoveredDefinition } from "../../utils/tools";
 import SkillTagEditor from "./skill-tag-editor";
 
 const TH =
@@ -48,6 +48,7 @@ function groupDefinitions(
 export default function DiscoveredDefinitionsList({
   items,
   emptyLabel,
+  projectTagCatalog,
   onTagsChange,
   selectedId,
   onSelect,
@@ -55,11 +56,13 @@ export default function DiscoveredDefinitionsList({
   items: DiscoveredDefinition[];
   /** e.g. "skills" or "agents" — used only in the empty-state sentence. */
   emptyLabel: string;
+  /** The live Project Tags catalog — only needed (and only supplied) alongside `onTagsChange`. */
+  projectTagCatalog?: string[];
   /**
-   * Only the Skills tab supplies this. Its presence is what turns on the Tags column — Agents
+   * Only the Skills page supplies this. Its presence is what turns on the Tags column — Agents
    * reuses this same list component but has nothing to tag, so it keeps its plain two-column table.
    */
-  onTagsChange?: (id: string, tags: SkillTag[]) => void;
+  onTagsChange?: (id: string, next: { projectTags: string[]; agentTypes: string[] }) => void;
   /**
    * Only the /agents page supplies these. Their presence is what makes rows clickable — the
    * table's own look (grouping, columns, no status badge) is unchanged either way, since /agents
@@ -115,7 +118,9 @@ export default function DiscoveredDefinitionsList({
                       <td className="px-4 py-2.5 align-top">
                         <SkillTagEditor
                           skillId={item.id}
-                          tags={item.tags}
+                          projectTagCatalog={projectTagCatalog ?? []}
+                          projectTags={item.projectTags}
+                          agentTypes={item.agentTypes}
                           onChange={(next) => onTagsChange(item.id, next)}
                         />
                       </td>

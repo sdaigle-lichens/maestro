@@ -81,17 +81,17 @@ export async function discoverAgents(projectRoot: string, bundledDir: string | n
     getInstalledPluginAgents(),
   ]);
   return dedupeById([
-    ...project.map((a) => ({ id: a.name, description: a.description, source: "project", tags: [] })),
-    ...user.map((a) => ({ id: a.name, description: a.description, source: "user", tags: [] })),
-    ...bundled.map((a) => ({ id: a.name, description: a.description, source: "maestro", tags: [] })),
-    ...plugins.map((a) => ({ id: a.name, description: a.description, source: a.plugin, tags: [] })),
+    ...project.map((a) => ({ id: a.name, description: a.description, source: "project", projectTags: [], agentTypes: [] })),
+    ...user.map((a) => ({ id: a.name, description: a.description, source: "user", projectTags: [], agentTypes: [] })),
+    ...bundled.map((a) => ({ id: a.name, description: a.description, source: "maestro", projectTags: [], agentTypes: [] })),
+    ...plugins.map((a) => ({ id: a.name, description: a.description, source: a.plugin, projectTags: [], agentTypes: [] })),
   ]).sort((a, b) => a.id.localeCompare(b.id));
 }
 
 /**
  * All skills the user can choose from: project-scoped, global (~/.claude), and every installed
- * plugin's skills — each tagged with its `source`, plus whatever tags the user has manually set
- * on it (`skill-tags.ts`, global across every project by skill id).
+ * plugin's skills — each tagged with its `source`, plus whatever project tags / agent types the
+ * user has manually set on it (`skill-tags.ts`, global across every project by skill id).
  */
 export async function discoverSkills(projectRoot: string): Promise<DiscoveredDefinition[]> {
   const [project, user, plugins] = await Promise.all([
@@ -105,7 +105,11 @@ export async function discoverSkills(projectRoot: string): Promise<DiscoveredDef
     ...user.map((s) => ({ id: s.name, description: s.description, source: "user" })),
     ...plugins.map((s) => ({ id: s.name, description: s.description, source: s.plugin })),
   ])
-    .map((s) => ({ ...s, tags: tagsById[s.id] ?? [] }))
+    .map((s) => ({
+      ...s,
+      projectTags: tagsById[s.id]?.projectTags ?? [],
+      agentTypes: tagsById[s.id]?.agentTypes ?? [],
+    }))
     .sort((a, b) => a.id.localeCompare(b.id));
 }
 
