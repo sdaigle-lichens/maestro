@@ -1,235 +1,181 @@
-# Per-agent output/report templates, decoupled from the fixed agent list
+# Project tags: project ↔ agent mapping
 
-Implement the following vertical slice. When complete, ensure every acceptance criterion below is met.
+## Context
 
-## Why
+`/templates` already has a "Project Tags" tab: a global catalog (`project-tags.ts`,
+`~/.claude/maestro-project-tags.sqlite`) seeded with `backend`/`frontend`/`mobile`, standalone —
+nothing consumes it yet. The user wants to actually put it to work as the mapping between a
+**project** and its **agents**:
 
-Today, five of the seven bundled Maestro agents (`plugins/maestro/agents/{backend,frontend,mobile,scribe,test}.md`)
-hardcode a `## Mandatory Output Format` section — a fenced JSON block the agent must always emit at the
-end of its run. `refactor.md` and `reviewer.md` have no such section. This couples "does this agent report
-a structured output" to whether someone wrote that section into its `.md` file by hand, and it only exists
-for the 7 agents Maestro ships — any other agent (a project's own, a global `~/.claude/agents/` one, a
-plugin's) has no way to participate at all.
+- A project selects which of the catalog's tags it belongs to (stored in its own `maestro.json`).
+- An agent is assigned exactly one of those same tags (or `global`, for agents like
+  reviewer/scribe/test/refactor that apply to every project regardless of category) — a second,
+  new global store, distinct from the existing Agent Types tab's unrelated
+  developer/planner/reviewer/annotator/tester classification.
+- On install, the project's tags are auto-detected from repo evidence (reusing `detect.ts`,
+  unchanged) and the matching bundled agents (backend/frontend/mobile) get seeded, exactly as
+  today — the 4 hardcoded core roles in `seed.ts` are untouched, and project tags never place a
+  new kind of node into the seeded graph. Tags stay editable afterward from `/maestro`, and
+  editing them afterward only ever **adds** a newly-tag-matched agent to `agents_available` — it
+  never rewrites the graph the user has already built.
+- The same flow needs a terminal-only equivalent, since `/maestro-install` is a full alternate
+  path into a project with no desktop app involved.
 
-The goal: pull the output-format instruction out of the agent `.md` files entirely and inject it at
-runtime instead — the same move already made for `handoff_details`
-(`templates/handoffs/<sender>/<receiver>.md`, injected by `maestro-inject-agent-context.js`, "the whole
-communication layer no longer lives in the agent files"). This makes report templates available to **any**
-discovered agent, not just the 7 bundled ones, and lets an agent that genuinely needs no output section
-just... not have one, rather than needing a maintainer to leave a gap in a markdown file.
+Resolved during grilling (in order): tags are shown/editable on `/maestro` only **after** install;
+Install now seeds `maestro.json` immediately (bringing the app in line with what the terminal
+skill already does today), instead of leaving that to `/workflows`' first Save; the agent-side
+field is called **project tag** (not "agent type" — that name is taken); it lives in a new store
+but on the *same* `/templates` tab as the catalog; the 4 core roles and the graph topology are
+never touched by any of this; `/workflows`' existing no-config fallback (`DetectedChain`) stays as
+a safety net and needs no changes.
 
-Read `apps/maestro/.claude/skills/maestro-architecture/SKILL.md` and
-`apps/maestro/.claude/skills/log-view/SKILL.md` before starting — this slice extends the same
-`SubagentStart` hook (`maestro-inject-agent-context.js`) both describe, and must not disturb its existing
-skills/HANDOFF-routing behavior, which stays exactly as documented.
+## Data model
 
-## What to build
-
-### 1. Two-tier report storage
-
-**Global tier** (new — mirrors `skill-tags.ts` / `~/.claude/maestro-skill-tags.sqlite`, not
-`maestro.json`): a new module `apps/maestro/src/core/report-defaults.ts`, backed by `node:sqlite` at
-`~/.claude/maestro-report-defaults.sqlite`. Two tables:
-
-- `agent_reports (agent_name TEXT PRIMARY KEY, report_id TEXT NOT NULL)`
-- `reports (report_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL)`
-
-This is global (per machine, every project), unlike skill tags being global for the reason skill tags are
-("a skill is the same skill everywhere") — here it's because it's the fallback tier when a project has no
-opinion, and it's what install/update syncs *from*. There is **no UI to edit this tier** in this slice —
-see "What's explicitly out of scope" below. It only needs to be readable (by the hook and by the
-install/update scripts) and seedable (by the migration step, #5).
-
-Follow the `skill-tags.ts` → `plugin-entries/maestro-skill-tags.ts` → generated
-`lib/maestro-skill-tags.cjs` pattern exactly: add `apps/maestro/src/core/plugin-entries/maestro-report-defaults.ts`
-re-exporting the read functions, run `pnpm --filter maestro build:plugin-libs` to produce
-`plugins/maestro/scripts/lib/maestro-report-defaults.cjs`, and wrap every `require()` of it in try/catch —
-this runs under whatever `node` is on the session's PATH, not Electron's bundled one, and `node:sqlite`
-needs Node ≥ 22.5. Degrade to "no global default" on a missing/old `node`, exactly like
-`maestro-install.js` degrades its skill-map best-fit step.
-
-**Project tier**: a new `reports` slice on `MaestroConfigV3` (`apps/maestro/src/core/types.ts`,
-`contracts.ts`) —
+**`apps/maestro/src/core/types.ts`** — add to `MaestroConfigV3`:
 
 ```ts
-interface MaestroReportEntry {
-  id: string; // always the agent's own name when created by the UI (see §4)
-  syncedFrom?: { version: number; hash: string }; // absent for a hand-authored override; present
-  // when it was materialized from a global default, for the install/update staleness check
-}
-type MaestroReportsSlice = Record<string /* agent name */, MaestroReportEntry>;
+/** Which Project Tags catalog entries this project belongs to. Absent = none recorded yet
+ *  (pre-dates this field). Selected once at install (from repo-detection evidence, backend/
+ *  frontend/mobile only) and editable afterward from /maestro. */
+project_tags?: string[];
 ```
 
-Content lives at `<project>/.claude/reports/<report id>.md` — plain markdown, no frontmatter needed (the
-file *is* the content that gets injected, not a template with metadata). Gitignore this the way the other
-project-writable Maestro artifacts are **not** ignored — unlike the ephemeral session files, this is
-authored config and should be committed, same tier as `.claude/handoffs/` overrides.
+Add `MaestroProjectTagsSlice { project_tags: string[] }` alongside the existing
+`MaestroWorkflowsSlice`/`MaestroRulesSlice`.
 
-### 2. Pure resolution module
+**`apps/maestro/src/core/config.ts`** — extend `ConfigSlice` with
+`{ sliceType: "project-tags"; slice: MaestroProjectTagsSlice }`; `mergeSlice` sets
+`next.project_tags = input.slice.project_tags` only (same "leaves the other slice untouched" rule
+the existing two branches follow). Reuses `saveConfig()` unchanged — a project-tags save still
+re-renders the orchestrator and re-applies rules, harmlessly (both are no-ops for this slice).
 
-`apps/maestro/src/core/report-resolution.ts` (pure — no `fs`, mirrors `read-scope.ts`/`write-scope.ts`'s
-style): given an agent name, the project's `reports` slice, and the global tier's data, resolve to
-`{ source: "project" | "global" | "none", content: string | null, reportId: string | null }`. Order:
-project override (file exists at the mapped id) → global default (agent has a row in `agent_reports`) →
-`none`. This is the one function both the hook and the app UI call, so the two can never disagree about
-what's "in effect" for a given agent.
+## New store: agent → project tag
 
-### 3. Hook injection — unconditional, independent of workflow matching
+**`apps/maestro/src/core/agent-project-tags.ts`** (new file), mirroring `agent-types.ts` almost
+exactly: `node:sqlite`, `~/.claude/maestro-agent-project-tags.sqlite`, table
+`agent_project_tags(agent_name TEXT PRIMARY KEY, project_tag TEXT NOT NULL)`, seeded-on-first-read
+with `backend→backend, frontend→frontend, mobile→mobile, refactor→global, reviewer→global,
+scribe→global, test→global`. Unlike `agent-types.ts`, the value isn't a fixed TS union — it's
+whatever the live Project Tags catalog contains, plus the literal `"global"` — so validation on
+write is just "non-empty string" here; the UI is what constrains the dropdown to real catalog
+values.
 
-Extend `plugins/maestro/scripts/maestro-inject-agent-context.js`. Critically: **this new lookup must not
-be gated behind `matchedInstances.length === 0`** the way the existing skills/HANDOFF logic is. Today the
-hook returns `null` (full no-op) whenever the invoked agent type isn't mapped to any node in the active
-workflow. A report instruction has to fire whenever the agent type resolves to *any* report (project or
-global), regardless of whether it's part of a matched workflow — otherwise an agent used outside Maestro's
-routing (or a project with no `maestro.json` at all, for the global tier) would silently lose the report
-instruction the static `.md` block used to always provide.
+Exports: `readAllAgentProjectTags(dbPath?)`, `setAgentProjectTag(agentName, tag, dbPath?)`,
+`agentsForProjectTags(tags: string[], dbPath?)` (agent names whose stored tag is in `tags` —
+used by the post-install "add matching agents" step below), `DEFAULT_AGENT_PROJECT_TAGS_DB_PATH`.
 
-Concretely: add a second, independent branch in the hook's `IIFE` — call it after (or instead of, when)
-`collect()` returns `null` — that resolves the report via `report-resolution.ts`'s logic (reading the
-project's `maestro.json` `reports` slice if present, and the global sqlite via the generated `.cjs` lib,
-wrapped in try/catch) and, if non-empty, appends its content as another `additionalContext` part:
+## Install flow
 
+**`apps/maestro/src/core/install.ts`** — `installRuntime()` gains one new step, after the existing
+asset/hook/gitignore/runtimeVersion work: **if `readConfig(projectRoot)` is `null`** (no
+`maestro.json` yet — first install), seed it right there instead of waiting for `/workflows`:
+
+```ts
+const detection = detectImplAgents(projectRoot);
+const skills = await discoverSkills(projectRoot);
+const skillMap = skillMapFromTags(readAllSkillTags(), skills.map(s => s.id), seededAgentNames(detection.implAgents));
+const catalog = readAllProjectTags(projectTagsDbPath);
+const projectTags = detection.implAgents.filter(t => catalog.includes(t));
+const config = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
+writeConfig(projectRoot, config);
 ```
-Mandatory output format for the `<agent_type>` agent:
 
-<resolved report content, verbatim>
-```
+This is the same computation `main/ipc.ts`'s `workflowsData` handler already does inline for the
+`/workflows` bootstrap fallback (kept, per the grilling answer, unchanged, as the safety net for a
+project that somehow reaches `/workflows` with literally no config and no install). The two are
+intentionally similar, not shared — different signatures (framework-free `install.ts` vs. the
+async IPC handler), same "PORTED" duplication convention already used elsewhere (`seed.ts`'s own
+header). If `maestro.json` already exists, none of this runs — an existing config, including its
+`project_tags`, is the user's own and is never touched by a re-install, exactly like
+`runtimeVersion` and every other field `install.ts` already leaves alone.
 
-If resolution yields `none`, emit nothing for this part (existing behavior for `refactor`/`reviewer`
-today, now true for any unconfigured agent). Keep this as its own function/branch, not folded into
-`collect()` — it has a different no-op condition than the skills+routing logic and conflating them risks
-re-introducing the `matchedInstances` gate for reports by accident later.
+Add optional `projectTagsDbPath?: string` param (mirrors `reportsDbPath?`'s existing test-isolation
+pattern) so tests never touch the real `~/.claude/maestro-project-tags.sqlite`.
 
-### 4. Install / update sync
+**`apps/maestro/src/core/contracts.ts`** — extend `InstallReport` with
+`configSeeded: { implAgents: string[]; projectTags: string[] } | null`, so `/maestro`'s report card
+can say what got seeded, same idea as the existing `reportsSync` summary.
 
-Both delivery paths — `/maestro-install`/`/maestro-update` (`plugins/maestro/scripts/maestro-install.js`
-and its update counterpart) and the desktop app's `installRuntime()`/equivalent update path
-(`apps/maestro/src/core/install.ts`) — gain a sync step over every agent the project's `reports` slice
-references (not the whole global set — only what this project has actually opted into via an existing map
-entry with `syncedFrom` metadata, or newly-seeded on first install):
+## New IPC surface
 
-- No project file at the mapped id → copy the current global default in, write `.claude/reports/<id>.md`,
-  and record `syncedFrom: { version, hash: sha256(content) }` in the `reports` slice.
-- Project file present, its content hash still equals its recorded `syncedFrom.hash`, and the global
-  default's version has advanced past `syncedFrom.version` → overwrite with the new global content, bump
-  `syncedFrom` to the new `{ version, hash }`. (Unmodified since last sync — safe to refresh.)
-- Project file present, its content hash does **not** match `syncedFrom.hash` → the user edited it. Skip
-  silently in terms of writes, but surface it in the install/update summary as "stale but customized" —
-  same spirit as the existing `installedRuntimeId`/`shippedRuntimeId` staleness badge, not a new
-  mechanism.
+**`shared/ipc.ts`**: add channels
 
-This is deliberately not a "does maestro.json exist" seed-once operation like `maestro.json` itself
-(`installRuntime()` seeds only when absent) — reports need to keep tracking a moving global default, which
-is the entire reason `syncedFrom` exists.
+- `data:project-tags` → `projectTagsData(): Promise<{ catalog: string[]; selected: string[] }>` —
+  reads the global catalog plus the *current* project's `maestro.json.project_tags ?? []`. Used by
+  `/maestro`'s new section (no route loader there today — it fetches imperatively in the
+  component, same as its existing `install:status` call).
+- `project:tags:set` → `(tags: string[]) => Promise<string[]>` — the write path for toggling a tag
+  on `/maestro`. Handler in `main/ipc.ts`:
+  1. `saveConfig(root, { sliceType: "project-tags", slice: { project_tags: tags } })`.
+  2. Diff against the previous `project_tags` for **newly added** tags only; for those, call
+     `agentsForProjectTags(newlyAdded)` and union any not-yet-present agent ids into
+     `agents_available` via a second `saveConfig(root, { sliceType: "workflows", slice: {...} })`
+     call. Never removes an agent on uncheck — that stays a manual edit on `/workflows`' existing
+     checklist, so unchecking a tag can't silently rip an agent out of a graph the user wired up.
+  3. Returns the resulting `project_tags`.
+- `templates.agentProjectTags.list()` / `.save(agentName, tag)` — same shape as the existing
+  `templates.agentTypes.{list,save}` pair, backed by the new store.
 
-### 5. Migration — strip and seed, same change
+Wire through `preload/index.ts` (`templates.agentProjectTags`, `data.projectTags`) and
+`main/ipc.ts` the same way every existing pair in this file is wired.
 
-For the 5 existing agent files with a `## Mandatory Output Format` section
-(`backend.md`, `frontend.md`, `mobile.md`, `scribe.md`, `test.md`):
+## `/templates` — extend the existing Project Tags tab
 
-- Remove that section from each `.md` file.
-- Seed the global sqlite store (`reports` table) with that exact content, `version: 1`, one row per
-  agent, `report_id` equal to the agent's own name (`backend`, `frontend`, `mobile`, `scribe`, `test`) —
-  do **not** collapse the near-identical backend/frontend/mobile shapes into one shared id as part of this
-  migration; that reuse is future work once a global-editing UI exists to manage shared ids sanely (see
-  "out of scope" below). One row per agent keeps this step a mechanical, verifiable copy with no judgment
-  calls.
-- Add corresponding `agent_reports` rows (`backend` → `backend`, etc.).
-- `refactor` and `reviewer` get no rows — unchanged behavior, no report section, exactly as today.
+**`project-tags-tab.tsx`** gains a second section below the existing chip catalog: one row per
+seeded agent name (same "flat list of rows, own dirty state, own Save" pattern as
+`agent-types-tab.tsx`), each with a `Select` whose options are `["global", ...catalog]` — sourced
+from the tab's own `initial` props (catalog + `readAllAgentProjectTags()`), not a fixed constant
+like `AGENT_TYPES`. `templates.tsx`'s loader adds a third parallel call
+(`templates.agentProjectTags.list()`) alongside the two it already makes for this tab.
 
-Do this as a one-time seed script (e.g. run once during this task's implementation to populate a
-maintainer's/CI's `~/.claude/maestro-report-defaults.sqlite`, or — more robust — a small idempotent
-migration the app/install script runs on first read if the `reports` table is empty, so a fresh machine
-that installs Maestro after this change still gets the 5 seeded defaults rather than nothing). Prefer the
-idempotent-seed-on-first-read approach: it works uniformly for every user of the plugin, not just whoever
-happens to run a one-off script now.
+## `/maestro` — the new post-install section
 
-### 6. New `/agents` page, replacing the Tools "Agents" tab
+In `InstallPage` (`routes/maestro.tsx`), once `status.installed` is true, render a new card: an
+explanatory paragraph (what these tags are, why some are pre-checked, that adding one may add a
+matching agent to the project) plus one checkbox per catalog tag, checked against `selected`,
+calling `project:tags:set` with the toggled list on each change. Mirrors the existing
+`ReportCard`/`RemovalCard` styling already on this page.
 
-New route `apps/maestro/src/renderer/src/routes/agents.tsx`:
+## `/workflows` — unchanged
 
-- **Left pane**: the exact same list `AgentsTab`/`DiscoveredDefinitionsList` render today, sourced from
-  `discoverAgents(projectRoot, bundledDir)` — no new status badge per row (explicitly decided against).
-  Move the `Create a subagent` link (`CreateLink to="/create-subagent"`) here from the removed tab.
-- **Right pane**: on selecting an agent, show the *resolved* report content (via `report-resolution.ts` —
-  project override if present, else global default, else empty) in a single freeform text editor. No
-  structured fields, no separate tabs for "project" vs "global" — one editor showing what's in effect.
-- **Save semantics — "if you touch it, it becomes this project's override."** Any edit + save always
-  writes a **project** override: `.claude/reports/<agent-name>.md` (id = the agent's own name, never
-  whatever id it may have inherited from the global tier — editing `backend` must never affect `frontend`
-  or `mobile` even if they currently share a global id) and sets
-  `reports[agentName] = { id: agentName }` (no `syncedFrom` — it's a hand-authored override now, not
-  tracking a global default) in `maestro.json`. Plain file write via a new `config:save`-style IPC path —
-  **no Claude session, no `claude:preview`/`claude:run`, no token** — the renderer sends text, main writes
-  it, same shape as the `/rules` save path.
-- Remove `apps/maestro/src/renderer/src/components/tabs/agents-tab.tsx` and its entry in `TABS` in
-  `routes/tools.tsx`. Add `/agents` to the top nav alongside `Skills`/`Workflows`/`Rules`/`Session Log` —
-  the same graduation `/skills` got when it grew its own inline editor and stopped fitting a `/tools` tab.
+Per the grilling answer, `DetectedChain`/`detectImplAgents`/`workflowsReseed` stay exactly as they
+are, as the fallback for a project that reaches `/workflows` with no `maestro.json` at all (now
+rare in practice, since Install seeds one immediately, but still a real path — e.g. a hand-deleted
+config). No deletions here.
 
-### What's explicitly out of scope for this slice
+## Terminal skill (`/maestro-install`)
 
-- **No UI to edit the global default tier.** The global store must exist, be seeded, and be readable by
-  the hook and by install/update — but nothing in the app writes to it yet. (Confirmed with the user:
-  deferred to a follow-up task.)
+1. **New plugin-entries**, mirroring `maestro-report-defaults.ts`'s shape exactly:
+   - `plugin-entries/maestro-project-tags.ts` → re-exports `readAllProjectTags`,
+     `DEFAULT_PROJECT_TAGS_DB_PATH` from `../project-tags.js`.
+   - `plugin-entries/maestro-agent-project-tags.ts` → re-exports `readAllAgentProjectTags`,
+     `agentsForProjectTags`, `DEFAULT_AGENT_PROJECT_TAGS_DB_PATH` from `../agent-project-tags.js`.
+   - Add both to the `entries` array in `apps/maestro/scripts/build-plugin-libs.mjs`, run
+     `pnpm --filter maestro build:plugin-libs`, and commit the two new generated `.cjs` files
+     under `plugins/maestro/scripts/lib/` — an *expected* diff there this time, unlike the prior
+     session's Agent Types work (which deliberately stayed app-only).
+2. **`plugins/maestro/scripts/maestro-install.js`**: add an optional `--project-tags
+   "backend,frontend"` flag, independent of the existing `--impl-agents` (which keeps building the
+   graph exactly as today — untouched). When seeding fresh, write the flag's value into the new
+   config's `project_tags` field (intersected with the live catalog, same guard as the app).
+3. **`plugins/maestro/skills/maestro-install/SKILL.md`**: after step 1 (repo analysis →
+   `implAgents`), add a step that reads the catalog via the new lib (same try/catch-degrades
+   pattern already used for skill tags), marks which entries the step-1 analysis supports as
+   evidence, and confirms with the user via one `AskUserQuestion` (multiSelect if the catalog is
+   ≤4 entries; otherwise the existing coarse-consent-plus-freeform-override pattern already used
+   for the skill-map question) before passing the result as `--project-tags` in step 3. Step 5's
+   summary mentions the recorded tags.
 
-  Proposed home for that follow-up, so it isn't re-litigated from scratch: a new **`/templates` page**,
-  reached from the **hamburger menu** (alongside `/docs` and `/tools`) rather than the per-project nav bar
-  — global report defaults, like the store in §1, are the same on every project, so they belong with the
-  concerns that don't need a project open, not beside Workflows/Rules/Agents. Split the page into tabs so
-  future global-template classes (beyond reports) each get a tab rather than a new nav entry; the first
-  tab is "Reports," editing rows straight out of `report-defaults.ts`'s `reports`/`agent_reports` tables.
-  Low edit frequency was the other reason for this placement — closer to a settings surface than a
-  frequently-visited one.
-- **No explicit "suppress this report" state.** A project can only override-to-different-content, never
-  override-to-nothing when a global default exists. "No report" only ever arises from no override + no
-  global default. Do not add a null/sentinel value to the `reports` slice for this.
-- **No per-agent status indicator in the left list.** Confirmed with the user — the list stays exactly as
-  plain as today's Tools table.
-- **No shared/reusable report ids created through the UI.** Every project-override id equals its agent's
-  own name; the id indirection exists in the schema (for the global tier's future reuse, and so
-  install/update sync has somewhere to record `syncedFrom`) but nothing in this slice lets a user point two
-  agents at one shared project-level id.
+## Verification
 
-## File-by-file map
-
-| Concern | File |
-| --- | --- |
-| Global report-defaults store (sqlite, mirrors `skill-tags.ts`) | `apps/maestro/src/core/report-defaults.ts` |
-| Pure resolution (project → global → none) | `apps/maestro/src/core/report-resolution.ts` |
-| `MaestroReportsSlice`/`MaestroReportEntry` types | `apps/maestro/src/core/types.ts`, re-exported via `contracts.ts` |
-| Plugin-lib bundle entry for the global store | `apps/maestro/src/core/plugin-entries/maestro-report-defaults.ts` → generated `plugins/maestro/scripts/lib/maestro-report-defaults.cjs` (`pnpm --filter maestro build:plugin-libs`) |
-| Hook injection (new, unconditional branch) | `plugins/maestro/scripts/maestro-inject-agent-context.js` |
-| Install/update sync step | `plugins/maestro/scripts/maestro-install.js` + its update path, and `apps/maestro/src/core/install.ts` |
-| Migration: strip sections, seed defaults | `plugins/maestro/agents/{backend,frontend,mobile,scribe,test}.md`; seed logic in `report-defaults.ts` (idempotent on first read) |
-| New page | `apps/maestro/src/renderer/src/routes/agents.tsx` (+ a detail/editor component under `components/`) |
-| Removed tab | `apps/maestro/src/renderer/src/components/tabs/agents-tab.tsx`, its entry in `routes/tools.tsx`'s `TABS` |
-| Save channel (plain write, no model) | `src/shared/ipc.ts` + handler in `src/main/ipc.ts` |
-| Nav entry | `apps/maestro/src/renderer/src/components/top-nav.tsx` |
-
-## Acceptance criteria
-
-- [ ] Any discovered agent (project/user/bundled-maestro/plugin-sourced) can have a report resolved for
-      it, not just the 7 bundled workers
-- [ ] `backend`/`frontend`/`mobile`/`scribe`/`test` have their `## Mandatory Output Format` section removed
-      from their `.md` files, and a subagent run through Maestro still receives the same report instruction
-      — now via injection, sourced from the seeded global default
-- [ ] `refactor`/`reviewer` (and any other agent with no configured report) receive no output-format
-      instruction, same as today
-- [ ] The `SubagentStart` hook injects a resolved report **even when the agent type doesn't match any node
-      in the active workflow** (i.e. this lookup is not gated by `matchedInstances`, unlike the existing
-      skills/HANDOFF logic)
-- [ ] A project can override an agent's report; the override is a plain `.md` file at
-      `.claude/reports/<agent-name>.md`, referenced from `maestro.json`'s new `reports` slice
-- [ ] Editing and saving from the `/agents` page always writes a project override keyed by the *edited
-      agent's own name*, never a shared/inherited global id — editing `backend`'s report never changes what
-      `frontend` or `mobile` resolve to
-- [ ] `/maestro-install` and `/maestro-update` (both the terminal script and the desktop app's install
-      path) sync project reports from the global default: materialize if absent, refresh if unmodified since
-      last sync, skip-and-flag-as-stale-but-customized if the project copy has diverged
-- [ ] The global sqlite store degrades gracefully (no crash, no report injected) on a `node` without
-      `node:sqlite` (< 22.5), matching the existing `maestro-skill-tags.cjs` precedent
-- [ ] `/tools`' Agents tab is removed; `/agents` is a new top-level route with the same agent list on the
-      left (no status badges) and a single freeform editor on the right showing the resolved report
-- [ ] Saving a report from `/agents` is a plain file write — no Claude session, no `claude:preview`/`run`,
-      no token involved
-- [ ] No UI exists yet for editing the global default tier — confirmed out of scope for this slice
+- `pnpm --filter maestro typecheck`, `pnpm --filter maestro test` — extend `test/install.test.ts`
+  for the new seed-on-first-install behavior and its `configSeeded` report field; new unit tests
+  for `agent-project-tags.ts` (seed content, `agentsForProjectTags`, replace-not-append) and
+  `config.ts`'s new slice branch.
+- `pnpm --filter maestro build:plugin-libs`, then confirm via `git diff
+  plugins/maestro/scripts/lib/` that exactly the two new files appear and nothing else changed.
+- Live CDP pass (isolated fake `$HOME`, per this session's established discipline): install a
+  fresh fixture project, confirm `maestro.json` now has `project_tags` populated from detection
+  immediately (no `/workflows` visit needed); toggle a tag on `/maestro` and confirm the matching
+  agent joins `agents_available`; confirm the Project Tags tab on `/templates` shows and saves the
+  per-agent assignment; confirm the real `~/.claude/*.sqlite` stores are untouched by the test run.

@@ -20,6 +20,7 @@ import { Route as MaestroTasksRouteImport } from './routes/maestro-tasks'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as SessionLogRouteImport } from './routes/session-log'
 import { Route as SkillsRouteImport } from './routes/skills'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as WorkflowsRouteImport } from './routes/workflows'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
@@ -82,6 +83,11 @@ const SkillsRoute = SkillsRouteImport.update({
   path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -125,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/rules': typeof RulesRoute
   '/session-log': typeof SessionLogRoute
   '/skills': typeof SkillsRoute
+  '/templates': typeof TemplatesRoute
   '/tools': typeof ToolsRoute
   '/workflows': typeof WorkflowsRoute
   '/project-docs/$slug': typeof ProjectDocsSlugRoute
@@ -144,6 +151,7 @@ export interface FileRoutesByTo {
   '/rules': typeof RulesRoute
   '/session-log': typeof SessionLogRoute
   '/skills': typeof SkillsRoute
+  '/templates': typeof TemplatesRoute
   '/tools': typeof ToolsRoute
   '/workflows': typeof WorkflowsRoute
   '/project-docs/$slug': typeof ProjectDocsSlugRoute
@@ -164,6 +172,7 @@ export interface FileRoutesById {
   '/rules': typeof RulesRoute
   '/session-log': typeof SessionLogRoute
   '/skills': typeof SkillsRoute
+  '/templates': typeof TemplatesRoute
   '/tools': typeof ToolsRoute
   '/workflows': typeof WorkflowsRoute
   '/project-docs/$slug': typeof ProjectDocsSlugRoute
@@ -185,6 +194,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/session-log'
     | '/skills'
+    | '/templates'
     | '/tools'
     | '/workflows'
     | '/project-docs/$slug'
@@ -204,6 +214,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/session-log'
     | '/skills'
+    | '/templates'
     | '/tools'
     | '/workflows'
     | '/project-docs/$slug'
@@ -223,6 +234,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/session-log'
     | '/skills'
+    | '/templates'
     | '/tools'
     | '/workflows'
     | '/project-docs/$slug'
@@ -243,6 +255,7 @@ export interface RootRouteChildren {
   RulesRoute: typeof RulesRoute
   SessionLogRoute: typeof SessionLogRoute
   SkillsRoute: typeof SkillsRoute
+  TemplatesRoute: typeof TemplatesRoute
   ToolsRoute: typeof ToolsRoute
   WorkflowsRoute: typeof WorkflowsRoute
   ProjectDocsSlugRoute: typeof ProjectDocsSlugRoute
@@ -330,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools': {
       id: '/tools'
       path: '/tools'
@@ -387,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   RulesRoute: RulesRoute,
   SessionLogRoute: SessionLogRoute,
   SkillsRoute: SkillsRoute,
+  TemplatesRoute: TemplatesRoute,
   ToolsRoute: ToolsRoute,
   WorkflowsRoute: WorkflowsRoute,
   ProjectDocsSlugRoute: ProjectDocsSlugRoute,

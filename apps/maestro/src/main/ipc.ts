@@ -54,6 +54,13 @@ import {
   runUsageStats,
   getResolvedReport,
   saveProjectReportOverride,
+  readAllAgentReportDefaults,
+  writeAgentReportDefault,
+  readAllAgentTypes,
+  setAgentType,
+  readAllProjectTags,
+  addProjectTag,
+  removeProjectTag,
 } from "../core/index.js";
 import { IPC, IPC_EVENTS } from "../shared/ipc.js";
 import type {
@@ -83,6 +90,8 @@ import type {
   UninstallReport,
   ProjectState,
   ResolvedReport,
+  ReportDefault,
+  AgentType,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -377,6 +386,21 @@ export function registerIpc(): void {
     if (!projectRoot) throw new Error("No project is open.");
     return saveProjectReportOverride(projectRoot, agentName, content);
   });
+
+  // ── templates (/templates page — the GLOBAL tier's write path) ──────
+  // No `currentRoot()` anywhere here — same discipline as the avatar handlers below: this store
+  // isn't project-scoped, so nothing on this page needs a project open.
+  ipcMain.handle(IPC.templateReportsList, (): Record<string, ReportDefault> => readAllAgentReportDefaults());
+  ipcMain.handle(IPC.templateReportSave, (_e, agentName: string, content: string): ReportDefault => {
+    return writeAgentReportDefault(agentName, content);
+  });
+  ipcMain.handle(IPC.templateAgentTypesList, (): Record<string, AgentType> => readAllAgentTypes());
+  ipcMain.handle(IPC.templateAgentTypeSave, (_e, agentName: string, tag: AgentType): AgentType => {
+    return setAgentType(agentName, tag);
+  });
+  ipcMain.handle(IPC.templateProjectTagsList, (): string[] => readAllProjectTags());
+  ipcMain.handle(IPC.templateProjectTagAdd, (_e, tag: string): string[] => addProjectTag(tag));
+  ipcMain.handle(IPC.templateProjectTagRemove, (_e, tag: string): string[] => removeProjectTag(tag));
 
   // ── skill tags ───────────────────────────────────────────────────────
   // Global, keyed by skill id — no project involved. Returns the stored (deduped, sorted) tags

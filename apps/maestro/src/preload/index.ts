@@ -50,6 +50,25 @@ const api: MaestroApi = {
     get: (agentName) => ipcRenderer.invoke(IPC.reportGet, agentName),
     save: (agentName, content) => ipcRenderer.invoke(IPC.reportSave, agentName, content),
   },
+  // The /templates page's write path for the GLOBAL tier — its own namespace, not `reports.*`
+  // above, for the same reason that pair is scoped to a project override: conflating the two would
+  // mean one function editing either "what this agent shows in this project" or "what every
+  // project without an override falls back to", decided only by which page called it.
+  templates: {
+    reports: {
+      list: () => ipcRenderer.invoke(IPC.templateReportsList),
+      save: (agentName, content) => ipcRenderer.invoke(IPC.templateReportSave, agentName, content),
+    },
+    agentTypes: {
+      list: () => ipcRenderer.invoke(IPC.templateAgentTypesList),
+      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentTypeSave, agentName, tag),
+    },
+    projectTags: {
+      list: () => ipcRenderer.invoke(IPC.templateProjectTagsList),
+      add: (tag) => ipcRenderer.invoke(IPC.templateProjectTagAdd, tag),
+      remove: (tag) => ipcRenderer.invoke(IPC.templateProjectTagRemove, tag),
+    },
+  },
   skillTags: {
     set: (skillId, tags) => ipcRenderer.invoke(IPC.skillTagsSet, skillId, tags),
   },

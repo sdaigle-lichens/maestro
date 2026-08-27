@@ -148,6 +148,30 @@ export interface ResolvedReport {
   content: string;
 }
 
+/**
+ * One row in the global report-defaults store (`report-defaults.ts`) — the fallback tier
+ * `/agents` falls back to when an agent has no project override, and what the `/templates` page's
+ * Reports tab edits directly. `version` is what `report-sync.ts` compares against a project's
+ * `syncedFrom.version` to decide whether install/update needs to refresh a stale project copy.
+ */
+export interface ReportDefault {
+  reportId: string;
+  content: string;
+  version: number;
+}
+
+/**
+ * The closed set of agent-type tags the `/templates` page's Agent Types tab assigns one of to each
+ * agent, backed by `agent-types.ts`'s own global sqlite store — same mechanism as `SKILL_TAGS`
+ * above, but singular per agent (an agent has exactly one type, not a set) and its own closed
+ * vocabulary rather than being named after the seven agents themselves.
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `SKILL_TAGS`: the
+ * renderer needs the actual array to render one Select option per type, not just the type.
+ */
+export const AGENT_TYPES = ["developer", "planner", "reviewer", "annotator", "tester"] as const;
+export type AgentType = (typeof AGENT_TYPES)[number];
+
 export interface ProjectRule {
   id: string;
   description: string;

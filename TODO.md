@@ -1,6 +1,6 @@
 # Todo
 
-Use the following skills to complete the task from :
+Use the following skills to complete the task from task.md :
 
 - apps/maestro/.claude/skills/maestro-architecture/SKILL.md
 - apps/maestro/.claude/skills/test-maestro/SKILL.md

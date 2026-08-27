@@ -115,6 +115,7 @@ export {
   readAgentReportDefault,
   readReportById,
   readAllAgentReportDefaults,
+  writeAgentReportDefault,
   DEFAULT_REPORT_DEFAULTS_DB_PATH,
   type ReportDefault,
 } from "./report-defaults.js";
@@ -122,6 +123,20 @@ export {
 export { resolveReport, type ReportResolution, type ReportSource, type GlobalReportInput } from "./report-resolution.js";
 
 export { syncProjectReports } from "./report-sync.js";
+
+export {
+  readAllAgentTypes,
+  setAgentType,
+  DEFAULT_AGENT_TYPES_DB_PATH,
+  type AgentType,
+} from "./agent-types.js";
+
+export {
+  readAllProjectTags,
+  addProjectTag,
+  removeProjectTag,
+  DEFAULT_PROJECT_TAGS_DB_PATH,
+} from "./project-tags.js";
 
 export { getResolvedReport, saveProjectReportOverride } from "./reports.js";
 

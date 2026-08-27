@@ -38,6 +38,7 @@ import type {
   InstallReport,
   ReportSyncSummary,
   ResolvedReport,
+  ReportDefault,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -103,14 +104,21 @@ import type {
   AvatarCategory,
   AvatarPartOption,
   AvatarLayers,
+  AgentType,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
 // child_process — so a VALUE from it costs the renderer nothing; the tag editor needs the actual
 // seven-entry array to render one toggle per tag, not just the type. `AVATAR_CATEGORIES`/
 // `AVATAR_PARTS` are here for the same reason: the avatar picker renders one row per category and
-// one swatch per option, not just the types.
-export { SKILL_TAGS, AVATAR_CATEGORIES, AVATAR_PARTS, AVATAR_REQUIRED_CATEGORIES } from "../core/contracts.js";
+// one swatch per option, not just the types. `AGENT_TYPES` is the Agent Types tab's Select options.
+export {
+  SKILL_TAGS,
+  AVATAR_CATEGORIES,
+  AVATAR_PARTS,
+  AVATAR_REQUIRED_CATEGORIES,
+  AGENT_TYPES,
+} from "../core/contracts.js";
 
 export type {
   MaestroConfigV3,
@@ -135,6 +143,7 @@ export type {
   InstallReport,
   ReportSyncSummary,
   ResolvedReport,
+  ReportDefault,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -200,6 +209,7 @@ export type {
   AvatarCategory,
   AvatarPartOption,
   AvatarLayers,
+  AgentType,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -316,6 +326,35 @@ export const IPC = {
   // /rules save path: it always writes a PROJECT override keyed by the agent's own name.
   reportGet: "report:get",
   reportSave: "report:save",
+
+  // The /templates page's Reports tab — the GLOBAL tier's own write path, distinct from the pair
+  // above. `reportGet`/`reportSave` always resolve/write a PROJECT override for one agent in the
+  // OPEN project; these edit the machine-wide fallback every project without an override receives,
+  // and need no project open at all. `templateReportsList` wraps `readAllAgentReportDefaults` —
+  // every agent with a global default, keyed by agent name. `templateReportSave` calls the new
+  // `writeAgentReportDefault`: a plain sqlite write, no Claude session, no token, same as
+  // `reportSave` — it just bumps the edited report's `version` in the `reports` table instead of
+  // writing a project file, which is what lets `report-sync.ts`'s existing staleness check pick up
+  // the change on a project's next install/update.
+  templateReportsList: "template:reports:list",
+  templateReportSave: "template:reports:save",
+
+  // The /templates page's Agent Types tab — same global, no-project-needed shape as the Reports
+  // pair above, backed by `agent-types.ts`'s own `~/.claude/maestro-agent-types.sqlite`.
+  // `templateAgentTypesList` wraps `readAllAgentTypes`; `templateAgentTypeSave` wraps
+  // `setAgentType` — a plain replace, not a version bump, since an agent type has no project-tier
+  // counterpart for any sync step to compare against.
+  templateAgentTypesList: "template:agent-types:list",
+  templateAgentTypeSave: "template:agent-types:save",
+
+  // The /templates page's Project Tags tab — a global CATALOG (add/remove, not per-item
+  // assignment like the two pairs above), backed by `project-tags.ts`'s own
+  // `~/.claude/maestro-project-tags.sqlite`. Seeded with backend/frontend/mobile — the same three
+  // categories detect.ts's evidence matching looks for — but standalone: nothing reads this store
+  // yet, so a tag added here beyond the seeded three is catalogued and nothing more.
+  templateProjectTagsList: "template:project-tags:list",
+  templateProjectTagAdd: "template:project-tags:add",
+  templateProjectTagRemove: "template:project-tags:remove",
 
   // Set one skill's tags in the global (`~/.claude/maestro-skill-tags.sqlite`) store — see
   // `src/core/skill-tags.ts`. No project involved: a skill's tags are the same in every project.
@@ -476,6 +515,40 @@ export interface MaestroApi {
   reports: {
     get(agentName: string): Promise<ResolvedReport>;
     save(agentName: string, content: string): Promise<ResolvedReport>;
+  };
+  /**
+   * The /templates page — the GLOBAL tier's write path, and the reason it is its own namespace
+   * rather than a widened `reports.*` above: that pair always resolves/writes a PROJECT override
+   * for the OPEN project, and this always edits the machine-wide fallback tier every project
+   * without an override falls back to. No project needed — nothing here is gated on one being open.
+   */
+  templates: {
+    reports: {
+      /** Every agent with a global default, keyed by agent name. */
+      list(): Promise<Record<string, ReportDefault>>;
+      /**
+       * Upsert one agent's global default. A plain write — no Claude session, no
+       * `claude:preview`/`run`, no token — that bumps the report's `version`.
+       */
+      save(agentName: string, content: string): Promise<ReportDefault>;
+    };
+    /** The Agent Types tab: one type per agent, global, no project needed. */
+    agentTypes: {
+      /** Every agent's type, keyed by agent name. */
+      list(): Promise<Record<string, AgentType>>;
+      /** Replace one agent's type with `tag`. */
+      save(agentName: string, tag: AgentType): Promise<AgentType>;
+    };
+    /**
+     * The Project Tags tab: a global catalog, not a per-item assignment — add/remove a tag name,
+     * seeded with backend/frontend/mobile. `add`/`remove` both return the full catalog after the
+     * change, so the tab renders the store's own echo rather than predicting it from the click.
+     */
+    projectTags: {
+      list(): Promise<string[]>;
+      add(tag: string): Promise<string[]>;
+      remove(tag: string): Promise<string[]>;
+    };
   };
   /**
    * Skill tags — global, keyed by skill id, edited from the /tools Skills tab. `set` returns the

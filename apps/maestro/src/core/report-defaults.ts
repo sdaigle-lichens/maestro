@@ -19,22 +19,20 @@
 // having run a migration script — still see the same five defaults the bundled agent files used
 // to carry inline, before their `## Mandatory Output Format` sections were stripped out.
 //
-// No UI writes here in this slice (confirmed out of scope — see task.md). Only readable, and
-// seedable by the first read.
+// The `/templates` page's Reports tab is the UI that writes here — `writeAgentReportDefault`
+// below. Every write it makes is one agent -> one report, keyed by the agent's own name; it never
+// creates the id-sharing indirection the schema allows for (see the header note above).
 
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
+import type { ReportDefault } from "./contracts.js";
+
+export type { ReportDefault };
 
 /** `~/.claude/maestro-report-defaults.sqlite` — one store, every project on this machine. */
 export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude", "maestro-report-defaults.sqlite");
-
-export interface ReportDefault {
-  reportId: string;
-  content: string;
-  version: number;
-}
 
 function backendLikeReport(subagent: string): string {
   return (
@@ -192,6 +190,45 @@ export function readAllAgentReportDefaults(
     const out: Record<string, ReportDefault> = {};
     for (const row of rows) out[row.agentName] = { reportId: row.reportId, content: row.content, version: row.version };
     return out;
+  } finally {
+    db.close();
+  }
+}
+
+/**
+ * Upsert `agentName`'s global default. Keyed by the agent's OWN name — same convention the seed
+ * established, and the one restriction this UI carries: it never points an agent at a `report_id`
+ * shared with another agent, so `report_id` is always `agentName` here.
+ *
+ * Bumps `version` by 1 when a `reports` row for `agentName` already exists, else inserts at
+ * version 1 — this is what makes `report-sync.ts`'s "global version advanced past
+ * `syncedFrom.version`" refresh logic fire for a project that already synced the old content.
+ * `reports` and `agent_reports` move together in one transaction, same discipline as `seedIfEmpty`.
+ */
+export function writeAgentReportDefault(
+  agentName: string,
+  content: string,
+  dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH
+): ReportDefault {
+  const db = openDb(dbPath);
+  try {
+    db.exec("BEGIN");
+    try {
+      const existing = db.prepare("SELECT version FROM reports WHERE report_id = ?").get(agentName) as
+        | { version: number }
+        | undefined;
+      const version = existing ? existing.version + 1 : 1;
+      db.prepare(
+        `INSERT INTO reports (report_id, content, version) VALUES (?, ?, ?)
+         ON CONFLICT(report_id) DO UPDATE SET content = excluded.content, version = excluded.version`
+      ).run(agentName, content, version);
+      db.prepare("INSERT OR REPLACE INTO agent_reports (agent_name, report_id) VALUES (?, ?)").run(agentName, agentName);
+      db.exec("COMMIT");
+      return { reportId: agentName, content, version };
+    } catch (err) {
+      db.exec("ROLLBACK");
+      throw err;
+    }
   } finally {
     db.close();
   }
