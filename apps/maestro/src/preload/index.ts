@@ -25,6 +25,9 @@ const api: MaestroApi = {
       ipcRenderer.on(IPC_EVENTS.projectChanged, listener);
       return () => ipcRenderer.removeListener(IPC_EVENTS.projectChanged, listener);
     },
+    tags: {
+      set: (tags) => ipcRenderer.invoke(IPC.projectTagsSet, tags),
+    },
   },
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
@@ -42,12 +45,45 @@ const api: MaestroApi = {
     // `src/core/global-docs.ts`.
     globalDocs: () => ipcRenderer.invoke(IPC.globalDocsData),
     globalDoc: (group, slug) => ipcRenderer.invoke(IPC.globalDocContent, group, slug),
+    projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),
   },
+  reports: {
+    get: (agentName) => ipcRenderer.invoke(IPC.reportGet, agentName),
+    save: (agentName, content) => ipcRenderer.invoke(IPC.reportSave, agentName, content),
+  },
+  // The /templates page's write path for the GLOBAL tier — its own namespace, not `reports.*`
+  // above, for the same reason that pair is scoped to a project override: conflating the two would
+  // mean one function editing either "what this agent shows in this project" or "what every
+  // project without an override falls back to", decided only by which page called it.
+  templates: {
+    reports: {
+      list: () => ipcRenderer.invoke(IPC.templateReportsList),
+      save: (agentName, content) => ipcRenderer.invoke(IPC.templateReportSave, agentName, content),
+    },
+    agentTypes: {
+      list: () => ipcRenderer.invoke(IPC.templateAgentTypesList),
+      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentTypeSave, agentName, tag),
+    },
+    projectTags: {
+      list: () => ipcRenderer.invoke(IPC.templateProjectTagsList),
+      add: (tag) => ipcRenderer.invoke(IPC.templateProjectTagAdd, tag),
+      remove: (tag) => ipcRenderer.invoke(IPC.templateProjectTagRemove, tag),
+    },
+    agentProjectTags: {
+      list: () => ipcRenderer.invoke(IPC.templateAgentProjectTagsList),
+      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentProjectTagSave, agentName, tag),
+    },
+  },
   skillTags: {
-    set: (skillId, tags) => ipcRenderer.invoke(IPC.skillTagsSet, skillId, tags),
+    setProjectTags: (skillId, tags) => ipcRenderer.invoke(IPC.skillProjectTagsSet, skillId, tags),
+    setAgentTypes: (skillId, tags) => ipcRenderer.invoke(IPC.skillAgentTypesSet, skillId, tags),
+  },
+  avatar: {
+    get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),
+    set: (agentName, layers) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers),
   },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),
@@ -64,6 +100,7 @@ const api: MaestroApi = {
     // forwarded as-is, validated on the main side against the current + recent project list.
     status: (projectRoot) => ipcRenderer.invoke(IPC.installStatus, projectRoot),
     run: (projectRoot) => ipcRenderer.invoke(IPC.installRun, projectRoot),
+    autoRefresh: (projectRoot) => ipcRenderer.invoke(IPC.installAutoRefresh, projectRoot),
     uninstallPlan: (projectRoot) => ipcRenderer.invoke(IPC.installUninstallPlan, projectRoot),
     uninstall: (opts, projectRoot) => ipcRenderer.invoke(IPC.installUninstall, opts, projectRoot),
   },

@@ -1,7 +1,21 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { toast } from "@repo/ui/toast";
 import { callMain, type CallResult } from "./call-main";
 import { useProject } from "./project-context";
 import type { InstallReport, InstallStatus, UninstallPlan, UninstallReport } from "../../../shared/ipc";
+
+/**
+ * What to name in the "Maestro runtime updated" notice, in the order a reader would want them:
+ * the hook scripts first (the part that actually changes runtime behaviour), then the orchestrator
+ * skill. Falls back to naming the version bump alone — a project stamped for the first time by
+ * this feature, where nothing else needed a copy.
+ */
+function describeRuntimeRefresh(report: InstallReport): string {
+  const parts: string[] = [];
+  if (report.scriptsWritten.length > 0) parts.push("hooks");
+  if (report.orchestratorSkill.action !== "unchanged") parts.push("orchestrator skill");
+  return parts.length > 0 ? parts.join(", ") : `runtime version → ${report.runtimeVersion}`;
+}
 
 interface InstallContextValue {
   /** null until the first status lands, and whenever no project is open. */
@@ -54,6 +68,16 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
       setStatus(null);
       setError(null);
       return;
+    }
+    // Task 027: the cheap runtimeVersion check, and the refresh it triggers when stale — before
+    // fetching status, so the status this call resolves with already reflects a refresh that just
+    // happened rather than reporting stale for one more render. A failure here is swallowed rather
+    // than surfaced as this provider's `error`: it must never block the status read that follows,
+    // and `callMain` would otherwise still leave `res.ok === false` fall through silently below —
+    // stated explicitly because the auto-refresh is a courtesy, not something the badge depends on.
+    const auto = await callMain(() => window.maestro.install.autoRefresh());
+    if (auto.ok && auto.value) {
+      toast(<>Maestro runtime updated: {describeRuntimeRefresh(auto.value)}</>);
     }
     const res = await callMain(() => window.maestro.install.status());
     if (res.ok) {

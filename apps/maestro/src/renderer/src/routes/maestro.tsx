@@ -2,11 +2,11 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
-import { AlertTriangle, Check, Download, FolderOpen, PowerOff, RefreshCw, Trash2, X } from "lucide-react";
+import { AlertTriangle, Check, Download, FolderOpen, PowerOff, RefreshCw, Tag as TagIcon, Trash2, X } from "lucide-react";
 import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
-import type { InstallReport, InstallStatus, UninstallPlan, UninstallReport } from "../../../shared/ipc";
+import type { InstallReport, InstallStatus, ProjectTagsData, UninstallPlan, UninstallReport } from "../../../shared/ipc";
 
 export const Route = createFileRoute("/maestro")({
   component: InstallPage,
@@ -97,6 +97,25 @@ function ReportCard({ report }: { report: InstallReport }) {
             </li>
           )}
           {report.gitignoreUpdated && <li>Session files added to the repo&rsquo;s .gitignore.</li>}
+          {report.reportsSync.materialized.length > 0 && (
+            <li>
+              Report{report.reportsSync.materialized.length === 1 ? "" : "s"} materialized from the global default:{" "}
+              <span className="font-mono text-(--ink-3)">{report.reportsSync.materialized.join(", ")}</span>
+            </li>
+          )}
+          {report.reportsSync.refreshed.length > 0 && (
+            <li>
+              Report{report.reportsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global default:{" "}
+              <span className="font-mono text-(--ink-3)">{report.reportsSync.refreshed.join(", ")}</span>
+            </li>
+          )}
+          {report.reportsSync.staleCustomized.length > 0 && (
+            <li>
+              Stale but customized — left alone since you edited{" "}
+              {report.reportsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
+              <span className="font-mono text-(--ink-3)">{report.reportsSync.staleCustomized.join(", ")}</span>
+            </li>
+          )}
         </ul>
       )}
     </div>
@@ -282,6 +301,87 @@ function PurgeDialog({
           </button>
         </div>
       </div>
+    </div>
+  );
+}
+
+/**
+ * The post-install Project Tags section — only shown once `status.installed` is true (the
+ * grilling answer this page follows: tags are shown/editable here only after install, never
+ * before). Mirrors `ReportCard`/`RemovalCard`'s styling.
+ */
+function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
+  const [data, setData] = useState<ProjectTagsData | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.projectTags()).then((res) => {
+      if (!cancelled && res.ok) setData(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!data) return null;
+
+  const toggle = async (tag: string) => {
+    if (!data) return;
+    const next = data.selected.includes(tag) ? data.selected.filter((t) => t !== tag) : [...data.selected, tag];
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.tags.set(next));
+      if (!res.ok) {
+        toast(<>Could not save project tags: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setData({ ...data, selected: res.value });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <TagIcon size={12} /> Project tags
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Which of the catalog&rsquo;s categories this project belongs to. Tags matched from repo detection at
+        install time are pre-checked; adding one may add a matching bundled agent (backend/frontend/mobile) to{" "}
+        <span className="font-mono">agents_available</span> — unchecking never removes one, that stays a manual
+        edit on Workflows. Edited from the same catalog as the <span className="font-mono">/templates</span>{" "}
+        page&rsquo;s Project Tags tab.
+      </p>
+      {data.catalog.length === 0 ? (
+        <p className="text-[12px] text-(--ink-3) m-0">
+          The catalog is empty — add tags from <span className="font-mono">/templates</span> first.
+        </p>
+      ) : (
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {data.catalog.map((tag) => {
+            const checked = data.selected.includes(tag);
+            return (
+              <label
+                key={tag}
+                className={`inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-full border font-mono text-[12px] cursor-pointer ${
+                  checked ? "border-primary text-(--ink) bg-(--primary-dim)" : "border-(--line) text-(--ink-2)"
+                } ${busy ? "opacity-60 cursor-not-allowed" : ""}`}
+              >
+                <input
+                  type="checkbox"
+                  checked={checked}
+                  disabled={busy}
+                  onChange={() => void toggle(tag)}
+                  className="cursor-pointer"
+                />
+                {tag}
+              </label>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }
@@ -500,6 +600,8 @@ function InstallPage() {
           )}
 
           {status && <StatusCard status={status} />}
+
+          {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           <div className="flex items-center gap-2">
             <Button

@@ -475,9 +475,10 @@ describe("the create-* routes", () => {
     // at the bottom of the one /tools tab it belongs to — a route with no way in is still a route
     // nobody finds, just from a different component now.
     const tabFor: Record<(typeof routes)[number], string> = {
-      // Skills moved off /tools onto its own /skills page — see routes/skills.tsx.
+      // Skills and Agents moved off /tools onto their own pages — see routes/skills.tsx,
+      // routes/agents.tsx.
       "create-skill": "src/renderer/src/routes/skills.tsx",
-      "create-subagent": "src/renderer/src/components/tabs/agents-tab.tsx",
+      "create-subagent": "src/renderer/src/routes/agents.tsx",
       "create-plugin": "src/renderer/src/components/tabs/command-center.tsx",
       "create-marketplace": "src/renderer/src/components/tabs/marketplace.tsx",
     };

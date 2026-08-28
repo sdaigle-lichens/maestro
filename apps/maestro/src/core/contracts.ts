@@ -20,22 +20,103 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroProjectTagsSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   MaestroSession,
 } from "./types.js";
 
 import type { MaestroConfigV3 } from "./types.js";
 
 /**
- * The seven agents a workflow can seed — backend/frontend/mobile are also a project-type
- * classification, since they name both an implementation stack and the agent that owns it.
- *
- * A literal deliberate exception to "contracts.ts is interfaces only": both the renderer's tag
- * editor and `skillMapFromTags` need the same seven values, and the value has to be a runtime
- * array, not just a type, for the UI to render one toggle per tag. It's still self-contained (no
- * import, nothing that touches `fs`), which is what actually makes a value here renderer-safe.
+ * The sentinel value on either of a skill's two tag dimensions (see `DiscoveredDefinition` below)
+ * meaning "matches regardless of the agent's own value on that dimension" — the same convention
+ * `agent-project-tags.ts` already uses for an agent's own project tag.
  */
-export const SKILL_TAGS = ["backend", "frontend", "mobile", "refactor", "reviewer", "scribe", "test"] as const;
-export type SkillTag = (typeof SKILL_TAGS)[number];
+export const GLOBAL_TAG = "global";
+
+/**
+ * The agent avatar picker's part categories, bottom→top in the same order the layers composite in
+ * (`body` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
+ * must stay in agreement with this order.
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG` above:
+ * the renderer needs the actual array to render one row per category, not just the type.
+ */
+export const AVATAR_CATEGORIES = ["body", "head", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
+export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number];
+
+/** body/head/eyes are always rendered (never "none"); the rest may be null. */
+export const AVATAR_REQUIRED_CATEGORIES: readonly AvatarCategory[] = ["body", "head", "eyes"];
+
+export interface AvatarPartOption {
+  id: string;
+  name: string;
+}
+
+/**
+ * Every option per category. Must match the filenames under
+ * `src/renderer/src/assets/avatar/<category>/<id>.png` exactly — `test/core/avatar-parity.test.ts`
+ * pins this against the renderer's asset manifest. Three exceptions — `torso`, `legs`, `feet` —
+ * whose options are body-variant-aware (male/female cuts of the same garment) rather than one
+ * file per id; see `manifest.ts`'s `BODY_VARIANT_CATEGORIES`/`resolveAvatarUrl`. `hat` is NOT
+ * variant-aware: the upstream pack only ever cut one `adult` size for it.
+ *
+ * No "Child" body/head option: measured by compositing (see the session that added this comment) —
+ * every worn item and the eye layer are cropped and positioned for an ADULT frame, so pairing them
+ * with the child body/head produces severe, not cosmetic, misalignment (oversized torso floating
+ * off the shoulders, eyes rendering down near the chin). The upstream LPC pack has no child-sized
+ * cut for any of those layers, so there is no fix short of dropping the option.
+ */
+export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
+  body: [
+    { id: "male", name: "Male" },
+    { id: "female", name: "Female" },
+  ],
+  head: [
+    { id: "male", name: "Male" },
+    { id: "female", name: "Female" },
+  ],
+  eyes: [
+    { id: "brows", name: "Brows" },
+    { id: "cyclops", name: "Cyclops" },
+    { id: "cyclops2", name: "Cyclops (alt)" },
+  ],
+  hair: [
+    { id: "plain", name: "Plain" },
+    { id: "bangslong", name: "Long Bangs" },
+    { id: "bob", name: "Bob" },
+    { id: "buzzcut", name: "Buzzcut" },
+    { id: "dreadlocks_short", name: "Short Dreadlocks" },
+  ],
+  torso: [
+    { id: "tshirt", name: "T-Shirt" },
+    { id: "tshirt_buttoned", name: "Buttoned Shirt" },
+    { id: "leather_armour", name: "Leather Armor" },
+    { id: "plate_armour", name: "Plate Armor" },
+  ],
+  legs: [
+    { id: "pants", name: "Pants" },
+    { id: "shorts", name: "Shorts" },
+    { id: "skirt_plain", name: "Plain Skirt" },
+    { id: "skirt_legion", name: "Legion Skirt" },
+  ],
+  feet: [
+    { id: "shoes_basic", name: "Shoes" },
+    { id: "boots_basic", name: "Boots" },
+    { id: "sandals", name: "Sandals" },
+    { id: "shoes_ghillies", name: "Ghillie Shoes" },
+  ],
+  hat: [
+    { id: "bandana", name: "Bandana" },
+    { id: "bowler", name: "Bowler Hat" },
+    { id: "crown", name: "Crown" },
+    { id: "barbarian_helmet", name: "Barbarian Helmet" },
+  ],
+};
+
+/** One id per category, or null for an optional category left empty. */
+export type AvatarLayers = Record<AvatarCategory, string | null>;
 
 /**
  * Where an agent/skill was discovered: "project", "user" (global ~/.claude), the bundled
@@ -46,11 +127,55 @@ export interface DiscoveredDefinition {
   description: string;
   source: string;
   /**
-   * User-entered tags — which agent(s) this skill belongs to. Always present (empty when
-   * untagged); only skills carry these today, though the type is shared with `discoverAgents`.
+   * Which Project Tags catalog entries this skill applies to, plus `GLOBAL_TAG` for "regardless
+   * of project tag". Always present (empty when untagged, which matches no agent); only skills
+   * carry real values today, though the type is shared with `discoverAgents`.
+   *
+   * Matched against a seeded agent INSTANCE's own stored project tag (`agent-project-tags.ts`),
+   * not the project's raw selected `project_tags` list — see `skillMapFromTags` in `skill-tags.ts`.
    */
-  tags: SkillTag[];
+  projectTags: string[];
+  /**
+   * Which `AGENT_TYPES` this skill applies to, plus `GLOBAL_TAG` for "regardless of agent type".
+   * Matched against a seeded agent instance's own stored type (`agent-types.ts`).
+   */
+  agentTypes: string[];
 }
+
+/**
+ * What's in effect for one agent, as resolved by `report-resolution.ts` — the /agents page's
+ * right pane renders this directly, and it is exactly what a subagent run through Maestro would
+ * receive (the SubagentStart hook resolves the same way, independently, in plain JS).
+ */
+export interface ResolvedReport {
+  source: "project" | "global" | "none";
+  /** Empty string for "none" — the editor's resting state, never null on the wire. */
+  content: string;
+}
+
+/**
+ * One row in the global report-defaults store (`report-defaults.ts`) — the fallback tier
+ * `/agents` falls back to when an agent has no project override, and what the `/templates` page's
+ * Reports tab edits directly. `version` is what `report-sync.ts` compares against a project's
+ * `syncedFrom.version` to decide whether install/update needs to refresh a stale project copy.
+ */
+export interface ReportDefault {
+  reportId: string;
+  content: string;
+  version: number;
+}
+
+/**
+ * The closed set of agent-type tags the `/templates` page's Agent Types tab assigns one of to each
+ * agent, backed by `agent-types.ts`'s own global sqlite store — singular per agent (an agent has
+ * exactly one type, not a set), unlike a skill's `agentTypes` dimension, which may hold several
+ * plus `GLOBAL_TAG`.
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG`: the
+ * renderer needs the actual array to render one Select option per type, not just the type.
+ */
+export const AGENT_TYPES = ["developer", "planner", "reviewer", "annotator", "tester"] as const;
+export type AgentType = (typeof AGENT_TYPES)[number];
 
 export interface ProjectRule {
   id: string;
@@ -174,6 +299,18 @@ export interface InstallStatus {
   settingsUnreadable: boolean;
 }
 
+/**
+ * What the report sync step (install/update) did to the project's `.claude/reports/` copies,
+ * keyed by outcome rather than by agent — each agent name appears in exactly one list.
+ */
+export interface ReportSyncSummary {
+  materialized: string[];
+  refreshed: string[];
+  /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
+  staleCustomized: string[];
+  unchanged: string[];
+}
+
 /** What an install actually changed on disk. */
 export interface InstallReport {
   projectRoot: string;
@@ -189,11 +326,23 @@ export interface InstallReport {
   /** Hook ids added to the project's `.claude/settings.json`. */
   hooksAdded: string[];
   gitignoreUpdated: boolean;
+  /** The plugin.json version this run stamped into `maestro.json`'s `runtimeVersion`. */
+  runtimeVersion: string;
+  /** `runtimeVersion` changed on this run — the project was stamped with an older version or none. */
+  runtimeVersionUpdated: boolean;
+  /**
+   * Set on a first install (no `maestro.json` yet), when this run seeded one — the detected
+   * implementation-agent chain and the project tags matched against the live catalog. `null` on
+   * every re-install: an existing config is the user's own and is never re-seeded.
+   */
+  configSeeded: { implAgents: string[]; projectTags: string[] } | null;
   /** True when the run found nothing to do — the idempotent second run. */
   unchanged: boolean;
   warnings: string[];
   /** Recomputed after the writes, so the caller can refresh its badge without a second call. */
   status: InstallStatus;
+  /** What the report sync step did — materialized/refreshed/flagged-as-customized/unchanged. */
+  reportsSync: ReportSyncSummary;
 }
 
 /**

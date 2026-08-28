@@ -9,7 +9,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import type { MaestroConfigV3, MaestroRulesSlice, MaestroWorkflowsSlice } from "./types.js";
+import type { MaestroConfigV3, MaestroProjectTagsSlice, MaestroRulesSlice, MaestroWorkflowsSlice } from "./types.js";
 
 export function maestroJsonPath(projectRoot: string): string {
   return path.join(projectRoot, ".claude", "maestro.json");
@@ -63,15 +63,32 @@ export function writeConfig(projectRoot: string, cfg: MaestroConfigV3): string {
   return p;
 }
 
+/**
+ * Stamp `runtimeVersion` into an EXISTING `maestro.json`, leaving every other field untouched.
+ *
+ * No-ops (returns false, writes nothing) when there is no `maestro.json` yet — matching the
+ * "no-op when maestro.json is absent" pattern the runtime hooks already follow — and when the
+ * stamped version already matches, so a project already current from this call's point of view
+ * costs one read and zero writes. This is the one write `install.ts` makes to the config file
+ * itself; it never touches `workflows`/`rules`/anything else the user authored.
+ */
+export function writeRuntimeVersion(projectRoot: string, version: string): boolean {
+  const cfg = readConfig(projectRoot);
+  if (!cfg || cfg.runtimeVersion === version) return false;
+  writeConfig(projectRoot, { ...cfg, runtimeVersion: version });
+  return true;
+}
+
 export type ConfigSlice =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
-  | { sliceType: "rules"; slice: MaestroRulesSlice };
+  | { sliceType: "rules"; slice: MaestroRulesSlice }
+  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice };
 
 /**
- * Merge one slice into a config, leaving the other slice untouched.
+ * Merge one slice into a config, leaving the other slices untouched.
  *
  * This separation is the reason /workflows saves can't clobber /rules assignments and vice
- * versa — widening either branch to write the other's fields reintroduces that bug.
+ * versa — widening any branch to write another's fields reintroduces that bug.
  */
 export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): MaestroConfigV3 {
   const next: MaestroConfigV3 = { ...current, version: 3 };
@@ -80,8 +97,10 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
     next.skills_available = input.slice.skills_available;
     next.workflow_instances = input.slice.workflow_instances;
     next.workflows = input.slice.workflows;
-  } else {
+  } else if (input.sliceType === "rules") {
     next.rules = input.slice.rules;
+  } else {
+    next.project_tags = input.slice.project_tags;
   }
   return next;
 }

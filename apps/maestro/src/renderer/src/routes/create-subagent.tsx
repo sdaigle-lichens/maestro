@@ -11,7 +11,10 @@ import { Sparkles, Pencil, Store, Folder } from "lucide-react";
 import CreateShell, { jumpToField, type ShortcutSection } from "../components/create-shell";
 import CreateResult from "../components/create-result";
 import SubagentTemplatePreview from "../components/subagent-template-preview";
+import AvatarPicker from "../components/avatar/avatar-picker";
 import { getCreateOptions, useCreateFlow } from "../utils/create-flow";
+import { randomAvatarLayers } from "../utils/avatar";
+import type { AvatarLayers } from "../../../shared/ipc";
 
 const subagentSchema = z
   .object({
@@ -51,7 +54,7 @@ const SHORTCUTS: ShortcutSection[] = [
   {
     title: "Navigation",
     items: [
-      ["Jump to field 1–6", "⌘1–6"],
+      ["Jump to field 1–7", "⌘1–7"],
       ["Next / previous field", "Tab / ⇧Tab"],
     ],
   },
@@ -66,12 +69,13 @@ const SHORTCUTS: ShortcutSection[] = [
   },
 ];
 
-const FIELD_IDS = ["ca-name", "ca-idea", "ca-triggers", "ca-tools", "ca-marketplace", "ca-plugin"];
-const ROW_IDS = ["ca-row-1", "ca-row-2", "ca-row-3", "ca-row-4", "ca-row-5", "ca-row-6"];
+const FIELD_IDS = ["ca-name", "ca-idea", "ca-triggers", "ca-tools", "ca-marketplace", "ca-plugin", "ca-avatar"];
+const ROW_IDS = ["ca-row-1", "ca-row-2", "ca-row-3", "ca-row-4", "ca-row-5", "ca-row-6", "ca-row-7"];
 
 function CreateSubagent() {
   const { marketplaces, projectRoot } = Route.useLoaderData();
   const [helpOpen, setHelpOpen] = useState(false);
+  const [avatarLayers, setAvatarLayers] = useState<AvatarLayers>(() => randomAvatarLayers());
   const flow = useCreateFlow("Subagent");
 
   const first = marketplaces[0];
@@ -115,9 +119,13 @@ function CreateSubagent() {
   const submit = () =>
     void handleSubmit(
       (values) =>
-        flow.create({ kind: "create-subagent", ...values }, () =>
-          reset({ ...values, name: "", idea: "", description: "", triggers: [], tools: [] })
-        ),
+        flow.create({ kind: "create-subagent", ...values }, (result) => {
+          reset({ ...values, name: "", idea: "", description: "", triggers: [], tools: [] });
+          // Keyed by the RESOLVED name, not the form value: auto mode derives a blank name from
+          // the idea, and result.name is what /agents will look this avatar up by.
+          void window.maestro.avatar.set(result.name, avatarLayers);
+          setAvatarLayers(randomAvatarLayers());
+        }),
       (errs) => {
         if (errs.idea) jumpToField(FIELD_IDS, ROW_IDS, 2);
         else if (errs.name) jumpToField(FIELD_IDS, ROW_IDS, 1);
@@ -361,6 +369,12 @@ function CreateSubagent() {
             </div>
           </Field>
         )}
+
+        <Field id="ca-row-7" label="Avatar" hint="A cosmetic pixel-art look for this agent — has no effect on its behavior.">
+          <div id="ca-avatar">
+            <AvatarPicker value={avatarLayers} onChange={setAvatarLayers} />
+          </div>
+        </Field>
       </CreateShell>
       {flow.dialog}
     </>

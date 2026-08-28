@@ -38,6 +38,7 @@ import {
   paneSessionTarget,
   parseSkillTagsBlock,
   permissionReason,
+  readAllProjectTags,
   readStoredMessages,
   renewAllowance,
   resumableFrom,
@@ -300,16 +301,17 @@ function send(webContentsId: number, event: SessionEvent): void {
 
 /**
  * The other half of the `update-skill-tags` flow (see `session-handoff.ts` and the skill of the
- * same name): that flow has no tool to call `setSkillTags` with — `agent-sdk.ts`'s tool surface is
- * fixed, built-in tools only — so its last message carries one fenced JSON block instead, and this
- * is where it gets applied. A no-op for every other session: it only fires once a handoff for this
+ * same name): that flow has no tool to call `setSkillProjectTags`/`setSkillAgentTypes` with —
+ * `agent-sdk.ts`'s tool surface is fixed, built-in tools only — so its last message carries one
+ * fenced JSON block instead, and this is where it gets applied. A no-op for every other session:
+ * it only fires once a handoff for this
  * kind has actually widened `entry.writes`, which is the same gate `writeNote`/`grantNote` use to
  * tell one kind of write scope from another.
  */
 function applyUpdateSkillTagsIfAny(webContentsId: number, entry: LiveSession, text: string): void {
   const write = entry.writes.find((w) => w.kind === "update-skill-tags");
   if (!write) return;
-  const parsed = parseSkillTagsBlock(text);
+  const parsed = parseSkillTagsBlock(text, readAllProjectTags());
   if (!parsed) return;
   const applied = applySkillTagsBlock(parsed, write.path);
   if (applied.length === 0) return;

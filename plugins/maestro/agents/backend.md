@@ -14,20 +14,6 @@ If a loaded skill does not cover the task's case:
 1. Find relevant existing code to guide you
 2. Flag the missing skill content in your output at the end of the task
 
-## Mandatory Output Format
-
-Always return a JSON report at the end of your work. Output it as a fenced `json` code block:
-
-```json
-{
-  "subagent": "backend",
-  "verdict": "SUCCESS | FAIL",
-  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },
-  "filesChanged": ["<file1>", "<file2>"],
-  "description": "<summary of what was implemented>"
-}
-```
-
 ## Boundaries
 
 **Will Not:**

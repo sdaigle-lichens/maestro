@@ -32,7 +32,17 @@ import { execFileSync } from "node:child_process";
 import { getInstalledPlugins } from "@repo/claude-fs";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
-import { maestroJsonPath } from "./config.js";
+import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
+import { syncProjectReports } from "./report-sync.js";
+import { detectImplAgents } from "./detect.js";
+import { discoverSkills } from "./discovery.js";
+import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
+import { defaultV3Config, seededAgentNames } from "./seed.js";
+import { readAllProjectTags, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
+import { readAllAgentTypes } from "./agent-types.js";
+import { readAllAgentProjectTags } from "./agent-project-tags.js";
+import { GLOBAL_TAG } from "./contracts.js";
+import type { MaestroConfigV3 } from "./types.js";
 import type { InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
 
 export type { InstallReport, InstallStatus, OrchestratorSkillAction };
@@ -84,6 +94,21 @@ export function requirePluginRoot(pluginRoot?: string): string {
   return root;
 }
 
+/**
+ * The plugin.json `version` the app currently ships — what a fresh install or a refresh stamps
+ * into a project's `maestro.json` as `runtimeVersion`. The single source both delivery paths
+ * compare against: this function for the app, and `maestro-check-runtime.cjs`'s read of
+ * `~/.claude/plugins/installed_plugins.json` for a bare terminal session (which has no access to
+ * this repo's checkout — it reads the version the marketplace cache actually installed instead).
+ */
+export function shippedRuntimeVersion(pluginRoot?: string): string {
+  const root = requirePluginRoot(pluginRoot);
+  const manifestPath = path.join(root, ".claude-plugin", "plugin.json");
+  const parsed = JSON.parse(fs.readFileSync(manifestPath, "utf8")) as { version?: string };
+  if (!parsed.version) throw new Error(`${manifestPath} has no "version" field.`);
+  return parsed.version;
+}
+
 // ── the manifest ───────────────────────────────────────────────────────────
 
 export interface RuntimeAsset {
@@ -115,6 +140,9 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/maestro-set-session-workflow.cjs", dest: ".claude/scripts/maestro-set-session-workflow.cjs" },
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
   { src: "scripts/maestro-task-status.cjs", dest: ".claude/scripts/maestro-task-status.cjs" },
+  // Step 0's cheap staleness check — see maestro-architecture / task 027. Invoked directly by the
+  // orchestrator, not registered as a hook.
+  { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
@@ -522,8 +550,19 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
  * settings.json — is checked BEFORE the first byte is written, so a rejected install leaves the
  * project exactly as it was and the user can fix the cause and press the button again. Past that
  * point every step is a copy or an append that re-running completes.
+ *
+ * `reportsDbPath` overrides the global report-defaults store the report sync step reads —
+ * exposed only so tests don't touch the real machine's `~/.claude/maestro-report-defaults.sqlite`
+ * (mirrors `skill-tags.ts`'s tests taking an explicit `dbPath`); every real caller omits it.
+ * `projectTagsDbPath` is the same test-isolation escape hatch for the first-install seed's read of
+ * the global Project Tags catalog, below.
  */
-export async function installRuntime(projectRoot: string, pluginRoot?: string): Promise<InstallReport> {
+export async function installRuntime(
+  projectRoot: string,
+  pluginRoot?: string,
+  reportsDbPath?: string,
+  projectTagsDbPath?: string
+): Promise<InstallReport> {
   if (!projectRoot) throw new Error("No project is open.");
   if (!fs.existsSync(projectRoot)) throw new Error(`${projectRoot} does not exist.`);
   const root = requirePluginRoot(pluginRoot);
@@ -560,6 +599,43 @@ export async function installRuntime(projectRoot: string, pluginRoot?: string): 
 
   const gitignoreUpdated = ensureRepoRootGitignore(findRepoRoot(projectRoot));
 
+  // First install only: no maestro.json yet, so seed one right here instead of waiting for
+  // /workflows' first Save — bringing the app in line with what the terminal `/maestro-install`
+  // path already does today. An existing config, including its own `project_tags`, is the user's
+  // own and is never touched by a re-install — same discipline as `runtimeVersion` and every other
+  // field this function otherwise leaves alone. This is the same computation `main/ipc.ts`'s
+  // `workflowsData` handler already does inline for the `/workflows` bootstrap fallback (kept,
+  // unchanged, as the safety net for a project that somehow reaches `/workflows` with no config
+  // and no install) — intentionally similar, not shared, per this module's own "PORTED" convention.
+  let configSeeded: InstallReport["configSeeded"] = null;
+  if (readConfig(projectRoot) === null) {
+    const detection = detectImplAgents(projectRoot);
+    const skills = await discoverSkills(projectRoot);
+    const types = readAllAgentTypes();
+    const projectTagsByAgent = readAllAgentProjectTags();
+    const agentAttrs: Record<string, AgentAttrs> = {};
+    for (const name of seededAgentNames(detection.implAgents)) {
+      agentAttrs[name] = { type: types[name] ?? "developer", projectTag: projectTagsByAgent[name] ?? GLOBAL_TAG };
+    }
+    const skillMap = skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), agentAttrs);
+    const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
+    const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
+    const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
+    writeConfig(projectRoot, seeded);
+    configSeeded = { implAgents: detection.implAgents, projectTags };
+  }
+
+  // Stamp last, after the files it describes are actually current on disk. The seed step above
+  // guarantees maestro.json exists by this point on a first install, so this always finds one to
+  // stamp now.
+  const runtimeVersion = shippedRuntimeVersion(root);
+  const runtimeVersionUpdated = writeRuntimeVersion(projectRoot, runtimeVersion);
+
+  // Sync project reports from the global default tier — after maestro.json is guaranteed to
+  // exist in whatever form it's going to (stamped runtimeVersion above), so a reports slice
+  // written here isn't immediately clobbered by writeRuntimeVersion's own read-modify-write.
+  const reportsSync = syncProjectReports(projectRoot, reportsDbPath);
+
   const status = await installStatus(projectRoot, root);
 
   const warnings: string[] = [];
@@ -580,12 +656,52 @@ export async function installRuntime(projectRoot: string, pluginRoot?: string): 
     scriptsWritten,
     hooksAdded,
     gitignoreUpdated,
+    runtimeVersion,
+    runtimeVersionUpdated,
+    configSeeded,
     unchanged:
       orchestratorSkill.action === "unchanged" &&
       scriptsWritten.length === 0 &&
       hooksAdded.length === 0 &&
-      !gitignoreUpdated,
+      !gitignoreUpdated &&
+      !runtimeVersionUpdated &&
+      configSeeded === null &&
+      reportsSync.materialized.length === 0 &&
+      reportsSync.refreshed.length === 0,
     warnings,
     status,
+    reportsSync,
   };
+}
+
+/**
+ * Refresh an ALREADY-installed project's runtime iff its stamped `runtimeVersion` doesn't match
+ * what the plugin currently ships — the cheap trigger task 027 exists to add, decoupled from the
+ * content-hash comparison `installStatus()` does. A project already current costs one config read
+ * and a version-string compare: zero file reads of the runtime assets themselves, zero writes.
+ *
+ * Deliberately never installs FRESH: a project with no runtime at all (or none of it, or an
+ * authored graph but no runtime) is what the install button is for. Auto-triggering that from
+ * project selection would install Maestro into every repo a user happens to open in the app,
+ * which is not what "close the staleness gap" asked for — only refreshing an existing install is.
+ */
+export async function refreshStaleRuntime(
+  projectRoot: string,
+  pluginRoot?: string,
+  reportsDbPath?: string
+): Promise<InstallReport | null> {
+  const root = requirePluginRoot(pluginRoot);
+  // A raw parse, not readConfig()'s blank-on-corrupt fallback: this trigger fires on every project
+  // SELECTION, not an explicit user action, so it must never treat "the file is corrupt" the same
+  // as "the file is a legitimately empty v3 config" — the former getting silently rewritten to the
+  // latter just because the project was opened would violate "the workflow graph is untouched by a
+  // refresh" far more than the field it's here to add.
+  const parsed = readJsonSafe<MaestroConfigV3>(maestroJsonPath(projectRoot));
+  if (!parsed || parsed.version !== 3) return null;
+  const cfg = parsed;
+  const shipped = shippedRuntimeVersion(root);
+  if (cfg.runtimeVersion === shipped) return null;
+  const status = await installStatus(projectRoot, root);
+  if (!status.installed) return null;
+  return installRuntime(projectRoot, root, reportsDbPath);
 }

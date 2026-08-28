@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AgentsRouteImport } from './routes/agents'
 import { Route as CreateMarketplaceRouteImport } from './routes/create-marketplace'
 import { Route as CreatePluginRouteImport } from './routes/create-plugin'
 import { Route as CreateSkillRouteImport } from './routes/create-skill'
@@ -19,6 +20,7 @@ import { Route as MaestroTasksRouteImport } from './routes/maestro-tasks'
 import { Route as RulesRouteImport } from './routes/rules'
 import { Route as SessionLogRouteImport } from './routes/session-log'
 import { Route as SkillsRouteImport } from './routes/skills'
+import { Route as TemplatesRouteImport } from './routes/templates'
 import { Route as ToolsRouteImport } from './routes/tools'
 import { Route as WorkflowsRouteImport } from './routes/workflows'
 import { Route as DocsIndexRouteImport } from './routes/docs.index'
@@ -29,6 +31,11 @@ import { Route as DocsGroupSlugRouteImport } from './routes/docs.$group.$slug'
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AgentsRoute = AgentsRouteImport.update({
+  id: '/agents',
+  path: '/agents',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CreateMarketplaceRoute = CreateMarketplaceRouteImport.update({
@@ -76,6 +83,11 @@ const SkillsRoute = SkillsRouteImport.update({
   path: '/skills',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TemplatesRoute = TemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ToolsRoute = ToolsRouteImport.update({
   id: '/tools',
   path: '/tools',
@@ -109,6 +121,7 @@ const DocsGroupSlugRoute = DocsGroupSlugRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/create-marketplace': typeof CreateMarketplaceRoute
   '/create-plugin': typeof CreatePluginRoute
   '/create-skill': typeof CreateSkillRoute
@@ -118,6 +131,7 @@ export interface FileRoutesByFullPath {
   '/rules': typeof RulesRoute
   '/session-log': typeof SessionLogRoute
   '/skills': typeof SkillsRoute
+  '/templates': typeof TemplatesRoute
   '/tools': typeof ToolsRoute
   '/workflows': typeof WorkflowsRoute
   '/project-docs/$slug': typeof ProjectDocsSlugRoute
@@ -127,6 +141,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/create-marketplace': typeof CreateMarketplaceRoute
   '/create-plugin': typeof CreatePluginRoute
   '/create-skill': typeof CreateSkillRoute
@@ -136,6 +151,7 @@ export interface FileRoutesByTo {
   '/rules': typeof RulesRoute
   '/session-log': typeof SessionLogRoute
   '/skills': typeof SkillsRoute
+  '/templates': typeof TemplatesRoute
   '/tools': typeof ToolsRoute
   '/workflows': typeof WorkflowsRoute
   '/project-docs/$slug': typeof ProjectDocsSlugRoute
@@ -146,6 +162,7 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/agents': typeof AgentsRoute
   '/create-marketplace': typeof CreateMarketplaceRoute
   '/create-plugin': typeof CreatePluginRoute
   '/create-skill': typeof CreateSkillRoute
@@ -155,6 +172,7 @@ export interface FileRoutesById {
   '/rules': typeof RulesRoute
   '/session-log': typeof SessionLogRoute
   '/skills': typeof SkillsRoute
+  '/templates': typeof TemplatesRoute
   '/tools': typeof ToolsRoute
   '/workflows': typeof WorkflowsRoute
   '/project-docs/$slug': typeof ProjectDocsSlugRoute
@@ -166,6 +184,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/agents'
     | '/create-marketplace'
     | '/create-plugin'
     | '/create-skill'
@@ -175,6 +194,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/session-log'
     | '/skills'
+    | '/templates'
     | '/tools'
     | '/workflows'
     | '/project-docs/$slug'
@@ -184,6 +204,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/agents'
     | '/create-marketplace'
     | '/create-plugin'
     | '/create-skill'
@@ -193,6 +214,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/session-log'
     | '/skills'
+    | '/templates'
     | '/tools'
     | '/workflows'
     | '/project-docs/$slug'
@@ -202,6 +224,7 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/'
+    | '/agents'
     | '/create-marketplace'
     | '/create-plugin'
     | '/create-skill'
@@ -211,6 +234,7 @@ export interface FileRouteTypes {
     | '/rules'
     | '/session-log'
     | '/skills'
+    | '/templates'
     | '/tools'
     | '/workflows'
     | '/project-docs/$slug'
@@ -221,6 +245,7 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AgentsRoute: typeof AgentsRoute
   CreateMarketplaceRoute: typeof CreateMarketplaceRoute
   CreatePluginRoute: typeof CreatePluginRoute
   CreateSkillRoute: typeof CreateSkillRoute
@@ -230,6 +255,7 @@ export interface RootRouteChildren {
   RulesRoute: typeof RulesRoute
   SessionLogRoute: typeof SessionLogRoute
   SkillsRoute: typeof SkillsRoute
+  TemplatesRoute: typeof TemplatesRoute
   ToolsRoute: typeof ToolsRoute
   WorkflowsRoute: typeof WorkflowsRoute
   ProjectDocsSlugRoute: typeof ProjectDocsSlugRoute
@@ -245,6 +271,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/agents': {
+      id: '/agents'
+      path: '/agents'
+      fullPath: '/agents'
+      preLoaderRoute: typeof AgentsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/create-marketplace': {
@@ -310,6 +343,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SkillsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/templates': {
+      id: '/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof TemplatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/tools': {
       id: '/tools'
       path: '/tools'
@@ -357,6 +397,7 @@ declare module '@tanstack/react-router' {
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AgentsRoute: AgentsRoute,
   CreateMarketplaceRoute: CreateMarketplaceRoute,
   CreatePluginRoute: CreatePluginRoute,
   CreateSkillRoute: CreateSkillRoute,
@@ -366,6 +407,7 @@ const rootRouteChildren: RootRouteChildren = {
   RulesRoute: RulesRoute,
   SessionLogRoute: SessionLogRoute,
   SkillsRoute: SkillsRoute,
+  TemplatesRoute: TemplatesRoute,
   ToolsRoute: ToolsRoute,
   WorkflowsRoute: WorkflowsRoute,
   ProjectDocsSlugRoute: ProjectDocsSlugRoute,

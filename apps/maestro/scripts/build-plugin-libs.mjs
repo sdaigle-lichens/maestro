@@ -52,6 +52,10 @@ const entries = [
   { name: "maestro-skill-regions", entry: "src/core/plugin-entries/maestro-skill-regions.ts" },
   { name: "maestro-seed", entry: "src/core/plugin-entries/maestro-seed.ts" },
   { name: "maestro-skill-tags", entry: "src/core/plugin-entries/maestro-skill-tags.ts" },
+  { name: "maestro-report-defaults", entry: "src/core/plugin-entries/maestro-report-defaults.ts" },
+  { name: "maestro-project-tags", entry: "src/core/plugin-entries/maestro-project-tags.ts" },
+  { name: "maestro-agent-project-tags", entry: "src/core/plugin-entries/maestro-agent-project-tags.ts" },
+  { name: "maestro-agent-types", entry: "src/core/plugin-entries/maestro-agent-types.ts" },
 ];
 
 for (const { name, entry } of entries) {

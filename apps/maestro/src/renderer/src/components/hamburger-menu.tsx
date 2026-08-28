@@ -9,7 +9,7 @@
 // this one is its own component rather than a forced NavMenu variant.
 
 import { Link } from "@tanstack/react-router";
-import { Menu, BookOpen, LayoutGrid, Plus } from "lucide-react";
+import { Menu, BookOpen, LayoutGrid, LayoutTemplate, Plus } from "lucide-react";
 import { useState } from "react";
 import { useOutsideClose, MENU_ITEM } from "./top-nav";
 import { useProject } from "../utils/project-context";
@@ -62,6 +62,14 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
             className={MENU_ITEM}
           >
             <LayoutGrid size={13} /> Tools
+          </Link>
+          <Link
+            to="/templates"
+            onClick={close}
+            activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }}
+            className={MENU_ITEM}
+          >
+            <LayoutTemplate size={13} /> Templates
           </Link>
 
           <hr className="my-1 border-(--line)" />

@@ -66,9 +66,14 @@ export function useCreateFlow(label: string) {
    * `onWritten` is where the route resets its form. It runs only on success: a rejected scaffold
    * has written nothing, and clearing the fields would throw away the input the user now has to
    * retype to fix whatever the reason said.
+   *
+   * Takes the scaffold's result — the resolved name in particular is not always what the form
+   * held (a blank name is derived from the idea), so a caller that needs to key something off the
+   * artifact that actually landed on disk (create-subagent's avatar save) has no other way to
+   * learn it.
    */
   const create = useCallback(
-    async (request: CreateRequest, onWritten?: () => void) => {
+    async (request: CreateRequest, onWritten?: (result: ScaffoldResult) => void) => {
       setBusy(true);
       try {
         // callMain, not a bare await: the handler rejects when the request is invalid or the write
@@ -85,7 +90,7 @@ export function useCreateFlow(label: string) {
           return;
         }
         setOutcome({ request, result: res.value });
-        onWritten?.();
+        onWritten?.(res.value);
         toast(
           <>
             {label} written to <span className="font-mono text-(--ink)">{res.value.path}</span>

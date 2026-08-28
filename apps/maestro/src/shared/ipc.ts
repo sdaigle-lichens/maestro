@@ -7,9 +7,9 @@
 // what retires the whole "Server-only code and the client bundle" hazard class.
 //
 // Mostly type-only, so the renderer can use these types without pulling node in. One deliberate
-// exception: `SKILL_TAGS`, a runtime value re-exported from the renderer-safe `contracts.ts`
-// (see the re-export below) — the renderer needs the actual array, not just its type, to render
-// the skill-tag editor.
+// exception: a handful of runtime values re-exported from the renderer-safe `contracts.ts`
+// (see the re-export below) — the renderer needs the actual arrays, not just their types, to
+// render pickers like the Agent Types tab's Select and the Skills tab's tag editor.
 
 // Imported from `../core/contracts.js`, NOT `../core/index.js`. The barrel re-exports fs and
 // child_process; pulling a type from it would drag all of that into the renderer's type graph.
@@ -24,8 +24,10 @@ import type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroProjectTagsSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   DiscoveredDefinition,
-  SkillTag,
   ProjectRule,
   TreeNode,
   MaestroTask,
@@ -34,6 +36,9 @@ import type {
   RepoDetection,
   InstallStatus,
   InstallReport,
+  ReportSyncSummary,
+  ResolvedReport,
+  ReportDefault,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -96,12 +101,24 @@ import type {
   UsageStatsResult,
   UsageStatsView,
   UsageTotals,
+  AvatarCategory,
+  AvatarPartOption,
+  AvatarLayers,
+  AgentType,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
 // child_process — so a VALUE from it costs the renderer nothing; the tag editor needs the actual
-// seven-entry array to render one toggle per tag, not just the type.
-export { SKILL_TAGS } from "../core/contracts.js";
+// seven-entry array to render one toggle per tag, not just the type. `AVATAR_CATEGORIES`/
+// `AVATAR_PARTS` are here for the same reason: the avatar picker renders one row per category and
+// one swatch per option, not just the types. `AGENT_TYPES` is the Agent Types tab's Select options.
+export {
+  GLOBAL_TAG,
+  AVATAR_CATEGORIES,
+  AVATAR_PARTS,
+  AVATAR_REQUIRED_CATEGORIES,
+  AGENT_TYPES,
+} from "../core/contracts.js";
 
 export type {
   MaestroConfigV3,
@@ -112,8 +129,10 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroProjectTagsSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   DiscoveredDefinition,
-  SkillTag,
   ProjectRule,
   TreeNode,
   MaestroTask,
@@ -122,6 +141,9 @@ export type {
   RepoDetection,
   InstallStatus,
   InstallReport,
+  ReportSyncSummary,
+  ResolvedReport,
+  ReportDefault,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -184,6 +206,10 @@ export type {
   UsageStatsResult,
   UsageStatsView,
   UsageTotals,
+  AvatarCategory,
+  AvatarPartOption,
+  AvatarLayers,
+  AgentType,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -269,9 +295,18 @@ export interface DocsData {
   sections: DocSection[];
 }
 
+/** What `/maestro`'s post-install Project Tags section needs, in one round trip. */
+export interface ProjectTagsData {
+  /** The full global catalog — every entry the /templates tab has added. */
+  catalog: string[];
+  /** The open project's own `maestro.json.project_tags`, or `[]` when absent. */
+  selected: string[];
+}
+
 export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
-  | { sliceType: "rules"; slice: MaestroRulesSlice };
+  | { sliceType: "rules"; slice: MaestroRulesSlice }
+  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice };
 
 export const IPC = {
   projectGet: "project:get",
@@ -293,9 +328,70 @@ export const IPC = {
   globalDocContent: "data:global-doc",
   configSave: "config:save",
 
-  // Set one skill's tags in the global (`~/.claude/maestro-skill-tags.sqlite`) store — see
-  // `src/core/skill-tags.ts`. No project involved: a skill's tags are the same in every project.
-  skillTagsSet: "skill-tags:set",
+  // `/maestro`'s post-install Project Tags section: the global catalog plus the OPEN project's own
+  // selection, in one round trip — no route loader here, this page fetches imperatively like its
+  // existing `install:status` call. `project:tags:set` is the write path: saves the project-tags
+  // slice, then unions in any bundled agent that newly matches one of the ADDED tags (never removes
+  // one on uncheck — that stays a manual /workflows edit). See `project:tags:set` in `main/ipc.ts`.
+  projectTagsData: "data:project-tags",
+  projectTagsSet: "project:tags:set",
+
+  // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
+  // global default, else none) — the SAME resolution `report-resolution.ts` gives the
+  // SubagentStart hook, so the page can never show something other than what a run would actually
+  // receive. `reportSave` is a plain file write, no Claude session, no token — same shape as the
+  // /rules save path: it always writes a PROJECT override keyed by the agent's own name.
+  reportGet: "report:get",
+  reportSave: "report:save",
+
+  // The /templates page's Reports tab — the GLOBAL tier's own write path, distinct from the pair
+  // above. `reportGet`/`reportSave` always resolve/write a PROJECT override for one agent in the
+  // OPEN project; these edit the machine-wide fallback every project without an override receives,
+  // and need no project open at all. `templateReportsList` wraps `readAllAgentReportDefaults` —
+  // every agent with a global default, keyed by agent name. `templateReportSave` calls the new
+  // `writeAgentReportDefault`: a plain sqlite write, no Claude session, no token, same as
+  // `reportSave` — it just bumps the edited report's `version` in the `reports` table instead of
+  // writing a project file, which is what lets `report-sync.ts`'s existing staleness check pick up
+  // the change on a project's next install/update.
+  templateReportsList: "template:reports:list",
+  templateReportSave: "template:reports:save",
+
+  // The /templates page's Agent Types tab — same global, no-project-needed shape as the Reports
+  // pair above, backed by `agent-types.ts`'s own `~/.claude/maestro-agent-types.sqlite`.
+  // `templateAgentTypesList` wraps `readAllAgentTypes`; `templateAgentTypeSave` wraps
+  // `setAgentType` — a plain replace, not a version bump, since an agent type has no project-tier
+  // counterpart for any sync step to compare against.
+  templateAgentTypesList: "template:agent-types:list",
+  templateAgentTypeSave: "template:agent-types:save",
+
+  // The /templates page's Project Tags tab — a global CATALOG (add/remove, not per-item
+  // assignment like the Reports/Agent Types pairs above), backed by `project-tags.ts`'s own
+  // `~/.claude/maestro-project-tags.sqlite`. Seeded with backend/frontend/mobile — the same three
+  // categories detect.ts's evidence matching looks for. Consumed by a project's own `project_tags`
+  // (see `projectTagsData`/`projectTagsSet` above) and by the per-agent assignment below.
+  templateProjectTagsList: "template:project-tags:list",
+  templateProjectTagAdd: "template:project-tags:add",
+  templateProjectTagRemove: "template:project-tags:remove",
+
+  // The SAME tab's second section: which of the catalog's tags (or "global") each bundled/project
+  // agent belongs to — a global, one-per-agent assignment backed by its own
+  // `~/.claude/maestro-agent-project-tags.sqlite` (agent-project-tags.ts). Distinct from the
+  // Agent Types tab's unrelated developer/planner/reviewer/annotator/tester classification, and
+  // called "project tag" rather than "agent type" for exactly that reason — that name was taken.
+  templateAgentProjectTagsList: "template:agent-project-tags:list",
+  templateAgentProjectTagSave: "template:agent-project-tags:save",
+
+  // Set one skill's two tag dimensions in the global (`~/.claude/maestro-skill-tags.sqlite`)
+  // store — see `src/core/skill-tags.ts`. No project involved: a skill's tags are the same in
+  // every project. Two channels, mirroring the two independent pill rows in the Skills tab.
+  skillProjectTagsSet: "skill-tags:project-tags:set",
+  skillAgentTypesSet: "skill-tags:agent-types:set",
+
+  // An agent's cosmetic avatar in the global (`~/.claude/maestro-avatars.sqlite`) store — see
+  // `src/core/avatar-store.ts`. No project involved, and no token: purely cosmetic, keyed by the
+  // agent's name, same as `skillProjectTagsSet` is keyed by skill id.
+  avatarGet: "avatar:get",
+  avatarSet: "avatar:set",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -305,6 +401,9 @@ export const IPC = {
 
   installStatus: "install:status",
   installRun: "install:run",
+  // Task 027: the cheap runtimeVersion check + refresh, run automatically on project selection.
+  // A separate channel from installRun so `install:status` stays a pure read — see InstallProvider.
+  installAutoRefresh: "install:auto-refresh",
   installUninstallPlan: "install:uninstall-plan",
   installUninstall: "install:uninstall",
 
@@ -391,6 +490,16 @@ export interface MaestroApi {
     open(root: string): Promise<ProjectState>;
     forget(root: string): Promise<ProjectState>;
     onChanged(cb: (state: ProjectState) => void): () => void;
+    tags: {
+      /**
+       * Toggle the OPEN project's `project_tags` to exactly `tags` — `/maestro`'s post-install
+       * section calls this on every checkbox change. Saves the project-tags slice, then unions in
+       * any agent whose stored `agent-project-tags.ts` assignment newly matches one of the ADDED
+       * tags into `agents_available` (never removes one on uncheck — that stays a manual
+       * `/workflows` edit). Returns the resulting `project_tags`. Rejects when no project is open.
+       */
+      set(tags: string[]): Promise<string[]>;
+    };
   };
   data: {
     workflows(): Promise<WorkflowsData>;
@@ -430,16 +539,87 @@ export interface MaestroApi {
      * unreadable one — same discipline as `doc` above, and for the same reason.
      */
     globalDoc(group: "app", slug: string): Promise<DocContent>;
+    /**
+     * `/maestro`'s post-install Project Tags section: the global catalog plus the OPEN project's
+     * own `project_tags` selection, in one round trip. Never rejects; no project open reads back
+     * `selected: []`.
+     */
+    projectTags(): Promise<ProjectTagsData>;
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;
   };
   /**
-   * Skill tags — global, keyed by skill id, edited from the /tools Skills tab. `set` returns the
-   * stored (deduped, sorted) tags back, so the tab trusts the store's echo over its own click.
+   * The /agents page. `get` resolves what's in effect for one agent — project override, else
+   * global default, else none. `save` is a plain file write (no Claude session, no
+   * `claude:preview`/`run`, no token): it always writes `.claude/reports/<agentName>.md` and
+   * records the entry keyed by that SAME agent name, never an inherited global id.
+   */
+  reports: {
+    get(agentName: string): Promise<ResolvedReport>;
+    save(agentName: string, content: string): Promise<ResolvedReport>;
+  };
+  /**
+   * The /templates page — the GLOBAL tier's write path, and the reason it is its own namespace
+   * rather than a widened `reports.*` above: that pair always resolves/writes a PROJECT override
+   * for the OPEN project, and this always edits the machine-wide fallback tier every project
+   * without an override falls back to. No project needed — nothing here is gated on one being open.
+   */
+  templates: {
+    reports: {
+      /** Every agent with a global default, keyed by agent name. */
+      list(): Promise<Record<string, ReportDefault>>;
+      /**
+       * Upsert one agent's global default. A plain write — no Claude session, no
+       * `claude:preview`/`run`, no token — that bumps the report's `version`.
+       */
+      save(agentName: string, content: string): Promise<ReportDefault>;
+    };
+    /** The Agent Types tab: one type per agent, global, no project needed. */
+    agentTypes: {
+      /** Every agent's type, keyed by agent name. */
+      list(): Promise<Record<string, AgentType>>;
+      /** Replace one agent's type with `tag`. */
+      save(agentName: string, tag: AgentType): Promise<AgentType>;
+    };
+    /**
+     * The Project Tags tab: a global catalog, not a per-item assignment — add/remove a tag name,
+     * seeded with backend/frontend/mobile. `add`/`remove` both return the full catalog after the
+     * change, so the tab renders the store's own echo rather than predicting it from the click.
+     */
+    projectTags: {
+      list(): Promise<string[]>;
+      add(tag: string): Promise<string[]>;
+      remove(tag: string): Promise<string[]>;
+    };
+    /**
+     * The SAME tab's second section: one project tag (or "global") per agent — the OTHER half of
+     * the project ↔ agent mapping, distinct from `agentTypes` above. `save` returns the stored
+     * value back, same echo discipline as `agentTypes.save`.
+     */
+    agentProjectTags: {
+      /** Every agent's project tag, keyed by agent name. */
+      list(): Promise<Record<string, string>>;
+      /** Replace one agent's project tag with `tag` (a catalog entry, or "global"). */
+      save(agentName: string, tag: string): Promise<string>;
+    };
+  };
+  /**
+   * Skill tags — global, keyed by skill id, edited from the /skills page. Two independent
+   * dimensions (project tags, agent types), each returning the stored (deduped, sorted) values
+   * back so the page trusts the store's echo over its own click.
    */
   skillTags: {
-    set(skillId: string, tags: SkillTag[]): Promise<SkillTag[]>;
+    setProjectTags(skillId: string, tags: string[]): Promise<string[]>;
+    setAgentTypes(skillId: string, tags: string[]): Promise<string[]>;
+  };
+  /**
+   * An agent's cosmetic avatar — global, keyed by agent name, edited from the create-subagent form
+   * and the /agents detail pane. `get` resolves null when nothing has been saved for that name yet.
+   */
+  avatar: {
+    get(agentName: string): Promise<AvatarLayers | null>;
+    set(agentName: string, layers: AvatarLayers): Promise<AvatarLayers>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;
@@ -481,6 +661,13 @@ export interface MaestroApi {
      * than half-writing) when it cannot proceed — so the caller must go through `callMain`.
      */
     run(projectRoot?: string): Promise<InstallReport>;
+    /**
+     * Task 027: refresh the runtime IFF it's already installed and its stamped `runtimeVersion`
+     * doesn't match what the app ships — the cheap comparison, decoupled from `status()`'s content
+     * hashes, that lets a project already current cost zero file writes. Never installs fresh.
+     * Resolves `null` when there was nothing to refresh (including "not installed at all").
+     */
+    autoRefresh(projectRoot?: string): Promise<InstallReport | null>;
     /**
      * What each level of an uninstall would remove, right now. Reads only — this is what fills
      * the purge confirmation, so it can name the files before anything is deleted.

@@ -16,6 +16,7 @@ import {
   BookOpen,
   Sparkles,
   Tags,
+  Users,
 } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "../utils/session-context";
@@ -143,6 +144,9 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
       </Link>
       <Link to="/skills" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
         <Tags size={13} /> Skills
+      </Link>
+      <Link to="/agents" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
+        <Users size={13} /> Agents
       </Link>
       <Link to="/project-docs" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
         <BookOpen size={13} /> Project Docs

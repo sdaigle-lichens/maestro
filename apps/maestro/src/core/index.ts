@@ -17,6 +17,8 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroReportEntry,
+  MaestroReportsSlice,
   MaestroSession,
 } from "./types.js";
 
@@ -110,9 +112,47 @@ export {
 export { saveConfig, type SaveResult } from "./save.js";
 
 export {
+  readAgentReportDefault,
+  readReportById,
+  readAllAgentReportDefaults,
+  writeAgentReportDefault,
+  DEFAULT_REPORT_DEFAULTS_DB_PATH,
+  type ReportDefault,
+} from "./report-defaults.js";
+
+export { resolveReport, type ReportResolution, type ReportSource, type GlobalReportInput } from "./report-resolution.js";
+
+export { syncProjectReports } from "./report-sync.js";
+
+export {
+  readAllAgentTypes,
+  setAgentType,
+  DEFAULT_AGENT_TYPES_DB_PATH,
+  type AgentType,
+} from "./agent-types.js";
+
+export {
+  readAllProjectTags,
+  addProjectTag,
+  removeProjectTag,
+  DEFAULT_PROJECT_TAGS_DB_PATH,
+} from "./project-tags.js";
+
+export {
+  readAllAgentProjectTags,
+  setAgentProjectTag,
+  agentsForProjectTags,
+  DEFAULT_AGENT_PROJECT_TAGS_DB_PATH,
+} from "./agent-project-tags.js";
+
+export { getResolvedReport, saveProjectReportOverride } from "./reports.js";
+
+export {
   installRuntime,
   installStatus,
   installOrchestratorSkill,
+  refreshStaleRuntime,
+  shippedRuntimeVersion,
   runtimeAssets,
   findRepoRoot,
   findUpPluginRoot,
@@ -391,9 +431,17 @@ export {
 
 export {
   readAllSkillTags,
-  setSkillTags,
+  setSkillProjectTags,
+  setSkillAgentTypes,
   skillMapFromTags,
   parseSkillTagsBlock,
   applySkillTagsBlock,
   DEFAULT_SKILL_TAGS_DB_PATH,
+  type SkillTagSet,
+  type AgentAttrs,
 } from "./skill-tags.js";
+
+export { GLOBAL_TAG } from "./contracts.js";
+
+// Agent avatars — global, keyed by agent name, same shape as skill-tags.ts. See ./avatar-store.ts.
+export { getAvatar, setAvatar, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";
