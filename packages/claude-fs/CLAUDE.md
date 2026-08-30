@@ -20,6 +20,18 @@ Abstracts all `~/.claude/` path construction and JSON parsing so consumers never
 
 Returns parsed JSON or `null` on any error (missing file, parse error). Used internally by all other functions; exported for ad-hoc reads.
 
+### Definition functions — `src/definitions.ts`
+
+| Function                         | Reads                          | Returns                                                            |
+| -------------------------------- | ------------------------------ | ------------------------------------------------------------------ |
+| `readSkillsFromDir(dir)`         | `<dir>/<id>/SKILL.md`          | `DefinitionInfo[]` — `{ name, description }` only                  |
+| `readSkillEntriesFromDir(dir)`   | same                           | `SkillEntry[]` — adds `dir`, `skillPath` and the FULL frontmatter  |
+| `readAgentsFromDir(dir)`         | `<dir>/<n>.md` or `<n>/AGENTS.md` | `DefinitionInfo[]`                                              |
+
+`readSkillEntriesFromDir` is a sibling, not a replacement: the narrow shape is what the selectors
+and `/tools` want. Reach for the entry reader when you need a custom frontmatter key (the
+concept-skill markers) or the skill's own directory to read its sibling files.
+
 ### Marketplace functions — `src/marketplace.ts`
 
 | Function                                 | Source file                                 | Returns                                            |

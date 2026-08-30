@@ -84,6 +84,8 @@ If the line is missing or the label doesn't match any known condition, treat it 
 
 **Forward the handoff payload.** The subagent's final JSON includes a `handoff_details` object describing what the next agent needs (issues, failing tests, scribe notes, etc.). When you invoke the routed-to subagent, pass that `handoff_details` payload verbatim in its `Task` prompt — it is the structured input the receiving agent expects.
 
+**Route `conceptSkillGaps` to the scribe.** A subagent's report may carry a non-empty `conceptSkillGaps` array — a concept skill it loaded that failed to tell it something it then had to work out from the code. Collect them across the run and hand them to `@scribe` (in the `handoff_details` of the scribe step if the workflow has one, otherwise as a dispatch of its own once the success path completes), naming each skill and what was missing, so it can run `/update-single-concept-skill` on them. An agent paid for that gap once; nobody should pay for it twice. An empty array means nothing to route — do not invent a follow-up.
+
 ### Step 6 — Mark the task done (the mark-task-done node)
 
 This step runs when you reach the **mark-task-done** task created in Step 5 — i.e. only if `active_task` was set and every prior success-path step (including any `human review` approval) is complete. Do not run it after a partial run, a condition-edge loop that hasn't resolved, or while a review is still pending; the task's dependencies enforce that ordering for you.

@@ -20,6 +20,17 @@ refreshes it; `/maestro-uninstall` removes it.
 This repository is also a **plugin marketplace** — a catalog of Claude Code plugins, currently just
 `maestro` itself, published for anyone to install.
 
+## Concept skills
+
+The plugin also gives the `@scribe` agent a way to build and maintain a project's **concept
+skills** — one `.claude/skills/<id>/SKILL.md` per core concept of the project, written for agents
+rather than for humans, so a subagent can get oriented in a concept without rediscovering its shape
+every session. `/create-concept-skills` builds the list, `/update-concept-skills` reconciles it
+against what the code did since, and `/update-single-concept-skill` takes one of them from skeleton
+to something worth loading. `/scribe` is the rule for what belongs in a concept skill versus in
+`docs/`. See
+[`plugins/maestro/skills/create-concept-skills/README.md`](./plugins/maestro/skills/create-concept-skills/README.md).
+
 ## Installing the Maestro plugin
 
 ```bash

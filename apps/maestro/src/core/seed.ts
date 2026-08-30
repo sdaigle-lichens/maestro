@@ -13,7 +13,12 @@ const CORE_INSTANCES: MaestroInstanceV3[] = [
   { name: "test", agent: "test", loaded_skills: [], referenced_skills: [] },
   { name: "reviewer", agent: "reviewer", loaded_skills: [], referenced_skills: [] },
   { name: "refactor", agent: "refactor", loaded_skills: [], referenced_skills: [] },
-  { name: "scribe", agent: "scribe", loaded_skills: [], referenced_skills: [] },
+  // The scribe alone gets a seeded `loaded_skills`: `/scribe` is the routing rule for what belongs
+  // in a concept skill versus in `docs/`, and it has to be in context BEFORE the agent starts
+  // writing, not offered as one option among the project's own skills. Bare name, not
+  // `maestro:scribe` — `skills_available` already lists the bundled `use-design-check` unqualified
+  // (see `defaultV3Config`), and the two have to agree.
+  { name: "scribe", agent: "scribe", loaded_skills: ["scribe"], referenced_skills: [] },
 ];
 
 const succ = (from: string, to: string): MaestroEdgeV3 => ({

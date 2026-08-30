@@ -1,11 +1,13 @@
 export { CLAUDE_DIR } from "./config/directories.js";
 export { readJsonSafe } from "./utils/parser.js";
-export { parseFrontmatter } from "./utils/frontmatter.js";
+export { parseFrontmatter, parseFrontmatterMetadata } from "./utils/frontmatter.js";
 export {
   type DefinitionInfo,
   type PluginDefinitionInfo,
+  type SkillEntry,
   rebaseOnClaudeDir,
   readSkillsFromDir,
+  readSkillEntriesFromDir,
   readAgentsFromDir,
   getUserSkills,
   getUserAgents,

@@ -174,3 +174,63 @@ describe("syncProjectReports", () => {
     });
   });
 });
+
+// The seed only fires on a store that has never been written to, so on any machine that already
+// has this db, editing SEED_REPORTS does nothing at all — the new field is in the source and the
+// agents never see it, with nothing to report the discrepancy. `refreshSupersededSeeds` is what
+// closes that, and it has to do so WITHOUT eating an edit the user made from /templates.
+describe("superseded seed migration", () => {
+  let dir: string;
+  let dbPath: string;
+
+  // The v1 backend body, verbatim — what a store seeded before the concept-skills feature holds.
+  const BACKEND_V1 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "backend",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was implemented>"\n' +
+    "}\n" +
+    "```";
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-seed-migration-"));
+    dbPath = path.join(dir, "reports.sqlite");
+    // A store that predates the current seed: rows present, so seedIfEmpty will not fire.
+    const db = new DatabaseSync(dbPath);
+    db.exec(
+      "CREATE TABLE reports (report_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL);" +
+        "CREATE TABLE agent_reports (agent_name TEXT PRIMARY KEY, report_id TEXT NOT NULL);"
+    );
+    db.prepare("INSERT INTO reports VALUES ('backend', ?, 1)").run(BACKEND_V1);
+    db.prepare("INSERT INTO reports VALUES ('scribe', 'I EDITED THIS MYSELF', 4)").run();
+    db.exec("INSERT INTO agent_reports VALUES ('backend', 'backend'), ('scribe', 'scribe')");
+    db.close();
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("moves a row still carrying a superseded seed forward, and bumps its version", () => {
+    const row = readAgentReportDefault("backend", dbPath)!;
+    expect(row.content).toContain('"conceptSkillGaps"');
+    expect(row.version).toBe(2);
+  });
+
+  it("leaves a row the user edited exactly as it is", () => {
+    const row = readAgentReportDefault("scribe", dbPath)!;
+    expect(row.content).toBe("I EDITED THIS MYSELF");
+    expect(row.version).toBe(4);
+  });
+
+  it("is idempotent — a second open does not bump again", () => {
+    readAgentReportDefault("backend", dbPath);
+    const row = readAgentReportDefault("backend", dbPath)!;
+    expect(row.version).toBe(2);
+  });
+});

@@ -34,6 +34,15 @@ export type { ReportDefault };
 /** `~/.claude/maestro-report-defaults.sqlite` — one store, every project on this machine. */
 export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude", "maestro-report-defaults.sqlite");
 
+// The sentence that explains `conceptSkillGaps` to an agent that has one. Kept out of the JSON
+// block because the block is what the model copies; this is what stops it copying an empty array
+// out of politeness. An empty array is the honest answer most of the time.
+const CONCEPT_GAPS_NOTE =
+  "`conceptSkillGaps` is how a concept skill gets better: if one of the concept skills you loaded " +
+  "was missing something you had to work out from the code yourself, say which skill and what was " +
+  "missing, so the main session knows to hand it to the scribe. Leave the array empty when nothing " +
+  "was missing — do not invent a gap to fill the field.";
+
 function backendLikeReport(subagent: string): string {
   return (
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
@@ -43,10 +52,13 @@ function backendLikeReport(subagent: string): string {
     `  "subagent": "${subagent}",\n` +
     '  "verdict": "SUCCESS | FAIL",\n' +
     '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
     '  "filesChanged": ["<file1>", "<file2>"],\n' +
     '  "description": "<summary of what was implemented>"\n' +
     "}\n" +
-    "```"
+    "```\n" +
+    "\n" +
+    CONCEPT_GAPS_NOTE
   );
 }
 
@@ -60,13 +72,18 @@ const SCRIBE_REPORT =
   '  "agentsMdUpdated": 0,\n' +
   '  "docsUpdated": 0,\n' +
   '  "claudeFilesUpdated": 0,\n' +
+  '  "conceptSkillsUpdated": 0,\n' +
   '  "changelogUpdated": false,\n' +
   '  "description": "<summary of what was updated>"\n' +
   "}\n" +
   "```\n" +
   "\n" +
   '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
-  "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
+  "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.\n" +
+  "\n" +
+  "`conceptSkillsUpdated` counts concept skills you created or revised — it is a subset of " +
+  "`claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept " +
+  "list moved without reading the whole summary.";
 
 const TEST_REPORT =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
@@ -76,11 +93,14 @@ const TEST_REPORT =
   '  "subagent": "test",\n' +
   '  "verdict": "SUCCESS | FAIL",\n' +
   '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+  '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
   '  "testResult": "<N passed, N failed>",\n' +
   '  "filesChanged": ["<file1>", "<file2>"],\n' +
   '  "description": "<summary of what was tested>"\n' +
   "}\n" +
-  "```";
+  "```\n" +
+  "\n" +
+  CONCEPT_GAPS_NOTE;
 
 /**
  * The exact bodies stripped from `plugins/maestro/agents/{backend,frontend,mobile,scribe,test}.md`
@@ -96,6 +116,83 @@ const SEED_REPORTS: Record<string, string> = {
   scribe: SCRIBE_REPORT,
   test: TEST_REPORT,
 };
+
+// ---------------------------------------------------------------------------
+// Superseded seeds
+// ---------------------------------------------------------------------------
+
+/**
+ * Every body this file has ever seeded, per agent, newest-superseded first.
+ *
+ * `seedIfEmpty` only fires on a store that has never been written to, so on any machine that has
+ * ever opened this db, editing `SEED_REPORTS` above does NOTHING — the new field is in the source,
+ * the agents never see it, and nothing reports the discrepancy. That is the failure this list
+ * exists to close.
+ *
+ * The rule is the one `report-sync.ts` already applies one tier down: a row whose content matches a
+ * superseded seed VERBATIM was never touched by a human, so it is safe to move forward; a row that
+ * matches nothing here is either current or hand-edited, and either way is left alone. Comparing
+ * against known-old content rather than a stored "did we migrate yet" flag is what makes it safe to
+ * run on every open and safe to run twice.
+ *
+ * When you change a body in `SEED_REPORTS`, move its previous text here verbatim. A body that is
+ * changed without being recorded here simply stops propagating — silently.
+ */
+const PRIOR_SEEDS: Record<string, string[]> = (() => {
+  // v1: before `conceptSkillGaps` / `conceptSkillsUpdated` (the concept-skills feature).
+  const backendLikeV1 = (subagent: string): string =>
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    `  "subagent": "${subagent}",\n` +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was implemented>"\n' +
+    "}\n" +
+    "```";
+
+  const scribeV1 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "scribe",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "agentsMdUpdated": 0,\n' +
+    '  "docsUpdated": 0,\n' +
+    '  "claudeFilesUpdated": 0,\n' +
+    '  "changelogUpdated": false,\n' +
+    '  "description": "<summary of what was updated>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
+    "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
+
+  const testV1 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "test",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "testResult": "<N passed, N failed>",\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was tested>"\n' +
+    "}\n" +
+    "```";
+
+  return {
+    backend: [backendLikeV1("backend")],
+    frontend: [backendLikeV1("frontend")],
+    mobile: [backendLikeV1("mobile")],
+    scribe: [scribeV1],
+    test: [testV1],
+  };
+})();
 
 function openDb(dbPath: string): DatabaseSync {
   // Can be opened on a machine where `~/.claude` itself doesn't exist yet (no Claude Code session
@@ -117,7 +214,38 @@ function openDb(dbPath: string): DatabaseSync {
     )
   `);
   seedIfEmpty(db);
+  refreshSupersededSeeds(db);
   return db;
+}
+
+/**
+ * Move any row still carrying a superseded seed body forward to the current one, bumping its
+ * `version` so `report-sync.ts` refreshes the project copies it has already materialized.
+ *
+ * A row the user edited matches nothing in `PRIOR_SEEDS` and is left exactly as it is — the same
+ * "never clobber a customization" rule `syncProjectReports` applies to `.claude/reports/*.md`.
+ * Idempotent: after one pass the content matches the CURRENT seed, which is not in the prior list.
+ */
+function refreshSupersededSeeds(db: DatabaseSync): void {
+  const select = db.prepare(
+    "SELECT r.report_id AS id, r.content AS content, r.version AS version" +
+      " FROM reports r JOIN agent_reports a ON a.report_id = r.report_id WHERE a.agent_name = ?"
+  );
+  const update = db.prepare("UPDATE reports SET content = ?, version = ? WHERE report_id = ?");
+
+  db.exec("BEGIN");
+  try {
+    for (const [agentName, current] of Object.entries(SEED_REPORTS)) {
+      const row = select.get(agentName) as { id: string; content: string; version: number } | undefined;
+      if (!row) continue;
+      if (!(PRIOR_SEEDS[agentName] ?? []).includes(row.content)) continue;
+      update.run(current, row.version + 1, row.id);
+    }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
 }
 
 /** Idempotent: only runs when `reports` has never been written to, on THIS db file. */

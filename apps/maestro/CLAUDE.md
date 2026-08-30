@@ -49,6 +49,7 @@ second.
 | `seed.ts` / `label-layout.ts`           | The starter workflows an unconfigured project opens with (pure)                        |
 | `detect.ts`                             | Which implementation agent(s) the repo needs, and the evidence for it                  |
 | `discovery.ts` / `fs-scan.ts`           | The agents, skills, rules and directory tree a project can pick from                   |
+| `concept-skills.ts`                     | The project's concept skills — the `.claude/skills/*` whose frontmatter `metadata.type` is `concept-skill`, which explain its core concepts to agents. `metadata` is the Agent Skills spec's home for third-party data and one of the six fields that survive a claude.ai upload / `package_skill.py`; an invented top-level key is a HARD ERROR on those paths, so this must never move out of `metadata`, and it must be read with `parseFrontmatterMetadata` — `parseFrontmatter` flattens nesting and cannot tell `metadata.version` from a top-level `version`. Discovery walks EVERY `.claude/skills` in the tree (`skillSearchDirs` in `fs-scan.ts`), unlike `discoverSkills`, which reads one. Owns the `major.minor` arithmetic, the in-place frontmatter stamp, and the `concept_skills` block on `maestro.json`. Driven from `plugins/maestro/scripts/maestro-concept-skills.cjs` by the three `/…-concept-skill(s)` flows |
 | `skill-tags.ts`                         | A skill's backend/frontend/mobile/refactor/reviewer/scribe/test tags — global, keyed by skill id, in `~/.claude/maestro-skill-tags.sqlite` (`node:sqlite`, not a native module). `skillMapFromTags` is the pure tags→`SkillMap` lookup both `data:workflows`/`data:reseed` and `/maestro-install`'s terminal path converge on. `parseSkillTagsBlock`/`applySkillTagsBlock` are the "Update skill tags" pane flow's other half — see `claude-session.ts` |
 | `install.ts` / `uninstall.ts`           | Installs the runtime into a project, reports staleness, removes it                     |
 | `session-runtime.ts` / `session-log.ts` | Ephemeral session file, append-only log, the tail                                      |
@@ -92,8 +93,9 @@ Bundles `src/core/plugin-entries/*.ts` to CJS and writes them over:
 - `plugins/maestro/scripts/lib/maestro-session.cjs`
 - `plugins/maestro/scripts/lib/maestro-skill-regions.cjs`
 - `plugins/maestro/scripts/lib/maestro-seed.cjs`
+- `plugins/maestro/scripts/lib/maestro-concept-skills.cjs`
 
-**Those three files are generated. Do not hand-edit them** — edit the TypeScript source and re-run
+**Those files are generated. Do not hand-edit them** — edit the TypeScript source and re-run
 the build. They are committed because a project installs them by file copy, so they must exist in
 the repo rather than being produced at install time. (`lib/maestro-tasks.cjs` in the same directory
 is _not_ generated; it is hand-written and has no banner.)

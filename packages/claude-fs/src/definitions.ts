@@ -2,7 +2,7 @@ import { readdir, readFile } from "node:fs/promises";
 import path from "node:path";
 import { CLAUDE_DIR } from "./config/directories.js";
 import { getInstalledPlugins } from "./plugin.js";
-import { parseFrontmatter } from "./utils/frontmatter.js";
+import { parseFrontmatter, parseFrontmatterMetadata } from "./utils/frontmatter.js";
 
 // A subagent or skill definition, identified by its frontmatter `name`.
 export interface DefinitionInfo {
@@ -36,6 +36,45 @@ export async function readSkillsFromDir(dir: string): Promise<DefinitionInfo[]> 
     if (md === null) continue;
     const fm = parseFrontmatter(md);
     out.push({ name: fm.name || entry, description: fm.description ?? "" });
+  }
+  return out;
+}
+
+// A skill read with its location and its FULL frontmatter, rather than the two fields
+// `DefinitionInfo` keeps. Callers that need a custom frontmatter key (concept-skill markers)
+// or the directory itself (to read a skill's sibling files) want this one.
+export interface SkillEntry {
+  /** The frontmatter `name`, falling back to the directory name. */
+  id: string;
+  /** The skill's own directory — `<dir>/<entry>`. */
+  dir: string;
+  /** `<dir>/<entry>/SKILL.md`. */
+  skillPath: string;
+  /** Every top-level scalar key of the frontmatter block. */
+  frontmatter: Record<string, string>;
+  /**
+   * The frontmatter's `metadata:` map — the Agent Skills spec's home for third-party key-value
+   * data. Parsed properly rather than read off `frontmatter`, which flattens nesting and so cannot
+   * tell `metadata.version` from a top-level `version`.
+   */
+  metadata: Record<string, string>;
+}
+
+// Read skill entries from a directory of `<id>/SKILL.md` subfolders, preserving the path and
+// the whole frontmatter. A sibling of `readSkillsFromDir` rather than a widening of it: its
+// callers want the narrow `{ name, description }` shape and nothing more.
+export async function readSkillEntriesFromDir(dir: string): Promise<SkillEntry[]> {
+  const entries = await readdir(dir).catch(() => null);
+  if (entries === null) return [];
+  const out: SkillEntry[] = [];
+  for (const entry of entries) {
+    const skillDir = path.join(dir, entry);
+    const skillPath = path.join(skillDir, "SKILL.md");
+    const md = await readFile(skillPath, "utf-8").catch(() => null);
+    if (md === null) continue;
+    const frontmatter = parseFrontmatter(md);
+    const metadata = parseFrontmatterMetadata(md);
+    out.push({ id: frontmatter.name || entry, dir: skillDir, skillPath, frontmatter, metadata });
   }
   return out;
 }
