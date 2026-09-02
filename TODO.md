@@ -1,18 +1,9 @@
 # Todo
 
-Use the following skills to complete the task I will give you:
+Read the task, then from the `.claude` and `apps/maestro/.claude` select the skills that are related to the task feature to get the context and tool needed. In all case, you will at least need:
 
-- .claude/skills/maestro-architecture/SKILL.md
 - apps/maestro/.claude/skills/test-maestro/SKILL.md
 
-You can use the /grill-me skill to clarify the plan.
+The task is to implement the design for the agent page from `docs/features/agents-page/design_handoff_agents_page/README.md`. It was created in claude design. The current character implementation comes from the plan at `docs/features/agents-page/create-characters-plan.md` that can be deleted once this task is done. The only thing that the design should be missing is the button to toggle between loaded and ref skills for the agent. The rest should be there.
 
-- apps/maestro/.claude/skills/create-skills-architecture/SKILL.md
-- apps/maestro/.claude/skills/workflow-view/SKILL.md
-- .claude/skills/react-flow-canvas-geometry/SKILL.md
-
----
-
-Yes, any discovered agent, same list as the Tools tab. My intent is to decouple maestro from the fixed agent list and to make it usable by any agent on the user's computer
-
-● Good — that confirms the scope. One consequence to flag as we go: this generalizes cleanly with what's already there, since MaestroInstanceV3.agent and the templates/handoffs/<sender>/<receiver>.md convention are already agent-name-agnostic (they key off the frontmatter name, not a fixed list). The one place Maestro does hard-code the 7-agent list is SKILL_TAGS (the skill-tagging feature) — that's a separate system and out of scope here, just flagging it so it's not confused with this effort.
+When you are done, call the scribe agent, send him a summary of your code changes and ask him to use the `/scribe` skill and the `/update-concept-skills` skill to update the concept skills of the project.
