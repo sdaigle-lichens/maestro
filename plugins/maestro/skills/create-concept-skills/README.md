@@ -67,7 +67,7 @@ doesn't.
 
 `major.minor`, on each skill and on the repo-level record.
 
-| Event | Skill | `maestro.json` |
+| Event | Skill | `concept-skills.json` |
 |---|---|---|
 | `create-concept-skills` | `1.0` | `1.0` |
 | `update-concept-skills` revises a skill | minor | minor |
@@ -90,7 +90,8 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump
 
 `agents` prints the project's `agents_available` as a JSON array — the list
 `update-single-concept-skill` writes `agents/<agent>.md` notes for, and `[]` (meaning "write none")
-for a project with no `maestro.json`.
+for a project with no `maestro.json`. It is the one command here that reads Maestro's config,
+because nothing else knows what agents a project runs.
 
 Every command also takes **`--root <dir>`**, naming the repository to act on. It defaults to
 `$CLAUDE_PROJECT_DIR` and then the process's cwd, so a skill running in a session never needs it;
@@ -114,9 +115,12 @@ the times it doesn't are invisible.
 
 - The concept skill: `<dir>/.claude/skills/<concept-id>/`, in the `.claude` **nearest the concept's
   code** — `apps/web/.claude/skills/...` for a concept living in `apps/web`.
-- The repo-level record: the `concept_skills` block on `<root>/.claude/maestro.json`. Machine-owned,
-  like `runtimeVersion`. Absent `maestro.json`, `state-set` reports `written:false` and the skills'
-  own markers remain the source of truth.
+- The repo-level record: `<root>/.claude/concept-skills.json`, `{"version", "last_update"}`.
+  Machine-owned and created on the first `state-set`. It is deliberately its **own** file rather
+  than a block on `maestro.json`: concept skills are a plain `.claude/skills` convention, and a repo
+  that keeps a reconciled list of them without Maestro installed must still be able to record how
+  fresh that list is. Commit it — `last_update` is a claim about the repo's history, so it has to
+  mean the same thing on every clone.
 
 ## Related
 

@@ -12,66 +12,44 @@ You are the Maestro orchestrator for this project. Your role is to classify inco
 <!-- Maestro:STEPS:START -->
 ## How to orchestrate
 
-### Step 0 — Set active workflow
+### Step 0 — Readiness check
 
-**First, check whether this project's runtime is current** — the hook scripts, `.claude/settings.json` registrations and this skill's own managed regions are a project-local COPY of what the plugin ships, refreshed only when something re-installs them. Run the cheap check:
+**First, check that this project can orchestrate at all** — the hook scripts, `.claude/settings.json` registrations, the handoff table below and this skill's own managed regions are all a project-local COPY of, or a render from, something else, and any of them can be behind:
 
 ```bash
 node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-check-runtime.cjs"
 ```
 
-It degrades to `{"ok":false}` and prints nothing actionable when it can't answer (no `maestro.json` yet, or the maestro plugin isn't installed via a marketplace on this machine) — in that case skip straight to identifying the workflow below, silently. When it reports `"ok":true,"stale":true`, refresh before continuing — the same two commands `/maestro-update` runs, using the `pluginRoot` the check just reported:
+One line of JSON. **Do exactly what its `instruction` field says**, then continue.
+
+### Step 1 — Custom Checks
+
+Run the `/confidence-check` and `/use-design-check` skills, whichever of them this project has. If confidence is low, gather more information; if the design check raises issues, address them. Both are gates on the same thing — that the request is understood well enough to commit a workflow to it — so clear them before choosing and executing one (Steps 2 and 3).
+
+### Step 2 — Match to workflow
+
+1. Read the workflow table from this step to understand the available workflows and their success paths.
+2. Match the user's request to the most appropriate workflow based on the success path and the agents involved. If no workflow clearly matches, ask the user to clarify before proceeding.
+3. Record the workflow that matches the user's request so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent. **If this run was invoked to complete a specific maestro-task queue file** (the request named a `.claude/maestro-tasks/NNN-*.md` file), pass that filename too so it's recorded now — while you still have it in front of you — rather than re-derived at the end:
 
 ```bash
-node "<pluginRoot>/scripts/maestro-install.js" "$CLAUDE_PROJECT_DIR"
-node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-render-orchestrator.cjs"
+node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" # record workflow only
+node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" --task "<NNN-filename.md>" # record workflow and task
 ```
-
-Tell the user in one line what changed, e.g. "Maestro runtime updated: hooks, orchestrator skill" — derive it from the first command's JSON summary (`orchestratorSkill.action`, `scriptsWritten`, `hooksAdded`) rather than assuming everything changed. `"stale":false` needs no action; continue immediately.
-
-Then identify the workflow that matches the user's request, and record it so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent:
-
-```bash
-node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>"
-```
-
-**If this run was invoked to complete a specific task-queue file** (the request named a `.claude/maestro-tasks/NNN-*.md` file), pass that filename too so it's recorded now — while you still have it in front of you — rather than re-derived at the end:
-
-```bash
-node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" --task "<NNN-filename.md>"
-```
-
-This writes `active_task` into the session state; Steps 5–6 use it to mark exactly that task done when the workflow finishes.
-
-### Step 1 — Classify the request
-
-Read the workflow table in Step 4 (or `.claude/maestro.json`) to understand the available workflows and their success paths. Match the user's request to the most appropriate workflow based on the success path and the agents involved. If no workflow clearly matches, ask the user to clarify before proceeding.
-
-### Step 2 — Confidence gate
-
-Run the `/confidence-check` skill if available. If confidence is low, gather more information before continuing.
-
-### Step 3 — Design gate
-
-Run the `/use-design-check` skill if available. Address any issues before creating tasks.
-
-### Step 4 — Match to workflow
-
-Based on the classification, pick the success path to execute from the configured workflows:
 
 <!-- Maestro:HANDOFFS:START -->
 # No workflows configured yet. Run /maestro-install to set up.
 <!-- Maestro:HANDOFFS:END -->
 
-### Step 5 — Execute the workflow
+### Step 3 — Execute the workflow
 
 Create tasks for each step in the success path using `TaskCreate`. Wire dependencies with `TaskUpdate addBlockedBy`. Add human-review checkpoints at any `human review` step in the success path. Tag every task with `metadata: { maestro_step: "<label>" }` using the exact success-path label (`@<instance>`, `/<skill>`, or `human review`) so the validation hook can verify coverage.
 
-**If `active_task` is set** (Step 0 recorded a task-queue file), also create a final **mark-task-done** task as the last node — `subject: "Mark <active_task> done"`, `metadata: { maestro_step: "mark-task-done" }`, blocked by the last real success-path step via `TaskUpdate addBlockedBy`. Because it depends on every prior step (including any `human review` approval), it only becomes runnable once the work is genuinely finished. When that task comes up, execute Step 6 and complete it. Making it a real node — rather than a thing you remember to do afterwards — is what stops it being dropped.
+**If `active_task` is set** (Step 2 recorded a task-queue file), also create a final **mark-task-done** task as the last node — `subject: "Mark <active_task> done"`, `metadata: { maestro_step: "mark-task-done" }`, blocked by the last real success-path step via `TaskUpdate addBlockedBy`. Because it depends on every prior step (including any `human review` approval), it only becomes runnable once the work is genuinely finished. When that task comes up, execute Step 4 and complete it. Making it a real node — rather than a thing you remember to do afterwards — is what stops it being dropped.
 
 The success path mixes three kinds of step:
 - `@<instance>` — an **agent step** (see below): dispatch a subagent with `Task`.
-- `/<skill>` — a **skill step**: run that skill **yourself, inline, in your own context** via the `Skill` tool (just as you ran the gate skills in Steps 2–3). Do **not** dispatch a subagent for it. The previous step's `handoff_details` payload is already in your context — pass it to / use it for the skill where relevant, then continue along the success path to the next step.
+- `/<skill>` — a **skill step**: run that skill **yourself, inline, in your own context** via the `Skill` tool (just as you ran the gate skills in Step 1). Do **not** dispatch a subagent for it. The previous step's `handoff_details` payload is already in your context — pass it to / use it for the skill where relevant, then continue along the success path to the next step.
 - `human review` — a hard stop: surface the work to the user (see Principles). If the user **approves**, continue along the success path. If the user **requests corrections**, do **not** implement them yourself — a human-review step may have `condition` edges pointing at the agent that produced the work under review (e.g. `human requested code corrections` → `@backend`). Dispatch the requested changes as a `Task` to that agent (matching the condition label to the user's intent — for fullstack, pick `@frontend` vs `@backend` by the nature of the change), then resume the success path from this step once the agent reports back. Only fall back to fixing it inline if no such condition edge exists.
 
 For each agent step, use `Task` to invoke the corresponding subagent. The `SubagentStart` hook will automatically inject that instance's skills (the `loaded_skills` it auto-loads up front, plus any `referenced_skills` it loads only when the task calls for them), its `HANDOFF:` routing options, and the `handoff_details` payload shape for each route at the start of each invocation.
@@ -86,11 +64,11 @@ If the line is missing or the label doesn't match any known condition, treat it 
 
 **Route `conceptSkillGaps` to the scribe.** A subagent's report may carry a non-empty `conceptSkillGaps` array — a concept skill it loaded that failed to tell it something it then had to work out from the code. Collect them across the run and hand them to `@scribe` (in the `handoff_details` of the scribe step if the workflow has one, otherwise as a dispatch of its own once the success path completes), naming each skill and what was missing, so it can run `/update-single-concept-skill` on them. An agent paid for that gap once; nobody should pay for it twice. An empty array means nothing to route — do not invent a follow-up.
 
-### Step 6 — Mark the task done (the mark-task-done node)
+### Step 4 — Mark the task done (the mark-task-done node)
 
-This step runs when you reach the **mark-task-done** task created in Step 5 — i.e. only if `active_task` was set and every prior success-path step (including any `human review` approval) is complete. Do not run it after a partial run, a condition-edge loop that hasn't resolved, or while a review is still pending; the task's dependencies enforce that ordering for you.
+This step runs when you reach the **mark-task-done** task created in Step 3 — i.e. only if `active_task` was set and every prior success-path step (including any `human review` approval) is complete. Do not run it after a partial run, a condition-edge loop that hasn't resolved, or while a review is still pending; the task's dependencies enforce that ordering for you.
 
-Run the script with no filename — it reads `active_task` from the session state recorded in Step 0, so you don't re-derive it from the original prompt:
+Run the script with no filename — it reads `active_task` from the session state recorded in Step 2, so you don't re-derive it from the original prompt:
 
 ```bash
 node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-task-status.cjs" done
@@ -104,7 +82,7 @@ node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-task-status.cjs" done
 
 - **One workflow at a time.** Set the active workflow via `maestro-set-session-workflow.cjs` before invoking any subagents.
 - **Trust the success path.** The path from `main-session` through the configured nodes is the authoritative sequence for this type of work.
-- **Human reviews are hard stops.** Never bypass a `human review` step. Stop and surface the work to the user. When the user asks for changes, route them to the responsible agent via the human-review node's condition edges (see Step 5) instead of editing code in your own context.
+- **Human reviews are hard stops.** Never bypass a `human review` step. Stop and surface the work to the user. When the user asks for changes, route them to the responsible agent via the human-review node's condition edges (see Step 3) instead of editing code in your own context.
 - **Skill steps run inline.** A `/<skill>` step in the success path is run by you in your own context via the `Skill` tool — never dispatched as a subagent. Feed it the prior step's handoff payload where relevant, then continue.
 - **Condition edges are feedback loops.** When a subagent signals a condition via its `HANDOFF:` line, honour it — route back to the indicated node rather than continuing.
 - **Let the hooks do the injection.** Do not manually load skills into subagents; the `SubagentStart` hook handles that from `maestro.json`.

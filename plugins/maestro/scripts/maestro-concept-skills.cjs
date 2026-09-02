@@ -2,8 +2,8 @@
 // Maestro concept-skill index. The deterministic half of /create-concept-skills,
 // /update-concept-skills and /update-single-concept-skill: finding the skills,
 // doing the version arithmetic, rewriting the frontmatter markers, and stamping
-// <cwd>/.claude/maestro.json. The skills spend their tokens on judgement; this
-// spends none on arithmetic.
+// <cwd>/.claude/concept-skills.json. The skills spend their tokens on judgement;
+// this spends none on arithmetic.
 //
 //   node maestro-concept-skills.cjs list [--json]
 //       Every concept skill under the project root — from EVERY .claude/skills in
@@ -14,21 +14,25 @@
 //   node maestro-concept-skills.cjs agents
 //       The project's `agents_available` from maestro.json, as a JSON array — the
 //       list /update-single-concept-skill writes agents/<agent>.md notes for. `[]`
-//       when the project has no maestro.json, which means "write none".
+//       when the project has no maestro.json, which means "write none". The one
+//       command here that still reads Maestro's config, because nothing else knows
+//       what agents a project runs.
 //
 //   node maestro-concept-skills.cjs state
-//       The `concept_skills` block from maestro.json, or {"present": false} when
-//       no list has been created yet. This is what /create-concept-skills reads
-//       to decide whether to run at all.
+//       <root>/.claude/concept-skills.json, or {"present": false} when no list has
+//       been created yet. This is what /create-concept-skills reads to decide
+//       whether to run at all. Its OWN file, not a block on maestro.json: concept
+//       skills are a plain .claude/skills convention and a repo can keep a
+//       reconciled list of them without Maestro installed.
 //
 //   node maestro-concept-skills.cjs stamp <id-or-dir> --bump minor|major [--sha <sha>]
 //       Rewrite one skill's three marker lines. --bump initial sets 1.0 for a
 //       skill being marked for the first time. --sha defaults to HEAD.
 //
 //   node maestro-concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]
-//       The same, for the repo-level `concept_skills` block on maestro.json.
-//       No-ops (reporting written:false) when the project has no maestro.json —
-//       a repo can have concept skills without Maestro installed.
+//       The same, for the repo-level record in concept-skills.json. Creates the
+//       file (and .claude/) when absent; reports written:false only when the value
+//       is already what it would write, so a re-stamp shows no diff.
 //
 // Every command takes an optional --root <dir> naming the repository to act on,
 // so this can be pointed at a project other than the one the session is in — the
@@ -72,8 +76,9 @@ function has(name) {
   return argv.includes(`--${name}`);
 }
 
-// The sha is resolved here rather than in the skill prose: a model asked to "use the
-// current commit" reaches for Bash anyway, and the scribe agent has Bash disallowed.
+// The sha is resolved here rather than in the skill prose: "use the current commit" in a
+// prompt is one more thing for a model to get subtly wrong, and it already has this script
+// open. --root is honoured so the lookup names the same repo every other command acts on.
 function headSha() {
   try {
     return execFileSync("git", ["-C", projectDir, "rev-parse", "HEAD"], {

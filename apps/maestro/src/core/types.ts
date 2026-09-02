@@ -87,20 +87,18 @@ export interface MaestroConfigV3 {
    * frontend/mobile only) and editable afterward from /maestro.
    */
   project_tags?: string[];
-  /**
-   * State of this repo's concept-skill list — the skills whose frontmatter `metadata.type` is `concept-skill`, which explain
-   * the project's core concepts. Absent = no list has been created yet, which is what
-   * `/create-concept-skills` checks before it will run.
-   *
-   * Machine-owned, like `runtimeVersion`: written only by `maestro-concept-skills.cjs` on behalf
-   * of the create/update concept-skill flows, never by a save from the desktop app. `last_update`
-   * is the commit the list was last reconciled against, so `/update-concept-skills` can diff
-   * forward from it instead of re-reading the whole repo.
-   */
-  concept_skills?: MaestroConceptSkillsState;
 }
 
-/** The `concept_skills` block on `maestro.json`. `version` is `major.minor` — see `bumpMinor`. */
+/**
+ * State of a repo's concept-skill list — the skills whose frontmatter `metadata.type` is
+ * `concept-skill`, which explain the project's core concepts.
+ *
+ * It lives in its OWN file, `<root>/.claude/concept-skills.json`, not on `maestro.json`: concept
+ * skills are a plain `.claude/skills` convention and a repo can keep a reconciled list of them
+ * without Maestro installed. See `concept-skills.ts`. `version` is `major.minor` — see `bumpMinor`;
+ * `last_update` is the commit the list was last reconciled against, so `/update-concept-skills`
+ * can diff forward from it instead of re-reading the whole repo.
+ */
 export interface MaestroConceptSkillsState {
   version: string;
   last_update: string;

@@ -50,9 +50,9 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list
 ```
 
-`state` reports `{"present": true, ...}` when `.claude/maestro.json` already records a concept-skill
-list. If it does — **or** if `list` finds any concept skills even without a `maestro.json` — stop
-here and tell the user to run `/update-concept-skills` instead. Do not proceed and do not offer to
+`state` reports `{"present": true, ...}` when `.claude/concept-skills.json` already records a
+concept-skill list. If it does — **or** if `list` finds any concept skills even without that file —
+stop here and tell the user to run `/update-concept-skills` instead. Do not proceed and do not offer to
 merge; rebuilding a list over one that exists is how a user loses hand-written concept skills.
 
 Both empty is the only signal to continue — **with one exception**: a run resuming from an approved
@@ -155,9 +155,9 @@ Then the repo-level record:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump initial
 ```
 
-Both default the commit to `HEAD`. `state-set` reports `written:false` when the project has no
-`.claude/maestro.json` — that is fine and expected in a repo without Maestro installed; the skills
-themselves are still stamped, and `list` remains the source of truth.
+Both default the commit to `HEAD`. `state-set` writes `.claude/concept-skills.json`, creating it if
+it isn't there — the record does **not** live on `maestro.json`, so a repo without Maestro installed
+gets one too. It reports `written:false` only when the value is already what it would write.
 
 Never hand-edit `metadata.version` or `metadata.last-update`. The script owns them so that a version
 can't quietly drift, and a version stuck at `1.0` makes `/update-single-concept-skill` re-research a
@@ -184,6 +184,5 @@ The `/scribe` skill is the full rule for that split. Load it if you are unsure w
 
 Say how many concept skills were created and where each landed (a monorepo puts them in several
 `.claude` directories, and the user will want to know which). Name any concept the user rejected, so
-the decision is on the record. Say whether `state-set` wrote to `maestro.json` or reported
-`written:false`. Close by naming `/update-single-concept-skill` as the next step for whichever
+the decision is on the record. Say what `state-set` wrote to `.claude/concept-skills.json`. Close by naming `/update-single-concept-skill` as the next step for whichever
 concept matters most — the skeletons are not yet worth much on their own.

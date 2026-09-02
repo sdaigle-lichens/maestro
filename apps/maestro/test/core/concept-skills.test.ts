@@ -28,13 +28,14 @@ import {
   findConceptSkill,
   parseVersion,
   resolveSkillPath,
+  conceptSkillsJsonPath,
   readAgentsAvailable,
   readConceptSkillsState,
   stampConceptSkill,
   writeConceptSkillsState,
 } from "../../src/core/concept-skills.js";
 import { parseFrontmatter, parseFrontmatterMetadata } from "@repo/claude-fs";
-import { readConfig, writeConfig } from "../../src/core/config.js";
+import { maestroJsonPath, writeConfig } from "../../src/core/config.js";
 import { defaultish } from "./fixtures/configs.js";
 
 let tmp: string;
@@ -290,26 +291,50 @@ describe("readAgentsAvailable", () => {
   });
 });
 
-describe("the concept_skills state on maestro.json", () => {
-  it("no-ops with no maestro.json — a repo can have concept skills without Maestro", () => {
+describe("the concept-skills state file", () => {
+  // It is its OWN file, not a block on maestro.json: a repo can keep a reconciled concept-skill
+  // list with Maestro nowhere in sight, and hanging the state off Maestro's config meant exactly
+  // those repos recorded nothing.
+  it("writes .claude/concept-skills.json with no maestro.json present", () => {
     expect(readConceptSkillsState(tmp)).toBeNull();
-    expect(writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc" })).toBe(false);
-  });
-
-  it("leaves every other field untouched", () => {
-    writeConfig(tmp, structuredClone(defaultish));
-    const before = readConfig(tmp)!;
-
     expect(writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc123" })).toBe(true);
 
-    const after = readConfig(tmp)!;
-    expect(after.concept_skills).toEqual({ version: "1.0", last_update: "abc123" });
-    expect({ ...after, concept_skills: undefined }).toEqual({ ...before, concept_skills: undefined });
+    expect(fs.existsSync(path.join(tmp, ".claude", "maestro.json"))).toBe(false);
+    expect(readConceptSkillsState(tmp)).toEqual({ version: "1.0", last_update: "abc123" });
+  });
+
+  it("creates .claude/ when the project has none", () => {
+    const bare = fs.mkdtempSync(path.join(os.tmpdir(), "concept-bare-"));
+    try {
+      expect(writeConceptSkillsState(bare, { version: "1.0", last_update: "abc" })).toBe(true);
+      expect(readConceptSkillsState(bare)).toEqual({ version: "1.0", last_update: "abc" });
+    } finally {
+      fs.rmSync(bare, { recursive: true, force: true });
+    }
+  });
+
+  it("leaves maestro.json untouched", () => {
+    writeConfig(tmp, structuredClone(defaultish));
+    const before = fs.readFileSync(maestroJsonPath(tmp), "utf8");
+
+    writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc123" });
+
+    expect(fs.readFileSync(maestroJsonPath(tmp), "utf8")).toBe(before);
   });
 
   it("writes nothing when the value is already what it would write", () => {
-    writeConfig(tmp, structuredClone(defaultish));
     writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc123" });
     expect(writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc123" })).toBe(false);
+  });
+
+  it("reads a malformed or half-written file as 'no list recorded'", () => {
+    fs.mkdirSync(path.join(tmp, ".claude"), { recursive: true });
+    const p = conceptSkillsJsonPath(tmp);
+
+    fs.writeFileSync(p, "{ not json");
+    expect(readConceptSkillsState(tmp)).toBeNull();
+
+    fs.writeFileSync(p, JSON.stringify({ version: "1.0" }));
+    expect(readConceptSkillsState(tmp)).toBeNull();
   });
 });

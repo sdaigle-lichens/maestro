@@ -173,16 +173,6 @@ function readConfig(projectRoot) {
   if (!parsed) return blankConfig();
   return parsed.version === 3 ? parsed : blankConfig();
 }
-function serializeConfig(cfg) {
-  return JSON.stringify(cfg, null, 2);
-}
-function writeConfig(projectRoot, cfg) {
-  const claudeDir = import_node_path5.default.join(projectRoot, ".claude");
-  if (!import_node_fs.default.existsSync(claudeDir)) import_node_fs.default.mkdirSync(claudeDir, { recursive: true });
-  const p = maestroJsonPath(projectRoot);
-  import_node_fs.default.writeFileSync(p, serializeConfig(cfg));
-  return p;
-}
 
 // src/core/fs-scan.ts
 var import_node_fs2 = __toESM(require("node:fs"), 1);
@@ -354,18 +344,32 @@ function stampConceptSkill(skillPath, next) {
   const rebuilt = `${match[1]}${rebuiltLines.join("\n")}${match[3]}`;
   import_node_fs3.default.writeFileSync(skillPath, raw.slice(0, match.index) + rebuilt + raw.slice(match.index + match[0].length));
 }
+function conceptSkillsJsonPath(projectRoot) {
+  return import_node_path7.default.join(projectRoot, ".claude", "concept-skills.json");
+}
 function readConceptSkillsState(projectRoot) {
-  return readConfig(projectRoot)?.concept_skills ?? null;
+  const p = conceptSkillsJsonPath(projectRoot);
+  if (!import_node_fs3.default.existsSync(p)) return null;
+  let parsed;
+  try {
+    parsed = JSON.parse(import_node_fs3.default.readFileSync(p, "utf8"));
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+  const { version, last_update } = parsed;
+  if (typeof version !== "string" || typeof last_update !== "string") return null;
+  return { version, last_update };
 }
 function readAgentsAvailable(projectRoot) {
   return readConfig(projectRoot)?.agents_available ?? [];
 }
 function writeConceptSkillsState(projectRoot, next) {
-  const cfg = readConfig(projectRoot);
-  if (!cfg) return false;
-  const cur = cfg.concept_skills;
+  const cur = readConceptSkillsState(projectRoot);
   if (cur && cur.version === next.version && cur.last_update === next.last_update) return false;
-  writeConfig(projectRoot, { ...cfg, concept_skills: next });
+  const claudeDir = import_node_path7.default.join(projectRoot, ".claude");
+  if (!import_node_fs3.default.existsSync(claudeDir)) import_node_fs3.default.mkdirSync(claudeDir, { recursive: true });
+  import_node_fs3.default.writeFileSync(conceptSkillsJsonPath(projectRoot), JSON.stringify(next, null, 2) + "\n");
   return true;
 }
 // Annotate the CommonJS export names for ESM import in node:

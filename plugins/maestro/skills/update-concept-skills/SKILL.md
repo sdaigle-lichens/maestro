@@ -49,8 +49,8 @@ If `list` finds nothing, stop and tell the user to run `/create-concept-skills` 
 nothing here to update.
 
 If `list` finds skills but `state` reports `{"present": false}`, carry on — the list is real and
-just isn't recorded in `maestro.json` (a repo without Maestro installed, or one whose skills were
-written by hand). Step 6 will record it.
+just isn't recorded in `.claude/concept-skills.json` yet (skills written by hand, or a list
+predating this file). Step 6 will create it.
 
 ### 2. Find the window to diff
 

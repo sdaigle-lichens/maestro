@@ -36,7 +36,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatterMetadata, readSkillEntriesFromDir } from "@repo/claude-fs";
-import { readConfig, writeConfig } from "./config.js";
+import { readConfig } from "./config.js";
 import { skillSearchDirs } from "./fs-scan.js";
 import type { MaestroConceptSkillsState } from "./types.js";
 
@@ -269,44 +269,81 @@ export function stampConceptSkill(skillPath: string, next: { version: string; la
 }
 
 // ---------------------------------------------------------------------------
-// The repo-level state on maestro.json
+// The repo-level state: <root>/.claude/concept-skills.json
 // ---------------------------------------------------------------------------
+//
+// Its own file, deliberately NOT a block on `maestro.json`. Concept skills are an ordinary
+// `.claude/skills` convention — a repo can have them, and keep them reconciled, with Maestro
+// nowhere in sight. Hanging their state off Maestro's config meant `state-set` reported
+// `written:false` for exactly those repos and the list's freshness went unrecorded, which is the
+// one thing `/update-concept-skills` needs in order to diff forward instead of re-reading
+// everything.
+//
+// Machine-owned, like `runtimeVersion`: written only by `maestro-concept-skills.cjs` on behalf of
+// the create/update flows. Committed, not ignored — `last_update` is a statement about the repo's
+// history, so it has to mean the same thing on every clone.
+//
+// Unlike `maestro.json` this file has no legacy on-disk format to preserve, so it is written with
+// a trailing newline.
 
-/** The `concept_skills` block, or null when there is no config or no list yet. */
-export function readConceptSkillsState(projectRoot: string): MaestroConceptSkillsState | null {
-  return readConfig(projectRoot)?.concept_skills ?? null;
+/** `<root>/.claude/concept-skills.json`. */
+export function conceptSkillsJsonPath(projectRoot: string): string {
+  return path.join(projectRoot, ".claude", "concept-skills.json");
 }
 
 /**
- * The project's `agents_available`, or `[]` when it has no `maestro.json`.
+ * The recorded state, or null when no list has been created yet.
  *
+ * A missing, unreadable or malformed file all read as null — "no list recorded". That is the same
+ * answer the create flow acts on, and it is the safe one: the worst case is that
+ * `/update-concept-skills` has to ask for its diff window instead of reading it.
+ */
+export function readConceptSkillsState(projectRoot: string): MaestroConceptSkillsState | null {
+  const p = conceptSkillsJsonPath(projectRoot);
+  if (!fs.existsSync(p)) return null;
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(fs.readFileSync(p, "utf8"));
+  } catch {
+    return null;
+  }
+  if (!parsed || typeof parsed !== "object") return null;
+  const { version, last_update } = parsed as Partial<MaestroConceptSkillsState>;
+  if (typeof version !== "string" || typeof last_update !== "string") return null;
+  return { version, last_update };
+}
+
+/**
+ * The project's `agents_available` from `maestro.json`, or `[]` when it has no `maestro.json`.
+ *
+ * This is the one place the concept-skill flows still read Maestro's config, because there is no
+ * other source for the list of agents a project runs. It degrades to the right answer:
  * `/update-single-concept-skill` writes an `agents/<agent>.md` note only for an agent in this list,
- * so an empty answer means "write none" — which is also what a project without Maestro gets, and is
- * the right answer for it. It lives here rather than as an inline `node -e` in the skill so that the
- * project root is resolved ONCE, by the caller that already knows how (env, `--root`, then cwd); an
- * inline script reaching for `process.env.CLAUDE_PROJECT_DIR` alone reads `undefined/.claude/…` when
- * the variable is unset, catches its own error, and reports no agents rather than failing.
+ * so an empty answer means "write none", which is exactly right for a project without Maestro.
+ *
+ * It lives here rather than as an inline `node -e` in the skill so that the project root is
+ * resolved ONCE, by the caller that already knows how (env, `--root`, then cwd); an inline script
+ * reaching for `process.env.CLAUDE_PROJECT_DIR` alone reads `undefined/.claude/…` when the variable
+ * is unset, catches its own error, and reports no agents rather than failing.
  */
 export function readAgentsAvailable(projectRoot: string): string[] {
   return readConfig(projectRoot)?.agents_available ?? [];
 }
 
 /**
- * Stamp `concept_skills` into an EXISTING `maestro.json`, leaving every other field untouched —
- * the same shape as `writeRuntimeVersion`, and machine-owned for the same reason.
+ * Write the state file, creating `.claude/` and the file itself if they are absent.
  *
- * Returns false and writes nothing when the project has no `maestro.json` (a repo can perfectly
- * well have concept skills without Maestro installed; the list is then simply untracked) or when
- * the value is already what it would write.
+ * Returns false and writes nothing only when the value is already what it would write, so a
+ * re-stamp of an unchanged list costs one read and zero writes — and shows no diff.
  */
 export function writeConceptSkillsState(
   projectRoot: string,
   next: MaestroConceptSkillsState
 ): boolean {
-  const cfg = readConfig(projectRoot);
-  if (!cfg) return false;
-  const cur = cfg.concept_skills;
+  const cur = readConceptSkillsState(projectRoot);
   if (cur && cur.version === next.version && cur.last_update === next.last_update) return false;
-  writeConfig(projectRoot, { ...cfg, concept_skills: next });
+  const claudeDir = path.join(projectRoot, ".claude");
+  if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
+  fs.writeFileSync(conceptSkillsJsonPath(projectRoot), JSON.stringify(next, null, 2) + "\n");
   return true;
 }

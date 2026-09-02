@@ -85,7 +85,8 @@ Write `agents/<agent>.md` **only** for agents in that list, and **only** where a
 needs something the shared file shouldn't carry — how the backend agent should implement against this
 concept, how the test agent should test it, what the reviewer should look for.
 
-An empty list, or no `maestro.json`, means write no agent notes. This step is optional by design: an
+An empty list, or no `maestro.json`, means write no agent notes — `agents` is the one place these
+flows read Maestro's config, and a project without it correctly gets none. This step is optional by design: an
 `agents/` directory full of files restating the `SKILL.md` costs every one of those agents context
 and tells them nothing.
 
@@ -98,7 +99,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-i
 ```
 
 A major bump, because this pass is the thing that distinguishes a researched skill from a skeleton —
-that is exactly what step 1 reads. The repo-level `concept_skills` record is **not** touched: the
+that is exactly what step 1 reads. The repo-level `concept-skills.json` record is **not** touched: the
 list itself did not change, only one skill's depth.
 
 ## Keeping it lean

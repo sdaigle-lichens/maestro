@@ -579,6 +579,12 @@ describe("first-install config seeding (project tags)", () => {
   });
 });
 
+// The orchestrator's Step 0 reads two fields and nothing else: `action`, one of three values naming
+// exactly one command (`continue` / `/maestro-update` / `/maestro-install`), and `instruction`, the
+// sentence it obeys. Both live here rather than in the SKILL.md: there are more states than
+// behaviours, and prose that re-derives the mapping is re-read at the top of every orchestration —
+// paid for on every healthy run too. So every case below asserts the ACTION, not just the state it
+// was derived from, and one case pins the wording that travels with it.
 describe("maestro-check-runtime.cjs", () => {
   function runCheck(root: string, home: string): { code: number; stdout: string } {
     try {
@@ -598,75 +604,134 @@ describe("maestro-check-runtime.cjs", () => {
     fs.writeFileSync(path.join(dir, "installed_plugins.json"), JSON.stringify({ version: 1, plugins }, null, 2));
   }
 
-  it("no-ops when maestro.json is absent, without touching installed_plugins.json", async () => {
-    const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
-    const home = path.join(tmp, "home1");
-
-    const { code, stdout } = runCheck(root, home);
-    expect(code).toBe(0);
-    expect(JSON.parse(stdout)).toMatchObject({ ok: false, stale: false });
-  });
-
-  it("no-ops when the maestro plugin isn't installed on this machine", async () => {
-    const root = makeProject("p");
+  /** A project that is fully set up and current — the baseline every case below breaks one way. */
+  async function healthyProject(name: string): Promise<{ root: string; home: string }> {
+    const root = makeProject(name);
     writeConfig(root, defaultish);
     await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
-    const home = path.join(tmp, "home2");
-    fs.mkdirSync(home, { recursive: true }); // no plugins/installed_plugins.json at all
-
-    const { code, stdout } = runCheck(root, home);
-    expect(code).toBe(0);
-    expect(JSON.parse(stdout)).toMatchObject({ ok: false, stale: false });
-  });
-
-  it("reports stale when the installed plugin's version doesn't match runtimeVersion", async () => {
-    const root = makeProject("p");
-    writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
-    writeConfig(root, { ...readConfig(root)!, runtimeVersion: "0.0.0-older" });
-    const home = path.join(tmp, "home3");
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    const home = path.join(tmp, "home-" + name);
     writeInstalledPlugins(home, {
       "maestro@maestro": [
         {
           scope: "user",
-          version: "9.9.9",
+          version: readConfig(root)!.runtimeVersion!,
           installedAt: "2026-01-01T00:00:00.000Z",
-          installPath: "/some/cache/path/maestro/9.9.9",
+          installPath: "/some/cache/path/maestro",
         },
       ],
     });
+    return { root, home };
+  }
 
+  it("continues when the project is configured, rendered and current", async () => {
+    const { root, home } = await healthyProject("healthy");
     const { code, stdout } = runCheck(root, home);
     expect(code).toBe(0);
-    expect(JSON.parse(stdout)).toEqual({
+    expect(JSON.parse(stdout)).toMatchObject({ action: "continue", ok: true, stale: false });
+  });
+
+  // Step 0 does what `instruction` says without consulting a table, so an action that arrives
+  // without its sentence — or with someone else's — is the whole contract broken.
+  it("carries the one instruction that matches its action", async () => {
+    const { root, home } = await healthyProject("instructions");
+    const seen = new Map<string, string>();
+    const record = (r: string, h: string) => {
+      const { action, instruction } = JSON.parse(runCheck(r, h).stdout);
+      expect(instruction, `no instruction for action "${action}"`).toBeTypeOf("string");
+      const prior = seen.get(action);
+      if (prior !== undefined) expect(instruction).toBe(prior); // one wording per action, always
+      seen.set(action, instruction);
+    };
+    record(root, home); // continue
+    writeConfig(root, { ...readConfig(root)!, runtimeVersion: "0.0.0-older" });
+    record(root, home); // update
+    fs.rmSync(path.join(root, ".claude", "maestro.json"));
+    record(root, home); // install
+
+    expect([...seen.keys()].sort()).toEqual(["continue", "install", "update"]);
+    expect(seen.get("continue")).toContain("Carry on");
+    expect(seen.get("update")).toContain("/maestro-update");
+    expect(seen.get("install")).toContain("/maestro-install");
+    expect(seen.get("install")).toContain("Stop");
+  });
+
+  it("says install when maestro.json is absent", async () => {
+    const { root, home } = await healthyProject("no-config");
+    fs.rmSync(path.join(root, ".claude", "maestro.json"));
+    const { code, stdout } = runCheck(root, home);
+    expect(code).toBe(0);
+    expect(JSON.parse(stdout)).toMatchObject({ action: "install" });
+  });
+
+  // installRuntime copies the orchestrator template, whose HANDOFFS region is still the
+  // placeholder; /maestro-install runs the renderer as a separate step afterwards. A project
+  // caught between the two is genuinely not ready, and this is the state that says so.
+  it("says update when the runtime was installed but never rendered", async () => {
+    const root = makeProject("unrendered");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    expect(JSON.parse(runCheck(root, path.join(tmp, "home-unrendered")).stdout)).toMatchObject({
+      action: "update",
+      reason: "the handoff table no longer matches maestro.json",
+    });
+  });
+
+  // A config with no workflows renders the handoff table to its "not configured yet" placeholder,
+  // so the orchestrator would read that, find no success path, and start improvising. Catching it
+  // here is the difference between one actionable line and a confused conversation.
+  it("says install when maestro.json configures no workflows", async () => {
+    const { root, home } = await healthyProject("empty-wf");
+    writeConfig(root, { ...readConfig(root)!, workflows: [] });
+    expect(JSON.parse(runCheck(root, home).stdout)).toMatchObject({
+      action: "install",
+      reason: "maestro.json configures no workflows",
+    });
+  });
+
+  it("says install when the orchestrator skill was never written", async () => {
+    const { root, home } = await healthyProject("no-skill");
+    fs.rmSync(path.join(root, ".claude", "skills", "maestro"), { recursive: true, force: true });
+    expect(JSON.parse(runCheck(root, home).stdout)).toMatchObject({ action: "install" });
+  });
+
+  // The check nothing else in the system performs. A hand-edited maestro.json whose table was
+  // never re-rendered routes work down a path that is not the configured one — silently, and for
+  // as long as nobody notices. `handoffTable()` is imported from the renderer, so this comparison
+  // cannot drift from what a real re-render would produce.
+  it("says update when the handoff table no longer matches maestro.json", async () => {
+    const { root, home } = await healthyProject("drift");
+    const cfg = readConfig(root)!;
+    writeConfig(root, {
+      ...cfg,
+      workflows: cfg.workflows.map((w, i) => (i === 0 ? { ...w, name: w.name + "-renamed" } : w)),
+    });
+    expect(JSON.parse(runCheck(root, home).stdout)).toMatchObject({
+      action: "update",
+      reason: "the handoff table no longer matches maestro.json",
+    });
+  });
+
+  it("says update when the installed plugin's version doesn't match runtimeVersion", async () => {
+    const { root, home } = await healthyProject("stale");
+    writeConfig(root, { ...readConfig(root)!, runtimeVersion: "0.0.0-older" });
+    expect(JSON.parse(runCheck(root, home).stdout)).toMatchObject({
+      action: "update",
       ok: true,
       stale: true,
       installedVersion: "0.0.0-older",
-      runtimeVersion: "9.9.9",
-      pluginRoot: "/some/cache/path/maestro/9.9.9",
+      pluginRoot: "/some/cache/path/maestro",
     });
   });
 
-  it("reports not stale when the versions already match", async () => {
-    const root = makeProject("p");
-    writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
-    const stamped = readConfig(root)!.runtimeVersion!;
-    const home = path.join(tmp, "home4");
-    writeInstalledPlugins(home, {
-      "maestro@maestro": [
-        {
-          scope: "user",
-          version: stamped,
-          installedAt: "2026-01-01T00:00:00.000Z",
-          installPath: "/some/cache/path/maestro/" + stamped,
-        },
-      ],
-    });
-
-    const { stdout } = runCheck(root, home);
-    expect(JSON.parse(stdout)).toMatchObject({ ok: true, stale: false });
+  // The one branch that must NOT block: an unanswerable version comparison is ordinary (a
+  // project-local-only setup, or the app-only delivery path) and has nothing to do with whether
+  // this project can orchestrate. Everything the project itself controls has already passed.
+  it("continues when the maestro plugin isn't installed on this machine", async () => {
+    const { root } = await healthyProject("no-plugin");
+    const home = path.join(tmp, "home-bare");
+    fs.mkdirSync(home, { recursive: true }); // no plugins/installed_plugins.json at all
+    expect(JSON.parse(runCheck(root, home).stdout)).toMatchObject({ action: "continue", ok: false, stale: false });
   });
 });
 
