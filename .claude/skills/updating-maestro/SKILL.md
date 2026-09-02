@@ -1,6 +1,10 @@
 ---
 name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change."
+metadata:
+  type: concept-skill
+  version: "1.0"
+  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -114,6 +118,8 @@ bumped.**
 
 ## Related
 
+- `[[installing-maestro]]` — what an install actually writes into a project, and why the
+  project-local copies exist at all.
 - `[[maestro-architecture]]` — what those hooks and scripts do at runtime once they are present.
 - `/maestro-update` refreshes the project copies from the **currently installed plugin** — so if the
   plugin cache itself is stale, it faithfully propagates the stale copy. Fix the cache first.

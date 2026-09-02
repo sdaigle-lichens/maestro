@@ -114,7 +114,10 @@ the times it doesn't are invisible.
 ## Output locations
 
 - The concept skill: `<dir>/.claude/skills/<concept-id>/`, in the `.claude` **nearest the concept's
-  code** — `apps/web/.claude/skills/...` for a concept living in `apps/web`.
+  code** — `apps/web/.claude/skills/...` for a concept living in `apps/web` — except that a concept
+  explaining code the repo *publishes* goes in the nearest `.claude` outside that published tree,
+  usually the root. Placement is by audience: a concept skill written into a published directory
+  ships to that artifact's users, who are not who it was written for.
 - The repo-level record: `<root>/.claude/concept-skills.json`, `{"version", "last_update"}`.
   Machine-owned and created on the first `state-set`. It is deliberately its **own** file rather
   than a block on `maestro.json`: concept skills are a plain `.claude/skills` convention, and a repo

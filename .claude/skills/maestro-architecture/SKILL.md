@@ -1,6 +1,10 @@
 ---
 name: maestro-architecture
-description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, what the install does, how the SubagentStart/PreToolUse/SessionEnd hooks behave at runtime, how skills + condition-edge handoffs are injected, the HANDOFF routing contract, and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, what the install/uninstall touches, or which maestro file is authoritative."
+description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the SubagentStart/PreToolUse/SessionEnd hooks behave at runtime, how skills + condition-edge handoffs are injected, the HANDOFF routing contract, the orchestrator skill's managed regions, and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
+metadata:
+  type: concept-skill
+  version: "1.1"
+  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
 ---
 
 # Maestro Runtime Architecture
@@ -22,46 +26,28 @@ longer any transport between the two: no container, no port, no `/tmp` channel f
 blocks waiting for a UI. A save is an IPC call in the desktop app; a hook is a script the session
 runs.
 
-## Install pipeline
+## How the runtime gets there
 
-Two paths produce the same result, and both end at a rendered orchestrator over a seeded `maestro.json`.
+Two paths write the same files and end at a rendered orchestrator over a seeded `maestro.json`: the
+desktop app's `/maestro` route (`installRuntime()` in `src/core`, no session involved, and the path
+to prefer) and `/maestro-install` for a machine without the app. Both copy the runtime scripts into
+`<project>/.claude/scripts/`, register the hooks in the project's own `.claude/settings.json`,
+ignore the session files from the repo-root `.gitignore`, and seed `maestro.json` **only when
+absent**. Rendering is always a separate step afterwards, because the renderer consumes
+`maestro.json` and writes into `maestro/SKILL.md`, so both must already exist — which is all
+`/maestro-update` is.
 
-**The desktop app** (`apps/maestro`, `/maestro` route) — `installRuntime()` in `src/core`. No session involved. This is the path to prefer; it also reports what changed on disk and detects the double-registration case below.
+`/maestro-uninstall` reverses the hook registration and clears the session files; `--purge` also
+removes the orchestrator skill, the copied scripts and `maestro.json`.
 
-**`/maestro-install`** — the terminal path, for a machine with no desktop app:
+**The full pipeline — the asset and hook manifest, the two implementations that must agree, how
+staleness is decided, and what a purge deletes — is the `installing-maestro` skill.** What follows
+here is what those files then *do* inside a session.
 
-```
-User runs /maestro-install
-        │  Step 1: analyze repo → implementation agent(s)
-        │  Step 2 (fresh install only): scan .claude/skills/ (skill id = dir name; frontmatter
-        │          optional) → best-fit map each project skill to a seeded agent (impl +
-        │          test/reviewer/refactor/scribe) → single AskUserQuestion consent prompt →
-        │          skill map {agent: [skillId]}  (empty / skipped on re-install)
-        ▼
-maestro-install.js [--impl-agents a,b] [--skill-map {…}]   (idempotent)
-  1. templates/maestro/SKILL.md → .claude/skills/maestro/SKILL.md
-       absent   → copied whole
-       present  → Maestro:STEPS + Maestro:PRINCIPLES regions re-synced from the template;
-                  content outside the markers (and the rendered Maestro:HANDOFFS table) preserved
-       no markers (pre-regions install) → old file → SKILL.md.bak, template written  (action: "migrated")
-  2. runtime scripts             → .claude/scripts/{maestro-set-session-workflow.cjs, maestro-render-orchestrator.cjs, maestro-task-status.cjs, bash-validation.sh, lib/maestro-session.cjs, lib/maestro-tasks.cjs, lib/maestro-skill-regions.cjs}  (always refreshed)
-  3. merge PreToolUse Bash hook (bash-validation.sh) → .claude/settings.json  (preserves other keys)
-  4. ensure repo-root             .gitignore  `# Maestro` section     (**/.claude/maestro_session{,.log,_tasks}.{json,jsonl} — covers every nested .claude/ in a monorepo, including root; no per-project .claude/.gitignore is written)
-  5. seed .claude/maestro.json from defaultV3Config(implAgents, skillMap)  — ONLY when absent
-        ▼
-node .claude/scripts/maestro-render-orchestrator.cjs
-        rewrites the Maestro:HANDOFFS table in maestro/SKILL.md from maestro.json
-```
-
-Step 5 requires `lib/maestro-seed.cjs`, generated from `defaultV3Config` in `src/core` — the _same_ function the app seeds a fresh canvas with, so both paths produce a byte-identical starting config (`JSON.stringify(cfg, null, 2)`, no trailing newline). The seed is guarded on absence: an existing `maestro.json` is the user's authored graph and is never overwritten.
-
-Why render is a separate step from scaffold: the renderer _consumes_ `maestro.json` and writes into `maestro/SKILL.md`, so both files must already exist. `/maestro-update` does the same two things standalone — refresh the project-copied scripts from the plugin, then re-render — which is what you run after a hand-edit to `maestro.json` or after a plugin version bump.
-
-`/maestro-uninstall` reverses step 3 (removes the bash-validation `PreToolUse` hook and any legacy `agent: "maestro"` left by older installs) and clears the session files; `--purge` also removes the orchestrator skill, the copied scripts, and `maestro.json`. The desktop app's `/maestro` route has both levels too, and names every file in a confirmation before a purge.
-
-**What `/maestro-install` cannot do:** author a graph. It seeds one. Adding a workflow, moving a node, promoting a skill from referenced to loaded, or assigning rules is the app's canvas or a hand-edit — and the `rules` slice starts empty either way, since placing rule files is `maestro-apply-rules.js`'s job.
-
-`bash-validation.sh` (step 2/3) is a PreToolUse Bash guard: it denies any Bash command that reads a `.env` secret file, allowing only `.env.example`. It's a project-copied runtime script, so its hook command is `$CLAUDE_PROJECT_DIR/.claude/scripts/bash-validation.sh` and the installer reuses an existing `Bash` matcher rather than clobbering user hooks.
+**What an install cannot do:** author a graph. It seeds one. Adding a workflow, moving a node,
+promoting a skill from referenced to loaded, or assigning rules is the app's canvas or a hand-edit —
+and the `rules` slice starts empty either way, since placing rule files is `maestro-apply-rules.js`'s
+job.
 
 ## Runtime lifecycle (one session)
 
@@ -154,7 +140,7 @@ Note: protocol templates live **only** in the agent template files, never in `ma
 | The handoff table is stale                             | run `/maestro-update` (re-renders from `maestro.json`)                                                                                                                                                                                                                                                         |
 | How do I turn Maestro off?                             | `/maestro-uninstall` (removes the bash-validation hook + session files); `--purge` to also remove the orchestrator skill + scripts                                                                                                                                                                             |
 | How did this session go / what could have gone better? | `/maestro-post-mortem` — `maestro-post-mortem.js` digests `maestro_session.log.jsonl` (read-only) and the skill couples it with the main session's context to flag avoidable work, false checks, bad assumptions, and handoff issues, then proposes fixes. Run mid-session (the log is wiped at `SessionEnd`). |
-| Where's the install logic?                             | `installRuntime()`/`uninstallRuntime()` in `src/core` (the app's `/maestro` route), and `plugins/maestro/scripts/maestro-install.js` for the terminal path                                                                                                                                            |
+| Where's the install logic?                             | the `installing-maestro` skill — `installRuntime()`/`uninstallRuntime()` in `src/core` for the app, `plugins/maestro/scripts/maestro-{install,uninstall}.js` for the terminal path                                                                                                                    |
 | How do I edit the graph without a session?             | Open the project in the Maestro desktop app (`apps/maestro`) → `/workflows` for the canvas, `/rules` for rule placement. A save renders the orchestrator and applies rules in the same call.                                                                                                                   |
 
 ## Things that bite

@@ -17,7 +17,7 @@
 //      ${CLAUDE_PLUGIN_ROOT} — see apps/maestro/src/core/install.ts's header for why.
 //   3. merges the full Maestro hook set into <project>/.claude/settings.json (preserves other
 //      keys): the bash-validation PreToolUse guard plus SubagentStart/SubagentStop/PreToolUse/
-//      PostToolUse/SessionEnd, mirroring plugins/ai-tools-manager/hooks/hooks.json one-for-one.
+//      PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json one-for-one.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
 //      .claude/maestro_session*.{json,jsonl} across the repo / monorepo (the `**/` glob covers
 //      root-level .claude/ too, so no per-package .gitignore is needed)
@@ -274,7 +274,7 @@ function nodeHook(event, matcher, script) {
 }
 
 // What this install registers in the project's `.claude/settings.json`. Mirrors
-// plugins/ai-tools-manager/hooks/hooks.json one-for-one (see apps/maestro/src/core/install.ts's
+// plugins/maestro/hooks/hooks.json one-for-one (see apps/maestro/src/core/install.ts's
 // HOOK_REGISTRATIONS, which this list is kept in lockstep with) — every hook the plugin would
 // otherwise run from ${CLAUDE_PLUGIN_ROOT}, plus the bash-validation guard.
 const HOOK_REGISTRATIONS = [

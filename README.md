@@ -40,6 +40,9 @@ claude plugin install maestro@maestro
 
 Then run `/maestro-install` inside the project you want Maestro to orchestrate.
 
+See [`docs/marketplace.md`](./docs/marketplace.md) for updating, removing, installing from a local
+checkout, auto-registering the marketplace for a team, and publishing a change to the plugin.
+
 ## Running the desktop app
 
 ```bash
@@ -59,6 +62,7 @@ maestro/
 │   └── marketplace.json      # Marketplace manifest (this catalog)
 ├── apps/
 │   └── maestro/               # Electron desktop app
+├── docs/                      # Human-facing docs (see also apps/maestro/docs/)
 ├── packages/
 │   ├── ui/                    # Shared React component library
 │   ├── styles/                # Shared CSS

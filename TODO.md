@@ -2,7 +2,7 @@
 
 Use the following skills to complete the task I will give you:
 
-- apps/maestro/.claude/skills/maestro-architecture/SKILL.md
+- .claude/skills/maestro-architecture/SKILL.md
 - apps/maestro/.claude/skills/test-maestro/SKILL.md
 
 You can use the /grill-me skill to clarify the plan.

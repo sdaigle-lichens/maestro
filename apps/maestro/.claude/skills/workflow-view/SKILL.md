@@ -1,6 +1,10 @@
 ---
 name: workflow-view
 description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, or why a workflow change isn't reaching the config."
+metadata:
+  type: concept-skill
+  version: "1.0"
+  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
 ---
 
 # Workflow View

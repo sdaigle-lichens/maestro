@@ -116,8 +116,19 @@ directories is the failure.
 
 ### 6. Write the skeleton
 
-For each approved concept, in the `.claude` **nearest its code** — `apps/web/.claude/skills/...` for
-a concept that lives in `apps/web`, the repo root's only for something genuinely repo-wide:
+Each approved concept goes in the `.claude/skills/` **nearest its code** — `apps/web/.claude/skills/...`
+for a concept that lives in `apps/web` — with two rules that override that:
+
+- **Never write into a tree the repo publishes.** A plugin directory, a package that gets copied
+  verbatim into an installable artifact, anything whose contents reach someone else's machine: a
+  concept skill there ships to that artifact's *users*, who are not its audience. A concept
+  explaining published code goes in the nearest `.claude` **outside** the published tree — in
+  practice the repo root, since published trees rarely sit under an app.
+- Anything genuinely repo-wide, or belonging to no one package, goes at the root as well.
+
+Placement follows **audience**, not the directory the code happens to sit in: a concept skill exists
+for whoever works on *this* repo. Where a `CLAUDE.md` states which directories hold developer
+documentation, it settles the question over both rules above.
 
 ```
 <dir>/.claude/skills/<concept-id>/

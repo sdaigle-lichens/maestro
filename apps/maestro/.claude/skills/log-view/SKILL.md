@@ -1,6 +1,10 @@
 ---
 name: log-view
 description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, and how the maestro-session-log.js / maestro-subagent-log.js hooks write the maestro_session.log.jsonl it reads. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why a step has no status icon, or how dispatch/handoff entries are produced by the hooks."
+metadata:
+  type: concept-skill
+  version: "1.0"
+  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
 ---
 
 # Log View
