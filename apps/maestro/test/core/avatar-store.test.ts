@@ -4,8 +4,9 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 
-import { getAvatar, setAvatar } from "../../src/core/avatar-store.js";
+import { getAvatar, readAllAvatars, setAvatar } from "../../src/core/avatar-store.js";
 import { AVATAR_CATEGORIES, AVATAR_PARTS, type AvatarLayers } from "../../src/core/contracts.js";
 
 function fullLayers(): AvatarLayers {
@@ -59,5 +60,45 @@ describe("getAvatar / setAvatar", () => {
     const bad = fullLayers();
     delete (bad as Partial<AvatarLayers>).eyes;
     expect(() => setAvatar("reviewer", bad, dbPath)).toThrow();
+  });
+});
+
+// The /agents list draws a thumb per row, so it reads the whole store in one call rather than
+// opening it once per agent.
+describe("readAllAvatars", () => {
+  let dir: string;
+  let dbPath: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-avatars-all-"));
+    dbPath = path.join(dir, "avatars.sqlite");
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("is empty on a store nothing has been written to", () => {
+    expect(readAllAvatars(dbPath)).toEqual({});
+  });
+
+  it("returns every saved avatar keyed by agent name", () => {
+    const reviewer = fullLayers();
+    const scribe = { ...fullLayers(), hat: null };
+    setAvatar("reviewer", reviewer, dbPath);
+    setAvatar("scribe", scribe, dbPath);
+    expect(readAllAvatars(dbPath)).toEqual({ reviewer, scribe });
+  });
+
+  it("skips a row that no longer validates instead of failing the whole read", () => {
+    setAvatar("reviewer", fullLayers(), dbPath);
+    const db = new DatabaseSync(dbPath);
+    try {
+      db.prepare("INSERT INTO agent_avatars (agent_name, layers) VALUES (?, ?)").run("stale", '{"body":"gone"}');
+      db.prepare("INSERT INTO agent_avatars (agent_name, layers) VALUES (?, ?)").run("broken", "not json");
+    } finally {
+      db.close();
+    }
+    expect(Object.keys(readAllAvatars(dbPath))).toEqual(["reviewer"]);
   });
 });

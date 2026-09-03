@@ -84,6 +84,10 @@ const api: MaestroApi = {
   avatar: {
     get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),
     set: (agentName, layers) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers),
+    list: () => ipcRenderer.invoke(IPC.avatarList),
+  },
+  agents: {
+    describe: (agentName, description) => ipcRenderer.invoke(IPC.agentDescribe, agentName, description),
   },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),

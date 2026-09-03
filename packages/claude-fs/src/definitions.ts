@@ -101,6 +101,37 @@ export async function readAgentsFromDir(dir: string): Promise<DefinitionInfo[]> 
   return out;
 }
 
+// An agent read with the path it came from, rather than the two fields `DefinitionInfo` keeps.
+// A sibling of `readAgentsFromDir` for the same reason `readSkillEntriesFromDir` is a sibling of
+// `readSkillsFromDir`: its callers want the narrow `{ name, description }` shape and nothing more,
+// and only a caller that intends to WRITE the file needs to know where it is.
+export interface AgentEntry extends DefinitionInfo {
+  /** The `.md` the frontmatter was read from — `<dir>/<name>.md` or `<dir>/<name>/AGENTS.md`. */
+  file: string;
+}
+
+// Read agent entries from a directory, preserving each one's path. Same two layouts
+// `readAgentsFromDir` supports: flat `<name>.md` files and `<name>/AGENTS.md` subfolders.
+export async function readAgentEntriesFromDir(dir: string): Promise<AgentEntry[]> {
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => null);
+  if (entries === null) return [];
+  const out: AgentEntry[] = [];
+  for (const entry of entries) {
+    let file: string | null = null;
+    if (entry.isFile() && entry.name.endsWith(".md")) {
+      file = path.join(dir, entry.name);
+    } else if (entry.isDirectory()) {
+      file = path.join(dir, entry.name, "AGENTS.md");
+    }
+    if (!file) continue;
+    const md = await readFile(file, "utf-8").catch(() => null);
+    if (md === null) continue;
+    const fm = parseFrontmatter(md);
+    if (fm.name) out.push({ name: fm.name, description: fm.description ?? "", file });
+  }
+  return out;
+}
+
 // Global (user-scoped) skills and agents under ~/.claude.
 export function getUserSkills(): Promise<DefinitionInfo[]> {
   return readSkillsFromDir(path.join(CLAUDE_DIR, "skills"));

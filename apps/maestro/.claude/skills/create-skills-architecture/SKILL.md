@@ -3,8 +3,8 @@ name: create-skills-architecture
 description: "Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, or how target=project differs from target=marketplace."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
 ---
 
 # Create-Skills Architecture
@@ -244,7 +244,19 @@ Three rules hold it together:
 | Change the description algorithm | `text.ts` in `src/core` — affects skill & subagent, preview and file, at once                                                                                             |
 | Change keyboard shortcuts        | the route's `SHORTCUT_SECTIONS` and `create-shell.tsx`                                                                                                                    |
 | Add a new shared UI primitive    | new file in `packages/ui/src/`, then an export in `packages/ui/package.json`                                                                                              |
-| Add a new create-\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link at the bottom of the matching `/tools` tab (`components/tabs/create-link.tsx`), not into a top-bar menu |
+| Add a new create-\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link on the page that owns the thing (`components/tabs/create-link.tsx`), not into a top-bar menu — and add it to the reachability map in `test/isolation.test.ts`, which pins **which file** holds each entry point |
+
+**Where the four entry points live.** `test/isolation.test.ts`'s reachability map is the list of
+record, because a Create link nobody can reach is a green suite and a dead feature:
+
+| Flow                 | Entry point                                                  |
+| -------------------- | ------------------------------------------------------------ |
+| `create-skill`       | `src/renderer/src/routes/skills.tsx`                          |
+| `create-subagent`    | `src/renderer/src/components/agents/agent-list.tsx` — the "+ New agent" link at the foot of `/agents`' left pane, not the route file |
+| `create-plugin`      | `src/renderer/src/components/tabs/command-center.tsx`         |
+| `create-marketplace` | `src/renderer/src/components/tabs/marketplace.tsx`            |
+
+Skills and Agents moved off `/tools` onto their own pages; only the last two are still `/tools` tabs.
 
 ## Things that bite
 

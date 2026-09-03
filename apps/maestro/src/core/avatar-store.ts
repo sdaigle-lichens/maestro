@@ -53,6 +53,36 @@ export function getAvatar(agentName: string, dbPath: string = DEFAULT_AVATAR_DB_
   }
 }
 
+/**
+ * Every stored avatar, keyed by agent name — the /agents list renders one thumb per row, and a
+ * `getAvatar` per row would be one sqlite open per agent on every render. Same shape and same
+ * reason as `readAllAgentTypes` / `readAllAgentProjectTags`.
+ *
+ * A row whose JSON no longer validates (a part removed from `AVATAR_PARTS` since it was saved) is
+ * SKIPPED rather than failing the whole read: one stale agent must not blank the list.
+ */
+export function readAllAvatars(dbPath: string = DEFAULT_AVATAR_DB_PATH): Record<string, AvatarLayers> {
+  const db = openDb(dbPath);
+  try {
+    const rows = db.prepare("SELECT agent_name, layers FROM agent_avatars").all() as Array<{
+      agent_name: string;
+      layers: string;
+    }>;
+    const out: Record<string, AvatarLayers> = {};
+    for (const row of rows) {
+      try {
+        const parsed: unknown = JSON.parse(row.layers);
+        if (isValidLayers(parsed)) out[row.agent_name] = parsed;
+      } catch {
+        // Unparseable JSON — same treatment as an invalid one.
+      }
+    }
+    return out;
+  } finally {
+    db.close();
+  }
+}
+
 /** Rejects (throws) on an invalid category id — same discipline as `setAgentType`, checked before write. */
 export function setAvatar(
   agentName: string,

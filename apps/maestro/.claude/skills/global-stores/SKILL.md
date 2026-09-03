@@ -1,10 +1,10 @@
 ---
 name: global-stores
-description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, or where a report default comes from before the project has an opinion."
+description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report default comes from before the project has an opinion, or why an agent's description is written back to its own .md instead of a store."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
 ---
 
 # Global stores
@@ -35,6 +35,30 @@ Do not collapse these into one rationale; the modules' own headers distinguish t
 - **Report defaults** are global for a different reason: they are the **fallback tier** a project
   falls back to when it has no opinion of its own, and the thing install/update syncs a project's
   `.claude/reports/*.md` _from_.
+
+## The exception: a description is not a store
+
+`/agents` also edits an agent's **description**, and that one deliberately does *not* get a store.
+`src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the
+`agent:describe` channel. The reason is the test to apply before adding a sixth store: type, project
+tag and avatar are **Maestro's own metadata** and mean nothing to a Claude session, so a machine-wide
+copy is the truth. A description is the line **Claude Code itself reads** to decide when to dispatch
+the agent, so a copy beside the app would make the page show one sentence while every run used
+another.
+
+Two guards bound the write, and both are about not lying to the user:
+
+- `EDITABLE_AGENT_SOURCES` (`contracts.ts`) is `["project", "user", "maestro"]`. An **installed
+  plugin's** agents are refused — they live in a version-keyed marketplace cache that the next plugin
+  update overwrites, so an edit there is discarded, not merely unowned. `contracts.ts` is otherwise
+  interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` / `AVATAR_CATEGORIES` /
+  `AGENT_TYPES`) so the renderer can decide from `source` alone with no round trip.
+- `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's
+  read-only bundled agents report why instead of appearing to save.
+
+`replaceDescriptionInFrontmatter` **refuses** a YAML block scalar (`|`, `>`) or a value continued on
+the next line rather than flattening it: `parseFrontmatter` already misreads those, and rewriting
+only the first line would leave the continuation dangling as garbage keys.
 
 ## Why `node:sqlite`
 

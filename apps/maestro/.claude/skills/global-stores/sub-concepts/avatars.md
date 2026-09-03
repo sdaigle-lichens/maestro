@@ -9,5 +9,12 @@ wherever it is used, so its look should follow the name rather than being re-pic
 
 Nothing here affects routing or behaviour; it is appearance only.
 
+`readAllAvatars(dbPath?)` returns every stored avatar keyed by agent name in **one** db open — the
+batch read behind `avatar:list`, added so `/agents` can show a composited thumb per list row without
+one sqlite open per agent. A row whose JSON no longer validates is skipped, not fatal, so one bad
+row can't blank the list. `defaultAvatarLayers()` (`src/renderer/src/utils/avatar.ts`) fills a
+missing agent: it returns the first option of **every** category except `hat` — it previously
+returned only the required ones, which composited a naked sprite onto every uncustomised row.
+
 Files: `src/core/avatar-store.ts`, `src/renderer/src/components/avatar/`.
 Tested for core↔plugin agreement by `test/core/avatar-parity.test.ts`.

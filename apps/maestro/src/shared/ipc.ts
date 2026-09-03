@@ -105,6 +105,7 @@ import type {
   AvatarPartOption,
   AvatarLayers,
   AgentType,
+  AgentDescriptionResult,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
@@ -118,6 +119,8 @@ export {
   AVATAR_PARTS,
   AVATAR_REQUIRED_CATEGORIES,
   AGENT_TYPES,
+  EDITABLE_AGENT_SOURCES,
+  isEditableAgentSource,
 } from "../core/contracts.js";
 
 export type {
@@ -210,6 +213,7 @@ export type {
   AvatarPartOption,
   AvatarLayers,
   AgentType,
+  AgentDescriptionResult,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -392,6 +396,18 @@ export const IPC = {
   // agent's name, same as `skillProjectTagsSet` is keyed by skill id.
   avatarGet: "avatar:get",
   avatarSet: "avatar:set",
+  // Every stored avatar in one round trip — the /agents list draws a thumb per row, and a per-row
+  // `avatar:get` would open the sqlite store once per agent on every render.
+  avatarList: "avatar:list",
+
+  // The /agents card's Description field. The ONE channel that edits a subagent definition in
+  // place: unlike an agent's type, project tag or avatar — Maestro's own metadata, kept in global
+  // sqlite stores keyed by agent name — a description is the frontmatter line Claude Code itself
+  // reads to decide when to dispatch the agent, so an override kept beside the file would make
+  // this page show one sentence while every run used another. Resolves the file through
+  // `discoverAgents`' own tier order and refuses any tier this app does not own — see
+  // `src/core/agent-descriptions.ts`.
+  agentDescribe: "agent:describe",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -620,6 +636,19 @@ export interface MaestroApi {
   avatar: {
     get(agentName: string): Promise<AvatarLayers | null>;
     set(agentName: string, layers: AvatarLayers): Promise<AvatarLayers>;
+    /** Every agent with a saved avatar, keyed by agent name. Agents without one are simply absent. */
+    list(): Promise<Record<string, AvatarLayers>>;
+  };
+  /**
+   * An agent's own `description`, written back into the `.md` it was discovered in. REJECTS rather
+   * than no-opping when the agent has no definition file, when its tier is not one of
+   * `EDITABLE_AGENT_SOURCES` (an installed plugin's agents live in a cache the next update
+   * overwrites), when the file is read-only (a packaged build's bundled agents), or when its
+   * frontmatter uses a description shape this app can't rewrite without corrupting it. Echoes back
+   * the normalized description and the file it changed.
+   */
+  agents: {
+    describe(agentName: string, description: string): Promise<AgentDescriptionResult>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;

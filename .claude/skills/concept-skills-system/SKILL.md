@@ -3,8 +3,8 @@ name: concept-skills-system
 description: "Explains the concept-skill machinery the maestro plugin ships: what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the maestro-concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, or deciding whether something belongs in a concept skill or in docs/."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
 ---
 
 # Concept-skill system
@@ -45,9 +45,16 @@ the runtime sit in the root `.claude` instead. See the placement rule in the rep
 | `update-single-concept-skill` | Take one skill from skeleton to worth loading, incl. `agents/` notes | Deep on one concept, still not exhaustive |
 | `scribe` | The placement rule: concept skill vs `docs/` vs a `docs/` file a skill references | — |
 
-Version conventions follow that split: `update-concept-skills` bumps **minor**,
-`update-single-concept-skill` bumps **major**, and a repo-level major happens when a concept is added
-or removed.
+Version conventions follow that split: `update-concept-skills` bumps a touched skill **minor**,
+`update-single-concept-skill` bumps one **major** (a deep research pass is what separates a
+researched skill from a skeleton), and a skill created in either run gets **initial**.
+
+**The repo-level record moves by `0.1` and effectively only by `0.1`.** A reconciliation bumps it
+minor whether or not concepts were added or deleted — adding one is the ordinary outcome of a pass,
+not a different kind of event, and treating it as a major made the number jump a whole version for a
+routine run. `--bump major` on `state-set` stays in the CLI for a wholesale re-derivation of the
+list; nothing in the four flows reaches for it today, and `create-concept-skills` seeds a new list
+with `initial` instead.
 
 ## The CLI owns the versions
 

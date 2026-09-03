@@ -19,10 +19,17 @@ function loadImage(src: string): Promise<HTMLImageElement> {
 export default function AvatarCanvas({
   layers,
   size = 128,
+  fill = false,
   className = "",
 }: {
   layers: AvatarLayers;
   size?: number;
+  /**
+   * Stretch to the parent box instead of `size` px. The /agents card frames the avatar in a
+   * responsive `aspect-square` container whose width the layout decides, so it cannot name a pixel
+   * size up front; every other caller still passes one.
+   */
+  fill?: boolean;
   className?: string;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -59,7 +66,7 @@ export default function AvatarCanvas({
       ref={canvasRef}
       width={SPRITE_SIZE}
       height={SPRITE_SIZE}
-      style={{ width: size, height: size, imageRendering: "pixelated" }}
+      style={fill ? { width: "100%", height: "100%", imageRendering: "pixelated" } : { width: size, height: size, imageRendering: "pixelated" }}
       className={className}
     />
   );

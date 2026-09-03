@@ -20,6 +20,8 @@ import {
   skillMapFromTags,
   getAvatar,
   setAvatar,
+  readAllAvatars,
+  setAgentDescription,
   discoverProjectRules,
   discoverRuleLibrary,
   discoverProjectTree,
@@ -97,6 +99,7 @@ import type {
   ResolvedReport,
   ReportDefault,
   AgentType,
+  AgentDescriptionResult,
   ProjectTagsData,
   RulesData,
   SaveInput,
@@ -495,6 +498,18 @@ export function registerIpc(): void {
   });
   ipcMain.handle(IPC.avatarSet, (_e, agentName: string, layers: AvatarLayers): AvatarLayers => {
     return setAvatar(agentName, layers);
+  });
+  ipcMain.handle(IPC.avatarList, (): Record<string, AvatarLayers> => readAllAvatars());
+
+  // ── agent descriptions ──────────────────────────────────────────────
+  // The one handler that edits a subagent definition in place. `currentRoot()` matters here even
+  // though the other per-agent attributes ignore it: the project tier outranks the user, bundled
+  // and plugin ones, so which file this writes depends on which project is open — exactly as the
+  // list the user is looking at does. Every refusal is a throw with a reason (see
+  // `setAgentDescription`), so a read-only or plugin-owned agent reports why rather than appearing
+  // to save.
+  ipcMain.handle(IPC.agentDescribe, (_e, agentName: string, description: string): Promise<AgentDescriptionResult> => {
+    return setAgentDescription(currentRoot() ?? "", bundledAgentsDir(), agentName, description);
   });
 
   // ── tasks ────────────────────────────────────────────────────────────

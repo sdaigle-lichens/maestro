@@ -151,5 +151,9 @@
     "blockedBy": [
       "004-install-and-update-the-runtime-from-the-app.md"
     ]
+  },
+  "028-restore-the-prettier-config-and-make-check-pass-again.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

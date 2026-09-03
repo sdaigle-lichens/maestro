@@ -443,5 +443,19 @@ export {
 
 export { GLOBAL_TAG } from "./contracts.js";
 
+// An agent's own `description`, written back into the .md it was discovered in — the one per-agent
+// attribute that is NOT a global sqlite store, because Claude Code reads this line itself. See
+// ./agent-descriptions.ts.
+export {
+  findAgentFile,
+  setAgentDescription,
+  normalizeAgentDescription,
+  replaceDescriptionInFrontmatter,
+  isEditableAgentSource,
+  EDITABLE_AGENT_SOURCES,
+  type AgentFileRef,
+  type AgentDescriptionResult,
+} from "./agent-descriptions.js";
+
 // Agent avatars — global, keyed by agent name, same shape as skill-tags.ts. See ./avatar-store.ts.
-export { getAvatar, setAvatar, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";
+export { getAvatar, setAvatar, readAllAvatars, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";

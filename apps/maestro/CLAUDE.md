@@ -9,13 +9,14 @@ right-hand pane.
 
 ## Architecture docs live in `.claude/skills/`
 
-Six of them — the long-form reference; this file is the short one.
+Seven of them — the long-form reference; this file is the short one.
 
 | Skill                        | Covers                                                                                                                       |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `maestro-architecture`       | the **runtime** — install pipeline, orchestrator + hook lifecycle, the four config/state files, the HANDOFF routing contract |
 | `workflow-view`              | `/workflows` — the React Flow canvas and how the diagram maps to `maestro.json`                                              |
 | `rule-view`                  | `/rules` — the two rule selectors, the directory tree, and how a save moves rule files                                      |
+| `agents-view`                | `/agents` — the three panes, the one edit session that fans out to six write paths, the skill chips |
 | `log-view`                   | `/session-log` — the three panes, how entries become instances, and how the hooks write the log it reads                     |
 | `create-skills-architecture` | the four `create-*` flows — scaffold, confirmation dialog, consuming prompts                                                 |
 | `updating-maestro`           | how a runtime change actually reaches a project, on either delivery path                                                     |

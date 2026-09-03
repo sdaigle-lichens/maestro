@@ -154,6 +154,34 @@ export interface ResolvedReport {
 }
 
 /**
+ * What writing an agent's `description` back into its own definition file did — see
+ * `agent-descriptions.ts`. `file` and `source` are echoed so the page can say WHICH file it
+ * changed: an agent's description is not stored beside the app like its type or avatar, it is the
+ * frontmatter line Claude Code itself reads.
+ */
+export interface AgentDescriptionResult {
+  description: string;
+  file: string;
+  source: string;
+}
+
+/**
+ * The `DiscoveredDefinition.source` tiers whose agent files this app will write a description
+ * into: the user's project and global agents, and the Maestro subagents this repo ships. An
+ * installed plugin's agents are excluded — they live in a version-keyed marketplace cache the next
+ * plugin update overwrites, so an edit there is discarded rather than merely unowned.
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG`: the
+ * /agents page decides whether to render an editable description from the agent's `source` alone,
+ * with no round trip.
+ */
+export const EDITABLE_AGENT_SOURCES: readonly string[] = ["project", "user", "maestro"];
+
+export function isEditableAgentSource(source: string): boolean {
+  return EDITABLE_AGENT_SOURCES.includes(source);
+}
+
+/**
  * One row in the global report-defaults store (`report-defaults.ts`) — the fallback tier
  * `/agents` falls back to when an agent has no project override, and what the `/templates` page's
  * Reports tab edits directly. `version` is what `report-sync.ts` compares against a project's

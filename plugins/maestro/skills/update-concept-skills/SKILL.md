@@ -129,14 +129,18 @@ A skill you created in this run gets `--bump initial` instead. A skill you did n
 stamped — its `metadata.last-update` is a statement about when it was last checked against the code,
 and moving it forward for free is how a stale skill becomes invisible.
 
-Then the repo-level record:
+Then the repo-level record — **always a minor bump**, whether this run only revised skills or also
+added and deleted some:
 
 ```bash
-# a concept was added or deleted
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump major
-# only revisions
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump minor
 ```
+
+A reconciliation is a reconciliation. Adding a concept is the ordinary outcome of one — a feature
+landed and it needed a home — not a different kind of event, and reserving a major for it made the
+repo-level number jump a whole version for a routine pass. The number is there to say "the list moved
+on since `last-update`", and `0.1` says that. A repo-level **major** is for a wholesale re-derivation
+of the list, which is `/create-concept-skills`' job, not this one's.
 
 Pass `--sha <session-start-commit>` if the session has committed since it started, so the recorded
 window matches the one you actually read.
@@ -145,5 +149,4 @@ window matches the one you actually read.
 
 Four counts — added, deleted, revised, untouched — and the concept ids behind each. Name any skill
 you decided needed a deep pass rather than a reconciliation, so the user can run
-`/update-single-concept-skill` on it. Say what the repo-level version moved to and whether it was a
-major or minor bump.
+`/update-single-concept-skill` on it. Say what the repo-level version moved to.

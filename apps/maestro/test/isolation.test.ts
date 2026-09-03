@@ -476,9 +476,10 @@ describe("the create-* routes", () => {
     // nobody finds, just from a different component now.
     const tabFor: Record<(typeof routes)[number], string> = {
       // Skills and Agents moved off /tools onto their own pages — see routes/skills.tsx,
-      // routes/agents.tsx.
+      // routes/agents.tsx. /agents' own "+ New agent" link sits at the foot of its LEFT PANE
+      // rather than in the route file, so that is where this looks for it.
       "create-skill": "src/renderer/src/routes/skills.tsx",
-      "create-subagent": "src/renderer/src/routes/agents.tsx",
+      "create-subagent": "src/renderer/src/components/agents/agent-list.tsx",
       "create-plugin": "src/renderer/src/components/tabs/command-center.tsx",
       "create-marketplace": "src/renderer/src/components/tabs/marketplace.tsx",
     };

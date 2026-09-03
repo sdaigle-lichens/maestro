@@ -1,10 +1,10 @@
 ---
 name: maestro-config-model
-description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
+description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
 ---
 
 # Maestro config model (v3)
@@ -36,6 +36,13 @@ The comment on it is explicit about why: **this separation is the reason `/workf
 clobber `/rules` assignments and vice versa, and widening any branch to write another's fields
 reintroduces that bug.** Adding a field means deciding which slice owns it, not appending to
 whichever save path is nearest.
+
+**A slice can have more than one writer, and then read-before-write is the rule.** The `workflows`
+slice now has two: `/workflows`, and `/agents` (which edits the selected instance's `loaded_skills` /
+`referenced_skills`). Because the merge replaces the *whole* block, a writer that saves a copy it
+loaded minutes ago reverts everything the other one did in between — so `/agents` re-reads via
+`data:workflows` immediately before calling `config:save`, and mutates only the one instance in that
+fresh config. Any third writer of an existing slice owes the same.
 
 ## What is machine-owned, and what lives elsewhere
 

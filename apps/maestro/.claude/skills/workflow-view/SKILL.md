@@ -3,8 +3,8 @@ name: workflow-view
 description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, or why a workflow change isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
 ---
 
 # Workflow View
@@ -198,6 +198,7 @@ At runtime the `SubagentStart` hook (`maestro-inject-agent-context.js`) reads th
 - **Skills live on the instance, not the node.** A node only stores `instance` (+ id + position); the agent and skills come from the `workflow_instances` entry. Editing an instance updates every node that references it across all workflows.
 - **`success_path` is derived — never write it to `maestro.json`.** The plugin renderer (`successPath` in `maestro-render-orchestrator.cjs`) computes it from the edges and emits it into the orchestrator's `Maestro:HANDOFFS` table. Persisting it would duplicate state that can drift from the edges.
 - **Save only touches the workflow slice.** Don't widen `submitMaestroConfig`'s workflow branch to write `rules` — that's the `/rules` route's slice, and a stray write will clobber it.
+- **This route is no longer the only writer of the workflow slice.** `/agents` also saves it, to change one instance's `loaded_skills` / `referenced_skills` — it re-reads via `data:workflows` immediately before calling `config:save`, precisely because the merge replaces the whole block. If you change the shape of `workflow_instances`, `routes/agents.tsx` (`saveSkills`) has to move with it. Its chips default a newly ticked skill to **referenced**, matching `instance-skill-picker.tsx`, and it refuses to save skills at all while the config is `seeded` — writing would materialize a starter `maestro.json` as a side effect of visiting `/agents`.
 - **An instance can only hold skills that are checked in the left pane.** The `InstanceSkillPicker` lists `availableSkills` (= `skills_available` ids). Unchecking a skill in the left pane after attaching it leaves a dangling id on the instance.
 - **`NODE_TYPES`/`EDGE_TYPES` must stay module-level.** Moving them inside the component recreates the maps each render and React Flow remounts every node (loses selection, flickers).
 - **Layout auto-runs for any workflow without saved positions** — including empty ones (only main-session). The old guard `nodes.length > 1` was removed; dagre handles single-node graphs correctly.
