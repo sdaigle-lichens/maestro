@@ -169,5 +169,9 @@
     "blockedBy": [
       "029-make-project-the-only-editable-agent-tier.md"
     ]
+  },
+  "032-make-the-orchestrator-gates-optional.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

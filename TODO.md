@@ -2,11 +2,15 @@
 
 ## Queue status
 
-**The queue is empty.** Every file in `.claude/maestro-tasks/` is `done` as of `031`, and there is
-no `032`.
+**`032-make-the-orchestrator-gates-optional.md` is `ready`** and blocked by nothing. Everything up to
+`031` is `done`.
+
+It makes Step 1 of the orchestrator skill — the `/confidence-check` and `/use-design-check` gates —
+a per-project setting: two checkboxes on the app's `/maestro` page, persisted in `maestro.json`, read
+at invocation time by a runtime script whose output is injected into the skill body via the
+`` !`command` `` dynamic-context syntax. Both gates default to **off**.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting this line.
-The next run either queues new work with `/to-maestro-tasks`, or the user has something else in mind.
 
 ---
 
@@ -30,6 +34,12 @@ and then whichever of these the task actually touches:
 - .claude/skills/updating-maestro/SKILL.md
 - .claude/skills/maestro-architecture/SKILL.md
 - .claude/skills/task-queue/SKILL.md
+
+For `032` specifically, that is: `maestro-config-model` (a new `maestro.json` field and a new
+`ConfigSlice` arm), `installing-maestro` (a new runtime asset in both copies of the manifest),
+`updating-maestro` (the orchestrator skill's frontmatter is outside the managed regions, so the
+change needs a purge-and-reinstall) and `maestro-architecture` (Step 1 becomes config-driven and
+injected).
 
 Then do the task. When you are done, call the scribe agent, send it a summary of your code changes,
 and ask it to use the `/scribe` skill and the `/update-concept-skills` skill to update the project's
