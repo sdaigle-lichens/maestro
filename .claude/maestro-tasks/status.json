@@ -153,7 +153,7 @@
     ]
   },
   "028-restore-the-prettier-config-and-make-check-pass-again.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   }
 }
