@@ -257,11 +257,7 @@ export function stampConceptSkill(skillPath: string, next: { version: string; la
       [VERSION_KEY]: `"${next.version}"`,
       [LAST_UPDATE_KEY]: next.lastUpdate,
     };
-    rebuiltLines = [
-      ...kept,
-      "metadata:",
-      ...Object.entries(merged).map(([k, v]) => `${DEFAULT_INDENT}${k}: ${v}`),
-    ];
+    rebuiltLines = [...kept, "metadata:", ...Object.entries(merged).map(([k, v]) => `${DEFAULT_INDENT}${k}: ${v}`)];
   }
 
   const rebuilt = `${match[1]}${rebuiltLines.join("\n")}${match[3]}`;
@@ -336,10 +332,7 @@ export function readAgentsAvailable(projectRoot: string): string[] {
  * Returns false and writes nothing only when the value is already what it would write, so a
  * re-stamp of an unchanged list costs one read and zero writes — and shows no diff.
  */
-export function writeConceptSkillsState(
-  projectRoot: string,
-  next: MaestroConceptSkillsState
-): boolean {
+export function writeConceptSkillsState(projectRoot: string, next: MaestroConceptSkillsState): boolean {
   const cur = readConceptSkillsState(projectRoot);
   if (cur && cur.version === next.version && cur.last_update === next.last_update) return false;
   const claudeDir = path.join(projectRoot, ".claude");

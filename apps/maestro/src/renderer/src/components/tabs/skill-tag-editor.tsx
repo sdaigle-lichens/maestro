@@ -72,7 +72,12 @@ export default function SkillTagEditor({
     const res = await callMain(() => setSkillProjectTags(skillId, next));
     setPendingProjectTag(null);
     if (!res.ok) {
-      toast(<>Could not update project tags for {skillId}: {res.error}</>, { variant: "error" });
+      toast(
+        <>
+          Could not update project tags for {skillId}: {res.error}
+        </>,
+        { variant: "error" }
+      );
       return;
     }
     onChange({ projectTags: res.value, agentTypes });
@@ -84,7 +89,12 @@ export default function SkillTagEditor({
     const res = await callMain(() => setSkillAgentTypes(skillId, next));
     setPendingAgentType(null);
     if (!res.ok) {
-      toast(<>Could not update agent types for {skillId}: {res.error}</>, { variant: "error" });
+      toast(
+        <>
+          Could not update agent types for {skillId}: {res.error}
+        </>,
+        { variant: "error" }
+      );
       return;
     }
     onChange({ projectTags, agentTypes: res.value });

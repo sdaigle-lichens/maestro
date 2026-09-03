@@ -5,7 +5,13 @@
 import { Shuffle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import Button from "@repo/ui/button";
-import { AVATAR_CATEGORIES, AVATAR_PARTS, AVATAR_REQUIRED_CATEGORIES, type AvatarCategory, type AvatarLayers } from "../../../../shared/ipc";
+import {
+  AVATAR_CATEGORIES,
+  AVATAR_PARTS,
+  AVATAR_REQUIRED_CATEGORIES,
+  type AvatarCategory,
+  type AvatarLayers,
+} from "../../../../shared/ipc";
 import { resolveAvatarUrl } from "../../assets/avatar/manifest";
 import { randomAvatarLayers } from "../../utils/avatar";
 import AvatarCanvas from "./avatar-canvas";

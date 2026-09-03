@@ -43,8 +43,7 @@ export function getAvatar(agentName: string, dbPath: string = DEFAULT_AVATAR_DB_
   const db = openDb(dbPath);
   try {
     const row = db.prepare("SELECT layers FROM agent_avatars WHERE agent_name = ?").get(agentName) as
-      | { layers: string }
-      | undefined;
+      { layers: string } | undefined;
     if (!row) return null;
     const parsed: unknown = JSON.parse(row.layers);
     return isValidLayers(parsed) ? parsed : null;

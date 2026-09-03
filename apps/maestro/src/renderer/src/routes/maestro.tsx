@@ -2,11 +2,27 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
-import { AlertTriangle, Check, Download, FolderOpen, PowerOff, RefreshCw, Tag as TagIcon, Trash2, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Download,
+  FolderOpen,
+  PowerOff,
+  RefreshCw,
+  Tag as TagIcon,
+  Trash2,
+  X,
+} from "lucide-react";
 import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
-import type { InstallReport, InstallStatus, ProjectTagsData, UninstallPlan, UninstallReport } from "../../../shared/ipc";
+import type {
+  InstallReport,
+  InstallStatus,
+  ProjectTagsData,
+  UninstallPlan,
+  UninstallReport,
+} from "../../../shared/ipc";
 
 export const Route = createFileRoute("/maestro")({
   component: InstallPage,
@@ -348,11 +364,11 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
         <TagIcon size={12} /> Project tags
       </div>
       <p className="text-[12px] text-(--ink-2) m-0">
-        Which of the catalog&rsquo;s categories this project belongs to. Tags matched from repo detection at
-        install time are pre-checked; adding one may add a matching bundled agent (backend/frontend/mobile) to{" "}
-        <span className="font-mono">agents_available</span> — unchecking never removes one, that stays a manual
-        edit on Workflows. Edited from the same catalog as the <span className="font-mono">/templates</span>{" "}
-        page&rsquo;s Project Tags tab.
+        Which of the catalog&rsquo;s categories this project belongs to. Tags matched from repo detection at install
+        time are pre-checked; adding one may add a matching bundled agent (backend/frontend/mobile) to{" "}
+        <span className="font-mono">agents_available</span> — unchecking never removes one, that stays a manual edit on
+        Workflows. Edited from the same catalog as the <span className="font-mono">/templates</span> page&rsquo;s
+        Project Tags tab.
       </p>
       {data.catalog.length === 0 ? (
         <p className="text-[12px] text-(--ink-3) m-0">
@@ -593,9 +609,9 @@ function InstallPage() {
 
           {status?.pluginHooksActive && (
             <Note variant="warn">
-              The <span className="font-mono">maestro</span> plugin is also installed on this machine and
-              registers the same hooks globally, so tool calls would be logged twice here. Disable the plugin to let
-              this project-local install take over — the app will not edit your global configuration for you.
+              The <span className="font-mono">maestro</span> plugin is also installed on this machine and registers the
+              same hooks globally, so tool calls would be logged twice here. Disable the plugin to let this
+              project-local install take over — the app will not edit your global configuration for you.
             </Note>
           )}
 

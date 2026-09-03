@@ -370,7 +370,11 @@ function CreateSubagent() {
           </Field>
         )}
 
-        <Field id="ca-row-7" label="Avatar" hint="A cosmetic pixel-art look for this agent — has no effect on its behavior.">
+        <Field
+          id="ca-row-7"
+          label="Avatar"
+          hint="A cosmetic pixel-art look for this agent — has no effect on its behavior."
+        >
           <div id="ca-avatar">
             <AvatarPicker value={avatarLayers} onChange={setAvatarLayers} />
           </div>

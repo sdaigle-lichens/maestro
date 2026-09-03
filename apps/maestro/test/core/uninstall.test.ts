@@ -403,9 +403,9 @@ describe("the file-based task queue (.claude/maestro-tasks/)", () => {
     const root = await installed();
     seedTasks(root);
 
-    await expect(
-      uninstallRuntime(root, { deleteMaestroTasks: true, pluginRoot: PLUGIN_ROOT })
-    ).rejects.toThrow(/deleteMaestroTasks requires purge/);
+    await expect(uninstallRuntime(root, { deleteMaestroTasks: true, pluginRoot: PLUGIN_ROOT })).rejects.toThrow(
+      /deleteMaestroTasks requires purge/
+    );
     // Nothing touched — the rejection happens before any deletion.
     expect(fs.existsSync(path.join(root, ".claude", "maestro-tasks", "001-foo.md"))).toBe(true);
   });

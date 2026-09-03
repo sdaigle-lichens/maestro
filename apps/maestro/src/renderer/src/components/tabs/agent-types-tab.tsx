@@ -49,10 +49,7 @@ export default function AgentTypesTab({ initial }: { initial: Record<string, Age
         agentNames.map((name) => {
           const dirty = drafts[name] !== types[name];
           return (
-            <div
-              key={name}
-              className="flex items-center gap-3 px-4 py-3 border-b border-(--line) last:border-0"
-            >
+            <div key={name} className="flex items-center gap-3 px-4 py-3 border-b border-(--line) last:border-0">
               <div className="font-mono text-[13px] text-(--ink) w-28 shrink-0">{name}</div>
               <div className="w-48">
                 <Select

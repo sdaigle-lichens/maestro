@@ -66,7 +66,11 @@ export default function AvatarCanvas({
       ref={canvasRef}
       width={SPRITE_SIZE}
       height={SPRITE_SIZE}
-      style={fill ? { width: "100%", height: "100%", imageRendering: "pixelated" } : { width: size, height: size, imageRendering: "pixelated" }}
+      style={
+        fill
+          ? { width: "100%", height: "100%", imageRendering: "pixelated" }
+          : { width: size, height: size, imageRendering: "pixelated" }
+      }
       className={className}
     />
   );

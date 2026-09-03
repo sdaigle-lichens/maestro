@@ -27,7 +27,7 @@ Two reasons, neither about filesystem access:
 - One copy of hook logic to maintain; a fix ships the moment the plugin version bumps, no separate
   per-project update step.
 - Less to install per project — no `.claude/scripts/` copy, smaller `settings.json` diff.
-- Simpler mental model: the plugin *is* the runtime, rather than the plugin being a template the
+- Simpler mental model: the plugin _is_ the runtime, rather than the plugin being a template the
   project's copy drifts from until refreshed.
 
 ## Cons of moving to global

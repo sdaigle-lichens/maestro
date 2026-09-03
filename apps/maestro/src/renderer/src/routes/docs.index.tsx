@@ -57,8 +57,8 @@ function GlobalDocsIndex() {
               <span className="section-label mb-3 inline-block">Documentation</span>
               <h1 className="text-2xl font-semibold text-(--ink) m-0 mb-1">Docs</h1>
               <p className="text-[13px] text-subtle m-0">
-                Maestro the app — available with no project open. Search matches headings and body text, and opens
-                the doc at the section that matched.
+                Maestro the app — available with no project open. Search matches headings and body text, and opens the
+                doc at the section that matched.
               </p>
             </div>
             <button

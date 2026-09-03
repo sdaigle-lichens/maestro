@@ -7,7 +7,13 @@
 // three groups spread instead of bunching at the top.
 
 import { Pencil } from "lucide-react";
-import { AGENT_TYPES, GLOBAL_TAG, type AgentType, type AvatarCategory, type AvatarLayers } from "../../../../shared/ipc";
+import {
+  AGENT_TYPES,
+  GLOBAL_TAG,
+  type AgentType,
+  type AvatarCategory,
+  type AvatarLayers,
+} from "../../../../shared/ipc";
 import AgentAvatarBlock from "./agent-avatar-block";
 import {
   CARD_MIN_HEIGHT,
@@ -78,9 +84,7 @@ function SkillChip({
           }}
           title={editing ? "Switch between loaded and referenced" : undefined}
           className={`relative font-mono text-[9px] uppercase tracking-[0.08em] px-1 rounded-[3px] border ${
-            skill.mode === "loaded"
-              ? "border-(--primary-dim-2) text-(--primary)"
-              : "border-(--line-2) text-(--ink-3)"
+            skill.mode === "loaded" ? "border-(--primary-dim-2) text-(--primary)" : "border-(--line-2) text-(--ink-3)"
           } ${editing ? "cursor-pointer hover:border-(--primary) hover:text-(--primary)" : "cursor-default"}`}
         >
           {skill.mode === "loaded" ? "loaded" : "ref"}
@@ -175,9 +179,7 @@ export default function AgentCard({
               ))}
             </select>
           ) : (
-            <span
-              className={`${PRIMARY_CHIP} flex-none text-[11px] uppercase tracking-[0.06em] px-2.5 py-1`}
-            >
+            <span className={`${PRIMARY_CHIP} flex-none text-[11px] uppercase tracking-[0.06em] px-2.5 py-1`}>
               {type}
             </span>
           )}

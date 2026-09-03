@@ -33,12 +33,7 @@ import TopNav from "../components/top-nav";
 import AgentList, { type AgentListItem } from "../components/agents/agent-list";
 import AgentCard from "../components/agents/agent-card";
 import InteractionsPane from "../components/agents/interactions-pane";
-import {
-  PANE_SURFACES,
-  RIGHT_PANE_DEFAULT,
-  type AgentDraft,
-  type AgentSkill,
-} from "../components/agents/agent-shared";
+import { PANE_SURFACES, RIGHT_PANE_DEFAULT, type AgentDraft, type AgentSkill } from "../components/agents/agent-shared";
 import { defaultAvatarLayers } from "../utils/avatar";
 import { callMain, type CallResult } from "../utils/call-main";
 import { getToolsData, type ToolsData } from "../utils/tools";
@@ -173,8 +168,7 @@ function AgentsPage() {
       .map((a) => ({
         id: a.id,
         description: a.description,
-        layers:
-          (a.id === selected && draft ? draft.layers : attributes.avatars[a.id]) ?? defaultAvatarLayers(),
+        layers: (a.id === selected && draft ? draft.layers : attributes.avatars[a.id]) ?? defaultAvatarLayers(),
       }));
   }, [data, query, selected, draft, attributes.avatars]);
 

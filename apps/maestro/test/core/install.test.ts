@@ -424,9 +424,7 @@ describe("staleness", () => {
 
 describe("runtimeVersion (task 027)", () => {
   it("shippedRuntimeVersion reads the plugin's own plugin.json version", () => {
-    const manifest = JSON.parse(
-      fs.readFileSync(path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), "utf8")
-    );
+    const manifest = JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), "utf8"));
     expect(shippedRuntimeVersion(PLUGIN_ROOT)).toBe(manifest.version);
   });
 

@@ -79,7 +79,10 @@ function SkillsPage() {
   function handleTagsChange(id: string, next: { projectTags: string[]; agentTypes: string[] }) {
     setResult((prev) =>
       prev.ok
-        ? { ...prev, value: { ...prev.value, skills: prev.value.skills.map((s) => (s.id === id ? { ...s, ...next } : s)) } }
+        ? {
+            ...prev,
+            value: { ...prev.value, skills: prev.value.skills.map((s) => (s.id === id ? { ...s, ...next } : s)) },
+          }
         : prev
     );
   }

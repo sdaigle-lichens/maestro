@@ -97,7 +97,11 @@ let failures = 0;
 let flipAgrees = 0;
 
 for (const c of cases) {
-  const [, labelX, labelY] = getBezierPath({ ...c, sourcePosition: POS[c.sourcePosition], targetPosition: POS[c.targetPosition] });
+  const [, labelX, labelY] = getBezierPath({
+    ...c,
+    sourcePosition: POS[c.sourcePosition],
+    targetPosition: POS[c.targetPosition],
+  });
   const m = model(c);
   const err = Math.max(Math.abs(m.x - labelX), Math.abs(m.y - labelY));
   if (err > TOLERANCE) failures++;
@@ -113,7 +117,7 @@ console.log(
   `worst error: ${worst.err.toExponential(2)}px` +
     (worst.err > TOLERANCE
       ? `\n  at ${JSON.stringify(worst.c)}\n  expected ${JSON.stringify(worst.expected)}\n  got      ${JSON.stringify(worst.got)}`
-      : ""),
+      : "")
 );
 
 const pct = ((flipAgrees / cases.length) * 100).toFixed(1);
@@ -121,7 +125,7 @@ console.log(
   `\nHOW A WRONG MODEL HIDES:\n` +
     `  a sign-flipped model still lands within ${SPOT_CHECK_EYE}px of the library in ` +
     `${flipAgrees}/${cases.length} cases (${pct}%).\n` +
-    `  Spot-checking two or three labels in a window cannot distinguish the two. Run the grid.`,
+    `  Spot-checking two or three labels in a window cannot distinguish the two. Run the grid.`
 );
 
 process.exitCode = failures ? 1 : 0;

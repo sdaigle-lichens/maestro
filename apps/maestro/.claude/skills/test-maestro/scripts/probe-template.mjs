@@ -63,8 +63,8 @@ writeFileSync(
       rules: [],
     },
     null,
-    2,
-  ),
+    2
+  )
 );
 
 // ── Pass 1: first paint, dagre layout, drag, label edit, save ───────────────────────────────
@@ -106,7 +106,7 @@ const pass1 = await withApp(
     await cdp.waitFor(`!!document.body.innerText.match(/Saved to/)`, { label: "save toast" });
 
     return { g, samples, dragged, errors };
-  },
+  }
 );
 
 {
@@ -120,8 +120,7 @@ const pass1 = await withApp(
   const pairs = [];
   for (let i = 0; i < pass1.g.nodes.length; i++)
     for (let j = i + 1; j < pass1.g.nodes.length; j++)
-      if (overlaps(pass1.g.nodes[i], pass1.g.nodes[j]))
-        pairs.push([pass1.g.nodes[i].id, pass1.g.nodes[j].id]);
+      if (overlaps(pass1.g.nodes[i], pass1.g.nodes[j])) pairs.push([pass1.g.nodes[i].id, pass1.g.nodes[j].id]);
   record("dagre produces no overlapping nodes", pairs.length === 0, { overlapping: pairs });
 
   // Assert the sampler actually sampled BEFORE asserting anything about the frames it captured —
@@ -153,30 +152,27 @@ const savedN2 = wf.nodes.find((n) => n.id === "n2").position;
 record("the drag reached maestro.json", !!savedN2, { position: savedN2 });
 record(
   "the label edit reached maestro.json",
-  wf.edges.find((e) => e.from === "n3" && e.to === "n4")?.label === "ship it",
+  wf.edges.find((e) => e.from === "n3" && e.to === "n4")?.label === "ship it"
 );
 
-const pass2 = await withApp(
-  { appDir: APP, electron: ELECTRON, port: 9423, userDataDir: `${TMP}/udd` },
-  async (cdp) => {
-    await openProjectAt(cdp, PROJ, "#/workflows");
-    await cdp.waitFor(`!!document.querySelector(".react-flow__node")`);
-    await new Promise((r) => setTimeout(r, 600));
-    const g = await cdp.geometry();
-    const labels = await cdp.eval(`
+const pass2 = await withApp({ appDir: APP, electron: ELECTRON, port: 9423, userDataDir: `${TMP}/udd` }, async (cdp) => {
+  await openProjectAt(cdp, PROJ, "#/workflows");
+  await cdp.waitFor(`!!document.querySelector(".react-flow__node")`);
+  await new Promise((r) => setTimeout(r, 600));
+  const g = await cdp.geometry();
+  const labels = await cdp.eval(`
       return [...document.querySelectorAll(".react-flow__edgelabel-renderer span")]
         .map(s => s.textContent.trim());
     `);
-    return { g, labels };
-  },
-);
+  return { g, labels };
+});
 
 {
   const n2 = pass2.g.nodes.find((n) => n.id === "n2");
   record(
     "after close and reopen, the node is where it was left",
     n2 && Math.abs(n2.x - savedN2.x) < 1.5 && Math.abs(n2.y - savedN2.y) < 1.5,
-    { expected: savedN2, got: { x: n2?.x, y: n2?.y } },
+    { expected: savedN2, got: { x: n2?.x, y: n2?.y } }
   );
   record("after close and reopen, the label survived", pass2.labels.includes("ship it"), {
     labels: pass2.labels,

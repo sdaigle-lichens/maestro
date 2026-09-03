@@ -258,7 +258,11 @@ async function buildUpdateSkillTags(projectRoot: string): Promise<BuiltRequest> 
   const skillsDir = path.join(projectRoot, ".claude", "skills");
   const table =
     skills.length > 0
-      ? [`| id | description | project tags | agent types |`, `| --- | --- | --- | --- |`, ...skills.map(skillTagsRow)].join("\n")
+      ? [
+          `| id | description | project tags | agent types |`,
+          `| --- | --- | --- | --- |`,
+          ...skills.map(skillTagsRow),
+        ].join("\n")
       : "(no skills found under .claude/skills/)";
   // The live Project Tags catalog, since it's a dynamic vocabulary the model can't guess — unlike
   // AGENT_TYPES, which is a fixed union it already knows.

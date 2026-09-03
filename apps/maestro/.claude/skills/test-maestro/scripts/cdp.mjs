@@ -18,7 +18,7 @@ export function launch({ appDir, electron, port, userDataDir, extraArgs = [], en
   const child = spawn(
     electron,
     [appDir, `--remote-debugging-port=${port}`, `--user-data-dir=${userDataDir}`, ...extraArgs],
-    { stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ...env } },
+    { stdio: ["ignore", "pipe", "pipe"], env: { ...process.env, ...env } }
   );
   // Kept so a failing probe can print what the main process said. Electron is chatty on stderr
   // even in a healthy run, so this is diagnostic output, not a failure signal.
@@ -101,8 +101,7 @@ export class Cdp {
     });
     if (r.exceptionDetails) {
       throw new Error(
-        "page threw: " +
-          (r.exceptionDetails.exception?.description ?? JSON.stringify(r.exceptionDetails)),
+        "page threw: " + (r.exceptionDetails.exception?.description ?? JSON.stringify(r.exceptionDetails))
       );
     }
     return r.result.value;
@@ -124,14 +123,10 @@ export class Cdp {
   watchErrors() {
     const errors = [];
     this.on("Runtime.consoleAPICalled", (p) => {
-      if (p.type === "error")
-        errors.push(p.args.map((a) => a.value ?? a.description).join(" "));
+      if (p.type === "error") errors.push(p.args.map((a) => a.value ?? a.description).join(" "));
     });
     this.on("Runtime.exceptionThrown", (p) =>
-      errors.push(
-        "EXCEPTION: " +
-          (p.exceptionDetails?.exception?.description ?? JSON.stringify(p.exceptionDetails)),
-      ),
+      errors.push("EXCEPTION: " + (p.exceptionDetails?.exception?.description ?? JSON.stringify(p.exceptionDetails)))
     );
     return errors;
   }
@@ -143,7 +138,12 @@ export class Cdp {
 
   async drag(from, to, { steps = 12, settleMs = 16 } = {}) {
     await this.send("Input.dispatchMouseEvent", {
-      type: "mousePressed", x: from.x, y: from.y, button: "left", clickCount: 1, buttons: 1,
+      type: "mousePressed",
+      x: from.x,
+      y: from.y,
+      button: "left",
+      clickCount: 1,
+      buttons: 1,
     });
     for (let i = 1; i <= steps; i++) {
       await this.send("Input.dispatchMouseEvent", {
@@ -156,17 +156,32 @@ export class Cdp {
       await new Promise((r) => setTimeout(r, settleMs));
     }
     await this.send("Input.dispatchMouseEvent", {
-      type: "mouseReleased", x: to.x, y: to.y, button: "left", clickCount: 1, buttons: 0,
+      type: "mouseReleased",
+      x: to.x,
+      y: to.y,
+      button: "left",
+      clickCount: 1,
+      buttons: 0,
     });
   }
 
   async click(x, y) {
     await this.send("Input.dispatchMouseEvent", { type: "mouseMoved", x, y, buttons: 0 });
     await this.send("Input.dispatchMouseEvent", {
-      type: "mousePressed", x, y, button: "left", clickCount: 1, buttons: 1,
+      type: "mousePressed",
+      x,
+      y,
+      button: "left",
+      clickCount: 1,
+      buttons: 1,
     });
     await this.send("Input.dispatchMouseEvent", {
-      type: "mouseReleased", x, y, button: "left", clickCount: 1, buttons: 0,
+      type: "mouseReleased",
+      x,
+      y,
+      button: "left",
+      clickCount: 1,
+      buttons: 0,
     });
   }
 
@@ -209,7 +224,7 @@ export class Cdp {
       throw new Error(
         `clickElement: target is not clickable at (${Math.round(box.x)}, ${Math.round(box.y)}) — ` +
           `inViewport=${box.inViewport}, topElement=${box.topEl}. ` +
-          `It is off screen or covered. Use jsClick() if pointer semantics do not matter here.`,
+          `It is off screen or covered. Use jsClick() if pointer semantics do not matter here.`
       );
     }
     await this.click(Math.round(box.x), Math.round(box.y));
@@ -330,20 +345,19 @@ export class Cdp {
       return { x: null, y: null, transform: n.style.transform };
     `);
     if (!found) throw new Error(`dragNode: no node with data-id="${id}"`);
-    if (found.x === null)
-      throw new Error(`dragNode: every candidate grab point on "${id}" was a handle or a button`);
+    if (found.x === null) throw new Error(`dragNode: every candidate grab point on "${id}" was a handle or a button`);
 
     await this.drag(
       { x: Math.round(found.x), y: Math.round(found.y) },
       { x: Math.round(found.x + dx), y: Math.round(found.y + dy) },
-      { steps },
+      { steps }
     );
     await new Promise((r) => setTimeout(r, 400));
     const after = await this.eval(`return document.querySelector(${sel}).style.transform;`);
     if (after === found.transform) {
       throw new Error(
         `dragNode: "${id}" did not move (still ${after}). The press landed on something that ` +
-          `swallowed it, or React Flow is in a non-interactive state.`,
+          `swallowed it, or React Flow is in a non-interactive state.`
       );
     }
     return { before: found.transform, after, grabbedAt: { x: found.x, y: found.y } };

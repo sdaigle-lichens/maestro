@@ -995,14 +995,14 @@ export default function WorkflowCanvas({
 
   // ── Instance edit panel (right side, opened by clicking an agent node) ──────
 
-  const selectedInstance = selectedInstanceId ? instances.find((i) => i.name === selectedInstanceId) ?? null : null;
+  const selectedInstance = selectedInstanceId ? (instances.find((i) => i.name === selectedInstanceId) ?? null) : null;
   // The node id backing the selected instance — usually equal to the instance name (see
   // workflow-view skill), but resolved defensively rather than assumed, same as handleNodeClick.
   const selectedInstanceNodeId = selectedInstanceId
-    ? rfNodes.find((n) => (n.data.maestroNode as MaestroNodeV3 | undefined)?.instance === selectedInstanceId)?.id ??
-      selectedInstanceId
+    ? (rfNodes.find((n) => (n.data.maestroNode as MaestroNodeV3 | undefined)?.instance === selectedInstanceId)?.id ??
+      selectedInstanceId)
     : null;
-  const selectedEdge = selectedEdgeId ? rfEdges.find((e) => e.id === selectedEdgeId) ?? null : null;
+  const selectedEdge = selectedEdgeId ? (rfEdges.find((e) => e.id === selectedEdgeId) ?? null) : null;
 
   const updateSelectedInstance = useCallback(
     (patch: Partial<MaestroInstanceV3>) => {
@@ -1346,7 +1346,17 @@ export default function WorkflowCanvas({
           },
         };
       }),
-    [rfNodes, instances, deleteNode, openChangeSkill, openConditionModal, openAddStep, conditionSourceNodeId, terminalId, selectedInstanceId]
+    [
+      rfNodes,
+      instances,
+      deleteNode,
+      openChangeSkill,
+      openConditionModal,
+      openAddStep,
+      conditionSourceNodeId,
+      terminalId,
+      selectedInstanceId,
+    ]
   );
 
   // Condition edges touching the selected instance, in canvas order — indexed 1, 2, 3… so the
@@ -1432,9 +1442,7 @@ export default function WorkflowCanvas({
   const existingInstanceNames = instances.map((i) => i.name);
   // When editing an instance in the side panel, keep its own subagent selectable but hide
   // subagents already taken by other instances in this workflow.
-  const panelAvailableAgents = availableAgents.filter(
-    (a) => a === selectedInstance?.agent || !placedAgentTypes.has(a)
-  );
+  const panelAvailableAgents = availableAgents.filter((a) => a === selectedInstance?.agent || !placedAgentTypes.has(a));
 
   return (
     <div
@@ -1673,9 +1681,7 @@ export default function WorkflowCanvas({
         <div className="absolute top-0 right-0 h-full w-80 bg-(--bg) border-l border-(--line) shadow-xl z-20 flex flex-col overflow-y-auto">
           <div className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 border-b border-(--line)">
             <div className="flex flex-col min-w-0">
-              <span className="font-mono text-[13px] font-semibold text-(--ink) truncate">
-                {selectedInstance.name}
-              </span>
+              <span className="font-mono text-[13px] font-semibold text-(--ink) truncate">{selectedInstance.name}</span>
               <span className="text-[11px] text-subtle">Instance</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
@@ -1721,7 +1727,9 @@ export default function WorkflowCanvas({
             <InstanceSkillPicker
               skills={availableSkills}
               value={{ loaded: selectedInstance.loaded_skills, referenced: selectedInstance.referenced_skills }}
-              onChange={(sel) => updateSelectedInstance({ loaded_skills: sel.loaded, referenced_skills: sel.referenced })}
+              onChange={(sel) =>
+                updateSelectedInstance({ loaded_skills: sel.loaded, referenced_skills: sel.referenced })
+              }
               maxHeight="max-h-none"
               size="md"
               emptyHint="No skills available. Add skills from the left panel first."
@@ -1875,7 +1883,6 @@ export default function WorkflowCanvas({
           </div>
         </div>
       )}
-
     </div>
   );
 }

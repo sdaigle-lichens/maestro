@@ -120,23 +120,18 @@ export {
   type ReportDefault,
 } from "./report-defaults.js";
 
-export { resolveReport, type ReportResolution, type ReportSource, type GlobalReportInput } from "./report-resolution.js";
+export {
+  resolveReport,
+  type ReportResolution,
+  type ReportSource,
+  type GlobalReportInput,
+} from "./report-resolution.js";
 
 export { syncProjectReports } from "./report-sync.js";
 
-export {
-  readAllAgentTypes,
-  setAgentType,
-  DEFAULT_AGENT_TYPES_DB_PATH,
-  type AgentType,
-} from "./agent-types.js";
+export { readAllAgentTypes, setAgentType, DEFAULT_AGENT_TYPES_DB_PATH, type AgentType } from "./agent-types.js";
 
-export {
-  readAllProjectTags,
-  addProjectTag,
-  removeProjectTag,
-  DEFAULT_PROJECT_TAGS_DB_PATH,
-} from "./project-tags.js";
+export { readAllProjectTags, addProjectTag, removeProjectTag, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
 
 export {
   readAllAgentProjectTags,

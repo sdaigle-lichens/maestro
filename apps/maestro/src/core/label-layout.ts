@@ -245,7 +245,9 @@ export function placeConditionLabels(workflow: MaestroWorkflowV3, skillCount: Sk
     const exitsLeft = (e.sourceHandle ?? "right") === "left";
     const sourceRight = source.x + source.w;
     const sourceLeft = source.x;
-    const candidates = exitsLeft ? lanes.filter((l) => l.end <= sourceLeft) : lanes.filter((l) => l.start >= sourceRight);
+    const candidates = exitsLeft
+      ? lanes.filter((l) => l.end <= sourceLeft)
+      : lanes.filter((l) => l.start >= sourceRight);
     const lane =
       candidates.sort((a, b) => Math.abs(a.center - anchor.x) - Math.abs(b.center - anchor.x))[0] ??
       (exitsLeft ? lanes[0] : lanes[lanes.length - 1]);

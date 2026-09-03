@@ -69,7 +69,9 @@ export function handoffSeed(handoff: HandoffContext, prompt: string): string {
     `whatever the work needs and let them answer — do not talk yourself out of a tool call.`,
     `Repository: ${handoff.repo}`,
     "",
-    handoff.kind === "update-skill-tags" ? `The project's skills, as discovered (id — description — tags):` : `What the scaffold wrote:`,
+    handoff.kind === "update-skill-tags"
+      ? `The project's skills, as discovered (id — description — tags):`
+      : `What the scaffold wrote:`,
     indent(handoff.state),
     "",
     `What is left to write:`,

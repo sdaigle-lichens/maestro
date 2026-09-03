@@ -712,10 +712,7 @@ export interface MaestroApi {
      * `projectRoot` trails `opts` here rather than leading, so the existing
      * `uninstall({ purge, deleteMaestroTasks })` call sites keep type-checking untouched.
      */
-    uninstall(
-      opts?: { purge?: boolean; deleteMaestroTasks?: boolean },
-      projectRoot?: string
-    ): Promise<UninstallReport>;
+    uninstall(opts?: { purge?: boolean; deleteMaestroTasks?: boolean }, projectRoot?: string): Promise<UninstallReport>;
   };
   /**
    * The `claude -p` bridge. Two operations, and the split is the security design.

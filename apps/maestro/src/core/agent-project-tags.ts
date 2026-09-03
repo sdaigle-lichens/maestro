@@ -24,7 +24,11 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 /** `~/.claude/maestro-agent-project-tags.sqlite` — one store, every project on this machine. */
-export const DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = path.join(os.homedir(), ".claude", "maestro-agent-project-tags.sqlite");
+export const DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = path.join(
+  os.homedir(),
+  ".claude",
+  "maestro-agent-project-tags.sqlite"
+);
 
 /** The seven built-in agents' starting project tag — see the module header for the mapping. */
 const SEED_AGENT_PROJECT_TAGS: Record<string, string> = {

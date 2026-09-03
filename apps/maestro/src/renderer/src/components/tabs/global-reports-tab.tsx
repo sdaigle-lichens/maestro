@@ -119,8 +119,8 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
 
             <p className="text-[11px] text-(--ink-3) m-0">
               Saving updates the global fallback every project without its own override for{" "}
-              <span className="font-mono">{selected}</span> receives, and bumps its version — the next install or
-              update in a project still on the old content will refresh it.
+              <span className="font-mono">{selected}</span> receives, and bumps its version — the next install or update
+              in a project still on the old content will refresh it.
             </p>
           </>
         )}

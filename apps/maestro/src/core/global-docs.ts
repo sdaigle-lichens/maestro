@@ -28,9 +28,10 @@ export interface GlobalDocsDirs {
 export function globalDocsData(dirs: GlobalDocsDirs): GlobalDocsData {
   const app: DocMeta[] = (dirs.app ? listDocsIn(dirs.app) : []).map((d) => ({ ...d, group: "app" }));
 
-  const sections: DocSection[] = (dirs.app ? docSectionsIn(dirs.app) : []).map(
-    (s): DocSection => ({ ...s, group: "app" })
-  );
+  const sections: DocSection[] = (dirs.app ? docSectionsIn(dirs.app) : []).map((s): DocSection => ({
+    ...s,
+    group: "app",
+  }));
 
   return { app, sections };
 }

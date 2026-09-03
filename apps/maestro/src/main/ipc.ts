@@ -195,7 +195,9 @@ function startTail(webContentsId: number): void {
 function resolveProjectRoot(projectRoot?: string): string {
   if (!projectRoot) return currentRoot();
   const state = getState();
-  const allowed = state.current ? [state.current.root, ...state.recent.map((r) => r.root)] : state.recent.map((r) => r.root);
+  const allowed = state.current
+    ? [state.current.root, ...state.recent.map((r) => r.root)]
+    : state.recent.map((r) => r.root);
   if (allowed.includes(projectRoot)) return projectRoot;
   console.warn(`[ipc] ignoring unrecognised projectRoot "${projectRoot}"; falling back to the open project`);
   return currentRoot();
@@ -225,7 +227,11 @@ function seededAgentAttrs(implAgents: string[]): Record<string, AgentAttrs> {
  * and to `implAgents`'s seeded agents' own attributes, per `skillMapFromTags`'s guards.
  */
 function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]) {
-  return skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), seededAgentAttrs(implAgents));
+  return skillMapFromTags(
+    readAllSkillTags(),
+    skills.map((s) => s.id),
+    seededAgentAttrs(implAgents)
+  );
 }
 
 function announce(state: ProjectState): ProjectState {
@@ -527,13 +533,10 @@ export function registerIpc(): void {
   // open — so main resolves every path it writes to. The one exception is create-marketplace's
   // target directory, which is the whole point of that form and is validated as absolute and shown
   // in the scaffold's report.
-  ipcMain.handle(
-    IPC.createOptions,
-    (): CreateOptions => ({
-      marketplaces: listMarketplaces(),
-      projectRoot: currentRoot() ?? "",
-    })
-  );
+  ipcMain.handle(IPC.createOptions, (): CreateOptions => ({
+    marketplaces: listMarketplaces(),
+    projectRoot: currentRoot() ?? "",
+  }));
 
   // Throws on an invalid request or a failed write, so the caller must go through `callMain` —
   // "the write failed and here is why" has to reach the user, not an unhandled rejection.
@@ -591,7 +594,10 @@ export function registerIpc(): void {
     ): Promise<UninstallReport> => {
       const root = resolveProjectRoot(viewingRoot);
       if (!root) throw new Error("No project is open.");
-      return uninstallRuntime(root, { purge: opts?.purge === true, deleteMaestroTasks: opts?.deleteMaestroTasks === true });
+      return uninstallRuntime(root, {
+        purge: opts?.purge === true,
+        deleteMaestroTasks: opts?.deleteMaestroTasks === true,
+      });
     }
   );
 
@@ -617,20 +623,18 @@ export function registerIpc(): void {
     return previewClaudeRun(root, request, { settings: nodeSettings() });
   });
 
-  ipcMain.handle(
-    IPC.claudeRun,
-    async (e, token: string): Promise<ClaudeRunResult> =>
-      runPreviewedClaude(token, {
-        // Chunk by chunk, as it arrives. The token identifies the run on both sides, so the renderer
-        // can route output from the first byte without waiting for this handler to resolve.
-        output: (chunk) => {
-          if (!e.sender.isDestroyed()) e.sender.send(IPC_EVENTS.claudeOutput, { token, ...chunk });
-        },
-        // The same plugin the pane loads, for the same reason and with the same caveat: without it
-        // the create-* skills the prompt names resolve to nothing at all. `026` deleted the inlined
-        // copies of that guidance, so this line is what a headless run finishes an artifact with.
-        pluginDir: bundledPluginDir(),
-      })
+  ipcMain.handle(IPC.claudeRun, async (e, token: string): Promise<ClaudeRunResult> =>
+    runPreviewedClaude(token, {
+      // Chunk by chunk, as it arrives. The token identifies the run on both sides, so the renderer
+      // can route output from the first byte without waiting for this handler to resolve.
+      output: (chunk) => {
+        if (!e.sender.isDestroyed()) e.sender.send(IPC_EVENTS.claudeOutput, { token, ...chunk });
+      },
+      // The same plugin the pane loads, for the same reason and with the same caveat: without it
+      // the create-* skills the prompt names resolve to nothing at all. `026` deleted the inlined
+      // copies of that guidance, so this line is what a headless run finishes an artifact with.
+      pluginDir: bundledPluginDir(),
+    })
   );
 
   ipcMain.handle(IPC.claudeCancel, (_e, token: string): void => {
@@ -698,9 +702,8 @@ export function registerIpc(): void {
   // A grant taken back. It removes an entry main is already holding and can only ever NARROW what
   // the session may read — which is why a path is allowed to cross here while granting sends a
   // scope word and lets main resolve the path from the prompt it asked.
-  ipcMain.handle(
-    IPC.sessionRevoke,
-    async (e, id: string, target: string): Promise<boolean> => revokeGrant(e.sender.id, id, target)
+  ipcMain.handle(IPC.sessionRevoke, async (e, id: string, target: string): Promise<boolean> =>
+    revokeGrant(e.sender.id, id, target)
   );
 
   // The door in the spend ceiling. A session that reached it ended cleanly and kept its record —
@@ -716,14 +719,12 @@ export function registerIpc(): void {
   // the other two take an id that must have been on a list this window was given. That check is the
   // whole difference from `session:continue`, where an id is a key into main's own record and here
   // it names a file in the CLI's store.
-  ipcMain.handle(
-    IPC.sessionResumable,
-    async (e): Promise<ResumableSession[]> => listResumableSessions(e.sender.id, currentRoot() ?? "")
+  ipcMain.handle(IPC.sessionResumable, async (e): Promise<ResumableSession[]> =>
+    listResumableSessions(e.sender.id, currentRoot() ?? "")
   );
 
-  ipcMain.handle(
-    IPC.sessionResumeDetail,
-    async (e, id: string): Promise<ResumeDisclosure> => describeResume(e.sender.id, currentRoot() ?? "", id)
+  ipcMain.handle(IPC.sessionResumeDetail, async (e, id: string): Promise<ResumeDisclosure> =>
+    describeResume(e.sender.id, currentRoot() ?? "", id)
   );
 
   // The attach itself, and the one call on this surface that opens a session against a transcript
@@ -736,14 +737,12 @@ export function registerIpc(): void {
   // The two header controls that change a LIVE session without ending it. Both values are checked
   // in main against a list main itself produced — the effort levels the query is configured from,
   // and the models the CLI reported — so neither can put an arbitrary string into the session.
-  ipcMain.handle(
-    IPC.sessionEffort,
-    async (e, id: string, effort: SessionEffort): Promise<boolean> => setSessionEffort(e.sender.id, id, effort)
+  ipcMain.handle(IPC.sessionEffort, async (e, id: string, effort: SessionEffort): Promise<boolean> =>
+    setSessionEffort(e.sender.id, id, effort)
   );
 
-  ipcMain.handle(
-    IPC.sessionModel,
-    async (e, id: string, model: string | null): Promise<boolean> => setSessionModel(e.sender.id, id, model)
+  ipcMain.handle(IPC.sessionModel, async (e, id: string, model: string | null): Promise<boolean> =>
+    setSessionModel(e.sender.id, id, model)
   );
 
   ipcMain.handle(IPC.sessionEnd, (e): void => endSession(e.sender.id));
@@ -758,14 +757,12 @@ export function registerIpc(): void {
   //
   // Never rejects: a machine with neither ccusage nor npx is a normal machine, and the tab says so
   // rather than handing the renderer an error boundary.
-  ipcMain.handle(
-    IPC.statsPreview,
-    (_e, view: UsageStatsView): UsageStatsPreview => previewUsageStats(currentRoot() ?? "", view)
+  ipcMain.handle(IPC.statsPreview, (_e, view: UsageStatsView): UsageStatsPreview =>
+    previewUsageStats(currentRoot() ?? "", view)
   );
 
-  ipcMain.handle(
-    IPC.statsRun,
-    async (_e, token: string, view: UsageStatsView): Promise<UsageStatsResult> => runUsageStats(token, view)
+  ipcMain.handle(IPC.statsRun, async (_e, token: string, view: UsageStatsView): Promise<UsageStatsResult> =>
+    runUsageStats(token, view)
   );
 
   // ── session log ──────────────────────────────────────────────────────

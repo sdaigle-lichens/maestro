@@ -87,8 +87,7 @@ export const PENCIL_BUTTON =
   "hover:text-(--primary) hover:bg-(--bg-3) hover:border-(--line)";
 
 /** The mono id chip: an agent's name in the list, the agent type in the card header. */
-export const PRIMARY_CHIP =
-  "font-mono text-(--primary) bg-(--primary-dim) border border-(--primary-dim-2) rounded-md";
+export const PRIMARY_CHIP = "font-mono text-(--primary) bg-(--primary-dim) border border-(--primary-dim-2) rounded-md";
 
 /** The card footer's secondary action — Edit agent, and Cancel. */
 export const FOOTER_BUTTON =

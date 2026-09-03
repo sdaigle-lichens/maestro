@@ -295,8 +295,7 @@ export function readReportById(
   const db = openDb(dbPath);
   try {
     const row = db.prepare("SELECT content, version FROM reports WHERE report_id = ?").get(reportId) as
-      | { content: string; version: number }
-      | undefined;
+      { content: string; version: number } | undefined;
     return row ?? null;
   } finally {
     db.close();
@@ -343,14 +342,16 @@ export function writeAgentReportDefault(
     db.exec("BEGIN");
     try {
       const existing = db.prepare("SELECT version FROM reports WHERE report_id = ?").get(agentName) as
-        | { version: number }
-        | undefined;
+        { version: number } | undefined;
       const version = existing ? existing.version + 1 : 1;
       db.prepare(
         `INSERT INTO reports (report_id, content, version) VALUES (?, ?, ?)
          ON CONFLICT(report_id) DO UPDATE SET content = excluded.content, version = excluded.version`
       ).run(agentName, content, version);
-      db.prepare("INSERT OR REPLACE INTO agent_reports (agent_name, report_id) VALUES (?, ?)").run(agentName, agentName);
+      db.prepare("INSERT OR REPLACE INTO agent_reports (agent_name, report_id) VALUES (?, ?)").run(
+        agentName,
+        agentName
+      );
       db.exec("COMMIT");
       return { reportId: agentName, content, version };
     } catch (err) {

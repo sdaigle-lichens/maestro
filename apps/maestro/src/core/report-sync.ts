@@ -46,7 +46,10 @@ function writeReportFile(projectRoot: string, reportId: string, content: string)
 }
 
 /** No-op (returns all-empty) when the project has no `maestro.json` yet. */
-export function syncProjectReports(projectRoot: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportSyncSummary {
+export function syncProjectReports(
+  projectRoot: string,
+  dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH
+): ReportSyncSummary {
   const summary: ReportSyncSummary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
   const cfg = readConfig(projectRoot);
   if (!cfg) return summary;

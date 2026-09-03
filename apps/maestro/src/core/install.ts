@@ -462,9 +462,7 @@ async function pluginHooksActive(projectRoot: string): Promise<boolean> {
   try {
     const installed = await getInstalledPlugins();
     return installed.some(
-      (p) =>
-        p.pluginName === "maestro" &&
-        (!p.projectPath || path.resolve(p.projectPath) === path.resolve(projectRoot))
+      (p) => p.pluginName === "maestro" && (!p.projectPath || path.resolve(p.projectPath) === path.resolve(projectRoot))
     );
   } catch {
     return false;
@@ -617,7 +615,11 @@ export async function installRuntime(
     for (const name of seededAgentNames(detection.implAgents)) {
       agentAttrs[name] = { type: types[name] ?? "developer", projectTag: projectTagsByAgent[name] ?? GLOBAL_TAG };
     }
-    const skillMap = skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), agentAttrs);
+    const skillMap = skillMapFromTags(
+      readAllSkillTags(),
+      skills.map((s) => s.id),
+      agentAttrs
+    );
     const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
     const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
     const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };

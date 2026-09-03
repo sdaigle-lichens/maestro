@@ -191,9 +191,7 @@ describe("stampConceptSkill", () => {
     stampConceptSkill(p, { version: "2.0", lastUpdate: "deadbeef" });
 
     const after = fs.readFileSync(p, "utf8");
-    const changed = after
-      .split("\n")
-      .filter((line, i) => line !== before.split("\n")[i]);
+    const changed = after.split("\n").filter((line, i) => line !== before.split("\n")[i]);
     expect(changed).toEqual(['  version: "2.0"', "  last-update: deadbeef"]);
   });
 
@@ -236,7 +234,7 @@ describe("stampConceptSkill", () => {
   it("keeps metadata keys that are not ours, and the block's own indentation", async () => {
     const p = writeSkill(
       ".claude/skills/plain",
-      ['name: plain', 'description: "x"', "metadata:", "    owner: platform-team", "    type: concept-skill"].join("\n")
+      ["name: plain", 'description: "x"', "metadata:", "    owner: platform-team", "    type: concept-skill"].join("\n")
     );
     stampConceptSkill(p, { version: "2.0", lastUpdate: "cafe01" });
     const after = fs.readFileSync(p, "utf8");

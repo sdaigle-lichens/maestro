@@ -86,7 +86,9 @@ function ToastCard({ item }: { item: ToastItem }) {
           strokeLinejoin="round"
         >
           {isError && <path d="M6 6l12 12M18 6L6 18" />}
-          {isWarning && <path d="M12 9v4m0 3.5h.01M10.3 4.3 2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 4.3a1.5 1.5 0 0 0-2.6 0Z" />}
+          {isWarning && (
+            <path d="M12 9v4m0 3.5h.01M10.3 4.3 2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 4.3a1.5 1.5 0 0 0-2.6 0Z" />
+          )}
           {!isError && !isWarning && <path d="M5 12l5 5L20 7" />}
         </svg>
       </div>
