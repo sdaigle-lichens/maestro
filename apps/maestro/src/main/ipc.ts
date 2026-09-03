@@ -528,8 +528,8 @@ export function registerIpc(): void {
   // discipline as the templates handlers above — `/agents` and `create-subagent`'s `target:
   // "project"` field pass it for a project-tier agent; everything else (including `/templates`,
   // were it ever to grow an avatar tab) omits it and stays global.
-  ipcMain.handle(IPC.avatarGet, (_e, agentName: string): AvatarLayers | null => {
-    return getAvatar(agentName);
+  ipcMain.handle(IPC.avatarGet, (_e, agentName: string, projectScoped?: boolean): AvatarLayers | null => {
+    return getAvatar(agentName, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
   ipcMain.handle(
     IPC.avatarSet,

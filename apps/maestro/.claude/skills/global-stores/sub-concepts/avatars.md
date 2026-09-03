@@ -22,5 +22,12 @@ fills a missing agent: it returns the first option of **every** category except 
 previously returned only the required ones, which composited a naked sprite onto every
 uncustomised row.
 
+All three of `avatar:get`/`set`/`list` take the `projectScoped` flag. `030` originally gave it to
+`set` and `list` only, leaving `get` reading the global row for an agent whose avatar `set` had just
+written to the project row — a store you can write to one tier and read back from the other. Nothing
+in the renderer calls `avatars.get` today (the list is the read path), so it was latent rather than
+visible; it is the shape of bug worth fixing at the point the inconsistency appears, not once
+something depends on it.
+
 Files: `src/core/avatar-store.ts`, `src/renderer/src/components/avatar/`.
 Tested for core↔plugin agreement by `test/core/avatar-parity.test.ts`.

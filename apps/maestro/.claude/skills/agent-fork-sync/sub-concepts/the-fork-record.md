@@ -33,6 +33,22 @@ fork as user-modified for doing the thing forks exist to do.
 birth**, and the refresh branch could never fire for one; `031` added the `name:` half. Two tests
 pin it: one in `agent-fork.test.ts` on the hash itself, one in `agent-sync.test.ts` end to end.
 
+## Reading it defensively
+
+`agent-forks.json` is a **committed** file — only the three ephemeral session files are gitignored —
+so it arrives through merges and hand-edits, not only through `writeAgentForkRecord`. `readAgentForks`
+therefore drops what it cannot use: unparseable JSON (what a merge conflict leaves behind) returns
+`{}`, and an individually malformed record is skipped while its neighbours survive.
+
+Both degrade to *this agent is not a tracked fork*, which is the same thing **detach** says and the
+safest reading of a file the app can no longer interpret: nothing is compared, nothing is offered,
+no `.md` is touched. Before that guard existed, a record missing `templateBody` threw a bare
+`Cannot read properties of undefined` out of `computeAgentSync`; `callMain` swallowed it, and the
+fork review *and* the `/maestro` banner vanished for every fork with nothing on screen to say why.
+
+A dropped record does not survive the next `writeAgentForkRecord` — that rewrites the whole object
+from what was read — so a malformed entry is repaired away rather than carried forever.
+
 ## What `keep` and `detach` write
 
 - **`keep`** writes `acknowledgedFrom` and nothing else. `templateBodyHash` is untouched, because

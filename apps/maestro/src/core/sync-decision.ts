@@ -16,12 +16,14 @@
 //     name. A whole-file hash would mark every fork as user-modified the moment either changed,
 //     and the refresh branch below would then never fire for anybody.
 //   - "has the template MOVED?". A report compares the global store's integer `version`. A
-//     plugin-tier fork compares the plugin's `version` STRING for inequality, because a plugin's
-//     files come from a per-VERSION marketplace cache that `autoUpdate` only re-pulls when that
-//     string changes (see the `updating-maestro` skill) — so a plugin edit shipped without a
-//     version bump genuinely IS "no update available", and reporting it otherwise would promise a
-//     refresh that no delivery path can deliver. A `user`-tier fork has no version at all
-//     (`~/.claude/agents/*.md` are hand-edited files), so it compares template content hashes.
+//     plugin-tier fork asks for the plugin's `version` STRING to differ AND its body hash to
+//     differ. The version half is necessary because a plugin's files come from a per-VERSION
+//     marketplace cache that `autoUpdate` only re-pulls when that string changes (see the
+//     `updating-maestro` skill) — a plugin edit shipped without a bump genuinely IS "no update
+//     available", and reporting it otherwise would promise a refresh no delivery path can
+//     deliver. The body half is what keeps a bump that never touched THIS agent from being
+//     reported as one that did. A `user`-tier fork has no version at all (`~/.claude/agents/*.md`
+//     are hand-edited files), so it compares template content hashes alone.
 //
 // Nothing here writes. The caller decides whether a verdict becomes a file write (install's report
 // sync does) or stays a read-only report (agent sync does — see agent-sync.ts).

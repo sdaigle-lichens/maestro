@@ -45,7 +45,7 @@ repo.
 | --- | --- | --- |
 | `localHash` | `sha256` of the whole file | `hashAgentBody` — `name:`/`description:` normalised out |
 | `hasTemplate` | a global report default exists | the template still resolves in its recorded tier |
-| `templateAdvanced` | `global.version > syncedFrom.version` (integer, monotonic) | plugin: `template.version !== tracked.pluginVersion` (string, inequality) · user: body hashes differ |
+| `templateAdvanced` | `global.version > syncedFrom.version` (integer, monotonic) | plugin: `template.version !== tracked.pluginVersion` **and** body hashes differ · user: body hashes differ |
 | On a verdict | writes the file and bumps `syncedFrom` | records it and writes nothing |
 
 ## Adding a third caller

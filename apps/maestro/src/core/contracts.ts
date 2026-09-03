@@ -391,8 +391,9 @@ export interface DiffLine {
  * `verdict` comes from the same `decideSync` the report sync uses (`sync-decision.ts`), so the
  * terminal and the app cannot disagree about whether a fork is stale. What differs from a report:
  * the hash is over the body only (`hashAgentBody` — name and description normalised out), and
- * "the template advanced" is a plugin VERSION-STRING inequality for a plugin-tier fork and a
- * content-hash comparison for a `user`-tier one. See `agent-sync.ts`.
+ * "the template advanced" needs a plugin VERSION-STRING inequality *and* a changed body for a
+ * plugin-tier fork, against a content-hash comparison alone for a `user`-tier one. See
+ * `agent-sync.ts`.
  */
 export interface AgentSyncEntry {
   agentName: string;
@@ -411,8 +412,9 @@ export interface AgentSyncEntry {
   templateFile: string | null;
   templateDescription: string | null;
   /**
-   * The template has moved past what this fork tracks — a plugin VERSION-STRING inequality for a
-   * plugin-tier fork, a body-hash comparison for a `user`-tier one. Carried alongside `verdict`
+   * The template has moved past what this fork tracks — a plugin VERSION-STRING inequality *and* a
+   * changed body for a plugin-tier fork, a body-hash comparison for a `user`-tier one (a bump that
+   * never touched this agent is the plugin moving, not the template). Carried alongside `verdict`
    * because `decideSync` answers `stale-customized` BEFORE it consults this (the user's edit
    * outranks everything), and a customized fork whose template has not moved is nothing to tell
    * anyone about. See `AgentSyncSummary.diverged`.

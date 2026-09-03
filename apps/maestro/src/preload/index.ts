@@ -87,7 +87,7 @@ const api: MaestroApi = {
   },
   // `projectScoped` — same discipline as `templates` above.
   avatar: {
-    get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),
+    get: (agentName, projectScoped) => ipcRenderer.invoke(IPC.avatarGet, agentName, projectScoped),
     set: (agentName, layers, projectScoped) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers, projectScoped),
     list: (projectScoped) => ipcRenderer.invoke(IPC.avatarList, projectScoped),
   },

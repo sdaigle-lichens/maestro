@@ -18,12 +18,12 @@
 //   2. THE TWO GLOBAL TIERS NEED DIFFERENT TRIGGERS. A plugin's files come from a per-VERSION
 //      marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version` changes
 //      (see the `updating-maestro` skill), so a plugin agent's content CANNOT change without a
-//      version bump and comparing version strings is sufficient — exactly as `report-sync`
-//      compares the global store's integer `version`. It is also *necessary*: a plugin edit
-//      shipped without a bump reaches nobody, so reporting it as an available update would promise
-//      a refresh no delivery path can deliver. The `user` tier has no version at all
-//      (`~/.claude/agents/*.md` are hand-edited files), so those forks compare template content
-//      hashes on both sides. Two triggers, one merge rule.
+//      version bump: a plugin-tier fork asks for a version bump AND a changed body. The version
+//      half is necessary — an edit shipped without a bump reaches nobody, so reporting it as an
+//      available update would promise a refresh no delivery path can deliver. The body half is
+//      what makes it sufficient — a bump on its own says only that the PLUGIN moved, not that this
+//      agent did. The `user` tier has no version at all (`~/.claude/agents/*.md` are hand-edited
+//      files), so those forks compare template content hashes alone. Two triggers, one merge rule.
 //   3. NOTHING WRITES WITHOUT BEING ASKED. `computeAgentSync` is a pure read: it stats and reads
 //      files and writes none. Those `.claude/agents/*.md` may be committed, and a diff nobody
 //      asked for is hard to explain. Writes happen only through `applyAgentSync`, one agent at a
@@ -159,11 +159,26 @@ function trackedState(record: AgentForkRecord): { pluginVersion: string | null; 
 function hasTemplateAdvanced(record: AgentForkRecord, template: ResolvedTemplate | null): boolean {
   if (!template) return false;
   const tracked = trackedState(record);
-  // Plugin tier: the version string, for inequality only — the same comparison autoUpdate makes.
-  // Two nulls (a plugin whose version could not be read at either end) means "no update", which is
-  // the honest answer: there is nothing to compare and nothing to promise.
-  if (record.sourceTier === "plugin") return template.version !== tracked.pluginVersion;
-  return hashAgentBody(template.contents) !== tracked.templateBodyHash;
+  const bodyMoved = hashAgentBody(template.contents) !== tracked.templateBodyHash;
+  // `user` tier: `~/.claude/agents/*.md` are hand-edited files with no version anywhere, so the
+  // bytes are the only thing that can notice.
+  if (record.sourceTier !== "plugin") return bodyMoved;
+  // Plugin tier needs BOTH, and the two halves rule out opposite mistakes:
+  //
+  //   - the VERSION check is what makes this NECESSARY. A plugin's files come from a per-VERSION
+  //     marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version` changes
+  //     (see the `updating-maestro` skill), so a plugin edit shipped without a bump has reached
+  //     nobody: "no update available" is the true answer, and reporting one would promise a
+  //     refresh that no delivery path can deliver.
+  //   - the BODY check is what makes it SUFFICIENT. A version bump is not evidence that THIS agent
+  //     moved — this repo bumps `plugin.json` for every change under `plugins/`, and most of those
+  //     never touch `agents/` at all. On the version alone, every such release lit the `/maestro`
+  //     banner for every fork on the machine and sent the user to a review card that then told
+  //     them "the body is identical to the template's".
+  //
+  // Two nulls (a plugin whose version could not be read at either end) are already "no update" by
+  // the first half, which is the honest answer when there is nothing to compare.
+  return template.version !== tracked.pluginVersion && bodyMoved;
 }
 
 async function buildEntry(

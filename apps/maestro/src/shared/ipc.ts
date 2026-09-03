@@ -413,7 +413,9 @@ export const IPC = {
   // An agent's cosmetic avatar in the `~/.claude/maestro-avatars.sqlite` store — see
   // `src/core/avatar-store.ts`. No token: purely cosmetic, keyed by the agent's name, same as
   // `skillProjectTagsSet` is keyed by skill id — global by default, project-scoped (`030`) when
-  // `set`/`list` are called with `projectScoped: true`. See `MaestroApi.avatar`'s doc comment.
+  // called with `projectScoped: true`. All three of get/set/list take it, so a project-tier
+  // agent's avatar cannot be written to one tier and read back from the other.
+  // See `MaestroApi.avatar`'s doc comment.
   avatarGet: "avatar:get",
   avatarSet: "avatar:set",
   // Every stored avatar in one round trip — the /agents list draws a thumb per row, and a per-row
@@ -681,13 +683,13 @@ export interface MaestroApi {
    * create-subagent form and the /agents detail pane. `get` resolves null when nothing has been
    * saved for that name yet.
    *
-   * `projectScoped: true` (`030`) scopes `set`/`list` to the OPEN project instead of the global
+   * `projectScoped: true` (`030`) scopes all three calls to the OPEN project instead of the global
    * tier — pass it only when the agent is project-tier (a `target: "project"` create-subagent, or
    * an `/agents` edit of a project agent); a `user`/`maestro`/plugin-tier agent's avatar stays the
    * one shared global row.
    */
   avatar: {
-    get(agentName: string): Promise<AvatarLayers | null>;
+    get(agentName: string, projectScoped?: boolean): Promise<AvatarLayers | null>;
     set(agentName: string, layers: AvatarLayers, projectScoped?: boolean): Promise<AvatarLayers>;
     /** Every agent with a saved avatar, keyed by agent name. Agents without one are simply absent. */
     list(projectScoped?: boolean): Promise<Record<string, AvatarLayers>>;

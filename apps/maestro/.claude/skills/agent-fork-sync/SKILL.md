@@ -3,8 +3,8 @@ name: agent-fork-sync
 description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that both the report sync and the forked-agent sync call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card and the maestro/maestro-update skills' CLI) that must always reach the same verdict. Use when changing report-sync.ts or agent-sync.ts, adding a third caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
+  version: "1.1"
+  last-update: eab3cb4b5024b7a735be9b73d3986b502b9e195f
 ---
 
 # Keeping a copy in step with the thing it was copied from
@@ -30,7 +30,7 @@ of those states the right answer is the same. That answer is written down **once
         ┌──────────────────┴───┐        ┌───┴──────────────────────────┐
         │ report-sync.ts       │        │ agent-sync.ts                │
         │ hash: whole file     │        │ hash: hashAgentBody (body)   │
-        │ moved: version  >    │        │ moved: version !==  (plugin) │
+        │ moved: version  >    │        │ moved: version+body  (plugin)│
         │        (integer)     │        │        hash    !==  (user)   │
         │ WRITES on install    │        │ WRITES NOTHING (read-only)   │
         └──────────────────────┘        └───┬──────────────────────┬───┘
@@ -70,15 +70,23 @@ caller passes.
 
 This is the part that looks like an inconsistency and is not:
 
-- **Plugin tier → compare the `version` STRING for inequality.** A plugin's files come from a
-  per-VERSION marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version`
-  changes (see `updating-maestro` (at the repo root `.claude/skills`)). So a
-  plugin agent's content *cannot* reach a machine without a version bump. Comparing versions is
-  sufficient — and it is also **necessary**: a plugin edit shipped without a bump has reached
-  nobody, so *no update available* is the correct answer, not a missed one. Reporting otherwise
-  would promise a refresh that no delivery path can deliver. Pinned by a test.
-- **`user` tier → compare template content hashes.** `~/.claude/agents/*.md` are hand-edited files
-  with no version anywhere. Nothing but the bytes can notice.
+- **Plugin tier → the `version` STRING must differ AND the body hash must differ.** Both halves,
+  and each rules out the opposite mistake:
+  - The **version** half is what makes the check *necessary*. A plugin's files come from a
+    per-VERSION marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version`
+    changes (see `updating-maestro` (at the repo root `.claude/skills`)), so a plugin agent's
+    content *cannot* reach a machine without a bump. An edit shipped without one has reached
+    nobody: *no update available* is the correct answer, not a missed one, and reporting otherwise
+    would promise a refresh no delivery path can deliver.
+  - The **body** half is what makes it *sufficient*. A bump says the PLUGIN moved, not that this
+    agent did — and this repo bumps `plugin.json` for every change under `plugins/`, almost none of
+    which touch `agents/`. On the version alone, every release lit the `/maestro` banner for every
+    fork on the machine and sent the user to a review card that then told them *the body is
+    identical to the template's*.
+
+  Both directions are pinned by a test.
+- **`user` tier → compare template content hashes alone.** `~/.claude/agents/*.md` are hand-edited
+  files with no version anywhere. Nothing but the bytes can notice.
 
 `report-sync.ts` is a third answer to the same question: the global store's integer `version`, with
 `>` rather than `!==`, because that number only ever goes up.

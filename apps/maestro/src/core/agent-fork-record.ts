@@ -22,15 +22,47 @@ export function agentForksPath(projectRoot: string): string {
   return path.join(projectRoot, ".claude", AGENT_FORKS_FILENAME);
 }
 
-/** Every recorded fork in this project, keyed by the forked agent's own name. Missing file ⇒ {}. */
+/**
+ * The fields every reader of a record dereferences without checking. `agent-forks.json` is a
+ * COMMITTED file (only the three ephemeral session files are gitignored), so it reaches this
+ * function through merges and hand-edits, and a record missing `templateBody` used to throw a bare
+ * `Cannot read properties of undefined` out of `computeAgentSync` — which the app then swallowed
+ * in `callMain`, silently taking the whole fork review and the `/maestro` banner with it.
+ */
+function isUsableRecord(value: unknown): value is AgentForkRecord {
+  if (!value || typeof value !== "object") return false;
+  const r = value as Record<string, unknown>;
+  return (
+    typeof r.agentName === "string" &&
+    (r.sourceTier === "user" || r.sourceTier === "plugin") &&
+    typeof r.templateBody === "string" &&
+    typeof r.templateBodyHash === "string"
+  );
+}
+
+/**
+ * Every recorded fork in this project, keyed by the forked agent's own name. Missing file ⇒ {}.
+ *
+ * Unreadable/unparseable JSON and individually malformed records both degrade to "this agent is
+ * not a tracked fork", which is the same thing detaching says and the safest reading of a file
+ * this app can no longer interpret: nothing is compared, nothing is offered, and no `.md` is
+ * touched. Note that a dropped record does not survive the next `writeAgentForkRecord` — that
+ * rewrites the whole object from what was read — so a malformed entry is repaired away rather than
+ * carried forever.
+ */
 export function readAgentForks(projectRoot: string): Record<string, AgentForkRecord> {
+  let parsed: unknown;
   try {
-    const raw = fs.readFileSync(agentForksPath(projectRoot), "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as Record<string, AgentForkRecord>) : {};
+    parsed = JSON.parse(fs.readFileSync(agentForksPath(projectRoot), "utf8"));
   } catch {
     return {};
   }
+  if (!parsed || typeof parsed !== "object") return {};
+  const out: Record<string, AgentForkRecord> = {};
+  for (const [name, record] of Object.entries(parsed as Record<string, unknown>)) {
+    if (isUsableRecord(record)) out[name] = record;
+  }
+  return out;
 }
 
 function writeAllForks(projectRoot: string, all: Record<string, AgentForkRecord>): void {

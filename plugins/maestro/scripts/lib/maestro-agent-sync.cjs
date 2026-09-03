@@ -236,14 +236,24 @@ var AGENT_FORKS_FILENAME = "agent-forks.json";
 function agentForksPath(projectRoot) {
   return import_node_path6.default.join(projectRoot, ".claude", AGENT_FORKS_FILENAME);
 }
+function isUsableRecord(value) {
+  if (!value || typeof value !== "object") return false;
+  const r = value;
+  return typeof r.agentName === "string" && (r.sourceTier === "user" || r.sourceTier === "plugin") && typeof r.templateBody === "string" && typeof r.templateBodyHash === "string";
+}
 function readAgentForks(projectRoot) {
+  let parsed;
   try {
-    const raw = import_node_fs2.default.readFileSync(agentForksPath(projectRoot), "utf8");
-    const parsed = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? parsed : {};
+    parsed = JSON.parse(import_node_fs2.default.readFileSync(agentForksPath(projectRoot), "utf8"));
   } catch {
     return {};
   }
+  if (!parsed || typeof parsed !== "object") return {};
+  const out = {};
+  for (const [name, record] of Object.entries(parsed)) {
+    if (isUsableRecord(record)) out[name] = record;
+  }
+  return out;
 }
 function writeAllForks(projectRoot, all) {
   const file = agentForksPath(projectRoot);
@@ -373,8 +383,9 @@ function trackedState(record) {
 function hasTemplateAdvanced(record, template) {
   if (!template) return false;
   const tracked = trackedState(record);
-  if (record.sourceTier === "plugin") return template.version !== tracked.pluginVersion;
-  return hashAgentBody(template.contents) !== tracked.templateBodyHash;
+  const bodyMoved = hashAgentBody(template.contents) !== tracked.templateBodyHash;
+  if (record.sourceTier !== "plugin") return bodyMoved;
+  return template.version !== tracked.pluginVersion && bodyMoved;
 }
 async function buildEntry(projectRoot, record, options) {
   const local = await readAgentFrom(projectAgentsDir(projectRoot), record.agentName);

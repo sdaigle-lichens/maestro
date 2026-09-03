@@ -3,9 +3,11 @@
 // What's worth pinning, in the order the acceptance criteria state it: an untouched fork whose
 // template advanced is refreshable and taking the refresh keeps the user's description; an edited
 // one is stale-but-customized and is never overwritten; an agent with no provenance record is
-// invisible to all of this; plugin forks are checked by VERSION and user forks by content hash;
-// a plugin change shipped without a version bump reports no update; and computing the summary
-// writes nothing at all — asserted on file mtimes, because that is the criterion.
+// invisible to all of this; plugin forks need a VERSION bump AND a changed body while user forks
+// are checked by content hash alone — so neither a change shipped without a bump nor a bump that
+// never touched this agent reports an update; a malformed or unparseable sidecar degrades to "no
+// forks" rather than throwing; and computing the summary writes nothing at all — asserted on file
+// mtimes, because that is the criterion.
 
 import fs from "node:fs";
 import os from "node:os";
@@ -18,6 +20,7 @@ import type { AgentForkRecord } from "../../src/core/contracts.js";
 
 const BODY_V1 = "\n# Reviewer\n\nYou review code.\n\n- one\n- two\n";
 const BODY_V2 = "\n# Reviewer\n\nYou review code, strictly.\n\n- one\n- two\n- three\n";
+const BODY_V3 = "\n# Reviewer\n\nYou review code, strictly, and cite lines.\n\n- one\n- two\n- three\n";
 
 function agentFile(name: string, description: string, body: string): string {
   return `---\nname: ${name}\ndescription: ${description}\n---\n${body}`;
@@ -115,6 +118,28 @@ describe("computeAgentSync / applyAgentSync", () => {
     expect(await computeAgentSync(root, options)).toMatchObject({ entries: [], diverged: [] });
   });
 
+  it("skips a malformed sidecar record instead of taking the whole review down with it", async () => {
+    // agent-forks.json is committed, so it arrives through merges and hand-edits. A record missing
+    // templateBody used to throw out of computeAgentSync, and callMain then swallowed it — the
+    // fork review and the /maestro banner vanished with no explanation, for every fork.
+    seedPluginFork({ forkedVersion: "0.3.4" });
+    const file = path.join(root, ".claude", "agent-forks.json");
+    const forks = JSON.parse(fs.readFileSync(file, "utf8"));
+    forks.broken = { agentName: "broken", sourceTier: "plugin", sourcePlugin: "maestro" };
+    fs.writeFileSync(file, JSON.stringify(forks), "utf8");
+
+    const summary = await computeAgentSync(root, options);
+    expect(summary.entries.map((e) => e.agentName)).toEqual(["reviewer"]);
+    expect(summary.diverged).toEqual(["reviewer"]);
+  });
+
+  it("treats an unparseable sidecar as no forks at all rather than throwing", async () => {
+    seedPluginFork({ forkedVersion: "0.3.4" });
+    // What a git merge conflict leaves behind.
+    fs.writeFileSync(path.join(root, ".claude", "agent-forks.json"), "<<<<<<< HEAD\n{}\n=======\n", "utf8");
+    expect(await computeAgentSync(root, options)).toMatchObject({ entries: [], diverged: [] });
+  });
+
   it("reports NO update available when a plugin ships a changed body without bumping its version", async () => {
     // The template's body has moved (BODY_V2) but the version string has not — which is exactly
     // what a plugin edit shipped without a plugin.json bump looks like, and autoUpdate never
@@ -124,6 +149,30 @@ describe("computeAgentSync / applyAgentSync", () => {
     expect(summary.refreshed).toEqual([]);
     expect(summary.unchanged).toEqual(["reviewer"]);
     expect(summary.entries[0].templateAdvanced).toBe(false);
+  });
+
+  it("reports NO update available when the plugin bumped its version but not this agent", async () => {
+    // The other half of the pair above, and the common case: this repo bumps plugin.json for EVERY
+    // change under plugins/, and almost none of them touch plugins/maestro/agents/. On the version
+    // string alone every such release lit the /maestro banner for every fork on the machine, and
+    // the review card it linked to then said "the body is identical to the template's".
+    const template = agentFile("reviewer", "Reviews PRs.", BODY_V1);
+    fs.writeFileSync(path.join(pluginAgents, "reviewer.md"), template, "utf8"); // unchanged at 0.4.0
+    fs.writeFileSync(path.join(root, ".claude", "agents", "reviewer.md"), template, "utf8");
+    writeAgentForkRecord(root, {
+      agentName: "reviewer",
+      sourceTier: "plugin",
+      sourcePlugin: "maestro",
+      pluginVersion: "0.3.4",
+      templateBodyHash: hashAgentBody(template),
+      templateBody: template,
+      forkedAt: new Date().toISOString(),
+    });
+
+    const summary = await computeAgentSync(root, options);
+    expect(summary.entries[0].templateAdvanced).toBe(false);
+    expect(summary.refreshed).toEqual([]);
+    expect(summary.diverged).toEqual([]);
   });
 
   it("checks a user-tier fork by template content hash, since ~/.claude/agents has no version", async () => {
@@ -204,10 +253,15 @@ describe("computeAgentSync / applyAgentSync", () => {
     expect(readAgentForks(root).reviewer.acknowledgedFrom?.pluginVersion).toBe("0.4.0");
     expect((await computeAgentSync(root, options)).diverged).toEqual([]);
 
+    // "That moves" means the TEMPLATE moves, not merely the plugin's version string: a release
+    // that never touched this agent is not a new answer to a question already declined.
     const bumped: AgentSyncOptions = {
       ...options,
       pluginSources: { maestro: { agentsDir: pluginAgents, version: "0.5.0" } },
     };
+    expect((await computeAgentSync(root, bumped)).refreshed).toEqual([]);
+
+    fs.writeFileSync(path.join(pluginAgents, "reviewer.md"), agentFile("reviewer", "Reviews PRs.", BODY_V3), "utf8");
     expect((await computeAgentSync(root, bumped)).refreshed).toEqual(["reviewer"]);
   });
 
