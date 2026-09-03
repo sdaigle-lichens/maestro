@@ -44,7 +44,11 @@ var import_node_fs = __toESM(require("node:fs"), 1);
 var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
-var DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-agent-project-tags.sqlite");
+var DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = import_node_path.default.join(
+  import_node_os.default.homedir(),
+  ".claude",
+  "maestro-agent-project-tags.sqlite"
+);
 var SEED_AGENT_PROJECT_TAGS = {
   backend: "backend",
   frontend: "frontend",

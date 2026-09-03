@@ -335,11 +335,7 @@ function stampConceptSkill(skillPath, next) {
       [VERSION_KEY]: `"${next.version}"`,
       [LAST_UPDATE_KEY]: next.lastUpdate
     };
-    rebuiltLines = [
-      ...kept,
-      "metadata:",
-      ...Object.entries(merged).map(([k, v]) => `${DEFAULT_INDENT}${k}: ${v}`)
-    ];
+    rebuiltLines = [...kept, "metadata:", ...Object.entries(merged).map(([k, v]) => `${DEFAULT_INDENT}${k}: ${v}`)];
   }
   const rebuilt = `${match[1]}${rebuiltLines.join("\n")}${match[3]}`;
   import_node_fs3.default.writeFileSync(skillPath, raw.slice(0, match.index) + rebuilt + raw.slice(match.index + match[0].length));
