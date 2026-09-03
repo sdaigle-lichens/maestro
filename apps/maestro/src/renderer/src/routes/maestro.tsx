@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
@@ -7,6 +7,7 @@ import {
   Check,
   Download,
   FolderOpen,
+  GitBranch,
   PowerOff,
   RefreshCw,
   Tag as TagIcon,
@@ -16,7 +17,9 @@ import {
 import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
+import { useInstall } from "../utils/install-context";
 import type {
+  AgentSyncSummary,
   InstallReport,
   InstallStatus,
   ProjectTagsData,
@@ -402,6 +405,48 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
   );
 }
 
+/**
+ * `031`'s entry point, and deliberately only that: a COUNT and a link, not a modal.
+ *
+ * The summary behind it is computed on project selection (see `InstallProvider`) and writes
+ * nothing — those `.claude/agents/*.md` may be committed, and a diff nobody asked for is hard to
+ * explain. The per-agent review, the diff and the update / keep / detach actions all live on
+ * `/agents`, where the agent itself is already on screen.
+ *
+ * Renders nothing when no fork has diverged, which is the normal state.
+ */
+function ForkedAgentsCard({ summary }: { summary: AgentSyncSummary }) {
+  const count = summary.diverged.length;
+  if (count === 0) return null;
+  return (
+    <div
+      data-testid="maestro-diverged-forks"
+      data-count={count}
+      className="flex flex-col gap-2 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+    >
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <GitBranch size={12} /> Forked agents
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        <b>
+          {count} forked agent{count === 1 ? "" : "s"} differ{count === 1 ? "s" : ""} from{" "}
+          {count === 1 ? "its" : "their"} template
+        </b>{" "}
+        — <span className="font-mono text-(--ink-3)">{summary.diverged.join(", ")}</span>. Nothing has been rewritten:
+        reviewing each one is how you take the new body, keep the fork as it is, or detach it.
+      </p>
+      <div>
+        <Link
+          to="/agents"
+          className="inline-flex items-center gap-1.5 text-[12px] text-primary underline cursor-pointer"
+        >
+          Review them on /agents
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 function StatusCard({ status }: { status: InstallStatus }) {
   const scriptTrouble = status.scriptsMissing.length + status.scriptsOutOfDate.length;
   return (
@@ -470,6 +515,7 @@ function StatusCard({ status }: { status: InstallStatus }) {
  */
 function InstallPage() {
   const { current } = useProject();
+  const { agentSync } = useInstall();
   const viewedRoot = current?.root ?? null;
   const [status, setStatus] = useState<InstallStatus | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -608,6 +654,8 @@ function InstallPage() {
           )}
 
           {status && <StatusCard status={status} />}
+
+          {agentSync && <ForkedAgentsCard summary={agentSync} />}
 
           {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 

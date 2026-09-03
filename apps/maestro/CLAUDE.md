@@ -53,6 +53,10 @@ second.
 | `concept-skills.ts`                     | The project's concept skills — the `.claude/skills/*` whose frontmatter `metadata.type` is `concept-skill`, which explain its core concepts to agents. `metadata` is the Agent Skills spec's home for third-party data and one of the six fields that survive a claude.ai upload / `package_skill.py`; an invented top-level key is a HARD ERROR on those paths, so this must never move out of `metadata`, and it must be read with `parseFrontmatterMetadata` — `parseFrontmatter` flattens nesting and cannot tell `metadata.version` from a top-level `version`. Discovery walks EVERY `.claude/skills` in the tree (`skillSearchDirs` in `fs-scan.ts`), unlike `discoverSkills`, which reads one. Owns the `major.minor` arithmetic, the in-place frontmatter stamp, and the repo-level record at `<project>/.claude/concept-skills.json` — its own file, NOT a block on `maestro.json`, because concept skills are a plain `.claude/skills` convention and a repo must be able to keep a reconciled list of them with Maestro nowhere in sight. `readAgentsAvailable` is the one function here that still reads `maestro.json`, since nothing else knows what agents a project runs. Driven from `plugins/maestro/scripts/maestro-concept-skills.cjs` by the three `/…-concept-skill(s)` flows |
 | `skill-tags.ts`                         | A skill's backend/frontend/mobile/refactor/reviewer/scribe/test tags — global, keyed by skill id, in `~/.claude/maestro-skill-tags.sqlite` (`node:sqlite`, not a native module). `skillMapFromTags` is the pure tags→`SkillMap` lookup both `data:workflows`/`data:reseed` and `/maestro-install`'s terminal path converge on. `parseSkillTagsBlock`/`applySkillTagsBlock` are the "Update skill tags" pane flow's other half — see `claude-session.ts` |
 | `install.ts` / `uninstall.ts`           | Installs the runtime into a project, reports staleness, removes it                     |
+| `sync-decision.ts`                      | The ONE materialize / refresh / skip-as-customized / never-touched rule (pure, no `fs`). Lifted out of `report-sync.ts` by `031` so the report path and the forked-agent path cannot drift — the caller answers "what is the hash over" and "has the template moved" and this answers the verdict |
+| `agent-fork.ts` / `agent-fork-record.ts` | Forking a global-tier agent into the project, and the `agent-forks.json` provenance sidecar. Split so the sidecar + frontmatter arithmetic reach the plugin bundle WITHOUT `node:sqlite`, which `copyAgentAttributeRows` drags in |
+| `agent-sync.ts`                         | Whether each forked agent is still in step with its template. `computeAgentSync` READS ONLY — it runs on project selection and writes nothing to `.claude/agents/`; `applyAgentSync` is the one writer, for one explicit update / keep / detach |
+| `diff.ts`                               | A line diff (pure), so the `/agents` review card and the `maestro`/`maestro-update` skills render the same array |
 | `hook-arbitration.ts`                   | Which copy of a hook runs when the plugin and a project-local install both register it |
 | `session-runtime.ts` / `session-log.ts` | Ephemeral session file, append-only log, the tail                                      |
 | `claude-cli.ts`                         | Where the `claude` CLI is, decided with `fs` and not with PATH alone                   |
@@ -90,12 +94,15 @@ repo.
 pnpm --filter maestro build:plugin-libs
 ```
 
-Bundles `src/core/plugin-entries/*.ts` to CJS and writes them over:
+Bundles `src/core/plugin-entries/*.ts` to CJS and writes them over every `.cjs` in
+`plugins/maestro/scripts/lib/` **except `maestro-tasks.cjs`** — one per entry in
+`build-plugin-libs.mjs`'s `entries` array, which is the list:
 
-- `plugins/maestro/scripts/lib/maestro-session.cjs`
-- `plugins/maestro/scripts/lib/maestro-skill-regions.cjs`
-- `plugins/maestro/scripts/lib/maestro-seed.cjs`
-- `plugins/maestro/scripts/lib/maestro-concept-skills.cjs`
+- `maestro-session.cjs`, `maestro-skill-regions.cjs`, `maestro-seed.cjs`
+- `maestro-skill-tags.cjs`, `maestro-report-defaults.cjs`, `maestro-project-tags.cjs`,
+  `maestro-agent-project-tags.cjs`, `maestro-agent-types.cjs`
+- `maestro-concept-skills.cjs`
+- `maestro-agent-sync.cjs` — forked-agent staleness (`031`), behind `maestro-agent-forks.cjs`
 
 **Those files are generated. Do not hand-edit them** — edit the TypeScript source and re-run
 the build. They are committed because a project installs them by file copy, so they must exist in

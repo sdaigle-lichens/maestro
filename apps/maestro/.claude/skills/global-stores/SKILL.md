@@ -1,10 +1,10 @@
 ---
 name: global-stores
-description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report default comes from before the project has an opinion, or why an agent's description is written back to its own .md instead of a store."
+description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report default comes from before the project has an opinion, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: cf774acbd887f8170c7ddbe29bc0ae3163759ab8
+  version: "1.4"
+  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
 ---
 
 # Global stores
@@ -103,6 +103,18 @@ project — since the copy always lands on a project-tier agent, and after `030`
 the global row would leak into every other project. A same-name fork needs no copy at all: the
 shadowing row *is* the template's own global row. See `agents-view`.
 
+**This writer is why `agent-fork.ts` was split in two (`031`).** It touches three sqlite stores, so
+`agent-fork.ts` transitively imports `node:sqlite` — and `031`'s fork-staleness check has to reach
+the plugin's hook scripts through a generated bundle that runs under a bare `node` which may predate
+that module (the same constraint `maestro-skill-tags.cjs` lives with). So the sidecar and the
+frontmatter arithmetic moved to **`agent-fork-record.ts`** (`agentForksPath`, `readAgentForks`,
+`writeAgentForkRecord`, `removeAgentFork`, `bodyForHashing`, `hashAgentBody`, `mergeForkBody`,
+`renameAgentInFrontmatter`), which imports no store; `agent-fork.ts` keeps `forkAgent` and
+`copyAgentAttributeRows` and re-exports the rest, so every existing import still resolves. The
+property to preserve: `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-agent-sync.cjs`
+must stay **0**. Adding a store import to `agent-fork-record.ts` breaks that silently — the bundle
+still builds, and only a bare-`node` run notices.
+
 ## Why `node:sqlite`
 
 No native module, and therefore no `electron-rebuild` step. `skill-tags.ts`'s header carries the
@@ -121,6 +133,9 @@ fixed agent roster. Any code or doc still routing by agent name is working from 
 
 ## Relationships
 
+- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — why the sidecar and the frontmatter
+  helpers had to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these
+  stores, so it drags `node:sqlite` into any bundle that imports it.
 - [`maestro-config-model`](../maestro-config-model/SKILL.md) — the per-project counterpart; the
   `reports` slice is what overrides the `report-defaults` tier.
 - `maestro-architecture` (at the repo root `.claude/skills`) — the `SubagentStart` hook resolves a

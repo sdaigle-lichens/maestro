@@ -463,6 +463,31 @@ export {
   agentForksPath,
   hashAgentBody,
   bodyForHashing,
+  mergeForkBody,
+  removeAgentFork,
+  renameAgentInFrontmatter,
+  writeAgentForkRecord,
   type AgentForkRecord,
   type AgentForkResult,
 } from "./agent-fork.js";
+
+// The materialize / refresh / skip-as-customized / never-touched rule, lifted out of
+// report-sync.ts so the report path and the agent path cannot drift (`031`). Pure — no fs.
+export { decideSync, type SyncDecisionInput, type SyncTracking, type SyncVerdict } from "./sync-decision.js";
+
+// A line diff, computed in main so the /agents review card and the skills' terminal output render
+// the same array. Pure. See ./diff.ts.
+export { diffLines, hasChanges, unifiedDiffText, type DiffLine } from "./diff.js";
+
+// Keeping a forked agent in step with the template it was forked from. `computeAgentSync` READS
+// ONLY; `applyAgentSync` is the one writer, and only for an explicit per-agent review action.
+export {
+  computeAgentSync,
+  applyAgentSync,
+  type AgentSyncAction,
+  type AgentSyncApplyResult,
+  type AgentSyncEntry,
+  type AgentSyncOptions,
+  type AgentSyncSummary,
+  type PluginTemplateSource,
+} from "./agent-sync.js";

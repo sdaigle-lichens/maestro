@@ -57,6 +57,7 @@ const entries = [
   { name: "maestro-agent-project-tags", entry: "src/core/plugin-entries/maestro-agent-project-tags.ts" },
   { name: "maestro-agent-types", entry: "src/core/plugin-entries/maestro-agent-types.ts" },
   { name: "maestro-concept-skills", entry: "src/core/plugin-entries/maestro-concept-skills.ts" },
+  { name: "maestro-agent-sync", entry: "src/core/plugin-entries/maestro-agent-sync.ts" },
 ];
 
 for (const { name, entry } of entries) {

@@ -108,6 +108,11 @@ import type {
   AgentDescriptionResult,
   AgentForkResult,
   AgentForkRecord,
+  AgentSyncAction,
+  AgentSyncApplyResult,
+  AgentSyncEntry,
+  AgentSyncSummary,
+  DiffLine,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
@@ -218,6 +223,11 @@ export type {
   AgentDescriptionResult,
   AgentForkResult,
   AgentForkRecord,
+  AgentSyncAction,
+  AgentSyncApplyResult,
+  AgentSyncEntry,
+  AgentSyncSummary,
+  DiffLine,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -424,6 +434,14 @@ export const IPC = {
   // to `.claude/agents/<name>.md`, no Claude session, no token — same shape as `reportSave`. See
   // `src/core/agent-fork.ts`.
   agentFork: "agent:fork",
+
+  // `031` — keeping a fork in step with the template it came from. TWO channels for the same
+  // reason install/status and install/run are two: `agent:sync` is a pure READ that computes a
+  // summary on project selection and writes nothing to `.claude/agents/` (those files may be
+  // committed, and a diff nobody asked for is hard to explain), while `agent:sync:apply` writes
+  // exactly one agent, for exactly one explicit review action. See `src/core/agent-sync.ts`.
+  agentSync: "agent:sync",
+  agentSyncApply: "agent:sync:apply",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -695,6 +713,22 @@ export interface MaestroApi {
      * kebab-case, or when it collides with a file already in `.claude/agents/`.
      */
     fork(agentName: string, newName?: string): Promise<AgentForkResult>;
+    /**
+     * Which of this project's forked agents are still in step with their template (`031`).
+     *
+     * A pure read — it writes nothing, so it is safe to run on every project selection. The verdict
+     * per agent comes from the same `decideSync` the report sync uses, so this page, the `/maestro`
+     * count and the `maestro`/`maestro-update` skills cannot disagree about whether a fork is stale.
+     * An agent with no provenance record — hand-authored, or detached — is not in the result at all.
+     */
+    sync(): Promise<AgentSyncSummary>;
+    /**
+     * Apply ONE review action to ONE forked agent: `update` (take the new body, keep my
+     * description), `keep` (leave it, stay tracked, ask again next version) or `detach` (drop the
+     * provenance record — it is just a project agent now). The only call in this namespace that
+     * rewrites an agent's `.md`, and it does so one agent at a time on purpose.
+     */
+    syncApply(agentName: string, action: AgentSyncAction): Promise<AgentSyncApplyResult>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;

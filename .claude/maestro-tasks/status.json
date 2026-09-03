@@ -147,7 +147,7 @@
     ]
   },
   "027-auto-update-the-runtime-bundle.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "004-install-and-update-the-runtime-from-the-app.md"
     ]
@@ -165,7 +165,7 @@
     "blockedBy": []
   },
   "031-keep-forked-agents-in-step-with-their-template.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "029-make-project-the-only-editable-agent-tier.md"
     ]

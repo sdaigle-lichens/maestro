@@ -15,6 +15,12 @@
 //                                                       stale-but-customized
 //   - a hand-authored override (no `syncedFrom`)    -> never touched
 //
+// THOSE FIVE BRANCHES NOW LIVE IN `sync-decision.ts` (`031`), not here. A forked agent is the same
+// shape of thing — a project-local copy of a global template that records what it was copied from
+// — and `agent-sync.ts` asks the same function the same question. This file keeps everything that
+// is actually about REPORTS: which agents are candidates, where the file goes, what the hash is
+// taken over, and what "the global advanced" means for an integer store version.
+//
 // Deliberately NOT a "does maestro.json exist" seed-once operation like maestro.json's own seed:
 // reports keep tracking a moving global default, which is the entire reason `syncedFrom` exists.
 
@@ -23,6 +29,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { readConfig, writeConfig } from "./config.js";
 import { readAgentReportDefault, DEFAULT_REPORT_DEFAULTS_DB_PATH } from "./report-defaults.js";
+import { decideSync, type SyncTracking } from "./sync-decision.js";
 import type { MaestroReportsSlice } from "./types.js";
 import type { ReportSyncSummary } from "./contracts.js";
 
@@ -60,48 +67,43 @@ export function syncProjectReports(
 
   for (const agentName of candidateAgents) {
     const entry = reports[agentName];
-
-    // A hand-authored override (no syncedFrom) is the user's own content — never touched, and
-    // never even compared against the global default.
-    if (entry && !entry.syncedFrom) continue;
-
     const global = readAgentReportDefault(agentName, dbPath);
-    if (!global) continue; // nothing to sync from — this agent has no global default at all
 
     const reportId = entry?.id ?? agentName;
     const filePath = reportFilePath(projectRoot, reportId);
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
 
-    if (onDisk === null) {
-      writeReportFile(projectRoot, reportId, global.content);
-      reports[agentName] = { id: reportId, syncedFrom: { version: global.version, hash: sha256(global.content) } };
-      summary.materialized.push(agentName);
+    // A `reports` entry with no `syncedFrom` is a hand-authored override — the user's own content,
+    // which `saveProjectReportOverride` marks by dropping the field. No entry at all is a
+    // different thing: a stray file with nothing pointing at it. `decideSync` keeps them apart.
+    const tracking: SyncTracking = entry
+      ? entry.syncedFrom
+        ? { kind: "tracked", hash: entry.syncedFrom.hash }
+        : { kind: "detached" }
+      : { kind: "untracked" };
+
+    const verdict = decideSync({
+      tracking,
+      localHash: onDisk === null ? null : sha256(onDisk),
+      hasTemplate: global !== null,
+      // The global store's version is an integer that only ever goes up, so "advanced" is `>`.
+      templateAdvanced: !!global && !!entry?.syncedFrom && global.version > entry.syncedFrom.version,
+    });
+
+    // Neither of these is a state the user needs told about: one is content they own outright, the
+    // other is an agent with no global default to sync from in the first place.
+    if (verdict === "detached" || verdict === "no-template") continue;
+
+    if (verdict === "materialize" || verdict === "refresh") {
+      writeReportFile(projectRoot, reportId, global!.content);
+      reports[agentName] = { id: reportId, syncedFrom: { version: global!.version, hash: sha256(global!.content) } };
+      summary[verdict === "materialize" ? "materialized" : "refreshed"].push(agentName);
       changed = true;
       continue;
     }
 
-    // entry.syncedFrom is guaranteed set here: either entry was absent (handled above, onDisk
-    // would have been null too since the file can't exist with no slice entry pointing at it —
-    // unless a stray file happens to sit there, in which case treating it as unmodified-since a
-    // sync that never happened is wrong, so guard explicitly) or entry.syncedFrom exists.
-    if (!entry) {
-      // A file already exists at the default id with no tracking entry — leave it alone; this
-      // is not a case the spec describes and overwriting an unrelated file would be a surprise.
-      summary.unchanged.push(agentName);
-      continue;
-    }
-
-    const currentHash = sha256(onDisk);
-    if (currentHash !== entry.syncedFrom!.hash) {
+    if (verdict === "stale-customized") {
       summary.staleCustomized.push(agentName);
-      continue;
-    }
-
-    if (global.version > entry.syncedFrom!.version) {
-      writeReportFile(projectRoot, reportId, global.content);
-      reports[agentName] = { id: reportId, syncedFrom: { version: global.version, hash: sha256(global.content) } };
-      summary.refreshed.push(agentName);
-      changed = true;
       continue;
     }
 

@@ -22,6 +22,20 @@ node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-check-runtime.cjs"
 
 One line of JSON. **Do exactly what its `instruction` field says**, then continue.
 
+Then check whether any agent this project **forked** from a global template has fallen behind it:
+
+```bash
+node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-agent-forks.cjs" list
+```
+
+This writes nothing — a forked agent's `.md` is often committed, and a diff nobody asked for is
+hard to explain. If it names any diverged agent, **say so in one line and carry on with the
+workflow**; do not stop to fix it. Only if the user asks, run `diff <agent>` to show exactly what
+taking the template's new body would change (its own description is kept), then apply the answer
+with `update <agent>`, `keep <agent>` or `detach <agent>`. `/maestro-update` is where that review
+is done properly — this step exists so a stale fork is visible rather than silently running last
+year's version of an agent.
+
 ### Step 1 — Custom Checks
 
 Run the `/confidence-check` and `/use-design-check` skills, whichever of them this project has. If confidence is low, gather more information; if the design check raises issues, address them. Both are gates on the same thing — that the request is understood well enough to commit a workflow to it — so clear them before choosing and executing one (Steps 2 and 3).

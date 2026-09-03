@@ -361,9 +361,13 @@ const STATIC_ASSETS = [
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
   { src: "scripts/maestro-task-status.cjs", dest: ".claude/scripts/maestro-task-status.cjs" },
   { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
+  // Forked-agent sync (031) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it is
+  // copied into the project rather than run from ${CLAUDE_PLUGIN_ROOT}.
+  { src: "scripts/maestro-agent-forks.cjs", dest: ".claude/scripts/maestro-agent-forks.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
+  { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh — that one also tears down the
   // per-project web-app container, which is the plugin's business and not a project-local install's.

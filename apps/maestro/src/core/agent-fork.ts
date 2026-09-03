@@ -18,80 +18,29 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { createHash } from "node:crypto";
 import { getInstalledPlugins } from "@repo/claude-fs";
 import { getAvatar, setAvatar } from "./avatar-store.js";
 import { readAllAgentTypes, setAgentType } from "./agent-types.js";
 import { readAllAgentProjectTags, setAgentProjectTag } from "./agent-project-tags.js";
-import { findAgentFile, FRONTMATTER } from "./agent-descriptions.js";
+import { findAgentFile } from "./agent-descriptions.js";
+import { hashAgentBody, renameAgentInFrontmatter, writeAgentForkRecord } from "./agent-fork-record.js";
 import type { AgentForkRecord, AgentForkResult } from "./contracts.js";
 
 export type { AgentForkRecord, AgentForkResult };
 
-const AGENT_FORKS_FILENAME = "agent-forks.json";
-
-export function agentForksPath(projectRoot: string): string {
-  return path.join(projectRoot, ".claude", AGENT_FORKS_FILENAME);
-}
-
-/** Every recorded fork in this project, keyed by the forked agent's own name. Missing file ⇒ {}. */
-export function readAgentForks(projectRoot: string): Record<string, AgentForkRecord> {
-  try {
-    const raw = fs.readFileSync(agentForksPath(projectRoot), "utf8");
-    const parsed: unknown = JSON.parse(raw);
-    return parsed && typeof parsed === "object" ? (parsed as Record<string, AgentForkRecord>) : {};
-  } catch {
-    return {};
-  }
-}
-
-function writeAgentFork(projectRoot: string, record: AgentForkRecord): void {
-  const file = agentForksPath(projectRoot);
-  fs.mkdirSync(path.dirname(file), { recursive: true });
-  const all = readAgentForks(projectRoot);
-  all[record.agentName] = record;
-  fs.writeFileSync(file, JSON.stringify(all, null, 2) + "\n", "utf8");
-}
-
-/**
- * The bytes a fork's baseline hash is taken over: the file's frontmatter block with its
- * `description:` line (and any continuation lines directly under it) removed, then the untouched
- * body. A description is EXPECTED to diverge — editing it is the one thing this app itself lets a
- * global-tier agent's card do after a fork — so hashing the whole file would mark every fork as
- * modified the moment its description was edited, and `031`'s sync would then never fire for
- * anybody. Pin this normalisation with a test; it is the one part of the hash that is not obvious
- * from reading `031` later.
- */
-export function bodyForHashing(contents: string): string {
-  const match = contents.match(FRONTMATTER);
-  if (!match) return contents;
-  const lines = match[1].split("\n");
-  const index = lines.findIndex((l) => /^description\s*:/.test(l));
-  if (index === -1) return contents;
-  let end = index + 1;
-  while (end < lines.length && lines[end].trim() !== "" && /^\s/.test(lines[end])) end++;
-  const kept = [...lines.slice(0, index), ...lines.slice(end)];
-  return `---\n${kept.join("\n")}\n---` + contents.slice(match[0].length);
-}
-
-export function hashAgentBody(contents: string): string {
-  return createHash("sha256").update(bodyForHashing(contents)).digest("hex");
-}
-
-/**
- * Rewrite the frontmatter `name:` line to `name`, leaving everything else — including the
- * `description:` line — byte-identical. Only used for a RENAMED fork; a same-name fork copies the
- * template's bytes untouched, which is what the acceptance criterion means by "byte-for-byte".
- */
-function renameInFrontmatter(contents: string, name: string): string {
-  const match = contents.match(FRONTMATTER);
-  if (!match) throw new Error("This agent's file has no frontmatter block to rename.");
-  const lines = match[1].split("\n");
-  const index = lines.findIndex((l) => /^name\s*:/.test(l));
-  if (index === -1) throw new Error("This agent's frontmatter has no name: line to rename.");
-  lines[index] = `name: ${name}`;
-  return `---\n${lines.join("\n")}\n---` + contents.slice(match[0].length);
-}
+// The sidecar and the frontmatter arithmetic live in their own module so the sync path can reach
+// them without dragging `node:sqlite` in behind `copyAgentAttributeRows` — see its header. Every
+// existing importer of this file still finds them here.
+export {
+  agentForksPath,
+  bodyForHashing,
+  hashAgentBody,
+  mergeForkBody,
+  readAgentForks,
+  removeAgentFork,
+  renameAgentInFrontmatter,
+  writeAgentForkRecord,
+} from "./agent-fork-record.js";
 
 const KEBAB_CASE = /^[a-z][a-z0-9-]*$/;
 
@@ -177,7 +126,7 @@ export async function forkAgent(
   }
 
   const templateBody = fs.readFileSync(ref.file, "utf8");
-  const contents = renamed ? renameInFrontmatter(templateBody, targetName) : templateBody;
+  const contents = renamed ? renameAgentInFrontmatter(templateBody, targetName) : templateBody;
   fs.writeFileSync(targetFile, contents, "utf8");
 
   if (renamed) copyAgentAttributeRows(agentName, targetName, projectRoot, storeDbPaths);
@@ -191,7 +140,7 @@ export async function forkAgent(
     templateBody,
     forkedAt: new Date().toISOString(),
   };
-  writeAgentFork(projectRoot, record);
+  writeAgentForkRecord(projectRoot, record);
 
   return { name: targetName, file: targetFile };
 }

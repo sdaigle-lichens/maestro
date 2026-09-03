@@ -36,6 +36,7 @@ import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import AgentList, { type AgentListItem } from "../components/agents/agent-list";
 import AgentCard from "../components/agents/agent-card";
+import AgentForkReview from "../components/agents/agent-fork-review";
 import InteractionsPane from "../components/agents/interactions-pane";
 import { PANE_SURFACES, RIGHT_PANE_DEFAULT, type AgentDraft, type AgentSkill } from "../components/agents/agent-shared";
 import { defaultAvatarLayers } from "../utils/avatar";
@@ -47,6 +48,8 @@ import {
   AVATAR_CATEGORIES,
   GLOBAL_TAG,
   isEditableAgentSource,
+  type AgentSyncAction,
+  type AgentSyncSummary,
   type AgentType,
   type AvatarCategory,
   type AvatarLayers,
@@ -109,6 +112,11 @@ function AgentsPage() {
   const [pendingEdit, setPendingEdit] = useState(false);
   const [saving, setSaving] = useState(false);
   const [forking, setForking] = useState(false);
+  // `031`: which of this project's forked agents are still in step with their template. A READ —
+  // computing it writes nothing to `.claude/agents/` — refreshed alongside everything else, so a
+  // fork, an update or a detach is reflected without a second round trip of its own.
+  const [forkSync, setForkSync] = useState<AgentSyncSummary | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const [activeCat, setActiveCat] = useState<AvatarCategory>("hair");
   const [query, setQuery] = useState("");
   const [leftOpen, setLeftOpen] = useState(true);
@@ -125,13 +133,14 @@ function AgentsPage() {
   // view: the open project's own project-tier rows overlay the global ones, so a project agent
   // shows this project's classification rather than some other project's same-named one.
   const refresh = useCallback(async () => {
-    const [tools, flows, types, tags, avatars, catalog] = await Promise.all([
+    const [tools, flows, types, tags, avatars, catalog, sync] = await Promise.all([
       callMain(() => getToolsData()),
       callMain(() => window.maestro.data.workflows()),
       callMain(() => window.maestro.templates.agentTypes.list(true)),
       callMain(() => window.maestro.templates.agentProjectTags.list(true)),
       callMain(() => window.maestro.avatar.list(true)),
       callMain(() => window.maestro.templates.projectTags.list()),
+      callMain(() => window.maestro.agents.sync()),
     ]);
     setResult(tools);
     setWorkflows(flows.ok ? flows.value : null);
@@ -141,6 +150,7 @@ function AgentsPage() {
       avatars: avatars.ok ? avatars.value : {},
       catalog: catalog.ok ? catalog.value : [],
     });
+    setForkSync(sync.ok ? sync.value : null);
   }, []);
 
   useEffect(() => {
@@ -397,6 +407,48 @@ function AgentsPage() {
     }
   }
 
+  // The review action. One agent, one named action, and the ONLY thing on this page that can
+  // rewrite an agent's body — which is why it is a button press and not something the sync does on
+  // its own. `refresh()` afterwards re-computes the summary, so the block below the card either
+  // goes green or disappears.
+  async function handleSyncAction(action: AgentSyncAction) {
+    if (!selected) return;
+    setSyncing(true);
+    try {
+      const res = await callMain(() => window.maestro.agents.syncApply(selected, action));
+      if (!res.ok) {
+        toast(
+          <>
+            Could not {action} this fork: {res.error}
+          </>,
+          { variant: "error" }
+        );
+        return;
+      }
+      await refresh();
+      toast(
+        action === "update" ? (
+          <>
+            Took the template&rsquo;s body for <span className="font-mono text-(--ink)">{selected}</span> — your
+            description is unchanged.
+          </>
+        ) : action === "keep" ? (
+          <>
+            Kept <span className="font-mono text-(--ink)">{selected}</span> as it is — you&rsquo;ll be asked again when
+            its template moves.
+          </>
+        ) : (
+          <>
+            Detached <span className="font-mono text-(--ink)">{selected}</span> — its file is untouched and Maestro no
+            longer tracks it.
+          </>
+        )
+      );
+    } finally {
+      setSyncing(false);
+    }
+  }
+
   if (!result.ok) {
     return (
       <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
@@ -413,6 +465,9 @@ function AgentsPage() {
       </div>
     );
   }
+
+  const forkEntry = forkSync?.entries.find((e) => e.agentName === selected) ?? null;
+  const diverged = forkSync?.diverged ?? [];
 
   const paneNote = selected
     ? `${sourceLabel(report.source)} — saving always writes this project's override at .claude/reports/${selected}.md, so editing this agent never changes what another agent resolves to.`
@@ -448,6 +503,36 @@ function AgentsPage() {
             />
 
             <main className="flex-1 min-w-[560px] overflow-y-auto bg-(--bg)">
+              {/*
+                The entry point `/maestro`'s count links to. Chips rather than a modal: the review
+                is per agent, and picking which one to look at is the first thing to do.
+              */}
+              {diverged.length > 0 && (
+                <div
+                  data-testid="agent-fork-diverged"
+                  data-count={diverged.length}
+                  className="mx-6 mt-6 flex items-center gap-2 flex-wrap px-3 py-2 rounded-lg text-[12px] bg-amber-500/10"
+                >
+                  <AlertTriangle size={14} className="shrink-0 text-amber-500" />
+                  <span className="text-(--ink-2)">
+                    {diverged.length} forked agent{diverged.length === 1 ? "" : "s"} differ
+                    {diverged.length === 1 ? "s" : ""} from {diverged.length === 1 ? "its" : "their"} template:
+                  </span>
+                  {diverged.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => {
+                        setSelected(name);
+                        setDraft(null);
+                      }}
+                      className="font-mono text-[11px] px-2 h-6 rounded-full border border-amber-500/40 text-amber-500 hover:bg-amber-500/10 cursor-pointer focus:outline-none"
+                    >
+                      {name}
+                    </button>
+                  ))}
+                </div>
+              )}
               {live ? (
                 <AgentCard
                   name={live.id}
@@ -484,6 +569,15 @@ function AgentsPage() {
                   <Users size={18} className="text-(--ink-3)" />
                   <p className="text-[12px] m-0">Select an agent on the left to see its card.</p>
                 </div>
+              )}
+
+              {/*
+                Below the card, never inside it: `CARD_MIN_HEIGHT` is a measured constant that keeps
+                the card the same height in view and edit mode, and a conditional diff block inside
+                would make that height vary by agent. See the `agents-view` skill.
+              */}
+              {live && forkEntry && !editing && (
+                <AgentForkReview entry={forkEntry} busy={syncing} onAction={(a) => void handleSyncAction(a)} />
               )}
             </main>
 

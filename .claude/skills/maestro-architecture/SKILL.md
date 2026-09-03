@@ -3,8 +3,8 @@ name: maestro-architecture
 description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the SubagentStart/PreToolUse/SessionEnd hooks behave at runtime (including which copy of a hook fires when the plugin and a project-local install both register it), how skills + condition-edge handoffs are injected, the HANDOFF routing contract, the orchestrator skill's managed regions, and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 0b88ea57965d2eab2bf633c053cfdb606382af3e
+  version: "1.3"
+  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
 ---
 
 # Maestro Runtime Architecture
@@ -56,7 +56,9 @@ User invokes /maestro in a session
         │
         ▼
 Orchestrator (.claude/skills/maestro/SKILL.md):
-  Step 0  classify request → node .claude/scripts/maestro-set-session-workflow.cjs "<workflow>"
+  Step 0  readiness → node .claude/scripts/maestro-check-runtime.cjs   (do what its `instruction` says)
+          forks     → node .claude/scripts/maestro-agent-forks.cjs list (report in ONE line; never blocks)
+  Step 2  classify request → node .claude/scripts/maestro-set-session-workflow.cjs "<workflow>"
                               └─ writes { workflow, generated_instances } → maestro_session.json
   Step 1-3  confidence + design gates (/confidence-check, /use-design-check — IF available)
   Step 4  pick the success path from the Maestro:HANDOFFS table
@@ -150,6 +152,15 @@ Note: protocol templates live **only** in the agent template files, never in `ma
 - **`maestro.json` is the single source of truth.** Hand-edit it then run `/maestro-update` to re-render the orchestrator.
 - **`maestro/SKILL.md` has managed regions, and they _do_ get overwritten.** `Maestro:STEPS` and `Maestro:PRINCIPLES` are plugin-owned: `/maestro-install` and `/maestro-update` re-sync them from `templates/maestro/SKILL.md` on every run, which is how template improvements reach existing installs. `Maestro:HANDOFFS` is rendered from `maestro.json` and carried across a sync. **Everything outside the markers is yours and never touched** — put customisations there, not inside a region. The region list is `MANAGED_REGIONS` in `scripts/lib/maestro-skill-regions.cjs`; widening a region shrinks the space users can customise, so add regions rather than swallowing the whole file.
 - **Pre-regions installs get migrated, not synced.** A `SKILL.md` with no `Maestro:STEPS` marker can't be synced in place (there's nothing to anchor to), so the installer backs it up to `SKILL.md.bak` and writes the template, reporting `orchestratorSkill.action === "migrated"`. Both install skills are told to surface that and offer to re-apply prose from the `.bak`. This happens once per project.
+- **Step 0 runs two commands, and the second one must never stop the workflow.**
+  `maestro-check-runtime.cjs` answers with an `instruction` to obey; `maestro-agent-forks.cjs list`
+  (`031`) reports which agents this project forked from a global template have since fallen behind
+  it. It **writes nothing** — a forked agent's `.md` is usually committed, and a diff nobody asked
+  for is hard to explain — so the orchestrator says the count in one line and carries on;
+  `/maestro-update` is where the review is actually done. The check is inside the `Maestro:STEPS`
+  managed region, so it reaches an existing install only after a `0.3.5` (or later) plugin re-pull
+  **and** an update — the same version trap the arbitration guard shipped through. See
+  `updating-maestro`.
 - **The gate skills are optional.** `/confidence-check` and `/use-design-check` are now bundled in this plugin (`plugins/maestro/skills/{confidence-check,use-design-check}`), but the orchestrator still references them "if available" and degrades gracefully if a project hasn't installed them.
 - **Session logs are append-only by design.** Don't switch `maestro_session.log.jsonl` back to a read-modify-write JSON array — parallel subagents would lose entries.
 - **Anything `.md` under `agents/` is discovered as an agent.** This is why the `handoff_details` protocol templates live at `templates/handoffs/<sender>/<receiver>.md`, **not** under `agents/`: a frontmatter-less `.md` inside the agents tree gets registered as a phantom agent (e.g. `…:refactor:handoffs:backend`) with **All tools**. Keep handoff templates (and any other non-agent `.md`) out of `agents/`. If you add a new sender/receiver pair, drop the file under `templates/handoffs/<sender>/` — `readHandoffProtocol()` resolves it there (and at the project-local `.claude/handoffs/<sender>/` override).

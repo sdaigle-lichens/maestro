@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), and why both copies firing at once is now arbitrated rather than warned about, and which path wins."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 0b88ea57965d2eab2bf633c053cfdb606382af3e
+  version: "1.2"
+  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -118,6 +118,13 @@ describes what a *consumer* of the plugin sees change.
 scripts and nothing about the surface: same skills, same agents, same six hook registrations. Patch.
 It was first shipped as `0.4.0`, which is the mistake this section exists to stop repeating.
 
+`0.3.5` — forked-agent sync (`031`) — is the second one, and it is the more tempting case. It
+**added a script** (`scripts/maestro-agent-forks.cjs`) and its generated lib, rewrote a step in
+`templates/maestro/SKILL.md` and added a step to `maestro-update`'s. Still a patch: no new skill,
+agent, command, or hook event, so there is nothing a consumer can *invoke* that they could not
+before — the existing `/maestro` and `/maestro-update` skills simply do more. A new file under
+`scripts/` is not a published surface; a new directory under `skills/` or `agents/` is.
+
 ### Verify the refresh landed
 
 ```bash
@@ -128,10 +135,31 @@ ls "$P/scripts/maestro-inject-agent-context.js"   # exists
 
 Then `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.
 
+### What `031` added to the copied set
+
+Two more files now ride path 1 into every project:
+
+| Copied to | From | Why it is copied rather than run from the plugin |
+| --- | --- | --- |
+| `.claude/scripts/maestro-agent-forks.cjs` | `plugins/maestro/scripts/` | The orchestrator's Step 0 invokes it as `$CLAUDE_PROJECT_DIR/.claude/scripts/…`, like every other step-0 script. |
+| `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires. |
+
+Both are in `STATIC_ASSETS` in **both** implementations (`install.ts` and `maestro-install.js`) —
+the manifests are mirrored by hand, so a file added to one and not the other is a bug. Because the
+manifest grew, `installedRuntimeId` and `shippedRuntimeId` differ for every already-installed
+project: **each one reports stale exactly once and re-copies.** That is this delivery path working,
+not a regression.
+
+**Step 0's fork check reaches an installed project only after a re-pull.** It lives inside the
+`Maestro:STEPS` **managed region** of `templates/maestro/SKILL.md`, which `/maestro-install` and
+`/maestro-update` re-sync from the plugin's cached copy — so a project sees it only once the
+`0.3.5` cache has been pulled *and* an update has been run. Same version trap as `0.3.3`'s
+arbitration guard, one layer further out.
+
 ## Generated files that need a build, not just an edit
 
-`scripts/lib/maestro-session.cjs`, `scripts/lib/maestro-skill-regions.cjs` and
-`scripts/lib/maestro-seed.cjs` are **generated** from `apps/maestro/src/core/plugin-entries/` by
+`scripts/lib/maestro-session.cjs`, `scripts/lib/maestro-skill-regions.cjs`,
+`scripts/lib/maestro-seed.cjs` and `scripts/lib/maestro-agent-sync.cjs` are **generated** from `apps/maestro/src/core/plugin-entries/` by
 `pnpm --filter maestro build:plugin-libs`. Editing the `.cjs` directly is overwritten on
 the next build; edit the TypeScript source and rebuild. They are committed because a project
 installs them by file copy, so they must exist in the repo.
@@ -152,6 +180,9 @@ bumped.**
 
 ## Related
 
+- `[[agent-fork-sync]]` (in `apps/maestro/.claude/skills`) — the other consumer of the
+  version-string rule: a forked agent's staleness is a plugin `version` inequality, so a plugin
+  edit shipped without a bump correctly reports *no update available*.
 - `[[installing-maestro]]` — what an install actually writes into a project, and why the
   project-local copies exist at all. Its **hook arbitration** sub-concept is the full rule for which
   copy of a hook runs, and the three decisions behind it.

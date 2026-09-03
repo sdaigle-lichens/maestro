@@ -18,6 +18,7 @@ import {
   bodyForHashing,
   forkAgent,
   hashAgentBody,
+  mergeForkBody,
   readAgentForks,
 } from "../../src/core/agent-fork.js";
 
@@ -51,6 +52,14 @@ describe("bodyForHashing / hashAgentBody", () => {
     const a = file("name: scribe\ndescription:\n  continued elsewhere\ntools: Read");
     const b = file("name: scribe\ndescription: One line now.\ntools: Read");
     expect(hashAgentBody(a)).toBe(hashAgentBody(b));
+  });
+
+  it("strips the name line too, so a RENAMED fork is not modified from birth (031)", () => {
+    // `forkAgent` rewrites exactly this line on a rename. Hashing it would put every renamed fork
+    // permanently in `staleCustomized` and the refresh branch would never fire for one.
+    const template = file("name: reviewer\ndescription: Reviews.\ntools: Read");
+    const renamed = file("name: strict-reviewer\ndescription: Reviews.\ntools: Read");
+    expect(hashAgentBody(template)).toBe(hashAgentBody(renamed));
   });
 
   it("hashes the whole file unchanged when there's no frontmatter block", () => {
@@ -221,5 +230,26 @@ describe("forkAgent", () => {
 
   it("rejects when no project is open", async () => {
     await expect(forkAgent("", null, null, "scribe")).rejects.toThrow(/No project is open/);
+  });
+});
+
+describe("mergeForkBody", () => {
+  it("takes the template's body and carries the fork's own name and description over verbatim", () => {
+    const template = `---\nname: reviewer\ndescription: Reviews PRs.\ntools: Read\n---\n\nNew body.\n`;
+    const fork = file("name: strict-reviewer\ndescription: 'My own words.'\ntools: Read");
+    expect(mergeForkBody(template, fork)).toBe(
+      `---\nname: strict-reviewer\ndescription: 'My own words.'\ntools: Read\n---\n\nNew body.\n`
+    );
+  });
+
+  it("is the inverse of bodyForHashing — merging never changes the hash", () => {
+    const template = `---\nname: reviewer\ndescription: Reviews PRs.\n---\n\nNew body.\n`;
+    const fork = file("name: strict-reviewer\ndescription: Mine.");
+    expect(hashAgentBody(mergeForkBody(template, fork))).toBe(hashAgentBody(template));
+  });
+
+  it("returns the template untouched when either side has no frontmatter", () => {
+    const template = "# no frontmatter\n";
+    expect(mergeForkBody(template, file("name: a\ndescription: b"))).toBe(template);
   });
 });

@@ -1,10 +1,10 @@
 ---
 name: agents-view
-description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to six different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to six places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why the skills section is read-only, why the card doesn't reflow when you press Edit, or where the Interactions pane is going next."
+description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to six different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to six places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, or where the Interactions pane is going next."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: cf774acbd887f8170c7ddbe29bc0ae3163759ab8
+  version: "1.3"
+  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
 ---
 
 # Agents View
@@ -100,7 +100,7 @@ Two of these are documented in depth elsewhere rather than restated here:
 
 ## Data in
 
-The route holds no loader-driven state beyond the first paint. `refresh()` fans out five reads in
+The route holds no loader-driven state beyond the first paint. `refresh()` fans out seven reads in
 parallel, and re-runs on every project change and after every save:
 
 ```
@@ -110,7 +110,14 @@ window.maestro.templates.agentTypes.list(true)        → Record<agent, AgentTyp
 window.maestro.templates.agentProjectTags.list(true)  → Record<agent, string> — merged
 window.maestro.avatar.list(true)                      → Record<agent, AvatarLayers> — merged
 window.maestro.templates.projectTags.list()       → the catalog for the dropdown
+window.maestro.agents.sync()                      → AgentSyncSummary — which forks are behind their template (`031`)
 ```
+
+The seventh read is the only one that is *also* computed app-wide: `install-context.tsx`'s
+`refresh()` calls the same channel on project selection and hangs the result off
+`InstallContextValue.agentSync`, so `/maestro` can show the headline count without visiting this
+page. Both call sites swallow a failure the way the auto-refresh does — a fork check that throws
+must not stop the page from loading.
 
 `avatar:list` exists because of this page. The list draws a composited thumb per row, and the
 per-agent `avatar:get` would have been one sqlite open per agent on every render — see
@@ -187,13 +194,50 @@ Every fork — same-name or renamed — writes a provenance record to
 `sourcePlugin`, `pluginVersion`, `templateBodyHash`, `templateBody`, `forkedAt`), **never** into the
 agent's own frontmatter beyond the rename — `agent-fork.ts`'s header explains why (Maestro's own
 bookkeeping doesn't belong in a file format it doesn't own, same argument as the six-write-paths
-description exception below). `hashAgentBody` strips the `description:` frontmatter line (and its
-continuation) before hashing, so editing the description after forking never marks the fork as
-diverged.
+description exception below). `hashAgentBody` strips **both** the `name:` and the `description:` frontmatter lines (and their
+continuations) before hashing, so neither editing the description after forking nor renaming the
+fork at creation marks it as diverged. The `name:` half is `031`'s correction: `forkAgent` rewrites
+exactly that line on a renamed fork, so a description-only normalisation left every renamed fork
+hashing differently from its own template **from birth** — permanently stale-but-customized, with
+the refresh branch never firing for it.
 
 `/create-subagent`'s "Start from a template" field (`target: "project"` only) is a **different,
 lighter-weight thing** — it seeds a fresh manual-mode form's `name`/`description` from a picked
 agent, not a byte-for-byte copy of its body. See `create-skills-architecture`.
+
+## Reviewing a fork against its template (`031`)
+
+A fork is a snapshot, and the template moves on. `src/core/agent-sync.ts` notices; **this page is
+where the user answers.**
+
+**The mechanism is not documented here.** The shared decision function, the two staleness triggers,
+the hashing normalisation, the provenance record and what `update`/`keep`/`detach` actually write
+all live in [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — a concept, not a view, because
+`report-sync.ts` is its other caller and a reader arriving from there has no reason to open this
+file. Read that first; what follows is only what is true of this page.
+
+| Surface | What it shows |
+| --- | --- |
+| `/maestro`'s `ForkedAgentsCard` (`maestro.tsx`, `data-testid="maestro-diverged-forks"`) | The headline count from `useInstall().agentSync`, linking to `/agents`. Renders nothing when `diverged` is empty. |
+| This page's banner (`data-testid="agent-fork-diverged"`) | One chip per diverged fork at the top of `<main>`; clicking one selects it. |
+| `agent-fork-review.tsx` (`data-testid="agent-fork-review"`, `data-verdict`) | The per-agent review: both descriptions side by side, the body diff (`data-testid="agent-fork-diff"`, from `src/core/diff.ts`), and **Update / Keep as fork / Detach**. |
+
+- **The review renders BELOW the card, not inside `AgentCard`.** `CARD_MIN_HEIGHT` (below) is a
+  measured constant keeping the card the same height in view and edit mode; a conditional diff block
+  inside it would make that height vary by agent and by template state. The review is also hidden
+  while editing. Because no edit-mode card content changed, `CARD_MIN_HEIGHT` did **not** need
+  re-measuring for `031`.
+- **Update is offered even for a stale-customized fork, behind a two-click confirmation**
+  ("Take the new body…" → "Discard my edits and take it"). "Never overwritten" is a promise about
+  the **automatic** path — `computeAgentSync` writes nothing, ever — and refusing a user who has
+  read the diff and pressed twice would leave no route to take the update at all.
+- **Both descriptions are on screen beside the diff on purpose.** A fork syncs its body while its
+  description stays the user's, so the two drift — the description ending up promising something the
+  new body no longer does. Not a blocker, and only noticeable if both are visible.
+- **`refresh()` fans out a seventh read** (`window.maestro.agents.sync()`), so a fork, an update or
+  a detach is reflected without a round trip of its own. The count the banner shows is
+  `summary.diverged`, which is deliberately narrower than `refreshed + staleCustomized` — see
+  [`agent-fork-sync`](../agent-fork-sync/SKILL.md).
 
 ## Things that bite
 
@@ -255,13 +299,23 @@ agent, not a byte-for-byte copy of its body. See `create-skills-architecture`.
 | `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |
 | `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane, its resize handle and auto-growing editor. |
 | `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, and `describeUneditableSource`'s tier-specific refusals. |
-| `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, the store-row copy, the `agent-forks.json` provenance sidecar. |
+| `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, and `copyAgentAttributeRows`. Re-exports everything below. |
+| `src/core/agent-fork-record.ts` | The sidecar and the hashing/merging helpers, split out of `agent-fork.ts` in `031` so nothing sqlite-shaped reaches the generated bundle. |
+| `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts`. |
+| `src/core/agent-sync.ts` | `computeAgentSync` (read-only) and `applyAgentSync` (the only writer). |
+| `src/core/diff.ts` | `diffLines`/`hasChanges`/`unifiedDiffText` — LCS, with a `MAX_LINES = 4000` fallback to a whole-file replace. |
+| `src/renderer/src/components/agents/agent-fork-review.tsx` | The review block: both descriptions, the diff, and the three actions. |
+| `test/core/sync-decision.test.ts` | The branch table — `detached` outranks everything, `stale-customized` decided before `templateAdvanced`. |
+| `test/core/agent-sync.test.ts` | One case per `031` acceptance criterion, including the mtime-and-bytes proof that computing writes nothing. |
 | `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |
 | `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |
 | `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |
 
 ## Relationships
 
+- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — the mechanism behind the fork review on
+  this page: the one decision function `report-sync.ts` shares, the two staleness triggers, and
+  what update / keep / detach write.
 - [`global-stores`](../global-stores/SKILL.md) — four of the six write paths, why the fifth
   (description) deliberately is not one, and where `copyAgentAttributeRows` reads/writes those same
   three stores for a renamed fork.
@@ -273,3 +327,7 @@ agent, not a byte-for-byte copy of its body. See `create-skills-architecture`.
   this page's "+ New agent" link is the entry point for.
 - [`test-maestro`](../test-maestro/SKILL.md) — how the measured numbers above were measured, and how
   to re-measure them.
+- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is the tenth
+  generated bundle, and the reason the fork record had to leave `agent-fork.ts`.
+- `updating-maestro` (at the repo root `.claude/skills`) — why a plugin-tier fork is checked by
+  version string alone, and why that is the *correct* answer rather than a shortcut.

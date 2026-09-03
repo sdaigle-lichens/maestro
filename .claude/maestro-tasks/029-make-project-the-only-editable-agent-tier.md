@@ -135,6 +135,13 @@ of a fork — so a whole-file hash marks every fork as user-modified the moment 
 edited, and `031`'s sync would then never fire for anybody. Normalise the `description:` line out
 before hashing, and pin that with a test now rather than discovering it in `031`.
 
+> **Corrected by `031`.** Normalising out the description alone was not enough: `forkAgent` also
+> rewrites the `name:` line on a renamed fork, so `hashAgentBody(fork) !== record.templateBodyHash`
+> from birth and every renamed fork was permanently stale-but-customized. `bodyForHashing` (now in
+> `agent-fork-record.ts`, split out of `agent-fork.ts`) strips **both** lines. `AgentForkRecord`
+> also gained an optional `acknowledgedFrom` field in `031` — see that page's divergences 1, 2
+> and 7.
+
 `030` rekeys three of the stores this ticket copies rows in. The two are independent, but forking is
 what makes same-named agents across projects common, so landing `030` close behind is worth doing.
 

@@ -64,26 +64,44 @@ longer does. Not a blocker, but the user can only notice it if both are on scree
 
 ## Acceptance criteria
 
-- [ ] `report-sync.ts`'s materialize / refresh / skip-as-customized / never-touched decision lives
-      in one shared, `fs`-free function, and both the report path and the agent path call it
-- [ ] The existing report sync behaviour is unchanged — its tests pass without modification
-- [ ] A forked agent whose body is untouched and whose template version advanced is reported as
+- [x] `report-sync.ts`'s materialize / refresh / skip-as-customized / never-touched decision lives
+      in one shared, `fs`-free function, and both the report path and the agent path call it —
+      `src/core/sync-decision.ts` (`decideSync`, branch order lifted verbatim); `report-sync.ts` and
+      `agent-sync.ts` are its only importers
+- [x] The existing report sync behaviour is unchanged — its tests pass without modification —
+      `test/core/report-defaults.test.ts` and `reports.test.ts`, 26 tests, untouched, green
+- [x] A forked agent whose body is untouched and whose template version advanced is reported as
       refreshable, and taking the refresh replaces the body while leaving the description exactly as
-      the user wrote it
-- [ ] A forked agent whose body the user edited is reported as stale-but-customized and is never
-      overwritten
-- [ ] A detached agent (no provenance record) is never reported and never touched
-- [ ] Plugin-tier forks are checked by plugin version; user-tier forks are checked by template
-      content hash
-- [ ] Selecting a project computes the summary and writes nothing to `.claude/agents/`, proven by a
-      test asserting no file mtime changes
-- [ ] `/maestro` shows the count of diverged forks and links to the per-agent review
-- [ ] The review action offers update / keep as fork / detach, and detach removes only the
-      provenance record
-- [ ] The `maestro` and `maestro-update` skills print the same diff and reach the same verdict as the
-      app for the same project state
-- [ ] A plugin change shipped without a `plugin.json` version bump is correctly reported as *no
-      update available*, matching how delivery actually works
+      the user wrote it — unit test, plus a live Electron window: the file afterwards kept
+      `description: My own words — the strict one, and it reviews requirements too.` and gained
+      `- check requirement coverage`
+- [x] A forked agent whose body the user edited is reported as stale-but-customized and is never
+      overwritten — unit test asserts bytes unchanged; the window probe confirmed one Update click
+      writes nothing (see divergence 6 for the deliberate second-click escape hatch)
+- [x] A detached agent (no provenance record) is never reported and never touched — unit test:
+      `entries: []` for an agent with no record
+- [x] Plugin-tier forks are checked by plugin version; user-tier forks are checked by template
+      content hash — two unit tests, plus a live CLI run against a fake `$HOME`
+- [x] Selecting a project computes the summary and writes nothing to `.claude/agents/`, proven by a
+      test asserting no file mtime changes — `"writes NOTHING when computing the summary"` compares
+      `mtimeMs` **and** bytes across two `computeAgentSync` calls and asserts no new directory entries
+- [x] `/maestro` shows the count of diverged forks and links to the per-agent review — window probe:
+      `data-count="1"`, text `"1 forked agent differs from its template — reviewer…"`, and an
+      `a[href*="/agents"]`
+- [x] The review action offers update / keep as fork / detach, and detach removes only the
+      provenance record — window probe read the three button labels; after Detach the `.md` was
+      byte-identical and `agent-forks.json` had lost only that key
+- [x] The `maestro` and `maestro-update` skills print the same diff and reach the same verdict as the
+      app for the same project state — the CLI and the app ran against one fixture and both reported
+      `reviewer: update available from probe-plugin 0.5.0 (tracking 0.4.0)`, verdict `refresh`, same
+      diff line
+- [x] A plugin change shipped without a `plugin.json` version bump is correctly reported as *no
+      update available*, matching how delivery actually works — unit test: body moved, version did
+      not → `refreshed: []`, `unchanged: ["reviewer"]`, `templateAdvanced: false`
+
+Window probes ran against the packaged build (`pnpm --filter maestro build`, then `electron .`) with
+a fixture project and a fake `$HOME` in the scratchpad; both exited PASS with zero console errors,
+and the fixture was deleted afterwards. Full suite: 758 tests, 42 files, green.
 
 ## Notes for whoever picks this up
 
@@ -121,3 +139,69 @@ projects while those agents still share one avatar row will be confusing to test
 ## Blocked by
 
 - `029-make-project-the-only-editable-agent-tier.md`
+
+## Divergences from this page
+
+1. **`bodyForHashing` now strips the `name:` line too, not just `description:`.** This page said
+   "`029` already establishes the body-only hash; this ticket depends on it being right." It was not
+   right. `forkAgent` rewrites exactly the `name:` line on a renamed fork, so
+   `hashAgentBody(fork) !== record.templateBodyHash` **from birth**, and every renamed fork would
+   have sat permanently in `staleCustomized` with the refresh branch never firing for it — the
+   precise failure the description-stripping exists to prevent, one field over. Fixed in
+   `agent-fork-record.ts`, pinned by `"strips the name line too, so a RENAMED fork is not modified
+   from birth (031)"` (`agent-fork.test.ts`) and `"tracks a RENAMED fork without calling it
+   modified"` (`agent-sync.test.ts`). **`029`'s page has been corrected**, since its Notes section
+   described the normalisation as description-only.
+2. **`AgentForkRecord` gained an optional `acknowledgedFrom` field.** This page asks that "keep as
+   fork" mean "leave it, stay tracked, ask again next version". With nothing recorded, the same diff
+   re-raises on every launch and keeping is not a choice at all. `acknowledgedFrom` stores the
+   `{ pluginVersion, templateBodyHash }` that was declined; `templateAdvanced` compares against it
+   when set and against the fork baseline otherwise. Optional and backwards-compatible — pre-`031`
+   records read fine.
+3. **The summary is `ReportSyncSummary`'s four buckets plus two fields.** This page asked for "a
+   summary in the shape `ReportSyncSummary` already uses". The review UI additionally needs per-agent
+   detail (diff, both descriptions, tier, versions) and the headline needs a count, so
+   `AgentSyncSummary` adds `diverged: string[]` and `entries: AgentSyncEntry[]`. The past tense is
+   aspirational on the agent side: `refreshed` means "would refresh if asked", and
+   `computeAgentSync` never writes.
+4. **`materialized` means something different for agents.** Nothing is materialized. The bucket holds
+   forks whose own `.md` has gone missing while the provenance record remains.
+5. **The headline count is NOT `refreshed + staleCustomized`.** `decideSync` answers
+   `stale-customized` *before* it looks at whether the template moved, so counting all of them would
+   leave `/maestro`'s badge lit forever for any fork the user has ever edited. `summary.diverged` is
+   `refresh` ∪ (`stale-customized` **and** `templateAdvanced`) — an update exists that cannot be
+   applied automatically. `AgentSyncEntry.templateAdvanced` is carried for exactly this. A customized
+   fork on an unchanged template is reported in `staleCustomized` but not counted.
+6. **Update IS offered for a stale-customized fork, behind a two-click confirmation** ("Take the new
+   body…" → "Discard my edits and take it"). The criterion "never overwritten" is preserved for the
+   AUTOMATIC path — `computeAgentSync` writes nothing, ever — but a user who has read the diff and
+   pressed twice is being asked, and refusing them the update outright would leave no route to take
+   it. Verified in a window: the first click writes nothing.
+7. **`agent-fork.ts` was split into `agent-fork.ts` + `agent-fork-record.ts`.** Not cosmetic:
+   `copyAgentAttributeRows` writes three sqlite stores, so `agent-fork.ts` transitively imports
+   `node:sqlite`, and the generated `lib/maestro-agent-sync.cjs` must run under a bare `node` that
+   may predate it (the constraint `maestro-skill-tags.cjs` already lives with). Verified:
+   `grep -c "node:sqlite"` on the generated bundle is **0**. `agent-fork.ts` re-exports the record
+   module, so every existing import still resolves.
+8. **The review UI renders BELOW the card, not inside `AgentCard`.** `CARD_MIN_HEIGHT` is a measured
+   constant keeping the card the same height in view and edit mode; a conditional diff block inside
+   would make that height vary by agent and by template state. `CARD_MIN_HEIGHT` was not re-measured
+   and did not need to be — no edit-mode card content changed. The review is also hidden while
+   editing.
+9. **Two new files are copied into every project** (`.claude/scripts/maestro-agent-forks.cjs` and
+   `.claude/scripts/lib/maestro-agent-sync.cjs`), so the install manifest grew and
+   `installedRuntimeId`/`shippedRuntimeId` changed. Every installed project reports stale once and
+   re-copies. That is the intended delivery path, not a regression.
+10. **The orchestrator's Step 0 is a MANAGED region**, so the new fork check reaches installed
+    projects only via `/maestro-update` (or an app save) after the `0.3.5` re-pull. The version trap
+    working as designed.
+
+Plugin version: `0.3.4` → **`0.3.5`**, a patch. New scripts and new behaviour in existing skills, but
+no new skill, agent, command or hook event — the published surface did not grow. See the
+`updating-maestro` skill's table and its `0.3.5` worked example.
+
+## Downstream tasks
+
+There is no `032`, and nothing else in `.claude/maestro-tasks/` is blocked by this file — so **no
+downstream task page needed correcting**. `029`'s page was corrected for divergence 1 (see above);
+`030`'s page says nothing about `bodyForHashing` or `AgentForkRecord` and was left alone.

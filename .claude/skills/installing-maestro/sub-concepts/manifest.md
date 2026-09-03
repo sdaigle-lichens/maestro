@@ -9,8 +9,8 @@ Everything lands under `<project>/.claude/`. Four groups:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator or app invokes             | `.claude/scripts/*.cjs`            | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` |
-| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`                                                   |
+| Scripts the orchestrator or app invokes             | `.claude/scripts/*.cjs`            | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime`, `maestro-agent-forks` (`031`) |
+| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`)                     |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 | Handoff protocol templates                          | `.claude/templates/handoffs/**.md` | walked off disk, not enumerated                                                                               |
 
@@ -30,6 +30,11 @@ for `<project>/.claude/handoffs/<sender>/<receiver>.md` **first**, and falls bac
 `<script dir>/../templates/handoffs/…` — which from the copied script is exactly the install
 destination. So installing there needs no change to the script _and_ leaves the override location
 free. Copying into the override would overwrite a customised protocol on every update.
+
+**Both of `031`'s additions are `STATIC_ASSETS`, not `HOOK_SCRIPTS`** — they are already `.cjs` in
+the plugin and are not hooks, so they are copied under their existing names with no rename. They are
+what the orchestrator's Step 0 fork check runs. Adding them moved `shippedRuntimeId`, so every
+already-installed project reports stale once and re-copies; see the staleness sub-concept.
 
 **`maestro-session-cleanup.cjs`, not the plugin's `.sh` of the same name.** The two now do the same
 thing — the `.sh`'s container teardown was removed with M5. The project copy is node because the

@@ -23,6 +23,8 @@ import {
   readAllAvatars,
   setAgentDescription,
   forkAgent,
+  computeAgentSync,
+  applyAgentSync,
   discoverProjectRules,
   discoverRuleLibrary,
   discoverProjectTree,
@@ -102,6 +104,9 @@ import type {
   AgentType,
   AgentDescriptionResult,
   AgentForkResult,
+  AgentSyncAction,
+  AgentSyncApplyResult,
+  AgentSyncSummary,
   ProjectTagsData,
   RulesData,
   SaveInput,
@@ -526,9 +531,12 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.avatarGet, (_e, agentName: string): AvatarLayers | null => {
     return getAvatar(agentName);
   });
-  ipcMain.handle(IPC.avatarSet, (_e, agentName: string, layers: AvatarLayers, projectScoped?: boolean): AvatarLayers => {
-    return setAvatar(agentName, layers, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
-  });
+  ipcMain.handle(
+    IPC.avatarSet,
+    (_e, agentName: string, layers: AvatarLayers, projectScoped?: boolean): AvatarLayers => {
+      return setAvatar(agentName, layers, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+    }
+  );
   ipcMain.handle(IPC.avatarList, (_e, projectScoped?: boolean): Record<string, AvatarLayers> => {
     return readAllAvatars(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
@@ -550,6 +558,26 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.agentFork, (_e, agentName: string, newName?: string): Promise<AgentForkResult> => {
     return forkAgent(currentRoot() ?? "", bundledAgentsDir(), bundledPluginVersion(), agentName, newName);
   });
+
+  // ── forked-agent sync (031) ─────────────────────────────────────────
+  // A read and a write, deliberately two channels: `agent:sync` runs on every project selection
+  // and must be incapable of touching `.claude/agents/`, while `agent:sync:apply` writes one file
+  // for one named action the user pressed a button for.
+  //
+  // `bundled` is this build's own `plugins/maestro`, handed in so a dev checkout resolves the
+  // `maestro` plugin's templates even when no marketplace ever installed it; every other plugin
+  // falls through to `~/.claude/plugins/installed_plugins.json` — which is what a bare terminal
+  // session reads too, so the two paths compare against the same files.
+  const agentSyncOptions = () => ({ bundled: { agentsDir: bundledAgentsDir(), version: bundledPluginVersion() } });
+  ipcMain.handle(IPC.agentSync, (): Promise<AgentSyncSummary> => {
+    return computeAgentSync(currentRoot() ?? "", agentSyncOptions());
+  });
+  ipcMain.handle(
+    IPC.agentSyncApply,
+    (_e, agentName: string, action: AgentSyncAction): Promise<AgentSyncApplyResult> => {
+      return applyAgentSync(currentRoot() ?? "", agentName, action, agentSyncOptions());
+    }
+  );
 
   // ── tasks ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));

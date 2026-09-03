@@ -146,10 +146,16 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // Step 0's cheap staleness check — see maestro-architecture / task 027. Invoked directly by the
   // orchestrator, not registered as a hook.
   { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
+  // Forked-agent sync (`031`) — list / diff / update / keep / detach, driven by the `maestro` and
+  // `maestro-update` skills. Copied into the project rather than left at ${CLAUDE_PLUGIN_ROOT} for
+  // the same reason every other orchestrator-invoked script is: the orchestrator calls it by
+  // $CLAUDE_PROJECT_DIR path, and a project-local copy is refreshable without a version bump.
+  { src: "scripts/maestro-agent-forks.cjs", dest: ".claude/scripts/maestro-agent-forks.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
+  { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
   // PreToolUse Bash guard that blocks reading .env secrets. Runs as a bare command, hence +x.
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh, which does the same three

@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json was or wasn't touched, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 0b88ea57965d2eab2bf633c053cfdb606382af3e
+  version: "1.2"
+  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
 ---
 
 # Installing Maestro
@@ -73,6 +73,7 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/scripts/maestro-install.js`                 | 558   | The terminal implementation of the same manifest.                                             |
 | `plugins/maestro/scripts/maestro-uninstall.js`               | 196   | The terminal implementation of the same removal.                                              |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 179   | Step 0's readiness check, run by the orchestrator inside a session.                           |
+| `plugins/maestro/scripts/maestro-agent-forks.cjs`            |       | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 268   | The published skills that drive the terminal path.                                            |
 
 Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
@@ -102,12 +103,20 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   standalone.
 - **The seed is guarded on absence.** An existing `maestro.json` is the user's authored graph and is
   never overwritten — by install, re-install, or refresh.
+- **Adding an asset makes every installed project stale exactly once.** `031` added two
+  (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`), so `shippedRuntimeId` moved and
+  every project reports stale on its next check and re-copies. Expected, and the only way a new
+  runtime file ever arrives — but worth saying out loud, because "everything went stale after my
+  change" reads like a bug.
 - **`refreshStaleRuntime` never installs fresh.** It fires on project _selection_, so auto-installing
   would put Maestro into every repo the user happens to open. It also uses a raw parse rather than
   `readConfig()`'s blank-on-corrupt fallback, so a corrupt config is never silently rewritten.
 
 ## Relationships
 
+- `[[agent-fork-sync]]` (in `apps/maestro/.claude/skills`) — what the two runtime assets
+  `031` added to the manifest actually do, and why they are copied into the project rather
+  than run from `${CLAUDE_PLUGIN_ROOT}`.
 - `maestro-architecture` — what the installed files then _do_ inside a session. It links here for
   the pipeline rather than describing it.
 - `updating-maestro` — the debugging companion: why a change to a script or hook isn't reaching a

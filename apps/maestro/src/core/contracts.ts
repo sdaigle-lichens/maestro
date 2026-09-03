@@ -217,6 +217,14 @@ export interface AgentForkRecord {
   templateBodyHash: string;
   templateBody: string;
   forkedAt: string;
+  /**
+   * "Keep as fork" (`031`): the template state the user has already looked at and declined. Absent
+   * until they decline one. `agent-sync.ts` compares the template against this when it is set and
+   * against the fork baseline otherwise, which is what makes the review say "ask me again next
+   * version" rather than re-raising the same diff on every launch. Dropping it (or the whole
+   * record, which is what detach does) simply re-opens the question.
+   */
+  acknowledgedFrom?: { pluginVersion: string | null; templateBodyHash: string } | null;
 }
 
 /**
@@ -369,6 +377,90 @@ export interface ReportSyncSummary {
   /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
   staleCustomized: string[];
   unchanged: string[];
+}
+
+/** One line of a line-diff, as `src/core/diff.ts` produces it. `ctx` is unchanged context. */
+export interface DiffLine {
+  kind: "add" | "del" | "ctx";
+  text: string;
+}
+
+/**
+ * What `031`'s per-agent review shows for ONE forked agent, and the verdict behind it.
+ *
+ * `verdict` comes from the same `decideSync` the report sync uses (`sync-decision.ts`), so the
+ * terminal and the app cannot disagree about whether a fork is stale. What differs from a report:
+ * the hash is over the body only (`hashAgentBody` — name and description normalised out), and
+ * "the template advanced" is a plugin VERSION-STRING inequality for a plugin-tier fork and a
+ * content-hash comparison for a `user`-tier one. See `agent-sync.ts`.
+ */
+export interface AgentSyncEntry {
+  agentName: string;
+  verdict: SyncVerdictName;
+  sourceTier: "user" | "plugin";
+  /** Which plugin ships the template, or null for a `user`-tier fork. */
+  sourcePlugin: string | null;
+  /** The plugin version the fork is tracking (its acknowledgement, else its baseline). */
+  trackedVersion: string | null;
+  /** The plugin version shipping the template right now. Null for a `user`-tier fork. */
+  templateVersion: string | null;
+  /** The forked agent's own file, and its current description. */
+  file: string;
+  description: string | null;
+  /** Where the template resolved to now — null when it no longer exists anywhere. */
+  templateFile: string | null;
+  templateDescription: string | null;
+  /**
+   * The template has moved past what this fork tracks — a plugin VERSION-STRING inequality for a
+   * plugin-tier fork, a body-hash comparison for a `user`-tier one. Carried alongside `verdict`
+   * because `decideSync` answers `stale-customized` BEFORE it consults this (the user's edit
+   * outranks everything), and a customized fork whose template has not moved is nothing to tell
+   * anyone about. See `AgentSyncSummary.diverged`.
+   */
+  templateAdvanced: boolean;
+  /**
+   * The fork's body diffed against what "update" would write: the template's current contents with
+   * the fork's own name and description carried over. Empty when there is nothing to show.
+   */
+  diff: DiffLine[];
+}
+
+/**
+ * The same four buckets `ReportSyncSummary` uses, over forked agents — but READ-ONLY. Computing
+ * this writes nothing to `.claude/agents/`: those files may be committed, and a diff nobody asked
+ * for is hard to explain. So the past tense is aspirational here — `refreshed` means "would be
+ * refreshed if you asked", and `materialized` means the fork's own file has gone missing while its
+ * provenance record remains.
+ */
+export interface AgentSyncSummary {
+  materialized: string[];
+  refreshed: string[];
+  staleCustomized: string[];
+  unchanged: string[];
+  /**
+   * The headline count — "N forked agents differ from their template". Refreshable forks, plus the
+   * customized ones whose template HAS moved (an update exists that cannot be applied for them).
+   * A customized fork sitting on an unchanged template is not in here: it is simply a fork doing
+   * its job, and counting it would leave a badge lit forever.
+   */
+  diverged: string[];
+  entries: AgentSyncEntry[];
+}
+
+/** `sync-decision.ts`'s `SyncVerdict`, restated here so the renderer never imports that module. */
+export type SyncVerdictName = "detached" | "no-template" | "materialize" | "refresh" | "stale-customized" | "unchanged";
+
+/** What the `/agents` review offers per diverged fork, and what the skills prompt for. */
+export type AgentSyncAction = "update" | "keep" | "detach";
+
+/** What one applied review action actually did. */
+export interface AgentSyncApplyResult {
+  agentName: string;
+  action: AgentSyncAction;
+  /** The agent file rewritten (`update` only). */
+  fileWritten: string | null;
+  /** The provenance record afterwards — null once detached. */
+  record: AgentForkRecord | null;
 }
 
 /** What an install actually changed on disk. */
