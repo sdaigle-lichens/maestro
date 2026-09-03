@@ -56,21 +56,30 @@ var SEED_AGENT_TYPES = {
 function openDb(dbPath) {
   import_node_fs.default.mkdirSync(import_node_path.default.dirname(dbPath), { recursive: true });
   const db = new import_node_sqlite.DatabaseSync(dbPath);
+  dropLegacySchema(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS agent_types (
-      agent_name TEXT PRIMARY KEY,
-      tag        TEXT NOT NULL
+      project_root TEXT NOT NULL DEFAULT '',
+      agent_name   TEXT NOT NULL,
+      tag          TEXT NOT NULL,
+      PRIMARY KEY (project_root, agent_name)
     )
   `);
   seedIfEmpty(db);
   return db;
+}
+function dropLegacySchema(db) {
+  const cols = db.prepare("PRAGMA table_info(agent_types)").all();
+  if (cols.length > 0 && !cols.some((c) => c.name === "project_root")) {
+    db.exec("DROP TABLE agent_types");
+  }
 }
 function seedIfEmpty(db) {
   const row = db.prepare("SELECT COUNT(*) AS n FROM agent_types").get();
   if (row.n > 0) return;
   db.exec("BEGIN");
   try {
-    const insert = db.prepare("INSERT INTO agent_types (agent_name, tag) VALUES (?, ?)");
+    const insert = db.prepare("INSERT INTO agent_types (project_root, agent_name, tag) VALUES ('', ?, ?)");
     for (const [agentName, tag] of Object.entries(SEED_AGENT_TYPES)) insert.run(agentName, tag);
     db.exec("COMMIT");
   } catch (err) {
@@ -78,10 +87,12 @@ function seedIfEmpty(db) {
     throw err;
   }
 }
-function readAllAgentTypes(dbPath = DEFAULT_AGENT_TYPES_DB_PATH) {
+function readAllAgentTypes(dbPath = DEFAULT_AGENT_TYPES_DB_PATH, projectRoot) {
   const db = openDb(dbPath);
   try {
-    const rows = db.prepare("SELECT agent_name AS agentName, tag FROM agent_types ORDER BY agent_name").all();
+    const rows = db.prepare(
+      "SELECT agent_name AS agentName, tag FROM agent_types WHERE project_root = '' OR project_root = ? ORDER BY project_root ASC, agent_name ASC"
+    ).all(projectRoot ?? "");
     const out = {};
     for (const row of rows) out[row.agentName] = row.tag;
     return out;

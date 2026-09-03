@@ -3,8 +3,8 @@ name: agents-view
 description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to six different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to six places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why the skills section is read-only, why the card doesn't reflow when you press Edit, or where the Interactions pane is going next."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 4f8eed3
+  version: "1.2"
+  last-update: cf774acbd887f8170c7ddbe29bc0ae3163759ab8
 ---
 
 # Agents View
@@ -67,9 +67,9 @@ field:
 | Field | Channel | Destination |
 | --- | --- | --- |
 | report | `report:save` | `.claude/reports/<agent>.md` — a **project override**, keyed by the agent's own name |
-| avatar | `avatar:set` | `~/.claude/maestro-avatars.sqlite`, global |
-| type | `template:agent-types:save` | `~/.claude/maestro-agent-types.sqlite`, global |
-| project tag | `template:agent-project-tags:save` | `~/.claude/maestro-agent-project-tags.sqlite`, global |
+| avatar | `avatar:set` | `~/.claude/maestro-avatars.sqlite` — global, or this project's own row (see below) |
+| type | `template:agent-types:save` | `~/.claude/maestro-agent-types.sqlite` — global, or this project's own row |
+| project tag | `template:agent-project-tags:save` | `~/.claude/maestro-agent-project-tags.sqlite` — global, or this project's own row |
 | description | `agent:describe` | **the agent's own `.md` frontmatter** |
 | skills | `config:save` (workflows slice) | `.claude/maestro.json`'s `workflow_instances` |
 
@@ -77,6 +77,17 @@ Each write is attempted only when that field actually changed, and **failures ar
 field**: a partial failure toasts what failed and **stays in edit mode**, rather than closing the
 editor as if the whole save had landed. There is no transaction across six stores — the honest
 alternative is to say which parts got through.
+
+**Avatar/type/project-tag are global or project-scoped depending on the selected agent's tier
+(`030`).** `handleSave()` computes `const projectScoped = agent?.source === "project"` from the
+already-in-scope `DiscoveredDefinition` and passes it as the trailing argument to all three writes
+(`avatar.set`, `agentTypes.save`, `agentProjectTags.save`). Editing a `user`/`maestro`/plugin-tier
+agent still writes the one shared global row, exactly as before `030`; editing a project-tier agent
+scopes the write to the open project, so two projects with a same-named agent no longer collide.
+`refresh()`'s three bulk reads (`agentTypes.list`, `agentProjectTags.list`, `avatar.list`) always
+pass `true` — this page wants the merged (global ∪ open-project) view regardless of which agent is
+selected. See [`global-stores`](../global-stores/SKILL.md)'s "Keyed by project, not just agent
+name" section for the store-level mechanism.
 
 Two of these are documented in depth elsewhere rather than restated here:
 
@@ -95,9 +106,9 @@ parallel, and re-runs on every project change and after every save:
 ```
 getToolsData()                            → data.agents (id, description, source), data.skills
 window.maestro.data.workflows()           → config.workflow_instances, config.skills_available, seeded
-window.maestro.templates.agentTypes.list()        → Record<agent, AgentType>
-window.maestro.templates.agentProjectTags.list()  → Record<agent, string>
-window.maestro.avatar.list()                      → Record<agent, AvatarLayers>
+window.maestro.templates.agentTypes.list(true)        → Record<agent, AgentType> — merged, global ∪ open project
+window.maestro.templates.agentProjectTags.list(true)  → Record<agent, string> — merged
+window.maestro.avatar.list(true)                      → Record<agent, AvatarLayers> — merged
 window.maestro.templates.projectTags.list()       → the catalog for the dropdown
 ```
 
@@ -165,9 +176,11 @@ name) plus a "Fork into this project" button in the view-mode footer
   shadowing is the mechanism: a project `.claude/agents/<name>.md` wins `dedupeById`'s resolution, so
   the list shows one row, now sourced from the project.
 - A **renamed fork** rewrites only the frontmatter `name:` line and calls
-  `copyAgentAttributeRows(fromName, toName)` to copy the avatar/type/project-tag rows to the new name
-  — see `global-stores`. A same-name fork needs no copy: those three stores are still keyed by
-  `agent_name` alone, so the shadowing row *is* the same row.
+  `copyAgentAttributeRows(fromName, toName, projectRoot)` to copy the avatar/type/project-tag rows to
+  the new name — see `global-stores`. The read side stays global/name-only (the template is always a
+  global-tier agent); the write side scopes to the fork's own project (`030`), since the copy always
+  lands on a project-tier agent. A same-name fork needs no copy: the shadowing row *is* the
+  template's own global row.
 
 Every fork — same-name or renamed — writes a provenance record to
 `<projectRoot>/.claude/agent-forks.json` (`AgentForkRecord`: `sourceTier: "user" | "plugin"`,

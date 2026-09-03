@@ -22,6 +22,15 @@
 // The `/templates` page's Reports tab is the UI that writes here — `writeAgentReportDefault`
 // below. Every write it makes is one agent -> one report, keyed by the agent's own name; it never
 // creates the id-sharing indirection the schema allows for (see the header note above).
+//
+// DELIBERATELY NOT REKEYED BY (project_root, agent_name) — unlike agent-types.ts,
+// agent-project-tags.ts and avatar-store.ts (030). Those three are Maestro's own metadata about an
+// agent INSTANCE and the "same everywhere" assumption is genuinely false for a project-tier one.
+// This store is a different kind of thing: it is already the GLOBAL FALLBACK TIER by definition —
+// "what a reviewer outputs by default on this machine" — and every project already has its own
+// override at `.claude/reports/<name>.md`, resolved project → global → none by `resolveReport`.
+// Rekeying `agent_reports`/`reports` by project would collapse that two-tier design into one tier
+// with two names for the same thing. `030` leaves this file alone on purpose.
 
 import fs from "node:fs";
 import os from "node:os";

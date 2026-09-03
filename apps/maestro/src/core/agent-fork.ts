@@ -103,11 +103,19 @@ async function pluginVersionFor(source: string, bundledPluginVersion: string | n
 }
 
 /**
- * The three global stores are all `agent_name TEXT PRIMARY KEY`, so a SAME-NAME fork inherits its
- * template's avatar, type and project tag for free — nothing to do. A RENAMED fork starts blank
- * unless these rows are copied explicitly, which is what this does: read what the template's name
- * has stored, write it under the new name, and leave anything unset alone (a template with no
- * saved avatar leaves the fork with `defaultAvatarLayers()`'s fallback, same as any other agent).
+ * A SAME-NAME fork inherits its template's avatar, type and project tag for free — nothing to do,
+ * since the shadowing row IS the same GLOBAL row the template already reads from. A RENAMED fork
+ * starts blank unless these rows are copied explicitly, which is what this does: read what the
+ * template's name has stored (always the GLOBAL row — a fork's source is always a global-tier
+ * template, never a project one), and write it under the new name.
+ *
+ * The read side stays name-only (global); the write side does not. Since `030` rekeyed these three
+ * stores' project-tier rows by `(projectRoot, agentName)`, the copy has to land on the FORK's own
+ * project — `projectRoot` is the fork's own project root, threaded through here from `forkAgent` —
+ * or the copy would land in the global tier and immediately leak into every other project.
+ *
+ * Anything unset on the template is left alone (a template with no saved avatar leaves the fork
+ * with `defaultAvatarLayers()`'s fallback, same as any other agent).
  *
  * Exported (and each store's db path overridable, same as the store modules themselves) so a test
  * can exercise the copy without touching the real machine's global sqlite files.
@@ -115,16 +123,17 @@ async function pluginVersionFor(source: string, bundledPluginVersion: string | n
 export function copyAgentAttributeRows(
   fromName: string,
   toName: string,
+  projectRoot: string,
   dbPaths: { avatar?: string; agentTypes?: string; agentProjectTags?: string } = {}
 ): void {
   const avatar = getAvatar(fromName, dbPaths.avatar);
-  if (avatar) setAvatar(toName, avatar, dbPaths.avatar);
+  if (avatar) setAvatar(toName, avatar, dbPaths.avatar, projectRoot);
 
   const type = readAllAgentTypes(dbPaths.agentTypes)[fromName];
-  if (type) setAgentType(toName, type, dbPaths.agentTypes);
+  if (type) setAgentType(toName, type, dbPaths.agentTypes, projectRoot);
 
   const tag = readAllAgentProjectTags(dbPaths.agentProjectTags)[fromName];
-  if (tag) setAgentProjectTag(toName, tag, dbPaths.agentProjectTags);
+  if (tag) setAgentProjectTag(toName, tag, dbPaths.agentProjectTags, projectRoot);
 }
 
 /**
@@ -171,7 +180,7 @@ export async function forkAgent(
   const contents = renamed ? renameInFrontmatter(templateBody, targetName) : templateBody;
   fs.writeFileSync(targetFile, contents, "utf8");
 
-  if (renamed) copyAgentAttributeRows(agentName, targetName, storeDbPaths);
+  if (renamed) copyAgentAttributeRows(agentName, targetName, projectRoot, storeDbPaths);
 
   const record: AgentForkRecord = {
     agentName: targetName,

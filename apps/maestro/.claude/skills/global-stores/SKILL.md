@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report default comes from before the project has an opinion, or why an agent's description is written back to its own .md instead of a store."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 4f8eed3
+  version: "1.3"
+  last-update: cf774acbd887f8170c7ddbe29bc0ae3163759ab8
 ---
 
 # Global stores
@@ -14,16 +14,44 @@ Five modules in `apps/maestro/src/core` share one mechanism: a `node:sqlite` dat
 counterweight to [`maestro-config-model`](../maestro-config-model/SKILL.md) — state that is
 explicitly _not_ per-project.
 
-| Store                                         | File                    | Keyed by               |
-| --------------------------------------------- | ----------------------- | ---------------------- |
-| `~/.claude/maestro-skill-tags.sqlite`         | `skill-tags.ts`         | skill id               |
-| `~/.claude/maestro-agent-types.sqlite`        | `agent-types.ts`        | agent name             |
-| `~/.claude/maestro-agent-project-tags.sqlite` | `agent-project-tags.ts` | agent name             |
-| `~/.claude/maestro-report-defaults.sqlite`    | `report-defaults.ts`    | agent name → report id |
-| `~/.claude/maestro-avatars.sqlite`            | `avatar-store.ts`       | agent name             |
+| Store                                         | File                    | Keyed by                            |
+| --------------------------------------------- | ----------------------- | ------------------------------------ |
+| `~/.claude/maestro-skill-tags.sqlite`         | `skill-tags.ts`         | skill id                            |
+| `~/.claude/maestro-agent-types.sqlite`        | `agent-types.ts`        | `(project_root, agent_name)` (`030`) |
+| `~/.claude/maestro-agent-project-tags.sqlite` | `agent-project-tags.ts` | `(project_root, agent_name)` (`030`) |
+| `~/.claude/maestro-report-defaults.sqlite`    | `report-defaults.ts`    | agent name → report id              |
+| `~/.claude/maestro-avatars.sqlite`            | `avatar-store.ts`       | `(project_root, agent_name)` (`030`) |
 
 Each exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the
 real machine's store.
+
+## Keyed by project, not just agent name (`030`)
+
+The three per-agent stores — types, project tags, avatars — widened their primary key from
+`agent_name` alone to `(project_root, agent_name)`, `project_root = ''` meaning "global". This
+matters only for a `project`-tier agent: two unrelated projects that each define
+`.claude/agents/reviewer.md` no longer share one avatar/type/tag row. `user`/`maestro`/plugin-tier
+agents are unaffected — they're the same agent everywhere, so they still key on `''` (global).
+
+Every read/write function on these three takes an optional trailing `projectRoot?: string`:
+
+- **Omitted** → touches the GLOBAL row only. This is what `/templates` and the plugin's
+  install-time reader do, unchanged from before `030`.
+- **Passed on a bulk read** (`readAllAgentTypes`, `readAllAgentProjectTags`, `readAllAvatars`) →
+  one SQL query returns the global rows unioned with `projectRoot`'s own rows; a later row for the
+  same agent name overwrites the earlier one as the result map is built, because `''` collates
+  before any real path — so a project's own override wins over the global default for that project
+  only.
+- **Passed on a write** (`setAgentType`, `setAgentProjectTag`, `setAvatar`) → targets that
+  project's own row exclusively.
+
+**No migration.** Each store's `openDb()` calls a `dropLegacySchema()` helper that `DROP TABLE`s a
+pre-`030` shape (no `project_root` column) before the `CREATE TABLE IF NOT EXISTS`/`seedIfEmpty`
+that follows — a deliberate, one-time data loss, acceptable because Maestro wasn't installed
+anywhere that mattered yet.
+
+`report-defaults.ts` was deliberately **not** touched — it's already the global fallback tier by
+definition (see below), a different kind of thing from these three's per-instance metadata.
 
 ## Why global — the reasons are not the same
 
@@ -67,12 +95,13 @@ only the first line would leave the continuation dangling as garbage keys.
 
 ## A fourth writer, on a fork
 
-`agent-fork.ts`'s `copyAgentAttributeRows` (`029`) is a new consumer of three of these five stores —
-avatar, agent type, project tag — called only for a **renamed** fork on `/agents`: it reads the
-template's row with the existing getters and writes it under the new name with the existing setters.
-A same-name fork needs no copy — these stores are still keyed by `agent_name` alone, so the shadowing
-row *is* the same row. `030` is expected to rekey the project-tier case to `(projectRoot, agentName)`,
-which is when `copyAgentAttributeRows`'s calls need to change too — see `agents-view`.
+`agent-fork.ts`'s `copyAgentAttributeRows(fromName, toName, projectRoot, dbPaths?)` (`029`, rekeyed
+`030`) is a new consumer of three of these five stores — avatar, agent type, project tag — called
+only for a **renamed** fork on `/agents`. The read side stays name-only/global (a fork's source is
+always a global-tier template), but the write side passes `projectRoot` — the new fork's own
+project — since the copy always lands on a project-tier agent, and after `030`'s rekey landing it on
+the global row would leak into every other project. A same-name fork needs no copy at all: the
+shadowing row *is* the template's own global row. See `agents-view`.
 
 ## Why `node:sqlite`
 

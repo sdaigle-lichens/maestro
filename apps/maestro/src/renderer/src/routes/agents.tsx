@@ -10,11 +10,15 @@
 // Nothing touches disk until Save, which then fans out to the channel that owns each field:
 //
 //   report        reports:save                     -> .claude/reports/<agent>.md, a PROJECT override
-//   avatar        avatar:set                       -> ~/.claude/maestro-avatars.sqlite, global
-//   type          template:agent-types:save        -> ~/.claude/maestro-agent-types.sqlite, global
+//   avatar        avatar:set                       -> ~/.claude/maestro-avatars.sqlite
+//   type          template:agent-types:save        -> ~/.claude/maestro-agent-types.sqlite
 //   project tag   template:agent-project-tags:save -> ~/.claude/maestro-agent-project-tags.sqlite
 //   description   agent:describe                   -> the agent's OWN .md frontmatter
 //   skills        config:save (workflows slice)    -> .claude/maestro.json's workflow_instances
+//
+// The avatar/type/project-tag writes carry a `projectScoped` flag (030): true only when the agent
+// being edited is project-tier, so its row lands under this project alone rather than the one
+// shared global row a `user`/`maestro`/plugin agent still resolves to from every project.
 //
 // The description is the odd one and deliberately so: it is the line Claude Code itself reads to
 // decide when to dispatch the agent, so a copy kept beside the app would show one sentence here
@@ -116,13 +120,17 @@ function AgentsPage() {
   // Everything on this page reads the OPEN project — the report resolution, the workflow instances
   // and the agent list all have to agree about which project they describe, and only the top nav's
   // folder button changes it.
+  //
+  // `projectScoped: true` on the three classification reads (030) is what makes this the MERGED
+  // view: the open project's own project-tier rows overlay the global ones, so a project agent
+  // shows this project's classification rather than some other project's same-named one.
   const refresh = useCallback(async () => {
     const [tools, flows, types, tags, avatars, catalog] = await Promise.all([
       callMain(() => getToolsData()),
       callMain(() => window.maestro.data.workflows()),
-      callMain(() => window.maestro.templates.agentTypes.list()),
-      callMain(() => window.maestro.templates.agentProjectTags.list()),
-      callMain(() => window.maestro.avatar.list()),
+      callMain(() => window.maestro.templates.agentTypes.list(true)),
+      callMain(() => window.maestro.templates.agentProjectTags.list(true)),
+      callMain(() => window.maestro.avatar.list(true)),
       callMain(() => window.maestro.templates.projectTags.list()),
     ]);
     setResult(tools);
@@ -315,6 +323,10 @@ function AgentsPage() {
     if (!d || !base) return;
     setSaving(true);
     const failures: string[] = [];
+    // Scope the classification writes to THIS project only when the agent being edited actually
+    // is project-tier (030) — a `user`/`maestro`/plugin agent still resolves to the one shared
+    // global row from any project, so it must keep writing there.
+    const projectScoped = agent?.source === "project";
     try {
       if (d.report !== base.report) {
         const res = await callMain(() => window.maestro.reports.save(d.id, d.report));
@@ -322,15 +334,17 @@ function AgentsPage() {
         else failures.push(`report: ${res.error}`);
       }
       if (!sameLayers(d.layers, base.layers)) {
-        const res = await callMain(() => window.maestro.avatar.set(d.id, d.layers));
+        const res = await callMain(() => window.maestro.avatar.set(d.id, d.layers, projectScoped));
         if (!res.ok) failures.push(`avatar: ${res.error}`);
       }
       if (d.type !== base.type) {
-        const res = await callMain(() => window.maestro.templates.agentTypes.save(d.id, d.type));
+        const res = await callMain(() => window.maestro.templates.agentTypes.save(d.id, d.type, projectScoped));
         if (!res.ok) failures.push(`type: ${res.error}`);
       }
       if (d.projectTag !== base.projectTag) {
-        const res = await callMain(() => window.maestro.templates.agentProjectTags.save(d.id, d.projectTag));
+        const res = await callMain(() =>
+          window.maestro.templates.agentProjectTags.save(d.id, d.projectTag, projectScoped)
+        );
         if (!res.ok) failures.push(`project tag: ${res.error}`);
       }
       if (descriptionEditable && d.description.trim() !== base.description.trim()) {

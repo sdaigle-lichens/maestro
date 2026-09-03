@@ -161,7 +161,7 @@
     "blockedBy": []
   },
   "030-key-the-agent-stores-by-namespace-not-name.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "031-keep-forked-agents-in-step-with-their-template.md": {

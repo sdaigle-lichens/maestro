@@ -364,11 +364,13 @@ export const IPC = {
   templateReportsList: "template:reports:list",
   templateReportSave: "template:reports:save",
 
-  // The /templates page's Agent Types tab — same global, no-project-needed shape as the Reports
-  // pair above, backed by `agent-types.ts`'s own `~/.claude/maestro-agent-types.sqlite`.
-  // `templateAgentTypesList` wraps `readAllAgentTypes`; `templateAgentTypeSave` wraps
-  // `setAgentType` — a plain replace, not a version bump, since an agent type has no project-tier
-  // counterpart for any sync step to compare against.
+  // The /templates page's Agent Types tab — backed by `agent-types.ts`'s own
+  // `~/.claude/maestro-agent-types.sqlite`. `templateAgentTypesList` wraps `readAllAgentTypes`;
+  // `templateAgentTypeSave` wraps `setAgentType` — a plain replace, not a version bump, since an
+  // agent type has no project-tier counterpart for any sync step to compare against.
+  //
+  // ALSO the channel `/agents` reads/writes an agent's type through (`030`) — see `MaestroApi`'s
+  // `templates` doc comment for the `projectScoped` flag that tells the two apart.
   templateAgentTypesList: "template:agent-types:list",
   templateAgentTypeSave: "template:agent-types:save",
 
@@ -382,10 +384,13 @@ export const IPC = {
   templateProjectTagRemove: "template:project-tags:remove",
 
   // The SAME tab's second section: which of the catalog's tags (or "global") each bundled/project
-  // agent belongs to — a global, one-per-agent assignment backed by its own
+  // agent belongs to — a one-per-agent assignment backed by its own
   // `~/.claude/maestro-agent-project-tags.sqlite` (agent-project-tags.ts). Distinct from the
   // Agent Types tab's unrelated developer/planner/reviewer/annotator/tester classification, and
   // called "project tag" rather than "agent type" for exactly that reason — that name was taken.
+  //
+  // ALSO the channel `/agents` reads/writes an agent's project tag through (`030`) — see
+  // `MaestroApi`'s `templates` doc comment for the `projectScoped` flag that tells the two apart.
   templateAgentProjectTagsList: "template:agent-project-tags:list",
   templateAgentProjectTagSave: "template:agent-project-tags:save",
 
@@ -395,9 +400,10 @@ export const IPC = {
   skillProjectTagsSet: "skill-tags:project-tags:set",
   skillAgentTypesSet: "skill-tags:agent-types:set",
 
-  // An agent's cosmetic avatar in the global (`~/.claude/maestro-avatars.sqlite`) store — see
-  // `src/core/avatar-store.ts`. No project involved, and no token: purely cosmetic, keyed by the
-  // agent's name, same as `skillProjectTagsSet` is keyed by skill id.
+  // An agent's cosmetic avatar in the `~/.claude/maestro-avatars.sqlite` store — see
+  // `src/core/avatar-store.ts`. No token: purely cosmetic, keyed by the agent's name, same as
+  // `skillProjectTagsSet` is keyed by skill id — global by default, project-scoped (`030`) when
+  // `set`/`list` are called with `projectScoped: true`. See `MaestroApi.avatar`'s doc comment.
   avatarGet: "avatar:get",
   avatarSet: "avatar:set",
   // Every stored avatar in one round trip — the /agents list draws a thumb per row, and a per-row
@@ -590,6 +596,13 @@ export interface MaestroApi {
    * rather than a widened `reports.*` above: that pair always resolves/writes a PROJECT override
    * for the OPEN project, and this always edits the machine-wide fallback tier every project
    * without an override falls back to. No project needed — nothing here is gated on one being open.
+   *
+   * `agentTypes` and `agentProjectTags` are also where `/agents` reads and writes an agent's
+   * classification, with a different intent (`030`): a `user`/`maestro`/plugin-tier agent is the
+   * same agent everywhere, so editing it from either page writes the one shared global row — but a
+   * `project`-tier agent is one project's own file, and `/agents` passes `projectScoped: true` for
+   * one of those so its row can't be read back from, or overwritten by, another project. `/templates`
+   * never passes it and always sees/edits the global tier, exactly as before.
    */
   templates: {
     reports: {
@@ -601,12 +614,18 @@ export interface MaestroApi {
        */
       save(agentName: string, content: string): Promise<ReportDefault>;
     };
-    /** The Agent Types tab: one type per agent, global, no project needed. */
+    /** The Agent Types tab: one type per agent, global by default — see the namespace doc above. */
     agentTypes: {
-      /** Every agent's type, keyed by agent name. */
-      list(): Promise<Record<string, AgentType>>;
-      /** Replace one agent's type with `tag`. */
-      save(agentName: string, tag: AgentType): Promise<AgentType>;
+      /**
+       * Every agent's type, keyed by agent name. `projectScoped: true` (only ever from `/agents`)
+       * overlays the OPEN project's own project-tier rows on top of the global ones.
+       */
+      list(projectScoped?: boolean): Promise<Record<string, AgentType>>;
+      /**
+       * Replace one agent's type with `tag`. `projectScoped: true` writes the OPEN project's own
+       * row instead of the global one — pass it only when the agent being edited is project-tier.
+       */
+      save(agentName: string, tag: AgentType, projectScoped?: boolean): Promise<AgentType>;
     };
     /**
      * The Project Tags tab: a global catalog, not a per-item assignment — add/remove a tag name,
@@ -621,13 +640,13 @@ export interface MaestroApi {
     /**
      * The SAME tab's second section: one project tag (or "global") per agent — the OTHER half of
      * the project ↔ agent mapping, distinct from `agentTypes` above. `save` returns the stored
-     * value back, same echo discipline as `agentTypes.save`.
+     * value back, same echo discipline as `agentTypes.save`. Same `projectScoped` discipline too.
      */
     agentProjectTags: {
       /** Every agent's project tag, keyed by agent name. */
-      list(): Promise<Record<string, string>>;
+      list(projectScoped?: boolean): Promise<Record<string, string>>;
       /** Replace one agent's project tag with `tag` (a catalog entry, or "global"). */
-      save(agentName: string, tag: string): Promise<string>;
+      save(agentName: string, tag: string, projectScoped?: boolean): Promise<string>;
     };
   };
   /**
@@ -640,14 +659,20 @@ export interface MaestroApi {
     setAgentTypes(skillId: string, tags: string[]): Promise<string[]>;
   };
   /**
-   * An agent's cosmetic avatar — global, keyed by agent name, edited from the create-subagent form
-   * and the /agents detail pane. `get` resolves null when nothing has been saved for that name yet.
+   * An agent's cosmetic avatar — global by default, keyed by agent name, edited from the
+   * create-subagent form and the /agents detail pane. `get` resolves null when nothing has been
+   * saved for that name yet.
+   *
+   * `projectScoped: true` (`030`) scopes `set`/`list` to the OPEN project instead of the global
+   * tier — pass it only when the agent is project-tier (a `target: "project"` create-subagent, or
+   * an `/agents` edit of a project agent); a `user`/`maestro`/plugin-tier agent's avatar stays the
+   * one shared global row.
    */
   avatar: {
     get(agentName: string): Promise<AvatarLayers | null>;
-    set(agentName: string, layers: AvatarLayers): Promise<AvatarLayers>;
+    set(agentName: string, layers: AvatarLayers, projectScoped?: boolean): Promise<AvatarLayers>;
     /** Every agent with a saved avatar, keyed by agent name. Agents without one are simply absent. */
-    list(): Promise<Record<string, AvatarLayers>>;
+    list(projectScoped?: boolean): Promise<Record<string, AvatarLayers>>;
   };
   /**
    * An agent's own `description`, written back into the `.md` it was discovered in. REJECTS rather

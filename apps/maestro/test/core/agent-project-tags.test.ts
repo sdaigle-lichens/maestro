@@ -6,6 +6,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { DatabaseSync } from "node:sqlite";
 
 import {
   readAllAgentProjectTags,
@@ -116,5 +117,80 @@ describe("agentsForProjectTags", () => {
 
   it("returns an empty list for a tag nothing is assigned to", () => {
     expect(agentsForProjectTags(["some-unused-tag"], dbPath)).toEqual([]);
+  });
+});
+
+// The keying change 030 exists for: a project-tier agent's project tag must not collide with a
+// same-named agent in another project, and a user/maestro/plugin-tier one must still resolve to
+// one shared row from any project.
+describe("project scoping (030)", () => {
+  let dir: string;
+  let dbPath: string;
+  let projectA: string;
+  let projectB: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-agent-project-tags-scope-"));
+    dbPath = path.join(dir, "agent-project-tags.sqlite");
+    projectA = path.join(dir, "project-a");
+    projectB = path.join(dir, "project-b");
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("two projects with a same-named project agent hold independent project tags", () => {
+    setAgentProjectTag("reviewer", "frontend", dbPath, projectA);
+    setAgentProjectTag("reviewer", "mobile", dbPath, projectB);
+
+    expect(readAllAgentProjectTags(dbPath, projectA).reviewer).toBe("frontend");
+    expect(readAllAgentProjectTags(dbPath, projectB).reviewer).toBe("mobile");
+  });
+
+  it("a project's own row overrides the global one for that project only", () => {
+    setAgentProjectTag("backend", "backend", dbPath);
+    setAgentProjectTag("backend", "mobile", dbPath, projectA);
+
+    expect(readAllAgentProjectTags(dbPath, projectA).backend).toBe("mobile");
+    expect(readAllAgentProjectTags(dbPath, projectB).backend).toBe("backend");
+    expect(readAllAgentProjectTags(dbPath).backend).toBe("backend");
+  });
+
+  it("omitting projectRoot reads and writes only the global row, regardless of any project-scoped rows", () => {
+    setAgentProjectTag("reviewer", "frontend", dbPath, projectA);
+    expect(readAllAgentProjectTags(dbPath).reviewer).toBe("global"); // untouched seed value
+    setAgentProjectTag("reviewer", "backend", dbPath);
+    expect(readAllAgentProjectTags(dbPath).reviewer).toBe("backend");
+    expect(readAllAgentProjectTags(dbPath, projectA).reviewer).toBe("frontend");
+  });
+
+  it("agentsForProjectTags scoped to a project doesn't return another project's same-named, same-tagged agent", () => {
+    setAgentProjectTag("reviewer", "frontend", dbPath, projectA);
+    setAgentProjectTag("reviewer", "frontend", dbPath, projectB);
+
+    expect(agentsForProjectTags(["frontend"], dbPath, projectA)).toEqual(["frontend", "reviewer"]);
+    expect(agentsForProjectTags(["frontend"], dbPath, projectB)).toEqual(["frontend", "reviewer"]);
+    // Unscoped, both projects' rows collapse into the same key — which is exactly why a caller
+    // that cares about a single project must pass its root.
+    expect(agentsForProjectTags(["frontend"], dbPath)).toEqual(["frontend"]);
+  });
+
+  it("drops a pre-030 table (no project_root column) and reseeds, rather than erroring", () => {
+    fs.mkdirSync(dir, { recursive: true });
+    const db = new DatabaseSync(dbPath);
+    db.exec("CREATE TABLE agent_project_tags (agent_name TEXT PRIMARY KEY, project_tag TEXT NOT NULL)");
+    db.prepare("INSERT INTO agent_project_tags (agent_name, project_tag) VALUES (?, ?)").run("backend", "global");
+    db.close();
+
+    expect(readAllAgentProjectTags(dbPath)).toEqual({
+      backend: "backend",
+      frontend: "frontend",
+      mobile: "mobile",
+      refactor: "global",
+      reviewer: "global",
+      scribe: "global",
+      test: "global",
+    });
   });
 });

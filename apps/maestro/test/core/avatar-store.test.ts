@@ -102,3 +102,58 @@ describe("readAllAvatars", () => {
     expect(Object.keys(readAllAvatars(dbPath))).toEqual(["reviewer"]);
   });
 });
+
+// The keying change 030 exists for: a project-tier agent's avatar must not collide with a
+// same-named agent in another project, and a user/maestro/plugin-tier one must still resolve to
+// one shared row from any project.
+describe("project scoping (030)", () => {
+  let dir: string;
+  let dbPath: string;
+  let projectA: string;
+  let projectB: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-avatars-scope-"));
+    dbPath = path.join(dir, "avatars.sqlite");
+    projectA = path.join(dir, "project-a");
+    projectB = path.join(dir, "project-b");
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("two projects with a same-named project agent hold independent avatars", () => {
+    const hatted = { ...fullLayers(), hat: "bandana" };
+    const bare = { ...fullLayers(), hat: null };
+    setAvatar("reviewer", hatted, dbPath, projectA);
+    setAvatar("reviewer", bare, dbPath, projectB);
+
+    expect(getAvatar("reviewer", dbPath, projectA)).toEqual(hatted);
+    expect(getAvatar("reviewer", dbPath, projectB)).toEqual(bare);
+    expect(readAllAvatars(dbPath, projectA).reviewer).toEqual(hatted);
+    expect(readAllAvatars(dbPath, projectB).reviewer).toEqual(bare);
+  });
+
+  it("a project's own row overrides the global one for that project only", () => {
+    const global = fullLayers();
+    const overridden = { ...fullLayers(), hat: "bandana" };
+    setAvatar("reviewer", global, dbPath);
+    setAvatar("reviewer", overridden, dbPath, projectA);
+
+    expect(getAvatar("reviewer", dbPath, projectA)).toEqual(overridden);
+    expect(getAvatar("reviewer", dbPath, projectB)).toEqual(global);
+    expect(readAllAvatars(dbPath, projectB).reviewer).toEqual(global);
+    expect(readAllAvatars(dbPath).reviewer).toEqual(global);
+  });
+
+  it("omitting projectRoot reads and writes only the global row, regardless of any project-scoped rows", () => {
+    const scoped = { ...fullLayers(), hat: "bandana" };
+    setAvatar("reviewer", scoped, dbPath, projectA);
+    expect(getAvatar("reviewer", dbPath)).toBeNull();
+    const global = fullLayers();
+    setAvatar("reviewer", global, dbPath);
+    expect(getAvatar("reviewer", dbPath)).toEqual(global);
+    expect(getAvatar("reviewer", dbPath, projectA)).toEqual(scoped);
+  });
+});

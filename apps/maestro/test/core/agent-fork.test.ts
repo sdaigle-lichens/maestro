@@ -114,7 +114,7 @@ describe("forkAgent", () => {
     expect(fs.readFileSync(forkedPath, "utf8")).toBe(file("name: strict-reviewer\ndescription: Reviews PRs."));
   });
 
-  it("copies the template's avatar, type and project tag rows under the new name on a rename", async () => {
+  it("copies the template's avatar, type and project tag rows under the new name on a rename, scoped to the fork's own project (030)", async () => {
     const bundled = path.join(root, "bundled");
     fs.mkdirSync(bundled);
     fs.writeFileSync(path.join(bundled, "reviewer.md"), file("name: reviewer\ndescription: Reviews."), "utf8");
@@ -129,9 +129,14 @@ describe("forkAgent", () => {
     const { readAllAvatars } = await import("../../src/core/avatar-store.js");
     const { readAllAgentTypes } = await import("../../src/core/agent-types.js");
     const { readAllAgentProjectTags } = await import("../../src/core/agent-project-tags.js");
-    expect(readAllAvatars(dbPaths.avatar)["strict-reviewer"]).toEqual(layers);
-    expect(readAllAgentTypes(dbPaths.agentTypes)["strict-reviewer"]).toBe("reviewer");
-    expect(readAllAgentProjectTags(dbPaths.agentProjectTags)["strict-reviewer"]).toBe("backend");
+    // The copy lands on the FORK's own project-tier row, not the global one — reading with no
+    // project scope (what the template's own global row would show) must find nothing here.
+    expect(readAllAvatars(dbPaths.avatar)["strict-reviewer"]).toBeUndefined();
+    expect(readAllAgentTypes(dbPaths.agentTypes)["strict-reviewer"]).toBeUndefined();
+    expect(readAllAgentProjectTags(dbPaths.agentProjectTags)["strict-reviewer"]).toBeUndefined();
+    expect(readAllAvatars(dbPaths.avatar, root)["strict-reviewer"]).toEqual(layers);
+    expect(readAllAgentTypes(dbPaths.agentTypes, root)["strict-reviewer"]).toBe("reviewer");
+    expect(readAllAgentProjectTags(dbPaths.agentProjectTags, root)["strict-reviewer"]).toBe("backend");
   });
 
   it("does NOT touch the attribute stores on a same-name fork — the rows are inherited for free", async () => {

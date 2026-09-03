@@ -424,7 +424,10 @@ export function registerIpc(): void {
 
     const newlyAdded = tags.filter((t) => !before.has(t));
     if (newlyAdded.length > 0) {
-      const matchingAgents = agentsForProjectTags(newlyAdded);
+      // Scoped to THIS project (030): otherwise a project-tier agent belonging to some other
+      // project, sharing both this agent's name and the newly-added tag, could get pulled into a
+      // graph it has nothing to do with.
+      const matchingAgents = agentsForProjectTags(newlyAdded, undefined, projectRoot);
       const current = readConfig(projectRoot);
       if (current) {
         const agentsAvailable = new Set(current.agents_available);
@@ -467,24 +470,41 @@ export function registerIpc(): void {
     return saveProjectReportOverride(projectRoot, agentName, content);
   });
 
-  // ── templates (/templates page — the GLOBAL tier's write path) ──────
-  // No `currentRoot()` anywhere here — same discipline as the avatar handlers below: this store
-  // isn't project-scoped, so nothing on this page needs a project open.
+  // ── templates (/templates page — the GLOBAL tier's write path — AND /agents' per-agent
+  //    classification, which shares these same three stores with a different intent) ──────
+  //
+  // `/templates` never sends `projectScoped`, so it always sees/edits the machine-wide fallback —
+  // no `currentRoot()` involved on that path, and nothing on that page needs a project open.
+  // `/agents` sends `projectScoped: true` only for a `project`-tier agent (never for a
+  // `user`/`maestro`/plugin one, which still resolves to the one shared global row from any
+  // project — `030`). The renderer never sends a path: `projectScoped` is a plain flag, and main
+  // resolves it against ITS OWN `currentRoot()`, the same "a caller states intent, never nominates
+  // a directory" discipline `scaffold.ts`'s create-* flows already follow.
   ipcMain.handle(IPC.templateReportsList, (): Record<string, ReportDefault> => readAllAgentReportDefaults());
   ipcMain.handle(IPC.templateReportSave, (_e, agentName: string, content: string): ReportDefault => {
     return writeAgentReportDefault(agentName, content);
   });
-  ipcMain.handle(IPC.templateAgentTypesList, (): Record<string, AgentType> => readAllAgentTypes());
-  ipcMain.handle(IPC.templateAgentTypeSave, (_e, agentName: string, tag: AgentType): AgentType => {
-    return setAgentType(agentName, tag);
+  ipcMain.handle(IPC.templateAgentTypesList, (_e, projectScoped?: boolean): Record<string, AgentType> => {
+    return readAllAgentTypes(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
+  ipcMain.handle(
+    IPC.templateAgentTypeSave,
+    (_e, agentName: string, tag: AgentType, projectScoped?: boolean): AgentType => {
+      return setAgentType(agentName, tag, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+    }
+  );
   ipcMain.handle(IPC.templateProjectTagsList, (): string[] => readAllProjectTags());
   ipcMain.handle(IPC.templateProjectTagAdd, (_e, tag: string): string[] => addProjectTag(tag));
   ipcMain.handle(IPC.templateProjectTagRemove, (_e, tag: string): string[] => removeProjectTag(tag));
-  ipcMain.handle(IPC.templateAgentProjectTagsList, (): Record<string, string> => readAllAgentProjectTags());
-  ipcMain.handle(IPC.templateAgentProjectTagSave, (_e, agentName: string, tag: string): string => {
-    return setAgentProjectTag(agentName, tag);
+  ipcMain.handle(IPC.templateAgentProjectTagsList, (_e, projectScoped?: boolean): Record<string, string> => {
+    return readAllAgentProjectTags(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
+  ipcMain.handle(
+    IPC.templateAgentProjectTagSave,
+    (_e, agentName: string, tag: string, projectScoped?: boolean): string => {
+      return setAgentProjectTag(agentName, tag, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+    }
+  );
 
   // ── skill tags ───────────────────────────────────────────────────────
   // Global, keyed by skill id — no project involved. Two independent dimensions, two independent
@@ -499,15 +519,19 @@ export function registerIpc(): void {
   });
 
   // ── agent avatars ───────────────────────────────────────────────────
-  // Global, keyed by agent name — no project involved, and no token: purely cosmetic. Note these
-  // do NOT call currentRoot() — avatar storage isn't project-scoped.
+  // Global by default, keyed by agent name, no token: purely cosmetic. Same `projectScoped`
+  // discipline as the templates handlers above — `/agents` and `create-subagent`'s `target:
+  // "project"` field pass it for a project-tier agent; everything else (including `/templates`,
+  // were it ever to grow an avatar tab) omits it and stays global.
   ipcMain.handle(IPC.avatarGet, (_e, agentName: string): AvatarLayers | null => {
     return getAvatar(agentName);
   });
-  ipcMain.handle(IPC.avatarSet, (_e, agentName: string, layers: AvatarLayers): AvatarLayers => {
-    return setAvatar(agentName, layers);
+  ipcMain.handle(IPC.avatarSet, (_e, agentName: string, layers: AvatarLayers, projectScoped?: boolean): AvatarLayers => {
+    return setAvatar(agentName, layers, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
-  ipcMain.handle(IPC.avatarList, (): Record<string, AvatarLayers> => readAllAvatars());
+  ipcMain.handle(IPC.avatarList, (_e, projectScoped?: boolean): Record<string, AvatarLayers> => {
+    return readAllAvatars(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+  });
 
   // ── agent descriptions ──────────────────────────────────────────────
   // The one handler that edits a subagent definition in place. `currentRoot()` matters here even

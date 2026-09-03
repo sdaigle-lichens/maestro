@@ -144,7 +144,10 @@ function CreateSubagent() {
           reset({ ...values, name: "", idea: "", description: "", triggers: [], tools: [] });
           // Keyed by the RESOLVED name, not the form value: auto mode derives a blank name from
           // the idea, and result.name is what /agents will look this avatar up by.
-          void window.maestro.avatar.set(result.name, avatarLayers);
+          // `target: "project"` (030) writes a project-tier agent's own file, so its avatar is
+          // scoped to this project too — a marketplace target isn't tied to the open project at
+          // all, so it stays global.
+          void window.maestro.avatar.set(result.name, avatarLayers, values.target === "project");
           setAvatarLayers(randomAvatarLayers());
         }),
       (errs) => {

@@ -63,9 +63,12 @@ const api: MaestroApi = {
       list: () => ipcRenderer.invoke(IPC.templateReportsList),
       save: (agentName, content) => ipcRenderer.invoke(IPC.templateReportSave, agentName, content),
     },
+    // `projectScoped` is forwarded as a plain flag, never a path — main resolves it against its
+    // own `currentRoot()`. See `MaestroApi.templates`'s doc comment.
     agentTypes: {
-      list: () => ipcRenderer.invoke(IPC.templateAgentTypesList),
-      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentTypeSave, agentName, tag),
+      list: (projectScoped) => ipcRenderer.invoke(IPC.templateAgentTypesList, projectScoped),
+      save: (agentName, tag, projectScoped) =>
+        ipcRenderer.invoke(IPC.templateAgentTypeSave, agentName, tag, projectScoped),
     },
     projectTags: {
       list: () => ipcRenderer.invoke(IPC.templateProjectTagsList),
@@ -73,18 +76,20 @@ const api: MaestroApi = {
       remove: (tag) => ipcRenderer.invoke(IPC.templateProjectTagRemove, tag),
     },
     agentProjectTags: {
-      list: () => ipcRenderer.invoke(IPC.templateAgentProjectTagsList),
-      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentProjectTagSave, agentName, tag),
+      list: (projectScoped) => ipcRenderer.invoke(IPC.templateAgentProjectTagsList, projectScoped),
+      save: (agentName, tag, projectScoped) =>
+        ipcRenderer.invoke(IPC.templateAgentProjectTagSave, agentName, tag, projectScoped),
     },
   },
   skillTags: {
     setProjectTags: (skillId, tags) => ipcRenderer.invoke(IPC.skillProjectTagsSet, skillId, tags),
     setAgentTypes: (skillId, tags) => ipcRenderer.invoke(IPC.skillAgentTypesSet, skillId, tags),
   },
+  // `projectScoped` — same discipline as `templates` above.
   avatar: {
     get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),
-    set: (agentName, layers) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers),
-    list: () => ipcRenderer.invoke(IPC.avatarList),
+    set: (agentName, layers, projectScoped) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers, projectScoped),
+    list: (projectScoped) => ipcRenderer.invoke(IPC.avatarList, projectScoped),
   },
   agents: {
     describe: (agentName, description) => ipcRenderer.invoke(IPC.agentDescribe, agentName, description),
