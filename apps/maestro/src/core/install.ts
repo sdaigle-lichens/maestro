@@ -12,12 +12,15 @@
 //   .claude/settings.json, pointing at $CLAUDE_PROJECT_DIR/.claude/scripts/, makes "update this
 //   project's runtime" a file copy the app can do and the user can see.
 //
+//   What the registrations this file writes then MEAN to the plugin's own copy of the same hooks
+//   is hook-arbitration.ts: the plugin's copy stands down for any hook the project registers here,
+//   so both being installed is a precedence rule and not the double-firing it used to be.
+//
 // Three rules this file exists to enforce:
 //
-//   1. PROJECT-LOCAL, NEVER GLOBAL. Every path written is under `projectRoot`. The user's
-//      ~/.claude is read (to notice the plugin is also installed) and never written — an
-//      installer that registered hooks globally would silently change every other repo on the
-//      machine.
+//   1. PROJECT-LOCAL, NEVER GLOBAL. Every path written is under `projectRoot`, and the user's
+//      ~/.claude is never written — an installer that registered hooks globally would silently
+//      change every other repo on the machine.
 //   2. MERGE, NEVER CLOBBER. settings.json is a file users hand-edit. Unknown keys, unrelated
 //      hooks and other matchers survive; an unparseable file aborts the install instead of being
 //      replaced with `{}` (which is what the legacy script did, losing the user's content).
@@ -29,7 +32,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { getInstalledPlugins } from "@repo/claude-fs";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
@@ -38,6 +40,7 @@ import { detectImplAgents } from "./detect.js";
 import { discoverSkills } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
 import { defaultV3Config, seededAgentNames } from "./seed.js";
+import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
 import { readAllProjectTags, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
 import { readAllAgentTypes } from "./agent-types.js";
 import { readAllAgentProjectTags } from "./agent-project-tags.js";
@@ -149,9 +152,12 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   // PreToolUse Bash guard that blocks reading .env secrets. Runs as a bare command, hence +x.
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
-  // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh — see that file's header:
-  // the .sh also tears down the per-project web-app container, which is the plugin's business
-  // and not something a project-local install should inherit.
+  // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh, which does the same three
+  // deletions and nothing more (its container teardown went with M5) — the twin is node because
+  // the .sh parses the hook payload with python3, which a project cannot assume is installed.
+  // It is also the one hook with no arbitration guard: both copies `rm -f` the same three files,
+  // so a double fire is unobservable and a bash reimplementation of hook-arbitration.ts to
+  // suppress a no-op would cost more than it saves.
   { src: "scripts/maestro-session-cleanup.cjs", dest: ".claude/scripts/maestro-session-cleanup.cjs" },
   ...HOOK_SCRIPTS.map((name) => ({
     src: `scripts/${name}.js`,
@@ -251,39 +257,21 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
-// Exported for uninstall.ts, which is this file's mirror: it has to read the same settings.json
+// Re-exported for uninstall.ts, which is this file's mirror: it has to read the same settings.json
 // with the same tolerance for keys neither module wrote.
-export interface HookCommand {
-  type?: string;
-  command?: string;
-  [k: string]: unknown;
-}
-export interface HookEntry {
-  matcher?: string;
-  hooks?: HookCommand[];
-  [k: string]: unknown;
-}
-export interface Settings {
-  hooks?: Partial<Record<string, HookEntry[]>>;
-  [k: string]: unknown;
-}
+export type { HookCommand, HookEntry, Settings } from "./hook-arbitration.js";
 
 /**
  * Is this registration already in `settings`?
  *
- * Keyed on the script's basename appearing anywhere in a command string for the same event, not
- * on an exact command match: users re-quote paths, and a second entry that only differs by
- * quoting would fire the hook twice — the failure the whole idempotency requirement is about.
+ * `settingsRegisterScript` is shared with the runtime guard in hook-arbitration.ts on purpose: the
+ * installer uses it so a re-quoted command doesn't get a duplicate entry that fires the hook twice,
+ * and the plugin's copy of a hook uses the same test to decide the project owns that hook and stand
+ * down. Two answers to "is this script registered here?" that could disagree would put those two
+ * mechanisms at odds.
  */
 function hasHook(settings: Settings, reg: HookRegistration): boolean {
-  const entries = settings.hooks?.[reg.event];
-  if (!Array.isArray(entries)) return false;
-  return entries.some(
-    (e) =>
-      e &&
-      Array.isArray(e.hooks) &&
-      e.hooks.some((h) => h && typeof h.command === "string" && h.command.includes(reg.script))
-  );
+  return settingsRegisterScript(settings, reg.event, reg.script);
 }
 
 /** Add every missing registration to `settings` in place. Returns the ids added. */
@@ -457,18 +445,6 @@ function runtimeDigest(assets: RuntimeAsset[], read: (a: RuntimeAsset) => Buffer
   return h.digest("hex").slice(0, 12);
 }
 
-/** Is the maestro plugin — whose hooks.json registers the same hooks — installed too? */
-async function pluginHooksActive(projectRoot: string): Promise<boolean> {
-  try {
-    const installed = await getInstalledPlugins();
-    return installed.some(
-      (p) => p.pluginName === "maestro" && (!p.projectPath || path.resolve(p.projectPath) === path.resolve(projectRoot))
-    );
-  } catch {
-    return false;
-  }
-}
-
 export async function installStatus(projectRoot: string, pluginRoot?: string): Promise<InstallStatus> {
   const root = requirePluginRoot(pluginRoot);
   const assets = runtimeAssets(root);
@@ -534,7 +510,6 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
       return fs.existsSync(dest) ? fs.readFileSync(dest) : null;
     }),
     stale,
-    pluginHooksActive: await pluginHooksActive(projectRoot),
     settingsUnreadable,
   };
 }
@@ -644,11 +619,6 @@ export async function installRuntime(
   if (orchestratorSkill.action === "migrated") {
     warnings.push(
       `The orchestrator skill predates Maestro's managed regions, so it was replaced. Your previous version is at ${orchestratorSkill.backup} — copy any custom prose back across.`
-    );
-  }
-  if (status.pluginHooksActive) {
-    warnings.push(
-      "The maestro plugin is also installed on this machine and registers the same hooks globally, so tool calls will be logged twice in this project. Disable the plugin to let the project-local install take over — the app does not edit your global Claude configuration."
     );
   }
 

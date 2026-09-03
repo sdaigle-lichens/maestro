@@ -317,12 +317,6 @@ export interface InstallStatus {
   installedRuntimeId: string;
   /** Installed, but something is missing or older than what the app ships. */
   stale: boolean;
-  /**
-   * The maestro plugin is installed for this machine, so its hooks.json registers the
-   * same runtime hooks globally — every tool call would be logged twice. The app never edits the
-   * user's global configuration, so this is reported, not fixed.
-   */
-  pluginHooksActive: boolean;
   /** `.claude/settings.json` exists but is not valid JSON — install would refuse to touch it. */
   settingsUnreadable: boolean;
 }

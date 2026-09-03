@@ -38,6 +38,7 @@ __export(maestro_session_exports, {
   bareAgentName: () => bareAgentName,
   collectAgentSkills: () => collectAgentSkills,
   nodeLabel: () => nodeLabel,
+  projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readSession: () => readSession,
   readStdin: () => readStdin,
@@ -137,9 +138,43 @@ function workflowNodeLabels(wf, instances) {
   return labels;
 }
 
-// src/core/session-runtime.ts
+// src/core/hook-arbitration.ts
 var import_node_fs = __toESM(require("node:fs"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
+function settingsRegisterScript(settings, event, script) {
+  const entries = settings.hooks?.[event];
+  if (!Array.isArray(entries)) return false;
+  return entries.some(
+    (e) => e && Array.isArray(e.hooks) && e.hooks.some((h) => h && typeof h.command === "string" && h.command.includes(script))
+  );
+}
+function projectTwinName(scriptPath) {
+  return import_node_path.default.basename(scriptPath).replace(/\.(js|cjs|sh)$/, "") + ".cjs";
+}
+var PROJECT_SETTINGS_FILES = ["settings.json", "settings.local.json"];
+function projectOwnsHook(scriptPath, cwd, event) {
+  if (!cwd || !scriptPath) return false;
+  const projectScripts = import_node_path.default.join(cwd, ".claude", "scripts");
+  if (import_node_path.default.resolve(import_node_path.default.dirname(scriptPath)) === import_node_path.default.resolve(projectScripts)) return false;
+  const twin = projectTwinName(scriptPath);
+  for (const file of PROJECT_SETTINGS_FILES) {
+    let settings;
+    try {
+      const parsed = JSON.parse(import_node_fs.default.readFileSync(import_node_path.default.join(cwd, ".claude", file), "utf8"));
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+      settings = parsed;
+    } catch {
+      continue;
+    }
+    const events = event ? [event] : Object.keys(settings.hooks ?? {});
+    if (events.some((e) => settingsRegisterScript(settings, e, twin))) return true;
+  }
+  return false;
+}
+
+// src/core/session-runtime.ts
+var import_node_fs2 = __toESM(require("node:fs"), 1);
+var import_node_path2 = __toESM(require("node:path"), 1);
 function readStdin() {
   return new Promise((resolve) => {
     let data = "";
@@ -150,7 +185,7 @@ function readStdin() {
 }
 function readJson(p) {
   try {
-    return JSON.parse(import_node_fs.default.readFileSync(p, "utf8"));
+    return JSON.parse(import_node_fs2.default.readFileSync(p, "utf8"));
   } catch {
     return null;
   }
@@ -160,15 +195,15 @@ function readSession(p) {
 }
 function writeSession(p, session) {
   const tmp = p + ".tmp";
-  import_node_fs.default.writeFileSync(tmp, JSON.stringify(session, null, 2));
-  import_node_fs.default.renameSync(tmp, p);
+  import_node_fs2.default.writeFileSync(tmp, JSON.stringify(session, null, 2));
+  import_node_fs2.default.renameSync(tmp, p);
 }
 var SESSION_LOG_FILE = "maestro_session.log.jsonl";
 function sessionLogPath(claudeDir) {
-  return import_node_path.default.join(claudeDir, SESSION_LOG_FILE);
+  return import_node_path2.default.join(claudeDir, SESSION_LOG_FILE);
 }
 function appendSessionLog(claudeDir, entry) {
-  import_node_fs.default.appendFileSync(sessionLogPath(claudeDir), JSON.stringify(entry) + "\n");
+  import_node_fs2.default.appendFileSync(sessionLogPath(claudeDir), JSON.stringify(entry) + "\n");
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
@@ -177,6 +212,7 @@ function appendSessionLog(claudeDir, entry) {
   bareAgentName,
   collectAgentSkills,
   nodeLabel,
+  projectOwnsHook,
   readJson,
   readSession,
   readStdin,

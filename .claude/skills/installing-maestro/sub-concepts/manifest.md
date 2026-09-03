@@ -31,9 +31,14 @@ for `<project>/.claude/handoffs/<sender>/<receiver>.md` **first**, and falls bac
 destination. So installing there needs no change to the script _and_ leaves the override location
 free. Copying into the override would overwrite a customised protocol on every update.
 
-**`maestro-session-cleanup.cjs`, not the plugin's `.sh` of the same name.** The shell version also
-tears down the per-project web-app container, which is the plugin's business and not something a
-project-local install should inherit.
+**`maestro-session-cleanup.cjs`, not the plugin's `.sh` of the same name.** The two now do the same
+thing — the `.sh`'s container teardown was removed with M5. The project copy is node because the
+`.sh` shells out to `python3` to parse the hook payload, which a project cannot assume is installed.
+It is also the one hook script with **no arbitration guard**: both copies just `rm -f` the same three
+ephemeral files, so a double fire is unobservable (see the hook-arbitration sub-concept).
+
+> `install.ts`'s asset-manifest comment (around line 155) still claims the `.sh` "also tears down
+> the per-project web-app container". That is stale — flagged, not edited here.
 
 ## Hooks — `HOOK_REGISTRATIONS`
 

@@ -607,14 +607,6 @@ function InstallPage() {
             </Note>
           )}
 
-          {status?.pluginHooksActive && (
-            <Note variant="warn">
-              The <span className="font-mono">maestro</span> plugin is also installed on this machine and registers the
-              same hooks globally, so tool calls would be logged twice here. Disable the plugin to let this
-              project-local install take over — the app will not edit your global configuration for you.
-            </Note>
-          )}
-
           {status && <StatusCard status={status} />}
 
           {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}

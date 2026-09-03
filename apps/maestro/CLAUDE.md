@@ -53,6 +53,7 @@ second.
 | `concept-skills.ts`                     | The project's concept skills — the `.claude/skills/*` whose frontmatter `metadata.type` is `concept-skill`, which explain its core concepts to agents. `metadata` is the Agent Skills spec's home for third-party data and one of the six fields that survive a claude.ai upload / `package_skill.py`; an invented top-level key is a HARD ERROR on those paths, so this must never move out of `metadata`, and it must be read with `parseFrontmatterMetadata` — `parseFrontmatter` flattens nesting and cannot tell `metadata.version` from a top-level `version`. Discovery walks EVERY `.claude/skills` in the tree (`skillSearchDirs` in `fs-scan.ts`), unlike `discoverSkills`, which reads one. Owns the `major.minor` arithmetic, the in-place frontmatter stamp, and the repo-level record at `<project>/.claude/concept-skills.json` — its own file, NOT a block on `maestro.json`, because concept skills are a plain `.claude/skills` convention and a repo must be able to keep a reconciled list of them with Maestro nowhere in sight. `readAgentsAvailable` is the one function here that still reads `maestro.json`, since nothing else knows what agents a project runs. Driven from `plugins/maestro/scripts/maestro-concept-skills.cjs` by the three `/…-concept-skill(s)` flows |
 | `skill-tags.ts`                         | A skill's backend/frontend/mobile/refactor/reviewer/scribe/test tags — global, keyed by skill id, in `~/.claude/maestro-skill-tags.sqlite` (`node:sqlite`, not a native module). `skillMapFromTags` is the pure tags→`SkillMap` lookup both `data:workflows`/`data:reseed` and `/maestro-install`'s terminal path converge on. `parseSkillTagsBlock`/`applySkillTagsBlock` are the "Update skill tags" pane flow's other half — see `claude-session.ts` |
 | `install.ts` / `uninstall.ts`           | Installs the runtime into a project, reports staleness, removes it                     |
+| `hook-arbitration.ts`                   | Which copy of a hook runs when the plugin and a project-local install both register it |
 | `session-runtime.ts` / `session-log.ts` | Ephemeral session file, append-only log, the tail                                      |
 | `claude-cli.ts`                         | Where the `claude` CLI is, decided with `fs` and not with PATH alone                   |
 | `claude-preview.ts`                     | Builds the prompt and issues a token. **Cannot spawn**                                 |
@@ -114,8 +115,9 @@ suite. Two of its settings exist for exactly that reason and are not incidental:
   solution file (`files: []`, references only), so `absWorkingDir` must resolve to a config that
   actually sets `strict`, or the bundles silently come out non-strict.
 
-The export surface of each bundle must stay identical to what the hook scripts `require()`;
-`test/core/parity.test.ts` asserts the name lists.
+The export surface of each bundle must stay a **superset** of what the hook scripts `require()` —
+adding an export is safe, renaming or removing one breaks a script running outside this workspace;
+`test/core/parity.test.ts` asserts the original name lists are still all there.
 
 `src/shared/ipc.ts` is the typed channel contract between the three processes. Types that cross the
 boundary come from `src/core/contracts.ts`, **not** `src/core/index.ts`. The barrel re-exports `fs`
@@ -1016,12 +1018,18 @@ never opens this tab should not carry it.
   `"type": "module"` makes node parse their `require()` as ESM — the hook then fails on _every
   tool call_ with "require is not defined in ES module scope". Nothing catches this but running a
   copied script from inside such a project, which `test/install.test.ts` does.
-- **Two things can register Maestro's hooks, and both firing is a visible bug.** A project
-  installed from `/maestro` (formerly `/install`) has them in its own settings; the `maestro` plugin registers
-  the same ones globally from its `hooks.json`. With both, every tool call is logged twice and
-  every subagent gets its context injected twice. `InstallStatus.pluginHooksActive` detects it and
-  the route says so — it does not "fix" it, because the fix is in the user's global configuration
-  and the app does not write there.
+- **Two things can register Maestro's hooks, and the plugin's copy stands down per hook.** A
+  project installed from `/maestro` (formerly `/install`) has them in its own settings; the
+  `maestro` plugin registers the same ones globally from its `hooks.json`. Both firing used to log
+  every tool call twice and inject every subagent's context twice. `projectOwnsHook`
+  (`src/core/hook-arbitration.ts`) now arbitrates it: each of the plugin's four hook scripts exits 0
+  for a hook the project registers itself, and still runs for every hook it doesn't. The test is on
+  the **registration**, never on the copied script existing — a plain (non-purging) uninstall leaves
+  `.claude/scripts/` on disk, and keying on the file would suppress the plugin in favour of hooks
+  nobody runs. `InstallStatus.pluginHooksActive` and its warnings are gone. The guard ships in the
+  plugin's own copy of the scripts, so it reaches a machine only on a `plugin.json` version bump
+  (`0.3.3`) and re-pull. `maestro-session-cleanup.sh` deliberately has no guard: both copies `rm -f`
+  the same three files, so a double fire is unobservable.
 - **Uninstall has two levels and the destructive one is never the default.** Plain uninstall
   unregisters the hooks and deletes the ephemeral session files, and **keeps `maestro.json`** —
   a user turning the hooks off has not asked to lose their workflow graph and rule assignments.

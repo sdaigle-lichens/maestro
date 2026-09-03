@@ -16,6 +16,13 @@ managed-region migration left), the copied runtime scripts, the installed handof
 
 Collapsing the two, or making purge the default, turns "stop the hooks" into silent data loss.
 
+**On a machine with the plugin, plain uninstall stops the project's hooks and hands them back to the
+plugin's copies, which keep firing.** That is the fallback, not a fault: the plugin's copy of a hook
+stands down only while the project registers its own, so removing those registrations is exactly what
+re-enables it. `uninstall.ts` used to warn about this and no longer does — the code carries a comment
+saying why instead. `--purge` is still not the way to stop the plugin's hooks; disabling the plugin
+is. See the hook-arbitration sub-concept.
+
 **`.claude/maestro-tasks/` needs its own second opt-in** on top of `--purge` (an error without it).
 That queue is user-authored content, not an install artifact. A purge _reports_ what is in it —
 `uninstallPlan` carries `maestroTasks` — so the UI can show the user what a follow-up would take,

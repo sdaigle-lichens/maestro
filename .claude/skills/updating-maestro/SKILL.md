@@ -1,10 +1,10 @@
 ---
 name: updating-maestro
-description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change."
+description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), and why both copies firing at once is now arbitrated rather than warned about, and which path wins."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 0b88ea57965d2eab2bf633c053cfdb606382af3e
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -13,7 +13,7 @@ There are **two** ways a project ends up with Maestro's hooks, they have differe
 rules, and the first thing to establish is which one you are looking at.
 
 ```
-project-local (preferred)                     plugin-global (legacy / no-install)
+project-local (wins per hook)                 plugin-global (fallback / no-install)
   <project>/.claude/settings.json                ~/.claude/plugins/cache/maestro/
     hooks → $CLAUDE_PROJECT_DIR/                    maestro/<version>/hooks/hooks.json
             .claude/scripts/*.cjs                 scripts run from that cache dir
@@ -22,10 +22,17 @@ project-local (preferred)                     plugin-global (legacy / no-install
   refreshed by: re-running either                refreshed by: a plugin.json VERSION bump
 ```
 
-`InstallStatus.pluginHooksActive` (the app's `/maestro` route) tells you when **both** are live.
-That is a real bug, not a redundancy: every tool call gets logged twice and every subagent gets its
-context injected twice. The app reports it rather than fixing it, because the fix is in the user's
-global configuration and the app does not write there.
+**Both being live is no longer a bug — it is a precedence rule.** The plugin's copy of a hook
+stands down when the project registers that same hook itself, arbitrated at runtime by
+`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the four
+plugin hook scripts. So the left column wins per hook, the right column covers any hook the project
+did not register, and neither the app nor this repo touches the user's global configuration to make
+that happen. `InstallStatus.pluginHooksActive` and its warnings are gone.
+
+**The guard reaches a machine only through path 2's version bump**, because it lives in the plugin's
+copy of the scripts. It shipped in `plugin.json` `0.3.3`; a project still on an older cached version
+keeps double-firing until it re-pulls. The fix for the version trap is itself subject to the version
+trap.
 
 ## Path 1 — project-local copies
 
@@ -84,6 +91,33 @@ the only signal autoUpdate watches.
    rm -rf ~/.claude/plugins/cache/maestro/<plugin>/<old-version>
    ```
 
+### Which component to bump
+
+The rule above says a change must bump the version. This says by how much — because nothing else
+did, and the question came up the first time somebody had to answer it.
+
+**Nothing reads the magnitude.** autoUpdate compares the cached version string against
+`plugin.json`'s for *inequality* only, so `0.3.2 → 0.3.3` re-pulls exactly as `0.3.2 → 0.4.0` does.
+There is never a delivery reason to inflate a bump. The component is free to be honest, and the
+thing it should be honest about is **the plugin's published surface** — what a consumer of the
+plugin can name and call:
+
+| Bump | When | Because |
+| --- | --- | --- |
+| **major** | The published surface **breaks**: a skill, agent or command removed or renamed; a hook event dropped; a config file's shape changed incompatibly. | Someone's `/command` or `@agent` stops resolving, or their config stops loading. Not used yet — the plugin is still `0.x`. |
+| **minor** | The published surface **grows**: a new skill, agent, command, or a hook registered on a new event. | There is something new to invoke that was not there before. |
+| **patch** | Everything else: the behaviour of existing scripts, bug fixes, prose edits inside a skill, and bumps that exist only to force a re-pull. | The same surface, doing what it already claimed to do — only correctly, or better. |
+
+**A `feat:` commit is not automatically a minor.** The repo's own history is the guide: `0.2.0` was
+new skills, `0.3.0` was new script behaviour plus a new state file — but `0.3.1` (concept-skills
+system), `0.3.2` (agent page) and `0.2.1` (a bare re-pull trigger) are all patches, and two of the
+three landed under a `feat:` subject. The commit message describes the work; the version component
+describes what a *consumer* of the plugin sees change.
+
+`0.3.3` — hook arbitration — is the worked example. It changed the behaviour of four existing hook
+scripts and nothing about the surface: same skills, same agents, same six hook registrations. Patch.
+It was first shipped as `0.4.0`, which is the mistake this section exists to stop repeating.
+
 ### Verify the refresh landed
 
 ```bash
@@ -111,7 +145,7 @@ installs them by file copy, so they must exist in the repo.
 | What plugin version is installed?         | `cat ~/.claude/plugins/installed_plugins.json` (`installPath` + `version` + `installedAt`)            |
 | Does the cached copy even have the files? | `ls ~/.claude/plugins/cache/maestro/<plugin>/<version>/{hooks,scripts}`                  |
 | Is the cache older than the change?       | compare `installedAt` / dir mtime against the commit that added the file                              |
-| Everything logged twice?                  | both paths are registered — see `pluginHooksActive` above                                             |
+| Everything logged twice?                  | the cached plugin version predates `0.3.3` — it has no arbitration guard. Bump/re-pull (above)        |
 
 If skills work but `hooks/`/`scripts/` are absent from the cache → **stale cache, version was never
 bumped.**
@@ -119,7 +153,8 @@ bumped.**
 ## Related
 
 - `[[installing-maestro]]` — what an install actually writes into a project, and why the
-  project-local copies exist at all.
+  project-local copies exist at all. Its **hook arbitration** sub-concept is the full rule for which
+  copy of a hook runs, and the three decisions behind it.
 - `[[maestro-architecture]]` — what those hooks and scripts do at runtime once they are present.
 - `/maestro-update` refreshes the project copies from the **currently installed plugin** — so if the
   plugin cache itself is stale, it faithfully propagates the stale copy. Fix the cache first.

@@ -21,6 +21,15 @@ Everything under `plugins/<name>/` ships to that plugin's **end users**. Nothing
 someone develop *this repo* belongs there — no `.claude/` directory, no developer-facing skills, no
 architecture notes.
 
+**Every change under `plugins/<name>/` must bump that plugin's `plugin.json` `version`** — the
+marketplace cache is keyed by it, so an unbumped change reaches nobody, silently. Bump the component
+that matches what a *consumer* of the plugin sees change, not the size of the diff: **minor** only
+when the published surface grows (a new skill, agent, command, or hook event), **patch** for
+everything else, including behaviour changes to existing scripts and commits labelled `feat:`.
+Nothing reads the magnitude — autoUpdate only compares the string for inequality — so there is never
+a delivery reason to inflate one. See `.claude/skills/updating-maestro/` for the table and the
+worked examples.
+
 Documentation written for agents working on this codebase — **concept skills** in particular — goes
 in the `.claude/skills/` **nearest the code it describes**, choosing only between:
 

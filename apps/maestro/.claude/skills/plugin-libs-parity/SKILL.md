@@ -1,10 +1,10 @@
 ---
 name: plugin-libs-parity
-description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the nine plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, and why maestro-tasks.cjs is the one hand-maintained exception. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
+description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the nine plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 0b88ea57965d2eab2bf633c053cfdb606382af3e
 ---
 
 # Core ↔ plugin parity
@@ -30,6 +30,15 @@ a source module that stops reaching the plugin while the hooks go on running the
 So after changing anything in `plugin-entries/` or in a `src/core` module one of them pulls in,
 re-run the build and **read `git diff plugins/maestro/scripts/lib/`** rather than trusting green
 tests. The root `CLAUDE.md` states the same rule.
+
+## The export surface is a superset, not an identity
+
+Each bundle's export list must stay a **superset** of what the hook scripts `require()` — adding an
+export is safe, renaming or removing one breaks a script that runs outside this workspace (from the
+marketplace cache, or from a copy inside someone else's project). `test/core/parity.test.ts` asserts
+the original name list is still all there, not that the lists match exactly. `maestro-session.ts`
+grew `projectOwnsHook` this way, which is how the hook-arbitration guard reaches the plugin's hook
+scripts at all.
 
 ## The nine generated entries
 
@@ -77,6 +86,9 @@ against them would go tautological the moment the build runs.
   `maestro-skill-regions` read and rewrite what it defines.
 - `maestro-architecture` and `updating-maestro` (at the repo root `.claude/skills`) — the hooks
   that consume these bundles, and the _other_ staleness problem (delivery, not generation).
+- `installing-maestro`'s **hook arbitration** sub-concept — `projectOwnsHook` ships through the
+  `maestro-session` bundle, so editing `hook-arbitration.ts` without re-running the build leaves the
+  plugin's hooks arbitrating with the old rule.
 
 ## Sub-concepts
 

@@ -24,6 +24,7 @@ import {
   refreshStaleRuntime,
   HOOK_REGISTRATIONS,
 } from "../../src/core/install.js";
+import { uninstallRuntime } from "../../src/core/uninstall.js";
 import { writeConfig, readConfig, writeRuntimeVersion } from "../../src/core/config.js";
 import { defaultish } from "./fixtures/configs.js";
 
@@ -771,6 +772,72 @@ describe("the installed hooks actually run", () => {
     expect(fs.existsSync(path.join(root, ".claude", "maestro_session.json"))).toBe(false);
     // The user's config survives a session end — only the ephemeral files go.
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
+  });
+
+  // The other half of "the installed hooks actually run": what the PLUGIN's copy of the same hook
+  // does while the project is running its own. Both used to fire — every tool call logged twice —
+  // and this runs the plugin's real script, from the real plugins/maestro/scripts/, to show it
+  // does not any more.
+  function runPluginHook(root: string, script: string, payload: unknown): string {
+    return execFileSync("node", [path.join(PLUGIN_ROOT, "scripts", script)], {
+      input: JSON.stringify(payload),
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: tmp },
+    });
+  }
+
+  const logPath = (root: string) => path.join(root, ".claude", "maestro_session.log.jsonl");
+  const readPayload = (root: string) => ({
+    cwd: root,
+    hook_event_name: "PreToolUse",
+    tool_name: "Read",
+    tool_input: { file_path: "src/app.ts" },
+  });
+
+  it("stands the plugin's copy down for a hook the project registers itself", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+
+    runPluginHook(root, "maestro-session-log.js", readPayload(root));
+    expect(fs.existsSync(logPath(root))).toBe(false);
+
+    // ...and the project's own copy of that same hook still logs the call, exactly once.
+    runHook(root, "maestro-session-log.cjs", readPayload(root));
+    expect(fs.readFileSync(logPath(root), "utf8").trim().split("\n")).toHaveLength(1);
+  });
+
+  it("keeps the plugin's copy running for a Maestro project with no local install", async () => {
+    // The plugin-global path, untouched: a maestro.json and no registrations of its own.
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+
+    runPluginHook(root, "maestro-session-log.js", readPayload(root));
+    expect(fs.existsSync(logPath(root))).toBe(true);
+  });
+
+  it("hands the work back to the plugin after a non-purging uninstall", async () => {
+    // Plain uninstall removes the registrations and LEAVES .claude/scripts/ on disk. A guard that
+    // keyed on the twin file would suppress the plugin here in favour of hooks nobody runs, which
+    // is Maestro off rather than Maestro falling back.
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
+
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-session-log.cjs"))).toBe(true);
+    runPluginHook(root, "maestro-session-log.js", readPayload(root));
+    expect(fs.existsSync(logPath(root))).toBe(true);
+  });
+
+  it("stands down the plugin's SubagentStart injection, so context is injected once", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+
+    const payload = { cwd: root, hook_event_name: "SubagentStart", agent_type: "backend" };
+    expect(runPluginHook(root, "maestro-inject-agent-context.js", payload)).toBe("");
+    expect(runHook(root, "maestro-inject-agent-context.cjs", payload)).toContain("HANDOFF:");
   });
 
   it("copies the hook scripts as .cjs so they survive a `type: module` project", async () => {

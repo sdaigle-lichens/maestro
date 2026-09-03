@@ -1,10 +1,10 @@
 ---
 name: installing-maestro
-description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json was or wasn't touched, or what --purge actually deletes."
+description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json was or wasn't touched, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: 0b88ea57965d2eab2bf633c053cfdb606382af3e
 ---
 
 # Installing Maestro
@@ -39,9 +39,12 @@ same hooks in the _project's_ own `.claude/settings.json`, pointing at
 can do and the user can see. That is the whole reason the copies exist. `updating-maestro` covers
 the consequences when a change doesn't land.
 
-**The flip side is double registration.** A machine with both the plugin _and_ a project-local
-install fires every hook twice. `installStatus()` detects it via `pluginHooksActive` and the report
-carries a warning — the app **reads** `~/.claude` to notice and never writes there.
+**The flip side used to be double registration.** A machine with both the plugin _and_ a
+project-local install fired every hook twice. It is now arbitrated at runtime instead of warned
+about: **the plugin's copy of a hook stands down when the project registers that same hook itself**
+(`hook-arbitration.ts`, and the sub-concept below). Precedence is per hook, so a partial install
+still gets the plugin covering the rest. `InstallStatus.pluginHooksActive` and the warnings it drove
+are gone — the app still never writes `~/.claude`, it just no longer needs to ask the user to.
 
 ## Three rules the code exists to enforce
 
@@ -52,7 +55,9 @@ carries a warning — the app **reads** `~/.claude` to notice and never writes t
    replaced with `{}` — which is what the legacy script did, losing the user's content.
 3. **Idempotent.** A second run adds no hook entry and rewrites no identical file. The presence
    test keys on the script's **basename inside the command string**, not an exact match, so a user
-   who re-quoted a path by hand doesn't get a duplicate that fires twice.
+   who re-quoted a path by hand doesn't get a duplicate that fires twice. `hasHook()` delegates to
+   `settingsRegisterScript` in `hook-arbitration.ts` so this test and the runtime guard can never
+   disagree about what "registered" means.
 
 Ordering enforces a fourth: **everything that can refuse is checked before the first byte is
 written**, so a rejected install leaves the project exactly as it was. Past that point every step
@@ -62,8 +67,9 @@ is a copy or an append that re-running completes.
 
 | File                                                         | Lines | What it owns                                                                                  |
 | ------------------------------------------------------------ | ----- | --------------------------------------------------------------------------------------------- |
-| `apps/maestro/src/core/install.ts`                           | 707   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
+| `apps/maestro/src/core/install.ts`                           | 676   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
 | `apps/maestro/src/core/uninstall.ts`                         | 402   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
+| `apps/maestro/src/core/hook-arbitration.ts`                  | 120   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand`. |
 | `plugins/maestro/scripts/maestro-install.js`                 | 558   | The terminal implementation of the same manifest.                                             |
 | `plugins/maestro/scripts/maestro-uninstall.js`               | 196   | The terminal implementation of the same removal.                                              |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 179   | Step 0's readiness check, run by the orchestrator inside a session.                           |
@@ -71,7 +77,7 @@ is a copy or an append that re-running completes.
 
 Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
 (`defaultV3Config`), `detect.ts`, `report-sync.ts`. Test: `test/core/install.test.ts`,
-`test/core/uninstall.test.ts`.
+`test/core/uninstall.test.ts`, `test/core/hook-arbitration.test.ts`.
 
 ## Things that bite
 
@@ -80,6 +86,10 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   sit under `"type": "module"`, which makes node parse their `require()` as ESM and **fail the hook
   on every tool call**. Adding a hook script to `HOOK_SCRIPTS` gets the rename; adding one to
   `STATIC_ASSETS` does not.
+- **A registration means more than "this project is installed" — it decides which copy of the hook
+  runs.** The plugin's copy stands down for exactly the hooks the project registers, so removing a
+  registration hands that hook back to the plugin rather than turning it off. See the hook
+  arbitration sub-concept before changing `HOOK_REGISTRATIONS` or how `hasHook()` matches.
 - **`bash-validation.sh`'s command string is unquoted, byte-for-byte as the legacy installer wrote
   it.** `maestro-uninstall.js` removes it by _exact string match_, and old projects carry that exact
   value. Re-quoting it here duplicates the entry on those projects and orphans it on uninstall.
@@ -117,3 +127,5 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   current", and which one runs where.
 - [Uninstall and purge](sub-concepts/uninstall-and-purge.md) — the two levels, and why the
   asymmetry with install is deliberate.
+- [Hook arbitration](sub-concepts/hook-arbitration.md) — which copy of a hook runs when both
+  delivery paths are live, and the three decisions behind the rule.

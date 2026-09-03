@@ -18,8 +18,6 @@ asset added to one and not the other shows up as a differential failure, not a l
 
 ## What only the app does
 
-- **Detects double registration.** `pluginHooksActive` reads `~/.claude`'s installed plugins and
-  warns that hooks will fire twice.
 - **Reports what changed on disk.** `InstallReport` carries `scriptsWritten`, `hooksAdded`,
   `gitignoreUpdated`, `configSeeded`, `runtimeVersionUpdated` and an `unchanged` flag, which is what
   lets a second run say "nothing to do" instead of claiming success ambiguously.

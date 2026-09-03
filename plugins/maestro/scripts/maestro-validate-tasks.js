@@ -20,6 +20,7 @@ const {
   readSession,
   successPathSteps,
   workflowNodeLabels,
+  projectOwnsHook,
 } = require("./lib/maestro-session.cjs");
 
 // ---------------------------------------------------------------------------
@@ -82,6 +83,11 @@ function writeTasks(claudeDir, data) {
 
   const cwd = p.cwd || process.env.CLAUDE_PROJECT_DIR || "";
   if (!cwd) process.exit(0);
+
+  // Both delivery paths can register this hook. When the project registers its own copy, THIS
+  // copy — the plugin's, running from the marketplace cache — stands down, so nothing fires twice.
+  // A no-op in the copy installed into the project. See src/core/hook-arbitration.ts.
+  if (projectOwnsHook(__filename, cwd, p.hook_event_name)) process.exit(0);
 
   const claudeDir = path.join(cwd, ".claude");
   const cfgPath = path.join(claudeDir, "maestro.json");

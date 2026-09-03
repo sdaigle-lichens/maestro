@@ -371,12 +371,11 @@ export async function uninstallRuntime(projectRoot: string, options: UninstallOp
 
   const status = await installStatus(projectRoot, pluginRoot);
 
+  // No warning about the maestro plugin's own hooks here. It registers them globally and they do
+  // keep firing in a project this uninstall just unregistered — which is the FALLBACK, not a fault:
+  // the plugin's copy of each hook stands down only while the project registers its own
+  // (hook-arbitration.ts), so removing those registrations is what hands the work back to it.
   const warnings: string[] = [];
-  if (status.pluginHooksActive) {
-    warnings.push(
-      "The maestro plugin is also installed on this machine and registers Maestro's hooks globally, so they will keep firing in this project. Disable the plugin to stop them — the app does not edit your global Claude configuration."
-    );
-  }
   if (purge && status.configFile) {
     warnings.push(`${maestroJsonPath(projectRoot)} could not be deleted.`);
   }

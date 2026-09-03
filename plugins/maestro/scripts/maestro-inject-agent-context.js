@@ -32,6 +32,7 @@ const {
   resolveSearchList,
   collectAgentSkills,
   bareAgentName,
+  projectOwnsHook,
 } = require("./lib/maestro-session.cjs");
 
 // Read the handoff_details payload template for a sender -> receiver edge.
@@ -190,6 +191,12 @@ function collectReportContext(cfg, projectDir, agentType) {
   if (!agentType) process.exit(0);
 
   const projectDir = process.env.CLAUDE_PROJECT_DIR || payload.cwd || process.cwd();
+
+  // Both delivery paths can register this hook. When the project registers its own copy, THIS
+  // copy — the plugin's, running from the marketplace cache — stands down, so nothing fires twice.
+  // A no-op in the copy installed into the project. See src/core/hook-arbitration.ts.
+  if (projectOwnsHook(__filename, projectDir, payload.hook_event_name)) process.exit(0);
+
   // May be null (absent), or present but not v3 — either way the skills/routing block below is
   // skipped, but `cfg` (even null) is still passed to the report branch, which has its own,
   // looser no-op condition (see collectReportContext's header comment).
