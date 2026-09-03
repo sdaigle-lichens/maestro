@@ -10,6 +10,7 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+  describeUneditableSource,
   findAgentFile,
   isEditableAgentSource,
   normalizeAgentDescription,
@@ -70,11 +71,30 @@ describe("normalizeAgentDescription", () => {
 });
 
 describe("editable sources", () => {
-  it("owns the project, user and bundled tiers and disowns an installed plugin's", () => {
+  it("owns only the project tier — user, bundled, and installed plugins are all read-only", () => {
     expect(isEditableAgentSource("project")).toBe(true);
-    expect(isEditableAgentSource("user")).toBe(true);
-    expect(isEditableAgentSource("maestro")).toBe(true);
+    expect(isEditableAgentSource("user")).toBe(false);
+    expect(isEditableAgentSource("maestro")).toBe(false);
     expect(isEditableAgentSource("some-installed-plugin")).toBe(false);
+  });
+});
+
+describe("describeUneditableSource", () => {
+  it("tells the user a user-tier agent is machine-wide, not 'created in some other project'", () => {
+    const message = describeUneditableSource("scribe", "user");
+    expect(message).toMatch(/~\/.claude\/agents/);
+    expect(message).toMatch(/every project on this machine/);
+    expect(message).not.toMatch(/created in/i);
+  });
+
+  it("tells the user a plugin-tier agent's file is overwritten by the next update", () => {
+    const message = describeUneditableSource("scribe", "maestro");
+    expect(message).toMatch(/maestro plugin/);
+    expect(message).toMatch(/plugin update overwrites/);
+  });
+
+  it("names the actual plugin for an installed plugin's agent", () => {
+    expect(describeUneditableSource("reviewer", "some-installed-plugin")).toMatch(/some-installed-plugin plugin/);
   });
 });
 
@@ -111,6 +131,20 @@ describe("setAgentDescription", () => {
     expect(found).toMatchObject({ source: "project", file: agentPath() });
 
     await setAgentDescription(root, bundled, "scribe", "Edited.");
+    expect(fs.readFileSync(path.join(bundled, "scribe.md"), "utf8")).toContain("description: Bundled.");
+  });
+
+  it("refuses to edit a bundled-tier agent — the throw names the plugin, and the file is untouched", async () => {
+    const bundled = path.join(root, "bundled");
+    fs.mkdirSync(bundled);
+    fs.writeFileSync(path.join(bundled, "scribe.md"), file("name: scribe\ndescription: Bundled."), "utf8");
+
+    // No project-tier scribe here, so findAgentFile resolves the bundled ("maestro") tier — the
+    // same refusal path a `user`-tier agent takes, exercised through a source this module can
+    // reach without touching the real machine's ~/.claude.
+    await expect(setAgentDescription(root, bundled, "scribe", "New.")).rejects.toThrow(
+      describeUneditableSource("scribe", "maestro")
+    );
     expect(fs.readFileSync(path.join(bundled, "scribe.md"), "utf8")).toContain("description: Bundled.");
   });
 

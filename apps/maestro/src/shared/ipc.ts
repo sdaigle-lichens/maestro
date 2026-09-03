@@ -106,6 +106,8 @@ import type {
   AvatarLayers,
   AgentType,
   AgentDescriptionResult,
+  AgentForkResult,
+  AgentForkRecord,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
@@ -214,6 +216,8 @@ export type {
   AvatarLayers,
   AgentType,
   AgentDescriptionResult,
+  AgentForkResult,
+  AgentForkRecord,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -408,6 +412,12 @@ export const IPC = {
   // `discoverAgents`' own tier order and refuses any tier this app does not own — see
   // `src/core/agent-descriptions.ts`.
   agentDescribe: "agent:describe",
+
+  // "Fork into this project" — the card's escape hatch for the three tiers `agent:describe`
+  // refuses. A read (resolve the template through `discoverAgents`' own tier order) plus a write
+  // to `.claude/agents/<name>.md`, no Claude session, no token — same shape as `reportSave`. See
+  // `src/core/agent-fork.ts`.
+  agentFork: "agent:fork",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -649,6 +659,17 @@ export interface MaestroApi {
    */
   agents: {
     describe(agentName: string, description: string): Promise<AgentDescriptionResult>;
+    /**
+     * Fork a `user`/`maestro`/plugin-tier agent into this project's `.claude/agents/`. `newName`
+     * defaults to the template's own name — shadowing, not a rival: a project agent with the same
+     * name wins `discoverAgents`' own tier order, so the list shows one row, sourced from the
+     * project. A different `newName` writes a coexisting agent instead, with its frontmatter
+     * `name:` rewritten to match.
+     *
+     * Rejects when the agent is already project-tier (nothing to fork FROM), when `newName` isn't
+     * kebab-case, or when it collides with a file already in `.claude/agents/`.
+     */
+    fork(agentName: string, newName?: string): Promise<AgentForkResult>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;

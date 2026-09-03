@@ -454,3 +454,15 @@ export {
 
 // Agent avatars — global, keyed by agent name, same shape as skill-tags.ts. See ./avatar-store.ts.
 export { getAvatar, setAvatar, readAllAvatars, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";
+
+// Forking a global-tier agent into the open project's .claude/agents/ — the escape hatch
+// EDITABLE_AGENT_SOURCES narrowing to ["project"] exists to point people at. See ./agent-fork.ts.
+export {
+  forkAgent,
+  readAgentForks,
+  agentForksPath,
+  hashAgentBody,
+  bodyForHashing,
+  type AgentForkRecord,
+  type AgentForkResult,
+} from "./agent-fork.js";

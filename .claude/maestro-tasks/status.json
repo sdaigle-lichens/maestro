@@ -157,7 +157,7 @@
     "blockedBy": []
   },
   "029-make-project-the-only-editable-agent-tier.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "030-key-the-agent-stores-by-namespace-not-name.md": {
@@ -165,7 +165,7 @@
     "blockedBy": []
   },
   "031-keep-forked-agents-in-step-with-their-template.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "029-make-project-the-only-editable-agent-tier.md"
     ]

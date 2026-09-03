@@ -1,10 +1,10 @@
 ---
 name: create-skills-architecture
-description: "Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, or how target=project differs from target=marketplace."
+description: "Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
+  version: "1.2"
+  last-update: 4f8eed3
 ---
 
 # Create-Skills Architecture
@@ -156,6 +156,7 @@ Renderer paths are relative to `apps/maestro/`.
 | ------------------------------------- | --------------------------- | --------------------------- | ------------- | ------------------ |
 | Mode toggle (auto / manual)           | yes                         | yes                         | no            | no                 |
 | Target toggle (marketplace / project) | yes                         | yes                         | no            | no                 |
+| Template seed (target=project only)   | no                          | yes                         | no            | no                 |
 | Chip-array fields                     | `useWhen`                   | `triggers`, `tools`         | `keywords`    | —                  |
 | File generated                        | `SKILL.md`                  | `AGENTS.md` or `<name>.md`  | `plugin.json` | `marketplace.json` |
 | Preview type                          | YAML frontmatter + markdown | YAML frontmatter + markdown | JSON          | JSON               |
@@ -184,6 +185,17 @@ The toggle survived the container's retirement; only its Docker half did not. Ma
 project is a real choice about where a skill lives. What went is the _path ambiguity_ that existed
 only because the container could not write outside its mount — there is no longer any target the
 app can see but cannot reach.
+
+## Template seeding (create-subagent, project target only) (`029`)
+
+`create:options` also returns `agentTemplates: DiscoveredDefinition[]` — every discovered agent,
+project tier included, not filtered to global. `/create-subagent` renders a "Start from a template"
+picker only when `target === "project"` and that list is non-empty; picking one sets `mode:
+"manual"` plus `name`/`description` from the chosen entry. **This is a form seed, not a fork** — a
+`DiscoveredDefinition` carries only `id`/`description`, so the scaffold still writes a fresh
+skeleton via `manualAgentBody()` rather than cloning the source agent's actual body/tools/triggers.
+The byte-for-byte version lives on `/agents`' card instead (`forkAgent`,
+`src/core/agent-fork.ts`) — see `agents-view`.
 
 ## The marketplace repository (create-marketplace only)
 

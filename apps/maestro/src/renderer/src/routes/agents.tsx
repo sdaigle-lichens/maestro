@@ -104,6 +104,7 @@ function AgentsPage() {
   const [draft, setDraft] = useState<AgentDraft | null>(null);
   const [pendingEdit, setPendingEdit] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [forking, setForking] = useState(false);
   const [activeCat, setActiveCat] = useState<AvatarCategory>("hair");
   const [query, setQuery] = useState("");
   const [leftOpen, setLeftOpen] = useState(true);
@@ -168,6 +169,7 @@ function AgentsPage() {
       .map((a) => ({
         id: a.id,
         description: a.description,
+        source: a.source,
         layers: (a.id === selected && draft ? draft.layers : attributes.avatars[a.id]) ?? defaultAvatarLayers(),
       }));
   }, [data, query, selected, draft, attributes.avatars]);
@@ -209,7 +211,9 @@ function AgentsPage() {
     : workflows?.seeded
       ? "This project has no maestro.json yet — save a workflow on /workflows before editing skills here."
       : !descriptionEditable
-        ? `Shipped by the ${agent?.source} plugin, whose files a plugin update overwrites — edit its description there.`
+        ? agent?.source === "user"
+          ? "This agent lives in ~/.claude/agents — machine-wide, shared by every project on this machine, so its description is locked here. Fork it into this project to edit that; type, project tag, avatar, report and skills still save normally."
+          : `Shipped by the ${agent?.source} plugin — a plugin update overwrites this file, so its description is locked here. Fork it into this project to edit that; type, project tag, avatar, report and skills still save normally.`
         : "The description is written back into this agent's own .md — it is the line Claude Code reads when deciding to dispatch it.";
 
   const projectTagOptions = useMemo(() => {
@@ -355,6 +359,30 @@ function AgentsPage() {
     }
   }
 
+  // "Fork into this project" — the read-only card's escape hatch. A read plus a write, no Claude
+  // session, no token; the refresh() afterwards is what MOVES the row from Global to Project, which
+  // is the confirmation the fork worked. Select the forked name so the card follows the move.
+  async function handleFork(newName: string) {
+    if (!selected) return;
+    setForking(true);
+    try {
+      const res = await callMain(() => window.maestro.agents.fork(selected, newName));
+      if (!res.ok) {
+        toast(<>Could not fork this agent: {res.error}</>, { variant: "error" });
+        return;
+      }
+      await refresh();
+      setSelected(res.value.name);
+      toast(
+        <>
+          Forked into <span className="font-mono text-(--ink)">{res.value.file}</span>.
+        </>
+      );
+    } finally {
+      setForking(false);
+    }
+  }
+
   if (!result.ok) {
     return (
       <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
@@ -409,6 +437,7 @@ function AgentsPage() {
               {live ? (
                 <AgentCard
                   name={live.id}
+                  source={agent?.source ?? "project"}
                   description={live.description}
                   type={live.type}
                   projectTag={live.projectTag}
@@ -417,6 +446,7 @@ function AgentsPage() {
                   skills={live.skills}
                   editing={editing}
                   saving={saving}
+                  forking={forking}
                   activeCat={activeCat}
                   descriptionEditable={descriptionEditable}
                   skillsEditable={skillsEditable}
@@ -433,6 +463,7 @@ function AgentsPage() {
                   onStartEdit={() => startEdit()}
                   onCancel={() => setDraft(null)}
                   onSave={() => void handleSave()}
+                  onFork={(newName) => void handleFork(newName)}
                 />
               ) : (
                 <div className="h-full flex flex-col items-center justify-center gap-2 text-center text-(--ink-2)">

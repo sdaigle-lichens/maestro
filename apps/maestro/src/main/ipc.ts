@@ -22,6 +22,7 @@ import {
   setAvatar,
   readAllAvatars,
   setAgentDescription,
+  forkAgent,
   discoverProjectRules,
   discoverRuleLibrary,
   discoverProjectTree,
@@ -100,6 +101,7 @@ import type {
   ReportDefault,
   AgentType,
   AgentDescriptionResult,
+  AgentForkResult,
   ProjectTagsData,
   RulesData,
   SaveInput,
@@ -108,7 +110,7 @@ import type {
   UsageStatsView,
   WorkflowsData,
 } from "../shared/ipc.js";
-import { bundledAgentsDir, bundledPluginDir, maestroAppDocsDir } from "./bundled-assets.js";
+import { bundledAgentsDir, bundledPluginDir, bundledPluginVersion, maestroAppDocsDir } from "./bundled-assets.js";
 import {
   answerPermission,
   answerQuestion,
@@ -518,6 +520,13 @@ export function registerIpc(): void {
     return setAgentDescription(currentRoot() ?? "", bundledAgentsDir(), agentName, description);
   });
 
+  // "Fork into this project" — the card's escape hatch for the three tiers `agent:describe`
+  // refuses. Same `currentRoot()` discipline as above: which project's `.claude/agents/` the copy
+  // lands in depends on which project is open.
+  ipcMain.handle(IPC.agentFork, (_e, agentName: string, newName?: string): Promise<AgentForkResult> => {
+    return forkAgent(currentRoot() ?? "", bundledAgentsDir(), bundledPluginVersion(), agentName, newName);
+  });
+
   // ── tasks ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
@@ -533,9 +542,10 @@ export function registerIpc(): void {
   // open — so main resolves every path it writes to. The one exception is create-marketplace's
   // target directory, which is the whole point of that form and is validated as absolute and shown
   // in the scaffold's report.
-  ipcMain.handle(IPC.createOptions, (): CreateOptions => ({
+  ipcMain.handle(IPC.createOptions, async (): Promise<CreateOptions> => ({
     marketplaces: listMarketplaces(),
     projectRoot: currentRoot() ?? "",
+    agentTemplates: await discoverAgents(currentRoot() ?? "", bundledAgentsDir()),
   }));
 
   // Throws on an invalid request or a failed write, so the caller must go through `callMain` —

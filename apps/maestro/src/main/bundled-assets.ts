@@ -73,6 +73,29 @@ export function bundledPluginDir(): string | null {
 }
 
 /**
+ * The version this build's bundled `maestro` plugin ships — `bundledPluginDir()`'s own
+ * `.claude-plugin/plugin.json`. Read straight off disk rather than through `getInstalledPlugins()`
+ * (`~/.claude/plugins/installed_plugins.json`): the bundled copy is this app's own asset, not
+ * something a marketplace installed, so it may not appear in that file at all — and if the user
+ * has ALSO installed `maestro` from a marketplace, that entry describes a different copy.
+ *
+ * Null when the build ships no bundled agents, or the manifest can't be read — a fork's provenance
+ * then records `pluginVersion: null` rather than failing the fork over a version nobody asked for.
+ */
+export function bundledPluginVersion(): string | null {
+  const dir = bundledPluginDir();
+  if (!dir) return null;
+  try {
+    const manifest = JSON.parse(fs.readFileSync(path.join(dir, ".claude-plugin", "plugin.json"), "utf8")) as {
+      version?: string;
+    };
+    return manifest.version ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
  * The global Docs page's Maestro-app corpus — `apps/maestro/docs/app/*.md`.
  *
  * Simpler than `bundledAgentsDir()` because there is nothing to search up for: the directory is

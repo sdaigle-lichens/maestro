@@ -74,6 +74,19 @@ the global tier for every project, `/agents` edits one agent in the open project
 sites; scoping the store without scoping the caller is how `/templates` quietly becomes a
 project-local editor.
 
+**Staleness check (`029` landed since this page was written):** `029` added a fourth call site —
+`copyAgentAttributeRows` in `apps/maestro/src/core/agent-fork.ts`, called by `forkAgent` for a
+**renamed** fork. It calls `getAvatar`/`setAvatar`, `readAllAgentTypes`/`setAgentType`, and
+`readAllAgentProjectTags`/`setAgentProjectTag` with the same by-name keying those modules use today,
+copying the template's row to the new name. Once this ticket scopes those getters/setters by
+`(projectRoot, agentName)` for project-tier agents, `copyAgentAttributeRows`'s calls need to move
+with them — the fork is always copying *from* a global-tier agent (that's the only thing `forkAgent`
+can fork), so the read side stays name-only, but the write lands on a **project**-tier agent (the new
+fork), so it needs the fork's own `projectRoot` threaded through. `copyAgentAttributeRows` already
+takes an optional `dbPaths` override (added for `029`'s tests); the new project-scope argument is
+separate from that. No other part of `029` needs to change — the rest of this page still describes
+the code accurately.
+
 ## Blocked by
 
 _none_

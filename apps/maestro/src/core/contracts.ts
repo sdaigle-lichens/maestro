@@ -167,18 +167,56 @@ export interface AgentDescriptionResult {
 
 /**
  * The `DiscoveredDefinition.source` tiers whose agent files this app will write a description
- * into: the user's project and global agents, and the Maestro subagents this repo ships. An
- * installed plugin's agents are excluded — they live in a version-keyed marketplace cache the next
- * plugin update overwrites, so an edit there is discarded rather than merely unowned.
+ * into: the project's own `.claude/agents/`. Every other tier is a file this app does not own —
+ * `user` (`~/.claude/agents/`) belongs to no project and is shared by every project on the
+ * machine, `maestro` is this repo's bundled agents (in a packaged build, read-only resources
+ * inside `app.asar`), and an installed plugin's agents live in a version-keyed marketplace cache
+ * the next update overwrites. All three are un-editable for the same underlying reason — an edit
+ * would be silently discarded or silently shared — which is why forking (`agent-fork.ts`) exists:
+ * it turns "you can't edit this" into "here is a project copy you can".
  *
  * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG`: the
  * /agents page decides whether to render an editable description from the agent's `source` alone,
  * with no round trip.
  */
-export const EDITABLE_AGENT_SOURCES: readonly string[] = ["project", "user", "maestro"];
+export const EDITABLE_AGENT_SOURCES: readonly string[] = ["project"];
 
 export function isEditableAgentSource(source: string): boolean {
   return EDITABLE_AGENT_SOURCES.includes(source);
+}
+
+/**
+ * What forking one agent into the open project wrote — see `src/core/agent-fork.ts`. `name` is
+ * the resolved (possibly renamed) agent id, echoed back because a caller cannot otherwise learn
+ * what a same-name fork request actually landed as if the target already existed under a
+ * different casing, etc. — same discipline as `ScaffoldResult.name`.
+ */
+export interface AgentForkResult {
+  name: string;
+  file: string;
+}
+
+/**
+ * Where a forked agent's template came from, and enough of it to sync or diff against later
+ * (`031`). Written to a project-local sidecar (`agent-fork.ts`'s `agent-forks.json`), never into
+ * the forked agent's own frontmatter — Maestro's own bookkeeping does not belong in a file Claude
+ * Code itself reads, the same argument `EDITABLE_AGENT_SOURCES` makes about descriptions.
+ *
+ * `sourceTier` is `"user"` (machine-wide, no plugin) or `"plugin"` (bundled Maestro or an
+ * installed marketplace plugin); `sourcePlugin` names which plugin for the latter and is null for
+ * `"user"`. `templateBodyHash` is over the template's body with its `description:` frontmatter
+ * line normalised out — see `hashAgentBody` — because a description is expected to diverge the
+ * moment someone edits it, and hashing the whole file would mark every fork as modified on the
+ * first edit of the one field this app itself lets you change.
+ */
+export interface AgentForkRecord {
+  agentName: string;
+  sourceTier: "user" | "plugin";
+  sourcePlugin: string | null;
+  pluginVersion: string | null;
+  templateBodyHash: string;
+  templateBody: string;
+  forkedAt: string;
 }
 
 /**
@@ -467,6 +505,14 @@ export interface CreateOptions {
   marketplaces: MarketplaceEntry[];
   /** The open project's root, or "" — where `target: "project"` writes. */
   projectRoot: string;
+  /**
+   * Every agent this machine can currently see — `/create-subagent`'s Template field seeds a new
+   * form from one of these. Restricted to `target: "project"` on the FORM side (not filtered out
+   * of this list): forking a third-party plugin's agent into your own plugin would be republishing
+   * someone else's work, but the same list is exactly what `target: "project"` legitimately wants
+   * to offer.
+   */
+  agentTemplates: DiscoveredDefinition[];
 }
 
 /**

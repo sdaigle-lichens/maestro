@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report default comes from before the project has an opinion, or why an agent's description is written back to its own .md instead of a store."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
+  version: "1.2"
+  last-update: 4f8eed3
 ---
 
 # Global stores
@@ -48,17 +48,31 @@ another.
 
 Two guards bound the write, and both are about not lying to the user:
 
-- `EDITABLE_AGENT_SOURCES` (`contracts.ts`) is `["project", "user", "maestro"]`. An **installed
-  plugin's** agents are refused — they live in a version-keyed marketplace cache that the next plugin
-  update overwrites, so an edit there is discarded, not merely unowned. `contracts.ts` is otherwise
-  interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` / `AVATAR_CATEGORIES` /
-  `AGENT_TYPES`) so the renderer can decide from `source` alone with no round trip.
+- `EDITABLE_AGENT_SOURCES` (`contracts.ts`) is `["project"]` (narrowed from `["project", "user",
+  "maestro"]` in `029` — the `maestro` entry was editable by accident: bundled agents are ordinary
+  files in a repo checkout but live inside `app.asar` in a packaged build). Every non-project tier is
+  refused: `user`-tier agents belong to no project and are shared by every project on the machine;
+  `maestro`/an **installed plugin's** agents live in a version-keyed marketplace cache that the next
+  plugin update overwrites, so an edit there is discarded, not merely unowned.
+  `describeUneditableSource` gives each its own message — see `agents-view`. `contracts.ts` is
+  otherwise interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` /
+  `AVATAR_CATEGORIES` / `AGENT_TYPES`) so the renderer can decide from `source` alone with no round
+  trip.
 - `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's
   read-only bundled agents report why instead of appearing to save.
 
 `replaceDescriptionInFrontmatter` **refuses** a YAML block scalar (`|`, `>`) or a value continued on
 the next line rather than flattening it: `parseFrontmatter` already misreads those, and rewriting
 only the first line would leave the continuation dangling as garbage keys.
+
+## A fourth writer, on a fork
+
+`agent-fork.ts`'s `copyAgentAttributeRows` (`029`) is a new consumer of three of these five stores —
+avatar, agent type, project tag — called only for a **renamed** fork on `/agents`: it reads the
+template's row with the existing getters and writes it under the new name with the existing setters.
+A same-name fork needs no copy — these stores are still keyed by `agent_name` alone, so the shadowing
+row *is* the same row. `030` is expected to rekey the project-tier case to `(projectRoot, agentName)`,
+which is when `copyAgentAttributeRows`'s calls need to change too — see `agents-view`.
 
 ## Why `node:sqlite`
 
@@ -84,6 +98,8 @@ fixed agent roster. Any code or doc still routing by agent name is working from 
   report across these tiers at dispatch time.
 - [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — four of these five have a generated CJS
   twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules`.
+- [`agents-view`](../agents-view/SKILL.md) — the fourth writer above, and the "Fork into this
+  project" button that triggers it.
 
 ## Sub-concepts
 

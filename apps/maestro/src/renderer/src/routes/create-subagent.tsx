@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -7,7 +7,7 @@ import { Field, Input, Textarea } from "@repo/ui/field";
 import ChipInput from "@repo/ui/chip-input";
 import Select from "@repo/ui/select";
 import ModePill from "@repo/ui/mode-pill";
-import { Sparkles, Pencil, Store, Folder } from "lucide-react";
+import { Sparkles, Pencil, Store, Folder, Copy } from "lucide-react";
 import CreateShell, { jumpToField, type ShortcutSection } from "../components/create-shell";
 import CreateResult from "../components/create-result";
 import SubagentTemplatePreview from "../components/subagent-template-preview";
@@ -73,9 +73,10 @@ const FIELD_IDS = ["ca-name", "ca-idea", "ca-triggers", "ca-tools", "ca-marketpl
 const ROW_IDS = ["ca-row-1", "ca-row-2", "ca-row-3", "ca-row-4", "ca-row-5", "ca-row-6", "ca-row-7"];
 
 function CreateSubagent() {
-  const { marketplaces, projectRoot } = Route.useLoaderData();
+  const { marketplaces, projectRoot, agentTemplates } = Route.useLoaderData();
   const [helpOpen, setHelpOpen] = useState(false);
   const [avatarLayers, setAvatarLayers] = useState<AvatarLayers>(() => randomAvatarLayers());
+  const [templateId, setTemplateId] = useState("");
   const flow = useCreateFlow("Subagent");
 
   const first = marketplaces[0];
@@ -115,6 +116,26 @@ function CreateSubagent() {
   ]);
 
   const selected = marketplaces.find((m) => m.name === marketplace);
+
+  // Restricted to target: "project" — forking a third-party plugin's agent into your OWN plugin
+  // would be republishing someone else's work, so a template selected under "project" is dropped
+  // the moment the toggle moves away from it rather than silently seeding a marketplace submission.
+  useEffect(() => {
+    if (target !== "project" && templateId) setTemplateId("");
+  }, [target, templateId]);
+
+  function applyTemplate(id: string) {
+    setTemplateId(id);
+    const template = agentTemplates.find((a) => a.id === id);
+    if (!template) return;
+    // Manual, not auto: a template's description is real text to start from, not an idea for
+    // Claude to expand — and Manual is what writes the description field this seeds. Same name as
+    // the template by default, so an untouched submit shadows it (`029`'s own default for the
+    // card's Fork button), same as a project agent naturally would.
+    setValue("mode", "manual");
+    setValue("name", template.id);
+    setValue("description", template.description);
+  }
 
   const submit = () =>
     void handleSubmit(
@@ -208,6 +229,29 @@ function CreateSubagent() {
           />
         }
       >
+        {target === "project" && agentTemplates.length > 0 && (
+          <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-(--bg-elev) border border-(--line) rounded-lg text-[13px] text-(--ink-2)">
+            <div className="w-7 h-7 rounded-[7px] bg-(--primary-dim) text-primary flex items-center justify-center">
+              <Copy size={15} />
+            </div>
+            <div className="flex-1 leading-normal">
+              <strong className="text-(--ink)">Start from a template.</strong> Seeds the name and description from an
+              agent already on this machine, and switches to Manual — optional.
+            </div>
+            <div className="w-64">
+              <Select
+                value={templateId}
+                onChange={applyTemplate}
+                placeholder="No template"
+                options={[
+                  { id: "", name: "No template" },
+                  ...agentTemplates.map((a) => ({ id: a.id, name: `${a.id} (${a.source})` })),
+                ]}
+              />
+            </div>
+          </div>
+        )}
+
         <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-(--bg-elev) border border-(--line) rounded-lg text-[13px] text-(--ink-2)">
           <div className="w-7 h-7 rounded-[7px] bg-(--primary-dim) text-primary flex items-center justify-center">
             {mode === "auto" ? <Sparkles size={15} /> : <Pencil size={15} />}

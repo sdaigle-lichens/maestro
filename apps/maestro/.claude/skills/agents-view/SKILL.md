@@ -1,10 +1,10 @@
 ---
 name: agents-view
-description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the single edit session that fans out to six different write paths on Save, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to six places, why a description is written to the agent's own .md, why the skills section is read-only, why the card doesn't reflow when you press Edit, or where the Interactions pane is going next."
+description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to six different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to six places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why the skills section is read-only, why the card doesn't reflow when you press Edit, or where the Interactions pane is going next."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
+  version: "1.1"
+  last-update: 4f8eed3
 ---
 
 # Agents View
@@ -38,6 +38,13 @@ from six different homes, and that is the single fact everything else here follo
 └──────────────────┴────────────────────────────────────────┴───────────────────────────────┘
       292px                        flex: 1, min 560px                 400px, 280–720
 ```
+
+The left pane is two labelled sections, **Project** and **Global** (`agent-list.tsx`'s
+`SectionLabel`) — `source === "project"` vs. everything else — shown only when non-empty. Since
+`discoverAgents` already runs `dedupeById` over project → user → bundled → plugins (first wins),
+every agent appears in exactly one section, and forking one (below) moves its row from Global to
+Project on the next refresh — that movement is the confirmation the fork worked, no toast needed.
+The card carries a matching uppercase tier tag next to the agent name.
 
 Both side panes collapse to their header row. The right pane is resizable by dragging its left edge.
 
@@ -146,6 +153,35 @@ enough to push the details below the fold.
 `aspect-square` box whose width the layout decides (max 232px in view, 168px in edit — the arrows
 need the room).
 
+## Forking a global agent
+
+Only the description locks on a Global-tier card (see "Things that bite" below) — every other field
+still saves normally. The escape hatch is a free-text name input (defaulting to the agent's own
+name) plus a "Fork into this project" button in the view-mode footer
+(`data-testid="agent-fork-name"` / `"agent-fork-button"`), calling `forkAgent`
+(`src/core/agent-fork.ts`) over the `agent:fork` channel.
+
+- A **same-name fork** copies the template file byte-for-byte, including its `description:` line —
+  shadowing is the mechanism: a project `.claude/agents/<name>.md` wins `dedupeById`'s resolution, so
+  the list shows one row, now sourced from the project.
+- A **renamed fork** rewrites only the frontmatter `name:` line and calls
+  `copyAgentAttributeRows(fromName, toName)` to copy the avatar/type/project-tag rows to the new name
+  — see `global-stores`. A same-name fork needs no copy: those three stores are still keyed by
+  `agent_name` alone, so the shadowing row *is* the same row.
+
+Every fork — same-name or renamed — writes a provenance record to
+`<projectRoot>/.claude/agent-forks.json` (`AgentForkRecord`: `sourceTier: "user" | "plugin"`,
+`sourcePlugin`, `pluginVersion`, `templateBodyHash`, `templateBody`, `forkedAt`), **never** into the
+agent's own frontmatter beyond the rename — `agent-fork.ts`'s header explains why (Maestro's own
+bookkeeping doesn't belong in a file format it doesn't own, same argument as the six-write-paths
+description exception below). `hashAgentBody` strips the `description:` frontmatter line (and its
+continuation) before hashing, so editing the description after forking never marks the fork as
+diverged.
+
+`/create-subagent`'s "Start from a template" field (`target: "project"` only) is a **different,
+lighter-weight thing** — it seeds a fresh manual-mode form's `name`/`description` from a picked
+agent, not a byte-for-byte copy of its body. See `create-skills-architecture`.
+
 ## Things that bite
 
 - **`CARD_MIN_HEIGHT` is a measured constant, not a round number.** The card must be the same height
@@ -161,10 +197,16 @@ need the room).
   declaration** until the next render, so every later measurement in the same probe silently loses the
   floor and reports a card that "doesn't respect its minimum". Save the previous inline value and
   restore *that*. This cost a probe run.
-- **The description is not editable for every agent.** `EDITABLE_AGENT_SOURCES` in `contracts.ts`
-  is `["project", "user", "maestro"]`; an installed plugin's agents render a read-only paragraph even
-  in edit mode. The renderer decides from `DiscoveredDefinition.source` alone, with no round trip —
-  which is why that constant is a value export from an otherwise interfaces-only file.
+- **The description is not editable for every agent — as of `029`, only `project`-tier is.**
+  `EDITABLE_AGENT_SOURCES` in `contracts.ts` is `["project"]`; every other tier renders a read-only
+  paragraph even in edit mode. The renderer decides from `DiscoveredDefinition.source` alone, with no
+  round trip — which is why that constant is a value export from an otherwise interfaces-only file.
+  `describeUneditableSource(agentName, source)` (`agent-descriptions.ts`) gives the thrown refusal a
+  tier-specific message: `user`-tier says the agent is machine-wide and points at forking rather than
+  claiming it was "created" anywhere (there is no such place); `maestro`/plugin-tier names the plugin
+  and says an update overwrites the file. The card's own footer note is a **separate, hand-written
+  parallel** of that message (`agents.tsx`), not a shared import — the renderer can only pull
+  `contracts`/`text` out of `src/core`, so the two strings can drift; check both if you change one.
 - **A pencil on an _unselected_ row cannot build the draft immediately.** That agent's report is still
   in flight, so `startEdit` sets `selected` plus a `pendingEdit` flag and an effect builds the draft
   once `base` resolves. Building it inline would clone a draft carrying the previously selected
@@ -199,14 +241,17 @@ need the room).
 | `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card + the Edit/Cancel/Save footer. |
 | `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |
 | `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane, its resize handle and auto-growing editor. |
-| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution and the frontmatter rewrite. |
+| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, and `describeUneditableSource`'s tier-specific refusals. |
+| `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, the store-row copy, the `agent-forks.json` provenance sidecar. |
 | `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |
 | `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |
+| `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |
 
 ## Relationships
 
-- [`global-stores`](../global-stores/SKILL.md) — four of the six write paths, and why the fifth
-  (description) deliberately is not one.
+- [`global-stores`](../global-stores/SKILL.md) — four of the six write paths, why the fifth
+  (description) deliberately is not one, and where `copyAgentAttributeRows` reads/writes those same
+  three stores for a renamed fork.
 - [`maestro-config-model`](../maestro-config-model/SKILL.md) — the workflows slice this page is the
   second writer of, and the read-before-write rule that follows.
 - [`workflow-view`](../workflow-view/SKILL.md) — the other writer, and where `loaded_skills` /

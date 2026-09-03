@@ -88,6 +88,7 @@ const api: MaestroApi = {
   },
   agents: {
     describe: (agentName, description) => ipcRenderer.invoke(IPC.agentDescribe, agentName, description),
+    fork: (agentName, newName) => ipcRenderer.invoke(IPC.agentFork, agentName, newName),
   },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),

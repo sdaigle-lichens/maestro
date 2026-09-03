@@ -90,11 +90,31 @@ export function normalizeAgentDescription(description: string): string {
   return description.replace(/\s+/g, " ").trim();
 }
 
+/**
+ * Why a tier's file can't be written, in words that point at the actual reason rather than a
+ * generic "not editable" — a `user` agent is not "created in some other project" (it belongs to no
+ * project at all, so there is nowhere to send the user to edit it) and a `maestro`/plugin agent is
+ * not merely unowned (a plugin update overwrites it, so an edit there would be silently temporary).
+ */
+export function describeUneditableSource(agentName: string, source: string): string {
+  if (source === "user") {
+    return (
+      `"${agentName}" lives in ~/.claude/agents — it belongs to no project, it's shared by every ` +
+      `project on this machine, and there's nowhere else to edit it. Fork it into this project to customise it here.`
+    );
+  }
+  return (
+    `"${agentName}" is shipped by the ${source} plugin — the next plugin update overwrites its file, ` +
+    `so an edit there would be silently temporary. Fork it into this project to customise it here.`
+  );
+}
+
 function quoteYaml(s: string): string {
   return s.replace(/\\/g, "\\\\").replace(/"/g, '\\"');
 }
 
-const FRONTMATTER = /^---\s*\n([\s\S]*?)\n---/;
+/** Exported so `agent-fork.ts` can locate the same block for renaming and for hashing. */
+export const FRONTMATTER = /^---\s*\n([\s\S]*?)\n---/;
 
 /**
  * Rewrite the `description:` line of a frontmatter block, leaving every other line — and the body
@@ -156,9 +176,7 @@ export async function setAgentDescription(
   const ref = await findAgentFile(projectRoot, bundledDir, agentName);
   if (!ref) throw new Error(`No definition file found for "${agentName}".`);
   if (!isEditableAgentSource(ref.source)) {
-    throw new Error(
-      `"${agentName}" is shipped by the ${ref.source} plugin — edit it there, or copy it into this project's .claude/agents/.`
-    );
+    throw new Error(describeUneditableSource(agentName, ref.source));
   }
 
   try {

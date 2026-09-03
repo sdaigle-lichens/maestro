@@ -96,6 +96,28 @@ Landing `030` first is recommended. It is not a hard dependency — this ticket'
 fork sidecar, not in the sqlite stores — but building conflict UI for same-named agents across
 projects while those agents still share one avatar row will be confusing to test.
 
+**What `029` actually landed (read this before the sync logic above):**
+
+- Read the sidecar via `readAgentForks(projectRoot)` / `agentForksPath(projectRoot)`, exported from
+  `apps/maestro/src/core/agent-fork.ts` and re-exported off `src/core/index.ts`. It is
+  `<projectRoot>/.claude/agent-forks.json`, a flat JSON object keyed by the forked agent's name —
+  this page's "fork sidecar" is that file.
+- `AgentForkRecord`'s tier field is **`sourceTier: "user" | "plugin"`**, not the raw
+  `DiscoveredDefinition.source` string this page's acceptance criteria describe in prose ("Plugin-tier
+  forks are checked by plugin version; user-tier forks are checked by template content hash" —
+  that wording already matches the landed shape). `"maestro"` (this repo's own bundled copy) and any
+  real installed plugin both land in tier `"plugin"`, with `sourcePlugin` naming which one (`"maestro"`
+  or the plugin's name) and `pluginVersion` set from it. `sourceTier: "user"` always carries
+  `sourcePlugin: null` and `pluginVersion: null`.
+- Compare a fresh `hashAgentBody(currentTemplateContents)` against the stored `templateBodyHash` — the
+  description-line-and-continuation normalization this ticket's body-only-hash requirement depends on
+  is already implemented in `bodyForHashing`/`hashAgentBody` and tested in `test/core/agent-fork.test.ts`.
+- **Only `forkAgent`-created agents get a sidecar entry.** `/create-subagent`'s "Start from a
+  template" field (also from `029`) is a plain form seed — `mode: "manual"` plus `name`/`description`
+  copied from a `DiscoveredDefinition` into a fresh skeleton — and writes no provenance record at all.
+  If this ticket's sync is meant to also cover agents created that way, that needs a different
+  detection path; as landed, there is nothing there to read.
+
 ## Blocked by
 
 - `029-make-project-the-only-editable-agent-tier.md`

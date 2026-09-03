@@ -86,27 +86,47 @@ replace when the time comes to show a diff.
 
 ## Acceptance criteria
 
-- [ ] `EDITABLE_AGENT_SOURCES` is `["project"]`, and `setAgentDescription` refuses every other tier
-      before touching the filesystem
-- [ ] The `user`-tier refusal message describes a machine-wide agent in `~/.claude/agents/` and does
-      not refer to a project it was created in
-- [ ] The `maestro`/plugin refusal message explains that a plugin update overwrites the file
-- [ ] The left pane renders two labelled sections, Project and Global, and every discovered agent
-      appears in exactly one of them
-- [ ] The card carries a tier tag consistent with the section the agent is listed under
-- [ ] On a global agent, the description field is read-only while type, project tag, avatar, report
-      and skills all still save
-- [ ] "Fork into this project" on the card writes `.claude/agents/<name>.md` with the template's
+- [x] `EDITABLE_AGENT_SOURCES` is `["project"]`, and `setAgentDescription` refuses every other tier
+      before touching the filesystem — `contracts.ts:182`; refusal asserted in
+      `test/core/agent-descriptions.test.ts`, and live: editing `reviewer` (plugin) rendered a
+      read-only paragraph
+- [x] The `user`-tier refusal message describes a machine-wide agent in `~/.claude/agents/` and does
+      not refer to a project it was created in — `describeUneditableSource` in
+      `agent-descriptions.ts`; asserted by name/negative-assertion test in
+      `test/core/agent-descriptions.test.ts`
+- [x] The `maestro`/plugin refusal message explains that a plugin update overwrites the file — same
+      function, same test file; live: `reviewer`'s footer note named the `maestro` plugin
+- [x] The left pane renders two labelled sections, Project and Global, and every discovered agent
+      appears in exactly one of them — `agent-list.tsx`'s `SectionLabel` + `projectItems`/`globalItems`
+      split; live in a fixture project: one Project row, eight Global rows (7 bundled + 1 from another
+      installed plugin), no duplicates
+- [x] The card carries a tier tag consistent with the section the agent is listed under — `agent-card.tsx`
+      `isProjectTier` tag; live: `reviewer` showed "Global" under Edit
+- [x] On a global agent, the description field is read-only while type, project tag, avatar, report
+      and skills all still save — description renders as a paragraph, not a textarea, while the type
+      `<select>` stayed interactive in the live check; the other four fields are unaffected by
+      `EDITABLE_AGENT_SOURCES`, which only gates `agent:describe`
+- [x] "Fork into this project" on the card writes `.claude/agents/<name>.md` with the template's
       content byte-for-byte, and the agent moves from the Global section to the Project section on
-      the next refresh
-- [ ] A same-name fork shadows its template: the list shows one row, sourced from the project
-- [ ] A renamed fork copies the template's avatar, type and project tag rows under the new name
-- [ ] `/create-subagent` offers an installed agent as a template, and the option is unavailable when
-      `target` is `marketplace`
-- [ ] Every fork writes a sidecar record holding source tier, plugin, plugin version, template body
+      the next refresh — `forkAgent` in `agent-fork.ts`; live: forking `reviewer` made
+      `.claude/agents/reviewer.md` byte-identical to `plugins/maestro/agents/reviewer.md`, and the left
+      pane showed exactly one `reviewer` row, now under Project
+- [x] A same-name fork shadows its template: the list shows one row, sourced from the project — same
+      live check as above (one `reviewer` row post-fork)
+- [x] A renamed fork copies the template's avatar, type and project tag rows under the new name —
+      `copyAgentAttributeRows` in `agent-fork.ts`, covered end-to-end in `test/core/agent-fork.test.ts`
+      with injectable `storeDbPaths`; live: forked `scribe` as `strict-scribe`
+- [x] `/create-subagent` offers an installed agent as a template, and the option is unavailable when
+      `target` is `marketplace` — "Start from a template" bar in `create-subagent.tsx`, gated on
+      `target === "project" && agentTemplates.length > 0`; live: bar visible on Project, hidden on
+      Marketplace
+- [x] Every fork writes a sidecar record holding source tier, plugin, plugin version, template body
       hash and template body — and no fork writes anything into the agent's frontmatter beyond what
-      the template already had
-- [ ] `test/isolation.test.ts` still passes: nothing new crosses the core/main/preload/renderer split
+      the template already had — `writeAgentFork` → `<projectRoot>/.claude/agent-forks.json`; live:
+      the `reviewer` entry recorded `sourceTier: "plugin"`, `sourcePlugin: "maestro"`,
+      `pluginVersion: "0.3.3"`, and the matching hash/body
+- [x] `test/isolation.test.ts` still passes: nothing new crosses the core/main/preload/renderer split
+      — full suite green: `pnpm typecheck` and `pnpm test`, 709 tests / 38 files
 
 ## Notes for whoever picks this up
 
@@ -117,6 +137,31 @@ before hashing, and pin that with a test now rather than discovering it in `031`
 
 `030` rekeys three of the stores this ticket copies rows in. The two are independent, but forking is
 what makes same-named agents across projects common, so landing `030` close behind is worth doing.
+
+## Divergences from this page
+
+1. **Sidecar location/shape**: this page said only "a project-local sidecar", with no path named.
+   Landed as `<projectRoot>/.claude/agent-forks.json`, a flat JSON object keyed by the forked agent's
+   name, one `AgentForkRecord` per entry. `031` should target that path and shape.
+2. **`AgentForkRecord.sourceTier` is `"user" | "plugin"`, not the raw `DiscoveredDefinition.source`
+   string.** This page said "the source tier and plugin" as two facts; the implementation models
+   `"user"` as its own tier with no plugin, and folds both `maestro` (this repo's bundled copy) and
+   any real installed plugin into tier `"plugin"` with `sourcePlugin` naming which one. `031` reads
+   `sourceTier`/`sourcePlugin`, not `source`.
+3. **`describeUneditableSource` backs the thrown error in `setAgentDescription`, but the `/agents`
+   card's footer-note copy is a separately hand-written string in `agents.tsx`**, not the same
+   function call — `src/renderer` may only import `contracts`/`text` from `src/core`, so a shared
+   helper would need to move into `text.ts` (renderer-safe) to be literally shared. Left as two
+   similar-but-separate strings; a future edit to one should check the other.
+4. **`/create-subagent`'s template field is a lightweight form seed, not a byte-for-byte fork.** It
+   sets `mode: "manual"`, `name`, and `description` from the picked `DiscoveredDefinition` (which only
+   carries `id`/`description`) — the scaffold still writes a fresh skeleton via `manualAgentBody()`,
+   it does not clone the source agent's actual body. The real byte-for-byte fork is `/agents`' "Fork
+   into this project" button (`forkAgent`). Only `forkAgent`-created agents get an `agent-forks.json`
+   entry — an agent created via the create-subagent template field gets no provenance record.
+5. **`CreateOptions.agentTemplates` lists every discovered agent, project included** — not filtered to
+   global-tier only. The UI restricts which `target` can use the feature at all, not which agent can
+   seed a new form.
 
 ## Blocked by
 
