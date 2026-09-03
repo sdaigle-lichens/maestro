@@ -46,3 +46,18 @@ plugins/*/scripts/lib/
 #
 # Markdown only. Scripts that ship alongside a skill (`scripts/*.mjs`) are code and stay checked.
 **/.claude/skills/**/*.md
+
+# CLAUDE.md and docs/ are out for the same reason, at any depth (no leading slash, so these hold
+# whichever directory prettier runs from).
+#
+# The reformat that first put them in the enforced set is what made the case against it: prettier
+# rewrote 124 lines of apps/maestro/CLAUDE.md and 114 of docs/app/avatar-art-credits.md, and every
+# one of them was a markdown table being re-padded -- the same em-dash width disagreement described
+# above, on the same kind of hand-formatted prose, in files that are read far more often in a
+# GitHub blob or a Claude context window than in an editor. Enforcing a column-alignment prettier
+# cannot compute consistently buys nothing and churns the diff of every documentation edit.
+#
+# What stays checked is code: src/, test/, packages/*/src, config files, and the scripts beside a
+# skill. Prose is reviewed by reading it.
+CLAUDE.md
+docs/

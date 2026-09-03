@@ -29,12 +29,12 @@ your recent projects and lets you open a different one without leaving whatever 
 
 Everything Maestro designs for a project lives in `.claude/`:
 
-| File                         | What it is                                                                                                                                                                 |
-| ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `maestro.json`               | The **source of truth** — your workflow graph, rule assignments, and agent config. Committed to git. Edited by the canvas, the rules view, or by hand.                     |
-| `maestro_session.json`       | Which workflow is active in the _current terminal session_. Ephemeral, gitignored, deleted when the session ends.                                                          |
-| `maestro_session.log.jsonl`  | An append-only log of everything that session's hooks observed — tool calls, subagent dispatches, handoffs. This is what `/session-log` reads live. Ephemeral, gitignored. |
-| `maestro_session_tasks.json` | Tracks which workflow steps already got a task created for them this session, so the orchestrator doesn't duplicate work. Ephemeral, gitignored.                           |
+| File | What it is |
+|---|---|
+| `maestro.json` | The **source of truth** — your workflow graph, rule assignments, and agent config. Committed to git. Edited by the canvas, the rules view, or by hand. |
+| `maestro_session.json` | Which workflow is active in the *current terminal session*. Ephemeral, gitignored, deleted when the session ends. |
+| `maestro_session.log.jsonl` | An append-only log of everything that session's hooks observed — tool calls, subagent dispatches, handoffs. This is what `/session-log` reads live. Ephemeral, gitignored. |
+| `maestro_session_tasks.json` | Tracks which workflow steps already got a task created for them this session, so the orchestrator doesn't duplicate work. Ephemeral, gitignored. |
 
 Only `maestro.json` survives between sessions. The other three exist only while a terminal
 session using the installed runtime is actually running, and are cleaned up automatically when it ends.
@@ -44,7 +44,7 @@ session using the installed runtime is actually running, and are cleaned up auto
 - **Hamburger menu** (top-left): the Maestro (runtime) page, the global Docs page you're reading
   now, the Tools dashboard, and your recent-projects list.
 - **Direct links**, shown whenever a project is open: Project Docs, Workflows, Rules, Session Log,
-  Maestro Tasks — the things you came to _do_ in this specific project.
+  Maestro Tasks — the things you came to *do* in this specific project.
 - **Center**: the workflow selector, for projects with more than one configured workflow.
 - **Right side**: the chat pane toggle, the current-project button, and the theme toggle.
 

@@ -39,7 +39,7 @@ installer. If you're adding that:
 - The Agent SDK resolves the `claude` CLI and its own runtime **on disk**, so
   `@anthropic-ai/claude-agent-sdk` must be **externalized**, not bundled, or its own
   `require.resolve` runs against `out/main/` and throws `Native CLI binary for <platform> not
-found`. `electron.vite.config.ts`'s `EXTERNAL` list (derived from `package.json`
+  found`. `electron.vite.config.ts`'s `EXTERNAL` list (derived from `package.json`
   `dependencies`) already does this for the dev/preview build; a packager needs the same
   exclusion.
 - A packaged app additionally needs `asar: { unpack: "**/node_modules/@anthropic-ai/**" }`, plus
