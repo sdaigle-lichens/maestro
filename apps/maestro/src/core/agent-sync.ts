@@ -236,7 +236,7 @@ const EMPTY: AgentSyncSummary = {
 /**
  * Every forked agent in this project, and whether it is still in step with its template.
  *
- * READS ONLY. Run on project selection and from the skills' Step 0; it never touches
+ * READS ONLY. Run on project selection, from the maestro-step0 hook and from /maestro-update; it never touches
  * `.claude/agents/`, never rewrites the sidecar, and never creates a directory.
  *
  * An agent with no provenance record is not in the result at all — that is either a hand-authored

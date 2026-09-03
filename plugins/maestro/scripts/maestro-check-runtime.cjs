@@ -1,8 +1,10 @@
 #!/usr/bin/env node
-// Step 0's readiness check: can this project orchestrate right now, and if not, which ONE command
-// fixes it? Run by the orchestrator skill before it does anything else.
+// The readiness check: can this project orchestrate right now, and if not, which ONE command
+// fixes it? Run by the maestro-step0 hook when the orchestrator skill is invoked — which is what
+// `checkRuntime(projectDir)` is for. It is ALSO a CLI, for a human debugging a project by hand and
+// for /maestro-install's own reporting; the orchestrator skill no longer runs it, or mentions it.
 //
-// It answers with two fields the orchestrator reads and nothing else: `action`, one of three values,
+// It answers with two fields the caller reads and nothing else: `action`, one of three values,
 // and `instruction`, the sentence to obey.
 //
 //   continue  — nothing to do; get on with the workflow.
@@ -77,9 +79,13 @@ function readJsonSafe(p) {
   }
 }
 
-// The one sentence the orchestrator acts on, written here rather than in SKILL.md. There is exactly
-// one per action and every report() goes through this map, so no call site can word it differently,
+// The one sentence the caller acts on, written here rather than in SKILL.md. There is exactly
+// one per action and every answer goes through this map, so no call site can word it differently,
 // and the skill needs no branch table to re-derive from — it just does what `instruction` says.
+//
+// These are addressed to the MODEL. `install` has a second, user-facing wording in
+// maestro-step0.js, because on that path the hook blocks the invocation outright and the sentence
+// is read by a person rather than obeyed by an agent.
 const INSTRUCTIONS = {
   continue: "Nothing to do. Carry on with the workflow, and say nothing about this check.",
   update: "Run /maestro-update first, then say in one line what it changed and carry on.",
@@ -87,93 +93,113 @@ const INSTRUCTIONS = {
     "Stop and end your turn. Tell the user Maestro is not ready for this project, quoting `reason`, and ask them to run /maestro-install. Do not improvise a workflow.",
 };
 
-function report(value) {
-  const { action, ...rest } = value;
-  process.stdout.write(JSON.stringify({ action, instruction: INSTRUCTIONS[action], ...rest }) + "\n");
+/**
+ * The whole answer for `projectDir`: `{ action, instruction, ... }`. Never throws.
+ *
+ * Written as one function with early returns rather than as top-level script flow so the hook can
+ * `require()` it — the alternative was spawning this file and parsing its stdout from a hook that
+ * already runs inside node.
+ */
+function checkRuntime(projectDir) {
+  const answer = (value) => {
+    const { action, ...rest } = value;
+    return { action, instruction: INSTRUCTIONS[action], ...rest };
+  };
+
+  // --- 1. the config exists -----------------------------------------------------------------
+  const config = readJsonSafe(path.join(projectDir, ".claude", "maestro.json"));
+  if (!config || config.version !== 3) {
+    return answer({
+      action: "install",
+      ok: true,
+      reason: "no .claude/maestro.json — Maestro is not configured for this project",
+    });
+  }
+
+  // --- 2. it configures something ------------------------------------------------------------
+  // A seeded config always has both. Empty means a partial install, or a hand-edit that emptied it;
+  // either way the handoff table below renders to its placeholder and the orchestrator has no path
+  // to follow, so it must say so rather than improvise one.
+  const workflows = Array.isArray(config.workflows) ? config.workflows : [];
+  const instances = Array.isArray(config.workflow_instances) ? config.workflow_instances : [];
+  if (workflows.length === 0 || instances.length === 0) {
+    return answer({ action: "install", ok: true, reason: "maestro.json configures no workflows" });
+  }
+
+  // --- 3 & 4. the rendered orchestrator matches the config -----------------------------------
+  const skillPath = path.join(projectDir, ".claude", "skills", "maestro", "SKILL.md");
+  if (!fs.existsSync(skillPath)) {
+    return answer({ action: "install", ok: true, reason: "the orchestrator skill is not installed" });
+  }
+
+  if (!handoffTable || !extractRegion) {
+    return answer({ action: "update", ok: true, reason: "the project's copied runtime scripts are incomplete" });
+  }
+
+  let renderedHandoffs = null;
+  try {
+    renderedHandoffs = extractRegion(fs.readFileSync(skillPath, "utf8"), "HANDOFFS");
+  } catch {
+    renderedHandoffs = null;
+  }
+  const expectedHandoffs = handoffTable(config);
+  if (renderedHandoffs === null || renderedHandoffs.trim() !== expectedHandoffs.trim()) {
+    return answer({
+      action: "update",
+      ok: true,
+      reason:
+        renderedHandoffs === null
+          ? "the orchestrator skill has no Maestro:HANDOFFS region to render into"
+          : "the handoff table no longer matches maestro.json",
+    });
+  }
+
+  // --- 5. the copied runtime is the version the plugin ships ---------------------------------
+  const installedPluginsPath = path.join(process.env.HOME || "", ".claude", "plugins", "installed_plugins.json");
+  const installedPlugins = readJsonSafe(installedPluginsPath);
+  const entries = installedPlugins && installedPlugins.plugins ? installedPlugins.plugins : {};
+
+  // Keys are "<pluginName>@<marketplace>". Prefer an install scoped to THIS project over a global
+  // one, mirroring apps/maestro/src/core/install.ts's pluginHooksActive — but any match is enough to
+  // answer the question, since every install of the plugin ships the same runtime files.
+  let match = null;
+  for (const [key, installs] of Object.entries(entries)) {
+    const pluginName = key.includes("@") ? key.slice(0, key.lastIndexOf("@")) : key;
+    if (pluginName !== "maestro" || !Array.isArray(installs)) continue;
+    for (const install of installs) {
+      if (!install || !install.installPath || !install.version) continue;
+      const scoped = install.projectPath && path.resolve(install.projectPath) === path.resolve(projectDir);
+      if (!match || scoped) match = install;
+    }
+  }
+
+  if (!match) {
+    return answer({
+      action: "continue",
+      ok: false,
+      stale: false,
+      reason: "maestro plugin not installed on this machine — cannot compare runtime versions",
+    });
+  }
+
+  const stale = config.runtimeVersion !== match.version;
+  return answer({
+    action: stale ? "update" : "continue",
+    ok: true,
+    stale,
+    reason: stale
+      ? `project runtime ${config.runtimeVersion || "(unstamped)"} is behind plugin ${match.version}`
+      : undefined,
+    installedVersion: config.runtimeVersion || null,
+    runtimeVersion: match.version,
+    pluginRoot: match.installPath,
+  });
+}
+
+module.exports = { checkRuntime, INSTRUCTIONS };
+
+// One line of JSON on stdout, exit 0 — the shape the skill's fallback command documents.
+if (require.main === module) {
+  process.stdout.write(JSON.stringify(checkRuntime(process.env.CLAUDE_PROJECT_DIR || process.cwd())) + "\n");
   process.exit(0);
 }
-
-const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
-
-// --- 1. the config exists -----------------------------------------------------------------
-const config = readJsonSafe(path.join(projectDir, ".claude", "maestro.json"));
-if (!config || config.version !== 3) {
-  report({ action: "install", ok: true, reason: "no .claude/maestro.json — Maestro is not configured for this project" });
-}
-
-// --- 2. it configures something ------------------------------------------------------------
-// A seeded config always has both. Empty means a partial install, or a hand-edit that emptied it;
-// either way the handoff table below renders to its placeholder and the orchestrator has no path
-// to follow, so it must say so rather than improvise one.
-const workflows = Array.isArray(config.workflows) ? config.workflows : [];
-const instances = Array.isArray(config.workflow_instances) ? config.workflow_instances : [];
-if (workflows.length === 0 || instances.length === 0) {
-  report({ action: "install", ok: true, reason: "maestro.json configures no workflows" });
-}
-
-// --- 3 & 4. the rendered orchestrator matches the config -----------------------------------
-const skillPath = path.join(projectDir, ".claude", "skills", "maestro", "SKILL.md");
-if (!fs.existsSync(skillPath)) {
-  report({ action: "install", ok: true, reason: "the orchestrator skill is not installed" });
-}
-
-if (!handoffTable || !extractRegion) {
-  report({ action: "update", ok: true, reason: "the project's copied runtime scripts are incomplete" });
-}
-
-let renderedHandoffs = null;
-try {
-  renderedHandoffs = extractRegion(fs.readFileSync(skillPath, "utf8"), "HANDOFFS");
-} catch {
-  renderedHandoffs = null;
-}
-const expectedHandoffs = handoffTable(config);
-if (renderedHandoffs === null || renderedHandoffs.trim() !== expectedHandoffs.trim()) {
-  report({
-    action: "update",
-    ok: true,
-    reason:
-      renderedHandoffs === null
-        ? "the orchestrator skill has no Maestro:HANDOFFS region to render into"
-        : "the handoff table no longer matches maestro.json",
-  });
-}
-
-// --- 5. the copied runtime is the version the plugin ships ---------------------------------
-const installedPluginsPath = path.join(process.env.HOME || "", ".claude", "plugins", "installed_plugins.json");
-const installedPlugins = readJsonSafe(installedPluginsPath);
-const entries = installedPlugins && installedPlugins.plugins ? installedPlugins.plugins : {};
-
-// Keys are "<pluginName>@<marketplace>". Prefer an install scoped to THIS project over a global
-// one, mirroring apps/maestro/src/core/install.ts's pluginHooksActive — but any match is enough to
-// answer the question, since every install of the plugin ships the same runtime files.
-let match = null;
-for (const [key, installs] of Object.entries(entries)) {
-  const pluginName = key.includes("@") ? key.slice(0, key.lastIndexOf("@")) : key;
-  if (pluginName !== "maestro" || !Array.isArray(installs)) continue;
-  for (const install of installs) {
-    if (!install || !install.installPath || !install.version) continue;
-    const scoped = install.projectPath && path.resolve(install.projectPath) === path.resolve(projectDir);
-    if (!match || scoped) match = install;
-  }
-}
-
-if (!match) {
-  report({
-    action: "continue",
-    ok: false,
-    stale: false,
-    reason: "maestro plugin not installed on this machine — cannot compare runtime versions",
-  });
-}
-
-const stale = config.runtimeVersion !== match.version;
-report({
-  action: stale ? "update" : "continue",
-  ok: true,
-  stale,
-  reason: stale ? `project runtime ${config.runtimeVersion || "(unstamped)"} is behind plugin ${match.version}` : undefined,
-  installedVersion: config.runtimeVersion || null,
-  runtimeVersion: match.version,
-  pluginRoot: match.installPath,
-});

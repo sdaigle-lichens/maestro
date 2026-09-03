@@ -78,6 +78,30 @@ export function projectTwinName(scriptPath: string): string {
 }
 
 /**
+ * Are these the same directory, through symlinks?
+ *
+ * `path.resolve` alone is not enough and the failure is SILENT AND TOTAL. A hook payload's `cwd` is
+ * the path the session was opened at (`/tmp/p`, `/var/folders/...`), while `__filename` inside the
+ * running script is already the real one (`/private/tmp/p`) — so on any project reached through a
+ * symlinked ancestor, the project's OWN copy of a hook fails to recognise itself, decides the
+ * project owns the hook and stands down. The plugin's copy stands down for the same registration,
+ * and the hook then runs nowhere at all: no error, no output, nothing in the log.
+ *
+ * `realpathSync` throws on a path that does not exist (a project with no `.claude/scripts/`), which
+ * is a legitimate answer of "not the same", so each side falls back to `resolve`.
+ */
+function samePath(a: string, b: string): boolean {
+  const real = (p: string) => {
+    try {
+      return fs.realpathSync(path.resolve(p));
+    } catch {
+      return path.resolve(p);
+    }
+  };
+  return real(a) === real(b);
+}
+
+/**
  * Settings files a project's own hooks can be registered in, in the order Claude Code merges them.
  * `settings.local.json` is the user's untracked tier — the installer never writes it, but a user
  * who moved our hooks there still owns those hooks and must not get them fired twice.
@@ -99,7 +123,7 @@ export function projectOwnsHook(scriptPath: string, cwd: string, event?: string)
   if (!cwd || !scriptPath) return false;
 
   const projectScripts = path.join(cwd, ".claude", "scripts");
-  if (path.resolve(path.dirname(scriptPath)) === path.resolve(projectScripts)) return false;
+  if (samePath(path.dirname(scriptPath), projectScripts)) return false;
 
   const twin = projectTwinName(scriptPath);
   for (const file of PROJECT_SETTINGS_FILES) {

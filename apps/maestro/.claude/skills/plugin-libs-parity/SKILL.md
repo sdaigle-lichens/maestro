@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the ten plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
+  version: "1.3"
+  last-update: dc07795aca62476b23408ba23e0455dc855aef35
 ---
 
 # Core ↔ plugin parity
@@ -47,8 +47,10 @@ scripts at all.
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`).
 
 **`maestro-agent-sync` must not pull in `node:sqlite`.** It backs
-`plugins/maestro/scripts/maestro-agent-forks.cjs`, which the orchestrator's Step 0 runs under
-whatever bare `node` is on the session's PATH. Its source (`agent-sync.ts`) therefore imports
+**two** callers, both running under whatever bare `node` is on the session's PATH:
+`plugins/maestro/scripts/maestro-agent-forks.cjs` (the user-facing CLI, driven by `/maestro-update`)
+and `plugins/maestro/scripts/maestro-step0.js`, the readiness hook, which `require`s
+`computeAgentSync` out of the bundle directly rather than spawning the CLI. Its source (`agent-sync.ts`) therefore imports
 `agent-fork-record.ts` and never `agent-fork.ts` — the latter reaches three sqlite stores through
 `copyAgentAttributeRows`, which is exactly why `031` split the file (see `global-stores`). The
 check is `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-agent-sync.cjs` → `0`. Nothing

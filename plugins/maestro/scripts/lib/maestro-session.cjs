@@ -151,11 +151,21 @@ function settingsRegisterScript(settings, event, script) {
 function projectTwinName(scriptPath) {
   return import_node_path.default.basename(scriptPath).replace(/\.(js|cjs|sh)$/, "") + ".cjs";
 }
+function samePath(a, b) {
+  const real = (p) => {
+    try {
+      return import_node_fs.default.realpathSync(import_node_path.default.resolve(p));
+    } catch {
+      return import_node_path.default.resolve(p);
+    }
+  };
+  return real(a) === real(b);
+}
 var PROJECT_SETTINGS_FILES = ["settings.json", "settings.local.json"];
 function projectOwnsHook(scriptPath, cwd, event) {
   if (!cwd || !scriptPath) return false;
   const projectScripts = import_node_path.default.join(cwd, ".claude", "scripts");
-  if (import_node_path.default.resolve(import_node_path.default.dirname(scriptPath)) === import_node_path.default.resolve(projectScripts)) return false;
+  if (samePath(import_node_path.default.dirname(scriptPath), projectScripts)) return false;
   const twin = projectTwinName(scriptPath);
   for (const file of PROJECT_SETTINGS_FILES) {
     let settings;

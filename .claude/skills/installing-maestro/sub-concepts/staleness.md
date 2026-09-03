@@ -7,7 +7,7 @@ different callers. Reaching for the wrong one is the usual mistake.
 | -------------- | ----------------------------------- | ---------------------------------- | ---------------------------------- |
 | Content hash   | `installStatus()` → `runtimeDigest` | reads every asset, both sides      | the app's install page             |
 | Version string | `refreshStaleRuntime()`             | one config read + a string compare | project selection, automatically   |
-| Readiness      | `maestro-check-runtime.cjs`         | five ordered checks                | the orchestrator, inside a session |
+| Readiness      | `maestro-check-runtime.cjs`         | five ordered checks                | the `maestro-step0` hook, inside a session |
 
 ## The content hash
 
@@ -46,6 +46,12 @@ and if not, which ONE command fixes it?_ It returns `action` (`continue` / `inst
 purpose**: prose that re-derives it is re-read at the top of every orchestration, costs tokens on
 the healthy run too, and getting it subtly wrong either blocks a healthy project or lets a broken
 one run.
+
+That argument was followed all the way: the check is no longer prose at all. `checkRuntime()` is
+`require`d by the `maestro-step0` hook, so the healthy answer costs **nothing** — no tool call, no
+output, no tokens — and `install` exits 2 and genuinely blocks, which prose could only ask for. The
+orchestrator template has no readiness step left to run. The `require.main` CLI still prints the
+same JSON, for a **person** debugging a project by hand.
 
 Five checks, cheapest and most fundamental first:
 

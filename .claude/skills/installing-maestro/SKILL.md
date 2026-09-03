@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json was or wasn't touched, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
+  version: "1.3"
+  last-update: dc07795aca62476b23408ba23e0455dc855aef35
 ---
 
 # Installing Maestro
@@ -67,14 +67,15 @@ is a copy or an append that re-running completes.
 
 | File                                                         | Lines | What it owns                                                                                  |
 | ------------------------------------------------------------ | ----- | --------------------------------------------------------------------------------------------- |
-| `apps/maestro/src/core/install.ts`                           | 676   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
-| `apps/maestro/src/core/uninstall.ts`                         | 402   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
-| `apps/maestro/src/core/hook-arbitration.ts`                  | 120   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand`. |
-| `plugins/maestro/scripts/maestro-install.js`                 | 558   | The terminal implementation of the same manifest.                                             |
-| `plugins/maestro/scripts/maestro-uninstall.js`               | 196   | The terminal implementation of the same removal.                                              |
-| `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 179   | Step 0's readiness check, run by the orchestrator inside a session.                           |
-| `plugins/maestro/scripts/maestro-agent-forks.cjs`            |       | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. |
-| `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 268   | The published skills that drive the terminal path.                                            |
+| `apps/maestro/src/core/install.ts`                           | 704   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
+| `apps/maestro/src/core/uninstall.ts`                         | 401   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
+| `apps/maestro/src/core/hook-arbitration.ts`                  | 144   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand`, and `samePath` (see the hook-arbitration sub-concept). |
+| `plugins/maestro/scripts/maestro-install.js`                 | 569   | The terminal implementation of the same manifest.                                             |
+| `plugins/maestro/scripts/maestro-uninstall.js`               | 201   | The terminal implementation of the same removal.                                              |
+| `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
+| `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging a project by hand; nothing in the orchestrator runs it. |
+| `plugins/maestro/scripts/maestro-agent-forks.cjs`            | 127   | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. The hook calls `computeAgentSync` directly; this CLI is the user-facing half. |
+| `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
 Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
 (`defaultV3Config`), `detect.ts`, `report-sync.ts`. Test: `test/core/install.test.ts`,

@@ -1,10 +1,10 @@
 ---
 name: agent-fork-sync
-description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that both the report sync and the forked-agent sync call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card and the maestro/maestro-update skills' CLI) that must always reach the same verdict. Use when changing report-sync.ts or agent-sync.ts, adding a third caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
+description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that both the report sync and the forked-agent sync call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card, and the terminal side — the maestro-step0 hook plus /maestro-update's CLI) that must always reach the same verdict. Use when changing report-sync.ts or agent-sync.ts, adding a third caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: eab3cb4b5024b7a735be9b73d3986b502b9e195f
+  version: "1.2"
+  last-update: dc07795aca62476b23408ba23e0455dc855aef35
 ---
 
 # Keeping a copy in step with the thing it was copied from
@@ -35,8 +35,9 @@ of those states the right answer is the same. That answer is written down **once
         │ WRITES on install    │        │ WRITES NOTHING (read-only)   │
         └──────────────────────┘        └───┬──────────────────────┬───┘
                                             │                      │
-                                  /agents review card    maestro-agent-forks.cjs
-                                  (+ /maestro count)     (maestro, maestro-update)
+                                  /agents review card    maestro-step0.js (hook)
+                                  (+ /maestro count)     maestro-agent-forks.cjs
+                                                         (maestro-update)
 ```
 
 **Why one function and not two implementations that agree today.** `resolveReport` makes the same
@@ -111,8 +112,8 @@ hashAgentBody(t)` is a tested property, and it is why an update leaves a fork ge
 
 ## Computing writes nothing. Applying writes one agent.
 
-`computeAgentSync` runs on **project selection** (`InstallProvider`) and from the skills' Step 0. It
-stats and reads and writes nothing at all — no file, no sidecar, no directory. Those
+`computeAgentSync` runs on **project selection** (`InstallProvider`), from the `maestro-step0` hook,
+and from `/maestro-update`. It stats and reads and writes nothing at all — no file, no sidecar, no directory. Those
 `.claude/agents/*.md` are usually committed, and a diff nobody asked for is hard to explain. A test
 asserts it on mtimes *and* bytes across two consecutive calls.
 
@@ -160,7 +161,8 @@ asserts it on mtimes *and* bytes across two consecutive calls.
 | `apps/maestro/src/core/agent-fork.ts` | `forkAgent` + `copyAgentAttributeRows`; re-exports the above. |
 | `apps/maestro/src/core/diff.ts` | The line diff both surfaces render. Pure. |
 | `apps/maestro/src/core/plugin-entries/maestro-agent-sync.ts` | Bundle entry → `plugins/maestro/scripts/lib/maestro-agent-sync.cjs`. |
-| `plugins/maestro/scripts/maestro-agent-forks.cjs` | The CLI: `list` / `diff` / `update` / `keep` / `detach`. |
+| `plugins/maestro/scripts/maestro-agent-forks.cjs` | The CLI: `list` / `diff` / `update` / `keep` / `detach`. Driven by `/maestro-update`. |
+| `plugins/maestro/scripts/maestro-step0.js` | The readiness hook. Calls `computeAgentSync` from the bundle directly — no CLI spawn; read-only, never blocks, speaks only when something diverged. |
 | `apps/maestro/test/core/sync-decision.test.ts` | The branch table, incl. the two ordering guarantees. |
 | `apps/maestro/test/core/agent-sync.test.ts` | One case per `031` acceptance criterion. |
 | `apps/maestro/test/core/diff.test.ts` | The diff and its elision. |

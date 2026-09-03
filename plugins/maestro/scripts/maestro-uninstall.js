@@ -55,6 +55,7 @@ const HOOK_SCRIPTS = [
   "maestro-inject-agent-context.cjs",
   "maestro-validate-tasks.cjs",
   "maestro-session-cleanup.cjs",
+  "maestro-step0.cjs",
 ];
 
 // Strip every Maestro hook from settings.json, dropping entries left empty and
@@ -141,6 +142,8 @@ try {
       path.join(claudeDir, "scripts", "maestro-render-orchestrator.cjs"),
       path.join(claudeDir, "scripts", "maestro-task-status.cjs"),
       path.join(claudeDir, "scripts", "bash-validation.sh"),
+      path.join(claudeDir, "scripts", "maestro-check-runtime.cjs"),
+      path.join(claudeDir, "scripts", "maestro-agent-forks.cjs"),
       // Hook scripts the desktop app copies in (as .cjs, so they run under a
       // "type": "module" project) instead of running them from the plugin root.
       path.join(claudeDir, "scripts", "maestro-session-log.cjs"),
@@ -148,9 +151,11 @@ try {
       path.join(claudeDir, "scripts", "maestro-inject-agent-context.cjs"),
       path.join(claudeDir, "scripts", "maestro-validate-tasks.cjs"),
       path.join(claudeDir, "scripts", "maestro-session-cleanup.cjs"),
+      path.join(claudeDir, "scripts", "maestro-step0.cjs"),
       path.join(claudeDir, "scripts", "lib", "maestro-session.cjs"),
       path.join(claudeDir, "scripts", "lib", "maestro-tasks.cjs"),
       path.join(claudeDir, "scripts", "lib", "maestro-skill-regions.cjs"),
+      path.join(claudeDir, "scripts", "lib", "maestro-agent-sync.cjs"),
       // Handoff protocols the app installs. NOT .claude/handoffs/ — that path is
       // the user's own override and nothing here put it there.
       path.join(claudeDir, "templates", "handoffs"),

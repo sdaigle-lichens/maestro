@@ -136,6 +136,10 @@ const HOOK_SCRIPTS = [
   "maestro-subagent-log",
   "maestro-session-log",
   "maestro-validate-tasks",
+  // The orchestrator's Step 0, run as a hook rather than as prose the model executes. It
+  // `require`s maestro-check-runtime.cjs (a STATIC_ASSET, already copied beside it) and, when it
+  // is there, lib/maestro-agent-sync.cjs.
+  "maestro-step0",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -143,8 +147,9 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/maestro-set-session-workflow.cjs", dest: ".claude/scripts/maestro-set-session-workflow.cjs" },
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
   { src: "scripts/maestro-task-status.cjs", dest: ".claude/scripts/maestro-task-status.cjs" },
-  // Step 0's cheap staleness check — see maestro-architecture / task 027. Invoked directly by the
-  // orchestrator, not registered as a hook.
+  // The cheap staleness check — see maestro-architecture / task 027. Not registered as a hook
+  // itself: it is `require`d by maestro-step0 (which is). Its CLI half stays for a human debugging
+  // a project by hand; the orchestrator skill no longer runs it.
   { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
   // Forked-agent sync (`031`) — list / diff / update / keep / detach, driven by the `maestro` and
   // `maestro-update` skills. Copied into the project rather than left at ${CLAUDE_PLUGIN_ROOT} for
@@ -206,7 +211,13 @@ export function runtimeAssets(pluginRoot?: string): RuntimeAsset[] {
 
 // ── the hooks ──────────────────────────────────────────────────────────────
 
-export type HookEvent = "SubagentStart" | "SubagentStop" | "PreToolUse" | "PostToolUse" | "SessionEnd";
+export type HookEvent =
+  | "UserPromptExpansion"
+  | "SubagentStart"
+  | "SubagentStop"
+  | "PreToolUse"
+  | "PostToolUse"
+  | "SessionEnd";
 
 export interface HookRegistration {
   event: HookEvent;
@@ -246,8 +257,16 @@ function nodeHook(event: HookEvent, matcher: string, script: string): HookRegist
  *
  * SubagentStop IS included even though the plan lists only four events — without it the session log
  * has dispatch entries with no matching handoff, and /session-log renders half a conversation.
+ *
+ * UserPromptExpansion is back, for a different reason than the container launches M5 deleted: it is
+ * the one event that fires when a user TYPES `/maestro`, matched on the command name, which is what
+ * lets the readiness check run before the orchestrator's prompt reaches the model. Its PreToolUse
+ * twin covers the other entrance — the model invoking the skill through the Skill tool — because
+ * no expansion happens on that path. Both point at the same script.
  */
 export const HOOK_REGISTRATIONS: HookRegistration[] = [
+  nodeHook("UserPromptExpansion", "maestro", "maestro-step0.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-step0.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),

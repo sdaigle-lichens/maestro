@@ -11,11 +11,12 @@ apps/maestro/src/core/agent-sync.ts + sync-decision.ts + diff.ts
         │ imported directly                           │ build-plugin-libs.mjs (esbuild → CJS)
         ▼                                             ▼
   src/main/ipc.ts                        plugins/maestro/scripts/lib/maestro-agent-sync.cjs
-  agent:sync · agent:sync:apply                        ▲
-        │                                              │ require("./lib/…")
-        ▼                                    plugins/maestro/scripts/maestro-agent-forks.cjs
-  /maestro count · /agents review card                 │
-                                          maestro (Step 0) · maestro-update (step 3)
+  agent:sync · agent:sync:apply                 ▲                    ▲
+        │                    require("./lib/…") │                    │ require("./lib/…")
+        ▼                                       │                    │
+  /maestro count · /agents review card   maestro-step0.js   maestro-agent-forks.cjs
+                                         (the hook)                  │
+                                                            maestro-update (step 3)
 ```
 
 ## The app side
@@ -36,12 +37,19 @@ It loads its lib defensively — a missing `lib/maestro-agent-sync.cjs` means th
 runtime predates the file, which is a real answer (*run `/maestro-update`*) and not a stack trace,
 the same shape `maestro-check-runtime.cjs` uses.
 
-Where each skill puts it:
+Where each caller puts it — note only one of the two is a skill:
 
-- **`maestro` (the orchestrator template), Step 0** — runs `list`, reports the count in **one line**,
-  and carries on. It must not block a workflow to ask about a fork.
-- **`maestro-update`, step 3** — the real review: `list`, then `diff` per named agent, then the
-  user's answer applied one at a time.
+- **The `maestro-step0` hook** (`UserPromptExpansion` matcher `maestro`, `PreToolUse` matcher
+  `Skill`) — not the CLI at all: it `require`s `computeAgentSync` from the bundle directly. When
+  `summary.diverged` is non-empty it injects **one line** naming those agents and telling the model
+  to carry on; when it is empty it says nothing whatsoever. It must not block a workflow to ask
+  about a fork — and structurally cannot, since only the readiness half ever exits 2.
+- **`maestro-update`, step 3** — the real review, and the only CLI caller left: `list`, then `diff`
+  per named agent, then the user's answer applied one at a time.
+
+The hook also calls `projectOwnsHook(__filename, cwd, event)` and stands down when the project
+registers its own copy, so the plugin's copy and a project-local one cannot both report the same
+diverged fork. See `installing-maestro`'s hook-arbitration sub-concept.
 
 ## Constraints that hold this together
 
@@ -56,8 +64,16 @@ Where each skill puts it:
 - **The diff is computed once, in `src/core/diff.ts`.** Main ships `DiffLine[]` to the renderer,
   which colours it; `unifiedDiffText` renders the same array for a terminal. A renderer-side differ
   would be a second thing that can disagree about what "diverged" looks like.
-- **Both new files are copied into the project** (`.claude/scripts/maestro-agent-forks.cjs` and
-  `.claude/scripts/lib/maestro-agent-sync.cjs`), so the orchestrator invokes them by
-  `$CLAUDE_PROJECT_DIR` path and they are refreshable without a version bump. The *skills* that call
-  them are not: Step 0 is a managed region, so the fork check reaches an installed project only after
-  a `plugin.json` re-pull. See `updating-maestro`.
+- **Three files are copied into the project** — `.claude/scripts/maestro-agent-forks.cjs` and
+  `.claude/scripts/lib/maestro-agent-sync.cjs` (`STATIC_ASSETS`, copied under their own names), plus
+  `.claude/scripts/maestro-step0.cjs` (a `HOOK_SCRIPTS` entry, so it gets the `.js` → `.cjs`
+  rename). `/maestro-update` invokes the CLI by `$CLAUDE_PROJECT_DIR` path; the hook is run by the
+  harness off its **registration**, so the install has to merge two entries into the project's
+  `.claude/settings.json` as well as copy the file.
+- **The delivery argument inverted in `0.4.0`, and the new failure is silent.** The fork check used
+  to be prose inside the `Maestro:STEPS` managed region, reaching a project on a template sync. It
+  is now a hook, so it arrives like every other Maestro hook: project-local registration on a
+  re-install / `/maestro-update`, or the plugin's `hooks.json` on a version bump and re-pull. The
+  cost is that a project whose runtime predates `maestro-step0` and has not updated gets **no fork
+  check and no notice that one didn't happen** — the orchestrator no longer carries a fallback. An
+  accepted trade, not an oversight. See `updating-maestro`.

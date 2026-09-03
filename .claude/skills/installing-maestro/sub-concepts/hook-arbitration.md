@@ -52,8 +52,8 @@ is running, so the plugin's copy should.
 
 ## Where the guard is called
 
-The four plugin hook scripts — `maestro-session-log.js`, `maestro-subagent-log.js`,
-`maestro-validate-tasks.js`, `maestro-inject-agent-context.js` — each call
+The five plugin hook scripts — `maestro-session-log.js`, `maestro-subagent-log.js`,
+`maestro-validate-tasks.js`, `maestro-inject-agent-context.js`, `maestro-step0.js` — each call
 `projectOwnsHook(__filename, cwd, p.hook_event_name)` right after resolving `cwd`, and `exit 0` when
 it is true. `projectOwnsHook` reaches them through the `maestro-session.cjs` bundle
 (`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm --filter maestro
@@ -62,6 +62,17 @@ build:plugin-libs` — see `plugin-libs-parity`.
 **`maestro-session-cleanup.sh` has no guard, on purpose.** Its project twin is `.cjs` and both just
 `rm -f` the same three ephemeral files, so a double fire is unobservable. A third implementation of
 the arbitration written in bash, to suppress a no-op, is worse than the no-op.
+
+## Symlinks, and why the comparison is `realpath`
+
+"Am I the project's own copy?" is `samePath(dirname(__filename), <cwd>/.claude/scripts)`, and
+`path.resolve` alone is not enough. A hook payload's `cwd` is the path the session was opened at
+(`/tmp/p`, `/var/folders/…` on macOS) while `__filename` inside the running script is already the
+real one (`/private/tmp/p`). On any project reached through a symlinked ancestor the project's own
+copy fails to recognise itself, decides the project owns the hook and stands down — and the
+plugin's copy stands down for the same registration, so **the hook then runs nowhere at all**: no
+error, no output, nothing in the log. Both sides are `realpathSync`'d, each falling back to
+`resolve` for a path that does not exist.
 
 ## The bootstrap trap
 

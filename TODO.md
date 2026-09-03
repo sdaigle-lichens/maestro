@@ -5,12 +5,6 @@
 **The queue is empty.** Every file in `.claude/maestro-tasks/` is `done` as of `031`, and there is
 no `032`.
 
-`027-auto-update-the-runtime-bundle.md` was closed retroactively: its machinery
-(`refreshStaleRuntime`, `maestro.json`'s `runtimeVersion`, the `install:auto-refresh` channel and
-Step 0's `maestro-check-runtime.cjs`) had shipped long before, but `status.json` was never flipped —
-so it kept offering itself to every run. Its acceptance criteria on the page are still unticked; the
-code is there, nobody re-verified it criterion by criterion.
-
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting this line.
 The next run either queues new work with `/to-maestro-tasks`, or the user has something else in mind.
 

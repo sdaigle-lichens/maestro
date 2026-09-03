@@ -9,7 +9,7 @@ Everything lands under `<project>/.claude/`. Four groups:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator or app invokes             | `.claude/scripts/*.cjs`            | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime`, `maestro-agent-forks` (`031`) |
+| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`) |
 | Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`)                     |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 | Handoff protocol templates                          | `.claude/templates/handoffs/**.md` | walked off disk, not enumerated                                                                               |
@@ -17,9 +17,9 @@ Everything lands under `<project>/.claude/`. Four groups:
 Plus `bash-validation.sh`, the one asset copied **executable** (`0o755`) because its hook runs it as
 a bare command rather than through `node`.
 
-**The `.js` → `.cjs` rename is load-bearing.** The four `HOOK_SCRIPTS`
+**The `.js` → `.cjs` rename is load-bearing.** The five `HOOK_SCRIPTS`
 (`maestro-inject-agent-context`, `maestro-subagent-log`, `maestro-session-log`,
-`maestro-validate-tasks`) keep `.js` in the plugin, whose directory has no `package.json` declaring
+`maestro-validate-tasks`, `maestro-step0`) keep `.js` in the plugin, whose directory has no `package.json` declaring
 a module type. Inside a project the same file may sit under `"type": "module"`, which makes node
 parse their `require()` as ESM and fail the hook **on every tool call**. Scripts already named
 `.cjs` in the plugin are copied under their existing names. Add a hook script to the wrong list and
@@ -33,7 +33,9 @@ free. Copying into the override would overwrite a customised protocol on every u
 
 **Both of `031`'s additions are `STATIC_ASSETS`, not `HOOK_SCRIPTS`** — they are already `.cjs` in
 the plugin and are not hooks, so they are copied under their existing names with no rename. They are
-what the orchestrator's Step 0 fork check runs. Adding them moved `shippedRuntimeId`, so every
+what the fork check is made of: the `maestro-step0` hook `require`s `lib/maestro-agent-sync.cjs`
+directly, and `maestro-agent-forks.cjs` is the user-facing CLI `/maestro-update` drives. Adding them
+moved `shippedRuntimeId`, so every
 already-installed project reports stale once and re-copies; see the staleness sub-concept.
 
 **`maestro-session-cleanup.cjs`, not the plugin's `.sh` of the same name.** The two now do the same
@@ -47,11 +49,13 @@ ephemeral files, so a double fire is unobservable (see the hook-arbitration sub-
 
 ## Hooks — `HOOK_REGISTRATIONS`
 
-Seven entries, written into the project's `.claude/settings.json`, mirroring the plugin's
+Nine entries, written into the project's `.claude/settings.json`, mirroring the plugin's
 `hooks.json` one-for-one:
 
-| Event           | Matcher      | Script                             |
-| --------------- | ------------ | ---------------------------------- |
+| Event                 | Matcher      | Script                             |
+| --------------------- | ------------ | ---------------------------------- |
+| `UserPromptExpansion` | `maestro`    | `maestro-step0.cjs`                |
+| `PreToolUse`          | `Skill`      | `maestro-step0.cjs`                |
 | `SubagentStart` | `.*`         | `maestro-inject-agent-context.cjs` |
 | `SubagentStart` | `.*`         | `maestro-subagent-log.cjs`         |
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |
@@ -60,7 +64,9 @@ Seven entries, written into the project's `.claude/settings.json`, mirroring the
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
-`id` is `<Event>:<script>`, unique because one script is registered on two events. **`SubagentStop`
+`id` is `<Event>:<script>`, unique because two scripts are registered on two events each
+(`maestro-subagent-log` on SubagentStart/Stop, `maestro-step0` on the two entrances to the
+orchestrator — a typed `/maestro`, and a `Skill` tool call). **`SubagentStop`
 is included even though the plan lists four events** — without it the session log has dispatch
 entries with no matching handoff and `/session-log` renders half a conversation.
 

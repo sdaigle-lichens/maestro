@@ -12,12 +12,13 @@
 //   2. copies runtime scripts + handoff templates → <project>/.claude/scripts/ and
 //      <project>/.claude/templates/handoffs/ (always refreshed). Includes the hook scripts
 //      (maestro-inject-agent-context, maestro-subagent-log, maestro-session-log,
-//      maestro-validate-tasks — copied as .cjs) and maestro-session-cleanup.cjs, so every hook
+//      maestro-validate-tasks, maestro-step0 — copied as .cjs) and maestro-session-cleanup.cjs, so every hook
 //      this install registers runs from a project-local copy rather than
 //      ${CLAUDE_PLUGIN_ROOT} — see apps/maestro/src/core/install.ts's header for why.
 //   3. merges the full Maestro hook set into <project>/.claude/settings.json (preserves other
-//      keys): the bash-validation PreToolUse guard plus SubagentStart/SubagentStop/PreToolUse/
-//      PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json one-for-one.
+//      keys): the bash-validation PreToolUse guard plus UserPromptExpansion/SubagentStart/
+//      SubagentStop/PreToolUse/PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json
+//      one-for-one.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
 //      .claude/maestro_session*.{json,jsonl} across the repo / monorepo (the `**/` glob covers
 //      root-level .claude/ too, so no per-package .gitignore is needed)
@@ -278,6 +279,11 @@ function nodeHook(event, matcher, script) {
 // HOOK_REGISTRATIONS, which this list is kept in lockstep with) — every hook the plugin would
 // otherwise run from ${CLAUDE_PLUGIN_ROOT}, plus the bash-validation guard.
 const HOOK_REGISTRATIONS = [
+  // The orchestrator's Step 0. Two events because there are two entrances: the user typing
+  // `/maestro` (UserPromptExpansion, matched on the command name) and the model invoking the skill
+  // through the Skill tool (PreToolUse) — see the script's own header.
+  nodeHook("UserPromptExpansion", "maestro", "maestro-step0.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-step0.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -352,6 +358,7 @@ const HOOK_SCRIPTS = [
   "maestro-subagent-log",
   "maestro-session-log",
   "maestro-validate-tasks",
+  "maestro-step0",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the

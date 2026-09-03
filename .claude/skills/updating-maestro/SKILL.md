@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), and why both copies firing at once is now arbitrated rather than warned about, and which path wins."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 039eb88e2c4ea099ea1016a254901ea207439795
+  version: "1.3"
+  last-update: dc07795aca62476b23408ba23e0455dc855aef35
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -24,7 +24,7 @@ project-local (wins per hook)                 plugin-global (fallback / no-insta
 
 **Both being live is no longer a bug — it is a precedence rule.** The plugin's copy of a hook
 stands down when the project registers that same hook itself, arbitrated at runtime by
-`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the four
+`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the five
 plugin hook scripts. So the left column wins per hook, the right column covers any hook the project
 did not register, and neither the app nor this repo touches the user's global configuration to make
 that happen. `InstallStatus.pluginHooksActive` and its warnings are gone.
@@ -70,8 +70,11 @@ version bump is invisible to every project running the plugin's hooks.**
 Skills and commands are copied into the same cache, so a stale cache **still resolves skills
 normally** — `/maestro-install`, `/create-skill` all work. But a snapshot taken before `hooks/` and
 `scripts/` existed has no `hooks/hooks.json` and no hook scripts at all, so `SubagentStart` (skill
-injection + handoff routing), `PreToolUse`/`SubagentStop` logging, and the `TaskCreate` validator
-**silently never fire** — no error, the files just aren't there. Meanwhile `bash-validation.sh`
+injection + handoff routing), `PreToolUse`/`SubagentStop` logging, the `TaskCreate` validator, and
+(since `0.4.0`) the `maestro-step0` readiness check **silently never fire** — no error, the files
+just aren't there. **Step 0 is the worst of these**, because `0.4.0` deleted its prose from
+`templates/maestro/SKILL.md` outright: there is no fallback left in the orchestrator, so a stale
+project gets no readiness check, no fork check, and nothing telling it either was skipped. Meanwhile `bash-validation.sh`
 keeps working, because the installer copies _that one into the project_. That asymmetry is what
 makes the failure look random: one Maestro hook works, the rest don't.
 
@@ -116,7 +119,8 @@ describes what a *consumer* of the plugin sees change.
 
 `0.3.3` — hook arbitration — is the worked example. It changed the behaviour of four existing hook
 scripts and nothing about the surface: same skills, same agents, same six hook registrations. Patch.
-It was first shipped as `0.4.0`, which is the mistake this section exists to stop repeating.
+It was first shipped as a `0.4.0`-style minor bump, which is the mistake this section exists to stop
+repeating. (Unrelated to the real `0.4.0` below, which earns its minor.)
 
 `0.3.5` — forked-agent sync (`031`) — is the second one, and it is the more tempting case. It
 **added a script** (`scripts/maestro-agent-forks.cjs`) and its generated lib, rewrote a step in
@@ -124,6 +128,16 @@ It was first shipped as `0.4.0`, which is the mistake this section exists to sto
 agent, command, or hook event, so there is nothing a consumer can *invoke* that they could not
 before — the existing `/maestro` and `/maestro-update` skills simply do more. A new file under
 `scripts/` is not a published surface; a new directory under `skills/` or `agents/` is.
+
+`0.4.0` — Step 0 as a hook — is the third, and the **first legitimate minor**, which is what makes
+it worth keeping beside two patches. Almost everything in it would have been a patch alone: a new
+script under `scripts/` (`maestro-step0.js` — explicitly not a surface, per `0.3.5`), a
+`hook-arbitration.ts` bug fix, deleted template prose, and a second registration on `PreToolUse`,
+an event the plugin already registered. **One thing carried the bump**: `hooks/hooks.json` gained a
+top-level `UserPromptExpansion` key it had never had, and `install.ts`'s `HookEvent` union gained
+the matching member. A hook event the plugin did not previously register is a new published
+surface — the harness now calls the plugin at a moment it never used to. That is the minor row's
+"a hook registered on a new event", and nothing else in the change comes near it.
 
 ### Verify the refresh landed
 
@@ -135,26 +149,32 @@ ls "$P/scripts/maestro-inject-agent-context.js"   # exists
 
 Then `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.
 
-### What `031` added to the copied set
+### What `031` and `0.4.0` added to the copied set
 
-Two more files now ride path 1 into every project:
+Three more files now ride path 1 into every project:
 
 | Copied to | From | Why it is copied rather than run from the plugin |
 | --- | --- | --- |
-| `.claude/scripts/maestro-agent-forks.cjs` | `plugins/maestro/scripts/` | The orchestrator's Step 0 invokes it as `$CLAUDE_PROJECT_DIR/.claude/scripts/…`, like every other step-0 script. |
-| `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires. |
+| `.claude/scripts/maestro-agent-forks.cjs` | `plugins/maestro/scripts/` | `/maestro-update` invokes it as `$CLAUDE_PROJECT_DIR/.claude/scripts/…`, like every other project-copied script. |
+| `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires — and, since `0.4.0`, the `maestro-step0` hook, which calls `computeAgentSync` from it directly. |
+| `.claude/scripts/maestro-step0.cjs` (`0.4.0`) | `plugins/maestro/scripts/maestro-step0.js` | A **`HOOK_SCRIPTS`** entry, not a `STATIC_ASSET` — so it gets the `.js` → `.cjs` rename, and it needs its two `settings.json` registrations merged in as well as the file copied. |
 
-Both are in `STATIC_ASSETS` in **both** implementations (`install.ts` and `maestro-install.js`) —
+The first two are in `STATIC_ASSETS` and the third in `HOOK_SCRIPTS`, in **both** implementations
+(`install.ts` and `maestro-install.js`) —
 the manifests are mirrored by hand, so a file added to one and not the other is a bug. Because the
 manifest grew, `installedRuntimeId` and `shippedRuntimeId` differ for every already-installed
 project: **each one reports stale exactly once and re-copies.** That is this delivery path working,
 not a regression.
 
-**Step 0's fork check reaches an installed project only after a re-pull.** It lives inside the
-`Maestro:STEPS` **managed region** of `templates/maestro/SKILL.md`, which `/maestro-install` and
-`/maestro-update` re-sync from the plugin's cached copy — so a project sees it only once the
-`0.3.5` cache has been pulled *and* an update has been run. Same version trap as `0.3.3`'s
-arbitration guard, one layer further out.
+**Step 0 reaches an installed project only after a re-pull — and since `0.4.0` the trap moved.**
+In `0.3.5` it was prose inside the `Maestro:STEPS` **managed region** of
+`templates/maestro/SKILL.md`, re-synced by `/maestro-install` and `/maestro-update`. In `0.4.0`
+Step 0 was **deleted from that region entirely** and became the `maestro-step0` hook, so what a
+project now needs is the new *script* plus its two new *registrations* in `.claude/settings.json` —
+still delivered by the same re-pull-then-update, but no longer anything a template sync could carry
+on its own. The failure mode is quieter than `0.3.3`'s: a project that never updates simply gets no
+readiness check and **no warning that none happened**, because the template no longer has the
+fallback commands in it.
 
 ## Generated files that need a build, not just an edit
 
@@ -174,6 +194,7 @@ installs them by file copy, so they must exist in the repo.
 | Does the cached copy even have the files? | `ls ~/.claude/plugins/cache/maestro/<plugin>/<version>/{hooks,scripts}`                  |
 | Is the cache older than the change?       | compare `installedAt` / dir mtime against the commit that added the file                              |
 | Everything logged twice?                  | the cached plugin version predates `0.3.3` — it has no arbitration guard. Bump/re-pull (above)        |
+| Hook fires from **neither** copy?         | a runtime older than `0.4.0` on a project reached through a **symlinked** ancestor. `projectOwnsHook` compared `path.resolve`d paths, so the project's own copy failed to recognise itself (`/tmp/p` vs `/private/tmp/p`), stood down, and the plugin's copy stood down too — no error, no output, nothing in the log. Fixed by `samePath` (realpath both sides). Subject to the same double version trap as `0.3.3`'s guard: re-install (path 1) **and** re-pull (path 2). |
 
 If skills work but `hooks/`/`scripts/` are absent from the cache → **stale cache, version was never
 bumped.**

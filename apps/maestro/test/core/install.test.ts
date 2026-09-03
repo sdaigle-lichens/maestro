@@ -26,6 +26,7 @@ import {
 } from "../../src/core/install.js";
 import { uninstallRuntime } from "../../src/core/uninstall.js";
 import { writeConfig, readConfig, writeRuntimeVersion } from "../../src/core/config.js";
+import { renderOrchestrator } from "../../src/core/render.js";
 import { defaultish } from "./fixtures/configs.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -257,8 +258,12 @@ describe("installRuntime", () => {
     // the failure that is invisible until the hook fires twice.
     const settingsPath = path.join(root, ".claude", "settings.json");
     const edited = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
-    edited.hooks.PreToolUse[0].hooks[0].command =
-      "node '${CLAUDE_PROJECT_DIR}/.claude/scripts/maestro-session-log.cjs'";
+    // Found by what it points at, never by index: PreToolUse carries several of our entries and
+    // the order they are written in is not a promise this test should be making.
+    const logHook = edited.hooks.PreToolUse.flatMap((e: any) => e.hooks).find((h: any) =>
+      h.command.includes("maestro-session-log.cjs")
+    );
+    logHook.command = "node '${CLAUDE_PROJECT_DIR}/.claude/scripts/maestro-session-log.cjs'";
     fs.writeFileSync(settingsPath, JSON.stringify(edited, null, 2));
 
     for (let i = 0; i < 4; i++) await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
@@ -838,6 +843,106 @@ describe("the installed hooks actually run", () => {
     const payload = { cwd: root, hook_event_name: "SubagentStart", agent_type: "backend" };
     expect(runPluginHook(root, "maestro-inject-agent-context.js", payload)).toBe("");
     expect(runHook(root, "maestro-inject-agent-context.cjs", payload)).toContain("HANDOFF:");
+  });
+
+  // ── Step 0, as a hook ────────────────────────────────────────────────────
+  //
+  // The readiness check used to be two bash calls and forty lines of prose at the top of every
+  // orchestration. What is asserted here is the part that replaced it: WHICH invocations it reacts
+  // to, and that the healthy path is silent — a hook that speaks on every prompt is worse than the
+  // prose it replaced.
+
+  /** Run a hook that may exit non-zero, returning both streams and the code. */
+  function runHookRaw(root: string, script: string, payload: unknown) {
+    try {
+      const stdout = runHook(root, script, payload);
+      return { code: 0, stdout, stderr: "" };
+    } catch (err) {
+      const e = err as { status: number; stdout: string; stderr: string };
+      return { code: e.status, stdout: e.stdout, stderr: e.stderr };
+    }
+  }
+
+  const expansion = (root: string, command: string) => ({
+    cwd: root,
+    hook_event_name: "UserPromptExpansion",
+    command_name: command,
+  });
+
+  it("says nothing at all when the project is ready to orchestrate", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    // The install copies the skill; rendering its handoff table from maestro.json is the separate
+    // step /maestro-install runs next, and check 4 is what notices when nobody did.
+    renderOrchestrator(root);
+    writeRuntimeVersion(root, shippedRuntimeVersion(PLUGIN_ROOT));
+
+    const run = runHookRaw(root, "maestro-step0.cjs", expansion(root, "maestro"));
+    expect(run.code).toBe(0);
+    expect(run.stdout).toBe("");
+  });
+
+  it("reacts to `/maestro` and to the Skill tool, and to nothing else", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    // Deliberately NOT rendered, so the check has something to say and silence means "ignored".
+    const speaks = (payload: unknown) => runHookRaw(root, "maestro-step0.cjs", payload).stdout !== "";
+
+    expect(speaks(expansion(root, "maestro"))).toBe(true);
+    // The plugin's own commands share the prefix and must not trip it.
+    expect(speaks(expansion(root, "maestro-update"))).toBe(false);
+    expect(speaks(expansion(root, "maestro-install"))).toBe(false);
+    // The other entrance: the model invoking the skill itself.
+    const skillCall = (skill: string) => ({
+      cwd: root,
+      hook_event_name: "PreToolUse",
+      tool_name: "Skill",
+      tool_input: { skill },
+    });
+    expect(speaks(skillCall("maestro"))).toBe(true);
+    expect(speaks(skillCall("maestro:maestro-update"))).toBe(false);
+    expect(speaks({ ...skillCall("maestro"), tool_name: "Bash" })).toBe(false);
+  });
+
+  it("injects an instruction the way each event actually accepts one", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+
+    // UserPromptExpansion adds plain stdout to the model's context...
+    const expanded = runHookRaw(root, "maestro-step0.cjs", expansion(root, "maestro"));
+    expect(expanded.code).toBe(0);
+    expect(expanded.stdout).toContain("/maestro-update");
+    expect(() => JSON.parse(expanded.stdout)).toThrow();
+
+    // ...PreToolUse does not, so the same sentence has to travel as additionalContext.
+    const viaSkill = runHookRaw(root, "maestro-step0.cjs", {
+      cwd: root,
+      hook_event_name: "PreToolUse",
+      tool_name: "Skill",
+      tool_input: { skill: "maestro" },
+    });
+    expect(JSON.parse(viaSkill.stdout).hookSpecificOutput).toMatchObject({
+      hookEventName: "PreToolUse",
+      additionalContext: expect.stringContaining("/maestro-update"),
+    });
+  });
+
+  it("blocks the invocation outright when the project cannot orchestrate", () => {
+    // No maestro.json at all: the prose this replaced could only ASK the model to stop.
+    const root = makeProject("p");
+    fs.mkdirSync(path.join(root, ".claude", "scripts"), { recursive: true });
+    for (const asset of runtimeAssets(PLUGIN_ROOT)) {
+      const to = path.join(root, asset.dest);
+      fs.mkdirSync(path.dirname(to), { recursive: true });
+      fs.copyFileSync(path.join(PLUGIN_ROOT, asset.src), to);
+    }
+
+    const run = runHookRaw(root, "maestro-step0.cjs", expansion(root, "maestro"));
+    expect(run.code).toBe(2);
+    expect(run.stderr).toContain("/maestro-install");
   });
 
   it("copies the hook scripts as .cjs so they survive a `type: module` project", async () => {
