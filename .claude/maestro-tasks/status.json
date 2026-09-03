@@ -155,5 +155,19 @@
   "028-restore-the-prettier-config-and-make-check-pass-again.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "029-make-project-the-only-editable-agent-tier.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "030-key-the-agent-stores-by-namespace-not-name.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "031-keep-forked-agents-in-step-with-their-template.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "029-make-project-the-only-editable-agent-tier.md"
+    ]
   }
 }
