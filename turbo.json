@@ -10,6 +10,10 @@
     "check": {
       "outputs": []
     },
+    "format": {
+      "cache": false,
+      "outputs": []
+    },
     "typecheck": {
       "dependsOn": ["^build"],
       "outputs": []
