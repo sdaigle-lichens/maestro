@@ -4,7 +4,7 @@
 // puppeteer-class dependency to this repo just to press a mouse button would be a poor trade.
 // Everything here is the small subset that testing the canvas actually needs.
 //
-// Usage: see ./probe-template.mjs, and ../SKILL.md for the recipes.
+// Usage: see ../SKILL.md for the worked example and the recipes.
 
 import { spawn } from "node:child_process";
 

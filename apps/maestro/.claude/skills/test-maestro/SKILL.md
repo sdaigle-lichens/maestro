@@ -52,21 +52,36 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
 
 ## Quick start
 
-The template creates its own fixture and asserts twelve things about a real window. Run it first —
-it is the fastest check that the harness and the app still agree:
+Write the probe in the scratchpad and import the harness by absolute path. It has no dependencies
+(Node 22's global `WebSocket` speaks CDP, which is why nothing was added to the repo for this).
 
-```bash
-node .claude/skills/test-maestro-desktop/scripts/probe-template.mjs
+This is the whole shape — build first, launch, open a fixture, assert, exit non-zero on failure:
+
+```js
+import { withApp, openProjectAt } from "/abs/path/to/.claude/skills/test-maestro/scripts/cdp.mjs";
+
+const out = await withApp(
+  { appDir: APP, electron: `${APP}/node_modules/.bin/electron`, port: 9431, userDataDir: UDD },
+  async (cdp, { errors }) => {
+    await openProjectAt(cdp, PROJ, "#/workflows");
+    await cdp.waitFor(`!!document.querySelector(".react-flow__node")`, { label: "canvas nodes" });
+    const g = await cdp.geometry();
+    return { nodes: g.nodes.length, dragged: !!(await cdp.dragNode("n2", 120, 90)), errs: errors.length };
+  }
+);
+console.log(JSON.stringify(out, null, 2));
+process.exit(out.nodes >= 4 && out.dragged && out.errs === 0 ? 0 : 1);
 ```
 
-Then copy it into the scratchpad and edit it for whatever you are actually testing:
+Keep that shape: one recorded line per claim, a summary, and a **non-zero exit when something
+fails** — a probe that prints a wall of state and leaves you to eyeball it will quietly stop being
+run.
 
-```bash
-cp .claude/skills/test-maestro-desktop/scripts/probe-template.mjs "$SCRATCHPAD/probe.mjs"
-```
-
-Import the harness by absolute path from the scratchpad; it has no dependencies (Node 22's global
-`WebSocket` speaks CDP, which is why nothing was added to the repo for this).
+There was a `probe-template.mjs` here. It was removed rather than repaired: it came over in the
+import at `98b9582` still pointing `REPO` at the old repository's absolute path, and it clicked a
+`button[title="Edit label"]` that has never existed in this repo's source. It could not have run
+here on any commit, and a worked example that has never worked is worse than none — it reads as
+tested ground.
 
 ## The harness
 
@@ -216,7 +231,8 @@ report where they were, so the grant is auditable. Two shapes cover most work:
 - a project with **no** `.claude/maestro.json` at all, which exercises the seeded starter config
   and its banner.
 
-`probe-template.mjs` writes the first one and is the quickest thing to copy. For rules work, add
+Write whichever shape the question needs — a `.claude/maestro.json` with `workflow_instances`
+nodes and edges for the first, an empty project directory for the second. For rules work, add
 `.claude/rules/<id>.md` files with `name`/`description` frontmatter.
 
 ## Reporting
