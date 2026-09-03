@@ -24,8 +24,25 @@ plugins/*/scripts/lib/
 # read as much in a GitHub blob and a Claude context window as in an editor, and reflowing them
 # would rewrite line breaks that were chosen.
 #
-# EVERY PATTERN IS ROOT-ANCHORED, and that is load-bearing rather than tidy. A bare `skills/`
-# matches at any depth, so it would also swallow apps/maestro/.claude/skills/ — architecture docs
-# that ARE in the enforced set today. The leading slash is what keeps this widening out of the one
-# app prettier is actually policing.
+# ROOT-ANCHORED, and that is load-bearing rather than tidy: `/plugins/` is the published plugin
+# tree, and only the one at the repo root is that. A bare `plugins/` would match at any depth.
 /plugins/
+
+# Concept-skill markdown is NOT in the enforced set, at any depth. This is a decision, not an
+# artifact of where the pattern happens to anchor.
+#
+# The anchoring above used to decide it by accident, and decided it inconsistently: `check` runs
+# per workspace, and only apps/maestro defines one, so the 9 concept skills under
+# apps/maestro/.claude/skills/ were checked while the 5 under the repo root's own .claude/skills/
+# were not — same kind of file, same authors, opposite treatment, for no reason anyone chose.
+#
+# Prettier is the wrong tool for these bodies specifically. It pads markdown tables to aligned
+# columns, and it measures those columns with a width count that disagrees with itself on the em
+# dashes this prose style uses everywhere — so it emits tables whose separator row is a different
+# width from its content rows, then reports them as correctly formatted. What it produces is not
+# more consistent than what was written by hand; it is differently inconsistent, and it churns on
+# every edit. These files are read in GitHub blobs and Claude context windows, where the chosen
+# line breaks are the formatting.
+#
+# Markdown only. Scripts that ship alongside a skill (`scripts/*.mjs`) are code and stay checked.
+**/.claude/skills/**/*.md
