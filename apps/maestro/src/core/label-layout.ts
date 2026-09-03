@@ -13,7 +13,7 @@
 // overwrites it.
 //
 // The numbers below are the canvas's real render metrics, measured in a window rather than read
-// off the Tailwind classes — see `.claude/skills/test-maestro-desktop`.
+// off the Tailwind classes — see `.claude/skills/test-maestro`.
 //
 // One asymmetry shapes the whole design. A node's **x** extent is exact: the cards are fixed
 // widths and the seed chooses the columns. Its **height** is not knowable here — skill chips wrap
