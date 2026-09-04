@@ -1,10 +1,10 @@
 ---
 name: maestro-config-model
-description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
+description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
+  version: "1.2"
+  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
 ---
 
 # Maestro config model (v3)
@@ -27,15 +27,22 @@ entry point the IPC layer calls.
 | `reports?`                              | Per-agent report overrides. Absent means "no project-level opinion", and resolution falls through to the global tier. |
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                      |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                           |
+| `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
 
 ## Slice merges are the load-bearing rule
 
-Saves never write the whole file. `ConfigSlice` is a union of exactly three shapes — `workflows`,
-`rules`, `project-tags` — and `mergeSlice` copies only that slice's fields onto the current config.
-The comment on it is explicit about why: **this separation is the reason `/workflows` saves can't
+Saves never write the whole file. `ConfigSlice` is a union of exactly four shapes — `workflows`,
+`rules`, `project-tags`, `gates` — and `mergeSlice` copies only that slice's fields onto the current
+config. The comment on it is explicit about why: **this separation is the reason `/workflows` saves can't
 clobber `/rules` assignments and vice versa, and widening any branch to write another's fields
 reintroduces that bug.** Adding a field means deciding which slice owns it, not appending to
 whichever save path is nearest.
+
+**`mergeSlice` has four explicit `sliceType` tests and no `else`, on purpose** (`032`). It used to
+end in a catch-all `else` that happened to mean `project-tags`; that is a latent instance of exactly
+the clobbering bug the function's own header warns about, because the *next* slice added would have
+silently inherited the previous one's write. A fifth slice must add a fifth test — being forgotten
+should be a no-op, never a wrong write.
 
 **A slice can have more than one writer, and then read-before-write is the rule.** The `workflows`
 slice now has two: `/workflows`, and `/agents` (which edits the selected instance's `loaded_skills` /
@@ -61,7 +68,7 @@ fresh config. Any third writer of an existing slice owes the same.
 | File                       | Role                                                                                                |
 | -------------------------- | --------------------------------------------------------------------------------------------------- |
 | `src/core/types.ts`        | The schema — every `MaestroConfigV3` type and slice.                                                |
-| `src/core/config.ts`       | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`. |
+| `src/core/config.ts`       | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`, `resolveGates`/`DEFAULT_GATES`. |
 | `src/core/save.ts`         | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                               |
 | `src/core/render.ts`       | Renders the orchestrator's handoff table from the config.                                           |
 | `src/core/success-path.ts` | Derives the agent→skill success path a workflow describes.                                          |
@@ -80,3 +87,5 @@ fresh config. Any third writer of an existing slice owes the same.
 - [Rules slice](sub-concepts/rules-slice.md) — rules and their scopes.
 - [Reports slice](sub-concepts/reports-slice.md) — per-agent overrides and tier fallback.
 - [Project tags slice](sub-concepts/project-tags-slice.md) — catalog membership.
+- [Gates slice](sub-concepts/gates-slice.md) — the orchestrator's optional Step 1 gates, and how an
+  absent or malformed value resolves.

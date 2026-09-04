@@ -156,6 +156,13 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // the same reason every other orchestrator-invoked script is: the orchestrator calls it by
   // $CLAUDE_PROJECT_DIR path, and a project-local copy is refreshable without a version bump.
   { src: "scripts/maestro-agent-forks.cjs", dest: ".claude/scripts/maestro-agent-forks.cjs" },
+  // The orchestrator's Step 1 gate configuration (`032`), read at invocation time and injected
+  // into the skill body by the !`command` line in the STEPS region. Not a hook, and not required
+  // by one: it is spawned by the harness expanding the skill. Its absence is the one asset gap
+  // that BREAKS an invocation rather than degrading it (node exits 1, and an injected command
+  // exiting non-zero aborts the skill), which is why maestro-check-runtime.cjs checks for this
+  // file by name.
+  { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
@@ -212,12 +219,7 @@ export function runtimeAssets(pluginRoot?: string): RuntimeAsset[] {
 // ── the hooks ──────────────────────────────────────────────────────────────
 
 export type HookEvent =
-  | "UserPromptExpansion"
-  | "SubagentStart"
-  | "SubagentStop"
-  | "PreToolUse"
-  | "PostToolUse"
-  | "SessionEnd";
+  "UserPromptExpansion" | "SubagentStart" | "SubagentStop" | "PreToolUse" | "PostToolUse" | "SessionEnd";
 
 export interface HookRegistration {
   event: HookEvent;

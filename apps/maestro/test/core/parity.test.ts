@@ -8,6 +8,9 @@
 
 import { describe, it, expect } from "vitest";
 import { createRequire } from "node:module";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   successPathSteps,
@@ -22,6 +25,7 @@ import { replaceRegion, extractRegion, syncManagedRegions } from "../../src/core
 import { allConfigs } from "./fixtures/configs.js";
 
 const require = createRequire(import.meta.url);
+const here = path.dirname(fileURLToPath(import.meta.url));
 const legacySession = require("./fixtures/legacy/maestro-session.cjs");
 const legacyRegions = require("./fixtures/legacy/maestro-skill-regions.cjs");
 
@@ -213,5 +217,45 @@ describe("skill-regions parity", () => {
         "writeSession",
       ].sort()
     );
+  });
+});
+
+// The two STATIC_ASSETS manifests are mirrored BY HAND — `install.ts` says so and
+// `maestro-install.js` says so back. Nothing generates either, and the differential test above
+// only compares what a run produced, so a file added to one list and forgotten in the other is
+// invisible until a project installed from the terminal is missing a script the app's projects
+// have. This reads both sources and pins the two `src` sets equal.
+describe("STATIC_ASSETS manifest parity (source-level)", () => {
+  const REPO = path.resolve(here, "../../../..");
+
+  /** Every `src:` string inside the file's `STATIC_ASSETS = [...]` literal. */
+  function manifestSrcs(file: string): string[] {
+    const text = fs.readFileSync(file, "utf8");
+    // The DECLARATION, not the first mention — both files talk about `STATIC_ASSETS` in comments
+    // above it, and the TS one writes `STATIC_ASSETS: RuntimeAsset[] = [`, whose type annotation
+    // carries an empty pair of brackets that a naive `indexOf("[")` stops on.
+    const decl = /STATIC_ASSETS[^=\n]*=\s*\[/.exec(text);
+    expect(decl, `no STATIC_ASSETS declaration in ${file}`).not.toBeNull();
+    const open = decl!.index + decl![0].length - 1;
+    // Balanced-bracket scan: the literal contains no nested arrays today, but a `.map(...)` tail
+    // does carry brackets after it, so stopping at the first `]` would be wrong tomorrow.
+    let depth = 0;
+    let end = open;
+    for (let i = open; i < text.length; i++) {
+      if (text[i] === "[") depth++;
+      else if (text[i] === "]" && --depth === 0) {
+        end = i;
+        break;
+      }
+    }
+    const body = text.slice(open, end);
+    return [...body.matchAll(/src:\s*["'`]([^"'`]+)["'`]/g)].map((m) => m[1]).sort();
+  }
+
+  it("the app's manifest and the plugin script's list exactly the same files", () => {
+    const app = manifestSrcs(path.join(REPO, "apps/maestro/src/core/install.ts"));
+    const plugin = manifestSrcs(path.join(REPO, "plugins/maestro/scripts/maestro-install.js"));
+    expect(app.length).toBeGreaterThan(5); // the scan found a real list, not an empty match
+    expect(plugin).toEqual(app);
   });
 });

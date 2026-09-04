@@ -28,6 +28,9 @@ const api: MaestroApi = {
     tags: {
       set: (tags) => ipcRenderer.invoke(IPC.projectTagsSet, tags),
     },
+    gates: {
+      set: (gates) => ipcRenderer.invoke(IPC.gatesSet, gates),
+    },
   },
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
@@ -46,6 +49,7 @@ const api: MaestroApi = {
     globalDocs: () => ipcRenderer.invoke(IPC.globalDocsData),
     globalDoc: (group, slug) => ipcRenderer.invoke(IPC.globalDocContent, group, slug),
     projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
+    gates: () => ipcRenderer.invoke(IPC.gatesData),
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),

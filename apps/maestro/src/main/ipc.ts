@@ -7,6 +7,8 @@
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import {
   readConfig,
+  resolveGates,
+  DEFAULT_GATES,
   blankConfig,
   defaultV3Config,
   seededAgentNames,
@@ -108,6 +110,8 @@ import type {
   AgentSyncApplyResult,
   AgentSyncSummary,
   ProjectTagsData,
+  GatesData,
+  MaestroGates,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -348,6 +352,15 @@ export function registerIpc(): void {
     return { catalog, selected: readConfig(projectRoot)?.project_tags ?? [] };
   });
 
+  // `/maestro`'s Step 1 gates card. Never rejects: the card renders on a route that is reachable
+  // with no project open, and both-off is the honest answer there — the same answer an absent or
+  // corrupt `gates` block resolves to, via the same `resolveGates`.
+  ipcMain.handle(IPC.gatesData, (): GatesData => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { gates: { ...DEFAULT_GATES } };
+    return { gates: resolveGates(readConfig(projectRoot)) };
+  });
+
   // ── the read-only surface folded in from help-server ──────────────────
   // Two loaders, four tabs and two doc views. help-server ran six server functions for the same
   // screens, two of which each re-read `installed_plugins.json` to compute their own `isInstalled`
@@ -421,6 +434,20 @@ export function registerIpc(): void {
   // agent whose stored `agent-project-tags.ts` assignment newly matches one of the ADDED tags —
   // never on an unchecked one, so unchecking a tag can't silently rip an agent out of a graph the
   // user has already wired up; that stays a manual /workflows edit.
+  // `/maestro`'s Step 1 gates checkboxes. One slice write and nothing else — a gate flag says
+  // which skills the ORCHESTRATOR runs in its own context, which implies nothing about the
+  // project's agents or skills, so there is no cross-slice follow-up here of the kind
+  // `project:tags:set` below has to make.
+  ipcMain.handle(IPC.gatesSet, async (_e, gates: MaestroGates): Promise<MaestroGates> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    // Resolved, not trusted: the renderer's shape is checked the same way the runtime script
+    // checks the file's, so a bad payload can only ever write two booleans.
+    const resolved = resolveGates({ gates } as MaestroConfigV3);
+    await saveConfig(projectRoot, { sliceType: "gates", slice: { gates: resolved } });
+    return resolved;
+  });
+
   ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");

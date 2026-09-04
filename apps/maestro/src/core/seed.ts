@@ -269,8 +269,10 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     ...CORE_INSTANCES.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) })),
   ];
   const agentsAvailable = seededAgentNames(impl);
-  // skills_available = the always-present gate skill + every skill assigned to an instance.
-  // skills_available = the always-present gate skill + every skill assigned to an instance.
+  // skills_available = `use-design-check` + every skill assigned to an instance. It is seeded
+  // because the Refactor workflow below leads with a `skill:use-design-check` NODE — a Step 3
+  // inline skill step, not the Step 1 gate of the same name. The Step 1 gates are opt-in and live
+  // in `gates` below; nothing here makes either of them run.
   const skillsAvailable = Array.from(
     new Set(["use-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
   );
@@ -290,5 +292,8 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
       buildTestsWorkflow("Tests", impl, skillCount),
     ],
     rules: [],
+    // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
+    // well-understood request should not pay for two skill invocations it never asked for.
+    gates: { confidence_check: false, use_design_check: false },
   };
 }

@@ -7,7 +7,7 @@ different callers. Reaching for the wrong one is the usual mistake.
 | -------------- | ----------------------------------- | ---------------------------------- | ---------------------------------- |
 | Content hash   | `installStatus()` → `runtimeDigest` | reads every asset, both sides      | the app's install page             |
 | Version string | `refreshStaleRuntime()`             | one config read + a string compare | project selection, automatically   |
-| Readiness      | `maestro-check-runtime.cjs`         | five ordered checks                | the `maestro-step0` hook, inside a session |
+| Readiness      | `maestro-check-runtime.cjs`         | six ordered checks                 | the `maestro-step0` hook, inside a session |
 
 ## The content hash
 
@@ -53,15 +53,27 @@ output, no tokens — and `install` exits 2 and genuinely blocks, which prose co
 orchestrator template has no readiness step left to run. The `require.main` CLI still prints the
 same JSON, for a **person** debugging a project by hand.
 
-Five checks, cheapest and most fundamental first:
+Six checks, cheapest and most fundamental first:
 
 1. `.claude/maestro.json` exists and is v3 → else `install`
 2. It actually configures workflows → else `install`
 3. The orchestrator skill is on disk → else `install`
-4. Its `<!-- Maestro:HANDOFFS -->` table matches what `maestro.json` renders to **today** → else `update`
-5. The stamped `runtimeVersion` matches the plugin the marketplace last pulled → else `update`
+4. Every script in `SKILL_INVOKED_SCRIPTS` is present in `.claude/scripts/` → else `update`, with
+   the reason naming the missing file (`032`)
+5. Its `<!-- Maestro:HANDOFFS -->` table matches what `maestro.json` renders to **today** → else `update`
+6. The stamped `runtimeVersion` matches the plugin the marketplace last pulled → else `update`
 
-**Check 4 is the one nothing else catches.** The orchestrator routes work by reading that table, so
+**Check 4 is new and it guards an abort, not a degradation** (`032`). `SKILL_INVOKED_SCRIPTS` is the
+set the orchestrator invokes **by `$CLAUDE_PROJECT_DIR` path** rather than through a hook:
+`maestro-step1-gates.cjs`, `maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`. It is a
+list rather than the one script `032` added because the failure shape is identical for all three and
+one loop costs nothing. The gates script is the sharpest case: its call is an injected
+`` !`command` `` with no `|| true`, so `node` on an absent file exits 1 and takes the entire
+`/maestro` invocation with it before the model sees a word. This nag is the only thing standing
+between a half-installed project and that abort — which is also why it must stay an `update` and
+never become an `install`.
+
+**Check 5 is the one nothing else catches.** The orchestrator routes work by reading that table, so
 a hand-edited `maestro.json` whose table was never re-rendered sends work down a path that is not
 the configured one — silently, and forever. `handoffTable()` is imported from the renderer rather
 than reimplemented, so the comparison cannot drift from what a re-render would produce.

@@ -343,7 +343,10 @@ function defaultV3Config(implAgents, skillMap = {}) {
       linearWorkflow("Review", ["reviewer"], skillCount),
       buildTestsWorkflow("Tests", impl, skillCount)
     ],
-    rules: []
+    rules: [],
+    // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
+    // well-understood request should not pay for two skill invocations it never asked for.
+    gates: { confidence_check: false, use_design_check: false }
   };
 }
 // Annotate the CommonJS export names for ESM import in node:

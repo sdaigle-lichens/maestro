@@ -21,6 +21,8 @@ export type {
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
   MaestroProjectTagsSlice,
+  MaestroGates,
+  MaestroGatesSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
   MaestroSession,

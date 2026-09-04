@@ -28,18 +28,28 @@
 //   1. .claude/maestro.json exists and is v3.       → else `install`
 //   2. It actually configures workflows.            → else `install`
 //   3. The orchestrator skill is on disk.           → else `install`
-//   4. Its <!-- Maestro:HANDOFFS --> table matches   → else `update`
+//   4. Every runtime script the skill INVOKES by     → else `update`
+//      $CLAUDE_PROJECT_DIR path is copied beside
+//      this one.
+//   5. Its <!-- Maestro:HANDOFFS --> table matches   → else `update`
 //      what maestro.json renders to TODAY.
-//   5. maestro.json's stamped `runtimeVersion`      → else `update`
+//   6. maestro.json's stamped `runtimeVersion`      → else `update`
 //      matches the plugin the marketplace last
 //      pulled.
 //
-// Check 4 is the one nothing else catches. The orchestrator routes work by reading that table; a
+// Check 4 exists for one script in particular. `maestro-step1-gates.cjs` is named by the
+// orchestrator's Step 1 as an INJECTED command (!`node …`), and an injected command that exits
+// non-zero aborts the whole skill invocation — so on a project whose runtime predates that file,
+// `/maestro` does not degrade, it fails outright, before the model sees a word of the body. This
+// check is what is supposed to say "run /maestro-update" first. It is a presence test only: the
+// script itself never fails, it only ever prints a line (see its header).
+//
+// Check 5 is the one nothing else catches. The orchestrator routes work by reading that table; a
 // hand-edited maestro.json whose table was never re-rendered sends work down a path that is not
 // the configured one, silently and forever. `handoffTable()` is imported from the renderer rather
 // than reimplemented so the comparison can never drift from what a re-render would produce.
 //
-// Check 5 is the original purpose, and the reason it needs installed_plugins.json: a bare terminal
+// Check 6 is the original purpose, and the reason it needs installed_plugins.json: a bare terminal
 // session has no access to the app's checkout of plugins/maestro (it may not even be on this
 // machine), so it can't read a plugin.json the way apps/maestro/src/core/install.ts's
 // shippedRuntimeVersion() does. What it CAN read is the same thing the app's pluginHooksActive
@@ -47,10 +57,10 @@
 // of whatever the marketplace last pulled — the version that would actually apply if the runtime
 // were refreshed right now.
 //
-// Check 5 alone degrades to `continue` (with ok:false) when it cannot be answered: an unreadable
+// Check 6 alone degrades to `continue` (with ok:false) when it cannot be answered: an unreadable
 // installed_plugins.json, or the maestro plugin not installed via a marketplace on this machine at
 // all (a project-local-only setup, or the app-only delivery path, has nothing here to compare
-// against — that project's runtime is refreshed by the app instead). Checks 1–4 need nothing
+// against — that project's runtime is refreshed by the app instead). Checks 1–5 need nothing
 // outside the project, so they always have an answer.
 //
 // Never throws, never writes anything — it only ANSWERS.
@@ -70,6 +80,15 @@ try {
 } catch {
   /* reported as `update` once the project checks below have had their say */
 }
+
+// Runtime scripts the orchestrator skill invokes BY PATH, so a project that lacks one cannot run
+// the step that names it. `maestro-step1-gates.cjs` is the sharp case: it is injected with
+// !`node …`, and a non-zero exit there aborts the invocation outright.
+const SKILL_INVOKED_SCRIPTS = [
+  "maestro-step1-gates.cjs",
+  "maestro-set-session-workflow.cjs",
+  "maestro-task-status.cjs",
+];
 
 function readJsonSafe(p) {
   try {
@@ -126,10 +145,25 @@ function checkRuntime(projectDir) {
     return answer({ action: "install", ok: true, reason: "maestro.json configures no workflows" });
   }
 
-  // --- 3 & 4. the rendered orchestrator matches the config -----------------------------------
+  // --- 3, 4 & 5. the rendered orchestrator matches the config, and its scripts are all here ---
   const skillPath = path.join(projectDir, ".claude", "skills", "maestro", "SKILL.md");
   if (!fs.existsSync(skillPath)) {
     return answer({ action: "install", ok: true, reason: "the orchestrator skill is not installed" });
+  }
+
+  // Scripts the SKILL names by $CLAUDE_PROJECT_DIR path. Missing means the project's copied
+  // runtime predates them, which for the injected one is fatal rather than degrading — see the
+  // header. Same family of answer as the `require` failure below: an incomplete copy, fixed by
+  // /maestro-update.
+  const missingScript = SKILL_INVOKED_SCRIPTS.find(
+    (name) => !fs.existsSync(path.join(projectDir, ".claude", "scripts", name))
+  );
+  if (missingScript) {
+    return answer({
+      action: "update",
+      ok: true,
+      reason: `the project's copied runtime is missing .claude/scripts/${missingScript}`,
+    });
   }
 
   if (!handoffTable || !extractRegion) {

@@ -1,15 +1,15 @@
 ---
 name: maestro-architecture
-description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract, the orchestrator skill's managed regions, and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
+description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract, the orchestrator skill's managed regions and its optional config-driven Step 1 gates (injected dynamic context — a third delivery channel beside hooks and template prose), and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, why /maestro ran (or skipped) the confidence and design gates, or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: dc07795aca62476b23408ba23e0455dc855aef35
+  version: "1.5"
+  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
 ---
 
 # Maestro Runtime Architecture
 
-Maestro turns a project into a multi-agent workflow: the user manually invokes the **`/maestro`** skill, which classifies each request, runs gates, picks a configured workflow, and dispatches subagents whose skills + handoff rules are injected at runtime from `.claude/maestro.json`.
+Maestro turns a project into a multi-agent workflow: the user manually invokes the **`/maestro`** skill, which classifies each request, runs whichever Step 1 gates the project has turned on (by default, none), picks a configured workflow, and dispatches subagents whose skills + handoff rules are injected at runtime from `.claude/maestro.json`.
 
 This doc covers the **runtime** half — the part that only exists inside a Claude session. The **authoring** half is the Maestro desktop app (`apps/maestro`), documented in the `workflow-view` and `rule-view` skills. The two meet at `.claude/maestro.json` and nowhere else.
 
@@ -63,11 +63,14 @@ UserPromptExpansion hook (matcher "maestro") → maestro-step0.js
         ▼
 Orchestrator (.claude/skills/maestro/SKILL.md):
   (no Step 0 — it is not a step any more; the hook above is the whole of it)
+  Step 1  custom checks (OPTIONAL gates). The template holds three lines amounting to "do what
+          the injected line says"; !`node .claude/scripts/maestro-step1-gates.cjs` supplies the
+          step itself. A freshly seeded project: "no gates enabled, continue to Step 2".
   Step 2  classify request → node .claude/scripts/maestro-set-session-workflow.cjs "<workflow>"
                               └─ writes { workflow, generated_instances } → maestro_session.json
-  Step 1-3  confidence + design gates (/confidence-check, /use-design-check — IF available)
-  Step 4  pick the success path from the Maestro:HANDOFFS table
-  Step 5  TaskCreate per step; Task() each agent step
+  Step 3  execute the workflow: the success path from the Maestro:HANDOFFS table,
+          TaskCreate per step, Task() each agent step
+  Step 4  mark the task done (the mark-task-done node)
         │
         ▼ (each Task → subagent)
 SubagentStart hook  (matcher ".*")  → maestro-inject-agent-context.js
@@ -119,9 +122,53 @@ SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
 
 There is **no `SessionStart` hook**. It existed only to serve the retired container, reference-counting live sessions so teardown could wait for the last one; nothing replaced it — the desktop app is an ordinary application the user opens, so there is nothing to start, refcount, or tear down. `UserPromptExpansion` is registered again, but for an unrelated job: the container-era entries launched a web form and blocked the prompt until a result file appeared, whereas `maestro-step0.js` answers a question about this project and gets out of the way.
 
-**Every one of these scripts exists in two places, and neither copy updates on its own.** The six hook scripts above (`maestro-step0.js`, `maestro-inject-agent-context.js`, `maestro-subagent-log.js`, `maestro-session-log.js`, `maestro-validate-tasks.js`, `maestro-session-cleanup.sh`) run from `${CLAUDE_PLUGIN_ROOT}/scripts/` — which resolves into the **version-keyed marketplace cache**, so an edit reaches a project only after a `plugin.json` version bump and re-pull. The installer also copies them into `<project>/.claude/scripts/` as `.cjs`, and those copies only refresh on (re)install or `/maestro-update`. `maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs` and `maestro-task-status.cjs` exist **only** as project copies. Which copy of a hook actually fires when both are registered is `projectOwnsHook`'s call — see Things that bite. Both staleness rules: `updating-maestro`.
+**Every one of these scripts exists in two places, and neither copy updates on its own.** The six hook scripts above (`maestro-step0.js`, `maestro-inject-agent-context.js`, `maestro-subagent-log.js`, `maestro-session-log.js`, `maestro-validate-tasks.js`, `maestro-session-cleanup.sh`) run from `${CLAUDE_PLUGIN_ROOT}/scripts/` — which resolves into the **version-keyed marketplace cache**, so an edit reaches a project only after a `plugin.json` version bump and re-pull. The installer also copies them into `<project>/.claude/scripts/` as `.cjs`, and those copies only refresh on (re)install or `/maestro-update`. `maestro-set-session-workflow.cjs`, `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs` and `maestro-step1-gates.cjs` (`032`) exist **only** as project copies. Which copy of a hook actually fires when both are registered is `projectOwnsHook`'s call — see Things that bite. Both staleness rules: `updating-maestro`.
 
 **`maestro-session-cleanup` exists twice, on purpose.** The plugin's `.sh` fires from `hooks.json`; the `.cjs` is what the installer copies into `<project>/.claude/scripts/` for a project that registers hooks locally. They do the same thing. The `.cjs` is node because the `.sh` shells out to `python3` to parse the hook payload, which a project cannot assume is installed. It is also the **one hook script with no arbitration guard**: both copies just `rm -f` the same three ephemeral files, so a double fire is unobservable and a third implementation of the arbitration in bash would cost more than the no-op. `templates/maestro/SKILL.md` reaches existing installs too: `/maestro-install` and `/maestro-update` re-sync its **managed regions** (`Maestro:STEPS`, `Maestro:PRINCIPLES`) into `.claude/skills/maestro/SKILL.md` on every run, so a template edit propagates on the next update — but only _inside_ those markers. Content the template adds **outside** a managed region still reaches new installs only.
+
+**Injected context is a third delivery channel, and it is the only one that can abort the
+invocation.** A hook pushes context in from outside the skill; the template's prose carries it
+statically inside the body. Step 1 uses neither: the body holds a `` !`command` `` line, and Claude
+Code runs that command and substitutes its **stdout** before the model ever sees the prompt.
+
+**The injected line is the whole of Step 1, not a flag the body branches on**, and that is the
+point of using this channel at all. `maestro-step1-gates.cjs` prints the full instruction for the
+resolved state — which skills, in what order, with the `Skill` tool in the orchestrator's own
+context, and what to do about a low score — while the template holds only "do exactly what the line
+above says" plus the fallback below. The reasoning is `maestro-check-runtime.cjs`'s, verbatim: a
+branch table in `SKILL.md` is re-read at the top of **every** orchestration including the default
+one, and prose that re-derives a decision made in code is prose that can disagree with it. An
+earlier draft split them — a terse `Gates: run /confidence-check.` in the script and the bullets in
+the template — and it is the wrong shape for both reasons.
+
+Four consequences, all load-bearing:
+
+- **The command needs a grant, and the grant is not optional.** A permission check answering
+  anything but `allow` aborts the whole invocation — the model never sees the orchestrator at all.
+  It is granted by `allowed-tools` in the *template's frontmatter*, which is a **grant**, not a
+  restriction (`disallowed-tools` is the restriction field), so it does not narrow the
+  orchestrator's access to `Task`/`TaskCreate`/`Skill`/`Read`. Deliberately **not** a
+  `permissions.allow` entry in the project's `settings.json` — see `installing-maestro`.
+- **A non-zero exit aborts it too.** Which is why `maestro-step1-gates.cjs` exits 0 unconditionally,
+  writes nothing to stderr, and has no failure branch: every degenerate input resolves to the
+  continue-to-Step-2 line instead.
+- **Exactly one line, however long.** Each of the four is several sentences on a single
+  newline-terminated line — it keeps the contract trivially assertable and lets the body say "the
+  line above". `install.test.ts` pins the *properties* (one line, only the enabled gates named, in
+  order, always sending the orchestrator on to Step 2, four distinct answers) rather than the
+  wording, which is prose and expected to be reworded.
+- **A missing script does not degrade — it kills `/maestro`.** The command is a single clause with
+  no `|| true`, so `node` on an absent file exits 1. `maestro-check-runtime.cjs` therefore carries a
+  presence check (`SKILL_INVOKED_SCRIPTS` — the scripts the orchestrator names by
+  `$CLAUDE_PROJECT_DIR` path: `maestro-step1-gates.cjs`, `maestro-set-session-workflow.cjs`,
+  `maestro-task-status.cjs`) and answers `update` when one is absent. That nag is the only thing
+  between a half-installed project and an aborted invocation.
+
+If the harness has `disableSkillShellExecution: true`, the line is replaced with the literal
+`[shell command execution disabled by policy]`. **This is the one thing the script cannot speak
+to** — its own output never arrived — so it is the one thing the template must still say for
+itself: a missing, empty or policy-replaced line means this project has no Step 1, go to Step 2.
+Keep that sentence in the template however much else moves into the script.
 
 ## The HANDOFF contract
 
@@ -170,6 +217,22 @@ Note: protocol templates live **only** in the agent template files, never in `ma
   where that review is actually done. Only the readiness half can block, and only on `install`.
   Reaching an existing install needs a plugin re-pull **and** an update — the same version trap the
   arbitration guard shipped through. See `updating-maestro`.
-- **The gate skills are optional.** `/confidence-check` and `/use-design-check` are now bundled in this plugin (`plugins/maestro/skills/{confidence-check,use-design-check}`), but the orchestrator still references them "if available" and degrades gracefully if a project hasn't installed them.
+- **Step 1's gates are a per-project setting and they default to OFF** (`032`). `maestro.json`'s
+  `gates: { confidence_check, use_design_check }` is resolved at invocation time by
+  `maestro-step1-gates.cjs`, whose one line of stdout is injected into the body and carries the
+  whole step — which gates to run, in what order, and how. All four combinations are valid and none nests inside another. A
+  seeded config has both `false`, and **every** degenerate case — no config, corrupt JSON,
+  `version !== 3`, `gates` absent or not a plain object, a non-boolean value, any throw — resolves
+  to the continue-to-Step-2 line, quietly, with exit 0. The checkboxes live on the desktop app's `/maestro` page;
+  there is no migration, so a project installed before `032` simply has no `gates` field and skips.
+  `/confidence-check` and `/use-design-check` are still bundled in this plugin
+  (`plugins/maestro/skills/{confidence-check,use-design-check}`), but the orchestrator no longer
+  references them "if available" — it runs what the injected line names, and is told to say so
+  rather than invent one if a named gate isn't installed.
+- **`use-design-check` means two different things and only one of them is a gate.** The seeded
+  **Refactor** workflow has a `skill:use-design-check` **node** in its success path — that is
+  Step 3's inline-skill mechanism, driven by `workflows`, and it is untouched by the `gates` field.
+  Turning both gates off does not remove it. `seed.ts` used to call it "the always-present gate
+  skill" in a comment; that was corrected in `032` because it invited exactly this confusion.
 - **Session logs are append-only by design.** Don't switch `maestro_session.log.jsonl` back to a read-modify-write JSON array — parallel subagents would lose entries.
 - **Anything `.md` under `agents/` is discovered as an agent.** This is why the `handoff_details` protocol templates live at `templates/handoffs/<sender>/<receiver>.md`, **not** under `agents/`: a frontmatter-less `.md` inside the agents tree gets registered as a phantom agent (e.g. `…:refactor:handoffs:backend`) with **All tools**. Keep handoff templates (and any other non-agent `.md`) out of `agents/`. If you add a new sender/receiver pair, drop the file under `templates/handoffs/<sender>/` — `readHandoffProtocol()` resolves it there (and at the project-local `.claude/handoffs/<sender>/` override).

@@ -87,6 +87,13 @@ export interface MaestroConfigV3 {
    * frontend/mobile only) and editable afterward from /maestro.
    */
   project_tags?: string[];
+  /**
+   * Which of the orchestrator's Step 1 gates this project runs. Absent means BOTH are off and
+   * Step 1 is skipped entirely — the opt-in stance, not "preserve the historical behaviour". A
+   * partial or non-boolean value resolves the same way, per field; `resolveGates` in `config.ts`
+   * is the one reader, and `maestro-step1-gates.cjs` mirrors it for the runtime.
+   */
+  gates?: MaestroGates;
 }
 
 /**
@@ -117,6 +124,21 @@ export interface MaestroRulesSlice {
 
 export interface MaestroProjectTagsSlice {
   project_tags: string[];
+}
+
+/**
+ * The orchestrator's Step 1 gates, one flag each. All four combinations are valid and none is
+ * nested under another: the design check runs on its own perfectly well, and both off means
+ * Step 1 is skipped. Read at invocation time by `maestro-step1-gates.cjs`, whose single line of
+ * output is injected into the orchestrator skill body.
+ */
+export interface MaestroGates {
+  confidence_check: boolean;
+  use_design_check: boolean;
+}
+
+export interface MaestroGatesSlice {
+  gates: MaestroGates;
 }
 
 /**

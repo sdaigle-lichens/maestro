@@ -24,6 +24,8 @@ import type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroGates,
+  MaestroGatesSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -139,6 +141,8 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroGates,
+  MaestroGatesSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -321,10 +325,22 @@ export interface ProjectTagsData {
   selected: string[];
 }
 
+/**
+ * What `/maestro`'s Step 1 gates card needs, and what it writes back. Half of the pair that drives
+ * the orchestrator's injected Step 1: the app writes `maestro.json.gates` here, and
+ * `maestro-step1-gates.cjs` reads it at invocation time and prints the one directive line the
+ * skill body injects. Nothing else connects the two — there is no shared code path.
+ */
+export interface GatesData {
+  /** Resolved, never raw: an absent, partial or corrupt `gates` block reads back as both false. */
+  gates: MaestroGates;
+}
+
 export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
-  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice };
+  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
+  | { sliceType: "gates"; slice: MaestroGatesSlice };
 
 export const IPC = {
   projectGet: "project:get",
@@ -353,6 +369,14 @@ export const IPC = {
   // one on uncheck — that stays a manual /workflows edit). See `project:tags:set` in `main/ipc.ts`.
   projectTagsData: "data:project-tags",
   projectTagsSet: "project:tags:set",
+
+  // `/maestro`'s Step 1 gates checkboxes — the pair that drives the orchestrator's INJECTED Step 1.
+  // `data:gates` reads the project's resolved gates (both off when no project is open, so the card
+  // can render on a route reachable in that state); `project:gates:set` saves the `gates` slice and
+  // returns what was saved. Unlike `project:tags:set` there is no second cross-slice write: a gate
+  // flag implies nothing about which agents or skills the project has.
+  gatesData: "data:gates",
+  gatesSet: "project:gates:set",
 
   // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
   // global default, else none) — the SAME resolution `report-resolution.ts` gives the
@@ -542,6 +566,14 @@ export interface MaestroApi {
     open(root: string): Promise<ProjectState>;
     forget(root: string): Promise<ProjectState>;
     onChanged(cb: (state: ProjectState) => void): () => void;
+    gates: {
+      /**
+       * Set the OPEN project's Step 1 gates to exactly `gates` — `/maestro`'s Step 1 gates card
+       * calls this on EVERY checkbox change, with no Save button. Saves the `gates` slice and
+       * nothing else, and returns what was saved. Rejects when no project is open.
+       */
+      set(gates: MaestroGates): Promise<MaestroGates>;
+    };
     tags: {
       /**
        * Toggle the OPEN project's `project_tags` to exactly `tags` — `/maestro`'s post-install
@@ -597,6 +629,12 @@ export interface MaestroApi {
      * `selected: []`.
      */
     projectTags(): Promise<ProjectTagsData>;
+    /**
+     * `/maestro`'s Step 1 gates card: the open project's RESOLVED gates. Never rejects — no
+     * project open, or an absent/corrupt `gates` block, both read back as two falses, which is
+     * exactly what the runtime script resolves them to as well.
+     */
+    gates(): Promise<GatesData>;
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;

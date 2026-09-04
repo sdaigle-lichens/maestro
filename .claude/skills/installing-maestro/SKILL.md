@@ -1,10 +1,10 @@
 ---
 name: installing-maestro
-description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json was or wasn't touched, or what --purge actually deletes."
+description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: dc07795aca62476b23408ba23e0455dc855aef35
+  version: "1.4"
+  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
 ---
 
 # Installing Maestro
@@ -25,9 +25,12 @@ is the fallback for the other:
 `install.ts`'s header says `PORTED FROM` the script and `test/core/install.test.ts` opens with
 `describe("differential against the legacy installer")`, asserting the same files byte for byte.
 The manifests are mirrored by hand in both files — **if the two lists diverge, that is a bug in one
-of them**, and the plugin script's header says so too. Same shape as `task-queue`'s two
-implementations, and unlike `plugin-libs-parity`, **nothing here is generated**: both copies are
-hand-maintained.
+of them**, and the plugin script's header says so too. Since `032` that is no longer only a
+convention: `test/core/parity.test.ts`'s `STATIC_ASSETS manifest parity` describe parses the
+`STATIC_ASSETS` literal out of **both source files** and asserts the two `src` sets are equal, so a
+file added to one and forgotten in the other fails as a named test rather than as a puzzling
+differential diff. Same shape as `task-queue`'s two implementations, and unlike
+`plugin-libs-parity`, **nothing here is generated**: both copies are hand-maintained.
 
 ## Why the install is project-local
 
@@ -74,6 +77,7 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/scripts/maestro-uninstall.js`               | 201   | The terminal implementation of the same removal.                                              |
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging a project by hand; nothing in the orchestrator runs it. |
+| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the only asset invoked by the *harness* rather than by a hook or the model: the orchestrator's Step 1 injects it with `` !`command` ``. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
 | `plugins/maestro/scripts/maestro-agent-forks.cjs`            | 127   | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. The hook calls `computeAgentSync` directly; this CLI is the user-facing half. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
@@ -92,6 +96,18 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   runs.** The plugin's copy stands down for exactly the hooks the project registers, so removing a
   registration hands that hook back to the plugin rather than turning it off. See the hook
   arbitration sub-concept before changing `HOOK_REGISTRATIONS` or how `hasHook()` matches.
+- **The install writes HOOKS into `settings.json` and nothing else — no `permissions` block, ever.**
+  `032` is the case that tested it. The orchestrator's Step 1 injects a `` !`command` `` whose
+  permission check *must* return `allow` or the whole `/maestro` invocation aborts, so a grant was
+  genuinely required. It was put in the **orchestrator template's frontmatter**
+  (`allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")`), not
+  in `permissions.allow` of the project's `settings.json`. `allowed-tools` is a **grant**, not a
+  restriction (`disallowed-tools` is the restriction field), so it does not narrow the
+  orchestrator's own access to `Task`/`TaskCreate`/`Skill`/`Read`. Two things follow, and both are
+  why it was chosen: the installer stays out of a block users hand-edit and reason about, and
+  **uninstall gains no new removal logic** — the grant leaves with the skill file. Keep it that way:
+  a permissions entry is a claim on the user's project-wide configuration that a hook registration
+  is not.
 - **`bash-validation.sh`'s command string is unquoted, byte-for-byte as the legacy installer wrote
   it.** `maestro-uninstall.js` removes it by _exact string match_, and old projects carry that exact
   value. Re-quoting it here duplicates the entry on those projects and orphans it on uninstall.
@@ -105,10 +121,12 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
 - **The seed is guarded on absence.** An existing `maestro.json` is the user's authored graph and is
   never overwritten — by install, re-install, or refresh.
 - **Adding an asset makes every installed project stale exactly once.** `031` added two
-  (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`), so `shippedRuntimeId` moved and
+  (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`) and `032` added one
+  (`maestro-step1-gates.cjs`), so `shippedRuntimeId` moved each time and
   every project reports stale on its next check and re-copies. Expected, and the only way a new
   runtime file ever arrives — but worth saying out loud, because "everything went stale after my
-  change" reads like a bug.
+  change" reads like a bug. Note the digest is over the manifest, so this fires whether or not any
+  *existing* file changed.
 - **`refreshStaleRuntime` never installs fresh.** It fires on project _selection_, so auto-installing
   would put Maestro into every repo the user happens to open. It also uses a raw parse rather than
   `readConfig()`'s blank-on-corrupt fallback, so a corrupt config is never silently rewritten.

@@ -38,8 +38,10 @@ conversation with the user, not a judgement call during implementation.
 - **The injected command is permitted by `allowed-tools` in the template's frontmatter**, not by a
   `permissions.allow` entry in the project's `.claude/settings.json`. See the notes at the bottom
   for why, and for the one consequence that bites.
-- **The Step 1 prose stays in the template's `STEPS` region.** The script prints a single directive
-  line and nothing else.
+- ~~**The Step 1 prose stays in the template's `STEPS` region.** The script prints a single directive
+  line and nothing else.~~ **Reversed with the user after implementation — see divergence 4.** The
+  script now prints the whole of Step 1 and the template holds only "do what the line says" plus the
+  line-never-arrived fallback.
 
 ### Config model
 
@@ -92,6 +94,12 @@ New file `plugins/maestro/scripts/maestro-step1-gates.cjs`, modelled closely on
 | confidence only | `Gates: run /confidence-check.` |
 | design only | `Gates: run /use-design-check.` |
 | neither on — **and** every degenerate case below | `Gates: none — skip Step 1 and go straight to Step 2.` |
+
+> **Superseded — see divergence 4.** Each line now carries the whole step (which skills, in what
+> order, with the `Skill` tool in the orchestrator's own context) rather than a terse directive the
+> template branches on. Still exactly one newline-terminated line per state, still four distinct
+> answers, still every degenerate case landing on the both-off one. The tests assert those
+> properties rather than the wording.
 
 Degenerate cases that must all land on the skip line, quietly: `maestro.json` missing, unreadable,
 unparseable, `version !== 3`, `gates` absent, `gates` present but not a plain object, a gate whose
@@ -175,29 +183,128 @@ writes `maestro.json` on every click, with no Save button) and the closest analo
 `plugins/maestro/.claude-plugin/plugin.json` `0.4.0` → **`0.5.0`**. Minor: the published surface
 grows by a script.
 
+> **Shipped as `0.4.1`, not `0.5.0`** — see the divergence below. This paragraph is what the page
+> planned; the reasoning in it was measured against the project's own rule and did not hold.
+
 ## Acceptance criteria
 
-- [ ] All four gate combinations produce the documented single stdout line, with exit 0 and empty
-      stderr
-- [ ] A missing `maestro.json`, corrupt JSON, `version: 2`, an absent `gates`, a partial `gates`, a
-      non-object `gates` and a non-boolean gate value all produce the skip line, with exit 0 and
-      empty stderr
-- [ ] `mergeSlice` has an explicit `gates` arm and an explicit `project-tags` arm and no `else`; a
+All met. Evidence in brackets; the suite is `pnpm --filter maestro test` — **42 files, 784 tests,
+all passing**, with `typecheck` (both tsconfig projects) and repo-wide `pnpm check` clean.
+
+- [x] All four gate combinations produce the documented single stdout line, with exit 0 and empty
+      stderr — [`install.test.ts` › `maestro-step1-gates.cjs (032)` spawns the **copied** script over
+      all four combinations; and live against a fixture project scaffolded by the real
+      `maestro-install.js`, all four states gave one line, exit 0, 0 bytes on stderr. Per divergence
+      4 the assertion is on the contract — one line, only the enabled gates named, in order, four
+      distinct answers, every state routing on to Step 2 — not on the sentences, which are now the
+      step itself and expected to be reworded. Mutation-checked in both directions]
+- [x] A missing `maestro.json`, corrupt JSON, `version: 2`, an absent `gates`, a partial `gates`, a
+      non-object `gates` and a non-boolean gate value all produce the both-off line, with exit 0 and
+      empty stderr — [twelve degenerate inputs in `install.test.ts`, each asserting byte equality
+      with the both-off line **read back from the script** rather than restated, plus exit 0 and
+      empty stderr; plus a `resolveGates` describe in `config.test.ts` over well-formed,
+      absent, null config, partial, non-boolean, non-object, and fresh-object-per-call]
+- [x] `mergeSlice` has an explicit `gates` arm and an explicit `project-tags` arm and no `else`; a
       gates save leaves `workflows` / `rules` / `project_tags` untouched, and each of those saves
-      leaves `gates` untouched
-- [ ] A freshly seeded `maestro.json` carries
-      `gates: { confidence_check: false, use_design_check: false }`
-- [ ] `serializeConfig` output is unchanged in shape — 2-space indent, no trailing newline
-- [ ] A fresh install from **both** implementations copies `maestro-step1-gates.cjs` into
-      `.claude/scripts/`, and `maestro-check-runtime.cjs` reports a project missing it as stale
-- [ ] The installed `SKILL.md` carries the `allowed-tools` line and the exact `` !`…` `` literal, and
+      leaves `gates` untouched — [`config.test.ts` › `mergeSlice — gates` asserts isolation in both
+      directions across all four slices, replace-not-merge, and absent on `blankConfig`; confirmed
+      live — the gates saves left `workflows` / `workflow_instances` / `rules` / `project_tags`
+      byte-identical on disk]
+- [x] A freshly seeded `maestro.json` carries
+      `gates: { confidence_check: false, use_design_check: false }` — [`defaultV3Config` in
+      `seed.ts`, **and** the regenerated `lib/maestro-seed.cjs` so the terminal installer agrees —
+      see divergence 2]
+- [x] `serializeConfig` output is unchanged in shape — 2-space indent, no trailing newline —
+      [`save.test.ts`; and verified on the on-disk file the real UI wrote]
+- [x] A fresh install from **both** implementations copies `maestro-step1-gates.cjs` into
+      `.claude/scripts/`, and `maestro-check-runtime.cjs` reports a project missing it as stale —
+      [`install.test.ts` (the app path) and `real-project.test.ts` (the real `maestro-install.js`);
+      `installStatus` reports stale when the file is deleted and clean after a reinstall, and
+      `maestro-check-runtime.cjs` answers `update` naming the missing script. New
+      `parity.test.ts` › `STATIC_ASSETS manifest parity` parses both source manifests and asserts
+      the two `src` sets are **equal** (13 each)]
+- [x] The installed `SKILL.md` carries the `allowed-tools` line and the exact `` !`…` `` literal, and
       the command string inside `allowed-tools` is asserted **byte-identical** to the one in the
-      STEPS region — one assertion, so the two cannot drift apart
-- [ ] A managed-region re-sync leaves everything before `<!-- Maestro:STEPS:START -->`
-      byte-identical, frontmatter included
-- [ ] Toggling either checkbox on `/maestro` writes `.claude/maestro.json` immediately, and both
-      boxes render unchecked on a freshly seeded project
-- [ ] `plugins/maestro/.claude-plugin/plugin.json` reads `0.5.0`
+      STEPS region — one assertion, so the two cannot drift apart — [`real-project.test.ts`, one
+      assertion, against the project the real installer scaffolds]
+- [x] A managed-region re-sync leaves everything before `<!-- Maestro:STEPS:START -->`
+      byte-identical, frontmatter included — [`real-project.test.ts`]
+- [x] Toggling either checkbox on `/maestro` writes `.claude/maestro.json` immediately, and both
+      boxes render unchecked on a freshly seeded project — [driven in a real packaged Electron
+      window over CDP: both boxes unchecked on a fresh seed; box 1 → `{true, false}`; box 2 →
+      `{true, true}`; unchecking box 1 → `{false, true}`, the design-only combination, with the DOM
+      agreeing and **0 console errors**. The script then read back exactly what the card wrote]
+- [~] `plugins/maestro/.claude-plugin/plugin.json` reads **`0.4.1`**, not the `0.5.0` this page
+      specified — [deliberate, decided with the user; see the version divergence below. The
+      criterion behind it — that the plugin version moved off `0.4.0`, so autoUpdate re-pulls — is
+      met, and that is the only part of it anything reads]
+
+## Divergences from what this page planned
+
+Three, all recorded here so the page describes what exists rather than what was intended.
+
+1. **The check-runtime staleness test is a LIST, not a single file.** The page said "extend
+   `maestro-check-runtime.cjs` so a project missing the script reports stale". It landed as a
+   `SKILL_INVOKED_SCRIPTS` array covering all three scripts the orchestrator invokes by
+   `$CLAUDE_PROJECT_DIR` path — `maestro-step1-gates.cjs`, `maestro-set-session-workflow.cjs`,
+   `maestro-task-status.cjs` — because the failure shape is identical for all three and one loop
+   costs nothing. A missing one answers `update` with reason
+   `the project's copied runtime is missing .claude/scripts/<name>`. The new check is numbered **4**,
+   which renumbered the existing checks 4 and 5 to **5 and 6** throughout that file's header, its
+   numbered list and its prose.
+2. **`plugins/maestro/scripts/lib/maestro-seed.cjs` had to be regenerated**, which this page did not
+   mention. It is a `build-plugin-libs.mjs` bundle of `seed.ts`, so without
+   `pnpm --filter maestro build:plugin-libs` the terminal installer kept seeding a `maestro.json`
+   with no `gates` block — which resolves to "both off" and therefore *looked* correct. Caught by
+   installing into a real fixture project, not by any test.
+3. **The plugin shipped as `0.4.1`, not the `0.5.0` this page specified** — decided with the user
+   rather than during implementation. Detail below.
+4. **The script prints the whole of Step 1, not "a single directive line and nothing else"** —
+   reversing one of this page's settled decisions, at the user's direction. Detail below.
+
+Everything else landed exactly as specified, including the `allowed-tools` decision, the narrow
+grant, the four-arm `mergeSlice` with no `else`, and the fixture split. **The `sh -c '… || true'`
+fallback this page offered was not needed.**
+
+### On the fourth: where Step 1's prose lives
+
+This page settled that the prose stays in the `STEPS` region and the script prints "a single
+directive line and nothing else". Built that way, Step 1 was ten lines of template describing a
+four-way branch, of which the default project takes the do-nothing arm.
+
+That is the exact shape `maestro-check-runtime.cjs`'s header rejects for itself — *"the collapse
+belongs in code: prose that re-derives it is re-read at the top of every single orchestration, costs
+tokens on every run including the healthy one... The wording travels with the logic instead, so the
+two can never disagree."* Its `INSTRUCTIONS` map is one sentence per action for the same reason.
+Step 1 as specified was the branch table that comment exists to argue against, and the user called
+it. So the script now prints the whole step and the template collapsed to three lines.
+
+**One thing had to stay behind**, and it is the reason this is a collapse rather than a move: the
+template still says what to do when the injected line is *missing, empty, or replaced by
+`[shell command execution disabled by policy]`*. The script cannot speak to the case where its own
+output never arrived. Everything else is in the script.
+
+The consequences for the tests: the four outputs are prose now, so `install.test.ts` asserts the
+contract — one newline-terminated line, only the enabled gates named, confidence before design when
+both are on, every state routing on to Step 2, and four distinct answers — instead of byte-copying
+sentences that are expected to be reworded. The degenerate-input test reads the both-off line from
+the script rather than restating it. Both were mutation-checked: collapsing design-only onto the
+both-off line, and reversing the order in the both-on line, each fail.
+
+### On the third: the version component
+
+This page called for a minor on "the published surface grows by a script". Measured against
+`.claude/skills/updating-maestro/`'s own table and its `0.3.5` precedent — *"a new file under
+`scripts/` is not a published surface; a new directory under `skills/` or `agents/` is"* — that does
+not hold: `hooks/hooks.json` is untouched, no skill, agent or command was added or renamed, and a
+consumer gains nothing new to **invoke**. `/maestro` simply does less by default.
+
+Raised with the user, who chose to follow the rule over the page, so it shipped as **`0.4.1`**.
+Nothing reads the magnitude — autoUpdate compares the string for inequality only — so delivery is
+identical either way; what the correction buys is that the next person reading `updating-maestro`'s
+worked examples is not taught the wrong rule by a live counter-example. `updating-maestro` carries
+it as the fourth worked example, and as the case where the table was applied *against* a ticket
+that specified the bump.
 
 ## Notes for whoever picks this up
 

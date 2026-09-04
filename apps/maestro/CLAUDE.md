@@ -189,7 +189,16 @@ the Claude bridge below.
 The **runtime** half — hook scripts that fire inside a session: `maestro-inject-agent-context`
 (SubagentStart), `maestro-subagent-log` (SubagentStart/Stop), `maestro-session-log` (PreToolUse),
 `maestro-validate-tasks` (PostToolUse), `maestro-session-cleanup` (SessionEnd),
-`maestro-set-session-workflow.cjs`, `bash-validation.sh`.
+`maestro-set-session-workflow.cjs`, `maestro-step1-gates.cjs`, `bash-validation.sh`.
+
+`maestro-step1-gates.cjs` is the odd one: not a hook, and not invoked by the model either. The
+orchestrator skill's Step 1 names it with Claude Code's `` !`command` `` syntax, so the HARNESS runs
+it while expanding the skill and injects its one line of stdout into the body — a third delivery
+channel beside hooks and prose. It prints which of `/confidence-check` and `/use-design-check` this
+project's `maestro.json` `gates` block turns on (`resolveGates` in `src/core/config.ts` is the
+app-side reader of the same field, behind the Step 1 gates card on `/maestro`). It exits 0 and says
+nothing on stderr under every input, because an injected command that exits non-zero aborts the
+whole `/maestro` invocation before the model sees a word of it.
 
 They need a session to _run_, but not to be **installed**: `/maestro` (the desktop app route,
 formerly `/install`) copies them into `<project>/.claude/scripts/` and registers them in the

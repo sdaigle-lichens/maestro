@@ -371,6 +371,9 @@ const STATIC_ASSETS = [
   // Forked-agent sync (031) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it is
   // copied into the project rather than run from ${CLAUDE_PLUGIN_ROOT}.
   { src: "scripts/maestro-agent-forks.cjs", dest: ".claude/scripts/maestro-agent-forks.cjs" },
+  // Step 1's gate configuration (032) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for
+  // why its absence is the one that breaks an invocation outright.
+  { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },

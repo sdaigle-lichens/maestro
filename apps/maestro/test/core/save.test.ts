@@ -195,6 +195,38 @@ describe("saveConfig", () => {
     expect(res.warnings).toContain("Rule file not found for: ghost");
   });
 
+  // A gates save goes down the same saveConfig path as every other slice, so it re-renders the
+  // orchestrator too. That is harmless and worth pinning: the render must refresh HANDOFFS and
+  // leave STEPS — which is where the injected gate line lives — exactly as it found it.
+  it("a gates save re-renders HANDOFFS and disturbs nothing else in the skill", async () => {
+    const root = path.join(tmp, "p");
+    makeProject(root, { withSkill: true });
+
+    await saveConfig(root, {
+      sliceType: "workflows",
+      slice: {
+        agents_available: defaultish.agents_available,
+        skills_available: defaultish.skills_available,
+        workflow_instances: defaultish.workflow_instances,
+        workflows: defaultish.workflows,
+      },
+    });
+    const skillPath = path.join(root, ".claude", "skills", "maestro", "SKILL.md");
+    const before = fs.readFileSync(skillPath, "utf8");
+
+    const res = await saveConfig(root, {
+      sliceType: "gates",
+      slice: { gates: { confidence_check: true, use_design_check: false } },
+    });
+
+    expect(res.render.ok).toBe(true);
+    expect(res.warnings).toEqual([]);
+    expect(fs.readFileSync(skillPath, "utf8")).toBe(before); // same config in, same table out
+    expect(readConfig(root)!.gates).toEqual({ confidence_check: true, use_design_check: false });
+    // …and the slices the user authored are untouched by it.
+    expect(readConfig(root)!.workflows).toEqual(defaultish.workflows);
+  });
+
   it("a workflows save preserves rules written by an earlier rules save", async () => {
     const root = path.join(tmp, "p");
     makeProject(root, { withSkill: true });

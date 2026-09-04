@@ -12,7 +12,7 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync } from "node:child_process";
+import { execFileSync, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -957,5 +957,170 @@ describe("the installed hooks actually run", () => {
       runHook(root, "maestro-session-log.cjs", { cwd: root, tool_name: "Read", tool_input: {} })
     ).not.toThrow();
     expect(fs.existsSync(path.join(root, ".claude", "maestro_session.log.jsonl"))).toBe(true);
+  });
+});
+
+// The one runtime asset whose ABSENCE breaks an invocation rather than degrading it: Step 1 names
+// it with an injected !`command`, and an injected command that exits non-zero aborts the whole
+// skill before the model sees the body. So both halves are pinned here — that the script never
+// fails whatever it is handed, and that a project missing it is reported stale before it can.
+describe("maestro-step1-gates.cjs (032)", () => {
+  /**
+   * The both-off output, read from the script rather than written down here.
+   *
+   * Its wording is prose the orchestrator obeys and is expected to be reworded; what must not
+   * change is that every degenerate input resolves to exactly THIS, whatever it currently says.
+   * Duplicating the sentence in the test would pin the wording and prove nothing about the rule.
+   */
+  function skipLine(root: string): string {
+    writeConfig(root, { ...defaultish, gates: { confidence_check: false, use_design_check: false } });
+    return runGates(root).stdout;
+  }
+
+  /** Runs the COPY in the project, not the plugin's original — that is what a session executes. */
+  function runGates(root: string): { code: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs")], {
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    });
+    return { code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr };
+  }
+
+  /** Writes maestro.json verbatim — including shapes `writeConfig` would never produce. */
+  function writeRawConfig(root: string, body: string): void {
+    fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "maestro.json"), body);
+  }
+
+  async function installed(name: string): Promise<string> {
+    const root = makeProject(name);
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    return root;
+  }
+
+  it("is copied into the project by installRuntime", async () => {
+    const root = await installed("copied");
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"))).toBe(true);
+    expect(runtimeAssets(PLUGIN_ROOT).map((a) => a.dest)).toContain(".claude/scripts/maestro-step1-gates.cjs");
+  });
+
+  // The script prints the WHOLE of Step 1, not a flag the skill body branches on, so what is
+  // asserted is the contract rather than the prose: one line, exit 0, empty stderr, exactly the
+  // enabled gates named, in order, and an instruction to go on to Step 2. The wording is expected
+  // to change; every property below is not.
+  it("prints one line naming exactly the enabled gates, in order, for all four combinations", async () => {
+    const root = await installed("combos");
+    const seen = new Set<string>();
+
+    for (const confidence_check of [false, true]) {
+      for (const use_design_check of [false, true]) {
+        const label = `confidence=${confidence_check} design=${use_design_check}`;
+        writeConfig(root, { ...defaultish, gates: { confidence_check, use_design_check } });
+        const { code, stdout, stderr } = runGates(root);
+
+        expect(code, `${label} must exit 0`).toBe(0);
+        expect(stderr, `${label} must say nothing on stderr`).toBe("");
+        expect(stdout.endsWith("\n"), `${label} must be newline-terminated`).toBe(true);
+        expect(stdout.trimEnd().split("\n"), `${label} must be exactly one line`).toHaveLength(1);
+
+        // Named iff enabled — this is the whole decision the script exists to make.
+        expect(stdout.includes("/confidence-check"), label).toBe(confidence_check);
+        expect(stdout.includes("/use-design-check"), label).toBe(use_design_check);
+        // Both on: confidence first. The order is part of the instruction, not incidental.
+        if (confidence_check && use_design_check) {
+          expect(stdout.indexOf("/confidence-check")).toBeLessThan(stdout.indexOf("/use-design-check"));
+        }
+        // Every state hands off to Step 2, including the one that does nothing else.
+        expect(stdout, `${label} must send the orchestrator on to Step 2`).toMatch(/Step 2/);
+
+        seen.add(stdout);
+      }
+    }
+
+    // Four distinct answers: a bug collapsing two states would otherwise pass everything above.
+    expect(seen.size).toBe(4);
+  });
+
+  // Every one of these is a case where a script that "reported the problem" would take the whole
+  // /maestro invocation down with it. Skip, quietly, exit 0, is the only safe answer.
+  it("falls back to the both-off line — exit 0, empty stderr — on every degenerate input", async () => {
+    const root = await installed("degenerate");
+    const configPath = path.join(root, ".claude", "maestro.json");
+
+    const cases: [string, () => void][] = [
+      ["maestro.json missing", () => fs.rmSync(configPath)],
+      ["corrupt JSON", () => writeRawConfig(root, "{ not json at all")],
+      ["empty file", () => writeRawConfig(root, "")],
+      ["version 2", () => writeRawConfig(root, JSON.stringify({ version: 2, gates: { confidence_check: true } }))],
+      ["gates absent", () => writeConfig(root, { ...defaultish, gates: undefined })],
+      ["gates is an array", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: [true, true] }))],
+      ["gates is a string", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: "both" }))],
+      ["gates is null", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: null }))],
+      [
+        "gate values are strings",
+        () =>
+          writeRawConfig(
+            root,
+            JSON.stringify({ version: 3, gates: { confidence_check: "true", use_design_check: "true" } })
+          ),
+      ],
+      [
+        "gate values are numbers",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, gates: { confidence_check: 1, use_design_check: 1 } })),
+      ],
+      ["the whole file is an array", () => writeRawConfig(root, "[]")],
+      [
+        ".claude/maestro.json is a directory",
+        () => {
+          fs.rmSync(configPath, { force: true });
+          fs.mkdirSync(configPath);
+        },
+      ],
+    ];
+
+    const skip = skipLine(root);
+    expect(skip, "the both-off line must not be empty").toMatch(/Step 2/);
+
+    for (const [label, mutate] of cases) {
+      mutate();
+      const { code, stdout, stderr } = runGates(root);
+      expect(code, `${label} must exit 0`).toBe(0);
+      expect(stderr, `${label} must say nothing on stderr`).toBe("");
+      expect(stdout, `${label} must resolve to exactly the both-off line`).toBe(skip);
+      fs.rmSync(configPath, { recursive: true, force: true });
+    }
+  });
+
+  it("reports a project missing the script as stale, and re-installing as the fix", async () => {
+    const root = await installed("stale");
+    expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(false);
+
+    fs.rmSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"));
+    expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(true);
+
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(false);
+  });
+
+  // The staleness nag is the only thing standing between a half-installed project and an aborted
+  // /maestro, so it has to fire from the runtime check the step0 hook actually consults — not just
+  // from the app's own content hash above.
+  it("makes maestro-check-runtime say update when the script is gone", async () => {
+    const root = await installed("check");
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    const check = (): { action: string; reason?: string } =>
+      JSON.parse(
+        execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
+          encoding: "utf8",
+          env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: path.join(tmp, "home-check") },
+        })
+      );
+
+    expect(check().action).toBe("continue");
+    fs.rmSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"));
+    const after = check();
+    expect(after.action).toBe("update");
+    expect(after.reason).toContain("maestro-step1-gates.cjs");
   });
 });

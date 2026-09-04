@@ -1,10 +1,10 @@
 ---
 name: updating-maestro
-description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), and why both copies firing at once is now arbitrated rather than warned about, and which path wins."
+description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: dc07795aca62476b23408ba23e0455dc855aef35
+  version: "1.4"
+  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -139,6 +139,23 @@ the matching member. A hook event the plugin did not previously register is a ne
 surface — the harness now calls the plugin at a moment it never used to. That is the minor row's
 "a hook registered on a new event", and nothing else in the change comes near it.
 
+`0.4.1` — optional Step 1 gates (`032`) — is the fourth, and it is the case where the table was
+applied **against** the ticket that specified the bump. That page said `0.5.0`, minor, on the
+reasoning "the published surface grows by a script". Measured against this table and against
+`0.3.5`, that does not hold: a new file under `scripts/` is explicitly *not* a published surface,
+`hooks/hooks.json` is untouched, and no skill, agent or command was added or renamed. Everything
+else in it is a patch by the same precedent — a rewritten step inside
+`templates/maestro/SKILL.md`'s managed region, a new check in `maestro-check-runtime.cjs`, an
+additive optional `maestro.json` field. A consumer gains nothing they can *invoke*; `/maestro`
+simply does less by default. So it shipped as `0.4.1`.
+
+The tempting argument for a minor, and why it fails: the frontmatter grew an `allowed-tools` grant,
+so the harness now runs a command it never used to at `/maestro` expansion. That is inside an
+existing skill's own body, which `0.3.5` already settled as a patch; `0.4.0`'s minor turned on
+`hooks.json` gaining a top-level event key, and nothing in `032` touches it. **The delivery
+consequence of the patch is nil** — autoUpdate compares for inequality only — but the frontmatter
+trap below is a real one, and it is orthogonal to the component chosen.
+
 ### Verify the refresh landed
 
 ```bash
@@ -149,19 +166,21 @@ ls "$P/scripts/maestro-inject-agent-context.js"   # exists
 
 Then `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.
 
-### What `031` and `0.4.0` added to the copied set
+### What `031`, `0.4.0` and `032` added to the copied set
 
-Three more files now ride path 1 into every project:
+Four more files now ride path 1 into every project:
 
 | Copied to | From | Why it is copied rather than run from the plugin |
 | --- | --- | --- |
 | `.claude/scripts/maestro-agent-forks.cjs` | `plugins/maestro/scripts/` | `/maestro-update` invokes it as `$CLAUDE_PROJECT_DIR/.claude/scripts/…`, like every other project-copied script. |
 | `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires — and, since `0.4.0`, the `maestro-step0` hook, which calls `computeAgentSync` from it directly. |
 | `.claude/scripts/maestro-step0.cjs` (`0.4.0`) | `plugins/maestro/scripts/maestro-step0.js` | A **`HOOK_SCRIPTS`** entry, not a `STATIC_ASSET` — so it gets the `.js` → `.cjs` rename, and it needs its two `settings.json` registrations merged in as well as the file copied. |
+| `.claude/scripts/maestro-step1-gates.cjs` (`032`) | `plugins/maestro/scripts/` | A `STATIC_ASSET`. The orchestrator's Step 1 injects it as `` !`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"` ``, so it must be a project copy like every other `$CLAUDE_PROJECT_DIR` script. **This is the one whose absence is fatal rather than degrading** — see below. |
 
-The first two are in `STATIC_ASSETS` and the third in `HOOK_SCRIPTS`, in **both** implementations
-(`install.ts` and `maestro-install.js`) —
-the manifests are mirrored by hand, so a file added to one and not the other is a bug. Because the
+Three are in `STATIC_ASSETS` and `maestro-step0` in `HOOK_SCRIPTS`, in **both** implementations
+(`install.ts` and `maestro-install.js`) — the manifests are mirrored by hand, so a file added to one
+and not the other is a bug. Since `032`, `test/core/parity.test.ts` asserts the two `STATIC_ASSETS`
+`src` sets are **equal**, so that particular bug now fails a named test. Because the
 manifest grew, `installedRuntimeId` and `shippedRuntimeId` differ for every already-installed
 project: **each one reports stale exactly once and re-copies.** That is this delivery path working,
 not a regression.
@@ -176,6 +195,38 @@ on its own. The failure mode is quieter than `0.3.3`'s: a project that never upd
 readiness check and **no warning that none happened**, because the template no longer has the
 fallback commands in it.
 
+### The frontmatter trap — an update cannot deliver it, only a purge-and-reinstall can
+
+**`/maestro-update` re-syncs the orchestrator's MANAGED REGIONS. It never rewrites its
+frontmatter.** `syncManagedRegions` touches only what is between the `Maestro:*` markers, and
+`installOrchestratorSkill` copies the template whole **only when the destination is absent** — and a
+plain (non-purging) uninstall keeps `.claude/skills/maestro/SKILL.md`. So anything the template adds
+*outside* a region reaches new installs and nothing else.
+
+`032` is the first change where that matters, because the thing outside the region is a **grant**:
+
+```yaml
+allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")
+```
+
+An injected command whose permission check answers anything but `allow` **aborts the invocation**.
+So on a project installed before `0.4.1`, an ordinary update copies the new script and re-syncs the
+new Step 1 into the STEPS region, and `/maestro` then **fails to start** — it does not degrade,
+because the frontmatter that permits the command it now contains never arrived.
+
+The fix is one of:
+
+- `/maestro-uninstall --purge`, then reinstall — the thorough option, and it also removes
+  `maestro.json`, so only do this where the workflow graph is disposable or committed;
+- **delete `.claude/skills/maestro/SKILL.md` and re-install** — the file then counts as absent and
+  the template is copied whole, frontmatter included. This is the one to reach for: it costs only
+  the customisations kept outside the managed regions in that file.
+
+Generalise it: **a template change outside a managed region is not deliverable by an update.** If
+the change must reach existing projects, either put it inside a region, or say plainly in the ship
+notes that it needs the file deleted first. `plugins/maestro/skills/maestro-update/SKILL.md` carries
+this as a Notes bullet so a user driving the terminal path is told the same thing.
+
 ## Generated files that need a build, not just an edit
 
 `scripts/lib/maestro-session.cjs`, `scripts/lib/maestro-skill-regions.cjs`,
@@ -183,6 +234,13 @@ fallback commands in it.
 `pnpm --filter maestro build:plugin-libs`. Editing the `.cjs` directly is overwritten on
 the next build; edit the TypeScript source and rebuild. They are committed because a project
 installs them by file copy, so they must exist in the repo.
+
+**`032` is the worked example of forgetting.** It changed `seed.ts` to emit a `gates` block, but
+`seed.ts` is a `plugin-entries` source, so until `build:plugin-libs` was re-run the terminal
+installer went on seeding a config with **no `gates` field** from the stale
+`lib/maestro-seed.cjs` — which resolves to "both gates off" and therefore looked correct. No test
+caught it; installing into a real fixture project did. Anything under `src/core/plugin-entries`'
+import graph needs the rebuild **and** a `git diff plugins/maestro/scripts/lib/` afterwards.
 
 ## Diagnosing "my hook/script change isn't taking effect"
 
@@ -195,6 +253,7 @@ installs them by file copy, so they must exist in the repo.
 | Is the cache older than the change?       | compare `installedAt` / dir mtime against the commit that added the file                              |
 | Everything logged twice?                  | the cached plugin version predates `0.3.3` — it has no arbitration guard. Bump/re-pull (above)        |
 | Hook fires from **neither** copy?         | a runtime older than `0.4.0` on a project reached through a **symlinked** ancestor. `projectOwnsHook` compared `path.resolve`d paths, so the project's own copy failed to recognise itself (`/tmp/p` vs `/private/tmp/p`), stood down, and the plugin's copy stood down too — no error, no output, nothing in the log. Fixed by `samePath` (realpath both sides). Subject to the same double version trap as `0.3.3`'s guard: re-install (path 1) **and** re-pull (path 2). |
+| `/maestro` aborts instead of running, right after an update | the orchestrator's frontmatter is missing the `allowed-tools` grant Step 1's injected command needs — an update never rewrites frontmatter. Delete `.claude/skills/maestro/SKILL.md` and re-install, or purge and reinstall (see the frontmatter trap) |
 
 If skills work but `hooks/`/`scripts/` are absent from the cache → **stale cache, version was never
 bumped.**

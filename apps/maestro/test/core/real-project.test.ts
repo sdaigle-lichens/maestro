@@ -102,6 +102,56 @@ describe("save against a really-installed project", () => {
     expect(after.split("<!-- Maestro:STEPS:START -->")[0]).toBe(before.split("<!-- Maestro:STEPS:START -->")[0]);
   });
 
+  // 032. Two separate things the REAL installer has to get right for the injected Step 1, and
+  // only this suite runs it: the script is copied, and the skill it wrote grants the exact command
+  // it also invokes.
+  it("copies maestro-step1-gates.cjs, and grants exactly the command Step 1 injects", () => {
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"))).toBe(true);
+
+    const skill = fs.readFileSync(orchestratorSkillPath(root), "utf8");
+
+    // The grant and the invocation are written in two places in the template, and a permission
+    // check that returns anything but `allow` ABORTS the whole skill invocation — so a one-byte
+    // drift between them is a /maestro that cannot start. One assertion, so they cannot drift.
+    const granted = /^allowed-tools:\s*Bash\((.+)\)\s*$/m.exec(skill);
+    expect(granted, "no allowed-tools Bash(...) line in the installed skill").not.toBeNull();
+
+    const steps = extractRegion(skill, "STEPS")!;
+    const injected = /^!`(.+)`\s*$/m.exec(steps);
+    expect(injected, "no !`command` line inside the STEPS region").not.toBeNull();
+
+    expect(injected![1]).toBe(granted![1]);
+    expect(injected![1]).toContain("maestro-step1-gates.cjs");
+  });
+
+  // Frontmatter lives OUTSIDE the managed regions, so a re-sync must not touch it — which is also
+  // why an already-installed project needs a purge-and-reinstall to receive the new allowed-tools
+  // line. See plugins/maestro/skills/maestro-update/SKILL.md.
+  it("leaves everything before the STEPS marker byte-identical across a managed-region re-sync", async () => {
+    const skillPath = orchestratorSkillPath(root);
+    const before = fs.readFileSync(skillPath, "utf8");
+    const seeded = defaultV3Config(["backend"]);
+
+    await saveConfig(root, {
+      sliceType: "gates",
+      slice: { gates: { confidence_check: true, use_design_check: true } },
+    });
+    await saveConfig(root, {
+      sliceType: "workflows",
+      slice: {
+        agents_available: seeded.agents_available,
+        skills_available: seeded.skills_available,
+        workflow_instances: seeded.workflow_instances,
+        workflows: seeded.workflows,
+      },
+    });
+
+    const after = fs.readFileSync(skillPath, "utf8");
+    const head = (t: string) => t.split("<!-- Maestro:STEPS:START -->")[0];
+    expect(head(after)).toBe(head(before));
+    expect(head(after)).toContain("allowed-tools: Bash(");
+  });
+
   it("places a rule file and keeps the workflow slice", async () => {
     fs.mkdirSync(path.join(root, ".claude", "rules"), { recursive: true });
     fs.writeFileSync(

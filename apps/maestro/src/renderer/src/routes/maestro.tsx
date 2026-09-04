@@ -10,6 +10,7 @@ import {
   GitBranch,
   PowerOff,
   RefreshCw,
+  ShieldCheck,
   Tag as TagIcon,
   Trash2,
   X,
@@ -22,6 +23,7 @@ import type {
   AgentSyncSummary,
   InstallReport,
   InstallStatus,
+  GatesData,
   ProjectTagsData,
   UninstallPlan,
   UninstallReport,
@@ -406,6 +408,96 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
 }
 
 /**
+ * The post-install Step 1 gates section. Structurally `ProjectTagsCard` above — a checkbox card
+ * that writes `maestro.json` on every click with no Save button — because it is the same kind of
+ * thing, and the two should stay easy to read side by side.
+ *
+ * What it writes is read by nothing in this app: `maestro-step1-gates.cjs` reads `gates` at
+ * `/maestro` invocation time and prints the one line the orchestrator's Step 1 injects. So a
+ * change here shows up in the NEXT orchestration, not in anything on screen.
+ */
+function GatesCard({ viewedRoot }: { viewedRoot: string }) {
+  const [data, setData] = useState<GatesData | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.gates()).then((res) => {
+      if (!cancelled && res.ok) setData(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!data) return null;
+
+  const toggle = async (key: keyof GatesData["gates"]) => {
+    const next = { ...data.gates, [key]: !data.gates[key] };
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.gates.set(next));
+      if (!res.ok) {
+        toast(<>Could not save the Step 1 gates: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setData({ gates: res.value });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const rows: { key: keyof GatesData["gates"]; skill: string; blurb: string }[] = [
+    {
+      key: "confidence_check",
+      skill: "/confidence-check",
+      blurb: "Score how well the request is understood before committing a workflow to it.",
+    },
+    {
+      key: "use_design_check",
+      skill: "/use-design-check",
+      blurb: "Decide whether the work needs a design pass first. Runs on its own if you leave the box above unchecked.",
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <ShieldCheck size={12} /> Step 1 gates
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Which gate skills the <span className="font-mono">/maestro</span> orchestrator runs before it classifies a
+        request. Both start off — uncheck both and Step 1 is skipped entirely, and the run goes straight to matching a
+        workflow. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
+        of the next orchestration.
+      </p>
+      <div className="flex flex-col gap-2">
+        {rows.map((row) => (
+          <label
+            key={row.key}
+            className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+              busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={data.gates[row.key]}
+              disabled={busy}
+              onChange={() => void toggle(row.key)}
+              className="mt-0.5 accent-primary cursor-pointer"
+            />
+            <span>
+              Run <span className="font-mono">{row.skill}</span>
+              <span className="block text-(--ink-3)">{row.blurb}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
  * `031`'s entry point, and deliberately only that: a COUNT and a link, not a modal.
  *
  * The summary behind it is computed on project selection (see `InstallProvider`) and writes
@@ -658,6 +750,8 @@ function InstallPage() {
           {agentSync && <ForkedAgentsCard summary={agentSync} />}
 
           {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
+
+          {status?.installed && viewedRoot && <GatesCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           <div className="flex items-center gap-2">
             <Button

@@ -53,6 +53,8 @@ export {
   serializeConfig,
   writeConfig,
   mergeSlice,
+  resolveGates,
+  DEFAULT_GATES,
   type ConfigSlice,
 } from "./config.js";
 

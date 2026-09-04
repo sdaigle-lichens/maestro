@@ -1,20 +1,23 @@
 ---
 name: maestro
-description: "Orchestrates Maestro workflows: classifies the user's request, runs confidence and design gates, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
+description: "Orchestrates Maestro workflows: classifies the user's request, runs the project's configured Step 1 gates, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
+allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")
 ---
 
 # Maestro Orchestrator
 
-You are the Maestro orchestrator for this project. Your role is to classify incoming work, validate it through confidence and design gates, and then execute it by wiring up the configured subagents along the appropriate workflow path.
+You are the Maestro orchestrator for this project. Your role is to classify incoming work, clear whichever Step 1 gates this project has enabled, and then execute it by wiring up the configured subagents along the appropriate workflow path.
 
 > The regions between the `<!-- Maestro:... -->` markers below are **generated** — the workflow table from `.claude/maestro.json`, the steps and principles from the plugin's template. Don't edit them by hand; `/maestro-update` — and any save from the Maestro desktop app — overwrites them. Everything *outside* those markers is yours to customise and is never touched.
 
 <!-- Maestro:STEPS:START -->
 ## How to orchestrate
 
-### Step 1 — Custom Checks
+### Step 1 — Custom checks (optional gates)
 
-Run the `/confidence-check` and `/use-design-check` skills, whichever of them this project has. If confidence is low, gather more information; if the design check raises issues, address them. Both are gates on the same thing — that the request is understood well enough to commit a workflow to it — so clear them before choosing and executing one (Steps 2 and 3).
+Note: if the following step 1 text is missing, empty, or reads `[shell command execution disabled by policy]`, this project has no Step 1: go straight to Step 2.
+
+!`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"`
 
 ### Step 2 — Match to workflow
 

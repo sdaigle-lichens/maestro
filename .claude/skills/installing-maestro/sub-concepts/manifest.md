@@ -9,7 +9,7 @@ Everything lands under `<project>/.claude/`. Four groups:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`) |
+| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`) |
 | Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`)                     |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 | Handoff protocol templates                          | `.claude/templates/handoffs/**.md` | walked off disk, not enumerated                                                                               |
@@ -30,6 +30,15 @@ for `<project>/.claude/handoffs/<sender>/<receiver>.md` **first**, and falls bac
 `<script dir>/../templates/handoffs/…` — which from the copied script is exactly the install
 destination. So installing there needs no change to the script _and_ leaves the override location
 free. Copying into the override would overwrite a customised protocol on every update.
+
+**`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
+by the **harness** rather than by a hook or by the model — the orchestrator's Step 1 names it in a
+`` !`command` `` line, and Claude Code substitutes its stdout into the skill body before the model
+reads it. Two manifest consequences: `shippedRuntimeId` moved again, so every installed project
+reported stale once and re-copied; and a project **missing** it does not degrade but loses
+`/maestro` outright (`node` on an absent file exits 1, and a non-zero exit aborts the invocation),
+which is why `maestro-check-runtime.cjs` grew a presence check over it — see the staleness
+sub-concept.
 
 **Both of `031`'s additions are `STATIC_ASSETS`, not `HOOK_SCRIPTS`** — they are already `.cjs` in
 the plugin and are not hooks, so they are copied under their existing names with no rename. They are
@@ -79,6 +88,14 @@ Two properties of how they are written:
 
 `bash-validation.sh`'s command is written **unquoted and un-prefixed**, byte-for-byte as the legacy
 installer wrote it, because `maestro-uninstall.js` removes it by exact string match.
+
+**`hooks` is the only key either implementation writes into `settings.json`.** No `permissions`
+block, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
+and did not. It needed a permission grant for the command Step 1 injects (an injected command whose
+check answers anything but `allow` aborts the invocation), and put it in the orchestrator
+**template's frontmatter** as `allowed-tools` instead. That keeps the installer out of a block users
+hand-edit, and keeps uninstall's removal list to hook entries: the grant lives in the skill file and
+leaves with it under `--purge`. See the uninstall sub-concept for what that removal list is.
 
 ## The other two writes
 
