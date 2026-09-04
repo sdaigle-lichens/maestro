@@ -54,6 +54,7 @@ second.
 | `skill-tags.ts`                         | A skill's backend/frontend/mobile/refactor/reviewer/scribe/test tags — global, keyed by skill id, in `~/.claude/maestro-skill-tags.sqlite` (`node:sqlite`, not a native module). `skillMapFromTags` is the pure tags→`SkillMap` lookup both `data:workflows`/`data:reseed` and `/maestro-install`'s terminal path converge on. `parseSkillTagsBlock`/`applySkillTagsBlock` are the "Update skill tags" pane flow's other half — see `claude-session.ts` |
 | `install.ts` / `uninstall.ts`           | Installs the runtime into a project, reports staleness, removes it                     |
 | `sync-decision.ts`                      | The ONE materialize / refresh / skip-as-customized / never-touched rule (pure, no `fs`). Lifted out of `report-sync.ts` by `031` so the report path and the forked-agent path cannot drift — the caller answers "what is the hash over" and "has the template moved" and this answers the verdict |
+| `handoff-seeds.ts` / `handoff-defaults.ts` / `handoff-routes.ts` / `handoff-resolution.ts` / `handoff-sync.ts` / `handoffs.ts` | The `handoff_details` protocol a route's sender must emit (`033`), in the same three-tier shape as reports: project file → `~/.claude/maestro-handoff-defaults.sqlite` → the shipped seed. `handoff-seeds.ts` **imports nothing** on purpose — it rides into the SubagentStart hook inside `lib/maestro-session.cjs`, so the floor still answers on a `node` older than 22.5; the store is a separate bundle the hook `require`s in a try/catch. `handoff-routes.ts` is the route walk lifted out of the hook so the install-time sync and the hook cannot disagree about which routes exist. `handoff-sync.ts` is `decideSync`'s third caller. Ids are `"<sender>/<receiver>"` with BARE agent names, validated before any `path.join` |
 | `agent-fork.ts` / `agent-fork-record.ts` | Forking a global-tier agent into the project, and the `agent-forks.json` provenance sidecar. Split so the sidecar + frontmatter arithmetic reach the plugin bundle WITHOUT `node:sqlite`, which `copyAgentAttributeRows` drags in |
 | `agent-sync.ts`                         | Whether each forked agent is still in step with its template. `computeAgentSync` READS ONLY — it runs on project selection and writes nothing to `.claude/agents/`; `applyAgentSync` is the one writer, for one explicit update / keep / detach |
 | `diff.ts`                               | A line diff (pure), so the `/agents` review card and the `maestro`/`maestro-update` skills render the same array |
@@ -103,6 +104,9 @@ Bundles `src/core/plugin-entries/*.ts` to CJS and writes them over every `.cjs` 
   `maestro-agent-project-tags.cjs`, `maestro-agent-types.cjs`
 - `maestro-concept-skills.cjs`
 - `maestro-agent-sync.cjs` — forked-agent staleness (`031`), behind `maestro-agent-forks.cjs`
+- `maestro-handoff-defaults.cjs` — the handoff global store (`033`), `require`d by
+  `maestro-inject-agent-context.js` **inside a try/catch**; the seed tier ships in
+  `maestro-session.cjs` instead, so `grep -c "node:sqlite" …/lib/maestro-session.cjs` must stay `0`
 
 **Those files are generated. Do not hand-edit them** — edit the TypeScript source and re-run
 the build. They are committed because a project installs them by file copy, so they must exist in

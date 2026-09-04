@@ -1,10 +1,10 @@
 ---
 name: agent-fork-sync
-description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that both the report sync and the forked-agent sync call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card, and the terminal side — the maestro-step0 hook plus /maestro-update's CLI) that must always reach the same verdict. Use when changing report-sync.ts or agent-sync.ts, adding a third caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
+description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that its three callers — the report sync, the forked-agent sync and (since 033) the handoff sync — all call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card, and the terminal side — the maestro-step0 hook plus /maestro-update's CLI) that must always reach the same verdict. Use when changing report-sync.ts, agent-sync.ts or handoff-sync.ts, adding a fourth caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: dc07795aca62476b23408ba23e0455dc855aef35
+  version: "1.3"
+  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
 ---
 
 # Keeping a copy in step with the thing it was copied from
@@ -21,23 +21,24 @@ of those states the right answer is the same. That answer is written down **once
 `src/core/sync-decision.ts`, and this skill exists to keep it that way.
 
 ```
-              ┌──────────────────────────────────────────┐
-              │  sync-decision.ts  ·  decideSync()       │   pure. no fs. knows nothing
-              │  detached / no-template / materialize /  │   about reports or agents.
-              │  refresh / stale-customized / unchanged  │
-              └────────────┬────────────────┬────────────┘
-                           │                │
-        ┌──────────────────┴───┐        ┌───┴──────────────────────────┐
-        │ report-sync.ts       │        │ agent-sync.ts                │
-        │ hash: whole file     │        │ hash: hashAgentBody (body)   │
-        │ moved: version  >    │        │ moved: version+body  (plugin)│
-        │        (integer)     │        │        hash    !==  (user)   │
-        │ WRITES on install    │        │ WRITES NOTHING (read-only)   │
-        └──────────────────────┘        └───┬──────────────────────┬───┘
-                                            │                      │
-                                  /agents review card    maestro-step0.js (hook)
-                                  (+ /maestro count)     maestro-agent-forks.cjs
-                                                         (maestro-update)
+              ┌──────────────────────────────────────────────┐
+              │  sync-decision.ts  ·  decideSync()           │   pure. no fs. knows nothing
+              │  detached / no-template / materialize /      │   about reports, handoffs
+              │  refresh / stale-customized / unchanged      │   or agents.
+              └──┬───────────────────┬─────────────────────┬─┘
+                 │                   │                     │
+        ┌────────┴────────┐ ┌────────┴────────┐ ┌──────────┴───────────────────┐
+        │ report-sync.ts  │ │ handoff-sync.ts │ │ agent-sync.ts                │
+        │ per AGENT       │ │ per ROUTE PAIR  │ │ per FORKED AGENT             │
+        │ hash: whole file│ │ hash: whole file│ │ hash: hashAgentBody (body)   │
+        │ moved: version >│ │ moved: version >│ │ moved: version+body  (plugin)│
+        │        (integer)│ │        (integer)│ │        hash    !==  (user)   │
+        │ WRITES on inst. │ │ WRITES on inst. │ │ WRITES NOTHING (read-only)   │
+        └─────────────────┘ └─────────────────┘ └───┬──────────────────────┬───┘
+                                                    │                      │
+                                            /agents review card    maestro-step0.js (hook)
+                                            (+ /maestro count)     maestro-agent-forks.cjs
+                                                                   (maestro-update)
 ```
 
 **Why one function and not two implementations that agree today.** `resolveReport` makes the same
@@ -61,8 +62,10 @@ subtly wrong is invisible.
 | `refresh` / `unchanged` | Untouched, and the template did / did not move | |
 
 The two things that genuinely differ between callers arrive **already answered**, as
-`localHash` and `templateAdvanced`. Adding a third caller means answering those two questions for
-it — not adding a branch here.
+`localHash` and `templateAdvanced`. Adding a caller means answering those two questions for it —
+not adding a branch here. `033` proved the cost: `handoff-sync.ts` became the **third** caller and
+reused both of `report-sync.ts`'s answers verbatim, so it added no branch and no test to
+`sync-decision.test.ts`. Only its candidate set is new (see the shared-decision table).
 
 See [the shared decision](sub-concepts/the-shared-decision.md) for the full table and what each
 caller passes.
@@ -90,7 +93,9 @@ This is the part that looks like an inconsistency and is not:
   files with no version anywhere. Nothing but the bytes can notice.
 
 `report-sync.ts` is a third answer to the same question: the global store's integer `version`, with
-`>` rather than `!==`, because that number only ever goes up.
+`>` rather than `!==`, because that number only ever goes up. `handoff-sync.ts` uses that same
+answer against `maestro-handoff-defaults.sqlite`, so there are three definitions of "the template
+moved", not four.
 
 ## The description does not track — and neither does the name
 
@@ -157,6 +162,7 @@ asserts it on mtimes *and* bytes across two consecutive calls.
 | `apps/maestro/src/core/sync-decision.ts` | `decideSync` — the one rule. Pure, no `fs`. |
 | `apps/maestro/src/core/report-sync.ts` | Caller 1: reports, on install/update. Writes. |
 | `apps/maestro/src/core/agent-sync.ts` | Caller 2: forked agents. `computeAgentSync` reads, `applyAgentSync` writes. |
+| `apps/maestro/src/core/handoff-sync.ts` | Caller 3 (`033`): handoff protocols, on install/update. Writes. Candidates come from the workflow graph, not from a list of agents. |
 | `apps/maestro/src/core/agent-fork-record.ts` | The `agent-forks.json` sidecar, `hashAgentBody`, `mergeForkBody`, `renameAgentInFrontmatter`. No sqlite. |
 | `apps/maestro/src/core/agent-fork.ts` | `forkAgent` + `copyAgentAttributeRows`; re-exports the above. |
 | `apps/maestro/src/core/diff.ts` | The line diff both surfaces render. Pure. |

@@ -29,3 +29,29 @@ export {
   sessionLogPath,
   SESSION_LOG_FILE,
 } from "../session-runtime.js";
+
+// Handoff protocols (`033`), the parts that must reach the hook WITHOUT `node:sqlite`.
+//
+// `handoffRoutes` is the route walk the hook used to carry inline — lifted so the injector and the
+// install-time sync cannot disagree about which routes a project has. `resolveHandoff` is the
+// three-tier order, shared with the app for the same reason `resolveReport` is. `SEED_HANDOFFS` /
+// `isSeededHandoff` are the floor: the sqlite tier lives in its own bundle the hook requires inside
+// a try/catch, and this is what answers when that require throws. Keep `grep -c "node:sqlite"` on
+// the generated maestro-session.cjs at 0.
+export { handoffRoutes, routesFrom, handoffPairs, type HandoffRoute } from "../handoff-routes.js";
+
+export {
+  resolveHandoff,
+  type HandoffResolution,
+  type HandoffSource,
+  type GlobalHandoffInput,
+} from "../handoff-resolution.js";
+
+export {
+  SEED_HANDOFFS,
+  PRIOR_SEEDS as PRIOR_HANDOFF_SEEDS,
+  isSeededHandoff,
+  isValidHandoffId,
+  splitHandoffId,
+  handoffId,
+} from "../handoff-seeds.js";

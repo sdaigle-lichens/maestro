@@ -1,18 +1,18 @@
 # The manifest
 
-What an install writes, in two lists that both implementations mirror by hand:
-`STATIC_ASSETS` + `handoffAssets()` (the files) and `HOOK_REGISTRATIONS` (the settings entries).
+What an install writes, in two lists that both implementations mirror by hand: `STATIC_ASSETS`
+(the files) and `HOOK_REGISTRATIONS` (the settings entries). Since `033` there is no second file
+list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSETS` alone.
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Four groups:
+Everything lands under `<project>/.claude/`. Three groups — 17 files:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`) |
 | Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`)                     |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
-| Handoff protocol templates                          | `.claude/templates/handoffs/**.md` | walked off disk, not enumerated                                                                               |
 
 Plus `bash-validation.sh`, the one asset copied **executable** (`0o755`) because its hook runs it as
 a bare command rather than through `node`.
@@ -25,11 +25,16 @@ parse their `require()` as ESM and fail the hook **on every tool call**. Scripts
 `.cjs` in the plugin are copied under their existing names. Add a hook script to the wrong list and
 it breaks only in projects that happen to be ESM.
 
-**`.claude/templates/handoffs/` is not `.claude/handoffs/`.** `maestro-inject-agent-context` looks
-for `<project>/.claude/handoffs/<sender>/<receiver>.md` **first**, and falls back to
-`<script dir>/../templates/handoffs/…` — which from the copied script is exactly the install
-destination. So installing there needs no change to the script _and_ leaves the override location
-free. Copying into the override would overwrite a customised protocol on every update.
+**Handoff protocols left the manifest in `033`.** They used to be a fourth group — the ~23
+`templates/handoffs/**.md` files walked off disk into `.claude/templates/handoffs/`, where the
+injector's fallback looked. Both the source directory and the destination are gone. What replaces
+them is not an asset copy but a **sync**: `syncProjectHandoffs()` materialises
+`.claude/handoffs/<sender>/<receiver>.md` for exactly the routes the workflows wire, records
+`syncedFrom{version,hash}` in `maestro.json`'s `handoffs` slice, and leaves an edited file alone.
+The shipped floor is `SEED_HANDOFFS`, a constant bundled into `lib/maestro-session.cjs`, so it
+needs no file on disk to answer. Consequence for this manifest: an install's file count dropped
+from ~37 to 17, and adding a handoff pair no longer touches `shippedRuntimeId` — it is a seed edit
+plus a `build:plugin-libs`.
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
 by the **harness** rather than by a hook or by the model — the orchestrator's Step 1 names it in a
@@ -113,5 +118,6 @@ analysis. **All three flags only affect a fresh seed.**
 
 `runtimeVersion` is stamped **last**, after the files it describes are current on disk.
 
-Files: `apps/maestro/src/core/install.ts` (`STATIC_ASSETS`, `HOOK_SCRIPTS`, `handoffAssets`,
-`HOOK_REGISTRATIONS`), `plugins/maestro/scripts/maestro-install.js` (the mirror).
+Files: `apps/maestro/src/core/install.ts` (`STATIC_ASSETS`, `HOOK_SCRIPTS`, `runtimeAssets`,
+`HOOK_REGISTRATIONS`), `apps/maestro/src/core/handoff-sync.ts` (the handoff half, which is a sync
+rather than a manifest entry), `plugins/maestro/scripts/maestro-install.js` (the mirror of both).

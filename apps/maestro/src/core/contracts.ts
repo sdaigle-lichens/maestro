@@ -242,6 +242,34 @@ export interface ReportDefault {
 }
 
 /**
+ * One row in the global handoff-defaults store (`handoff-defaults.ts`) — the middle of the three
+ * tiers `handoff-resolution.ts` resolves, and what `034`'s `/templates` Handoffs tab edits.
+ * `version` is what `handoff-sync.ts` compares against a project's `syncedFrom.version`.
+ *
+ * `handoffId` is `"<sender>/<receiver>"`, bare names both sides — the store's own primary key, not
+ * an indirection like `ReportDefault.reportId`.
+ */
+export interface HandoffDefault {
+  handoffId: string;
+  content: string;
+  version: number;
+}
+
+/**
+ * What's in effect for one handoff route, as resolved by `handoff-resolution.ts`.
+ *
+ * `source` carries one tier more than `ResolvedReport`: `"seed"` means the global store had no
+ * answer (usually because `node:sqlite` isn't available to the process asking) and what is in
+ * effect is the constant Maestro ships. `034`'s UI needs the distinction to say whether editing
+ * the global default would change anything.
+ */
+export interface ResolvedHandoff {
+  source: "project" | "global" | "seed" | "none";
+  /** Empty string for "none" — the editor's resting state, never null on the wire. */
+  content: string;
+}
+
+/**
  * The closed set of agent-type tags the `/templates` page's Agent Types tab assigns one of to each
  * agent, backed by `agent-types.ts`'s own global sqlite store — singular per agent (an agent has
  * exactly one type, not a set), unlike a skill's `agentTypes` dimension, which may hold several
@@ -381,6 +409,21 @@ export interface ReportSyncSummary {
   unchanged: string[];
 }
 
+/**
+ * The same four buckets, over `.claude/handoffs/<sender>/<receiver>.md` — each entry a
+ * `"<sender>/<receiver>"` handoff id rather than an agent name, and each id in exactly one list.
+ *
+ * A wired route whose pair has no template anywhere (`scribe -> reviewer`) appears in NO bucket:
+ * `decideSync` returns `no-template`, no file is written, and there is nothing to tell the user.
+ */
+export interface HandoffSyncSummary {
+  materialized: string[];
+  refreshed: string[];
+  /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
+  staleCustomized: string[];
+  unchanged: string[];
+}
+
 /** One line of a line-diff, as `src/core/diff.ts` produces it. `ctx` is unchanged context. */
 export interface DiffLine {
   kind: "add" | "del" | "ctx";
@@ -499,6 +542,8 @@ export interface InstallReport {
   status: InstallStatus;
   /** What the report sync step did — materialized/refreshed/flagged-as-customized/unchanged. */
   reportsSync: ReportSyncSummary;
+  /** The same, for `.claude/handoffs/<sender>/<receiver>.md`, keyed by handoff id (`033`). */
+  handoffsSync: HandoffSyncSummary;
 }
 
 /**

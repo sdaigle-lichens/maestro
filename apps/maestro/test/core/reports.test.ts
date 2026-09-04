@@ -7,6 +7,9 @@ import path from "node:path";
 
 import { getResolvedReport, saveProjectReportOverride } from "../../src/core/reports.js";
 import { readAgentReportDefault } from "../../src/core/report-defaults.js";
+import { isValidReportId } from "../../src/core/report-resolution.js";
+import { syncProjectReports } from "../../src/core/report-sync.js";
+import { defaultish } from "./fixtures/configs.js";
 import { readConfig, writeConfig, blankConfig } from "../../src/core/config.js";
 
 describe("getResolvedReport / saveProjectReportOverride", () => {
@@ -76,5 +79,52 @@ describe("getResolvedReport / saveProjectReportOverride", () => {
       source: "project",
       content: "the project's own words",
     });
+  });
+});
+
+// The report id becomes `.claude/reports/<id>.md`, and it arrives from a hand-editable
+// maestro.json (or straight off the renderer on a save). `033` added the equivalent guard to the
+// handoff path and fixed this one at the same time — it had none at all.
+describe("report id path safety", () => {
+  let dir: string;
+  let dbPath: string;
+  let projectRoot: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-report-ids-"));
+    dbPath = path.join(dir, "reports.sqlite");
+    projectRoot = path.join(dir, "project");
+    fs.mkdirSync(projectRoot, { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  it("accepts a bare name and rejects anything that could escape the reports directory", () => {
+    expect(isValidReportId("backend")).toBe(true);
+    expect(isValidReportId("my-agent_2")).toBe(true);
+    for (const bad of ["../../etc/passwd", "a/b", "a\\b", ".", "..", "", "a.b", 3 as unknown]) {
+      expect(isValidReportId(bad)).toBe(false);
+    }
+  });
+
+  it("refuses to resolve or save through a malformed id", () => {
+    expect(() => getResolvedReport(projectRoot, "../../etc/passwd", dbPath)).toThrow(/Invalid report id/);
+    expect(() => saveProjectReportOverride(projectRoot, "../evil", "x")).toThrow(/Invalid report id/);
+  });
+
+  it("the sync skips a malformed entry instead of throwing the whole install away", () => {
+    writeConfig(projectRoot, {
+      ...defaultish,
+      reports: { backend: { id: "../../escape" }, "../../also-bad": { id: "fine" } },
+    });
+    const summary = syncProjectReports(projectRoot, dbPath);
+    expect(summary.materialized).toEqual(expect.arrayContaining(["scribe", "test"]));
+    for (const bucket of Object.values(summary)) {
+      expect(bucket).not.toContain("backend");
+      expect(bucket).not.toContain("../../also-bad");
+    }
+    expect(fs.existsSync(path.join(dir, "escape.md"))).toBe(false);
   });
 });

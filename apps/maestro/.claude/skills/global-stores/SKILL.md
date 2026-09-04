@@ -1,15 +1,15 @@
 ---
 name: global-stores
-description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report default comes from before the project has an opinion, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
+description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.5"
-  last-update: eab3cb4b5024b7a735be9b73d3986b502b9e195f
+  version: "1.6"
+  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
 ---
 
 # Global stores
 
-Five modules in `apps/maestro/src/core` share one mechanism: a `node:sqlite` database under
+Six modules in `apps/maestro/src/core` share one mechanism: a `node:sqlite` database under
 `~/.claude`, one store per machine, read by every project the app opens. They are the deliberate
 counterweight to [`maestro-config-model`](../maestro-config-model/SKILL.md) — state that is
 explicitly _not_ per-project.
@@ -20,6 +20,7 @@ explicitly _not_ per-project.
 | `~/.claude/maestro-agent-types.sqlite`        | `agent-types.ts`        | `(project_root, agent_name)` (`030`) |
 | `~/.claude/maestro-agent-project-tags.sqlite` | `agent-project-tags.ts` | `(project_root, agent_name)` (`030`) |
 | `~/.claude/maestro-report-defaults.sqlite`    | `report-defaults.ts`    | agent name → report id              |
+| `~/.claude/maestro-handoff-defaults.sqlite`   | `handoff-defaults.ts`   | `"<sender>/<receiver>"` (`033`)      |
 | `~/.claude/maestro-avatars.sqlite`            | `avatar-store.ts`       | `(project_root, agent_name)` (`030`) |
 
 Each exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the
@@ -60,15 +61,23 @@ Do not collapse these into one rationale; the modules' own headers distinguish t
 - **Skill tags and avatars** are global because _the thing is the same thing everywhere_. A skill
   from a marketplace is the same skill wherever it is used, so tagging it once should tag it
   everywhere; an agent named the same thing should look the same everywhere.
-- **Report defaults** are global for a different reason: they are the **fallback tier** a project
-  falls back to when it has no opinion of its own, and the thing install/update syncs a project's
-  `.claude/reports/*.md` _from_.
+- **Report defaults and handoff defaults** are global for a different reason: they are the
+  **fallback tier** a project falls back to when it has no opinion of its own, and the thing
+  install/update syncs a project's `.claude/reports/*.md` and `.claude/handoffs/**.md` _from_.
+
+## `handoff-defaults.ts` is not a copy of `report-defaults.ts` (`033`)
+
+Same argument for being global, deliberately different shape: **one table**, not
+`report-defaults.ts`'s agent → `report_id` → content indirection; the id **is a path**
+(`"<sender>/<receiver>"`, bare names) and is validated before any `path.join`; and the **seed lives
+outside the store** in `handoff-seeds.ts`, which imports nothing, so the floor still answers on a
+`node` too old for `node:sqlite`. See [Handoff defaults](sub-concepts/handoff-defaults.md).
 
 ## The exception: a description is not a store
 
 `/agents` also edits an agent's **description**, and that one deliberately does *not* get a store.
 `src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the
-`agent:describe` channel. The reason is the test to apply before adding a sixth store: type, project
+`agent:describe` channel. The reason is the test to apply before adding a seventh store: type, project
 tag and avatar are **Maestro's own metadata** and mean nothing to a Claude session, so a machine-wide
 copy is the truth. A description is the line **Claude Code itself reads** to decide when to dispatch
 the agent, so a copy beside the app would make the page show one sentence while every run used
@@ -96,7 +105,7 @@ only the first line would leave the continuation dangling as garbage keys.
 ## A fourth writer, on a fork
 
 `agent-fork.ts`'s `copyAgentAttributeRows(fromName, toName, projectRoot, dbPaths?)` (`029`, rekeyed
-`030`) is a new consumer of three of these five stores — avatar, agent type, project tag — called
+`030`) is a new consumer of three of these six stores — avatar, agent type, project tag — called
 only for a **renamed** fork on `/agents`. The read side stays name-only/global (a fork's source is
 always a global-tier template), but the write side passes `projectRoot` — the new fork's own
 project — since the copy always lands on a project-tier agent, and after `030`'s rekey landing it on
@@ -118,7 +127,7 @@ still builds, and only a bare-`node` run notices.
 ## Why `node:sqlite`
 
 No native module, and therefore no `electron-rebuild` step. `skill-tags.ts`'s header carries the
-full argument — the other four cite it rather than restating it. A new store should use the same
+full argument — the other five cite it rather than restating it. A new store should use the same
 mechanism for the same reason.
 
 ## The trap: `SKILL_TAGS` is gone
@@ -137,11 +146,16 @@ fixed agent roster. Any code or doc still routing by agent name is working from 
   helpers had to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these
   stores, so it drags `node:sqlite` into any bundle that imports it.
 - [`maestro-config-model`](../maestro-config-model/SKILL.md) — the per-project counterpart; the
-  `reports` slice is what overrides the `report-defaults` tier.
+  `reports` and `handoffs` slices are what override the `report-defaults` and `handoff-defaults`
+  tiers.
 - `maestro-architecture` (at the repo root `.claude/skills`) — the `SubagentStart` hook resolves a
-  report across these tiers at dispatch time.
-- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — four of these five have a generated CJS
-  twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules`.
+  report *and* a per-route handoff protocol across these tiers at dispatch time.
+- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — `syncProjectHandoffs` is `decideSync`'s third
+  caller, and syncs `.claude/handoffs/` from this store the way `report-sync.ts` syncs
+  `.claude/reports/`.
+- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — five of these six have a generated CJS
+  twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules` (every one
+  but `avatar-store.ts`).
 - [`agents-view`](../agents-view/SKILL.md) — the fourth writer above, and the "Fork into this
   project" button that triggers it.
 
@@ -151,4 +165,6 @@ fixed agent roster. Any code or doc still routing by agent name is working from 
 - [Agent types and project tags](sub-concepts/agent-classification.md) — the per-agent half of that
   match.
 - [Report defaults](sub-concepts/report-defaults.md) — the global fallback tier and its two tables.
+- [Handoff defaults](sub-concepts/handoff-defaults.md) — the one-table twin, its path-shaped id, and
+  the sqlite-free seed module that keeps the floor alive on an old `node`.
 - [Avatars](sub-concepts/avatars.md) — cosmetic, layered, keyed by agent name.

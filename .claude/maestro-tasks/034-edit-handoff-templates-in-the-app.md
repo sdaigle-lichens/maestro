@@ -169,6 +169,28 @@ Add the handoff lines beside the existing `reportsSync` block in `routes/maestro
 - [ ] `test/isolation.test.ts` still passes, including the `src/core` boundary walk over the new
       renderer imports
 
+## Checked against `033` as built
+
+Reconciled by the scribe when `033` closed. **The plan holds** — every `033` symbol this page names
+exists with the shape it assumes (`isSeededHandoff`, `deleteHandoffDefault`, `SEED_HANDOFFS`,
+`handoffRoutes`, `readAllHandoffDefaults`, `ResolvedHandoff`, `HandoffDefault`, and `handoffsSync`
+on `InstallReport`). Three small adjustments, none structural:
+
+- **`getResolvedHandoff` / `saveProjectHandoffOverride` take one `handoffId` string, not
+  `(sender, receiver)`.** The id is `"<sender>/<receiver>"`; `handoffId(sender, receiver)` in
+  `handoff-seeds.ts` builds it. Keep the channel signatures as this page has them and join in the
+  handler — or change them to take the id. Either, but decide once.
+- **Both ends of a route are BARE agent names, and a malformed id throws before any `path.join`.**
+  The pair dropdowns must emit bare names (`test`, never `maestro:test`), or every call fails the
+  `^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$` guard.
+- **`ResolvedHandoff.source` has four values, not three** — `"project" | "global" | "seed" | "none"`.
+  The pane's tier label needs a fourth case; `"seed"` reads as "what Maestro ships", and the page's
+  "no template at any tier" row is `"none"`.
+
+Also worth knowing before the pane work: `deleteHandoffDefault` **re-seeds** if the delete empties
+the table (see `033`'s divergence 5), and nothing renders `handoffsSync` yet — `maestro.tsx` still
+shows `reportsSync` only, which is the last bullet of this page's Files table.
+
 ## Notes for whoever picks this up
 
 Read `apps/maestro/.claude/skills/agents-view/` end to end before touching `agents.tsx` — the

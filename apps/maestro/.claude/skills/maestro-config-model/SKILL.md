@@ -1,10 +1,10 @@
 ---
 name: maestro-config-model
-description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
+description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
+  version: "1.3"
+  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
 ---
 
 # Maestro config model (v3)
@@ -25,6 +25,7 @@ entry point the IPC layer calls.
 | `workflows`                             | The graphs themselves — `MaestroWorkflowV3`, made of `MaestroNodeV3` and `MaestroEdgeV3`.                             |
 | `rules`                                 | `MaestroRuleV3[]` — rule files and the scopes they are assigned to.                                                   |
 | `reports?`                              | Per-agent report overrides. Absent means "no project-level opinion", and resolution falls through to the global tier. |
+| `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names. Flat, not nested — `decideSync` tracks one thing per key and the thing here is a pair. Same absence rule as `reports?`. |
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                      |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                           |
 | `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
@@ -43,6 +44,13 @@ end in a catch-all `else` that happened to mean `project-tags`; that is a latent
 the clobbering bug the function's own header warns about, because the *next* slice added would have
 silently inherited the previous one's write. A fifth slice must add a fifth test — being forgotten
 should be a no-op, never a wrong write.
+
+**`reports` and `handoffs` have no `mergeSlice` arm at all, and that is not an omission.** They are
+never written through `config:save`. Their writers are the install-time syncs (`report-sync.ts`,
+`handoff-sync.ts`) and the explicit save functions (`saveProjectReportOverride`,
+`saveProjectHandoffOverride`), each of which does its own `readConfig` → mutate one key →
+`writeConfig`. Adding a `sliceType` for either would put a second, racier path onto state that
+already has a writer. `033` followed that precedent rather than reopening it.
 
 **A slice can have more than one writer, and then read-before-write is the rule.** The `workflows`
 slice now has two: `/workflows`, and `/agents` (which edits the selected instance's `loaded_skills` /
@@ -86,6 +94,8 @@ fresh config. Any third writer of an existing slice owes the same.
 - [Workflows slice](sub-concepts/workflows-slice.md) — instances, nodes, edges and the success path.
 - [Rules slice](sub-concepts/rules-slice.md) — rules and their scopes.
 - [Reports slice](sub-concepts/reports-slice.md) — per-agent overrides and tier fallback.
+- [Handoffs slice](sub-concepts/handoffs-slice.md) — per-route overrides, the path-shaped key, and
+  the third tier that `reports` does not have.
 - [Project tags slice](sub-concepts/project-tags-slice.md) — catalog membership.
 - [Gates slice](sub-concepts/gates-slice.md) — the orchestrator's optional Step 1 gates, and how an
   absent or malformed value resolves.

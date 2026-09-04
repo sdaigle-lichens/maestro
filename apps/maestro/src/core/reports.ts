@@ -6,12 +6,15 @@ import fs from "node:fs";
 import path from "node:path";
 import { readConfig, writeConfig, blankConfig } from "./config.js";
 import { readAgentReportDefault, DEFAULT_REPORT_DEFAULTS_DB_PATH } from "./report-defaults.js";
-import { resolveReport } from "./report-resolution.js";
+import { resolveReport, isValidReportId } from "./report-resolution.js";
 import type { ResolvedReport } from "./contracts.js";
 
 export type { ResolvedReport };
 
 function reportFilePath(projectRoot: string, reportId: string): string {
+  // Same guard `report-sync.ts` applies: the id reaches here from a hand-editable maestro.json (or
+  // straight from the renderer on a save) and is joined into a path. See `isValidReportId`.
+  if (!isValidReportId(reportId)) throw new Error(`Invalid report id: ${String(reportId)}`);
   return path.join(projectRoot, ".claude", "reports", `${reportId}.md`);
 }
 
@@ -30,6 +33,10 @@ export function getResolvedReport(
   agentName: string,
   dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH
 ): ResolvedReport {
+  // Guarded at the entry point, not only at the `path.join`: an `agentName` that is not a bare
+  // name has no report file and no store row, and refusing it here is what makes the guard
+  // impossible to reach around by writing an `id` that happens to be well-formed.
+  if (!isValidReportId(agentName)) throw new Error(`Invalid report id: ${String(agentName)}`);
   // "" means no project is open — there is no project tier to consult, only the global one.
   const cfg = projectRoot ? readConfig(projectRoot) : null;
   const entry = cfg?.reports?.[agentName];
@@ -46,6 +53,7 @@ export function getResolvedReport(
  * default, it IS the project's answer now.
  */
 export function saveProjectReportOverride(projectRoot: string, agentName: string, content: string): ResolvedReport {
+  if (!isValidReportId(agentName)) throw new Error(`Invalid report id: ${String(agentName)}`);
   const dir = path.join(projectRoot, ".claude", "reports");
   fs.mkdirSync(dir, { recursive: true });
   fs.writeFileSync(reportFilePath(projectRoot, agentName), content);

@@ -124,6 +124,7 @@ export {
 
 export {
   resolveReport,
+  isValidReportId,
   type ReportResolution,
   type ReportSource,
   type GlobalReportInput,
@@ -143,6 +144,37 @@ export {
 } from "./agent-project-tags.js";
 
 export { getResolvedReport, saveProjectReportOverride } from "./reports.js";
+
+export {
+  readHandoffDefault,
+  readAllHandoffDefaults,
+  writeHandoffDefault,
+  deleteHandoffDefault,
+  DEFAULT_HANDOFF_DEFAULTS_DB_PATH,
+  type HandoffDefault,
+} from "./handoff-defaults.js";
+
+export {
+  SEED_HANDOFFS,
+  PRIOR_SEEDS as PRIOR_HANDOFF_SEEDS,
+  isSeededHandoff,
+  isValidHandoffId,
+  splitHandoffId,
+  handoffId,
+} from "./handoff-seeds.js";
+
+export { handoffRoutes, routesFrom, handoffPairs, type HandoffRoute } from "./handoff-routes.js";
+
+export {
+  resolveHandoff,
+  type HandoffResolution,
+  type HandoffSource,
+  type GlobalHandoffInput,
+} from "./handoff-resolution.js";
+
+export { syncProjectHandoffs, handoffFilePath } from "./handoff-sync.js";
+
+export { getResolvedHandoff, saveProjectHandoffOverride } from "./handoffs.js";
 
 export {
   installRuntime,

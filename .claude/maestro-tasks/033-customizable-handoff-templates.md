@@ -187,35 +187,111 @@ run stale code.
 
 ## Acceptance criteria
 
-- [ ] A handoff template resolves project file → global row → seed constant, decided by one pure
+- [x] A handoff template resolves project file → global row → seed constant, decided by one pure
       function that both the hook and the app call, mirroring `resolveReport`
-- [ ] The seed tier still answers when `node:sqlite` is unavailable —
+      — `resolveHandoff()` in `src/core/handoff-resolution.ts` (no `fs`, no `node:sqlite`); called by
+      `handoffProtocol()` in `maestro-inject-agent-context.js` and by `getResolvedHandoff()` in
+      `src/core/handoffs.ts`.
+- [x] The seed tier still answers when `node:sqlite` is unavailable —
       `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0`, and the hook
       emits the shipped payload shape with the sqlite bundle deliberately unresolvable
-- [ ] The global store is one table keyed `"<sender>/<receiver>"`; a write bumps `version`, and a
+      — grep re-run at close: `0`, with all 23 seed bodies present in that bundle.
+      `handoff-seeds.ts` imports nothing; `readGlobalHandoff()` `require`s
+      `./lib/maestro-handoff-defaults.cjs` inside a try/catch. Covered by
+      `install.test.ts` → `describe("handoff protocol injection")`.
+- [x] The global store is one table keyed `"<sender>/<receiver>"`; a write bumps `version`, and a
       row still carrying a superseded seed body is moved forward while a hand-edited row is not
-- [ ] An install materialises `.claude/handoffs/<sender>/<receiver>.md` for exactly the routes the
+      — `handoffs(handoff_id PK, content, version)` in `handoff-defaults.ts`; `openDb()` runs
+      `seedIfEmpty` then `refreshSupersededSeeds` on every open, driven by `PRIOR_SEEDS`.
+      `handoffs.test.ts` covers both directions.
+- [x] An install materialises `.claude/handoffs/<sender>/<receiver>.md` for exactly the routes the
       project's workflows wire — not an `agents_available` cross product — and records
       `syncedFrom{version,hash}` in `maestro.json`'s `handoffs` slice
-- [ ] A wired route whose pair has no template is skipped silently (`decideSync` → `no-template`),
-      leaving no file
-- [ ] A user's hand-edit to `.claude/handoffs/…` survives a second install and is reported as
+      — `syncProjectHandoffs()` (`handoff-sync.ts`), candidates = ids already in the `handoffs`
+      slice ∪ `handoffPairs(handoffRoutes(...))`, called from `installRuntime` right after
+      `syncProjectReports`.
+- [x] A wired route whose pair has no template is skipped silently (`decideSync` → `no-template`),
+      leaving no file — no new branch was written; the existing `no-template` verdict covers it
+      (`scribe → reviewer` is the live case).
+- [x] A user's hand-edit to `.claude/handoffs/…` survives a second install and is reported as
       `staleCustomized`; a global version bump refreshes an untouched copy
-- [ ] The route walk exists **once** — the hook calls `handoffRoutes()` and no longer carries its
+      — both are `decideSync`'s existing `stale-customized` / `refresh` verdicts, mapped into
+      `HandoffSyncSummary`'s four buckets; tested in `handoffs.test.ts`.
+- [x] The route walk exists **once** — the hook calls `handoffRoutes()` and no longer carries its
       own; the sync calls the same function
-- [ ] `syncProjectHandoffs` is the third caller of `decideSync` and introduces no second copy of
-      those branches
-- [ ] `<project>/.claude/templates/handoffs/` is no longer installed, `plugins/maestro/templates/handoffs/`
+      — the hook's inline `collect()` walk is deleted; it now calls
+      `routesFrom(handoffRoutes(searchList, instances), agentType)` out of `lib/maestro-session.cjs`.
+      Net removal of a duplicate implementation.
+- [x] `syncProjectHandoffs` is the third caller of `decideSync` and introduces no second copy of
+      those branches — and neither does the terminal path: `maestro-install.js`'s own
+      `syncProjectHandoffs()` `require`s `decideSync` from `lib/maestro-agent-sync.cjs` rather than
+      re-deriving it. `sync-decision.ts` gained no branch and no test.
+- [x] `<project>/.claude/templates/handoffs/` is no longer installed, `plugins/maestro/templates/handoffs/`
       is deleted, and uninstall still removes the former for projects installed by an older release
-- [ ] A `handoff_id` that is not `^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$` is rejected before any
+      — `handoffAssets()` deleted, `runtimeAssets()` returns `STATIC_ASSETS` only (17 files, down
+      from ~37); all 23 template files `git rm`'d; `uninstall.ts` unchanged in behaviour, with a
+      new legacy-sweep test in `uninstall.test.ts`.
+- [x] A `handoff_id` that is not `^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$` is rejected before any
       `path.join`, in the store and in the sync — and the equivalent guard is added to the report
       path's `entry.id`
-- [ ] Both ends of a route are bare agent names, so a project with namespaced instances
+      — `isValidHandoffId` guards `handoff-defaults.ts`, `handoff-sync.ts` (`handoffFilePath`) and
+      both entry points of `handoffs.ts`. Report side: `isValidReportId` added to
+      `report-resolution.ts`; `reportFilePath` throws, the sync loop `continue`s past a bad id
+      rather than failing the whole install, and `reports.ts` guards both entry points.
+      `reports.test.ts` → `describe("report id path safety")`.
+- [x] Both ends of a route are bare agent names, so a project with namespaced instances
       (`maestro:test`) resolves its handoff protocols
-- [ ] The app's `installRuntime()` and the plugin's `maestro-install.js` produce the same files and
+      — `handoffRoutes()` bares both `sender` and `receiver` via `bareAgentName`. This is the
+      correctness fix folded in: the hook previously passed `r.target` (`inst.agent` verbatim), so a
+      namespaced project resolved **no** protocol on any route, silently.
+- [x] The app's `installRuntime()` and the plugin's `maestro-install.js` produce the same files and
       the same `handoffs` slice for the same project — proven against one fixture, not asserted
-- [ ] `test/core/parity.test.ts` covers the new bundle's export surface
-- [ ] `plugins/maestro/.claude-plugin/plugin.json` is `0.4.2`
+      — `install.test.ts` → `describe("handoff sync parity between the app and the plugin's
+      installer (033)")`, which runs both against one fixture and compares files and slice.
+- [x] `test/core/parity.test.ts` covers the new bundle's export surface
+      — `describe("handoff bundles (033)")`, over both `maestro-handoff-defaults.cjs` and the
+      handoff exports added to `maestro-session.cjs`.
+- [x] `plugins/maestro/.claude-plugin/plugin.json` is `0.4.2`
+      — patch, per `.claude/skills/updating-maestro/`: behaviour changed and the manifest shrank,
+      but no skill, agent, command or hook event was added. That skill now carries `0.4.2` as its
+      fifth worked example — the first where the published surface *shrank*.
+
+## Divergences from this page, as built
+
+Recorded at close by the scribe. None of these contradict the ticket; each is a decision the page
+did not specify.
+
+1. **`handoff-routes.ts` exports three functions, not one.** The page specified `handoffRoutes()`.
+   It also ships `routesFrom(routes, agent)` (what the hook needs) and `handoffPairs(routes)` (what
+   the sync needs). Both are one-liners over the walk's output, and putting them here is what stops
+   the two callers writing their own filter and diverging on, say, whether a null receiver counts.
+2. **`handoff-seeds.ts` owns the path guard.** The page put `isValidHandoffId` "in the store and in
+   the sync". It lives in the seeds module instead, because that is the one module every tier
+   already imports and it imports nothing itself — so the store, the sync, `handoffs.ts` and the
+   hook all reach the same regex with no new import edge.
+3. **`PRIOR_SEEDS` is exported and empty.** `report-defaults.ts` keeps its equivalent private.
+   Exporting it lets `refreshSupersededSeeds` be tested before any seed has ever been revised —
+   which matters, because the mechanism's whole failure mode is that it is invisible until the first
+   edit, by which time it is too late to notice it was never wired.
+4. **`ResolvedHandoff.source` has four values, not three.** `"project" | "global" | "seed" | "none"`
+   — one more than `resolveReport`'s. The seed is a real source rather than a synonym for the global
+   tier: on a `node` without `node:sqlite` it is the tier that answers, and `034`'s UI has to be able
+   to say so.
+5. **`deleteHandoffDefault` re-seeds when the delete empties the table.** "Delete" means "stop
+   overriding the seed", never "make this route protocol-less".
+6. **`installRuntime` / `refreshStaleRuntime` grew optional db-path parameters.** Purely for test
+   isolation — without them the suite read the developer's real
+   `~/.claude/maestro-handoff-defaults.sqlite`. `installRuntime` took a fifth parameter
+   (`handoffsDbPath`); `refreshStaleRuntime` took `projectTagsDbPath` and `handoffsDbPath`.
+7. **`lib/maestro-handoff-defaults.cjs` is deliberately NOT in `STATIC_ASSETS`.** A project-local
+   hook copy therefore resolves project file → seed and never reaches the global tier. That matches
+   this page's design ("the seed travels with the hook") and is not a defect here. **But
+   `lib/maestro-report-defaults.cjs` has the identical gap, pre-existing, and there it *is* a latent
+   bug** — a report has no seed tier to fall back on, so a project-local hook copy silently resolves
+   a report to "none" where the plugin's copy would have found the global default. Worth its own
+   ticket; not fixed in `033`.
+8. **No UI was touched.** `maestro.tsx` still renders `reportsSync` only, so the `handoffsSync`
+   summary `InstallReport` now carries is computed and unrendered. `034` picks that up.
 
 ## Notes for whoever picks this up
 

@@ -23,6 +23,7 @@ import {
 } from "../../src/core/success-path.js";
 import { replaceRegion, extractRegion, syncManagedRegions } from "../../src/core/skill-regions.js";
 import { allConfigs } from "./fixtures/configs.js";
+import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -217,6 +218,62 @@ describe("skill-regions parity", () => {
         "writeSession",
       ].sort()
     );
+  });
+});
+
+// `033`'s two bundles. Unlike the parity blocks above, these read the LIVE generated files rather
+// than a snapshot — the question is not "does the port still behave like the hand-written
+// original" (there was no hand-written original) but "does the bundle the hook actually `require`s
+// still carry the names it requires, and only the dependencies it may have". Both fail silently:
+// build-plugin-libs.mjs is load-bearing and quiet, and a missing export is a hook that degrades
+// instead of throwing.
+describe("handoff bundles (033)", () => {
+  const LIB = path.resolve(here, "../../../../plugins/maestro/scripts/lib");
+
+  it("maestro-session.cjs carries the seed tier, the route walk and the resolution", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    for (const name of [
+      "handoffRoutes",
+      "routesFrom",
+      "handoffPairs",
+      "resolveHandoff",
+      "SEED_HANDOFFS",
+      "PRIOR_HANDOFF_SEEDS",
+      "isSeededHandoff",
+      "isValidHandoffId",
+      "splitHandoffId",
+      "handoffId",
+    ]) {
+      expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
+    }
+    expect(Object.keys(session.SEED_HANDOFFS)).toHaveLength(23);
+    expect(session.SEED_HANDOFFS).toEqual(SEED_HANDOFFS);
+  });
+
+  // THE property this whole split exists for. `handoff-seeds.ts` imports nothing that reaches
+  // node:sqlite so that the hook's UNCONDITIONAL require of this bundle still answers on a `node`
+  // older than 22.5 — the same check `031` pinned on maestro-agent-sync.cjs. Adding a store import
+  // to handoff-seeds.ts or handoff-routes.ts breaks it, the bundle still builds, and only a
+  // bare-`node` run notices.
+  it("maestro-session.cjs reaches no node:sqlite", () => {
+    const text = fs.readFileSync(path.join(LIB, "maestro-session.cjs"), "utf8");
+    expect(text.match(/node:sqlite/g) ?? []).toHaveLength(0);
+  });
+
+  it("maestro-handoff-defaults.cjs is the sqlite tier, and only that", () => {
+    const store = require(path.join(LIB, "maestro-handoff-defaults.cjs"));
+    expect(Object.keys(store).sort()).toEqual(
+      [
+        "DEFAULT_HANDOFF_DEFAULTS_DB_PATH",
+        "deleteHandoffDefault",
+        "readAllHandoffDefaults",
+        "readHandoffDefault",
+        "writeHandoffDefault",
+      ].sort()
+    );
+    // Externalized, not inlined — the require() that can throw has to stay a require() for the
+    // hook's own try/catch to catch (see build-plugin-libs.mjs's `external` list).
+    expect(fs.readFileSync(path.join(LIB, "maestro-handoff-defaults.cjs"), "utf8")).toContain('require("node:sqlite")');
   });
 });
 

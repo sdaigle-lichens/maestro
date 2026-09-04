@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
+  version: "1.5"
+  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -149,6 +149,17 @@ else in it is a patch by the same precedent — a rewritten step inside
 additive optional `maestro.json` field. A consumer gains nothing they can *invoke*; `/maestro`
 simply does less by default. So it shipped as `0.4.1`.
 
+`0.4.2` — customizable handoff templates (`033`) — is the fifth, and the first one where the
+published surface **shrank**: all 23 files under `plugins/maestro/templates/handoffs/` were deleted,
+and `handoffAssets()` with them. Still a patch, and the table says why on its own terms — a
+*published surface* is a skill, agent, command or hook event, and `templates/` is none of those, so
+removing files from it is no more a major than adding a script was a minor in `0.3.5`. The seed
+bodies did not go away; they moved into `SEED_HANDOFFS` and ship inside `lib/maestro-session.cjs`.
+The delivery consequence, though, is the largest of any patch so far: **the asset manifest lost ~23
+entries, so `shippedRuntimeId` moved and every installed project reports stale exactly once** — and
+the files an old project already has under `.claude/templates/handoffs/` are removed only by an
+uninstall, whose sweep of that directory now exists solely for them.
+
 The tempting argument for a minor, and why it fails: the frontmatter grew an `allowed-tools` grant,
 so the harness now runs a command it never used to at `/maestro` expansion. That is inside an
 existing skill's own body, which `0.3.5` already settled as a patch; `0.4.0`'s minor turned on
@@ -166,9 +177,9 @@ ls "$P/scripts/maestro-inject-agent-context.js"   # exists
 
 Then `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.
 
-### What `031`, `0.4.0` and `032` added to the copied set
+### What `031`, `0.4.0`, `032` and `033` changed in the copied set
 
-Four more files now ride path 1 into every project:
+Four more files now ride path 1 into every project — and `033` took ~23 away:
 
 | Copied to | From | Why it is copied rather than run from the plugin |
 | --- | --- | --- |
@@ -176,6 +187,14 @@ Four more files now ride path 1 into every project:
 | `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires — and, since `0.4.0`, the `maestro-step0` hook, which calls `computeAgentSync` from it directly. |
 | `.claude/scripts/maestro-step0.cjs` (`0.4.0`) | `plugins/maestro/scripts/maestro-step0.js` | A **`HOOK_SCRIPTS`** entry, not a `STATIC_ASSET` — so it gets the `.js` → `.cjs` rename, and it needs its two `settings.json` registrations merged in as well as the file copied. |
 | `.claude/scripts/maestro-step1-gates.cjs` (`032`) | `plugins/maestro/scripts/` | A `STATIC_ASSET`. The orchestrator's Step 1 injects it as `` !`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"` ``, so it must be a project copy like every other `$CLAUDE_PROJECT_DIR` script. **This is the one whose absence is fatal rather than degrading** — see below. |
+
+**`033` removed a whole group.** The ~23 `templates/handoffs/**.md` no longer ride path 1 at all:
+`handoffAssets()` is deleted and `runtimeAssets()` is `STATIC_ASSETS` alone (17 files). What an
+install writes in their place is not a copy but a sync — `.claude/handoffs/<sender>/<receiver>.md`,
+for exactly the routes the workflows wire, tracked by `syncedFrom` so a hand-edit survives the next
+install. The shipped floor rides inside `lib/maestro-session.cjs` instead, which is path 1's usual
+trap in a new place: edit `handoff-seeds.ts` without re-running `build:plugin-libs` and every hook
+keeps serving the old protocol, silently.
 
 Three are in `STATIC_ASSETS` and `maestro-step0` in `HOOK_SCRIPTS`, in **both** implementations
 (`install.ts` and `maestro-install.js`) — the manifests are mirrored by hand, so a file added to one

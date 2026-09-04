@@ -175,7 +175,7 @@
     "blockedBy": []
   },
   "033-customizable-handoff-templates.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "034-edit-handoff-templates-in-the-app.md": {
@@ -183,5 +183,9 @@
     "blockedBy": [
       "033-customizable-handoff-templates.md"
     ]
+  },
+  "035-reach-the-global-report-tier-from-a-project-local-hook.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

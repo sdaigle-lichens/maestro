@@ -41,14 +41,21 @@ repo.
 
 ## What each caller supplies
 
-| | `report-sync.ts` | `agent-sync.ts` |
-| --- | --- | --- |
-| `localHash` | `sha256` of the whole file | `hashAgentBody` — `name:`/`description:` normalised out |
-| `hasTemplate` | a global report default exists | the template still resolves in its recorded tier |
-| `templateAdvanced` | `global.version > syncedFrom.version` (integer, monotonic) | plugin: `template.version !== tracked.pluginVersion` **and** body hashes differ · user: body hashes differ |
-| On a verdict | writes the file and bumps `syncedFrom` | records it and writes nothing |
+| | `report-sync.ts` | `agent-sync.ts` | `handoff-sync.ts` (`033`) |
+| --- | --- | --- | --- |
+| The unit | one agent | one forked agent | one `(sender, receiver)` route pair |
+| Candidates | tracked ids ∪ `agents_available` | the fork records | tracked ids ∪ the pairs `handoffRoutes()` walks out of the graph |
+| `localHash` | `sha256` of the whole file | `hashAgentBody` — `name:`/`description:` normalised out | `sha256` of the whole file (a handoff template has no frontmatter to normalise out) |
+| `hasTemplate` | a global report default exists | the template still resolves in its recorded tier | a global handoff default exists for the pair |
+| `templateAdvanced` | `global.version > syncedFrom.version` (integer, monotonic) | plugin: `template.version !== tracked.pluginVersion` **and** body hashes differ · user: body hashes differ | `global.version > syncedFrom.version` (integer, monotonic) |
+| On a verdict | writes the file and bumps `syncedFrom` | records it and writes nothing | writes the file and bumps `syncedFrom` |
 
-## Adding a third caller
+`handoff-sync.ts` is the evidence that adding a caller costs nothing but two answers: it reuses
+`report-sync.ts`'s hash rule and its version rule verbatim and differs only in *what the candidate
+set is* — the routes the workflows wire, rather than a list of agents, because the pair analogue of
+`agents_available` would be a cross product. It added **no sixth branch**.
+
+## Adding a fourth caller
 
 Answer the two questions for your thing — *what is the hash over*, and *what does "the template
 moved" mean here* — and pass them in. Do **not** add a branch. If you find yourself wanting one, the

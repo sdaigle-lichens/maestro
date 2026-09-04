@@ -1,10 +1,10 @@
 ---
 name: plugin-libs-parity
-description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the ten plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
+description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the eleven plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: dc07795aca62476b23408ba23e0455dc855aef35
+  version: "1.4"
+  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
 ---
 
 # Core ↔ plugin parity
@@ -40,11 +40,12 @@ the original name list is still all there, not that the lists match exactly. `ma
 grew `projectOwnsHook` this way, which is how the hook-arbitration guard reaches the plugin's hook
 scripts at all.
 
-## The ten generated entries
+## The eleven generated entries
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed`, `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
-`maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`).
+`maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
+`maestro-handoff-defaults` (`033`).
 
 **`maestro-agent-sync` must not pull in `node:sqlite`.** It backs
 **two** callers, both running under whatever bare `node` is on the session's PATH:
@@ -55,6 +56,16 @@ and `plugins/maestro/scripts/maestro-step0.js`, the readiness hook, which `requi
 `copyAgentAttributeRows`, which is exactly why `031` split the file (see `global-stores`). The
 check is `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-agent-sync.cjs` → `0`. Nothing
 fails if it stops being 0; the script just starts throwing on machines with an older `node`.
+
+**`maestro-session` must not pull in `node:sqlite` either (`033`).** It is the bundle every hook
+`require`s **unconditionally**, and since `033` it carries the handoff seed tier (`SEED_HANDOFFS`,
+`isSeededHandoff`, `isValidHandoffId`) plus the pure route walk (`handoffRoutes`, `routesFrom`,
+`handoffPairs`) and `resolveHandoff`. The sqlite tier is a **separate** bundle,
+`maestro-handoff-defaults`, which `maestro-inject-agent-context.js` `require`s inside a try/catch —
+so on a `node` older than 22.5 the sqlite `require` fails and the seed still answers. That only
+holds while `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0`. The
+trap: `handoff-seeds.ts` imports **nothing**, and adding one store import to it moves 23 protocol
+bodies behind a `node` version check without failing a single test.
 
 **`maestro-tasks.cjs` is not generated.** It has no entry in `plugin-entries/` and is hand-maintained
 alongside `src/core/tasks.ts`, kept in sync so a task close from the UI and one from the orchestrator
@@ -80,7 +91,7 @@ cannot disagree about which tasks are ready. Editing `tasks.ts` alone is not eno
 | File                                           | Role                                                    |
 | ---------------------------------------------- | ------------------------------------------------------- |
 | `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments. |
-| `apps/maestro/src/core/plugin-entries/*.ts`    | The ten entry points — thin re-exports of `src/core`.   |
+| `apps/maestro/src/core/plugin-entries/*.ts`    | The eleven entry points — thin re-exports of `src/core`. |
 | `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.          |
 | `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.       |
 | `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                             |
@@ -91,10 +102,11 @@ against them would go tautological the moment the build runs.
 
 ## Relationships
 
-- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — what the tenth bundle carries, and why it
+- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — what `maestro-agent-sync` carries, and why it
   must stay free of `node:sqlite`.
-- [`global-stores`](../global-stores/SKILL.md) — four of the generated entries are its stores, and
-  the split that keeps the tenth free of them.
+- [`global-stores`](../global-stores/SKILL.md) — five of the generated entries are its stores, and
+  the two splits (`031`'s `agent-fork-record.ts`, `033`'s `handoff-seeds.ts`) that keep the bundles
+  above free of them.
 - [`agents-view`](../agents-view/SKILL.md) — what `maestro-agent-sync` computes, and the app-side
   surface that shares the verdict with the CLI.
 - [`maestro-config-model`](../maestro-config-model/SKILL.md) — `maestro-session` and

@@ -27,7 +27,9 @@ import {
 import { uninstallRuntime } from "../../src/core/uninstall.js";
 import { writeConfig, readConfig, writeRuntimeVersion } from "../../src/core/config.js";
 import { renderOrchestrator } from "../../src/core/render.js";
-import { defaultish } from "./fixtures/configs.js";
+import { defaultish, withSkillNodes } from "./fixtures/configs.js";
+import type { MaestroConfigV3 } from "../../src/core/types.js";
+import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // Snapshotted as .cjs, not .js: this package is "type": "module", so node would refuse to run the
@@ -46,11 +48,17 @@ let REPORTS_DB: string;
 // fresh file per test gets the seeded backend/frontend/mobile default without touching the real
 // ~/.claude/maestro-project-tags.sqlite.
 let PROJECT_TAGS_DB: string;
+// And the same again for `033`'s handoff sync, which reads
+// ~/.claude/maestro-handoff-defaults.sqlite. Every installRuntime()/refreshStaleRuntime() call
+// below passes it — a missed one materializes `.claude/handoffs/**` from whatever the machine
+// running the suite happens to have edited.
+let HANDOFFS_DB: string;
 
 beforeEach(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-install-"));
   REPORTS_DB = path.join(tmp, "report-defaults.sqlite");
   PROJECT_TAGS_DB = path.join(tmp, "project-tags.sqlite");
+  HANDOFFS_DB = path.join(tmp, "handoff-defaults.sqlite");
 });
 
 afterEach(() => {
@@ -111,7 +119,7 @@ describe("differential against the legacy installer", () => {
     const mine = makeProject("mine");
     const theirs = makeProject("theirs");
 
-    await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     execFileSync("node", [path.join(legacyPluginRoot(), "scripts", "maestro-install.cjs"), theirs], {
       encoding: "utf8",
     });
@@ -139,7 +147,7 @@ describe("differential against the legacy installer", () => {
 
   it("keeps the legacy behaviour of preserving a rendered HANDOFFS table on re-sync", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     const skillPath = path.join(root, ".claude", "skills", "maestro", "SKILL.md");
     const rendered = fs
@@ -150,7 +158,7 @@ describe("differential against the legacy installer", () => {
       );
     fs.writeFileSync(skillPath, rendered + "\n\n## My own section\n");
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     const after = fs.readFileSync(skillPath, "utf8");
     expect(report.orchestratorSkill.action).toBe("unchanged");
     expect(after).toContain("| default | @backend |");
@@ -163,7 +171,7 @@ describe("differential against the legacy installer", () => {
     fs.mkdirSync(path.dirname(skillPath), { recursive: true });
     fs.writeFileSync(skillPath, "# Old orchestrator\n\nHand-written prose, no markers.\n");
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     expect(report.orchestratorSkill.action).toBe("migrated");
     expect(report.orchestratorSkill.backup).toBe(`${skillPath}.bak`);
@@ -176,7 +184,7 @@ describe("differential against the legacy installer", () => {
 describe("installRuntime", () => {
   it("installs the runtime and registers every hook project-locally", async () => {
     const root = makeProject("p");
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     expect(report.orchestratorSkill.action).toBe("installed");
     expect(report.scriptsWritten).toEqual(runtimeAssets(PLUGIN_ROOT).map((a) => a.dest));
@@ -202,14 +210,24 @@ describe("installRuntime", () => {
     expect(fs.statSync(path.join(root, ".claude", "scripts", "bash-validation.sh")).mode & 0o111).toBeTruthy();
   });
 
-  it("installs the handoff templates where the injector's fallback looks, not over the user's overrides", async () => {
+  it("installs no handoff templates as ASSETS any more — the sync materializes them instead", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    writeConfig(root, defaultish);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
-    // `.claude/scripts/../templates/handoffs` is the copied injector's second candidate; the
-    // first is `.claude/handoffs`, which stays the user's and must not be written.
-    expect(fs.existsSync(path.join(root, ".claude", "templates", "handoffs"))).toBe(true);
-    expect(fs.existsSync(path.join(root, ".claude", "handoffs"))).toBe(false);
+    // The install-managed fallback is gone (`033`): a directory every install blind-overwrites
+    // cannot hold an opinion, which is the whole failure this slice removes.
+    expect(fs.existsSync(path.join(root, ".claude", "templates", "handoffs"))).toBe(false);
+    expect(runtimeAssets(PLUGIN_ROOT).some((a) => a.dest.includes("templates/handoffs"))).toBe(false);
+
+    // What replaced it: `.claude/handoffs/<sender>/<receiver>.md` for the routes the workflows
+    // actually wire, tracked in the config so a later edit is never clobbered.
+    expect(report.handoffsSync.materialized.length).toBeGreaterThan(0);
+    for (const id of report.handoffsSync.materialized) {
+      const [sender, receiver] = id.split("/");
+      expect(fs.existsSync(path.join(root, ".claude", "handoffs", sender, `${receiver}.md`))).toBe(true);
+      expect(readConfig(root)!.handoffs![id].syncedFrom).toBeDefined();
+    }
   });
 
   it("writes nothing outside the project, including the user's global Claude config", async () => {
@@ -222,7 +240,7 @@ describe("installRuntime", () => {
     const prevHome = process.env.HOME;
     process.env.HOME = home;
     try {
-      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     } finally {
       process.env.HOME = prevHome;
     }
@@ -233,12 +251,12 @@ describe("installRuntime", () => {
 
   it("is idempotent — the second run changes nothing and says so", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     const settingsPath = path.join(root, ".claude", "settings.json");
     const firstSettings = fs.readFileSync(settingsPath, "utf8");
     const firstSkill = fs.readFileSync(path.join(root, ".claude", "skills", "maestro", "SKILL.md"), "utf8");
 
-    const second = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const second = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     expect(second.unchanged).toBe(true);
     expect(second.scriptsWritten).toEqual([]);
@@ -251,7 +269,7 @@ describe("installRuntime", () => {
 
   it("never duplicates a hook entry, even after five runs or a re-quoted command", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     // A user reformats one command by hand. Keying presence on the script basename (not on the
     // exact string) is what stops the next install from adding a second, near-identical entry —
@@ -266,7 +284,7 @@ describe("installRuntime", () => {
     logHook.command = "node '${CLAUDE_PROJECT_DIR}/.claude/scripts/maestro-session-log.cjs'";
     fs.writeFileSync(settingsPath, JSON.stringify(edited, null, 2));
 
-    for (let i = 0; i < 4; i++) await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    for (let i = 0; i < 4; i++) await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     const settings = readSettings(root);
     for (const reg of HOOK_REGISTRATIONS) {
@@ -298,7 +316,7 @@ describe("installRuntime", () => {
       )
     );
 
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     const settings = readSettings(root);
 
     expect(settings.model).toBe("opus");
@@ -321,7 +339,9 @@ describe("installRuntime", () => {
     const settingsPath = path.join(root, ".claude", "settings.json");
     fs.writeFileSync(settingsPath, '{ "model": "opus", }  // trailing comma\n');
 
-    await expect(installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB)).rejects.toThrow(/not valid JSON/);
+    await expect(installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB)).rejects.toThrow(
+      /not valid JSON/
+    );
 
     // Nothing half-written: the preflight runs before the first copy.
     expect(fs.existsSync(path.join(root, ".claude", "skills"))).toBe(false);
@@ -331,7 +351,7 @@ describe("installRuntime", () => {
 
     // Fixing the cause and pressing the button again is all it takes.
     fs.writeFileSync(settingsPath, '{ "model": "opus" }');
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.status.installed).toBe(true);
     expect(readSettings(root).model).toBe("opus");
   });
@@ -351,7 +371,7 @@ describe("staleness", () => {
 
   it("notices an older runtime by content, and clears once updated", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(false);
 
     // What a project that installed an older version of the app looks like.
@@ -365,7 +385,7 @@ describe("staleness", () => {
     expect(before.scriptsMissing).toEqual([".claude/scripts/maestro-task-status.cjs"]);
     expect(before.installedRuntimeId).not.toBe(before.shippedRuntimeId);
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.scriptsWritten).toEqual([
       ".claude/scripts/maestro-task-status.cjs",
       ".claude/scripts/maestro-session-log.cjs",
@@ -376,7 +396,7 @@ describe("staleness", () => {
 
   it("is decided by content, not by modification times", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     const first = await installStatus(root, PLUGIN_ROOT);
 
     // A fresh `git clone` rewrites every mtime; two checkouts of one commit must still agree.
@@ -393,7 +413,7 @@ describe("staleness", () => {
 
   it("treats a missing hook registration as stale, and re-registering as the fix", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     const settingsPath = path.join(root, ".claude", "settings.json");
     const settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
@@ -404,14 +424,14 @@ describe("staleness", () => {
     expect(status.stale).toBe(true);
     expect(status.hooksMissing).toEqual(["SubagentStop:maestro-subagent-log.cjs"]);
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.hooksAdded).toEqual(["SubagentStop:maestro-subagent-log.cjs"]);
     expect(report.status.stale).toBe(false);
   });
 
   it("treats an orchestrator skill whose managed regions drifted as stale", async () => {
     const root = makeProject("p");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     const skillPath = path.join(root, ".claude", "skills", "maestro", "SKILL.md");
     const drifted = fs
@@ -422,7 +442,7 @@ describe("staleness", () => {
     expect((await installStatus(root, PLUGIN_ROOT)).orchestratorSkillOutOfDate).toBe(true);
     expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(true);
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.orchestratorSkill.action).toBe("synced");
     expect(report.status.stale).toBe(false);
   });
@@ -459,20 +479,20 @@ describe("runtimeVersion (task 027)", () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
     expect(report.runtimeVersionUpdated).toBe(true);
     expect(readConfig(root)!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
 
     // Re-running with the version already stamped writes nothing further and reports so.
-    const second = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const second = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(second.runtimeVersionUpdated).toBe(false);
     expect(second.unchanged).toBe(true);
   });
 
   it("a first install seeds maestro.json itself, so there is always one to stamp", async () => {
     const root = makeProject("p");
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.runtimeVersionUpdated).toBe(true);
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
     expect(readConfig(root)!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
@@ -481,27 +501,27 @@ describe("runtimeVersion (task 027)", () => {
   describe("refreshStaleRuntime", () => {
     it("returns null when there is no maestro.json at all", async () => {
       const root = makeProject("p");
-      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB)).toBeNull();
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB)).toBeNull();
     });
 
     it("returns null and writes nothing when the stamped version already matches", async () => {
       const root = makeProject("p");
       writeConfig(root, defaultish);
-      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
       const settingsBefore = fs.readFileSync(path.join(root, ".claude", "settings.json"), "utf8");
 
-      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB)).toBeNull();
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB)).toBeNull();
       expect(fs.readFileSync(path.join(root, ".claude", "settings.json"), "utf8")).toBe(settingsBefore);
     });
 
     it("never touches a corrupt or non-v3 maestro.json — it's not readConfig()'s blank fallback", async () => {
       const root = makeProject("p");
-      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB); // an installed runtime, so `installed` alone can't gate it
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB); // an installed runtime, so `installed` alone can't gate it
       const configPath = path.join(root, ".claude", "maestro.json");
       fs.writeFileSync(configPath, '{ "not": "valid json", ');
       const before = fs.readFileSync(configPath, "utf8");
 
-      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB)).toBeNull();
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB)).toBeNull();
       expect(fs.readFileSync(configPath, "utf8")).toBe(before);
     });
 
@@ -509,14 +529,14 @@ describe("runtimeVersion (task 027)", () => {
       const root = makeProject("p");
       writeConfig(root, { ...defaultish, runtimeVersion: "0.0.0-nonexistent" });
 
-      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB)).toBeNull();
+      expect(await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB)).toBeNull();
       expect(fs.existsSync(path.join(root, ".claude", "scripts"))).toBe(false);
     });
 
     it("refreshes an already-installed project whose stamped version is stale", async () => {
       const root = makeProject("p");
       writeConfig(root, defaultish);
-      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
       // Simulate what a project installed before this feature — or under an older plugin version —
       // looks like: the runtime is present, but the stamp doesn't match what's shipped now.
       writeConfig(root, { ...readConfig(root)!, runtimeVersion: "0.0.0-older" });
@@ -525,19 +545,26 @@ describe("runtimeVersion (task 027)", () => {
         "// stale content from an older release\n"
       );
 
-      const report = await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB);
+      const report = await refreshStaleRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
       expect(report).not.toBeNull();
       expect(report!.runtimeVersionUpdated).toBe(true);
       expect(report!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
       expect(report!.scriptsWritten).toContain(".claude/scripts/maestro-session-log.cjs");
       expect(readConfig(root)!.runtimeVersion).toBe(shippedRuntimeVersion(PLUGIN_ROOT));
-      // The authored graph is provably unchanged by the refresh — runtimeVersion differs, and
+      // The authored graph is provably unchanged by the refresh — runtimeVersion differs,
       // `reports` gains entries for every agent in `agents_available` that has a global default
-      // (the report sync step's own materialize-if-absent behavior), never touching anything else.
-      expect({ ...readConfig(root)!, runtimeVersion: undefined, reports: undefined }).toEqual({
+      // and `handoffs` one per wired route (each sync step's own materialize-if-absent behavior),
+      // never touching anything else.
+      expect({
+        ...readConfig(root)!,
+        runtimeVersion: undefined,
+        reports: undefined,
+        handoffs: undefined,
+      }).toEqual({
         ...defaultish,
         runtimeVersion: undefined,
         reports: undefined,
+        handoffs: undefined,
       });
       // Already materialized by the FIRST installRuntime() call above (line 504) — this refresh
       // finds them unmodified since that sync and current, so nothing changes a second time.
@@ -546,12 +573,83 @@ describe("runtimeVersion (task 027)", () => {
   });
 });
 
+// `033` — the app's installRuntime() and the plugin's maestro-install.js are two implementations
+// of the handoff sync, so this proves them equal against a real fixture rather than asserting it
+// in a comment. Both are pointed at ONE fake HOME so they read the same freshly-seeded global
+// store: the plugin script is a CLI with no db-path override, so isolating it means isolating its
+// whole `~/.claude`.
+describe("handoff sync parity between the app and the plugin's installer (033)", () => {
+  it("materializes the same files, byte for byte, and writes the same handoffs slice", async () => {
+    const home = path.join(tmp, "parity-home");
+    fs.mkdirSync(path.join(home, ".claude"), { recursive: true });
+    const sharedDb = path.join(home, ".claude", "maestro-handoff-defaults.sqlite");
+
+    const mine = makeProject("mine-handoffs");
+    const theirs = makeProject("theirs-handoffs");
+    writeConfig(mine, defaultish);
+    writeConfig(theirs, defaultish);
+
+    await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, sharedDb);
+    execFileSync("node", [path.join(PLUGIN_ROOT, "scripts", "maestro-install.js"), theirs], {
+      encoding: "utf8",
+      env: { ...process.env, HOME: home },
+    });
+
+    const mineFiles = filesUnder(path.join(mine, ".claude", "handoffs"));
+    expect(mineFiles.sort()).toEqual(["backend/test.md", "test/backend.md"]);
+    expect(filesUnder(path.join(theirs, ".claude", "handoffs")).sort()).toEqual(mineFiles.sort());
+    for (const rel of mineFiles) {
+      const a = fs.readFileSync(path.join(mine, ".claude", "handoffs", rel));
+      const b = fs.readFileSync(path.join(theirs, ".claude", "handoffs", rel));
+      expect(a.equals(b), `${rel} differs between the two installers`).toBe(true);
+    }
+
+    expect(readConfig(theirs)!.handoffs).toEqual(readConfig(mine)!.handoffs);
+    expect(Object.keys(readConfig(mine)!.handoffs!).sort()).toEqual(["backend/test", "test/backend"]);
+  });
+
+  it("both leave a hand-edit alone on a re-run, and neither writes .claude/templates/handoffs", async () => {
+    const home = path.join(tmp, "parity-home-2");
+    fs.mkdirSync(path.join(home, ".claude"), { recursive: true });
+    const sharedDb = path.join(home, ".claude", "maestro-handoff-defaults.sqlite");
+
+    const mine = makeProject("mine-edit");
+    const theirs = makeProject("theirs-edit");
+    writeConfig(mine, defaultish);
+    writeConfig(theirs, defaultish);
+    await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, sharedDb);
+    execFileSync("node", [path.join(PLUGIN_ROOT, "scripts", "maestro-install.js"), theirs], {
+      encoding: "utf8",
+      env: { ...process.env, HOME: home },
+    });
+
+    for (const root of [mine, theirs]) {
+      fs.writeFileSync(path.join(root, ".claude", "handoffs", "backend", "test.md"), "MY EDIT\n");
+    }
+
+    const report = await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, sharedDb);
+    const out = JSON.parse(
+      execFileSync("node", [path.join(PLUGIN_ROOT, "scripts", "maestro-install.js"), theirs], {
+        encoding: "utf8",
+        env: { ...process.env, HOME: home },
+      })
+    );
+
+    expect(report.handoffsSync.staleCustomized).toEqual(["backend/test"]);
+    expect(out.handoffsSync.staleCustomized).toEqual(["backend/test"]);
+    for (const root of [mine, theirs]) {
+      expect(fs.readFileSync(path.join(root, ".claude", "handoffs", "backend", "test.md"), "utf8")).toBe("MY EDIT\n");
+      expect(fs.existsSync(path.join(root, ".claude", "templates", "handoffs"))).toBe(false);
+    }
+  });
+});
+
 describe("first-install config seeding (project tags)", () => {
   it("seeds maestro.json immediately, with project_tags matched from repo detection", async () => {
     const root = makeProject("p");
     fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ dependencies: { express: "^4" } }));
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.configSeeded).toEqual({ implAgents: ["backend"], projectTags: ["backend"] });
 
     const cfg = readConfig(root)!;
@@ -563,7 +661,7 @@ describe("first-install config seeding (project tags)", () => {
     const root = makeProject("p");
     writeConfig(root, { ...defaultish, project_tags: ["frontend"] });
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(report.configSeeded).toBeNull();
     expect(readConfig(root)!.project_tags).toEqual(["frontend"]);
   });
@@ -577,7 +675,7 @@ describe("first-install config seeding (project tags)", () => {
     // seed-when-empty fallback — that only fires when the WHOLE catalog is emptied.
     removeProjectTag("mobile", narrowedCatalogDb);
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, narrowedCatalogDb);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, narrowedCatalogDb, HANDOFFS_DB);
     expect(report.configSeeded).toEqual({ implAgents: ["mobile"], projectTags: [] });
     expect(readConfig(root)!.project_tags).toEqual([]);
   });
@@ -612,7 +710,7 @@ describe("maestro-check-runtime.cjs", () => {
   async function healthyProject(name: string): Promise<{ root: string; home: string }> {
     const root = makeProject(name);
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
     const home = path.join(tmp, "home-" + name);
     writeInstalledPlugins(home, {
@@ -674,7 +772,7 @@ describe("maestro-check-runtime.cjs", () => {
   it("says update when the runtime was installed but never rendered", async () => {
     const root = makeProject("unrendered");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect(JSON.parse(runCheck(root, path.join(tmp, "home-unrendered")).stdout)).toMatchObject({
       action: "update",
       reason: "the handoff table no longer matches maestro.json",
@@ -758,7 +856,7 @@ describe("the installed hooks actually run", () => {
   it("logs a tool call, injects agent context, and cleans up at session end", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     runHook(root, "maestro-session-log.cjs", {
       cwd: root,
@@ -777,6 +875,70 @@ describe("the installed hooks actually run", () => {
     expect(fs.existsSync(path.join(root, ".claude", "maestro_session.json"))).toBe(false);
     // The user's config survives a session end — only the ephemeral files go.
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
+  });
+
+  // `033`'s three tiers, exercised through the COPIED hook — the only place the fall-through can
+  // actually be observed. A project install deliberately copies no `lib/maestro-handoff-defaults.cjs`
+  // (the sqlite tier is not part of the runtime manifest), so the require inside the hook's
+  // try/catch genuinely fails here. That is the condition the seed was split out of the store for,
+  // and it is what these two assert rather than simulate.
+  describe("handoff protocol injection", () => {
+    it("injects the project's materialized copy, and the user's edit to it", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const injected = runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" });
+      expect(injected).toContain("handoff_details");
+      expect(injected).toContain("behaviors_to_test"); // the backend -> test protocol
+
+      fs.writeFileSync(path.join(root, ".claude", "handoffs", "backend", "test.md"), "MY OWN SHAPE\n");
+      expect(runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })).toContain(
+        "MY OWN SHAPE"
+      );
+    });
+
+    it("still emits the shipped seed with the sqlite bundle unresolvable and no project file", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      // Neither of the two tiers above this one can answer: the project's copies are gone, and
+      // the store is unreachable from a project install.
+      fs.rmSync(path.join(root, ".claude", "handoffs"), { recursive: true, force: true });
+      expect(fs.existsSync(path.join(root, ".claude", "scripts", "lib", "maestro-handoff-defaults.cjs"))).toBe(false);
+
+      const context = JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(context).toContain("Route `HANDOFF: success` → `test`:");
+      expect(context).toContain(SEED_HANDOFFS["backend/test"]);
+    });
+
+    // The bug `033` folded in, and the fixture that proves it: the sender was bared and the
+    // RECEIVER was not, so a project whose instances carry namespaced agents resolved
+    // `frontend/maestro:reviewer` — a pair that exists nowhere — and injected no protocol at all,
+    // silently. Both ends namespaced is what the old code could not do; `withSkillNodes` only
+    // namespaces the sender, so it would have passed either way.
+    const namespacedBothEnds: MaestroConfigV3 = {
+      ...withSkillNodes,
+      workflow_instances: [
+        { name: "frontend_main", agent: "maestro:frontend", loaded_skills: [], referenced_skills: [] },
+        { name: "reviewer_main", agent: "maestro:reviewer", loaded_skills: [], referenced_skills: [] },
+      ],
+    };
+
+    it("resolves a protocol for a project whose instances carry NAMESPACED agents on both ends", async () => {
+      // Run from the PLUGIN root (an uninstalled project, so the arbitration guard lets it
+      // through) — that copy has the sqlite lib beside it, which also exercises the global tier.
+      const root = makeProject("ns");
+      writeConfig(root, namespacedBothEnds);
+      const context = JSON.parse(
+        runPluginHook(root, "maestro-inject-agent-context.js", { cwd: root, agent_type: "maestro:frontend" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(context).toContain("Route `HANDOFF: success` → `reviewer`:");
+      expect(context).toContain("areas_of_concern"); // the frontend -> reviewer protocol
+    });
   });
 
   // The other half of "the installed hooks actually run": what the PLUGIN's copy of the same hook
@@ -802,7 +964,7 @@ describe("the installed hooks actually run", () => {
   it("stands the plugin's copy down for a hook the project registers itself", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     runPluginHook(root, "maestro-session-log.js", readPayload(root));
     expect(fs.existsSync(logPath(root))).toBe(false);
@@ -827,7 +989,7 @@ describe("the installed hooks actually run", () => {
     // is Maestro off rather than Maestro falling back.
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
 
     expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-session-log.cjs"))).toBe(true);
@@ -838,7 +1000,7 @@ describe("the installed hooks actually run", () => {
   it("stands down the plugin's SubagentStart injection, so context is injected once", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     const payload = { cwd: root, hook_event_name: "SubagentStart", agent_type: "backend" };
     expect(runPluginHook(root, "maestro-inject-agent-context.js", payload)).toBe("");
@@ -872,7 +1034,7 @@ describe("the installed hooks actually run", () => {
   it("says nothing at all when the project is ready to orchestrate", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     // The install copies the skill; rendering its handoff table from maestro.json is the separate
     // step /maestro-install runs next, and check 4 is what notices when nobody did.
     renderOrchestrator(root);
@@ -886,7 +1048,7 @@ describe("the installed hooks actually run", () => {
   it("reacts to `/maestro` and to the Skill tool, and to nothing else", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     // Deliberately NOT rendered, so the check has something to say and silence means "ignored".
     const speaks = (payload: unknown) => runHookRaw(root, "maestro-step0.cjs", payload).stdout !== "";
 
@@ -909,7 +1071,7 @@ describe("the installed hooks actually run", () => {
   it("injects an instruction the way each event actually accepts one", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     // UserPromptExpansion adds plain stdout to the model's context...
     const expanded = runHookRaw(root, "maestro-step0.cjs", expansion(root, "maestro"));
@@ -949,7 +1111,7 @@ describe("the installed hooks actually run", () => {
     const root = makeProject("p");
     fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ name: "p", type: "module" }, null, 2));
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     // Under `"type": "module"` a copied .js hook would throw "require is not defined in ES module
     // scope" on every single tool call. Nothing but running it from inside the project catches it.
@@ -995,7 +1157,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
   async function installed(name: string): Promise<string> {
     const root = makeProject(name);
     writeConfig(root, defaultish);
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     return root;
   }
 
@@ -1099,7 +1261,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
     fs.rmSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"));
     expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(true);
 
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(false);
   });
 

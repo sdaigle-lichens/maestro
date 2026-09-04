@@ -71,6 +71,14 @@ export interface MaestroConfigV3 {
    */
   reports?: MaestroReportsSlice;
   /**
+   * Per-route handoff-protocol overrides/sync records, keyed `"<sender>/<receiver>"`. Absent, or
+   * missing an entry for a pair, means the project has no opinion about that route — the
+   * SubagentStart hook and `handoff-resolution.ts` then fall back to the global default tier
+   * (`handoff-defaults.ts`) and finally to the shipped seed (`handoff-seeds.ts`). See
+   * `MaestroHandoffEntry` for what an entry means.
+   */
+  handoffs?: MaestroHandoffsSlice;
+  /**
    * The plugin.json `version` of the maestro plugin the last time this project's runtime bundle
    * (the hook scripts under `.claude/scripts/`, their registration in `.claude/settings.json`, and
    * the orchestrator skill's managed regions) was installed or refreshed from it.
@@ -158,6 +166,32 @@ export interface MaestroReportEntry {
 
 /** `<project>/.claude/maestro.json`'s `reports` slice: agent name -> its report entry. */
 export type MaestroReportsSlice = Record<string, MaestroReportEntry>;
+
+/**
+ * One route's handoff entry in the project's `handoffs` slice.
+ *
+ * `id` is the `"<sender>/<receiver>"` pair itself — unlike `MaestroReportEntry.id` there is no
+ * indirection to a differently-named body, because the global store is one table keyed by the pair
+ * (see `handoff-defaults.ts`'s header on why it does not copy the report store's second hop). It
+ * is kept as a field anyway so the entry is self-describing when read out of the map.
+ *
+ * `syncedFrom` is absent for a hand-authored override (`saveProjectHandoffOverride` drops it) and
+ * present when the project's copy was materialized from a global default — install/update sync's
+ * staleness check reads it to decide materialize / refresh / skip-as-customized.
+ */
+export interface MaestroHandoffEntry {
+  id: string;
+  syncedFrom?: { version: number; hash: string };
+}
+
+/**
+ * `<project>/.claude/maestro.json`'s `handoffs` slice: `"<sender>/<receiver>"` -> its entry.
+ *
+ * FLAT, not nested by sender: `decideSync` takes one `SyncTracking` per tracked thing, and the
+ * thing here is a pair. Both ends are BARE agent names (`maestro:test` is `test`), matching the
+ * ids `handoffRoutes()` produces and the `.claude/handoffs/<sender>/<receiver>.md` path.
+ */
+export type MaestroHandoffsSlice = Record<string, MaestroHandoffEntry>;
 
 /** Ephemeral per-session state written to .claude/maestro_session.json. */
 export interface MaestroSession {

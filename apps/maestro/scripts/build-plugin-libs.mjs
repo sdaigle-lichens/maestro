@@ -58,6 +58,7 @@ const entries = [
   { name: "maestro-agent-types", entry: "src/core/plugin-entries/maestro-agent-types.ts" },
   { name: "maestro-concept-skills", entry: "src/core/plugin-entries/maestro-concept-skills.ts" },
   { name: "maestro-agent-sync", entry: "src/core/plugin-entries/maestro-agent-sync.ts" },
+  { name: "maestro-handoff-defaults", entry: "src/core/plugin-entries/maestro-handoff-defaults.ts" },
 ];
 
 for (const { name, entry } of entries) {

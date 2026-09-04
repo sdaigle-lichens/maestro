@@ -11,8 +11,9 @@ workflow graph and rule assignments. It also clears a legacy `agent: "maestro"` 
 left behind.
 
 **`--purge`** — additionally removes the orchestrator skill (and any `SKILL.md.bak` the
-managed-region migration left), the copied runtime scripts, the installed handoff protocols, and
-`maestro.json`.
+managed-region migration left), the copied runtime scripts, and `maestro.json`. It does **not**
+remove `.claude/handoffs/` — since `033` that directory holds the user's own tracked protocol
+overrides, which are workflow content in the same sense `maestro.json` is.
 
 Collapsing the two, or making purge the default, turns "stop the hooks" into silent data loss.
 
@@ -52,13 +53,23 @@ Two sources, unioned and de-duplicated:
   `maestro-`, plus the one exception shipped under another name, `bash-validation.sh`.
 
 The sweep exists so a project installed by an **older** release isn't left with orphans of scripts
-that release shipped. Anything else in `.claude/scripts/` is the user's. **`.claude/handoffs/` is
-never touched** — it is the user's override location, not an install destination.
+that release shipped. Anything else in `.claude/scripts/` is the user's.
+
+**The `.claude/templates/handoffs/` half of the sweep is now purely archaeological.** `033` stopped
+installing that directory, so on a project installed by `0.4.2` or later it matches nothing. It
+stays because a project installed by `0.4.1` or earlier still has ~23 orphaned files there and
+nothing else would ever remove them. Don't read its presence in `uninstall.ts` as evidence that
+something still writes there — only `uninstall.ts`'s header says why it survives.
+
+**`.claude/handoffs/` is never touched, and the reason changed.** It used to be untouched because
+nothing installed it; now install *does* materialise it, and it is still untouched because those
+files are the user's opinion — a hand-edit is tracked as `staleCustomized` rather than overwritten,
+and deleting them on a purge would throw away exactly what `syncedFrom` exists to protect.
 
 `purgeTargets()` returns the list **most consequential first**, and that ordering is functional
-rather than cosmetic: a full install is ~37 files, nearly all handoff templates, and the
-confirmation renders this list in order. With `maestro.json` last it would sit below the fold of the
-scroll box — the one file the user cannot get back.
+rather than cosmetic: it is what the confirmation renders. With `maestro.json` last it would sit
+below the fold of the scroll box — the one file the user cannot get back. The list is far shorter
+than it was (an install writes 17 files, not ~37), but the ordering rule is unchanged.
 
 Files: `apps/maestro/src/core/uninstall.ts`, `plugins/maestro/scripts/maestro-uninstall.js`,
 `plugins/maestro/skills/maestro-uninstall/SKILL.md`. Test: `test/core/uninstall.test.ts`.

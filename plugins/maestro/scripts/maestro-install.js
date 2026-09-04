@@ -9,8 +9,7 @@
 //      - predates the markers → backed up to SKILL.md.bak and replaced with the
 //        template (there is no safe way to locate the managed regions in it);
 //        reported as `migratedOrchestratorSkill` so the skill can tell the user.
-//   2. copies runtime scripts + handoff templates → <project>/.claude/scripts/ and
-//      <project>/.claude/templates/handoffs/ (always refreshed). Includes the hook scripts
+//   2. copies runtime scripts → <project>/.claude/scripts/ (always refreshed). Includes the hook scripts
 //      (maestro-inject-agent-context, maestro-subagent-log, maestro-session-log,
 //      maestro-validate-tasks, maestro-step0 — copied as .cjs) and maestro-session-cleanup.cjs, so every hook
 //      this install registers runs from a project-local copy rather than
@@ -30,7 +29,7 @@
 // so it runs afterwards via maestro-render-orchestrator.cjs (the /maestro-install and
 // /maestro-update skills both do this as their next step).
 //
-// This manifest (STATIC_ASSETS / HOOK_SCRIPTS / handoffAssets / HOOK_REGISTRATIONS below) mirrors
+// This manifest (STATIC_ASSETS / HOOK_SCRIPTS / HOOK_REGISTRATIONS below) mirrors
 // apps/maestro/src/core/install.ts's one-for-one. If this list and that one ever diverge again,
 // that's a bug in one of them — see that file's `RuntimeAsset`/`HOOK_REGISTRATIONS` for the
 // reasoning behind each entry.
@@ -385,30 +384,12 @@ const STATIC_ASSETS = [
   ...HOOK_SCRIPTS.map((name) => ({ src: `scripts/${name}.js`, dest: `.claude/scripts/${name}.cjs` })),
 ];
 
-// Handoff-protocol templates, installed to `.claude/templates/handoffs/`. See
-// apps/maestro/src/core/install.ts's handoffAssets() for why that destination (not
-// `.claude/handoffs/`, which is left free as the user's override).
-function handoffAssets(pluginRoot) {
-  const base = path.join(pluginRoot, "templates", "handoffs");
-  if (!fs.existsSync(base)) return [];
-  const out = [];
-  const walk = (rel) => {
-    for (const entry of fs
-      .readdirSync(path.join(base, rel), { withFileTypes: true })
-      .sort((a, b) => a.name.localeCompare(b.name))) {
-      const next = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(next);
-      else if (entry.name.endsWith(".md")) {
-        out.push({ src: `templates/handoffs/${next}`, dest: `.claude/templates/handoffs/${next}` });
-      }
-    }
-  };
-  walk("");
-  return out;
-}
-
-function runtimeAssets(pluginRoot) {
-  return [...STATIC_ASSETS, ...handoffAssets(pluginRoot)];
+// The handoff templates USED TO BE COPIED HERE, into `.claude/templates/handoffs/`. They are gone
+// (`033`) — see apps/maestro/src/core/install.ts's runtimeAssets() for the argument. What replaces
+// them is syncProjectHandoffs() below, which materializes `.claude/handoffs/<sender>/<receiver>.md`
+// for the routes the project's workflows actually wire and records what it copied.
+function runtimeAssets() {
+  return [...STATIC_ASSETS];
 }
 
 // Report sync — mirrors apps/maestro/src/core/report-sync.ts's syncProjectReports() exactly (see
@@ -486,6 +467,82 @@ function syncProjectReports(configPath, projectDir) {
   return summary;
 }
 
+// Handoff sync — mirrors apps/maestro/src/core/handoff-sync.ts's syncProjectHandoffs() (see that
+// file's header for the full reasoning). Unlike the report mirror above, this one does NOT restate
+// the five branches: `decideSync` comes out of lib/maestro-agent-sync.cjs, which is the same
+// compiled `sync-decision.ts` the app runs, and `handoffRoutes` out of lib/maestro-session.cjs, so
+// the terminal path and the app cannot disagree about either the candidate routes or the verdict.
+//
+// The store read is the one thing wrapped in its own try/catch: `node:sqlite` may not exist on
+// this session's `node`, and with no global tier there is nothing to sync FROM — the seed still
+// reaches agents through the hook, which requires it out of maestro-session.cjs.
+function syncProjectHandoffs(configPath, projectDir) {
+  const summary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
+  if (!fs.existsSync(configPath)) return summary;
+  const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  if (cfg.version !== 3) return summary;
+
+  const { handoffRoutes, handoffPairs, isValidHandoffId } = require("./lib/maestro-session.cjs");
+  const { decideSync } = require("./lib/maestro-agent-sync.cjs");
+
+  let readHandoffDefault;
+  try {
+    ({ readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs"));
+  } catch {
+    return summary; // no node:sqlite on this node — degrade to nothing synced
+  }
+
+  const handoffs = { ...(cfg.handoffs || {}) };
+  const wired = handoffPairs(handoffRoutes(cfg.workflows, cfg.workflow_instances));
+  const candidates = [...new Set([...Object.keys(handoffs), ...wired])].filter(isValidHandoffId);
+  let changed = false;
+
+  for (const id of candidates) {
+    const entry = handoffs[id];
+    const global = readHandoffDefault(id);
+
+    const [sender, receiver] = id.split("/");
+    const filePath = path.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`);
+    const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+
+    const tracking = entry
+      ? entry.syncedFrom
+        ? { kind: "tracked", hash: entry.syncedFrom.hash }
+        : { kind: "detached" }
+      : { kind: "untracked" };
+
+    const verdict = decideSync({
+      tracking,
+      localHash: onDisk === null ? null : sha256(onDisk),
+      hasTemplate: global !== null,
+      templateAdvanced: !!global && !!(entry && entry.syncedFrom) && global.version > entry.syncedFrom.version,
+    });
+
+    if (verdict === "detached" || verdict === "no-template") continue;
+
+    if (verdict === "materialize" || verdict === "refresh") {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, global.content);
+      handoffs[id] = { id, syncedFrom: { version: global.version, hash: sha256(global.content) } };
+      summary[verdict === "materialize" ? "materialized" : "refreshed"].push(id);
+      changed = true;
+      continue;
+    }
+
+    if (verdict === "stale-customized") {
+      summary.staleCustomized.push(id);
+      continue;
+    }
+
+    summary.unchanged.push(id);
+  }
+
+  if (changed) {
+    fs.writeFileSync(configPath, JSON.stringify({ ...cfg, handoffs }, null, 2));
+  }
+  return summary;
+}
+
 try {
   const claudeDir = path.join(projectDir, ".claude");
   const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
@@ -499,12 +556,12 @@ try {
     path.join(orchestratorSkillDir, "SKILL.md")
   );
 
-  // Runtime scripts + handoff templates the orchestrator / hooks invoke via $CLAUDE_PROJECT_DIR.
+  // Runtime scripts the orchestrator / hooks invoke via $CLAUDE_PROJECT_DIR.
   // They run in-place inside the project, whose package.json may declare "type": "module" — so
   // hook scripts are copied as .cjs to stay CommonJS regardless. Only files that differ are
   // rewritten, so a second run reports nothing left to do.
   const scriptsWritten = [];
-  for (const asset of runtimeAssets(pluginRoot)) {
+  for (const asset of runtimeAssets()) {
     const from = path.join(pluginRoot, ...asset.src.split("/"));
     const to = path.join(projectDir, ...asset.dest.split("/"));
     const source = fs.readFileSync(from);
@@ -548,6 +605,7 @@ try {
   }
 
   const reportsSync = syncProjectReports(configPath, projectDir);
+  const handoffsSync = syncProjectHandoffs(configPath, projectDir);
 
   process.stdout.write(
     JSON.stringify({
@@ -564,6 +622,7 @@ try {
       runtimeVersion,
       runtimeVersionUpdated,
       reportsSync,
+      handoffsSync,
     }) + "\n"
   );
 } catch (err) {

@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: 16fbb9c45b598f236ae65833ef1c1a378c0c00ac
+  version: "1.5"
+  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
 ---
 
 # Installing Maestro
@@ -70,11 +70,11 @@ is a copy or an append that re-running completes.
 
 | File                                                         | Lines | What it owns                                                                                  |
 | ------------------------------------------------------------ | ----- | --------------------------------------------------------------------------------------------- |
-| `apps/maestro/src/core/install.ts`                           | 704   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
-| `apps/maestro/src/core/uninstall.ts`                         | 401   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
+| `apps/maestro/src/core/install.ts`                           | 703   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
+| `apps/maestro/src/core/uninstall.ts`                         | 410   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
 | `apps/maestro/src/core/hook-arbitration.ts`                  | 144   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand`, and `samePath` (see the hook-arbitration sub-concept). |
-| `plugins/maestro/scripts/maestro-install.js`                 | 569   | The terminal implementation of the same manifest.                                             |
-| `plugins/maestro/scripts/maestro-uninstall.js`               | 201   | The terminal implementation of the same removal.                                              |
+| `plugins/maestro/scripts/maestro-install.js`                 | 631   | The terminal implementation of the same manifest — including its own `syncProjectHandoffs()`, which `require`s `decideSync` and `handoffRoutes` from the generated libs rather than re-deriving them. |
+| `plugins/maestro/scripts/maestro-uninstall.js`               | 204   | The terminal implementation of the same removal.                                              |
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging a project by hand; nothing in the orchestrator runs it. |
 | `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the only asset invoked by the *harness* rather than by a hook or the model: the orchestrator's Step 1 injects it with `` !`command` ``. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
@@ -82,8 +82,10 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
 Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
-(`defaultV3Config`), `detect.ts`, `report-sync.ts`. Test: `test/core/install.test.ts`,
-`test/core/uninstall.test.ts`, `test/core/hook-arbitration.test.ts`.
+(`defaultV3Config`), `detect.ts`, `report-sync.ts`, and — since `033` — `handoff-sync.ts`
+(`syncProjectHandoffs`, run right after `syncProjectReports`, and the **third** caller of
+`decideSync`). Test: `test/core/install.test.ts`, `test/core/uninstall.test.ts`,
+`test/core/hook-arbitration.test.ts`, `test/core/handoffs.test.ts`.
 
 ## Things that bite
 
@@ -111,22 +113,27 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
 - **`bash-validation.sh`'s command string is unquoted, byte-for-byte as the legacy installer wrote
   it.** `maestro-uninstall.js` removes it by _exact string match_, and old projects carry that exact
   value. Re-quoting it here duplicates the entry on those projects and orphans it on uninstall.
-- **Handoff templates install to `.claude/templates/handoffs/`, never `.claude/handoffs/`.** The
-  second is the user's override location, which the injector checks first. Copying into it would
-  overwrite a customised protocol on every update.
+- **Handoff templates are no longer copied assets at all (`033`).** `handoffAssets()` is gone and
+  `runtimeAssets()` returns `STATIC_ASSETS` only — about 23 of the ~37 files an install used to
+  write have stopped being written. `.claude/templates/handoffs/` is dead: what an install now
+  produces is `.claude/handoffs/<sender>/<receiver>.md`, **the very directory the old rule said
+  never to write into** — but through `syncProjectHandoffs()`, not a blind copy, so a hand-edit is
+  detected and preserved instead of overwritten. The shipped floor travels as `SEED_HANDOFFS`
+  inside `lib/maestro-session.cjs` rather than as files. Uninstall still sweeps
+  `.claude/templates/handoffs/` — purely to clear orphans left by a pre-`0.4.2` release.
 - **Rendering is a separate step from scaffolding**, always. The renderer _consumes_ `maestro.json`
   and writes into `maestro/SKILL.md`, so both must already exist — hence
   `maestro-render-orchestrator.cjs` runs afterwards, and `/maestro-update` is just those two steps
   standalone.
 - **The seed is guarded on absence.** An existing `maestro.json` is the user's authored graph and is
   never overwritten — by install, re-install, or refresh.
-- **Adding an asset makes every installed project stale exactly once.** `031` added two
-  (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`) and `032` added one
-  (`maestro-step1-gates.cjs`), so `shippedRuntimeId` moved each time and
-  every project reports stale on its next check and re-copies. Expected, and the only way a new
-  runtime file ever arrives — but worth saying out loud, because "everything went stale after my
-  change" reads like a bug. Note the digest is over the manifest, so this fires whether or not any
-  *existing* file changed.
+- **Changing the asset list makes every installed project stale exactly once.** `031` added two
+  (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`), `032` added one
+  (`maestro-step1-gates.cjs`), and `033` **removed ~23** (every `templates/handoffs/**.md`), so
+  `shippedRuntimeId` moved each time and every project reports stale on its next check and
+  re-copies. Expected, and the only way a runtime file ever arrives or leaves — but worth saying out
+  loud, because "everything went stale after my change" reads like a bug. Note the digest is over
+  the manifest, so this fires whether or not any *existing* file changed.
 - **`refreshStaleRuntime` never installs fresh.** It fires on project _selection_, so auto-installing
   would put Maestro into every repo the user happens to open. It also uses a raw parse rather than
   `readConfig()`'s blank-on-corrupt fallback, so a corrupt config is never silently rewritten.

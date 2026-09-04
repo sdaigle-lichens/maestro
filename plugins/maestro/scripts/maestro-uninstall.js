@@ -156,8 +156,11 @@ try {
       path.join(claudeDir, "scripts", "lib", "maestro-tasks.cjs"),
       path.join(claudeDir, "scripts", "lib", "maestro-skill-regions.cjs"),
       path.join(claudeDir, "scripts", "lib", "maestro-agent-sync.cjs"),
-      // Handoff protocols the app installs. NOT .claude/handoffs/ — that path is
-      // the user's own override and nothing here put it there.
+      // Handoff protocols an install BEFORE 0.4.2 wrote here. Nothing writes this
+      // directory any more (`033`); the sweep stays so an older install's 23 orphans
+      // still go. NOT .claude/handoffs/ — install materializes the project's tracked
+      // copies there now, but an edit to one is the user's own content and neither
+      // uninstall level touches it.
       path.join(claudeDir, "templates", "handoffs"),
       path.join(claudeDir, "maestro.json"),
     ];

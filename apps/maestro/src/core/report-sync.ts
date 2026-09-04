@@ -29,6 +29,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { readConfig, writeConfig } from "./config.js";
 import { readAgentReportDefault, DEFAULT_REPORT_DEFAULTS_DB_PATH } from "./report-defaults.js";
+import { isValidReportId } from "./report-resolution.js";
 import { decideSync, type SyncTracking } from "./sync-decision.js";
 import type { MaestroReportsSlice } from "./types.js";
 import type { ReportSyncSummary } from "./contracts.js";
@@ -40,6 +41,10 @@ function reportsDir(projectRoot: string): string {
 }
 
 function reportFilePath(projectRoot: string, reportId: string): string {
+  // `reportId` reaches here from `maestro.json`'s `reports[agent].id` or from `agents_available`,
+  // both hand-editable, and is joined straight into a path. Guarded explicitly — see
+  // `isValidReportId`. Callers filter their candidate list rather than relying on the throw.
+  if (!isValidReportId(reportId)) throw new Error(`Invalid report id: ${String(reportId)}`);
   return path.join(reportsDir(projectRoot), `${reportId}.md`);
 }
 
@@ -67,9 +72,13 @@ export function syncProjectReports(
 
   for (const agentName of candidateAgents) {
     const entry = reports[agentName];
+    const reportId = entry?.id ?? agentName;
+    // Both halves come from a hand-editable maestro.json and `reportId` becomes a path. A value
+    // that isn't a bare name is skipped rather than thrown on: one malformed entry must not take
+    // the whole install down.
+    if (!isValidReportId(agentName) || !isValidReportId(reportId)) continue;
     const global = readAgentReportDefault(agentName, dbPath);
 
-    const reportId = entry?.id ?? agentName;
     const filePath = reportFilePath(projectRoot, reportId);
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
 

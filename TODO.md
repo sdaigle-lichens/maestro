@@ -2,15 +2,26 @@
 
 ## Queue status
 
-**Next up: `033-customizable-handoff-templates.md`** — `ready`, unblocked. Brings agent handoff
-templates to parity with agent reports: a global `~/.claude/maestro-handoff-defaults.sqlite` tier, a
-tracked `.claude/handoffs/` project override synced through `decideSync`, and a seed constant that
-ships inside `maestro-session.cjs` so the floor survives a `node` without `node:sqlite`. It also
-removes the install-managed `.claude/templates/handoffs/`, so `plugins/maestro/` changes and the
-plugin version must be bumped to `0.4.2`.
+**`033-customizable-handoff-templates.md` is `done`.** Handoff protocols now resolve across three
+tiers — `.claude/handoffs/<sender>/<receiver>.md`, then
+`~/.claude/maestro-handoff-defaults.sqlite`, then a `SEED_HANDOFFS` constant bundled into
+`lib/maestro-session.cjs` so the floor survives a `node` without `node:sqlite`. The install-managed
+`.claude/templates/handoffs/` is gone (an install writes 17 files, not ~37) and all 23 files under
+`plugins/maestro/templates/handoffs/` were deleted. Plugin is at `0.4.2`. Its 14 acceptance criteria
+are ticked on the task page, with 8 recorded divergences from what the page planned.
 
-`034-edit-handoff-templates-in-the-app.md` is the UI half — `/templates`' Handoffs tab and the
-`/agents` Interactions pane — and is `blockedBy` `033`.
+**Next up: `034-edit-handoff-templates-in-the-app.md`** — now **unblocked**. The UI half:
+`/templates`' Handoffs tab (global rows, create/delete, Reset to default for a shipped pair) and
+`/agents`' Interactions pane (one entry per outgoing route, with its resolved tier). Its plan was
+reconciled against `033` as built and holds — see the **Checked against `033` as built** section on
+that page for the three small adjustments, chiefly that `ResolvedHandoff.source` has four values,
+not three. Note `handoffsSync` is computed by the install today and rendered by nothing; `034` is
+where `maestro.tsx` picks it up.
+
+**Also ready: `035-reach-the-global-report-tier-from-a-project-local-hook.md`** — filed while
+closing `033`. `lib/maestro-report-defaults.cjs` is not in `STATIC_ASSETS`, so a project-local copy
+of the SubagentStart hook silently cannot reach the global report tier. Small, unblocked, and
+independent of `034`.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

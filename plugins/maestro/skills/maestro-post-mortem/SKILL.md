@@ -30,7 +30,8 @@ This is read-and-reason first; it never changes anything until the user opts in.
    For each snag give: **what happened**, **evidence** (a digest line or a moment from context), and **why it was suboptimal**. Skip categories with nothing real in them.
 
 4. **Offer to explore fixes.** Ask the user which snags they want to address — don't fix unprompted. For each one they pick, propose a concrete remediation mapped to the right Maestro lever, then **apply it once they confirm**:
-   - tighten a subagent's prompt, or its handoff payload template at `templates/handoffs/<sender>/<receiver>.md`
+   - tighten a subagent's prompt, or its handoff payload template at `.claude/handoffs/<sender>/<receiver>.md`
+     (the project's own copy — editing it detaches it from the global default, which is what you want here)
    - add or adjust a skill/rule mapping — edit it on the Maestro desktop app's canvas (`apps/maestro`, which renders and applies on save), or hand-edit `.claude/maestro.json` and run `/maestro-update`
    - make a skill agents *should* be using actually usable: give it proper frontmatter (`name` + a `description` that names the files/logic it covers) so it registers and the description matches the task — a skill with no/weak description never gets loaded, so the agent reverse-engineers from source instead
    - retune where a skill lives: move it between an instance's `loaded_skills` (auto-load up front) and `referenced_skills` (load on demand) in `.claude/maestro.json` (then `/maestro-update`) when it was loaded too eagerly (context tax on unrelated tasks) or not eagerly enough (agent dove into source first)

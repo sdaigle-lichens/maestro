@@ -36,6 +36,7 @@ import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
 import { syncProjectReports } from "./report-sync.js";
+import { syncProjectHandoffs } from "./handoff-sync.js";
 import { detectImplAgents } from "./detect.js";
 import { discoverSkills } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
@@ -184,36 +185,21 @@ const STATIC_ASSETS: RuntimeAsset[] = [
 ];
 
 /**
- * Handoff-protocol templates, installed to `.claude/templates/handoffs/`.
+ * Every file the app copies into a project, in a stable order.
  *
- * `maestro-inject-agent-context` looks for `<project>/.claude/handoffs/<sender>/<receiver>.md`
- * first and falls back to `<script dir>/../templates/handoffs/…`. From the copied script that
- * second path is exactly `.claude/templates/handoffs/`, so installing there needs no change to
- * the script AND leaves `.claude/handoffs/` free as the user's override — copying into the
- * override location would overwrite a customised protocol on every update.
+ * THE HANDOFF TEMPLATES USED TO BE HERE (`033`). Roughly 23 of the ~37 files an install wrote were
+ * `templates/handoffs/<sender>/<receiver>.md` copied to `.claude/templates/handoffs/`, which is
+ * where the injector's fallback looked. They are gone, and the argument is the same one
+ * `syncedFrom` was built on one directory over: a fallback that every install blind-overwrites can
+ * never hold an opinion, so a user who edited one lost the edit silently. The tier that holds an
+ * opinion now is `~/.claude/maestro-handoff-defaults.sqlite`, and what an install materializes from
+ * it is `.claude/handoffs/<sender>/<receiver>.md` — tracked in `maestro.json`'s `handoffs` slice,
+ * for exactly the routes the project's workflows wire, and never overwritten once edited. See
+ * `handoff-sync.ts`. `pluginRoot` is kept in the signature because callers pass it and because a
+ * future asset may need it again; nothing reads it today.
  */
-function handoffAssets(pluginRoot: string): RuntimeAsset[] {
-  const base = path.join(pluginRoot, "templates", "handoffs");
-  if (!fs.existsSync(base)) return [];
-  const out: RuntimeAsset[] = [];
-  const walk = (rel: string) => {
-    for (const entry of fs
-      .readdirSync(path.join(base, rel), { withFileTypes: true })
-      .sort((a, b) => a.name.localeCompare(b.name))) {
-      const next = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(next);
-      else if (entry.name.endsWith(".md")) {
-        out.push({ src: `templates/handoffs/${next}`, dest: `.claude/templates/handoffs/${next}` });
-      }
-    }
-  };
-  walk("");
-  return out;
-}
-
-/** Every file the app copies into a project, in a stable order. */
-export function runtimeAssets(pluginRoot?: string): RuntimeAsset[] {
-  return [...STATIC_ASSETS, ...handoffAssets(requirePluginRoot(pluginRoot))];
+export function runtimeAssets(_pluginRoot?: string): RuntimeAsset[] {
+  return [...STATIC_ASSETS];
 }
 
 // ── the hooks ──────────────────────────────────────────────────────────────
@@ -555,13 +541,15 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
  * exposed only so tests don't touch the real machine's `~/.claude/maestro-report-defaults.sqlite`
  * (mirrors `skill-tags.ts`'s tests taking an explicit `dbPath`); every real caller omits it.
  * `projectTagsDbPath` is the same test-isolation escape hatch for the first-install seed's read of
- * the global Project Tags catalog, below.
+ * the global Project Tags catalog, below, and `handoffsDbPath` for the handoff sync's read of
+ * `~/.claude/maestro-handoff-defaults.sqlite`.
  */
 export async function installRuntime(
   projectRoot: string,
   pluginRoot?: string,
   reportsDbPath?: string,
-  projectTagsDbPath?: string
+  projectTagsDbPath?: string,
+  handoffsDbPath?: string
 ): Promise<InstallReport> {
   if (!projectRoot) throw new Error("No project is open.");
   if (!fs.existsSync(projectRoot)) throw new Error(`${projectRoot} does not exist.`);
@@ -639,6 +627,10 @@ export async function installRuntime(
   // exist in whatever form it's going to (stamped runtimeVersion above), so a reports slice
   // written here isn't immediately clobbered by writeRuntimeVersion's own read-modify-write.
   const reportsSync = syncProjectReports(projectRoot, reportsDbPath);
+  // Same placement, same reasoning, one tier over: the candidate routes come from the config this
+  // run has just guaranteed exists, and the slice it writes must not be clobbered by
+  // writeRuntimeVersion's own read-modify-write above.
+  const handoffsSync = syncProjectHandoffs(projectRoot, handoffsDbPath);
 
   const status = await installStatus(projectRoot, root);
 
@@ -666,10 +658,13 @@ export async function installRuntime(
       !runtimeVersionUpdated &&
       configSeeded === null &&
       reportsSync.materialized.length === 0 &&
-      reportsSync.refreshed.length === 0,
+      reportsSync.refreshed.length === 0 &&
+      handoffsSync.materialized.length === 0 &&
+      handoffsSync.refreshed.length === 0,
     warnings,
     status,
     reportsSync,
+    handoffsSync,
   };
 }
 
@@ -687,7 +682,9 @@ export async function installRuntime(
 export async function refreshStaleRuntime(
   projectRoot: string,
   pluginRoot?: string,
-  reportsDbPath?: string
+  reportsDbPath?: string,
+  projectTagsDbPath?: string,
+  handoffsDbPath?: string
 ): Promise<InstallReport | null> {
   const root = requirePluginRoot(pluginRoot);
   // A raw parse, not readConfig()'s blank-on-corrupt fallback: this trigger fires on every project
@@ -702,5 +699,5 @@ export async function refreshStaleRuntime(
   if (cfg.runtimeVersion === shipped) return null;
   const status = await installStatus(projectRoot, root);
   if (!status.installed) return null;
-  return installRuntime(projectRoot, root, reportsDbPath);
+  return installRuntime(projectRoot, root, reportsDbPath, projectTagsDbPath, handoffsDbPath);
 }

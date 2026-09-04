@@ -33,18 +33,28 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-session.ts
 var maestro_session_exports = {};
 __export(maestro_session_exports, {
+  PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
+  SEED_HANDOFFS: () => SEED_HANDOFFS,
   SESSION_LOG_FILE: () => SESSION_LOG_FILE,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
   collectAgentSkills: () => collectAgentSkills,
+  handoffId: () => handoffId,
+  handoffPairs: () => handoffPairs,
+  handoffRoutes: () => handoffRoutes,
+  isSeededHandoff: () => isSeededHandoff,
+  isValidHandoffId: () => isValidHandoffId,
   nodeLabel: () => nodeLabel,
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readSession: () => readSession,
   readStdin: () => readStdin,
+  resolveHandoff: () => resolveHandoff,
   resolveSearchList: () => resolveSearchList,
   resolveWorkflowName: () => resolveWorkflowName,
+  routesFrom: () => routesFrom,
   sessionLogPath: () => sessionLogPath,
+  splitHandoffId: () => splitHandoffId,
   successPathSteps: () => successPathSteps,
   workflowNodeLabels: () => workflowNodeLabels,
   writeSession: () => writeSession
@@ -215,20 +225,164 @@ function sessionLogPath(claudeDir) {
 function appendSessionLog(claudeDir, entry) {
   import_node_fs2.default.appendFileSync(sessionLogPath(claudeDir), JSON.stringify(entry) + "\n");
 }
+
+// src/core/handoff-routes.ts
+function handoffRoutes(workflows, instances) {
+  const instList = instances ?? [];
+  const instByName = (name) => name === void 0 ? void 0 : instList.find((i) => i.name === name);
+  const out = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const wf of workflows ?? []) {
+    const nodes = wf.nodes ?? [];
+    const edges = wf.edges ?? [];
+    const nodeById = (id) => nodes.find((n) => n.id === id);
+    const agentOfNode = (node, followSuccess, visited = /* @__PURE__ */ new Set()) => {
+      if (!node || visited.has(node.id)) return null;
+      visited.add(node.id);
+      if (node.type === "agent") {
+        const inst = instByName(node.instance);
+        return inst ? bareAgentName(inst.agent) : null;
+      }
+      if (!followSuccess) return null;
+      const next = edges.find((e) => e.from === node.id && e.kind === "success");
+      return next ? agentOfNode(nodeById(next.to), true, visited) : null;
+    };
+    for (const node of nodes) {
+      if (node.type !== "agent") continue;
+      const inst = instByName(node.instance);
+      if (!inst) continue;
+      const sender = bareAgentName(inst.agent);
+      for (const edge of edges) {
+        if (edge.from !== node.id) continue;
+        const label = edge.kind === "success" ? "success" : edge.label;
+        if (!label) continue;
+        const key = `${sender} ${label}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+        out.push({ sender, receiver: agentOfNode(nodeById(edge.to), edge.kind === "success"), label });
+      }
+    }
+  }
+  return out;
+}
+function routesFrom(routes, agent) {
+  const bare = bareAgentName(agent);
+  return routes.filter((r) => r.sender === bare);
+}
+function handoffPairs(routes) {
+  const ids = /* @__PURE__ */ new Set();
+  for (const r of routes) if (r.receiver) ids.add(`${r.sender}/${r.receiver}`);
+  return [...ids];
+}
+
+// src/core/handoff-seeds.ts
+var BACKEND_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "api_contracts": ["<endpoint \u2014 request/response shape the UI consumes>"],\n    "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n    "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n  }\n}\n```';
+var BACKEND_TO_MOBILE = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n    "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n    "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n  }\n}\n```';
+var BACKEND_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```';
+var BACKEND_TO_TEST = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```';
+var FRONTEND_TO_MOBILE = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "component_or_screen": "<the web feature being ported>",\n    "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n    "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n  }\n}\n```';
+var FRONTEND_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```';
+var FRONTEND_TO_TEST = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```';
+var MOBILE_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "component_or_screen": "<the mobile feature being ported>",\n    "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n    "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n  }\n}\n```';
+var MOBILE_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```';
+var MOBILE_TO_TEST = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```';
+var REFACTOR_TO_BACKEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
+var REFACTOR_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
+var REFACTOR_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "summary": "<brief summary of what was delegated, for re-review>"\n  }\n}\n```';
+var REFACTOR_TO_SCRIBE = '```json\n{\n  "handoff_details": {\n    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n  }\n}\n```';
+var REFACTOR_TO_TEST = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
+var REVIEWER_TO_BACKEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
+var REVIEWER_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
+var REVIEWER_TO_REFACTOR = '```json\n{\n  "handoff_details": {\n    "violations": ["<file:line \u2014 pattern violation, DRY issue, or code redundancy>"]\n  }\n}\n```';
+var REVIEWER_TO_SCRIBE = `\`\`\`json
+{
+  "handoff_details": {
+    "files_added_removed_renamed": ["<list, or 'none'>"],
+    "justfile_commands_changed": ["<old \u2192 new description, or 'none'>"],
+    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or 'none'>"],
+    "schema_changes": ["<new tables, columns, or constraints, or 'none'>"],
+    "workflow_or_process_changes": ["<changed agent handoff, new convention, or 'none'>"],
+    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]
+  }
+}
+\`\`\``;
+var REVIEWER_TO_TEST = '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 failure reason>"],\n    "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n  }\n}\n```';
+var TEST_TO_BACKEND = '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<endpoint/function the backend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```';
+var TEST_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<component/page the frontend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```';
+var TEST_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "tests_added": ["<test name \u2014 what it verifies>"],\n    "results": ["<pass/fail summary>"],\n    "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n    "files_touched": ["<list, or \'none\'>"]\n  }\n}\n```';
+var SEED_HANDOFFS = {
+  "backend/frontend": BACKEND_TO_FRONTEND,
+  "backend/mobile": BACKEND_TO_MOBILE,
+  "backend/reviewer": BACKEND_TO_REVIEWER,
+  "backend/test": BACKEND_TO_TEST,
+  "frontend/mobile": FRONTEND_TO_MOBILE,
+  "frontend/reviewer": FRONTEND_TO_REVIEWER,
+  "frontend/test": FRONTEND_TO_TEST,
+  "mobile/frontend": MOBILE_TO_FRONTEND,
+  "mobile/reviewer": MOBILE_TO_REVIEWER,
+  "mobile/test": MOBILE_TO_TEST,
+  "refactor/backend": REFACTOR_TO_BACKEND,
+  "refactor/frontend": REFACTOR_TO_FRONTEND,
+  "refactor/reviewer": REFACTOR_TO_REVIEWER,
+  "refactor/scribe": REFACTOR_TO_SCRIBE,
+  "refactor/test": REFACTOR_TO_TEST,
+  "reviewer/backend": REVIEWER_TO_BACKEND,
+  "reviewer/frontend": REVIEWER_TO_FRONTEND,
+  "reviewer/refactor": REVIEWER_TO_REFACTOR,
+  "reviewer/scribe": REVIEWER_TO_SCRIBE,
+  "reviewer/test": REVIEWER_TO_TEST,
+  "test/backend": TEST_TO_BACKEND,
+  "test/frontend": TEST_TO_FRONTEND,
+  "test/reviewer": TEST_TO_REVIEWER
+};
+var PRIOR_SEEDS = {};
+function isSeededHandoff(handoffId2) {
+  return Object.prototype.hasOwnProperty.call(SEED_HANDOFFS, handoffId2);
+}
+function isValidHandoffId(handoffId2) {
+  return typeof handoffId2 === "string" && /^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(handoffId2);
+}
+function splitHandoffId(handoffId2) {
+  if (!isValidHandoffId(handoffId2)) throw new Error(`Invalid handoff id: ${String(handoffId2)}`);
+  const [sender, receiver] = handoffId2.split("/");
+  return { sender, receiver };
+}
+function handoffId(sender, receiver) {
+  return `${sender}/${receiver}`;
+}
+
+// src/core/handoff-resolution.ts
+function resolveHandoff(id, projectContent, globalDefault) {
+  if (projectContent) return { source: "project", content: projectContent, handoffId: id };
+  if (globalDefault) return { source: "global", content: globalDefault.content, handoffId: id };
+  const seed = SEED_HANDOFFS[id];
+  if (seed) return { source: "seed", content: seed, handoffId: id };
+  return { source: "none", content: null, handoffId: id };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  PRIOR_HANDOFF_SEEDS,
+  SEED_HANDOFFS,
   SESSION_LOG_FILE,
   appendSessionLog,
   bareAgentName,
   collectAgentSkills,
+  handoffId,
+  handoffPairs,
+  handoffRoutes,
+  isSeededHandoff,
+  isValidHandoffId,
   nodeLabel,
   projectOwnsHook,
   readJson,
   readSession,
   readStdin,
+  resolveHandoff,
   resolveSearchList,
   resolveWorkflowName,
+  routesFrom,
   sessionLogPath,
+  splitHandoffId,
   successPathSteps,
   workflowNodeLabels,
   writeSession
