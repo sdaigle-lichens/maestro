@@ -193,9 +193,13 @@
     "blockedBy": []
   },
   "037-surface-agent-channels-in-the-app.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "036-move-handoff-payloads-onto-agent-channels.md"
     ]
+  },
+  "038-start-the-log-tail-for-a-window-that-subscribed-before-a-project.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

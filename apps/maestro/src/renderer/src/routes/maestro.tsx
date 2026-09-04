@@ -8,6 +8,7 @@ import {
   Download,
   FolderOpen,
   GitBranch,
+  Inbox,
   PowerOff,
   RefreshCw,
   ShieldCheck,
@@ -24,6 +25,7 @@ import type {
   InstallReport,
   InstallStatus,
   GatesData,
+  PendingLane,
   ProjectTagsData,
   UninstallPlan,
   UninstallReport,
@@ -521,6 +523,76 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
   );
 }
 
+/** `oldestAgeMs` in the words `/maestro` shows beside a lane — never sub-hour, this is a backlog view. */
+function formatAge(ms: number): string {
+  const hours = ms / (60 * 60 * 1000);
+  if (hours < 24) return `${Math.max(1, Math.round(hours))} hour${Math.round(hours) === 1 ? "" : "s"}`;
+  const days = hours / 24;
+  const rounded = days < 10 ? Math.round(days * 10) / 10 : Math.round(days);
+  return `${rounded} day${rounded === 1 ? "" : "s"}`;
+}
+
+/**
+ * `037`'s entry point — every `.claude/channels/<receiver>/` lane still holding a file, right now.
+ *
+ * READ-ONLY, same discipline as `ForkedAgentsCard` below: nothing here delivers, retires or sweeps
+ * a channel file — that is entirely `036`'s hooks' job, inside a live session. This just names what
+ * is waiting, and whether the CURRENT run (if one is live) will deliver it or it is queued for an
+ * agent nothing has invoked yet — which is a backlog, not an error, and is worded that way rather
+ * than as "stranded".
+ */
+function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
+  const [lanes, setLanes] = useState<PendingLane[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.channels.pending()).then((res) => {
+      if (!cancelled && res.ok) setLanes(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!lanes || lanes.length === 0) return null;
+
+  return (
+    <div
+      data-testid="maestro-channels"
+      data-lanes={lanes.length}
+      className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+    >
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <Inbox size={12} /> Channels
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Payloads waiting in <span className="font-mono">.claude/channels/</span> for an agent that hasn&rsquo;t consumed
+        them yet. A route with no workflow to it — like the scribe&rsquo;s concept-skill gaps — simply queues here until
+        that agent is next invoked, which can be a later run.
+      </p>
+      <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
+        {lanes.map((lane) => (
+          <li
+            key={lane.receiver}
+            data-testid={`channel-lane-${lane.receiver}`}
+            className="text-[12px] flex flex-wrap items-baseline gap-x-1.5"
+          >
+            <span className="font-mono text-(--ink)">{lane.receiver}</span>
+            <span className="text-(--ink-2)">{lane.count} pending</span>
+            <span className="text-(--ink-3)">
+              {lane.stranded === 0
+                ? "— will be delivered this run"
+                : lane.current > 0
+                  ? `— ${lane.current} this run, ${lane.stranded} queued (oldest ${formatAge(lane.oldestAgeMs)})`
+                  : `— queued for ${lane.receiver}, from a previous run (oldest ${formatAge(lane.oldestAgeMs)})`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
 /**
  * `031`'s entry point, and deliberately only that: a COUNT and a link, not a modal.
  *
@@ -772,6 +844,8 @@ function InstallPage() {
           {status && <StatusCard status={status} />}
 
           {agentSync && <ForkedAgentsCard summary={agentSync} />}
+
+          {status?.installed && viewedRoot && <ChannelsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 

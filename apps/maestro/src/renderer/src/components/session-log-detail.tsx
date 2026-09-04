@@ -44,6 +44,25 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
           ) : (
             <span className="text-(--ink-3) italic">No input captured</span>
           )}
+          {instance.delivered.length > 0 && (
+            <div className="mt-3 flex flex-col gap-2.5">
+              {instance.delivered.map((d, i) => (
+                <div key={i}>
+                  <div className="flex items-center gap-1.5 mb-1">
+                    <span className="text-[11px] text-(--ink-3)">
+                      Delivered from <span className="font-mono text-(--ink-2)">@{stripNamespace(d.sender)}</span>
+                    </span>
+                    <span className="ml-auto text-[9.5px] font-mono uppercase tracking-wide text-(--ink-3)">
+                      channel
+                    </span>
+                  </div>
+                  <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0 p-2.5 rounded-md bg-(--sunken) border border-(--line)">
+                    {d.content}
+                  </pre>
+                </div>
+              ))}
+            </div>
+          )}
         </Section>
 
         <Section title="Process">

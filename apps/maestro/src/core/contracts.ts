@@ -366,11 +366,11 @@ export interface SessionLogEntry {
   ts: string;
   origin: string;
   log: string;
-  /** Set on dispatch/handoff entries written by maestro-subagent-log.js. */
-  kind?: "dispatch" | "handoff" | "transition";
+  /** Set on dispatch/handoff/channel_delivery entries written by the hooks. */
+  kind?: "dispatch" | "handoff" | "transition" | "channel_delivery";
   /** dispatch: the subagent's agent_type */
   agent?: string;
-  /** shared key linking a dispatch↔handoff pair */
+  /** shared key linking a dispatch↔handoff pair, and (037) a channel_delivery to its receiver's dispatch */
   agent_id?: string;
   /** dispatch only: full spawning message (main session → agent) */
   input?: string;
@@ -382,6 +382,44 @@ export interface SessionLogEntry {
   label?: string | null;
   /** handoff only: full final message (agent → main session) */
   output?: string;
+  /** channel_delivery only: the bare agent name that wrote the payload */
+  sender?: string;
+  /** channel_delivery only: the bare agent name it was delivered to */
+  receiver?: string;
+  /** channel_delivery only: the payload, inlined verbatim */
+  content?: string;
+}
+
+/**
+ * One `kind: "channel_delivery"` log entry (`036`'s `SubagentStart` inlining, `037`'s reading of
+ * it) — a payload delivered to the RECEIVING agent's own dispatch, not the sender's. `/session-log`
+ * attaches these to the receiving `Instance`, matched by `agent_id` the same way `input` is.
+ */
+export interface ChannelDelivery {
+  sender: string;
+  receiver: string;
+  agent_id: string;
+  content: string;
+}
+
+/**
+ * One receiver's `.claude/channels/<receiver>/` lane, as `handoff-channels.ts`'s `pendingLanes()`
+ * (`037`) computes it — read-only, for `/maestro`'s Channels block.
+ *
+ * `current` is entries stamped with the LIVE session's own `run_id` — normal in-flight traffic that
+ * the next matching `SubagentStart` will inline. `stranded` is everything else (a foreign `run_id`,
+ * or unstamped) — `036`'s injector only ever MENTIONS these, never inlines them. A lane whose count
+ * is entirely `stranded` is not an error: the scribe's `conceptSkillGaps` lane lives there by
+ * construction the moment one `SessionEnd` passes with no scribe invoked, and is exactly the
+ * backlog the channel design means to make visible rather than silently remembered.
+ */
+export interface PendingLane {
+  receiver: string;
+  count: number;
+  /** Age, in ms, of the oldest file still in the lane. */
+  oldestAgeMs: number;
+  current: number;
+  stranded: number;
 }
 
 export interface RenderResult {

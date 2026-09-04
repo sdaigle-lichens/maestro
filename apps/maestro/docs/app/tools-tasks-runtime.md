@@ -40,3 +40,10 @@ Install, update, or remove the project's Maestro runtime (the hook scripts and o
 that make the workflow you designed in `/workflows` actually runnable from a terminal session), and
 see whether it's up to date. Like the Tools dashboard, it has a project selector so you can check
 another project's runtime status without switching away from the one you're currently working in.
+
+A **Channels** card also lists any handoff payload still waiting on an agent — one line per
+receiving agent, with a count and how old the oldest one is. A payload waiting for an agent that's
+about to run in the current session reads as "will be delivered this run"; one waiting for an agent
+nothing has invoked yet (a common shape: notes left for the scribe on a workflow with no route to
+it) reads as queued work, not an error — it's still valid whenever that agent is next run, up to a
+14-day age limit.

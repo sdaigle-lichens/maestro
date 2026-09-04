@@ -1,10 +1,10 @@
 ---
 name: agents-view
-description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to seven different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's list of the resolved report plus one editor per outgoing handoff route, the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to seven places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, or how the Interactions pane's per-route handoff editors work."
+description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to seven different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's list of the resolved report plus one editor per outgoing handoff route (each labelled, since `037`, with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to), the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to seven places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, or why a route shows (or doesn't show) a channel lane path."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
+  version: "1.5"
+  last-update: 84e32c699feb0057643949e34b10502d2d0a7bb1
 ---
 
 # Agents View
@@ -196,6 +196,13 @@ The right pane is a **list of header + body pairs**: the agent's resolved report
 - **A route header reads `→ receiver`**, plus ` · <label>` when the edge is a condition edge. Each
   entry has its own auto-growing textarea (the pane scrolls, the boxes don't) and its own pencil,
   and every pencil starts the **card's one** edit session.
+- **Since `037`, each entry with a receiver also names the file its template writes to** — a small
+  `→ .claude/channels/<receiver>/<sender>.1.md` line below the tier note, computed inline in
+  `interactions-pane.tsx` from `route.sender`/`route.receiver` (both already on
+  `ResolvedHandoffRoute`). This is a label only: `036` moved the payload itself off the orchestrator's
+  context and onto that file, and this pane's editor still edits the resolved `handoff_details`
+  *template*, not the file — nothing here reads or writes the channel file. Null for the Main Session
+  report entry and for a route whose edge reaches no agent (`receiver: null`).
 - **Every entry names the tier its body came from.** `HANDOFF_TIER` maps the four
   `ResolvedHandoff["source"]` values: `project` → "Project override", `global` → "Global default",
   `seed` → "Shipped by Maestro", `none` → "No protocol configured". The fourth is the point of the

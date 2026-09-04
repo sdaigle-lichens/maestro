@@ -130,6 +130,10 @@ export default function InteractionsPane({
           {routes.map((route) => {
             const id = route.handoffId;
             const value = id ? (handoffs[id] ?? route.content) : "";
+            // The route's payload is no longer a JSON field the agent returns (`036`) — it is the
+            // content of the file its own SubagentStart writes into the receiver's lane. Only
+            // routes with a receiver have one to name.
+            const lanePath = route.receiver ? `.claude/channels/${route.receiver}/${route.sender}.1.md` : null;
             return (
               <Entry
                 key={`${route.label}:${route.receiver ?? "—"}`}
@@ -152,6 +156,7 @@ export default function InteractionsPane({
                     : "This edge reaches no agent, so there is no protocol to attach to it."
                 }
                 note={id ? HANDOFF_TIER[route.source] : "Unrouted edge"}
+                lanePath={lanePath}
                 onChange={(v) => id && onHandoff(id, v)}
                 onStartEdit={onStartEdit}
               />
@@ -177,6 +182,7 @@ function Entry({
   placeholder,
   emptyText,
   note,
+  lanePath,
   onChange,
   onStartEdit,
 }: {
@@ -188,6 +194,8 @@ function Entry({
   placeholder: string;
   emptyText: string;
   note: string | null;
+  /** Where this route's template lands at runtime (`036`) — null for the report entry. */
+  lanePath?: string | null;
   onChange: (value: string) => void;
   onStartEdit: () => void;
 }) {
@@ -240,6 +248,7 @@ function Entry({
         </pre>
       )}
       {note && <p className="m-0 text-[10.5px] leading-[1.55] text-(--ink-3) text-pretty">{note}</p>}
+      {lanePath && <p className="m-0 text-[10.5px] leading-[1.55] text-(--ink-3) font-mono truncate">→ {lanePath}</p>}
     </div>
   );
 }

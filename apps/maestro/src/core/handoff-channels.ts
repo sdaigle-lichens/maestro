@@ -21,6 +21,8 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import { readSession } from "./session-runtime.js";
+import type { PendingLane } from "./contracts.js";
 
 /** How long a lane file may sit unconsumed before `sweep` removes it. */
 export const CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1000;
@@ -216,4 +218,32 @@ export function sweep(projectDir: string, opts: { now?: number; ageCapMs?: numbe
   }
 
   return { removed };
+}
+
+/**
+ * Every receiver lane holding at least one undelivered file, right now — the `/maestro` Channels
+ * block's one round trip (`037`). READ-ONLY: unlike `writeStamp`/`retire`/`sweep`, this never
+ * touches disk. It does not even mint a `run_id` — that is `ensureSessionRunId`'s job, reserved for
+ * a live hook mid-run; the app reads whatever `maestro_session.json` already holds (`null` when no
+ * session is active), which is the honest answer for a window that opens between sessions.
+ *
+ * `current`/`stranded` split on that read, not on age: a `null` live `run_id` means every entry
+ * reads as `stranded`, which is correct — with no session running, nothing is "in flight".
+ */
+export function pendingLanes(projectDir: string, now: number = Date.now()): PendingLane[] {
+  const liveRunId = readSession(path.join(projectDir, ".claude", "maestro_session.json")).run_id;
+  const lanes: PendingLane[] = [];
+  for (const receiver of listDirs(channelsRoot(projectDir))) {
+    const entries = readLane(projectDir, receiver, now);
+    if (entries.length === 0) continue;
+    const current = liveRunId ? entries.filter((e) => e.runId === liveRunId).length : 0;
+    lanes.push({
+      receiver,
+      count: entries.length,
+      oldestAgeMs: Math.max(...entries.map((e) => e.ageMs)),
+      current,
+      stranded: entries.length - current,
+    });
+  }
+  return lanes;
 }

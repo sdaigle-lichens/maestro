@@ -2,7 +2,8 @@
 
 ## Queue status
 
-**`036` is done.** `037` is next up and `ready` — its only blocker, `036`, is now done.
+**`038` is ready.** The agent-channels pair (`036`/`037`) is done; `038` is a small fix written from
+the bug the `037` verification turned up.
 
 **The plugin is at `0.4.5`.**
 
@@ -14,22 +15,22 @@
   pre-existing `writeSession` bug in `collect()` (dropping `active_task`/`run_id` on dispatch) was
   found and fixed as part of this slice; "delivered ... in a later run" for a scribe gap with no
   route landed as reached-and-mentioned rather than literally inlined for a foreign run.
-- **`037-surface-agent-channels-in-the-app.md`** (`ready`) — the app half. `/session-log` renders
+- **`037-surface-agent-channels-in-the-app.md`** (`done`) — the app half. `/session-log` renders
   delivered payloads (`kind: "channel_delivery"` log entries — `sender`/`receiver`/`agent_id`/
-  `content`) on the *receiving* instance's Input panel; `/maestro` shows undrained lanes via a new
-  read-only `pendingLanes()` beside `036`'s `handoff-channels.ts` functions.
-
-Worth knowing before touching `037`, since it reads what `036` wrote rather than the mechanism
-itself:
-
-- **A channel file's freshness is decided by its stamped `run_id`, not by mtime.** A file with a
-  `run_id` that doesn't match the live session's is "stranded" (foreign-run or unstamped) — `037`'s
-  pending-lanes view is explicitly asked to split current-run from stranded, and getting that split
-  right means reading the stamp `handoff-channels.ts` already parses, not re-deriving freshness from
-  file age.
-- **Retirement is a move to `.claude/channels/.consumed/<receiver>/`, never a delete**, until
-  `SessionEnd`'s `sweep()` ages a file out past 14 days. `037` is read-only by design (no app code
-  path delivers, retires or sweeps) — do not add a second implementation of the lifetime rule.
+  `content`) on the *receiving* instance's Input panel, correlated by `agent_id`, with a delivery
+  count on the card and list row. `/maestro` shows undrained lanes via a new read-only
+  `pendingLanes()` beside `036`'s `handoff-channels.ts` functions, wording an all-foreign-run lane as
+  queued backlog rather than an error. The Interactions pane now names each route's lane path
+  (`.claude/channels/<receiver>/<sender>.1.md`). No divergences from the plan; no `plugins/` change,
+  so no plugin version bump.
+- **`038-start-the-log-tail-for-a-window-that-subscribed-before-a-project.md`** (`ready`) — the
+  quirk `037` recorded as harness-only, re-examined and **confirmed user-facing**. `startTail`
+  returns before `tails.set` when no project is open, and `retargetTails` iterates `tails.keys()`,
+  so a window that subscribed before a project existed never gets a tail — and the renderer
+  subscribes once with `[]` deps, so nothing recovers. `/session-log` is dead for the life of that
+  window. It reproduces only on a first run (or after the open project is forgotten), which is why
+  it has never been reported. The fix separates "asked for a tail" from "has a tail"; the page says
+  why the two one-line alternatives are each worse.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

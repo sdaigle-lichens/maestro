@@ -129,29 +129,82 @@ No `plugins/` change, so **no plugin version bump** — `036` ships the runtime 
 
 ## Acceptance criteria
 
-- [ ] A `channel_delivery` entry attaches to the **receiving** instance, matched on `agent_id`, and
+- [x] A `channel_delivery` entry attaches to the **receiving** instance, matched on `agent_id`, and
       renders in its Input panel labelled with the sender.
-- [ ] An instance with several deliveries shows all of them, in log order; one with none renders no
+      Evidence: `buildInstances()` in `session-log.ts` collects `channel_delivery` entries into a
+      `Map<agent_id, ChannelDelivery[]>` and looks each instance up by the same
+      `handoff?.agent_id ?? dispatch?.agent_id` key `input` already uses. `session-log-detail.tsx`
+      renders "Delivered from @<sender>" plus a channel badge below the spawning message. Packaged
+      window: Input section read `"Write tests for the login endpoint.\nDelivered from
+      @backend\nCHANNEL\n{\"behaviors_to_test\":[\"login flow\"]}"`.
+- [x] An instance with several deliveries shows all of them, in log order; one with none renders no
       empty section.
-- [ ] A `channel_delivery` whose `agent_id` matches no dispatch does not crash the view and does not
+      Evidence: `test/renderer/session-log.test.ts` asserts multiple deliveries preserved in log
+      order and that an instance with none gets `delivered: []`, not `undefined`; the detail
+      component renders nothing extra when `delivered` is empty.
+- [x] A `channel_delivery` whose `agent_id` matches no dispatch does not crash the view and does not
       attach to an arbitrary instance.
-- [ ] The card and list row show a delivery count.
-- [ ] `skillsTriage` still parses and `unaccountedSkills` still diffs against `offered_skills` —
+      Evidence: `test/renderer/session-log.test.ts` covers an orphaned `agent_id` — it is left in the
+      map, unattached, no throw.
+- [x] The card and list row show a delivery count.
+      Evidence: `session-log-cards.tsx` shows an Inbox icon + count; `session-log-view.tsx`'s center
+      pane header shows "`N` delivered". Verified in the packaged window against the fixture.
+- [x] `skillsTriage` still parses and `unaccountedSkills` still diffs against `offered_skills` —
       unchanged by this slice; assert it rather than assuming it.
-- [ ] `/maestro` lists every lane with pending files, its count, its oldest write, and separates
+      Evidence: neither `parseSkillsTriage` nor `unaccountedSkills` was touched; existing tests for
+      both still pass in the 879-test green run, confirming the claim rather than assuming it.
+- [x] `/maestro` lists every lane with pending files, its count, its oldest write, and separates
       current-run from waiting (foreign-run or unstamped).
-- [ ] A scribe lane holding gaps from a previous run reads as queued work, not as an error or a
+      Evidence: `pendingLanes()` in `src/core/handoff-channels.ts` splits each lane's entries into
+      `current` (stamped with the live session's `run_id`) and `stranded` (foreign-run or unstamped);
+      `ChannelsCard` in `maestro.tsx` renders receiver, total count and the split per lane.
+- [x] A scribe lane holding gaps from a previous run reads as queued work, not as an error or a
       stranded-traffic warning — `036`'s uniform freshness rule puts it in that bucket permanently.
-- [ ] A project with an empty `.claude/channels/`, and one with no such directory at all, both render
+      Evidence: `ChannelsCard`'s all-stranded wording is "queued for `<receiver>`, from a previous
+      run (oldest `<age>`)" — verified against the fixture's `scribe` lane, which read "queued for
+      scribe, from a previous run (oldest 1 hours)"; never "stranded", never phrased as an error.
+- [x] A project with an empty `.claude/channels/`, and one with no such directory at all, both render
       without an error.
-- [ ] The Interactions pane names the lane path each route's template writes to.
-- [ ] `channels:pending` is read-only — no app code path delivers, retires or sweeps.
-- [ ] `test/isolation.test.ts` passes over the new renderer imports.
-- [ ] `pnpm --filter maestro test`, `typecheck` and `check` green.
-- [ ] Verified in a **packaged** window per `test-maestro` — `pnpm --filter maestro build`, then
+      Evidence: `pendingLanes()` has explicit empty-directory and no-directory-at-all test cases;
+      packaged-window check with `.claude/channels/` removed entirely showed no card and no console
+      errors.
+- [x] The Interactions pane names the lane path each route's template writes to.
+      Evidence: `interactions-pane.tsx` computes `lanePath = .claude/channels/<receiver>/<sender>.1.md`
+      per route and renders it below the tier note. Verified in the packaged window: selecting
+      `backend` (routed to `test`) showed `→ .claude/channels/test/backend.1.md`; null for the Main
+      Session report entry and for a route with no receiver.
+- [x] `channels:pending` is read-only — no app code path delivers, retires or sweeps.
+      Evidence: `pendingLanes()` only calls the existing read-only `readLane()`; it never calls
+      `writeStamp`/`retire`/`sweep`. It is exported from `src/core/index.ts` but deliberately not
+      added to `src/core/plugin-entries/maestro-session.ts` — confirmed by rebuilding the plugin libs
+      and finding `grep -c pendingLanes plugins/maestro/scripts/lib/maestro-session.cjs` is `0`
+      (tree-shaken, unreferenced by any hook).
+- [x] `test/isolation.test.ts` passes over the new renderer imports.
+      Evidence: green in the `pnpm --filter maestro test` run below; `PendingLane`/`ChannelDelivery`
+      cross from `src/core/contracts.ts`, never from the `src/core/index.ts` barrel that pulls in
+      `fs`/`child_process`.
+- [x] `pnpm --filter maestro test`, `typecheck` and `check` green.
+      Evidence: 46 test files, 879 tests passing (up from 45/870 before this slice); `typecheck` and
+      `check` (prettier) both green.
+- [x] Verified in a **packaged** window per `test-maestro` — `pnpm --filter maestro build`, then
       `electron . --remote-debugging-port=9222`, never `dev` — against a fixture whose
       `maestro_session.log.jsonl` carries dispatch, `channel_delivery` and handoff entries, and whose
       `.claude/channels/` holds one current-run and one stranded lane.
+      Evidence: fixture at `~/gits/maestro-037-fixture` (deleted after verification) with a `test/`
+      lane stamped to the live `run_id` and a `scribe/` lane stamped with a foreign `run_id`. All of
+      `/session-log`, `/maestro`'s Channels card (`data-lanes="2"`), and `/agents`' Interactions pane
+      read back as described above via `document.body.innerText`.
+
+No divergences from the plan — this slice matched the task page's design closely. One note, not a
+divergence: verifying `/maestro`'s Channels card requires a project opened via
+`window.maestro.project.open()` to already have `startTail()` register a log-file watcher, which it
+will not do on a truly cold app launch (empty `projects.json`, no prior `current` project) — `log:subscribe`
+fires before `currentRoot()` resolves, so the tail never starts and a later `retargetTails()` has
+nothing to restart. This is pre-existing behavior in `src/main/ipc.ts`, not introduced or touched by
+this slice, and it only affects a test harness that opens a project programmatically from a fresh
+profile — worked around here by pre-seeding `projects.json` before launch. Flagging for whoever next
+drives `test-maestro` from a cold profile; not filed as a bug since it does not affect `037`'s own
+acceptance criteria.
 
 ## Notes for whoever picks this up
 

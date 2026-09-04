@@ -184,6 +184,7 @@ export {
   readLane,
   retire,
   sweep,
+  pendingLanes,
   formatStampedContent,
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,

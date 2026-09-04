@@ -38,6 +38,7 @@ import {
   scaffoldCreate,
   nodeGit,
   tailSessionLog,
+  pendingLanes,
   installStatus,
   installRuntime,
   refreshStaleRuntime,
@@ -107,6 +108,7 @@ import type {
   InstallStatus,
   UninstallPlan,
   UninstallReport,
+  PendingLane,
   ProjectState,
   ResolvedReport,
   ReportDefault,
@@ -909,6 +911,14 @@ export function registerIpc(): void {
   });
 
   ipcMain.handle(IPC.logUnsubscribe, (e) => stopTail(e.sender.id));
+
+  // ── channels (037) ───────────────────────────────────────────────────
+  // Read-only: every receiver lane holding at least one undelivered file, right now. No project
+  // open reads back `[]`, matching `reportGet`'s "an empty answer is honest, not an error".
+  ipcMain.handle(IPC.channelsPending, (): PendingLane[] => {
+    const root = currentRoot();
+    return root ? pendingLanes(root) : [];
+  });
 
   // ── shell ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.revealInFolder, (_e, target: string) => {

@@ -1,5 +1,7 @@
 import { titleFromName, stripNamespace } from "./text";
-import type { SessionLogEntry } from "./maestro-session-log";
+import type { SessionLogEntry, ChannelDelivery } from "./maestro-session-log";
+
+export type { ChannelDelivery };
 
 /**
  * An agent's account of which injected skills it loaded vs deliberately skipped,
@@ -34,6 +36,12 @@ export interface Instance {
   skillsTriage: SkillsTriage | null;
   /** Skills the SubagentStart hook offered (from the dispatch entry), null when absent. */
   offeredSkills: { loaded: string[]; referenced: string[] } | null;
+  /**
+   * `kind: "channel_delivery"` entries logged at THIS instance's own SubagentStart (`036`/`037`) —
+   * matched by `agent_id`, same as `input`. Empty, never omitted, so a template need not special-case
+   * "no deliveries" from "not yet computed".
+   */
+  delivered: ChannelDelivery[];
 }
 
 /**
@@ -63,6 +71,7 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
         output: null,
         skillsTriage: null,
         offeredSkills: null,
+        delivered: [],
       };
       instances.push(current);
     }
@@ -92,6 +101,24 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
     }
   }
 
+  // channel_delivery entries (`036`) are logged at the RECEIVER's own SubagentStart, sharing that
+  // dispatch's agent_id — same correlation key as `input`, never the sender's segment. Grouped by
+  // agent_id up front so a delivery whose id matches no instance just never gets pulled out below,
+  // rather than needing a special case.
+  const deliveredByAgentId = new Map<string, ChannelDelivery[]>();
+  for (const entry of entries) {
+    if (entry.kind === "channel_delivery" && entry.agent_id) {
+      const list = deliveredByAgentId.get(entry.agent_id) ?? [];
+      list.push({
+        sender: entry.sender ?? "",
+        receiver: entry.receiver ?? "",
+        agent_id: entry.agent_id,
+        content: entry.content ?? "",
+      });
+      deliveredByAgentId.set(entry.agent_id, list);
+    }
+  }
+
   // For each subagent segment, find the dispatch entry whose agent_id matches
   // the handoff entry in that segment.
   for (const inst of instances) {
@@ -108,6 +135,11 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
       inst.input = dispatch.input ?? null;
       inst.offeredSkills = dispatch.offered_skills ?? null;
     }
+
+    // Same agent_id that resolved input/offeredSkills above — correlate on it, not on agent name,
+    // for the same reason (a re-invoked agent gets a fresh agent_id per run).
+    const agentId = handoff?.agent_id ?? dispatch?.agent_id;
+    inst.delivered = agentId ? (deliveredByAgentId.get(agentId) ?? []) : [];
 
     // Parse the skills triage out of the agent's final report.
     inst.skillsTriage = parseSkillsTriage(inst.output);

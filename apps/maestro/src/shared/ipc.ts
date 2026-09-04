@@ -34,6 +34,8 @@ import type {
   TreeNode,
   MaestroTask,
   SessionLogEntry,
+  ChannelDelivery,
+  PendingLane,
   SaveResult,
   RepoDetection,
   InstallStatus,
@@ -157,6 +159,8 @@ export type {
   TreeNode,
   MaestroTask,
   SessionLogEntry,
+  ChannelDelivery,
+  PendingLane,
   SaveResult,
   RepoDetection,
   InstallStatus,
@@ -576,6 +580,12 @@ export const IPC = {
 
   logSubscribe: "log:subscribe",
   logUnsubscribe: "log:unsubscribe",
+
+  // `/maestro`'s Channels block (`037`) — every `.claude/channels/<receiver>/` lane holding at
+  // least one undelivered file, right now. READ-ONLY: `036`'s hooks are the only thing that
+  // delivers, retires or sweeps a channel file; this just reads `handoff-channels.ts`'s
+  // `pendingLanes()`, the same functions those hooks use, re-exported to the app.
+  channelsPending: "channels:pending",
 
   revealInFolder: "shell:reveal",
 } as const;
@@ -1113,5 +1123,18 @@ export interface MaestroApi {
   };
   shell: {
     reveal(target: string): Promise<void>;
+  };
+  /**
+   * `/maestro`'s Channels block (`037`) — every receiver lane in `.claude/channels/` holding at
+   * least one undelivered file, right now.
+   *
+   * READ-ONLY, and there is exactly one call because there is exactly one thing to ask: `036`'s
+   * hooks are the only code that delivers (`SubagentStart`), retires (the same hook, by moving a
+   * file to `.consumed/`) or sweeps (`SessionEnd`) a channel file. This never does any of that —
+   * it is the read `pendingLanes()` already computes, so a second implementation of the lifetime
+   * rule never has the chance to drift from the hooks'.
+   */
+  channels: {
+    pending(): Promise<PendingLane[]>;
   };
 }

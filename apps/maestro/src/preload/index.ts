@@ -237,6 +237,9 @@ const api: MaestroApi = {
   shell: {
     reveal: (target) => ipcRenderer.invoke(IPC.revealInFolder, target),
   },
+  channels: {
+    pending: () => ipcRenderer.invoke(IPC.channelsPending),
+  },
 };
 
 contextBridge.exposeInMainWorld("maestro", api);

@@ -14,10 +14,12 @@ import {
   readLane,
   retire,
   sweep,
+  pendingLanes,
   formatStampedContent,
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
 } from "../../src/core/handoff-channels.js";
+import { writeSession } from "../../src/core/session-runtime.js";
 
 let projectDir: string;
 
@@ -177,5 +179,53 @@ describe("sweep", () => {
 
   it("is a no-op against a project with no channels directory at all", () => {
     expect(sweep(projectDir)).toEqual({ removed: [] });
+  });
+});
+
+describe("pendingLanes (037)", () => {
+  function setRunId(runId: string | null): void {
+    const dir = path.join(projectDir, ".claude");
+    fs.mkdirSync(dir, { recursive: true });
+    writeSession(path.join(dir, "maestro_session.json"), { workflow: null, generated_instances: [], run_id: runId });
+  }
+
+  it("is empty for a project with no channels directory at all", () => {
+    expect(pendingLanes(projectDir)).toEqual([]);
+  });
+
+  it("is empty for a project whose channels directory has no files in it", () => {
+    fs.mkdirSync(channelDir(projectDir, "test"), { recursive: true });
+    expect(pendingLanes(projectDir)).toEqual([]);
+  });
+
+  it("splits a lane's entries into current vs stranded by the LIVE run_id, and reports the oldest age", () => {
+    setRunId("run-1");
+    write("test", "backend", formatStampedContent("CURRENT\n", "run-1"));
+    write("test", "frontend", formatStampedContent("FOREIGN\n", "run-0"));
+    const now = Date.now() + 5000;
+
+    const [lane] = pendingLanes(projectDir, now);
+    expect(lane.receiver).toBe("test");
+    expect(lane.count).toBe(2);
+    expect(lane.current).toBe(1);
+    expect(lane.stranded).toBe(1);
+    expect(lane.oldestAgeMs).toBeGreaterThan(4900);
+  });
+
+  it("with no live session (no maestro_session.json), every entry reads as stranded", () => {
+    write("scribe", "backend", "GAP\n");
+    const [lane] = pendingLanes(projectDir);
+    expect(lane.current).toBe(0);
+    expect(lane.stranded).toBe(1);
+  });
+
+  it("lists one entry per receiver with pending files, skipping .consumed/", () => {
+    write("test", "backend", "A\n");
+    write("scribe", "backend", "B\n");
+    const [entry] = readLane(projectDir, "test");
+    retire(projectDir, "test", entry); // fully drained — must not appear
+
+    const receivers = pendingLanes(projectDir).map((l) => l.receiver);
+    expect(receivers).toEqual(["scribe"]);
   });
 });
