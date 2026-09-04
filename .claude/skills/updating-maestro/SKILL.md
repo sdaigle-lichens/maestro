@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.6"
-  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
+  version: "1.7"
+  last-update: 19a84d56fa22146635222ccb1662e152cdbadb1c
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -176,6 +176,17 @@ existing skill's own body, which `0.3.5` already settled as a patch; `0.4.0`'s m
 consequence of the patch is nil** — autoUpdate compares for inequality only — but the frontmatter
 trap below is a real one, and it is orthogonal to the component chosen.
 
+`0.4.4` — the two sqlite libs a project's own hook needs (`035`) — is the seventh, and the one that
+settles "a new **copied** file is not a published surface either". It added two entries to
+`STATIC_ASSETS` in both implementations (`lib/maestro-report-defaults.cjs`,
+`lib/maestro-handoff-defaults.cjs`) so a project-local `maestro-inject-agent-context` can reach the
+global report and handoff tiers at all. No skill, agent, command or hook event moved, and the libs
+themselves already shipped inside the plugin — all that changed is where they get copied to.
+**Patch**, under another `feat:` subject, by the same rule as `0.3.5`. Here the delivery consequence
+is the part to plan for rather than the component: the asset manifest grew, so `shippedRuntimeId`
+moved and **every installed project reports stale exactly once** — and until it re-installs, its own
+copy of the hook goes on silently resolving nothing for an agent whose report is only global.
+
 ### Verify the refresh landed
 
 ```bash
@@ -186,9 +197,9 @@ ls "$P/scripts/maestro-inject-agent-context.js"   # exists
 
 Then `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.
 
-### What `031`, `0.4.0`, `032` and `033` changed in the copied set
+### What `031`, `0.4.0`, `032`, `033` and `035` changed in the copied set
 
-Four more files now ride path 1 into every project — and `033` took ~23 away:
+Six more files now ride path 1 into every project — and `033` took ~23 away:
 
 | Copied to | From | Why it is copied rather than run from the plugin |
 | --- | --- | --- |
@@ -196,19 +207,24 @@ Four more files now ride path 1 into every project — and `033` took ~23 away:
 | `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires — and, since `0.4.0`, the `maestro-step0` hook, which calls `computeAgentSync` from it directly. |
 | `.claude/scripts/maestro-step0.cjs` (`0.4.0`) | `plugins/maestro/scripts/maestro-step0.js` | A **`HOOK_SCRIPTS`** entry, not a `STATIC_ASSET` — so it gets the `.js` → `.cjs` rename, and it needs its two `settings.json` registrations merged in as well as the file copied. |
 | `.claude/scripts/maestro-step1-gates.cjs` (`032`) | `plugins/maestro/scripts/` | A `STATIC_ASSET`. The orchestrator's Step 1 injects it as `` !`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"` ``, so it must be a project copy like every other `$CLAUDE_PROJECT_DIR` script. **This is the one whose absence is fatal rather than degrading** — see below. |
+| `.claude/scripts/lib/maestro-report-defaults.cjs` + `lib/maestro-handoff-defaults.cjs` (`035`) | `plugins/maestro/scripts/lib/` | `maestro-inject-agent-context` `require`s both, so `.claude/scripts/` has to hold them or the two global sqlite tiers do not exist for a project on its own copy. **This is the one whose absence is invisible rather than fatal**: both requires sit inside a try/catch, so the resolution failure is swallowed and the plugin's copy — which has the whole `lib/` beside it in the cache — goes on answering, making the arbitration winner decide what an agent is told. |
 
 **`033` removed a whole group.** The ~23 `templates/handoffs/**.md` no longer ride path 1 at all:
-`handoffAssets()` is deleted and `runtimeAssets()` is `STATIC_ASSETS` alone (17 files). What an
+`handoffAssets()` is deleted and `runtimeAssets()` is `STATIC_ASSETS` alone (17 files, 19 since
+`035`). What an
 install writes in their place is not a copy but a sync — `.claude/handoffs/<sender>/<receiver>.md`,
 for exactly the routes the workflows wire, tracked by `syncedFrom` so a hand-edit survives the next
 install. The shipped floor rides inside `lib/maestro-session.cjs` instead, which is path 1's usual
 trap in a new place: edit `handoff-seeds.ts` without re-running `build:plugin-libs` and every hook
 keeps serving the old protocol, silently.
 
-Three are in `STATIC_ASSETS` and `maestro-step0` in `HOOK_SCRIPTS`, in **both** implementations
+Five are in `STATIC_ASSETS` and `maestro-step0` in `HOOK_SCRIPTS`, in **both** implementations
 (`install.ts` and `maestro-install.js`) — the manifests are mirrored by hand, so a file added to one
 and not the other is a bug. Since `032`, `test/core/parity.test.ts` asserts the two `STATIC_ASSETS`
-`src` sets are **equal**, so that particular bug now fails a named test. Because the
+`src` sets are **equal**, so that particular bug now fails a named test; since `035`,
+`test/core/install.test.ts` additionally scans every copied script for relative `require()`
+specifiers and asserts the manifest copies each target, so a lib forgotten in *both* lists fails
+too. Because the
 manifest grew, `installedRuntimeId` and `shippedRuntimeId` differ for every already-installed
 project: **each one reports stale exactly once and re-copies.** That is this delivery path working,
 not a regression.
@@ -281,6 +297,7 @@ import graph needs the rebuild **and** a `git diff plugins/maestro/scripts/lib/`
 | Is the cache older than the change?       | compare `installedAt` / dir mtime against the commit that added the file                              |
 | Everything logged twice?                  | the cached plugin version predates `0.3.3` — it has no arbitration guard. Bump/re-pull (above)        |
 | Hook fires from **neither** copy?         | a runtime older than `0.4.0` on a project reached through a **symlinked** ancestor. `projectOwnsHook` compared `path.resolve`d paths, so the project's own copy failed to recognise itself (`/tmp/p` vs `/private/tmp/p`), stood down, and the plugin's copy stood down too — no error, no output, nothing in the log. Fixed by `samePath` (realpath both sides). Subject to the same double version trap as `0.3.3`'s guard: re-install (path 1) **and** re-pull (path 2). |
+| An agent gets **no** output format, or the shipped handoff protocol instead of the customized one | the project is on a runtime older than `0.4.4`, so its `.claude/scripts/lib/` has no `maestro-report-defaults.cjs` / `maestro-handoff-defaults.cjs` and the global sqlite tier silently does not exist for its copy of the hook. Confirm with `ls <project>/.claude/scripts/lib/`; fix by re-installing (path 1). Note this only shows up where the project's copy **wins** the arbitration — the plugin's copy resolves the tier fine |
 | `/maestro` aborts instead of running, right after an update | the orchestrator's frontmatter is missing the `allowed-tools` grant Step 1's injected command needs — an update never rewrites frontmatter. Delete `.claude/skills/maestro/SKILL.md` and re-install, or purge and reinstall (see the frontmatter trap) |
 
 If skills work but `hooks/`/`scripts/` are absent from the cache → **stale cache, version was never

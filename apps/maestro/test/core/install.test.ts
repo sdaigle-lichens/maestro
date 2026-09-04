@@ -26,6 +26,7 @@ import {
 } from "../../src/core/install.js";
 import { uninstallRuntime } from "../../src/core/uninstall.js";
 import { writeConfig, readConfig, writeRuntimeVersion } from "../../src/core/config.js";
+import { writeAgentReportDefault } from "../../src/core/report-defaults.js";
 import { renderOrchestrator } from "../../src/core/render.js";
 import { defaultish, withSkillNodes } from "./fixtures/configs.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
@@ -228,6 +229,46 @@ describe("installRuntime", () => {
       expect(fs.existsSync(path.join(root, ".claude", "handoffs", sender, `${receiver}.md`))).toBe(true);
       expect(readConfig(root)!.handoffs![id].syncedFrom).toBeDefined();
     }
+  });
+
+  // `035`. THE MANIFEST IS A DEPENDENCY LIST, AND IT FAILS SILENTLY WHEN IT IS WRONG. A copied
+  // script that `require`s a lib the manifest never copies throws MODULE_NOT_FOUND from inside
+  // `.claude/scripts/` — and every such require in a hook is wrapped in a try/catch (for a `node`
+  // older than 22.5, which has no `node:sqlite`), so the catch swallows it and the tier that
+  // require backed just stops existing. Nothing logs, nothing fails, and the plugin's own copy of
+  // the same hook — which has the whole `lib/` beside it in the marketplace cache — goes on
+  // answering, so the arbitration winner decides what an agent is told. That is how
+  // `lib/maestro-report-defaults.cjs` was missing from this list for two releases.
+  //
+  // Static, not a spawn: the failing branch is behind a `node:sqlite` version check and a caught
+  // exception, so no run of the hook can be trusted to reach it.
+  it("copies every lib a copied script requires, including the ones inside a try/catch", () => {
+    const assets = runtimeAssets(PLUGIN_ROOT);
+    const copied = new Set(assets.map((a) => a.dest));
+    const found: string[] = [];
+
+    for (const asset of assets) {
+      if (!asset.src.endsWith(".js") && !asset.src.endsWith(".cjs")) continue;
+      const text = fs.readFileSync(path.join(PLUGIN_ROOT, ...asset.src.split("/")), "utf8");
+      // Relative requires only: a bare specifier is a node builtin here (these scripts run with no
+      // node_modules), and an absolute one does not exist in either tree.
+      for (const m of text.matchAll(/require\(\s*["'](\.[^"']+)["']\s*\)/g)) {
+        // Resolve against the DESTINATION, which is what the copied script's `require` resolves
+        // against — the `.js` → `.cjs` rename moves nothing sideways, but the check is about the
+        // copied layout, not the plugin's.
+        const dest = path.posix.normalize(path.posix.join(path.posix.dirname(asset.dest), m[1]));
+        found.push(dest);
+        expect(copied.has(dest), `${asset.dest} requires ${m[1]}, which no STATIC_ASSET copies`).toBe(true);
+      }
+    }
+
+    // The audit ran against something. Both sqlite tiers are named explicitly because they are the
+    // two the scan is here to keep: they are the only requires reachable from a hook that a
+    // try/catch can hide, and a future refactor that drops them would otherwise leave this test
+    // passing over a smaller graph.
+    expect(found.length).toBeGreaterThan(5);
+    expect(found).toContain(".claude/scripts/lib/maestro-report-defaults.cjs");
+    expect(found).toContain(".claude/scripts/lib/maestro-handoff-defaults.cjs");
   });
 
   it("writes nothing outside the project, including the user's global Claude config", async () => {
@@ -877,11 +918,73 @@ describe("the installed hooks actually run", () => {
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
   });
 
+  // `035`. The global report tier, reached from the PROJECT'S copy of the hook — which is the
+  // whole point: `.claude/scripts/` is a different `require` root than the marketplace cache the
+  // plugin's copy runs from, and until this slice the manifest copied no
+  // `lib/maestro-report-defaults.cjs` into it. The require then failed, the try/catch around it
+  // swallowed the failure, and an agent whose only report is the global one got no output format
+  // at all — silently, and only for projects running their own install.
+  //
+  // `docsmith` is used because it is in no fixture's `agents_available`, so the report sync
+  // materializes no `.claude/reports/docsmith.md` and the project tier cannot be what answers.
+  // That is also the real case: a report has to reach an agent used outside Maestro's routing.
+  describe("global report defaults, from the project's own copy of the hook", () => {
+    // runHook points HOME at `tmp`, so this is the store the copied hook actually opens. NOT
+    // REPORTS_DB, which is the install's own read: passing the same file would leave it ambiguous
+    // whether the hook resolved the row or the install had materialized it.
+    const hookReportsDb = () => path.join(tmp, ".claude", "maestro-report-defaults.sqlite");
+
+    async function projectWithGlobalReport(): Promise<string> {
+      const root = makeProject("reports");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      writeAgentReportDefault("docsmith", "REPORT FROM THE GLOBAL STORE", hookReportsDb());
+      return root;
+    }
+
+    it("resolves an agent's global report default", async () => {
+      const root = await projectWithGlobalReport();
+      expect(fs.existsSync(path.join(root, ".claude", "reports", "docsmith.md"))).toBe(false);
+
+      const context = JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "docsmith" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(context).toContain("Mandatory output format for the `docsmith` agent");
+      expect(context).toContain("REPORT FROM THE GLOBAL STORE");
+    });
+
+    // The state every project installed before `035` was in, and the reason the bug was invisible:
+    // remove the copied lib and the same run emits NOTHING — no report, no error, exit 0. It is
+    // also still the state on a `node` older than 22.5, where the file is there and `node:sqlite`
+    // is not, which is why the require stays inside a try/catch.
+    it("emits nothing at all when the copied lib is missing, without failing the hook", async () => {
+      const root = await projectWithGlobalReport();
+      fs.rmSync(path.join(root, ".claude", "scripts", "lib", "maestro-report-defaults.cjs"));
+
+      expect(runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "docsmith" })).toBe("");
+    });
+
+    // The tier order is unchanged by the copy: a project file still wins over the global row.
+    it("still prefers a project override over the global row", async () => {
+      const root = await projectWithGlobalReport();
+      const cfg = readConfig(root)!;
+      writeConfig(root, { ...cfg, reports: { ...(cfg.reports ?? {}), docsmith: { id: "docsmith" } } });
+      fs.mkdirSync(path.join(root, ".claude", "reports"), { recursive: true });
+      fs.writeFileSync(path.join(root, ".claude", "reports", "docsmith.md"), "THE PROJECT'S OWN SHAPE\n");
+
+      const context = JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "docsmith" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(context).toContain("THE PROJECT'S OWN SHAPE");
+      expect(context).not.toContain("REPORT FROM THE GLOBAL STORE");
+    });
+  });
+
   // `033`'s three tiers, exercised through the COPIED hook — the only place the fall-through can
-  // actually be observed. A project install deliberately copies no `lib/maestro-handoff-defaults.cjs`
-  // (the sqlite tier is not part of the runtime manifest), so the require inside the hook's
-  // try/catch genuinely fails here. That is the condition the seed was split out of the store for,
-  // and it is what these two assert rather than simulate.
+  // actually be observed. Since `035` the sqlite tier IS copied into the project, so the second
+  // test below has to delete it to reach the seed: that is the condition the seed was split out
+  // of the store for (a `node` older than 22.5, or a project installed by an older runtime), and
+  // it is now simulated rather than a property of the manifest.
   describe("handoff protocol injection", () => {
     it("injects the project's materialized copy, and the user's edit to it", async () => {
       const root = makeProject("p");
@@ -904,9 +1007,9 @@ describe("the installed hooks actually run", () => {
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
       // Neither of the two tiers above this one can answer: the project's copies are gone, and
-      // the store is unreachable from a project install.
+      // the store's bundle is deleted, which is what an old `node` amounts to at the require.
       fs.rmSync(path.join(root, ".claude", "handoffs"), { recursive: true, force: true });
-      expect(fs.existsSync(path.join(root, ".claude", "scripts", "lib", "maestro-handoff-defaults.cjs"))).toBe(false);
+      fs.rmSync(path.join(root, ".claude", "scripts", "lib", "maestro-handoff-defaults.cjs"));
 
       const context = JSON.parse(
         runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })

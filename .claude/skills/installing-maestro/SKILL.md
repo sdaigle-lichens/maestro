@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.6"
-  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
+  version: "1.7"
+  last-update: 19a84d56fa22146635222ccb1662e152cdbadb1c
 ---
 
 # Installing Maestro
@@ -127,9 +127,16 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   standalone.
 - **The seed is guarded on absence.** An existing `maestro.json` is the user's authored graph and is
   never overwritten — by install, re-install, or refresh.
+- **A lib a copied script `require`s must be in `STATIC_ASSETS`, and forgetting one fails silently
+  (`035`).** Every sqlite `require` in a hook sits inside a try/catch (for a `node` older than
+  22.5), so a missing lib is swallowed and the tier it backed stops existing — for projects on
+  their own copy only, while the plugin's copy keeps answering from the marketplace cache. That is
+  no longer a convention: `install.test.ts` scans every copied script for relative `require()`
+  specifiers and asserts the manifest copies each one. See the manifest sub-concept.
 - **Changing the asset list makes every installed project stale exactly once.** `031` added two
   (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`), `032` added one
-  (`maestro-step1-gates.cjs`), and `033` **removed ~23** (every `templates/handoffs/**.md`), so
+  (`maestro-step1-gates.cjs`), `033` **removed ~23** (every `templates/handoffs/**.md`), and `035`
+  added two (`lib/maestro-report-defaults.cjs`, `lib/maestro-handoff-defaults.cjs`), so
   `shippedRuntimeId` moved each time and every project reports stale on its next check and
   re-copies. Expected, and the only way a runtime file ever arrives or leaves — but worth saying out
   loud, because "everything went stale after my change" reads like a bug. Note the digest is over

@@ -28,6 +28,16 @@ store gets its own bundle the hook `require`s in a try/catch. Same split, same r
 `agent-fork-record.ts`. The property, and it fails silently:
 `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` must stay **0**.
 
+**Since `035` the store's bundle IS copied into a project** (`STATIC_ASSETS` gained
+`lib/maestro-handoff-defaults.cjs`), so "the store is unreachable from a project install" has
+stopped being the condition that reaches the seed. It was copied even though the seed already
+covered the gap, because the global row is the tier `/templates`' Handoffs tab writes and
+`syncProjectHandoffs` runs only from install/refresh — a route wired in the app *after* the last
+install has no materialized project file, so falling through to the seed would silently discard the
+user's customization. What still reaches the seed is a `node` older than 22.5 or a project on a
+pre-`0.4.4` runtime, and `install.test.ts`'s seed test now **deletes** the copied lib to get there:
+the fall-through is simulated, not a property of the manifest.
+
 **`PRIOR_SEEDS` is not optional and is exported.** `seedIfEmpty` only fires on a store never
 written to, so on any machine that has opened the db, editing `SEED_HANDOFFS` does nothing — the new
 body is in the source and no agent ever sees it. `refreshSupersededSeeds` closes that by moving a

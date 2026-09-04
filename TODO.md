@@ -2,28 +2,30 @@
 
 ## Queue status
 
-**Next up: `035-reach-the-global-report-tier-from-a-project-local-hook.md`** — ready, unblocked and
-independent of everything before it. `lib/maestro-report-defaults.cjs` is not in `STATIC_ASSETS`, so
-a project-local copy of the SubagentStart hook silently cannot reach the global report tier. Its plan
-was reconciled against `034` as built and is **unaffected** — see the **Checked against `034` as
-built** section on that page; the only thing that moved is the base version, so its bump is
-`0.4.3 → 0.4.4` (still a patch).
+**The queue is empty.** Every page in `.claude/maestro-tasks/` is `done` and no `ready` task remains
+— `035` was the last file, so there is nothing downstream to reconcile either. The next run starts
+by writing new tasks (`/to-maestro-tasks`), not by picking one up.
 
-**`034-edit-handoff-templates-in-the-app.md` closed.** Both handoff tiers now have an editing
-surface: `/templates`' Handoffs tab writes the global row (create, delete, Reset to default for a
-shipped pair), `/agents`' Interactions pane writes the project override, one entry per outgoing
-route. Three things to carry forward:
+**The plugin is at `0.4.4`.**
 
-- **The plugin is at `0.4.3`.** `034` changed one branch in `plugins/maestro/scripts/maestro-install.js`
-  (the `no-template` verdict now clears a `syncedFrom` left tracking a deleted global row, mirroring
-  `handoff-sync.ts`), so it shipped as a patch even though the commit is a `feat:`.
-- **`handoffsSync` is now rendered on `/maestro`** — materialised / refreshed / stale-customised,
-  worded as the `reportsSync` lines. It was computed by `033`'s install and displayed by nothing.
-- **The planned `handoff:get` was replaced by `handoff:routes`.** The page planned five channels
-  (three `template:handoffs:*`, `handoff:get`, `handoff:save`); five shipped (`handoff:routes`
-  instead of `handoff:get`). `handoff:routes` returns every outgoing route already resolved in one
-  round trip because `handoff-routes.ts` is not renderer-safe — a per-route `get` would reopen the
-  global store once per row. All channels take a `handoffId` string rather than `(sender, receiver)`.
+**`035-reach-the-global-report-tier-from-a-project-local-hook.md` closed.** `STATIC_ASSETS` gained
+`lib/maestro-report-defaults.cjs` and `lib/maestro-handoff-defaults.cjs` in both install
+implementations, so a project's own copy of `maestro-inject-agent-context` can reach the two global
+sqlite tiers at all. Two facts worth carrying forward:
+
+- **`STATIC_ASSETS` now carries six libs, and a test enforces the require-audit.**
+  `install.test.ts` scans every copied script for relative `require()` specifiers and asserts the
+  manifest copies each target — the rule being that a forgotten lib fails **silently** (the require
+  sits in a try/catch, so the tier it backs just stops existing, and only for projects whose own
+  copy of the hook wins the arbitration). Adding a hook `require` now means adding its lib to both
+  manifests or failing that test.
+- **The handoff seed fall-through is simulated in tests, not guaranteed by the manifest.** Since the
+  sqlite bundle is copied, `install.test.ts`'s seed test deletes it to reach `SEED_HANDOFFS`. What
+  actually reaches the seed in the field is a `node` older than 22.5 or a project on a pre-`0.4.4`
+  runtime.
+
+Adding those two assets moved `shippedRuntimeId`, so **every already-installed project reports stale
+exactly once** and re-copies — expected, not a regression.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

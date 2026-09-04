@@ -9,6 +9,15 @@ is what would let a future global-editing UI point two agents at one shared repo
 change — nothing in this slice creates that sharing itself.
 
 Resolution order at dispatch: the project's `reports` slice → this global tier → no report at all.
+
+**There is no seed tier under it, which is why `035` was a real bug rather than a degradation.** The
+`SubagentStart` hook `require`s `lib/maestro-report-defaults.cjs` inside a try/catch (for a `node`
+older than 22.5), and until `035` that lib was not copied into `.claude/scripts/lib/` — so a project
+running its own copy of the hook fell straight past the middle tier to *nothing*, silently, for any
+agent whose report exists only globally (one used outside Maestro's routing, since the sync
+materializes a project file only for agents in `agents_available`). Handoffs survived the same gap
+because they have a seed; reports do not. The lib is now a `STATIC_ASSET` in both install
+implementations.
 Install/update syncs a project's `.claude/reports/*.md` _from_ here, and `MaestroReportEntry.syncedFrom`
 is how the staleness check tells a materialized copy from a hand-authored override.
 

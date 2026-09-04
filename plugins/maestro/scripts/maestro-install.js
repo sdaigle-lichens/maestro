@@ -377,6 +377,11 @@ const STATIC_ASSETS = [
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
+  // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
+  // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
+  // silently, and why the handoff store is copied even though its seed would have covered it.
+  { src: "scripts/lib/maestro-report-defaults.cjs", dest: ".claude/scripts/lib/maestro-report-defaults.cjs" },
+  { src: "scripts/lib/maestro-handoff-defaults.cjs", dest: ".claude/scripts/lib/maestro-handoff-defaults.cjs" },
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh — that one also tears down the
   // per-project web-app container, which is the plugin's business and not a project-local install's.

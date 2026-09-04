@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the eleven plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
+  version: "1.5"
+  last-update: 19a84d56fa22146635222ccb1662e152cdbadb1c
 ---
 
 # Core ↔ plugin parity
@@ -46,6 +46,16 @@ scripts at all.
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`).
+
+**Five of the eleven are also COPIED into projects, which widens what a rename breaks (`035`).** A
+bundle runs from the marketplace cache *and*, if it is in `install.ts`'s `STATIC_ASSETS`, from
+`<project>/.claude/scripts/lib/` — where the copy is a snapshot that only a re-install refreshes.
+The copied set is `maestro-session`, `maestro-skill-regions`, `maestro-agent-sync`, and — since
+`035` — `maestro-report-defaults` and `maestro-handoff-defaults` (plus the hand-maintained
+`maestro-tasks.cjs`). So removing or renaming an export from one of those breaks two populations
+with different clocks: the cache re-pulls on a `plugin.json` version bump, the project copies do
+not move until someone re-installs. See `installing-maestro`'s manifest sub-concept for the rule
+the copied list answers to, and why a lib missing from it fails silently.
 
 **`maestro-agent-sync` must not pull in `node:sqlite`.** It backs
 **two** callers, both running under whatever bare `node` is on the session's PATH:

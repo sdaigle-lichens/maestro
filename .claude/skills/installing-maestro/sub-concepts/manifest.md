@@ -6,16 +6,39 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups — 17 files:
+Everything lands under `<project>/.claude/`. Three groups — 19 files:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`) |
-| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`)                     |
+| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
 Plus `bash-validation.sh`, the one asset copied **executable** (`0o755`) because its hook runs it as
 a bare command rather than through `node`.
+
+**The shared-libs group is a DEPENDENCY LIST, and it fails silently when it is wrong (`035`).** The
+rule it answers to: *every* `require("./lib/…")` reachable from a copied script must resolve from
+`.claude/scripts/` — including the ones written inside a try/catch, which is all of the sqlite ones
+(`node` < 22.5 has no `node:sqlite`). A lib the manifest forgets throws MODULE_NOT_FOUND, the catch
+swallows it, and the tier that require backed just stops existing: nothing logs, nothing fails, and
+the **plugin's** copy of the same hook — running from the marketplace cache with the whole `lib/`
+beside it — goes on answering, so which copy won the arbitration decides what an agent is told. That
+is how `lib/maestro-report-defaults.cjs` was missing for two releases: a project-local
+`maestro-inject-agent-context` resolved **no** output format at all for an agent whose report is
+only global (reports have no seed tier). `lib/maestro-handoff-defaults.cjs` was missing the same
+way, but degraded to `SEED_HANDOFFS` rather than to nothing; it is copied all the same, because the
+global row is the tier `/templates`' Handoffs tab writes and a route wired **after** the last
+install has no materialized project file to answer from — degrading to the seed there discards the
+user's customization.
+
+The audit is now enforced rather than written down: `test/core/install.test.ts` › `installRuntime` ›
+*"copies every lib a copied script requires, including the ones inside a try/catch"* reads every
+`runtimeAssets()` entry's source, regex-scans for relative `require()` specifiers, resolves each
+against the asset's **destination** (the copied layout, not the plugin's), and asserts a manifest
+entry copies it. Static rather than a spawn, precisely because the failing branch sits behind a
+caught exception. (`install.ts`'s comment on the shared-libs block says this test lives in
+`parity.test.ts` — it does not; flagged, not edited here.)
 
 **The `.js` → `.cjs` rename is load-bearing.** The five `HOOK_SCRIPTS`
 (`maestro-inject-agent-context`, `maestro-subagent-log`, `maestro-session-log`,
@@ -33,7 +56,7 @@ them is not an asset copy but a **sync**: `syncProjectHandoffs()` materialises
 `syncedFrom{version,hash}` in `maestro.json`'s `handoffs` slice, and leaves an edited file alone.
 The shipped floor is `SEED_HANDOFFS`, a constant bundled into `lib/maestro-session.cjs`, so it
 needs no file on disk to answer. Consequence for this manifest: an install's file count dropped
-from ~37 to 17, and adding a handoff pair no longer touches `shippedRuntimeId` — it is a seed edit
+from ~37 to 17 (19 since `035`), and adding a handoff pair no longer touches `shippedRuntimeId` — it is a seed edit
 plus a `build:plugin-libs`.
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run

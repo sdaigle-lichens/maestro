@@ -165,10 +165,29 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // file by name.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
+  //
+  // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
+  // to resolve from `.claude/scripts/`, including the ones written inside a try/catch. A lib the
+  // manifest forgets does not fail — the catch swallows the resolution error and the tier it
+  // backs silently stops existing, but only for a project running its own copy of the hook. The
+  // plugin's copy, running from the marketplace cache with the whole `lib/` beside it, keeps
+  // answering, so which copy won the arbitration decides what an agent is told. `035` found the
+  // two sqlite tiers below missing for exactly that reason. `test/core/install.test.ts` now scans
+  // the copied scripts for `require("./lib/…")` and pins every name it finds against this list.
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
+  // The two global sqlite tiers maestro-inject-agent-context requires (`035`). Reports have no
+  // seed tier at all, so without this file a project-local hook resolves NO output format for an
+  // agent whose report is only global — the failure that motivated the slice. Handoffs do have a
+  // seed (it rides inside maestro-session.cjs), so the same gap there degraded to the shipped
+  // protocol instead of to nothing; it is copied all the same, because the global row is the tier
+  // `/templates`' Handoffs tab writes and a route wired after the last install has no
+  // materialized project file to answer from. Both requires stay inside a try/catch: `node`
+  // < 22.5 has no `node:sqlite`, and the copy being present does not make it importable.
+  { src: "scripts/lib/maestro-report-defaults.cjs", dest: ".claude/scripts/lib/maestro-report-defaults.cjs" },
+  { src: "scripts/lib/maestro-handoff-defaults.cjs", dest: ".claude/scripts/lib/maestro-handoff-defaults.cjs" },
   // PreToolUse Bash guard that blocks reading .env secrets. Runs as a bare command, hence +x.
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh, which does the same three

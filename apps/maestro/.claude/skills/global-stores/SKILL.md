@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.7"
-  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
+  version: "1.8"
+  last-update: 19a84d56fa22146635222ccb1662e152cdbadb1c
 ---
 
 # Global stores
@@ -64,6 +64,19 @@ Do not collapse these into one rationale; the modules' own headers distinguish t
 - **Report defaults and handoff defaults** are global for a different reason: they are the
   **fallback tier** a project falls back to when it has no opinion of its own, and the thing
   install/update syncs a project's `.claude/reports/*.md` and `.claude/handoffs/**.md` _from_.
+
+**These two are the only stores a HOOK reads, and since `035` it reads them from the project's own
+copy too.** Their generated bundles (`lib/maestro-report-defaults.cjs`,
+`lib/maestro-handoff-defaults.cjs`) are now in `install.ts`'s `STATIC_ASSETS`, so
+`maestro-inject-agent-context` resolves both tiers whether it runs from the marketplace cache or
+from `<project>/.claude/scripts/`. Before that only the plugin's copy could — the project copy's
+`require` resolved nothing, its try/catch swallowed the failure, and the tier silently did not
+exist: no output format at all for an agent whose report is only global (reports have **no** seed
+tier), and the shipped seed instead of the user's global row for a handoff. Consequence for this
+skill: a store these two hooks read must keep a bundle that is safe under a bare, possibly old
+`node`, and adding a `require` of a *third* store to the hook means adding its bundle to
+`STATIC_ASSETS` in **both** install implementations. See `installing-maestro`'s manifest
+sub-concept.
 
 ## `handoff-defaults.ts` is not a copy of `report-defaults.ts` (`033`)
 
