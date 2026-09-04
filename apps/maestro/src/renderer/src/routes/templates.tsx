@@ -3,9 +3,10 @@
 // beside the concerns (/docs, /tools) that don't need a project open. Low edit frequency was the
 // other reason — closer to a settings surface than a frequently-visited one.
 //
-// Tabbed like /tools's TABS pattern: "Reports", "Agent Types" and "Project Tags" today. A future
-// global-template class (anything else that lands in a similar per-machine store) gets a new tab
-// here instead of a new hamburger entry.
+// Tabbed like /tools's TABS pattern: "Reports", "Handoffs", "Agent Types" and "Project Tags"
+// today. A future global-template class (anything else that lands in a similar per-machine store)
+// gets a new tab here instead of a new hamburger entry — which is exactly how Handoffs arrived
+// (`034`), over `handoff-defaults.ts`'s own `~/.claude/maestro-handoff-defaults.sqlite`.
 //
 // No project context anywhere on this page — no ProjectSelect, no projectRoot threaded into any
 // of its calls. Every store behind it (report-defaults.ts, agent-types.ts, project-tags.ts) is
@@ -16,44 +17,49 @@ import { useState } from "react";
 import { AlertTriangle } from "lucide-react";
 import TopNav from "../components/top-nav";
 import GlobalReportsTab from "../components/tabs/global-reports-tab";
+import GlobalHandoffsTab from "../components/tabs/global-handoffs-tab";
 import AgentTypesTab from "../components/tabs/agent-types-tab";
 import ProjectTagsTab from "../components/tabs/project-tags-tab";
 import { callMain } from "../utils/call-main";
 
 export const Route = createFileRoute("/templates")({
   loader: async () => {
-    const [reports, agentTypes, projectTags, agentProjectTags] = await Promise.all([
+    const [reports, handoffs, agentTypes, projectTags, agentProjectTags] = await Promise.all([
       callMain(() => window.maestro.templates.reports.list()),
+      callMain(() => window.maestro.templates.handoffs.list()),
       callMain(() => window.maestro.templates.agentTypes.list()),
       callMain(() => window.maestro.templates.projectTags.list()),
       callMain(() => window.maestro.templates.agentProjectTags.list()),
     ]);
-    return { reports, agentTypes, projectTags, agentProjectTags };
+    return { reports, handoffs, agentTypes, projectTags, agentProjectTags };
   },
   component: TemplatesPage,
 });
 
-type TabId = "reports" | "agent-types" | "project-tags";
+type TabId = "reports" | "handoffs" | "agent-types" | "project-tags";
 
 const TABS: { id: TabId; label: string }[] = [
   { id: "reports", label: "Reports" },
+  { id: "handoffs", label: "Handoffs" },
   { id: "agent-types", label: "Agent Types" },
   { id: "project-tags", label: "Project Tags" },
 ];
 
 function TemplatesPage() {
-  const { reports, agentTypes, projectTags, agentProjectTags } = Route.useLoaderData();
+  const { reports, handoffs, agentTypes, projectTags, agentProjectTags } = Route.useLoaderData();
   const [tab, setTab] = useState<TabId>("reports");
 
   const failed = !reports.ok
     ? reports
-    : !agentTypes.ok
-      ? agentTypes
-      : !projectTags.ok
-        ? projectTags
-        : !agentProjectTags.ok
-          ? agentProjectTags
-          : null;
+    : !handoffs.ok
+      ? handoffs
+      : !agentTypes.ok
+        ? agentTypes
+        : !projectTags.ok
+          ? projectTags
+          : !agentProjectTags.ok
+            ? agentProjectTags
+            : null;
   if (failed) {
     return (
       <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
@@ -94,6 +100,7 @@ function TemplatesPage() {
           </div>
 
           {tab === "reports" && reports.ok && <GlobalReportsTab initial={reports.value} />}
+          {tab === "handoffs" && handoffs.ok && <GlobalHandoffsTab initial={handoffs.value} />}
           {tab === "agent-types" && agentTypes.ok && <AgentTypesTab initial={agentTypes.value} />}
           {tab === "project-tags" && projectTags.ok && agentProjectTags.ok && (
             <ProjectTagsTab initial={projectTags.value} initialAgentTags={agentProjectTags.value} />

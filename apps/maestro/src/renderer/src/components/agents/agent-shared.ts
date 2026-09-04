@@ -34,6 +34,18 @@ export interface AgentDraft {
   layers: AvatarLayers;
   skills: AgentSkill[];
   report: string;
+  /**
+   * The `handoff_details` protocol for each route LEAVING this agent, keyed by its
+   * `"<sender>/<receiver>"` id (`034`). Seeded from whatever tier each route resolved to, so an
+   * untouched entry equals its base and is not written on Save; an edited one is written as this
+   * project's own override.
+   *
+   * Keyed by pair rather than by edge on purpose: `backend → test` in the `default` workflow and
+   * in `tdd` are ONE file and one row, so two edges leading to the same agent share one entry here
+   * and editing either changes both. That is why the editor lives in this pane and not on a
+   * `/workflows` edge, where it would imply it was editing that edge's payload shape alone.
+   */
+  handoffs: Record<string, string>;
 }
 
 /**

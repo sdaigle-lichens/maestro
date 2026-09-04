@@ -16,6 +16,15 @@ Both file headers say the manifests mirror each other one-for-one and that a div
 one of them. There is no test comparing the two _lists_ directly — only their output — so a new
 asset added to one and not the other shows up as a differential failure, not a lint error.
 
+**The handoff sync is a second thing that must match, and it is hand-mirrored prose, not a shared
+module.** `maestro-install.js` `require`s `decideSync` and `handoffRoutes` from the generated libs,
+but its own verdict switch is a copy. `034` changed one branch in both: a `no-template` verdict now
+rewrites an entry that still carries a `syncedFrom` to `{ id }` — the global row it tracked was
+deleted on `/templates`, so the version can never advance — while leaving the file alone and
+reporting nothing. Changing that branch in one implementation and not the other makes the app and
+the terminal disagree about what a deleted global row leaves in the `handoffs` slice, and no test
+catches it, because it is the terminal script's own copy.
+
 ## What only the app does
 
 - **Reports what changed on disk.** `InstallReport` carries `scriptsWritten`, `hooksAdded`,

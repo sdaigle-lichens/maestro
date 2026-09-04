@@ -41,6 +41,11 @@ import type {
   ReportSyncSummary,
   ResolvedReport,
   ReportDefault,
+  HandoffSyncSummary,
+  ResolvedHandoff,
+  ResolvedHandoffRoute,
+  HandoffDefault,
+  HandoffDefaultsListing,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -128,6 +133,7 @@ export {
   AVATAR_PARTS,
   AVATAR_REQUIRED_CATEGORIES,
   AGENT_TYPES,
+  BUNDLED_AGENT_NAMES,
   EDITABLE_AGENT_SOURCES,
   isEditableAgentSource,
 } from "../core/contracts.js";
@@ -158,6 +164,11 @@ export type {
   ReportSyncSummary,
   ResolvedReport,
   ReportDefault,
+  HandoffSyncSummary,
+  ResolvedHandoff,
+  ResolvedHandoffRoute,
+  HandoffDefault,
+  HandoffDefaultsListing,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -397,6 +408,28 @@ export const IPC = {
   // the change on a project's next install/update.
   templateReportsList: "template:reports:list",
   templateReportSave: "template:reports:save",
+
+  // The /templates page's Handoffs tab — the same pair one tier over, plus a DELETE, because a
+  // handoff default has a full lifecycle where a report default does not: the pair roster is the
+  // bundled agents crossed with themselves, so the user can create one Maestro never shipped, and
+  // anything creatable has to be removable. `templateHandoffDelete` refuses a SEEDED id (main's
+  // check, not the tab's) — `SEED_HANDOFFS` is the store's floor and `seedIfEmpty` only fires on a
+  // store that has never been written to, so deleting a shipped pair would be irreversible. The
+  // tab offers "Reset to default" for those instead, which is an ordinary save of the seed body.
+  //
+  // `templateHandoffsList` returns the rows AND the seeded id list (`HandoffDefaultsListing`):
+  // `isSeededHandoff` lives in `handoff-seeds.ts`, which the renderer cannot import.
+  templateHandoffsList: "template:handoffs:list",
+  templateHandoffSave: "template:handoffs:save",
+  templateHandoffDelete: "template:handoffs:delete",
+
+  // /agents' Interactions pane — the PROJECT tier for handoffs, exactly as `reportGet`/`reportSave`
+  // are for reports. `handoffRoutes` answers "which routes leave this agent, and what template is
+  // in effect for each" in one round trip, because the graph walk (`handoff-routes.ts`) is not
+  // renderer-safe and a per-route resolve would reopen the global store once per row.
+  // `handoffSave` always writes `.claude/handoffs/<sender>/<receiver>.md` and DROPS `syncedFrom`.
+  handoffRoutes: "handoff:routes",
+  handoffSave: "handoff:save",
 
   // The /templates page's Agent Types tab — backed by `agent-types.ts`'s own
   // `~/.claude/maestro-agent-types.sqlite`. `templateAgentTypesList` wraps `readAllAgentTypes`;
@@ -650,6 +683,22 @@ export interface MaestroApi {
     save(agentName: string, content: string): Promise<ResolvedReport>;
   };
   /**
+   * The /agents page's Interactions pane — the same pair as `reports` above, one tier over.
+   *
+   * `routes` is deliberately not a `get(handoffId)`: the pane lists one entry per outgoing route
+   * from the project's graph, and the walk that produces that list (`handoff-routes.ts`) is not
+   * renderer-safe. It comes back already resolved, so the pane makes ONE round trip per selection
+   * rather than one plus one per row.
+   *
+   * `save` takes the `"<sender>/<receiver>"` id the route it came from carries, and always writes
+   * this project's own `.claude/handoffs/<sender>/<receiver>.md`, dropping `syncedFrom` — a
+   * hand-authored save stops tracking the global default and becomes the project's answer.
+   */
+  handoffs: {
+    routes(agentName: string): Promise<ResolvedHandoffRoute[]>;
+    save(handoffId: string, content: string): Promise<ResolvedHandoff>;
+  };
+  /**
    * The /templates page — the GLOBAL tier's write path, and the reason it is its own namespace
    * rather than a widened `reports.*` above: that pair always resolves/writes a PROJECT override
    * for the OPEN project, and this always edits the machine-wide fallback tier every project
@@ -671,6 +720,22 @@ export interface MaestroApi {
        * `claude:preview`/`run`, no token — that bumps the report's `version`.
        */
       save(agentName: string, content: string): Promise<ReportDefault>;
+    };
+    /**
+     * The Handoffs tab. Same tier and same intent as `reports` above, plus the lifecycle a report
+     * default has no need of: the pair roster is the bundled agents crossed with themselves, so a
+     * user can author a route Maestro never shipped, and anything creatable must be removable.
+     *
+     * `list` carries the seeded id set alongside the rows because `isSeededHandoff` lives behind
+     * the `src/core` boundary. `save` upserts — writing an id with no row inserts it at version 1,
+     * which is how a pair is created. `remove` REFUSES a seeded id: `SEED_HANDOFFS` is the store's
+     * floor and a delete of a shipped pair could not be undone, so the tab offers those a Reset to
+     * default (an ordinary `save` of the seed body) instead.
+     */
+    handoffs: {
+      list(): Promise<HandoffDefaultsListing>;
+      save(handoffId: string, content: string): Promise<HandoffDefault>;
+      remove(handoffId: string): Promise<void>;
     };
     /** The Agent Types tab: one type per agent, global by default — see the namespace doc above. */
     agentTypes: {

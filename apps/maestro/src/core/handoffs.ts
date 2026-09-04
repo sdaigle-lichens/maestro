@@ -12,10 +12,11 @@ import { readConfig, writeConfig, blankConfig } from "./config.js";
 import { readHandoffDefault, DEFAULT_HANDOFF_DEFAULTS_DB_PATH } from "./handoff-defaults.js";
 import { resolveHandoff } from "./handoff-resolution.js";
 import { handoffFilePath } from "./handoff-sync.js";
-import { isValidHandoffId } from "./handoff-seeds.js";
-import type { ResolvedHandoff } from "./contracts.js";
+import { handoffRoutes, routesFrom } from "./handoff-routes.js";
+import { isValidHandoffId, handoffId } from "./handoff-seeds.js";
+import type { ResolvedHandoff, ResolvedHandoffRoute } from "./contracts.js";
 
-export type { ResolvedHandoff };
+export type { ResolvedHandoff, ResolvedHandoffRoute };
 
 function readProjectHandoffFile(projectRoot: string, handoffId: string): string | null {
   try {
@@ -69,4 +70,34 @@ export function saveProjectHandoffOverride(projectRoot: string, handoffId: strin
   writeConfig(projectRoot, { ...cfg, handoffs });
 
   return { source: "project", content };
+}
+
+/**
+ * Every route LEAVING one agent in the open project's graph, each with the template in effect for
+ * it — the whole of what `/agents`' Interactions pane renders, in ONE round trip.
+ *
+ * One call rather than `handoffRoutes()` in the renderer plus a `getResolvedHandoff` per route:
+ * `handoff-routes.ts` is not renderer-safe (only `contracts.ts` and `text.ts` cross that boundary),
+ * and a fan-out of N reads per selection would open the sqlite store N times for a page that
+ * changes selection on every click.
+ *
+ * Order is the walk's own, and a route whose edge reaches no agent keeps its place in it: the pane
+ * exists to make a route with nothing attached to it visible, and dropping the ones with nothing
+ * attachable would be the same omission one step earlier.
+ */
+export function resolvedRoutesFrom(
+  projectRoot: string,
+  agent: string,
+  dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH
+): ResolvedHandoffRoute[] {
+  const cfg = projectRoot ? readConfig(projectRoot) : null;
+  const routes = routesFrom(handoffRoutes(cfg?.workflows, cfg?.workflow_instances), agent);
+  return routes.map((route) => {
+    if (!route.receiver) {
+      return { ...route, handoffId: null, source: "none" as const, content: "" };
+    }
+    const id = handoffId(route.sender, route.receiver);
+    const resolved = getResolvedHandoff(projectRoot, id, dbPath);
+    return { ...route, handoffId: id, source: resolved.source, content: resolved.content };
+  });
 }

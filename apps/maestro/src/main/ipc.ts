@@ -64,6 +64,13 @@ import {
   saveProjectReportOverride,
   readAllAgentReportDefaults,
   writeAgentReportDefault,
+  resolvedRoutesFrom,
+  saveProjectHandoffOverride,
+  readAllHandoffDefaults,
+  writeHandoffDefault,
+  deleteHandoffDefault,
+  isSeededHandoff,
+  SEED_HANDOFFS,
   readAllAgentTypes,
   setAgentType,
   readAllProjectTags,
@@ -103,6 +110,10 @@ import type {
   ProjectState,
   ResolvedReport,
   ReportDefault,
+  ResolvedHandoff,
+  ResolvedHandoffRoute,
+  HandoffDefault,
+  HandoffDefaultsListing,
   AgentType,
   AgentDescriptionResult,
   AgentForkResult,
@@ -502,6 +513,22 @@ export function registerIpc(): void {
     return saveProjectReportOverride(projectRoot, agentName, content);
   });
 
+  // ── handoffs (/agents page, Interactions pane) ──────────────────────
+  // The pair above, one tier over. `routes` is a READ of the open project's graph plus the
+  // resolution of each route it finds — never rejects on no project, exactly as `reportGet`
+  // doesn't: with nothing open there is no graph, so there are no routes, and an empty pane is the
+  // honest answer rather than an error.
+  ipcMain.handle(IPC.handoffRoutes, (_e, agentName: string): ResolvedHandoffRoute[] => {
+    return resolvedRoutesFrom(currentRoot() ?? "", agentName);
+  });
+  // Plain file write. Always a PROJECT override for the open project, and it drops `syncedFrom` —
+  // see saveProjectHandoffOverride's header.
+  ipcMain.handle(IPC.handoffSave, (_e, handoffId: string, content: string): ResolvedHandoff => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    return saveProjectHandoffOverride(projectRoot, handoffId, content);
+  });
+
   // ── templates (/templates page — the GLOBAL tier's write path — AND /agents' per-agent
   //    classification, which shares these same three stores with a different intent) ──────
   //
@@ -515,6 +542,25 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.templateReportsList, (): Record<string, ReportDefault> => readAllAgentReportDefaults());
   ipcMain.handle(IPC.templateReportSave, (_e, agentName: string, content: string): ReportDefault => {
     return writeAgentReportDefault(agentName, content);
+  });
+  // Same tier, one store over. The seeded id list travels WITH the rows rather than as its own
+  // channel: they are read together and rendered together, and a tab that had the rows but not
+  // the list would render Delete on a pair the store refuses to delete.
+  ipcMain.handle(IPC.templateHandoffsList, (): HandoffDefaultsListing => {
+    return { rows: readAllHandoffDefaults(), seeded: SEED_HANDOFFS };
+  });
+  ipcMain.handle(IPC.templateHandoffSave, (_e, handoffId: string, content: string): HandoffDefault => {
+    return writeHandoffDefault(handoffId, content);
+  });
+  // THE REFUSAL LIVES HERE, not in the tab. `deleteHandoffDefault` re-seeds the whole table when a
+  // delete empties it, and `seedIfEmpty` fires on nothing else — so a delete of a shipped pair on a
+  // store with other rows in it is permanent, and no tier below would answer for that route again.
+  // The tab offers Reset to default for those instead; this makes that the only way, whoever calls.
+  ipcMain.handle(IPC.templateHandoffDelete, (_e, handoffId: string): void => {
+    if (isSeededHandoff(handoffId)) {
+      throw new Error(`${handoffId} is one of Maestro's own handoff protocols — reset it to the default instead.`);
+    }
+    deleteHandoffDefault(handoffId);
   });
   ipcMain.handle(IPC.templateAgentTypesList, (_e, projectScoped?: boolean): Record<string, AgentType> => {
     return readAllAgentTypes(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);

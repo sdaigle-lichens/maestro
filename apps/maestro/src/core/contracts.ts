@@ -270,6 +270,60 @@ export interface ResolvedHandoff {
 }
 
 /**
+ * What `template:handoffs:list` hands the `/templates` Handoffs tab: every global row, plus which
+ * ids Maestro itself ships.
+ *
+ * The second field is on the wire because `isSeededHandoff` lives in `handoff-seeds.ts`, which the
+ * renderer cannot import — `test/isolation.test.ts` allows only `contracts.ts` and `text.ts` across
+ * that boundary. It is what picks **Reset to default** over **Delete** for a row, so it has to be
+ * knowledge the renderer holds rather than something it infers from the content.
+ */
+export interface HandoffDefaultsListing {
+  rows: Record<string, HandoffDefault>;
+  /**
+   * `SEED_HANDOFFS` itself — every id Maestro ships, mapped to the body it ships for it, whether
+   * or not the store currently has a row for that id.
+   *
+   * The bodies travel rather than just the ids because **Reset to default** is a plain save of
+   * `SEED_HANDOFFS[id]`: sending only the key set would need a second channel to fetch the body
+   * back the moment the button is pressed, for ~9 KB of constants read once with the rows.
+   */
+  seeded: Record<string, string>;
+}
+
+/**
+ * One outgoing route from an agent, with the template in effect for it — one entry per row in
+ * `/agents`' Interactions pane.
+ *
+ * `handoffId` is null exactly when `receiver` is: an edge leading nowhere an agent can be reached
+ * is still a real route (the orchestrator can emit the HANDOFF line for it), there is just no pair
+ * to key a template on, so the pane shows it and offers no editor.
+ */
+export interface ResolvedHandoffRoute {
+  /** The agent emitting the HANDOFF line. Always a BARE name. */
+  sender: string;
+  /** The receiving agent, BARE — or null for an edge that reaches no agent. */
+  receiver: string | null;
+  /** `"success"`, or the condition edge's own label. */
+  label: string;
+  handoffId: string | null;
+  source: ResolvedHandoff["source"];
+  content: string;
+}
+
+/**
+ * The agents Maestro itself ships, bare names — the fixed roster the `/templates` Handoffs tab's
+ * pair dropdowns offer.
+ *
+ * Fixed rather than a project's `agents_available` on purpose: `/templates` threads no project
+ * context at all, and a global default has to be authorable without one open. Bare names because
+ * both halves of a handoff id are (`maestro:test` is `test` here) — see `handoff-seeds.ts`.
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `AGENT_TYPES`.
+ */
+export const BUNDLED_AGENT_NAMES = ["backend", "frontend", "mobile", "refactor", "reviewer", "scribe", "test"] as const;
+
+/**
  * The closed set of agent-type tags the `/templates` page's Agent Types tab assigns one of to each
  * agent, backed by `agent-types.ts`'s own global sqlite store — singular per agent (an agent has
  * exactly one type, not a set), unlike a skill's `agentTypes` dimension, which may hold several

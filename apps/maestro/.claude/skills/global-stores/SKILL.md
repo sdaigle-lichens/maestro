@@ -1,10 +1,10 @@
 ---
 name: global-stores
-description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
+description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.6"
-  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
+  version: "1.7"
+  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
 ---
 
 # Global stores
@@ -73,6 +73,10 @@ Same argument for being global, deliberately different shape: **one table**, not
 outside the store** in `handoff-seeds.ts`, which imports nothing, so the floor still answers on a
 `node` too old for `node:sqlite`. See [Handoff defaults](sub-concepts/handoff-defaults.md).
 
+Since `034` this store has **two editing surfaces** — `/templates`' Handoffs tab writes the global
+rows, `/agents`' Interactions pane writes the project override that outranks them — and the tab is
+the reason `template:handoffs:delete` refuses a seeded id. Both are in the sub-concept.
+
 ## The exception: a description is not a store
 
 `/agents` also edits an agent's **description**, and that one deliberately does *not* get a store.
@@ -93,8 +97,8 @@ Two guards bound the write, and both are about not lying to the user:
   plugin update overwrites, so an edit there is discarded, not merely unowned.
   `describeUneditableSource` gives each its own message — see `agents-view`. `contracts.ts` is
   otherwise interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` /
-  `AVATAR_CATEGORIES` / `AGENT_TYPES`) so the renderer can decide from `source` alone with no round
-  trip.
+  `AVATAR_CATEGORIES` / `AGENT_TYPES` / `034`'s `BUNDLED_AGENT_NAMES`) so the renderer can decide
+  from `source` alone with no round trip.
 - `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's
   read-only bundled agents report why instead of appearing to save.
 

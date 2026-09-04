@@ -110,15 +110,16 @@ editor; it must not host it.
 
 ### Channels
 
-Mirroring the report pairs exactly:
+Planned to mirror the report pairs exactly. **As built** — the planned `handoff:get` was not,
+and both tiers take a `handoffId` rather than `(sender, receiver)`; see divergences 1 and 2:
 
 | Channel | Shape |
 | --- | --- |
-| `template:handoffs:list` | → `Record<handoffId, HandoffDefault>`, global, no project context |
+| `template:handoffs:list` | → `HandoffDefaultsListing` = `{ rows, seeded }`, global, no project context |
 | `template:handoffs:save` | `(handoffId, content)` → `HandoffDefault`; upsert, bumps `version` |
-| `template:handoffs:delete` | `(handoffId)` → `void`; refuses a seeded id |
-| `handoff:get` | `(sender, receiver)` → `ResolvedHandoff` for the open project |
-| `handoff:save` | `(sender, receiver, content)` → `ResolvedHandoff`; always a **project** override |
+| `template:handoffs:delete` | `(handoffId)` → `void`; **throws** on a seeded id |
+| `handoff:routes` | `(agentName)` → `ResolvedHandoffRoute[]` for the open project — every outgoing route, already resolved, in one call |
+| `handoff:save` | `(handoffId, content)` → `ResolvedHandoff`; always a **project** override |
 
 `handoff:save` writes `.claude/handoffs/<sender>/<receiver>.md` and drops `syncedFrom`, exactly as
 `saveProjectReportOverride` does — a hand-authored save is no longer tracking a moving global
@@ -142,32 +143,105 @@ Add the handoff lines beside the existing `reportsSync` block in `routes/maestro
 | `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` gains the handoff drafts. |
 | `src/renderer/src/routes/agents.tsx` | Seventh write path in `handleSave()`; fetch routes + resolved handoffs in `refresh()`. |
 | `src/renderer/src/routes/maestro.tsx` | The handoff sync lines. |
-| `src/shared/ipc.ts`, `src/main/ipc.ts`, `src/preload/index.ts` | The five channels. |
+| `src/shared/ipc.ts`, `src/main/ipc.ts`, `src/preload/index.ts` | The five channels above, plus `MaestroApi.handoffs` and `templates.handoffs`, and the type/value re-exports. |
+| `src/core/contracts.ts` | `HandoffDefaultsListing`, `ResolvedHandoffRoute`, `BUNDLED_AGENT_NAMES`. |
+| `src/core/handoffs.ts`, `src/core/index.ts` | `resolvedRoutesFrom` and its barrel export. |
+| `src/core/handoff-sync.ts` | The `no-template` branch clears a dead `syncedFrom`. |
+| `plugins/maestro/scripts/maestro-install.js` + `plugin.json` | The identical branch on the terminal path; version `0.4.2 → 0.4.3`. |
+| `test/core/handoffs.test.ts` | Seven new tests in two new `describe` blocks. |
 
-## Acceptance criteria
+## Acceptance criteria — all met
 
-- [ ] `/templates` has a Handoffs tab listing every global row, shipped and user-created
+Verified with a CDP probe on the **packaged** build (`pnpm --filter maestro build`, then `electron .`
+with a fake `$HOME` so the real `~/.claude/maestro-handoff-defaults.sqlite` was untouched) against a
+fixture at `~/gits/maestro-034-handoffs` (deleted afterwards) whose graph wires
+`backend →success test`, `backend →condition("needs a second pair of eyes") reviewer`,
+`test → reviewer`, `reviewer → scribe`, `scribe → reviewer`. The probe exits non-zero on any failed
+assertion; it printed **PASS** with `errors: []`. Suite: **837 tests**, typecheck and `pnpm check`
+green.
+
+- [x] `/templates` has a Handoffs tab listing every global row, shipped and user-created
       distinguished, and editing one bumps its `version` so a project that already synced it
       refreshes on the next install
-- [ ] Creating a pair from the two dropdowns writes a new global row at version 1; sender and
+      — tabs read `["Reports","Handoffs","Agent Types","Project Tags"]`; 23 shipped rows under a
+      "Shipped by Maestro" section; editing `backend → test` and saving produced "version 2".
+- [x] Creating a pair from the two dropdowns writes a new global row at version 1; sender and
       receiver cannot be the same agent, and creating an existing pair selects it instead of
       overwriting it
-- [ ] A user-created pair offers **Delete**; a pair Maestro ships offers **Reset to default**
+      — creating `mobile → backend` toasted "at version 1" and appeared under "Yours"; with both
+      dropdowns on `mobile` the Create button is `disabled: true`; after saving the body
+      `MOBILE-TO-BACKEND-BODY`, pressing Create again toasted "already has a global default" and the
+      editor still held that exact body.
+- [x] A user-created pair offers **Delete**; a pair Maestro ships offers **Reset to default**
       instead and restores `SEED_HANDOFFS[id]` byte-for-byte
-- [ ] `/templates` still threads no project context — no `ProjectSelect`, no `projectRoot` in any of
+      — shipped `backend → test` offered only "Reset to default" (no Delete); created
+      `mobile → backend` offered only "Delete". After an edit and a reset, the editor content was
+      `===` the pre-edit content (string equality asserted in the probe).
+- [x] `/templates` still threads no project context — no `ProjectSelect`, no `projectRoot` in any of
       its calls
-- [ ] The Interactions pane lists the report followed by one entry per outgoing route from
+      — no `ProjectSelect` and no "Choose a project" text anywhere on the page; the tab was driven
+      with no project open at all, before `project.open` was ever called.
+- [x] The Interactions pane lists the report followed by one entry per outgoing route from
       `handoffRoutes()`, each showing which tier its content came from, including a route with no
       template at any tier
-- [ ] Editing a route in the pane and pressing the card's Save writes
+      — `backend`: `data-routes="2"`, entries `["Main Session", "test", "reviewer · needs a second
+      pair of eyes"]`, tiers `["Global default …", "Global default", "Global default"]`. `scribe`:
+      `data-routes="1"`, its `scribe → reviewer` entry read **"No protocol configured"** and rendered
+      "No handoff protocol for this route" — Maestro ships nothing for that pair, so no tier answers.
+- [x] Editing a route in the pane and pressing the card's Save writes
       `.claude/handoffs/<sender>/<receiver>.md` and drops that pair's `syncedFrom`; Cancel discards
       report and handoff edits together
-- [ ] A partial save failure names which fields failed and leaves the card in edit mode
-- [ ] `/maestro`'s install report names materialised / refreshed / stale-customised handoffs
-- [ ] `CARD_MIN_HEIGHT` re-checked in a real window — the pane is outside the card, so it should be
+      — after editing `backend/test` and pressing the card's Save, `.claude/handoffs/backend/test.md`
+      held exactly `PROJECT-OVERRIDE-FROM-PANE`, `maestro.json`'s `handoffs` slice held
+      `{"backend/test": {"id": "backend/test"}}` with **no `syncedFrom`**, and the pane's tier label
+      had moved to "Project override". A later edit followed by Cancel left neither the pane text nor
+      the file changed.
+- [x] A partial save failure names which fields failed and leaves the card in edit mode
+      — unchanged mechanism: the handoff loop pushes into the same `failures` array as the other six
+      paths, and the existing `if (failures.length > 0) { toast(…); return; }` returns before
+      `setDraft(null)`. Verified by code path rather than provoked in the window.
+- [x] `/maestro`'s install report names materialised / refreshed / stale-customised handoffs
+      — three `handoffsSync` blocks added to `maestro.tsx`, worded as the `reportsSync` ones.
+      Rendering only; `handoffsSync` was already computed by `033`'s install.
+- [x] `CARD_MIN_HEIGHT` re-checked in a real window — the pane is outside the card, so it should be
       unaffected; confirm rather than assume
-- [ ] `test/isolation.test.ts` still passes, including the `src/core` boundary walk over the new
+      — measured by saving and restoring React's own inline value (never blanking it, per the known
+      trap). View natural **618.95px**, edit natural **603.83px**, applied **627px** in both modes.
+      The constant is unchanged at 627 and still ≥ both naturals, so pressing Edit does not reflow.
+      Confirmed unaffected: the pane is outside the card and no edit-mode card content changed.
+- [x] `test/isolation.test.ts` still passes, including the `src/core` boundary walk over the new
       renderer imports
+      — 43 files / 837 tests pass; the new renderer files reach `src/core` only through
+      `shared/ipc.ts`'s re-exports of `contracts.ts`.
+
+## Divergences from what this page planned
+
+Five, each with the reason it was taken.
+
+1. **`handoff:get` was not built; `handoff:routes` replaced it.** The channel table above planned
+   `handoff:get (sender, receiver) → ResolvedHandoff`. The pane needs the route LIST, and
+   `handoff-routes.ts` is not renderer-safe (`test/isolation.test.ts` allows only `contracts.ts` and
+   `text.ts` across the boundary), so the walk has to happen in main anyway. A `get` beside it would
+   have meant 1 + N round trips and N sqlite opens per selection. `handoff:routes` returns the routes
+   already resolved, in one call.
+2. **The channels take a `handoffId` string, not `(sender, receiver)`.** This is the decision the
+   "Checked against `033`" note below asked for, made once, in favour of the id — that is what
+   `033`'s core functions already take and what the store is keyed by. The renderer joins and splits
+   with a template literal and `id.split("/")` (a local `endsOf` in the tab, documented there as a
+   deliberate non-import of `splitHandoffId`).
+3. **`template:handoffs:list` returns `HandoffDefaultsListing`, not a bare
+   `Record<handoffId, HandoffDefault>`.** `isSeededHandoff` and `SEED_HANDOFFS` live in
+   `handoff-seeds.ts`, behind the `src/core` boundary. The seeded set must cross the wire for the tab
+   to pick Delete vs. Reset, and the seed BODIES must cross for Reset to be a plain save — otherwise
+   Reset needs a second channel round trip at click time. ~9 KB of constants, read once with the rows.
+4. **`BUNDLED_AGENT_NAMES` was added to `contracts.ts`** rather than the roster being hardcoded in
+   the tab. Same boundary reason; the repo had no existing exported constant for the seven bundled
+   agents (`seededAgentNames()` in `seed.ts` is a different, project-dependent set).
+5. **`plugins/maestro/scripts/maestro-install.js` also changed**, and is not in the Files table
+   above. It carries its own copy of the handoff sync branches for the terminal install path, and
+   leaving it behind would have made the app and the terminal disagree about what a deleted global
+   row leaves in the `handoffs` slice. Plugin version bumped **0.4.2 → 0.4.3 (patch)** — a behaviour
+   change to an existing script, published surface unchanged.
 
 ## Checked against `033` as built
 
@@ -194,7 +268,7 @@ shows `reportsSync` only, which is the last bullet of this page's Files table.
 ## Notes for whoever picks this up
 
 Read `apps/maestro/.claude/skills/agents-view/` end to end before touching `agents.tsx` — the
-six-write-path fan-out, the `pendingEdit` flag for a pencil on an unselected row, and the measured
+seven-write-path fan-out (six when this page was written), the `pendingEdit` flag for a pencil on an unselected row, and the measured
 `CARD_MIN_HEIGHT` are all things that break quietly. Then
 `apps/maestro/.claude/skills/test-maestro/` for the CDP harness.
 

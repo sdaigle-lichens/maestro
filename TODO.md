@@ -2,26 +2,28 @@
 
 ## Queue status
 
-**`033-customizable-handoff-templates.md` is `done`.** Handoff protocols now resolve across three
-tiers — `.claude/handoffs/<sender>/<receiver>.md`, then
-`~/.claude/maestro-handoff-defaults.sqlite`, then a `SEED_HANDOFFS` constant bundled into
-`lib/maestro-session.cjs` so the floor survives a `node` without `node:sqlite`. The install-managed
-`.claude/templates/handoffs/` is gone (an install writes 17 files, not ~37) and all 23 files under
-`plugins/maestro/templates/handoffs/` were deleted. Plugin is at `0.4.2`. Its 14 acceptance criteria
-are ticked on the task page, with 8 recorded divergences from what the page planned.
+**Next up: `035-reach-the-global-report-tier-from-a-project-local-hook.md`** — ready, unblocked and
+independent of everything before it. `lib/maestro-report-defaults.cjs` is not in `STATIC_ASSETS`, so
+a project-local copy of the SubagentStart hook silently cannot reach the global report tier. Its plan
+was reconciled against `034` as built and is **unaffected** — see the **Checked against `034` as
+built** section on that page; the only thing that moved is the base version, so its bump is
+`0.4.3 → 0.4.4` (still a patch).
 
-**Next up: `034-edit-handoff-templates-in-the-app.md`** — now **unblocked**. The UI half:
-`/templates`' Handoffs tab (global rows, create/delete, Reset to default for a shipped pair) and
-`/agents`' Interactions pane (one entry per outgoing route, with its resolved tier). Its plan was
-reconciled against `033` as built and holds — see the **Checked against `033` as built** section on
-that page for the three small adjustments, chiefly that `ResolvedHandoff.source` has four values,
-not three. Note `handoffsSync` is computed by the install today and rendered by nothing; `034` is
-where `maestro.tsx` picks it up.
+**`034-edit-handoff-templates-in-the-app.md` closed.** Both handoff tiers now have an editing
+surface: `/templates`' Handoffs tab writes the global row (create, delete, Reset to default for a
+shipped pair), `/agents`' Interactions pane writes the project override, one entry per outgoing
+route. Three things to carry forward:
 
-**Also ready: `035-reach-the-global-report-tier-from-a-project-local-hook.md`** — filed while
-closing `033`. `lib/maestro-report-defaults.cjs` is not in `STATIC_ASSETS`, so a project-local copy
-of the SubagentStart hook silently cannot reach the global report tier. Small, unblocked, and
-independent of `034`.
+- **The plugin is at `0.4.3`.** `034` changed one branch in `plugins/maestro/scripts/maestro-install.js`
+  (the `no-template` verdict now clears a `syncedFrom` left tracking a deleted global row, mirroring
+  `handoff-sync.ts`), so it shipped as a patch even though the commit is a `feat:`.
+- **`handoffsSync` is now rendered on `/maestro`** — materialised / refreshed / stale-customised,
+  worded as the `reportsSync` lines. It was computed by `033`'s install and displayed by nothing.
+- **The planned `handoff:get` was replaced by `handoff:routes`.** The page planned five channels
+  (three `template:handoffs:*`, `handoff:get`, `handoff:save`); five shipped (`handoff:routes`
+  instead of `handoff:get`). `handoff:routes` returns every outgoing route already resolved in one
+  round trip because `handoff-routes.ts` is not renderer-safe — a per-route `get` would reopen the
+  global store once per row. All channels take a `handoffId` string rather than `(sender, receiver)`.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

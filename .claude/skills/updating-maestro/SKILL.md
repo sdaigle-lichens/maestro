@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.5"
-  last-update: 6204e4d4d20f1e2926bfc5e6276698a46030a947
+  version: "1.6"
+  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -159,6 +159,15 @@ The delivery consequence, though, is the largest of any patch so far: **the asse
 entries, so `shippedRuntimeId` moved and every installed project reports stale exactly once** — and
 the files an old project already has under `.claude/templates/handoffs/` are removed only by an
 uninstall, whose sweep of that directory now exists solely for them.
+
+`0.4.3` — the app's handoff editing surfaces (`034`) — is the sixth, and the least interesting on
+purpose. Nothing under `plugins/maestro/` changed except one branch inside
+`scripts/maestro-install.js`: the terminal `syncProjectHandoffs()` now clears a `syncedFrom` left
+pointing at a global row somebody deleted, mirroring `handoff-sync.ts`. No skill, agent, command or
+hook event moved, and the asset manifest is untouched — so a **patch**, even though the commit is a
+`feat:` and almost all of its diff is in `apps/maestro`. The rule the example illustrates: the bump
+tracks what a *consumer of the plugin* sees change, not the size of the session's diff. It shipped
+because the two implementations must agree, and an unbumped script change reaches nobody.
 
 The tempting argument for a minor, and why it fails: the frontmatter grew an `allowed-tools` grant,
 so the harness now runs a command it never used to at `/maestro` expansion. That is inside an

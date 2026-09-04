@@ -174,7 +174,7 @@ export {
 
 export { syncProjectHandoffs, handoffFilePath } from "./handoff-sync.js";
 
-export { getResolvedHandoff, saveProjectHandoffOverride } from "./handoffs.js";
+export { getResolvedHandoff, saveProjectHandoffOverride, resolvedRoutesFrom } from "./handoffs.js";
 
 export {
   installRuntime,

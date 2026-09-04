@@ -16,6 +16,15 @@ install-time sync reads it to decide materialize / refresh / skip-as-customized.
 owns this file outright — `saveProjectHandoffOverride` **drops** the field, and that drop is the
 whole mechanism by which a hand-authored protocol survives every later install.
 
+**A `no-template` verdict now CLEARS a dead `syncedFrom` (`034`).** If the global row a project
+materialised from is deleted on `/templates`' Handoffs tab, the project keeps a file whose entry
+tracks a version that no longer exists and can never advance. The sync rewrites that entry to
+`{ id }` — the same shape `saveProjectHandoffOverride` writes — leaves the file untouched, and
+reports nothing in any bucket, because nothing happened the user needs told about. Left alone the
+row would flip straight back to `refresh` the moment somebody re-created the pair under the same
+name. It is the only silent branch that still writes, and **both** implementations carry it:
+`handoff-sync.ts` and the terminal path's own copy in `plugins/maestro/scripts/maestro-install.js`.
+
 **Two ways this differs from `reports`.** Its candidate set comes from the *graph*
 (`handoffRoutes()` over the workflows) rather than from `agents_available`, because the pair
 analogue of a list of agents is a cross product — 18 files for a project whose workflows wire 6-8.

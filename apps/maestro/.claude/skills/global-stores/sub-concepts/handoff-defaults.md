@@ -38,6 +38,44 @@ mechanism is testable before the first edit — `report-defaults.ts` keeps its e
 **`deleteHandoffDefault` re-seeds when the delete empties the table.** "Delete" means "stop
 overriding the seed", never "leave this route protocol-less".
 
+## The two editing surfaces (`034`)
+
+The store had no UI when `033` landed it. It has two now, one per tier, and they are deliberately
+different pages because they answer to different scopes.
+
+| Surface | Tier it writes | Channels |
+| --- | --- | --- |
+| `/templates` → **Handoffs** tab (`components/tabs/global-handoffs-tab.tsx`) | the GLOBAL row | `template:handoffs:list` → `HandoffDefaultsListing`, `template:handoffs:save`, `template:handoffs:delete` |
+| `/agents` → **Interactions** pane (`components/agents/interactions-pane.tsx`) | this project's `.claude/handoffs/<sender>/<receiver>.md` override | `handoff:routes` → `ResolvedHandoffRoute[]`, `handoff:save` |
+
+**There is no `handoff:get`.** The pane needs the route LIST, and `handoff-routes.ts` is not
+renderer-safe (`test/isolation.test.ts` lets only `contracts.ts` and `text.ts` cross), so the walk
+has to happen in main regardless; `resolvedRoutesFrom` (`handoffs.ts`) returns every route already
+resolved, so a selection costs one round trip instead of 1 + N and one sqlite open instead of N.
+`handoff:routes` takes an **agent name**; every other channel here takes the **`handoffId` string**
+rather than `(sender, receiver)` — that is what `033`'s core functions already take and what the
+store is keyed by. The renderer joins and splits the id with a template literal and a local
+`endsOf`, a deliberate non-import of `splitHandoffId` across the same boundary.
+
+**`template:handoffs:list` returns the rows AND `SEED_HANDOFFS` itself** (`HandoffDefaultsListing`
+= `{ rows, seeded }`). `isSeededHandoff` and `SEED_HANDOFFS` live behind the `src/core` boundary,
+and the tab needs the seeded id set to pick its footer button — with the rows alone it would render
+Delete on a pair the store refuses to delete. The seed **bodies** travel too (~9 KB, read once with
+the rows) because Reset to default is a plain `save` of `SEED_HANDOFFS[id]`; sending only the keys
+would need a second round trip at click time.
+
+**A shipped pair offers Reset to default; only a user-created one offers Delete — and the refusal
+lives in main** (`template:handoffs:delete` throws `"<id> is one of Maestro's own handoff protocols
+— reset it to the default instead."`). `seedIfEmpty` fires only on a store that has *never* been
+written to, so deleting a shipped pair from a store with any other row in it is irreversible: no
+tier below would answer for that route again. `deleteHandoffDefault`'s own re-seed-when-emptied
+covers the empty-table case, not this one.
+
+**The pair roster in the Create row is `BUNDLED_AGENT_NAMES`** (`contracts.ts`), the seven bundled
+bare names — not a project's `agents_available`, because `/templates` threads no project context at
+all and a global default has to be authorable with nothing open. Create refuses a same-agent pair,
+and creating a pair that already exists SELECTS it rather than clobbering the body.
+
 Files: `apps/maestro/src/core/handoff-defaults.ts` (the store),
 `apps/maestro/src/core/handoff-seeds.ts` (the seed tier, import-free),
 `apps/maestro/src/core/handoff-resolution.ts` (the pure three-tier decision),

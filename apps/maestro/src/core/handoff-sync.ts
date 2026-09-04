@@ -88,7 +88,22 @@ export function syncProjectHandoffs(
 
     // Neither of these is a state the user needs told about: one is content they own outright, the
     // other is a wired route with no template to sync from (`scribe -> reviewer` today).
-    if (verdict === "detached" || verdict === "no-template") continue;
+    //
+    // `no-template` has one side effect, though, and it is the only writing branch that reports
+    // nothing: a global row the user DELETED on `/templates` leaves this project's entry pointing
+    // at a version that no longer exists. The file stays — the project tier is the user's own and
+    // outranks the global one at the hook either way — but the tracking is cleared, which is
+    // exactly the shape `saveProjectHandoffOverride` writes for a hand-authored override. Left
+    // alone it would be a `syncedFrom` that can never match and can never advance, and the row
+    // would flip back to `refresh` the moment somebody re-created the pair under the same name.
+    if (verdict === "no-template") {
+      if (entry?.syncedFrom) {
+        handoffs[id] = { id };
+        changed = true;
+      }
+      continue;
+    }
+    if (verdict === "detached") continue;
 
     if (verdict === "materialize" || verdict === "refresh") {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });

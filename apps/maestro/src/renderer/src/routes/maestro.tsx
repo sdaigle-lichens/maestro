@@ -137,6 +137,30 @@ function ReportCard({ report }: { report: InstallReport }) {
               <span className="font-mono text-(--ink-3)">{report.reportsSync.staleCustomized.join(", ")}</span>
             </li>
           )}
+          {/*
+            The same three lines one tier over (`033`/`034`). Entries are `"<sender>/<receiver>"`
+            handoff ids rather than agent names, and a wired route with no template at any tier
+            appears in NO bucket — nothing was written, so there is nothing to report.
+          */}
+          {report.handoffsSync.materialized.length > 0 && (
+            <li>
+              Handoff protocol{report.handoffsSync.materialized.length === 1 ? "" : "s"} materialized from the global
+              default: <span className="font-mono text-(--ink-3)">{report.handoffsSync.materialized.join(", ")}</span>
+            </li>
+          )}
+          {report.handoffsSync.refreshed.length > 0 && (
+            <li>
+              Handoff protocol{report.handoffsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global
+              default: <span className="font-mono text-(--ink-3)">{report.handoffsSync.refreshed.join(", ")}</span>
+            </li>
+          )}
+          {report.handoffsSync.staleCustomized.length > 0 && (
+            <li>
+              Handoff protocol{report.handoffsSync.staleCustomized.length === 1 ? "" : "s"} stale but customized — left
+              alone since you edited {report.handoffsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
+              <span className="font-mono text-(--ink-3)">{report.handoffsSync.staleCustomized.join(", ")}</span>
+            </li>
+          )}
         </ul>
       )}
     </div>

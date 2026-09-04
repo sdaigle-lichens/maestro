@@ -60,6 +60,23 @@ one missing manifest line and it fails silently every time.
 - [ ] `plugins/maestro/.claude-plugin/plugin.json` is bumped — a patch, per
       `.claude/skills/updating-maestro/`
 
+## Checked against `034` as built
+
+Reconciled by the scribe when `034` closed. **This page is unaffected.** `034` touched neither
+`STATIC_ASSETS` (in either implementation), nor `HOOK_SCRIPTS`, nor
+`plugins/maestro/scripts/lib/maestro-report-defaults.cjs`, nor
+`maestro-inject-agent-context.js` — so the bug described above still exists exactly as written and
+the asset manifest has not moved. Two things to carry in:
+
+- **The plugin is now at `0.4.3`**, so this ticket's bump is `0.4.3 → 0.4.4`. It stays a patch:
+  adding a copied lib to the asset manifest is not a published surface. `.claude/skills/updating-maestro/`
+  now carries `0.4.3` as its sixth worked example.
+- **`034` added no channel this could reuse**, and did not need one: its two new IPC channels
+  (`handoff:routes`, `handoff:save`) are renderer↔main, on the handoff tier, and touch no hook. It
+  did, however, add a second hand-mirrored site to `plugins/maestro/scripts/maestro-install.js` (the
+  `no-template` branch in its own `syncProjectHandoffs`) — unrelated to the manifest, but a reminder
+  that the two installers' parity is prose in two files, not one shared module.
+
 ## Notes for whoever picks this up
 
 Read `.claude/skills/installing-maestro/` (the manifest sub-concept) and

@@ -5,16 +5,21 @@
 // A single horizontal scroller wraps the pane row at a 1120px floor, so a narrow window scrolls
 // rather than crushing the centre column.
 //
-// ONE EDIT SESSION, SIX WRITE PATHS. Pressing Edit — from the card footer, a list row's pencil, or
-// the Interactions pencil — clones the agent into a draft and every control edits the draft.
+// ONE EDIT SESSION, SEVEN WRITE PATHS. Pressing Edit — from the card footer, a list row's pencil,
+// or an Interactions pencil — clones the agent into a draft and every control edits the draft.
 // Nothing touches disk until Save, which then fans out to the channel that owns each field:
 //
 //   report        reports:save                     -> .claude/reports/<agent>.md, a PROJECT override
+//   handoffs      handoff:save                     -> .claude/handoffs/<sender>/<receiver>.md, ditto
 //   avatar        avatar:set                       -> ~/.claude/maestro-avatars.sqlite
 //   type          template:agent-types:save        -> ~/.claude/maestro-agent-types.sqlite
 //   project tag   template:agent-project-tags:save -> ~/.claude/maestro-agent-project-tags.sqlite
 //   description   agent:describe                   -> the agent's OWN .md frontmatter
 //   skills        config:save (workflows slice)    -> .claude/maestro.json's workflow_instances
+//
+// The handoff path is the only one that is a LIST: one write per route the user actually edited,
+// each of them a project override that drops that pair's `syncedFrom`. Same discipline as the rest
+// — attempted only where the body changed, failures collected per route and named in the toast.
 //
 // The avatar/type/project-tag writes carry a `projectScoped` flag (030): true only when the agent
 // being edited is project-tier, so its row lands under this project alone rather than the one
@@ -54,6 +59,7 @@ import {
   type AvatarCategory,
   type AvatarLayers,
   type MaestroInstanceV3,
+  type ResolvedHandoffRoute,
   type ResolvedReport,
   type WorkflowsData,
 } from "../../../shared/ipc";
@@ -73,6 +79,14 @@ interface AgentAttributes {
 
 const EMPTY_ATTRIBUTES: AgentAttributes = { types: {}, projectTags: {}, avatars: {}, catalog: [] };
 const NO_REPORT: ResolvedReport = { source: "none", content: "" };
+const NO_ROUTES: ResolvedHandoffRoute[] = [];
+
+/** The draft's starting point: whatever tier each route currently resolves to. */
+function handoffsOf(routes: ResolvedHandoffRoute[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const route of routes) if (route.handoffId) out[route.handoffId] = route.content;
+  return out;
+}
 
 function sourceLabel(source: ResolvedReport["source"]): string {
   if (source === "project") return "Project override";
@@ -86,6 +100,19 @@ function sameLayers(a: AvatarLayers, b: AvatarLayers): boolean {
 
 function sameSkills(a: AgentSkill[], b: AgentSkill[]): boolean {
   return a.length === b.length && a.every((s, i) => s.id === b[i].id && s.mode === b[i].mode);
+}
+
+/**
+ * A deep-enough copy for an edit session: `layers`, `skills` and `handoffs` are all mutated in
+ * place by the controls, so a shallow spread would edit `base` and make Cancel a no-op.
+ */
+function cloneDraft(base: AgentDraft): AgentDraft {
+  return {
+    ...base,
+    layers: { ...base.layers },
+    skills: base.skills.map((s) => ({ ...s })),
+    handoffs: { ...base.handoffs },
+  };
 }
 
 /** The instance's two skill lists, flattened into the chip model the card renders. */
@@ -107,6 +134,9 @@ function AgentsPage() {
 
   const [selected, setSelected] = useState<string | null>(null);
   const [report, setReport] = useState<ResolvedReport>(NO_REPORT);
+  // The routes leaving the selected agent, already resolved. Project-scoped like the report, and
+  // refetched with it for the same reason.
+  const [routes, setRoutes] = useState<ResolvedHandoffRoute[]>(NO_ROUTES);
 
   const [draft, setDraft] = useState<AgentDraft | null>(null);
   const [pendingEdit, setPendingEdit] = useState(false);
@@ -157,18 +187,25 @@ function AgentsPage() {
     void refresh();
   }, [refresh, projectRoot]);
 
-  // The report is the one per-agent thing that is project-scoped, so it is the one thing refetched
-  // per selection. Avatars arrive with the rest of the global attributes, in one read.
+  // The report and this agent's handoff routes are the per-agent, project-scoped things, so they
+  // are what is refetched per selection. Avatars arrive with the rest of the global attributes, in
+  // one read; `handoff:routes` is one call for every route rather than one per row.
   useEffect(() => {
     if (!selected) {
       setReport(NO_REPORT);
+      setRoutes(NO_ROUTES);
       return;
     }
     let cancelled = false;
-    void callMain(() => window.maestro.reports.get(selected)).then((res) => {
+    void Promise.all([
+      callMain(() => window.maestro.reports.get(selected)),
+      callMain(() => window.maestro.handoffs.routes(selected)),
+    ]).then(([rep, rts]) => {
       if (cancelled) return;
-      if (!res.ok) toast(<>Could not load this agent&rsquo;s report: {res.error}</>, { variant: "error" });
-      setReport(res.ok ? res.value : NO_REPORT);
+      if (!rep.ok) toast(<>Could not load this agent&rsquo;s report: {rep.error}</>, { variant: "error" });
+      if (!rts.ok) toast(<>Could not load this agent&rsquo;s handoffs: {rts.error}</>, { variant: "error" });
+      setReport(rep.ok ? rep.value : NO_REPORT);
+      setRoutes(rts.ok ? rts.value : NO_ROUTES);
     });
     return () => {
       cancelled = true;
@@ -208,8 +245,9 @@ function AgentsPage() {
       layers: attributes.avatars[agent.id] ?? defaultAvatarLayers(),
       skills: skillsOf(instance),
       report: report.content,
+      handoffs: handoffsOf(routes),
     };
-  }, [agent, attributes, instance, report]);
+  }, [agent, attributes, instance, report, routes]);
 
   const live = draft ?? base;
   const editing = draft !== null;
@@ -257,13 +295,13 @@ function AgentsPage() {
       setPendingEdit(true);
       return;
     }
-    if (base) setDraft({ ...base, layers: { ...base.layers }, skills: base.skills.map((s) => ({ ...s })) });
+    if (base) setDraft(cloneDraft(base));
   }
 
   // A pencil press on a row that wasn't selected: enter edit as soon as that agent's data lands.
   useEffect(() => {
     if (!pendingEdit || !base) return;
-    setDraft({ ...base, layers: { ...base.layers }, skills: base.skills.map((s) => ({ ...s })) });
+    setDraft(cloneDraft(base));
     setPendingEdit(false);
   }, [pendingEdit, base]);
 
@@ -342,6 +380,21 @@ function AgentsPage() {
         const res = await callMain(() => window.maestro.reports.save(d.id, d.report));
         if (res.ok) setReport(res.value);
         else failures.push(`report: ${res.error}`);
+      }
+      // One write per route whose body actually changed. Not batched into a single channel call:
+      // each is its own file, and a partial failure has to be able to name which route it was.
+      // Each one lands as this project's override and drops that pair's `syncedFrom`, so the
+      // resolved SOURCE moves too — hence the re-read below rather than a local patch of `routes`.
+      let handoffsWritten = false;
+      for (const [id, body] of Object.entries(d.handoffs)) {
+        if (body === base.handoffs[id]) continue;
+        const res = await callMain(() => window.maestro.handoffs.save(id, body));
+        if (res.ok) handoffsWritten = true;
+        else failures.push(`handoff ${id}: ${res.error}`);
+      }
+      if (handoffsWritten) {
+        const res = await callMain(() => window.maestro.handoffs.routes(d.id));
+        if (res.ok) setRoutes(res.value);
       }
       if (!sameLayers(d.layers, base.layers)) {
         const res = await callMain(() => window.maestro.avatar.set(d.id, d.layers, projectScoped));
@@ -583,13 +636,18 @@ function AgentsPage() {
 
             <InteractionsPane
               report={live?.report ?? ""}
+              reportNote={paneNote}
+              routes={routes}
+              handoffs={live?.handoffs ?? {}}
               editing={editing}
               open={rightOpen}
               width={rightWidth}
-              note={paneNote}
               onToggleOpen={() => setRightOpen((v) => !v)}
               onStartEdit={() => startEdit()}
               onReport={(value) => patch({ report: value })}
+              onHandoff={(handoffId, value) =>
+                setDraft((d) => (d ? { ...d, handoffs: { ...d.handoffs, [handoffId]: value } } : d))
+              }
               onWidth={setRightWidth}
             />
           </div>

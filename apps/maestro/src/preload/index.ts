@@ -58,6 +58,12 @@ const api: MaestroApi = {
     get: (agentName) => ipcRenderer.invoke(IPC.reportGet, agentName),
     save: (agentName, content) => ipcRenderer.invoke(IPC.reportSave, agentName, content),
   },
+  // The same pair for handoff protocols. `routes` reads the open project's graph and resolves each
+  // route in one call — the walk is main's, so the renderer never has to know how a route is found.
+  handoffs: {
+    routes: (agentName) => ipcRenderer.invoke(IPC.handoffRoutes, agentName),
+    save: (handoffId, content) => ipcRenderer.invoke(IPC.handoffSave, handoffId, content),
+  },
   // The /templates page's write path for the GLOBAL tier — its own namespace, not `reports.*`
   // above, for the same reason that pair is scoped to a project override: conflating the two would
   // mean one function editing either "what this agent shows in this project" or "what every
@@ -66,6 +72,13 @@ const api: MaestroApi = {
     reports: {
       list: () => ipcRenderer.invoke(IPC.templateReportsList),
       save: (agentName, content) => ipcRenderer.invoke(IPC.templateReportSave, agentName, content),
+    },
+    // `remove` refuses a seeded id in MAIN, not here — the tab renders Reset to default for those
+    // instead, and this bridge stays a forwarder with no policy of its own.
+    handoffs: {
+      list: () => ipcRenderer.invoke(IPC.templateHandoffsList),
+      save: (handoffId, content) => ipcRenderer.invoke(IPC.templateHandoffSave, handoffId, content),
+      remove: (handoffId) => ipcRenderer.invoke(IPC.templateHandoffDelete, handoffId),
     },
     // `projectScoped` is forwarded as a plain flag, never a path — main resolves it against its
     // own `currentRoot()`. See `MaestroApi.templates`'s doc comment.

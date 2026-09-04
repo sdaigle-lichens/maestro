@@ -22,7 +22,7 @@ import {
   deleteHandoffDefault,
 } from "../../src/core/handoff-defaults.js";
 import { syncProjectHandoffs, handoffFilePath } from "../../src/core/handoff-sync.js";
-import { getResolvedHandoff, saveProjectHandoffOverride } from "../../src/core/handoffs.js";
+import { getResolvedHandoff, saveProjectHandoffOverride, resolvedRoutesFrom } from "../../src/core/handoffs.js";
 import { readConfig, writeConfig } from "../../src/core/config.js";
 import { defaultish, withSkillNodes } from "./fixtures/configs.js";
 
@@ -411,5 +411,84 @@ describe("getResolvedHandoff / saveProjectHandoffOverride", () => {
   it("refuses a malformed id on both the read and the write", () => {
     expect(() => getResolvedHandoff(projectRoot, "../../etc/passwd", dbPath)).toThrow(/Invalid handoff id/);
     expect(() => saveProjectHandoffOverride(projectRoot, "a/b/c", "x")).toThrow(/Invalid handoff id/);
+  });
+});
+
+// 034 — what `/agents`' Interactions pane lists, and the one state a deleted global row leaves.
+describe("resolvedRoutesFrom — the Interactions pane's one round trip", () => {
+  it("returns one entry per outgoing route, in the walk's own order, each with its tier", () => {
+    writeConfig(projectRoot, defaultish);
+    const routes = resolvedRoutesFrom(projectRoot, "backend", dbPath);
+
+    expect(routes.map((r) => `${r.label}->${r.receiver}`)).toEqual(
+      routesFrom(handoffRoutes(defaultish.workflows, defaultish.workflow_instances), "backend").map(
+        (r) => `${r.label}->${r.receiver}`
+      )
+    );
+    const toTest = routes.find((r) => r.receiver === "test")!;
+    expect(toTest.handoffId).toBe("backend/test");
+    expect(toTest.source).toBe("global");
+    expect(toTest.content).toBe(SEED_HANDOFFS["backend/test"]);
+  });
+
+  it("keeps a route with NO template at any tier, so the gap is visible rather than silent", () => {
+    writeConfig(projectRoot, defaultish);
+    const routes = resolvedRoutesFrom(projectRoot, "test", dbPath);
+
+    const toScribe = routes.find((r) => r.receiver === "scribe")!;
+    expect(toScribe.handoffId).toBe("test/scribe");
+    expect(toScribe.source).toBe("none");
+    expect(toScribe.content).toBe("");
+  });
+
+  it("reports a project override once one is saved", () => {
+    writeConfig(projectRoot, defaultish);
+    saveProjectHandoffOverride(projectRoot, "backend/test", "mine");
+
+    const toTest = resolvedRoutesFrom(projectRoot, "backend", dbPath).find((r) => r.receiver === "test")!;
+    expect(toTest).toMatchObject({ source: "project", content: "mine" });
+  });
+
+  it("is empty with no project open — no graph, so no routes", () => {
+    expect(resolvedRoutesFrom("", "backend", dbPath)).toEqual([]);
+  });
+
+  it("bares a namespaced agent name, so `maestro:backend` finds backend's routes", () => {
+    writeConfig(projectRoot, defaultish);
+    expect(resolvedRoutesFrom(projectRoot, "maestro:backend", dbPath).length).toBeGreaterThan(0);
+  });
+});
+
+describe("syncProjectHandoffs — a global row deleted out from under a tracked project", () => {
+  it("clears the stale syncedFrom, keeps the file, and reports nothing", () => {
+    // The state a `/templates` delete leaves behind: an entry tracking a global row that is no
+    // longer there. `scribe/reviewer` stands in for it — Maestro ships nothing for that pair, so
+    // no tier answers for it and `seedIfEmpty` can never put one back.
+    writeConfig(projectRoot, defaultish);
+    fs.mkdirSync(path.dirname(handoffFilePath(projectRoot, "scribe/reviewer")), { recursive: true });
+    fs.writeFileSync(handoffFilePath(projectRoot, "scribe/reviewer"), "materialized earlier");
+    const cfg = readConfig(projectRoot)!;
+    writeConfig(projectRoot, {
+      ...cfg,
+      handoffs: { "scribe/reviewer": { id: "scribe/reviewer", syncedFrom: { version: 3, hash: "x" } } },
+    });
+
+    const summary = syncProjectHandoffs(projectRoot, dbPath);
+
+    // In no bucket — nothing was synced, so there is nothing to tell the user. The file stays
+    // (the project tier is the user's own and wins at the hook), and the tracking that could
+    // never match and never advance is gone.
+    for (const bucket of Object.values(summary)) expect(bucket).not.toContain("scribe/reviewer");
+    expect(read("scribe/reviewer")).toBe("materialized earlier");
+    expect(readConfig(projectRoot)!.handoffs!["scribe/reviewer"]).toEqual({ id: "scribe/reviewer" });
+  });
+
+  it("leaves an entry that never tracked anything exactly as it is", () => {
+    writeConfig(projectRoot, defaultish);
+    const cfg = readConfig(projectRoot)!;
+    writeConfig(projectRoot, { ...cfg, handoffs: { "scribe/reviewer": { id: "scribe/reviewer" } } });
+
+    syncProjectHandoffs(projectRoot, dbPath);
+    expect(readConfig(projectRoot)!.handoffs!["scribe/reviewer"]).toEqual({ id: "scribe/reviewer" });
   });
 });

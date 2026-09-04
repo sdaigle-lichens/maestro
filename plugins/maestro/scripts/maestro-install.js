@@ -518,7 +518,18 @@ function syncProjectHandoffs(configPath, projectDir) {
       templateAdvanced: !!global && !!(entry && entry.syncedFrom) && global.version > entry.syncedFrom.version,
     });
 
-    if (verdict === "detached" || verdict === "no-template") continue;
+    // `no-template` is the only silent branch that still writes. A global row deleted on the app's
+    // /templates Handoffs tab leaves this project's entry tracking a version that no longer exists
+    // and can never advance; the file stays (the project tier is the user's own and wins at the
+    // hook either way) and the dead tracking is cleared. Mirrors handoff-sync.ts exactly.
+    if (verdict === "no-template") {
+      if (entry && entry.syncedFrom) {
+        handoffs[id] = { id };
+        changed = true;
+      }
+      continue;
+    }
+    if (verdict === "detached") continue;
 
     if (verdict === "materialize" || verdict === "refresh") {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
