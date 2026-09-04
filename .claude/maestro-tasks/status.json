@@ -173,5 +173,15 @@
   "032-make-the-orchestrator-gates-optional.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "033-customizable-handoff-templates.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "034-edit-handoff-templates-in-the-app.md": {
+    "status": "ready",
+    "blockedBy": [
+      "033-customizable-handoff-templates.md"
+    ]
   }
 }
