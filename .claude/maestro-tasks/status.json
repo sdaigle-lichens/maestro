@@ -187,5 +187,15 @@
   "035-reach-the-global-report-tier-from-a-project-local-hook.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "036-move-handoff-payloads-onto-agent-channels.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "037-surface-agent-channels-in-the-app.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "036-move-handoff-payloads-onto-agent-channels.md"
+    ]
   }
 }
