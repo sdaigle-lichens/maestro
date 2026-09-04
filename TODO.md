@@ -2,8 +2,8 @@
 
 ## Queue status
 
-**`038` is ready.** The agent-channels pair (`036`/`037`) is done; `038` is a small fix written from
-the bug the `037` verification turned up.
+**The queue is empty.** `038` is done; nothing is currently queued as `ready` — the next task is
+whatever gets written next.
 
 **The plugin is at `0.4.5`.**
 
@@ -23,14 +23,20 @@ the bug the `037` verification turned up.
   queued backlog rather than an error. The Interactions pane now names each route's lane path
   (`.claude/channels/<receiver>/<sender>.1.md`). No divergences from the plan; no `plugins/` change,
   so no plugin version bump.
-- **`038-start-the-log-tail-for-a-window-that-subscribed-before-a-project.md`** (`ready`) — the
+- **`038-start-the-log-tail-for-a-window-that-subscribed-before-a-project.md`** (`done`) — the
   quirk `037` recorded as harness-only, re-examined and **confirmed user-facing**. `startTail`
-  returns before `tails.set` when no project is open, and `retargetTails` iterates `tails.keys()`,
-  so a window that subscribed before a project existed never gets a tail — and the renderer
-  subscribes once with `[]` deps, so nothing recovers. `/session-log` is dead for the life of that
-  window. It reproduces only on a first run (or after the open project is forgotten), which is why
-  it has never been reported. The fix separates "asked for a tail" from "has a tail"; the page says
-  why the two one-line alternatives are each worse.
+  returned before `tails.set` when no project was open, and `retargetTails` iterated `tails.keys()`,
+  so a window that subscribed before a project existed never got a tail — and the renderer
+  subscribes once with `[]` deps, so nothing recovered. `/session-log` was dead for the life of that
+  window. It reproduced only on a first run (or after the open project is forgotten), which is why
+  it had never been reported. The fix adds a `logSubscribers: Set<number>` in
+  `apps/maestro/src/main/ipc.ts`, separating "asked for a tail" from "has a tail": `retargetTails`
+  now reads `logSubscribers` instead of `tails.keys()`, `logSubscribe` adds to it before calling
+  `startTail`, and both `logUnsubscribe` and the window's `destroyed` listener remove from it.
+  `tails`, `startTail` and `stopTail` are unchanged. No divergences from the plan; reproduced and
+  fixed in a real packaged window from a genuinely cold profile (confirmed against the pre-fix code
+  too, via `git stash`, so the probe wasn't passing vacuously). No `plugins/` change, so no plugin
+  version bump.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

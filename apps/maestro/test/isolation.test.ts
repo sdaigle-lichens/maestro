@@ -1261,6 +1261,38 @@ describe("session log tail ownership", () => {
       .map((f) => path.relative(appRoot, f));
     expect(callSites).toEqual(["src/renderer/src/utils/session-log-context.tsx"]);
   });
+
+  // `038`: `tails` only holds windows with a RUNNING watcher, which a window that subscribed
+  // before a project was open is not — `startTail` returns before `tails.set` on a null root. So
+  // `retargetTails` reading `tails.keys()` (the fix's predecessor bug) or enumerating every open
+  // `BrowserWindow` (starting a watcher for a window that never subscribed) are each wrong in a
+  // way no render test catches; this is a source-level guard for the same reason the "saving
+  // refreshes loader data" block below is one.
+  it("retargetTails reads logSubscribers, not tails.keys() or every open window", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const body = ipc.slice(ipc.indexOf("function retargetTails"), ipc.indexOf("function startTail"));
+    // Iterates the subscribers, not the tails map's own keys (the predecessor bug) — resolving a
+    // known id's webContents via `BrowserWindow.getAllWindows().find(...)`, same as startTail
+    // does, is fine; iterating over EVERY open window as the outer loop is not, since that starts
+    // a watcher for a window that never asked for one.
+    expect(body).toMatch(/for \(const id of \[\.\.\.logSubscribers\]\)/);
+    expect(body).not.toMatch(/tails\.keys\(\)/);
+    expect(body).not.toMatch(/for \([^)]*of BrowserWindow\.getAllWindows\(\)\)/);
+  });
+
+  it("logSubscribers is maintained by the subscribe handler and both teardown paths", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    // Registered before startTail runs, so a null-root subscribe is still remembered.
+    const subscribeHandler = ipc.slice(ipc.indexOf("IPC.logSubscribe,"), ipc.indexOf("IPC.logUnsubscribe,"));
+    const addIdx = subscribeHandler.indexOf("logSubscribers.add(");
+    const startIdx = subscribeHandler.indexOf("startTail(");
+    expect(addIdx).toBeGreaterThan(-1);
+    expect(startIdx).toBeGreaterThan(addIdx);
+    // Removed on unsubscribe and on window destruction.
+    expect(subscribeHandler).toMatch(/destroyed["'],\s*\(\)\s*=>\s*\{[\s\S]*?logSubscribers\.delete\(/);
+    const unsubscribeHandler = ipc.slice(ipc.indexOf("IPC.logUnsubscribe,"), ipc.indexOf("IPC.logUnsubscribe,") + 200);
+    expect(unsubscribeHandler).toMatch(/logSubscribers\.delete\(/);
+  });
 });
 
 describe("saving refreshes loader data", () => {

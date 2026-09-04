@@ -68,25 +68,53 @@ No `plugins/` change, so **no plugin version bump**.
 
 ## Acceptance criteria
 
-- [ ] A window that subscribed with **no project open** gets a live tail as soon as a project is
-      opened, with no re-subscribe from the renderer.
-- [ ] A window that subscribed **with** a project open still gets a tail, and still exactly one —
-      the stop-before-start / single-owner behaviour is unchanged.
-- [ ] A project **switch** still retargets every subscribed window, and a window no longer streams
-      the outgoing project's log.
-- [ ] Unsubscribing, and destroying a window, both remove it from `logSubscribers` — a later
-      `retargetTails()` neither starts a tail for a dead window nor throws.
-- [ ] Nothing starts a tail for a window that never subscribed.
-- [ ] `test/isolation.test.ts`'s existing single-subscriber assertion still passes, plus a new
+- [x] A window that subscribed with **no project open** gets a live tail as soon as a project is
+      opened, with no re-subscribe from the renderer. Verified in a real packaged window: launched
+      under a genuinely fresh `--user-data-dir` with no `projects.json`, confirmed the empty state
+      on `/session-log`, called `window.maestro.project.open(fixtureRoot)` via CDP with **no
+      re-subscribe from the renderer**, appended a marker line to the fixture project's
+      `maestro_session.log.jsonl`, and saw it appear on screen within a couple of the tail's
+      1-second poll cycles.
+- [x] A window that subscribed **with** a project open still gets a tail, and still exactly one —
+      the stop-before-start / single-owner behaviour is unchanged. `tails`, `startTail`, `stopTail`
+      untouched; `logSubscribe` still does exactly one `startTail` per window.
+- [x] A project **switch** still retargets every subscribed window, and a window no longer streams
+      the outgoing project's log. `retargetTails` unchanged in shape (stop-then-start per id), only
+      the id source changed from `tails.keys()` to `logSubscribers`.
+- [x] Unsubscribing, and destroying a window, both remove it from `logSubscribers` — a later
+      `retargetTails()` neither starts a tail for a dead window nor throws. Both the `destroyed`
+      listener and the `logUnsubscribe` handler now call `logSubscribers.delete(...)` alongside the
+      existing `stopTail(...)`; `startTail`'s existing `if (!wc) return` guard covers a dead window
+      still resolved from `BrowserWindow.getAllWindows()`.
+- [x] Nothing starts a tail for a window that never subscribed. `logSubscribers` is only ever added
+      to inside the `logSubscribe` handler.
+- [x] `test/isolation.test.ts`'s existing single-subscriber assertion still passes, plus a new
       source-level pin that `retargetTails` does **not** read `tails.keys()` and does **not**
       enumerate `BrowserWindow.getAllWindows()`. This is a source-level guard for the same reason the
       "saving refreshes loader data" block is one: the failure is silent and no render test sees it.
-- [ ] `pnpm --filter maestro test`, `typecheck` and `check` green.
-- [ ] Reproduced and fixed in a **packaged** window from a genuinely cold profile — an empty
+      Two new tests added to `describe("session log tail ownership")`: one pins `retargetTails`'s
+      body to `for (const id of [...logSubscribers])` with no `tails.keys()` and no outer loop over
+      `BrowserWindow.getAllWindows()` (a `.find()` to resolve one already-known id is still allowed
+      and present); the other pins that `logSubscribers.add(...)` precedes `startTail(...)` in the
+      `logSubscribe` handler and that both teardown paths call `logSubscribers.delete(...)`.
+- [x] `pnpm --filter maestro test`, `typecheck` and `check` green. 881 tests pass across 46 files
+      (including the two new isolation tests); typecheck and prettier `check` both clean.
+- [x] Reproduced and fixed in a **packaged** window from a genuinely cold profile — an empty
       `projects.json` and no `current` — per `test-maestro`: open a project with
       `window.maestro.project.open()`, then confirm `/session-log` streams. `037` worked around this
       by pre-seeding `projects.json` before launch; **do not** pre-seed here, or the bug is invisible
-      and the fix unverified.
+      and the fix unverified. Built the app and launched the real packaged Electron app (`electron
+      .`, never `dev`) under a fresh `--user-data-dir` with no `projects.json`. To confirm the probe
+      wasn't passing vacuously, the fix was `git stash`ed, the app rebuilt and the identical probe
+      rerun against the old (buggy) code — it correctly failed (`sawMarker: false`, non-zero exit),
+      reproducing the bug exactly as described above. The stash was then restored, the app rebuilt,
+      and the probe rerun clean. Zero console/exception errors in either the empty-state or
+      post-open phase of the passing run.
+
+**No divergences.** Every criterion was met exactly as specified — no `BrowserWindow.getAllWindows()`
+enumeration was added to `retargetTails`, and no no-op stopper was registered in `tails` on a null
+root, matching the two explicitly rejected alternatives above. No `plugins/` file was touched, so
+per the repo's rule no plugin version bump was needed or made.
 
 ## Notes for whoever picks this up
 

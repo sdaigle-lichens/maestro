@@ -165,6 +165,18 @@ import { currentRoot, forgetProject, getState, openProject } from "./project-sto
  */
 const tails = new Map<number, () => void>();
 
+/**
+ * Windows that asked for a tail, whether or not one is running yet.
+ *
+ * `tails` answers "which windows have a running watcher", which is the wrong set for
+ * `retargetTails` to read: a window that subscribed with no project open has no tail (a null root
+ * makes `startTail` send an empty `logInit` and return before ever touching `tails`), so it would
+ * never be revisited once a project opened. This set is added to in the `logSubscribe` handler
+ * BEFORE `startTail` runs, and removed on unsubscribe/destroy — so it always answers "who asked",
+ * independent of whether a watcher is currently running for them.
+ */
+const logSubscribers = new Set<number>();
+
 function broadcast(channel: string, payload?: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(channel, payload);
@@ -181,7 +193,7 @@ function stopTail(webContentsId: number): void {
  * window would keep streaming the previously-opened repo's session log.
  */
 function retargetTails(): void {
-  for (const id of [...tails.keys()]) {
+  for (const id of [...logSubscribers]) {
     stopTail(id);
     const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === id)?.webContents;
     if (wc) startTail(wc.id);
@@ -906,11 +918,18 @@ export function registerIpc(): void {
   // No separate snapshot channel: `subscribe` emits the full snapshot as its first `init`, so a
   // second way to ask for the same bytes is surface with no consumer.
   ipcMain.handle(IPC.logSubscribe, (e) => {
+    logSubscribers.add(e.sender.id);
     startTail(e.sender.id);
-    e.sender.once("destroyed", () => stopTail(e.sender.id));
+    e.sender.once("destroyed", () => {
+      logSubscribers.delete(e.sender.id);
+      stopTail(e.sender.id);
+    });
   });
 
-  ipcMain.handle(IPC.logUnsubscribe, (e) => stopTail(e.sender.id));
+  ipcMain.handle(IPC.logUnsubscribe, (e) => {
+    logSubscribers.delete(e.sender.id);
+    stopTail(e.sender.id);
+  });
 
   // ── channels (037) ───────────────────────────────────────────────────
   // Read-only: every receiver lane holding at least one undelivered file, right now. No project
@@ -928,6 +947,7 @@ export function registerIpc(): void {
 
 export function disposeIpc(): void {
   for (const id of [...tails.keys()]) stopTail(id);
+  logSubscribers.clear();
   // A cancelled run's child is spawned detached, so it outlives us by design unless it is killed.
   // Without this, quitting the app leaves Claude running against the user's repo with no window
   // left to stop it from.

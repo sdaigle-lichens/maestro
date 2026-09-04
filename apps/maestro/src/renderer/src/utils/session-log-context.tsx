@@ -33,8 +33,10 @@ export function SessionLogProvider({ children }: { children: React.ReactNode }) 
       onReset: () => setEntries([]),
     });
 
-    // A project switch is handled in the main process — it retargets the tail and re-emits
-    // `init` — so there is nothing to re-subscribe to here.
+    // A project switch is handled in the main process — it retargets the tail for every window
+    // that subscribed (not just every window with a running tail, which a window that subscribed
+    // before a project was open would not be) and re-emits `init` — so there is nothing to
+    // re-subscribe to here.
     return () => {
       unsubscribe();
       setConnected(false);
