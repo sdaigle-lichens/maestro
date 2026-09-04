@@ -69,9 +69,12 @@ wrong extension.
 
 ## Reporting a gap
 
-Working agents report `conceptSkillGaps` — the concept skill they loaded and what it failed to tell
-them. That is the signal to run `/update-single-concept-skill` on that skill, and it is worth more
-than any audit you could run yourself: it names a gap someone actually hit.
+Working agents write concept-skill gaps to your own channel lane — `.claude/channels/scribe/` —
+rather than into a caller's report: the concept skill they loaded and what it failed to tell them.
+That arrives inlined in your context, labelled by sender, the next time you're invoked, whether or
+not this run's workflow wired a route to you at all. It is the signal to run
+`/update-single-concept-skill` on that skill, and it is worth more than any audit you could run
+yourself: it names a gap someone actually hit.
 
 ## Also true of the other files
 

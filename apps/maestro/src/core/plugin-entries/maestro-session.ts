@@ -25,10 +25,27 @@ export {
   readJson,
   readSession,
   writeSession,
+  ensureSessionRunId,
   appendSessionLog,
   sessionLogPath,
   SESSION_LOG_FILE,
 } from "../session-runtime.js";
+
+// Agent channels (`036`) — lanes, stamps, retire, sweep. `fs`/`path` only, so this costs nothing
+// against the "no node:sqlite in maestro-session.cjs" property below.
+export {
+  channelDir,
+  laneFor,
+  writeStamp,
+  readLane,
+  retire,
+  sweep,
+  formatStampedContent,
+  parseStampedContent,
+  CHANNEL_AGE_CAP_MS,
+  type ChannelEntry,
+  type SweepResult,
+} from "../handoff-channels.js";
 
 // Handoff protocols (`033`), the parts that must reach the hook WITHOUT `node:sqlite`.
 //

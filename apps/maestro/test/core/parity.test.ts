@@ -260,6 +260,29 @@ describe("handoff bundles (033)", () => {
     expect(text.match(/node:sqlite/g) ?? []).toHaveLength(0);
   });
 
+  it("maestro-session.cjs carries the channel surface (036), and reaches no node:sqlite", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    for (const name of [
+      "channelDir",
+      "laneFor",
+      "writeStamp",
+      "readLane",
+      "retire",
+      "sweep",
+      "formatStampedContent",
+      "parseStampedContent",
+      "CHANNEL_AGE_CAP_MS",
+      "ensureSessionRunId",
+    ]) {
+      expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
+    }
+    // Re-asserted here rather than only above: handoff-channels.ts is `fs`/`path` only by design,
+    // and a store import creeping into it would defeat the whole point of re-exporting it from
+    // the bundle every hook requires UNCONDITIONALLY.
+    const text = fs.readFileSync(path.join(LIB, "maestro-session.cjs"), "utf8");
+    expect(text.match(/node:sqlite/g) ?? []).toHaveLength(0);
+  });
+
   it("maestro-handoff-defaults.cjs is the sqlite tier, and only that", () => {
     const store = require(path.join(LIB, "maestro-handoff-defaults.cjs"));
     expect(Object.keys(store).sort()).toEqual(

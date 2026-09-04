@@ -48,40 +48,38 @@ var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
 
 // src/core/handoff-seeds.ts
-var BACKEND_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "api_contracts": ["<endpoint \u2014 request/response shape the UI consumes>"],\n    "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n    "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n  }\n}\n```';
-var BACKEND_TO_MOBILE = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n    "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n    "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n  }\n}\n```';
-var BACKEND_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```';
-var BACKEND_TO_TEST = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```';
-var FRONTEND_TO_MOBILE = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "component_or_screen": "<the web feature being ported>",\n    "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n    "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n  }\n}\n```';
-var FRONTEND_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```';
-var FRONTEND_TO_TEST = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```';
-var MOBILE_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "component_or_screen": "<the mobile feature being ported>",\n    "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n    "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n  }\n}\n```';
-var MOBILE_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```';
-var MOBILE_TO_TEST = '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```';
-var REFACTOR_TO_BACKEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
-var REFACTOR_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
-var REFACTOR_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "summary": "<brief summary of what was delegated, for re-review>"\n  }\n}\n```';
-var REFACTOR_TO_SCRIBE = '```json\n{\n  "handoff_details": {\n    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n  }\n}\n```';
-var REFACTOR_TO_TEST = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
-var REVIEWER_TO_BACKEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
-var REVIEWER_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```';
-var REVIEWER_TO_REFACTOR = '```json\n{\n  "handoff_details": {\n    "violations": ["<file:line \u2014 pattern violation, DRY issue, or code redundancy>"]\n  }\n}\n```';
+var BACKEND_TO_FRONTEND = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the UI consumes>"],\n  "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n}\n```';
+var BACKEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n  "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n}\n```';
+var BACKEND_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
+var BACKEND_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var FRONTEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "component_or_screen": "<the web feature being ported>",\n  "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n  "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n}\n```';
+var FRONTEND_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
+var FRONTEND_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var MOBILE_TO_FRONTEND = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "component_or_screen": "<the mobile feature being ported>",\n  "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n  "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n}\n```';
+var MOBILE_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
+var MOBILE_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var REFACTOR_TO_BACKEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
+var REFACTOR_TO_FRONTEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
+var REFACTOR_TO_REVIEWER = '```json\n{\n  "summary": "<brief summary of what was delegated, for re-review>"\n}\n```';
+var REFACTOR_TO_SCRIBE = '```json\n{\n  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n}\n```';
+var REFACTOR_TO_TEST = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
+var REVIEWER_TO_BACKEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
+var REVIEWER_TO_FRONTEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
+var REVIEWER_TO_REFACTOR = '```json\n{\n  "violations": ["<file:line \u2014 pattern violation, DRY issue, or code redundancy>"]\n}\n```';
 var REVIEWER_TO_SCRIBE = `\`\`\`json
 {
-  "handoff_details": {
-    "files_added_removed_renamed": ["<list, or 'none'>"],
-    "justfile_commands_changed": ["<old \u2192 new description, or 'none'>"],
-    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or 'none'>"],
-    "schema_changes": ["<new tables, columns, or constraints, or 'none'>"],
-    "workflow_or_process_changes": ["<changed agent handoff, new convention, or 'none'>"],
-    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]
-  }
+  "files_added_removed_renamed": ["<list, or 'none'>"],
+  "justfile_commands_changed": ["<old \u2192 new description, or 'none'>"],
+  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or 'none'>"],
+  "schema_changes": ["<new tables, columns, or constraints, or 'none'>"],
+  "workflow_or_process_changes": ["<changed agent handoff, new convention, or 'none'>"],
+  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]
 }
 \`\`\``;
-var REVIEWER_TO_TEST = '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 failure reason>"],\n    "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n  }\n}\n```';
-var TEST_TO_BACKEND = '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<endpoint/function the backend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```';
-var TEST_TO_FRONTEND = '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<component/page the frontend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```';
-var TEST_TO_REVIEWER = '```json\n{\n  "handoff_details": {\n    "tests_added": ["<test name \u2014 what it verifies>"],\n    "results": ["<pass/fail summary>"],\n    "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n    "files_touched": ["<list, or \'none\'>"]\n  }\n}\n```';
+var REVIEWER_TO_TEST = '```json\n{\n  "failing_tests": ["<test name \u2014 failure reason>"],\n  "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n}\n```';
+var TEST_TO_BACKEND = '```json\n{\n  "failing_tests": ["<test name \u2014 behavior it expects>"],\n  "test_files_added": ["<list, or \'none\'>"],\n  "implementation_targets": ["<endpoint/function the backend must implement>"],\n  "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n}\n```';
+var TEST_TO_FRONTEND = '```json\n{\n  "failing_tests": ["<test name \u2014 behavior it expects>"],\n  "test_files_added": ["<list, or \'none\'>"],\n  "implementation_targets": ["<component/page the frontend must implement>"],\n  "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n}\n```';
+var TEST_TO_REVIEWER = '```json\n{\n  "tests_added": ["<test name \u2014 what it verifies>"],\n  "results": ["<pass/fail summary>"],\n  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n  "files_touched": ["<list, or \'none\'>"]\n}\n```';
 var SEED_HANDOFFS = {
   "backend/frontend": BACKEND_TO_FRONTEND,
   "backend/mobile": BACKEND_TO_MOBILE,
@@ -107,7 +105,88 @@ var SEED_HANDOFFS = {
   "test/frontend": TEST_TO_FRONTEND,
   "test/reviewer": TEST_TO_REVIEWER
 };
-var PRIOR_SEEDS = {};
+var PRIOR_SEEDS = {
+  "backend/frontend": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "api_contracts": ["<endpoint \u2014 request/response shape the UI consumes>"],\n    "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n    "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "backend/mobile": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n    "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n    "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "backend/reviewer": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "backend/test": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "frontend/mobile": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "component_or_screen": "<the web feature being ported>",\n    "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n    "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "frontend/reviewer": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "frontend/test": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "mobile/frontend": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "component_or_screen": "<the mobile feature being ported>",\n    "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n    "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "mobile/reviewer": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "mobile/test": [
+    '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "refactor/backend": [
+    '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```'
+  ],
+  "refactor/frontend": [
+    '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```'
+  ],
+  "refactor/reviewer": [
+    '```json\n{\n  "handoff_details": {\n    "summary": "<brief summary of what was delegated, for re-review>"\n  }\n}\n```'
+  ],
+  "refactor/scribe": [
+    '```json\n{\n  "handoff_details": {\n    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n  }\n}\n```'
+  ],
+  "refactor/test": [
+    '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```'
+  ],
+  "reviewer/backend": [
+    '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```'
+  ],
+  "reviewer/frontend": [
+    '```json\n{\n  "handoff_details": {\n    "issues": ["<file:line \u2014 description of the problem>"]\n  }\n}\n```'
+  ],
+  "reviewer/refactor": [
+    '```json\n{\n  "handoff_details": {\n    "violations": ["<file:line \u2014 pattern violation, DRY issue, or code redundancy>"]\n  }\n}\n```'
+  ],
+  "reviewer/scribe": [
+    `\`\`\`json
+{
+  "handoff_details": {
+    "files_added_removed_renamed": ["<list, or 'none'>"],
+    "justfile_commands_changed": ["<old \u2192 new description, or 'none'>"],
+    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or 'none'>"],
+    "schema_changes": ["<new tables, columns, or constraints, or 'none'>"],
+    "workflow_or_process_changes": ["<changed agent handoff, new convention, or 'none'>"],
+    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]
+  }
+}
+\`\`\``
+  ],
+  "reviewer/test": [
+    '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 failure reason>"],\n    "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n  }\n}\n```'
+  ],
+  "test/backend": [
+    '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<endpoint/function the backend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "test/frontend": [
+    '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<component/page the frontend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```'
+  ],
+  "test/reviewer": [
+    '```json\n{\n  "handoff_details": {\n    "tests_added": ["<test name \u2014 what it verifies>"],\n    "results": ["<pass/fail summary>"],\n    "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n    "files_touched": ["<list, or \'none\'>"]\n  }\n}\n```'
+  ]
+};
 function isValidHandoffId(handoffId) {
   return typeof handoffId === "string" && /^[A-Za-z0-9_-]+\/[A-Za-z0-9_-]+$/.test(handoffId);
 }

@@ -40,12 +40,11 @@ Always conclude with a JSON block, then a final `HANDOFF:` line:
   "requirements": "<met / gaps listed>",
   "warnings": ["<non-blocking concern>"],
   "description": "<one sentence summary of the review>",
-  "files_reviewed": ["<every file read during this review>"],
-  "handoff_details": null
+  "files_reviewed": ["<every file read during this review>"]
 }
 ```
 
-The available `HANDOFF:` routes and the exact `handoff_details` shape for each target are injected into your context at the start of this invocation (from the workflow config). Set `handoff_details` to the shape for the route you take, and end your message with the matching `HANDOFF:` line.
+The available `HANDOFF:` routes are injected into your context at the start of this invocation (from the workflow config), each paired with the channel file to write for it and the JSON shape to write there — write it verbatim, then end your message with the matching `HANDOFF:` line. That payload never goes in the JSON block above; it goes in the channel file.
 
 A **PASS** means all checklist items are satisfied and all automated checks exit clean. A **FAIL** means at least one blocker exists.
 

@@ -2,34 +2,34 @@
 
 ## Queue status
 
-**`036` is ready.** Two new pages, written together from a design discussion rather than from a
-post-mortem, so they carry more reasoning than usual and no implementation has started.
+**`036` is done.** `037` is next up and `ready` — its only blocker, `036`, is now done.
 
-**The plugin is at `0.4.4`.**
+**The plugin is at `0.4.5`.**
 
-- **`036-move-handoff-payloads-onto-agent-channels.md`** (`ready`) — the runtime half. Moves
+- **`036-move-handoff-payloads-onto-agent-channels.md`** (`done`) — the runtime half. Moved
   `handoff_details`, `filesChanged` and `conceptSkillGaps` out of an agent's final message and into
-  `.claude/channels/<receiver>/`, delivered by the `SubagentStart` hook. `skillsTriage` and the
-  `HANDOFF:` line deliberately stay in the message.
-- **`037-surface-agent-channels-in-the-app.md`** (`blocked` by `036`) — the app half. `/session-log`
-  renders delivered payloads on the *receiving* instance, `/maestro` shows undrained lanes.
+  `.claude/channels/<receiver>/<sender>.1.md`, delivered by the `SubagentStart` hook, stamped with a
+  `run_id` at `SubagentStop`, swept (not flushed) at `SessionEnd`. `skillsTriage` and the `HANDOFF:`
+  line deliberately stayed in the message. Two divergences from the page, recorded on it: a
+  pre-existing `writeSession` bug in `collect()` (dropping `active_task`/`run_id` on dispatch) was
+  found and fixed as part of this slice; "delivered ... in a later run" for a scribe gap with no
+  route landed as reached-and-mentioned rather than literally inlined for a foreign run.
+- **`037-surface-agent-channels-in-the-app.md`** (`ready`) — the app half. `/session-log` renders
+  delivered payloads (`kind: "channel_delivery"` log entries — `sender`/`receiver`/`agent_id`/
+  `content`) on the *receiving* instance's Input panel; `/maestro` shows undrained lanes via a new
+  read-only `pendingLanes()` beside `036`'s `handoff-channels.ts` functions.
 
-Four things on `036` that are easy to get wrong and fail quietly:
+Worth knowing before touching `037`, since it reads what `036` wrote rather than the mechanism
+itself:
 
-- **Rewriting a seed body without moving its previous text into `PRIOR_SEEDS` is a no-op** on any
-  machine whose store has already been opened — `seedIfEmpty` only fires on a virgin store, and
-  `refreshSupersededSeeds` can only move a row it has the prior text for. Both `handoff-defaults.ts`
-  and `report-defaults.ts` are affected.
-- **The channel code re-exports from `maestro-session.cjs` rather than adding a 12th bundle**, which
-  is what keeps it out of both `STATIC_ASSETS` manifests. The price is that
-  `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` must stay `0`.
-- **A skill step between two agents has no lane.** `handoffRoutes` resolves a success edge *through*
-  a skill node, so the payload goes to the agent downstream of it and the skill — which runs inline
-  in the orchestrator's context, with no `SubagentStart` — gets nothing. `036` handles it with a read
-  that does not retire; miss it and skill steps lose their input silently.
-- **Dropping the `SessionEnd` flush costs freshness**, which is why channel files carry a `run_id`
-  stamp minted into `maestro_session.json`. Without it, an abandoned run's payload gets inlined into
-  an unrelated run a week later, silently.
+- **A channel file's freshness is decided by its stamped `run_id`, not by mtime.** A file with a
+  `run_id` that doesn't match the live session's is "stranded" (foreign-run or unstamped) — `037`'s
+  pending-lanes view is explicitly asked to split current-run from stranded, and getting that split
+  right means reading the stamp `handoff-channels.ts` already parses, not re-deriving freshness from
+  file age.
+- **Retirement is a move to `.claude/channels/.consumed/<receiver>/`, never a delete**, until
+  `SessionEnd`'s `sweep()` ages a file out past 14 days. `037` is read-only by design (no app code
+  path delivers, retires or sweeps) — do not add a second implementation of the lifetime rule.
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

@@ -19,8 +19,9 @@
 //      SubagentStop/PreToolUse/PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json
 //      one-for-one.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
-//      .claude/maestro_session*.{json,jsonl} across the repo / monorepo (the `**/` glob covers
-//      root-level .claude/ too, so no per-package .gitignore is needed)
+//      .claude/maestro_session*.{json,jsonl} AND .claude/channels/ (`036`) across the repo /
+//      monorepo (the `**/` glob covers root-level .claude/ too, so no per-package .gitignore is
+//      needed)
 //   5. seeds <project>/.claude/maestro.json from defaultV3Config — ONLY when absent. An existing
 //      config is the user's authored graph and is never touched. `project_tags` is stamped onto
 //      that same seed from `--project-tags`, intersected with the live Project Tags catalog.
@@ -183,7 +184,10 @@ for (const map of [tagSkillMap, claudeSkillMap]) {
   }
 }
 
-const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated each session, removed at SessionEnd";
+// `036`: not everything under this header is removed at SessionEnd any more — a channel file
+// survives it (only `.consumed/` and anything past the age cap is swept) — so the header no
+// longer claims that of the whole block.
+const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated as needed, never committed";
 
 function ensureDir(d) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
@@ -258,6 +262,7 @@ function ensureRepoRootGitignore(repoRoot) {
     "**/.claude/maestro_session.json",
     "**/.claude/maestro_session.log.jsonl",
     "**/.claude/maestro_session_tasks.json",
+    "**/.claude/channels/",
   ]);
 }
 

@@ -189,11 +189,11 @@
     "blockedBy": []
   },
   "036-move-handoff-payloads-onto-agent-channels.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "037-surface-agent-channels-in-the-app.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "036-move-handoff-payloads-onto-agent-channels.md"
     ]

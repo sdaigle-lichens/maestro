@@ -49,12 +49,11 @@ End with a JSON summary block, then a final `HANDOFF:` line:
   "totalFindings": 0,
   "blockers": ["<finding title>"],
   "suggestions": ["<finding title>"],
-  "description": "<summary of what was audited>",
-  "handoff_details": null
+  "description": "<summary of what was audited>"
 }
 ```
 
-The available `HANDOFF:` routes and the exact `handoff_details` shape for each target are injected into your context at the start of this invocation (from the workflow config). Set `handoff_details` to the shape for the route you take, and end your message with the matching `HANDOFF:` line.
+The available `HANDOFF:` routes are injected into your context at the start of this invocation (from the workflow config), each paired with the channel file to write for it and the JSON shape to write there — write it verbatim, then end your message with the matching `HANDOFF:` line. That payload never goes in the JSON block above; it goes in the channel file.
 
 ### Severity
 

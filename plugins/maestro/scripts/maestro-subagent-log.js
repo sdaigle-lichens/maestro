@@ -4,7 +4,10 @@
 //
 // SubagentStart  → dispatch entry:  who was called, with the full spawning message.
 // SubagentStop   → handoff entry:   the agent's outcome, parsed from its HANDOFF: line,
-//                                   with the full final message for debugging.
+//                                   with the full final message for debugging; then (`036`)
+//                                   stamps every unstamped `.claude/channels/*/<this agent>.*`
+//                                   file this agent just wrote with the run's own id — see
+//                                   apps/maestro/src/core/handoff-channels.ts.
 //
 // Both are no-ops when maestro.json is absent (Maestro not configured for this project).
 // Entries use kind:"dispatch"/"handoff" so the reader can distinguish them from
@@ -20,7 +23,10 @@ const {
   readSession,
   resolveSearchList,
   collectAgentSkills,
+  bareAgentName,
   projectOwnsHook,
+  ensureSessionRunId,
+  writeStamp,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -121,6 +127,21 @@ function parseHandoff(msg) {
           output: lastMsg,
           log: label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
         });
+
+        // `036`: stamp every unstamped channel file THIS agent just wrote, under whichever
+        // receiver's lane it landed in, with the run's own id. Only the sender's own SubagentStop
+        // does this — matched on the filename's sender segment against this agent's own bare
+        // type — which is what keeps two parallel subagents from stamping each other's writes. A
+        // file this agent was killed before writing (or never wrote) simply isn't found; a file it
+        // wrote but the process died before this hook ran stays unstamped, and is treated exactly
+        // like a foreign-run file by the receiving agent's SubagentStart.
+        try {
+          const sessionPath = path.join(claudeDir, "maestro_session.json");
+          const runId = ensureSessionRunId(sessionPath);
+          writeStamp(cwd, bareAgentName(agentType), runId);
+        } catch {
+          // Best-effort — never fail the agent on a stamping error.
+        }
       }
     }
   } catch {

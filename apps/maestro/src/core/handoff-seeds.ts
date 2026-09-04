@@ -18,263 +18,202 @@
 //
 // A handoff id is `"<sender>/<receiver>"`, bare agent names on BOTH sides (`maestro:test` is
 // `test` here), which maps straight onto `.claude/handoffs/<sender>/<receiver>.md`.
+//
+// `036` REWROTE EVERY BODY HERE. Before `036` a body was the shape of the `handoff_details` field
+// of the sender's final-message JSON — the orchestrator read that field and forwarded it verbatim
+// into the next `Task` prompt. Since `036` there is no `handoff_details` field: the sender writes
+// this exact JSON shape, flat (no wrapper key), to its own channel file —
+// `.claude/channels/<receiver>/<sender>.1.md` — and the receiving agent's `SubagentStart` hook
+// inlines it. The hook composes the "write this to your channel file" sentence and the per-route
+// file path dynamically (it already knows both ends of the route); a body here is only ever the
+// JSON shape itself.
 
 const BACKEND_TO_FRONTEND =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "api_contracts": ["<endpoint — request/response shape the UI consumes>"],\n' +
-  '    "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n' +
-  '    "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "api_contracts": ["<endpoint — request/response shape the UI consumes>"],\n' +
+  '  "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n' +
+  '  "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const BACKEND_TO_MOBILE =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "api_contracts": ["<endpoint — request/response shape the app consumes>"],\n' +
-  '    "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n' +
-  '    "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "api_contracts": ["<endpoint — request/response shape the app consumes>"],\n' +
+  '  "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n' +
+  '  "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const BACKEND_TO_REVIEWER =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "what_changed": ["<file:area — summary of the change>"],\n' +
-  '    "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
-  '    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "what_changed": ["<file:area — summary of the change>"],\n' +
+  '  "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
+  '  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const BACKEND_TO_TEST =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "behaviors_to_test": ["<endpoint/function — expected behavior>"],\n' +
-  '    "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n' +
-  '    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "behaviors_to_test": ["<endpoint/function — expected behavior>"],\n' +
+  '  "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n' +
+  '  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const FRONTEND_TO_MOBILE =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "component_or_screen": "<the web feature being ported>",\n' +
-  '    "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n' +
-  '    "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "component_or_screen": "<the web feature being ported>",\n' +
+  '  "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n' +
+  '  "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const FRONTEND_TO_REVIEWER =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "what_changed": ["<file:area — summary of the change>"],\n' +
-  '    "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
-  '    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "what_changed": ["<file:area — summary of the change>"],\n' +
+  '  "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
+  '  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const FRONTEND_TO_TEST =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "behaviors_to_test": ["<component/page — expected behavior>"],\n' +
-  '    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n' +
-  '    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "behaviors_to_test": ["<component/page — expected behavior>"],\n' +
+  '  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n' +
+  '  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const MOBILE_TO_FRONTEND =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "component_or_screen": "<the mobile feature being ported>",\n' +
-  '    "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n' +
-  '    "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "component_or_screen": "<the mobile feature being ported>",\n' +
+  '  "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n' +
+  '  "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const MOBILE_TO_REVIEWER =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "what_changed": ["<file:area — summary of the change>"],\n' +
-  '    "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
-  '    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "what_changed": ["<file:area — summary of the change>"],\n' +
+  '  "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
+  '  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const MOBILE_TO_TEST =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "behaviors_to_test": ["<screen/component — expected behavior>"],\n' +
-  '    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n' +
-  '    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "behaviors_to_test": ["<screen/component — expected behavior>"],\n' +
+  '  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n' +
+  '  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const REFACTOR_TO_BACKEND =
-  "```json\n" +
-  "{\n" +
-  '  "handoff_details": {\n' +
-  '    "issues": ["<file:line — description of the problem>"]\n' +
-  "  }\n" +
-  "}\n" +
-  "```";
+  "```json\n" + "{\n" + '  "issues": ["<file:line — description of the problem>"]\n' + "}\n" + "```";
 
 const REFACTOR_TO_FRONTEND =
-  "```json\n" +
-  "{\n" +
-  '  "handoff_details": {\n' +
-  '    "issues": ["<file:line — description of the problem>"]\n' +
-  "  }\n" +
-  "}\n" +
-  "```";
+  "```json\n" + "{\n" + '  "issues": ["<file:line — description of the problem>"]\n' + "}\n" + "```";
 
 const REFACTOR_TO_REVIEWER =
-  "```json\n" +
-  "{\n" +
-  '  "handoff_details": {\n' +
-  '    "summary": "<brief summary of what was delegated, for re-review>"\n' +
-  "  }\n" +
-  "}\n" +
-  "```";
+  "```json\n" + "{\n" + '  "summary": "<brief summary of what was delegated, for re-review>"\n' + "}\n" + "```";
 
 const REFACTOR_TO_SCRIBE =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n' +
-  '    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
-  "  }\n" +
+  '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n' +
+  '  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
   "}\n" +
   "```";
 
 const REFACTOR_TO_TEST =
-  "```json\n" +
-  "{\n" +
-  '  "handoff_details": {\n' +
-  '    "issues": ["<file:line — description of the problem>"]\n' +
-  "  }\n" +
-  "}\n" +
-  "```";
+  "```json\n" + "{\n" + '  "issues": ["<file:line — description of the problem>"]\n' + "}\n" + "```";
 
 const REVIEWER_TO_BACKEND =
-  "```json\n" +
-  "{\n" +
-  '  "handoff_details": {\n' +
-  '    "issues": ["<file:line — description of the problem>"]\n' +
-  "  }\n" +
-  "}\n" +
-  "```";
+  "```json\n" + "{\n" + '  "issues": ["<file:line — description of the problem>"]\n' + "}\n" + "```";
 
 const REVIEWER_TO_FRONTEND =
-  "```json\n" +
-  "{\n" +
-  '  "handoff_details": {\n' +
-  '    "issues": ["<file:line — description of the problem>"]\n' +
-  "  }\n" +
-  "}\n" +
-  "```";
+  "```json\n" + "{\n" + '  "issues": ["<file:line — description of the problem>"]\n' + "}\n" + "```";
 
 const REVIEWER_TO_REFACTOR =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "violations": ["<file:line — pattern violation, DRY issue, or code redundancy>"]\n' +
-  "  }\n" +
+  '  "violations": ["<file:line — pattern violation, DRY issue, or code redundancy>"]\n' +
   "}\n" +
   "```";
 
 const REVIEWER_TO_SCRIBE =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
-  '    "justfile_commands_changed": ["<old → new description, or \'none\'>"],\n' +
-  '    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or \'none\'>"],\n' +
-  '    "schema_changes": ["<new tables, columns, or constraints, or \'none\'>"],\n' +
-  '    "workflow_or_process_changes": ["<changed agent handoff, new convention, or \'none\'>"],\n' +
-  '    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
-  "  }\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "justfile_commands_changed": ["<old → new description, or \'none\'>"],\n' +
+  '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or \'none\'>"],\n' +
+  '  "schema_changes": ["<new tables, columns, or constraints, or \'none\'>"],\n' +
+  '  "workflow_or_process_changes": ["<changed agent handoff, new convention, or \'none\'>"],\n' +
+  '  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
   "}\n" +
   "```";
 
 const REVIEWER_TO_TEST =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "failing_tests": ["<test name — failure reason>"],\n' +
-  '    "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n' +
-  "  }\n" +
+  '  "failing_tests": ["<test name — failure reason>"],\n' +
+  '  "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n' +
   "}\n" +
   "```";
 
 const TEST_TO_BACKEND =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "failing_tests": ["<test name — behavior it expects>"],\n' +
-  '    "test_files_added": ["<list, or \'none\'>"],\n' +
-  '    "implementation_targets": ["<endpoint/function the backend must implement>"],\n' +
-  '    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "failing_tests": ["<test name — behavior it expects>"],\n' +
+  '  "test_files_added": ["<list, or \'none\'>"],\n' +
+  '  "implementation_targets": ["<endpoint/function the backend must implement>"],\n' +
+  '  "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const TEST_TO_FRONTEND =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "failing_tests": ["<test name — behavior it expects>"],\n' +
-  '    "test_files_added": ["<list, or \'none\'>"],\n' +
-  '    "implementation_targets": ["<component/page the frontend must implement>"],\n' +
-  '    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "failing_tests": ["<test name — behavior it expects>"],\n' +
+  '  "test_files_added": ["<list, or \'none\'>"],\n' +
+  '  "implementation_targets": ["<component/page the frontend must implement>"],\n' +
+  '  "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 const TEST_TO_REVIEWER =
   "```json\n" +
   "{\n" +
-  '  "handoff_details": {\n' +
-  '    "tests_added": ["<test name — what it verifies>"],\n' +
-  '    "results": ["<pass/fail summary>"],\n' +
-  '    "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
-  '    "files_touched": ["<list, or \'none\'>"]\n' +
-  "  }\n" +
+  '  "tests_added": ["<test name — what it verifies>"],\n' +
+  '  "results": ["<pass/fail summary>"],\n' +
+  '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+  '  "files_touched": ["<list, or \'none\'>"]\n' +
   "}\n" +
   "```";
 
 /**
- * The 23 handoff protocols Maestro ships, keyed `"<sender>/<receiver>"` — the bodies that used to
- * live one-per-file under `plugins/maestro/templates/handoffs/`, verbatim.
+ * The 23 handoff protocols Maestro ships, keyed `"<sender>/<receiver>"` — the JSON shape a sender
+ * writes VERBATIM to `.claude/channels/<receiver>/<sender>.1.md` (`036`).
  *
  * Written out one constant per pair, deliberately NOT factored through shared helpers even where
  * bodies are currently byte-identical (`backend|frontend|mobile -> reviewer`, and a five-way group
@@ -326,10 +265,265 @@ export const SEED_HANDOFFS: Record<string, string> = {
  * either way is left alone. Comparing against known-old content rather than a stored "did we
  * migrate yet" flag is what makes it safe to run on every open and safe to run twice.
  *
- * Empty today: `033` is the first release to seed these bodies at all, so nothing has been
- * superseded yet. It is not dead code — it is the slot the next edit to `SEED_HANDOFFS` goes into.
+ * `036`: every one of the 23 bodies above was rewritten (the `{"handoff_details": {...}}` wrapper
+ * dropped — a sender now writes the flat shape straight to its channel file), so every id below
+ * carries its pre-`036` body.
  */
-export const PRIOR_SEEDS: Record<string, string[]> = {};
+export const PRIOR_SEEDS: Record<string, string[]> = {
+  "backend/frontend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "api_contracts": ["<endpoint — request/response shape the UI consumes>"],\n' +
+      '    "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n' +
+      '    "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "backend/mobile": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "api_contracts": ["<endpoint — request/response shape the app consumes>"],\n' +
+      '    "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n' +
+      '    "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "backend/reviewer": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "what_changed": ["<file:area — summary of the change>"],\n' +
+      '    "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
+      '    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "backend/test": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "behaviors_to_test": ["<endpoint/function — expected behavior>"],\n' +
+      '    "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n' +
+      '    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "frontend/mobile": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "component_or_screen": "<the web feature being ported>",\n' +
+      '    "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n' +
+      '    "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "frontend/reviewer": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "what_changed": ["<file:area — summary of the change>"],\n' +
+      '    "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
+      '    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "frontend/test": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "behaviors_to_test": ["<component/page — expected behavior>"],\n' +
+      '    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n' +
+      '    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "mobile/frontend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "component_or_screen": "<the mobile feature being ported>",\n' +
+      '    "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n' +
+      '    "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "mobile/reviewer": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "what_changed": ["<file:area — summary of the change>"],\n' +
+      '    "design_decisions": ["<decision and rationale, or \'none\'>"],\n' +
+      '    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "mobile/test": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "behaviors_to_test": ["<screen/component — expected behavior>"],\n' +
+      '    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n' +
+      '    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "refactor/backend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "issues": ["<file:line — description of the problem>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "refactor/frontend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "issues": ["<file:line — description of the problem>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "refactor/reviewer": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "summary": "<brief summary of what was delegated, for re-review>"\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "refactor/scribe": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n' +
+      '    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "refactor/test": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "issues": ["<file:line — description of the problem>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "reviewer/backend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "issues": ["<file:line — description of the problem>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "reviewer/frontend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "issues": ["<file:line — description of the problem>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "reviewer/refactor": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "violations": ["<file:line — pattern violation, DRY issue, or code redundancy>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "reviewer/scribe": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+      '    "justfile_commands_changed": ["<old → new description, or \'none\'>"],\n' +
+      '    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or \'none\'>"],\n' +
+      '    "schema_changes": ["<new tables, columns, or constraints, or \'none\'>"],\n' +
+      '    "workflow_or_process_changes": ["<changed agent handoff, new convention, or \'none\'>"],\n' +
+      '    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "reviewer/test": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "failing_tests": ["<test name — failure reason>"],\n' +
+      '    "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "test/backend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "failing_tests": ["<test name — behavior it expects>"],\n' +
+      '    "test_files_added": ["<list, or \'none\'>"],\n' +
+      '    "implementation_targets": ["<endpoint/function the backend must implement>"],\n' +
+      '    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "test/frontend": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "failing_tests": ["<test name — behavior it expects>"],\n' +
+      '    "test_files_added": ["<list, or \'none\'>"],\n' +
+      '    "implementation_targets": ["<component/page the frontend must implement>"],\n' +
+      '    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+  "test/reviewer": [
+    "```json\n" +
+      "{\n" +
+      '  "handoff_details": {\n' +
+      '    "tests_added": ["<test name — what it verifies>"],\n' +
+      '    "results": ["<pass/fail summary>"],\n' +
+      '    "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+      '    "files_touched": ["<list, or \'none\'>"]\n' +
+      "  }\n" +
+      "}\n" +
+      "```",
+  ],
+};
 
 /**
  * A handoff id Maestro itself ships a body for. `034`'s UI uses it to say "this is Maestro's

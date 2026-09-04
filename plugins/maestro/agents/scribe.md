@@ -73,8 +73,9 @@ boundary in **Will Not** for what that permission is and is not for.
    - They exist and the code has moved since they were last checked → `update-concept-skills`
    - One skill is thin, or an agent reported a gap in it → `update-single-concept-skill`
 2. **Pass on what you were given** — a caller's code-change report lets the update flow skip
-   rediscovering what already changed, and a `conceptSkillGaps` entry from a working agent names the
-   skill and the gap outright.
+   rediscovering what already changed, and a gap delivered on your own channel lane
+   (`.claude/channels/scribe/`) names the skill and the gap outright, from a working agent that may
+   not even have had a route to you.
 3. **Expect a proposal step to end your turn.** `create-concept-skills` and `update-concept-skills`
    settle their concept list with the user before writing anything, and **no subagent has
    `AskUserQuestion`** — Claude Code strips it from every one of them. So when either flow reaches

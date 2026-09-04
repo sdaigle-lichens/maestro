@@ -43,14 +43,22 @@ export type { ReportDefault };
 /** `~/.claude/maestro-report-defaults.sqlite` — one store, every project on this machine. */
 export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude", "maestro-report-defaults.sqlite");
 
-// The sentence that explains `conceptSkillGaps` to an agent that has one. Kept out of the JSON
-// block because the block is what the model copies; this is what stops it copying an empty array
-// out of politeness. An empty array is the honest answer most of the time.
-const CONCEPT_GAPS_NOTE =
-  "`conceptSkillGaps` is how a concept skill gets better: if one of the concept skills you loaded " +
-  "was missing something you had to work out from the code yourself, say which skill and what was " +
-  "missing, so the main session knows to hand it to the scribe. Leave the array empty when nothing " +
-  "was missing — do not invent a gap to fill the field.";
+// `036`: a concept-skill gap no longer travels as a `conceptSkillGaps` field in the JSON report —
+// it goes on the scribe's own channel, unconditionally, whether or not this run's workflow wires a
+// route to `@scribe` at all. That is what makes a gap reachable even from an agent with no scribe
+// edge: `SubagentStart` delivers whatever is waiting in `.claude/channels/scribe/` the next time
+// `@scribe` is invoked, in this run or a later one. `filesChanged` is dropped outright rather than
+// moved — `grep` found it had zero consumers, and the files-changed information a *receiving*
+// agent actually needs already travels per-route, inside the `handoff-seeds.ts` shapes that most
+// routes already carry as `files_added_removed_renamed`.
+function conceptGapsChannelNote(subagent: string): string {
+  return (
+    "If a concept skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
+    '`{ "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file."
+  );
+}
 
 function backendLikeReport(subagent: string): string {
   return (
@@ -61,13 +69,11 @@ function backendLikeReport(subagent: string): string {
     `  "subagent": "${subagent}",\n` +
     '  "verdict": "SUCCESS | FAIL",\n' +
     '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
-    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
-    '  "filesChanged": ["<file1>", "<file2>"],\n' +
     '  "description": "<summary of what was implemented>"\n' +
     "}\n" +
     "```\n" +
     "\n" +
-    CONCEPT_GAPS_NOTE
+    conceptGapsChannelNote(subagent)
   );
 }
 
@@ -102,14 +108,12 @@ const TEST_REPORT =
   '  "subagent": "test",\n' +
   '  "verdict": "SUCCESS | FAIL",\n' +
   '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
-  '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
   '  "testResult": "<N passed, N failed>",\n' +
-  '  "filesChanged": ["<file1>", "<file2>"],\n' +
   '  "description": "<summary of what was tested>"\n' +
   "}\n" +
   "```\n" +
   "\n" +
-  CONCEPT_GAPS_NOTE;
+  conceptGapsChannelNote("test");
 
 /**
  * The exact bodies stripped from `plugins/maestro/agents/{backend,frontend,mobile,scribe,test}.md`
@@ -194,12 +198,55 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     "}\n" +
     "```";
 
+  // v2 (`036`): `conceptSkillGaps` and `filesChanged` were IN the JSON report, and the concept-gaps
+  // note pointed at the field rather than at the scribe's channel. Superseded when both moved off
+  // the report entirely — `conceptSkillGaps` onto `.claude/channels/scribe/`, `filesChanged` onto
+  // nothing (zero consumers; what a receiver needs already travels per-route on its own channel).
+  const conceptGapsFieldNoteV2 =
+    "`conceptSkillGaps` is how a concept skill gets better: if one of the concept skills you loaded " +
+    "was missing something you had to work out from the code yourself, say which skill and what was " +
+    "missing, so the main session knows to hand it to the scribe. Leave the array empty when nothing " +
+    "was missing — do not invent a gap to fill the field.";
+
+  const backendLikeV2 = (subagent: string): string =>
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    `  "subagent": "${subagent}",\n` +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was implemented>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    conceptGapsFieldNoteV2;
+
+  const testV2 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "test",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
+    '  "testResult": "<N passed, N failed>",\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was tested>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    conceptGapsFieldNoteV2;
+
   return {
-    backend: [backendLikeV1("backend")],
-    frontend: [backendLikeV1("frontend")],
-    mobile: [backendLikeV1("mobile")],
+    backend: [backendLikeV1("backend"), backendLikeV2("backend")],
+    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend")],
+    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile")],
     scribe: [scribeV1],
-    test: [testV1],
+    test: [testV1, testV2],
   };
 })();
 

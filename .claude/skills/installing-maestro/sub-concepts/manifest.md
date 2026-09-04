@@ -128,9 +128,13 @@ leaves with it under `--purge`. See the uninstall sub-concept for what that remo
 ## The other two writes
 
 **`.gitignore` at the repo root** (found via `git rev-parse --show-toplevel`) gets a `# Maestro`
-section with three `**/.claude/maestro_session*` entries. The leading recursive wildcard matches
-`.claude/` at **any** depth including the root, so a monorepo needs no per-package `.gitignore`.
-Entries are appended only when missing, under a header added only when missing.
+section with three `**/.claude/maestro_session*` entries plus, since `036`, `**/.claude/channels/`.
+The leading recursive wildcard matches `.claude/` at **any** depth including the root, so a
+monorepo needs no per-package `.gitignore`. Entries are appended only when missing, under a header
+added only when missing. The header itself changed wording in `036`, from "removed at SessionEnd"
+to "recreated as needed, never committed" — no longer everything under the block is deleted outright
+at `SessionEnd`: a channel lane file is only *swept* (retired or aged out), and can survive a
+`SessionEnd` on purpose. See `maestro-architecture`'s HANDOFF contract section for why.
 
 **`maestro.json` is seeded only when absent**, from `defaultV3Config(implAgents, skillMap)` — the
 _same_ function the app seeds a fresh canvas with, so both paths produce a byte-identical starting

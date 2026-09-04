@@ -135,9 +135,18 @@ describe("differential against the legacy installer", () => {
       expect(a.equals(b), `${rel} differs from the legacy installer's copy`).toBe(true);
     }
 
-    expect(fs.readFileSync(path.join(mine, ".gitignore"), "utf8")).toBe(
-      fs.readFileSync(path.join(theirs, ".gitignore"), "utf8")
-    );
+    // `036` added a channels glob and reworded the header (not everything under it is removed at
+    // SessionEnd any more), so ours no longer matches the frozen legacy snapshot byte for byte —
+    // same "legacy is a SUBSET of ours" rule as the file tree above, applied to gitignore lines.
+    const legacyGitignoreLines = fs
+      .readFileSync(path.join(theirs, ".gitignore"), "utf8")
+      .split(/\r?\n/)
+      .filter((l) => l && l !== "# Maestro ephemeral session state — recreated each session, removed at SessionEnd");
+    const mineGitignore = fs.readFileSync(path.join(mine, ".gitignore"), "utf8");
+    for (const line of legacyGitignoreLines) {
+      expect(mineGitignore, `${line} missing from ours`).toContain(line);
+    }
+    expect(mineGitignore).toContain("**/.claude/channels/");
 
     // settings.json is where the port deliberately does more. The legacy entry has to survive
     // verbatim: maestro-uninstall.js removes it by exact string match.
@@ -992,7 +1001,7 @@ describe("the installed hooks actually run", () => {
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
       const injected = runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" });
-      expect(injected).toContain("handoff_details");
+      expect(injected).toContain(".claude/channels/test/backend.1.md"); // `036`: the channel file to write, not a field
       expect(injected).toContain("behaviors_to_test"); // the backend -> test protocol
 
       fs.writeFileSync(path.join(root, ".claude", "handoffs", "backend", "test.md"), "MY OWN SHAPE\n");
@@ -1014,7 +1023,9 @@ describe("the installed hooks actually run", () => {
       const context = JSON.parse(
         runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })
       ).hookSpecificOutput.additionalContext as string;
-      expect(context).toContain("Route `HANDOFF: success` → `test`:");
+      expect(context).toContain(
+        "Route `HANDOFF: success` → `test` — write this to `.claude/channels/test/backend.1.md`:"
+      );
       expect(context).toContain(SEED_HANDOFFS["backend/test"]);
     });
 
@@ -1039,8 +1050,220 @@ describe("the installed hooks actually run", () => {
       const context = JSON.parse(
         runPluginHook(root, "maestro-inject-agent-context.js", { cwd: root, agent_type: "maestro:frontend" })
       ).hookSpecificOutput.additionalContext as string;
-      expect(context).toContain("Route `HANDOFF: success` → `reviewer`:");
+      expect(context).toContain(
+        "Route `HANDOFF: success` → `reviewer` — write this to `.claude/channels/reviewer/frontend.1.md`:"
+      );
       expect(context).toContain("areas_of_concern"); // the frontend -> reviewer protocol
+    });
+  });
+
+  // `036`. The COPIED scripts, fed synthetic SubagentStop/SubagentStart payloads exactly as
+  // maestro-inject-agent-context's own describe block above does for handoff protocols.
+  describe("agent channels (036)", () => {
+    function runId(root: string): string {
+      return JSON.parse(fs.readFileSync(path.join(root, ".claude", "maestro_session.json"), "utf8")).run_id;
+    }
+
+    it("stamps a channel file at SubagentStop, and a different sender's write is untouched", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const laneDir = path.join(root, ".claude", "channels", "test");
+      fs.mkdirSync(laneDir, { recursive: true });
+      fs.writeFileSync(path.join(laneDir, "backend.1.md"), '{"behaviors_to_test":["x"]}\n');
+      fs.writeFileSync(path.join(laneDir, "frontend.1.md"), '{"behaviors_to_test":["y"]}\n');
+
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStop",
+        agent_type: "backend",
+        agent_id: "a1",
+        last_assistant_message: "HANDOFF: success",
+      });
+
+      const stamped = fs.readFileSync(path.join(laneDir, "backend.1.md"), "utf8");
+      expect(stamped).toMatch(/^<!-- maestro:run_id=.+ -->\n\{"behaviors_to_test":\["x"\]\}\n$/);
+      // A parallel `frontend` write must not have been stamped by `backend`'s own SubagentStop.
+      expect(fs.readFileSync(path.join(laneDir, "frontend.1.md"), "utf8")).toBe('{"behaviors_to_test":["y"]}\n');
+    });
+
+    it("delivers a same-run stamped file at SubagentStart, retires it, and logs a channel_delivery entry", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const laneDir = path.join(root, ".claude", "channels", "test");
+      fs.mkdirSync(laneDir, { recursive: true });
+      fs.writeFileSync(path.join(laneDir, "backend.1.md"), '{"behaviors_to_test":["x"]}\n');
+
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStop",
+        agent_type: "backend",
+        agent_id: "a1",
+        last_assistant_message: "HANDOFF: success",
+      });
+      const stampedRunId = runId(root);
+
+      const context = JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "test", agent_id: "a2" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(context).toContain("Delivered to your channel");
+      expect(context).toContain('{"behaviors_to_test":["x"]}');
+      expect(context).toContain("From `backend`");
+
+      // Retired by MOVE, not delete.
+      expect(fs.existsSync(path.join(laneDir, "backend.1.md"))).toBe(false);
+      expect(
+        fs.readFileSync(path.join(root, ".claude", "channels", ".consumed", "test", "backend.1.md"), "utf8")
+      ).toContain('{"behaviors_to_test":["x"]}');
+
+      const log = fs
+        .readFileSync(path.join(root, ".claude", "maestro_session.log.jsonl"), "utf8")
+        .trim()
+        .split("\n")
+        .map((l) => JSON.parse(l));
+      const delivery = log.find((e) => e.kind === "channel_delivery");
+      expect(delivery).toMatchObject({ sender: "backend", receiver: "test", agent_id: "a2" });
+      expect(delivery.content).toContain('{"behaviors_to_test":["x"]}');
+      expect(stampedRunId).toBeTruthy();
+
+      // A second SubagentStart for the same receiver in the same run has nothing left to deliver.
+      const second = runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "test" });
+      expect(JSON.parse(second).hookSpecificOutput.additionalContext as string).not.toContain(
+        "Delivered to your channel"
+      );
+    });
+
+    it("does NOT inline a file stamped with a different run_id, or an unstamped one — only mentions them, and leaves them on disk", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const laneDir = path.join(root, ".claude", "channels", "test");
+      fs.mkdirSync(laneDir, { recursive: true });
+      fs.writeFileSync(path.join(laneDir, "backend.1.md"), "<!-- maestro:run_id=some-other-run -->\nFOREIGN\n");
+      fs.writeFileSync(path.join(laneDir, "frontend.1.md"), "UNSTAMPED\n");
+
+      const context = JSON.parse(runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "test" }))
+        .hookSpecificOutput.additionalContext as string;
+
+      expect(context).not.toContain("Delivered to your channel");
+      expect(context).not.toContain("FOREIGN");
+      expect(context).not.toContain("UNSTAMPED");
+      expect(context).toContain("Waiting in your channel but NOT from this run");
+      expect(context).toContain("backend");
+      expect(context).toContain("frontend");
+      expect(context).toContain("(unstamped)");
+      expect(context).toContain(".claude/channels/test/backend.1.md");
+      expect(context).toContain(".claude/channels/test/frontend.1.md");
+
+      // Left on disk, exactly where they were.
+      expect(fs.existsSync(path.join(laneDir, "backend.1.md"))).toBe(true);
+      expect(fs.existsSync(path.join(laneDir, "frontend.1.md"))).toBe(true);
+    });
+
+    it("mints run_id into maestro_session.json (at SubagentStop, which always touches it), and a run after SessionEnd gets a different one", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStop",
+        agent_type: "backend",
+        agent_id: "a1",
+        last_assistant_message: "HANDOFF: success",
+      });
+      const first = runId(root);
+      expect(first).toBeTruthy();
+
+      runHook(root, "maestro-session-cleanup.cjs", { cwd: root });
+      expect(fs.existsSync(path.join(root, ".claude", "maestro_session.json"))).toBe(false);
+
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStop",
+        agent_type: "backend",
+        agent_id: "a2",
+        last_assistant_message: "HANDOFF: success",
+      });
+      expect(runId(root)).not.toBe(first);
+    });
+
+    it("SessionEnd sweeps .consumed/ and ages out a lane file past the cap, but leaves an in-cap undelivered file — including the scribe's own lane", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const consumedPath = path.join(root, ".claude", "channels", ".consumed", "test", "backend.1.md");
+      fs.mkdirSync(path.dirname(consumedPath), { recursive: true });
+      fs.writeFileSync(consumedPath, "OLD DELIVERY\n");
+
+      const scribeLane = path.join(root, ".claude", "channels", "scribe", "backend.1.md");
+      fs.mkdirSync(path.dirname(scribeLane), { recursive: true });
+      fs.writeFileSync(scribeLane, '{"concept_skill_gaps":[]}\n');
+      const oldTime = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
+      fs.utimesSync(scribeLane, oldTime, oldTime); // past the 14-day cap
+
+      const recentLane = path.join(root, ".claude", "channels", "test", "frontend.1.md");
+      fs.mkdirSync(path.dirname(recentLane), { recursive: true });
+      fs.writeFileSync(recentLane, "RECENT\n"); // no scribe ran, still well inside the cap
+
+      runHook(root, "maestro-session-cleanup.cjs", { cwd: root });
+
+      expect(fs.existsSync(consumedPath)).toBe(false); // .consumed/ swept unconditionally
+      expect(fs.existsSync(scribeLane)).toBe(false); // past the age cap
+      expect(fs.existsSync(recentLane)).toBe(true); // in-cap, undelivered — kept
+    });
+
+    // `backend` has NO route to `scribe` at all in `defaultish` (its only success edge is
+    // `backend -> test`) — the case the whole scribe-lane redesign exists for: a gap is not
+    // route-shaped, so it has to reach the scribe regardless of whether this workflow ever wires
+    // an edge to it.
+    it("a concept-skill gap from an agent with no route to scribe still reaches the scribe's lane across a SessionEnd", async () => {
+      const root = makeProject("p");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      // backend's own injected report tells it where to write a gap, unconditionally — not gated
+      // on a scribe route existing for this workflow.
+      const backendContext = JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(backendContext).toContain(".claude/channels/scribe/backend.1.md");
+
+      // backend writes the gap itself, then its own SubagentStop stamps it (run A).
+      const gapPath = path.join(root, ".claude", "channels", "scribe", "backend.1.md");
+      fs.mkdirSync(path.dirname(gapPath), { recursive: true });
+      fs.writeFileSync(
+        gapPath,
+        '{"concept_skill_gaps":[{"skill":"agents-view","missing":"the tri-state chip logic"}]}\n'
+      );
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStop",
+        agent_type: "backend",
+        agent_id: "a1",
+        last_assistant_message: "HANDOFF: success",
+      });
+
+      // Run A ends. The gap survives it — SessionEnd sweeps only `.consumed/` and the age cap.
+      runHook(root, "maestro-session-cleanup.cjs", { cwd: root });
+      expect(fs.existsSync(gapPath)).toBe(true);
+
+      // Run B: `@scribe` is invoked with no route from `backend` in this run either. The gap is
+      // NOT silently dropped — same freshness rule as any other channel file, no special case for
+      // this lane: a run B stamp mismatch means it is surfaced, not inlined, and left on disk for
+      // the scribe to read itself.
+      const scribeContext = JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "scribe" })
+      ).hookSpecificOutput.additionalContext as string;
+      expect(scribeContext).toContain("Waiting in your channel but NOT from this run");
+      expect(scribeContext).toContain("backend");
+      expect(scribeContext).toContain(".claude/channels/scribe/backend.1.md");
+      expect(fs.existsSync(gapPath)).toBe(true); // left in place — the scribe can go read it
     });
   });
 

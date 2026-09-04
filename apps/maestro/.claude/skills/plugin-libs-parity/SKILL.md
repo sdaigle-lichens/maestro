@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the eleven plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.5"
-  last-update: 19a84d56fa22146635222ccb1662e152cdbadb1c
+  version: "1.6"
+  last-update: 7d9972492e8941ebabb500dda544ddd621eb29a6
 ---
 
 # Core ↔ plugin parity
@@ -70,7 +70,11 @@ fails if it stops being 0; the script just starts throwing on machines with an o
 **`maestro-session` must not pull in `node:sqlite` either (`033`).** It is the bundle every hook
 `require`s **unconditionally**, and since `033` it carries the handoff seed tier (`SEED_HANDOFFS`,
 `isSeededHandoff`, `isValidHandoffId`) plus the pure route walk (`handoffRoutes`, `routesFrom`,
-`handoffPairs`) and `resolveHandoff`. The sqlite tier is a **separate** bundle,
+`handoffPairs`) and `resolveHandoff`. Since `036` it also carries the agent-channel surface
+(`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/
+`parseStampedContent`, `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId` — re-exported here rather than
+given a 12th bundle, since `handoff-channels.ts` is `fs`/`path` only and every hook already
+`require`s this one. The sqlite tier is a **separate** bundle,
 `maestro-handoff-defaults`, which `maestro-inject-agent-context.js` `require`s inside a try/catch —
 so on a `node` older than 22.5 the sqlite `require` fails and the seed still answers. That only
 holds while `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0`. The

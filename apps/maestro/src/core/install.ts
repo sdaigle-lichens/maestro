@@ -406,12 +406,17 @@ export function installOrchestratorSkill(
   return { action: "synced", regions: synced, backup: null };
 }
 
-const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated each session, removed at SessionEnd";
+// `036`: not everything under this header is removed at SessionEnd any more — a channel file
+// survives it (only `.consumed/` and anything past the age cap is swept) — so the header no longer
+// claims that of the whole block. It is still all ephemeral, project-local state that regenerates
+// on its own and has no business in git.
+const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated as needed, never committed";
 
 const GITIGNORE_ENTRIES = [
   "**/.claude/maestro_session.json",
   "**/.claude/maestro_session.log.jsonl",
   "**/.claude/maestro_session_tasks.json",
+  "**/.claude/channels/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */

@@ -193,8 +193,17 @@ export interface MaestroHandoffEntry {
  */
 export type MaestroHandoffsSlice = Record<string, MaestroHandoffEntry>;
 
-/** Ephemeral per-session state written to .claude/maestro_session.json. */
+/**
+ * Ephemeral per-session state written to .claude/maestro_session.json.
+ *
+ * `run_id` (`036`) is minted the first time this file is written in a session — see
+ * `ensureSessionRunId` in `session-runtime.ts` — and stamped onto every channel file a subagent
+ * writes. `SessionEnd` deletes this file, so the next run necessarily mints a different one; that
+ * is the whole mechanism that keeps a channel delivery from being inlined into an unrelated,
+ * later run as if it were fresh.
+ */
 export interface MaestroSession {
   workflow: string | null;
   generated_instances: string[];
+  run_id?: string | null;
 }

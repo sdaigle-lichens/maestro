@@ -197,6 +197,27 @@ describe("superseded seed migration", () => {
     "}\n" +
     "```";
 
+  // The v2 backend body, verbatim — what a store seeded before `036` moved `conceptSkillGaps` and
+  // `filesChanged` off the report and onto the agent's channel holds.
+  const BACKEND_V2 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "backend",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was implemented>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    "`conceptSkillGaps` is how a concept skill gets better: if one of the concept skills you loaded " +
+    "was missing something you had to work out from the code yourself, say which skill and what was " +
+    "missing, so the main session knows to hand it to the scribe. Leave the array empty when nothing " +
+    "was missing — do not invent a gap to fill the field.";
+
   beforeEach(() => {
     dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-seed-migration-"));
     dbPath = path.join(dir, "reports.sqlite");
@@ -216,9 +237,27 @@ describe("superseded seed migration", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  it("moves a row still carrying a superseded seed forward, and bumps its version", () => {
+  it("moves a row still carrying a superseded (v1) seed forward, straight to current, and bumps its version", () => {
     const row = readAgentReportDefault("backend", dbPath)!;
-    expect(row.content).toContain('"conceptSkillGaps"');
+    expect(row.content).not.toContain('"conceptSkillGaps"');
+    expect(row.content).not.toContain('"filesChanged"');
+    expect(row.content).toContain(".claude/channels/scribe/backend.1.md");
+    expect(row.version).toBe(2);
+  });
+
+  // `036`: an ALREADY-SEEDED store (one that opened between the concept-skills feature and this
+  // slice) carries the v2 body — with `conceptSkillGaps` still a report field — and must be carried
+  // forward too. This is the assertion `036`'s own acceptance criteria calls for: against a store
+  // seeded with the OLD bodies, not a fresh one.
+  it("moves a row still carrying a superseded (v2, pre-036) seed forward too", () => {
+    const db = new DatabaseSync(dbPath);
+    db.prepare("UPDATE reports SET content = ?, version = 1 WHERE report_id = 'backend'").run(BACKEND_V2);
+    db.close();
+
+    const row = readAgentReportDefault("backend", dbPath)!;
+    expect(row.content).not.toContain('"conceptSkillGaps"');
+    expect(row.content).not.toContain('"filesChanged"');
+    expect(row.content).toContain(".claude/channels/scribe/backend.1.md");
     expect(row.version).toBe(2);
   });
 

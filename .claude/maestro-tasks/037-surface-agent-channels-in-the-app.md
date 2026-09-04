@@ -74,6 +74,18 @@ Two things to distinguish, because they mean different things to the user:
 
 Show the split. A lane whose only entries are foreign-run is not "in flight", it is stranded.
 
+**But do not label the scribe's lane stranded.** `036` shipped its freshness rule uniformly (its
+divergence 2): a foreign-run file is *mentioned*, never inlined, for every lane including the
+scribe's. That is the right call — special-casing one lane would undo the single rule this design
+rests on — but it means the gaps lane is in the foreign-run bucket permanently, by construction,
+the moment one `SessionEnd` passes. It is a **backlog**, not stranded traffic: a concept-skill gap
+from last week is still a valid gap, which is exactly why nothing sweeps it before the age cap.
+
+So the split is by *meaning*, not just by run id: a lane the current run will deliver, versus one
+waiting for an agent that has not been invoked. Word the second so a user reading `/maestro` sees
+work queued up, not an error — and keep the age visible, because the age cap is the only thing that
+eventually removes it.
+
 ### The Interactions pane should say where a template lands
 
 `034` made the pane list one editor per outgoing route, each holding the resolved `handoff_details`
@@ -127,7 +139,9 @@ No `plugins/` change, so **no plugin version bump** — `036` ships the runtime 
 - [ ] `skillsTriage` still parses and `unaccountedSkills` still diffs against `offered_skills` —
       unchanged by this slice; assert it rather than assuming it.
 - [ ] `/maestro` lists every lane with pending files, its count, its oldest write, and separates
-      current-run from stranded (foreign-run or unstamped).
+      current-run from waiting (foreign-run or unstamped).
+- [ ] A scribe lane holding gaps from a previous run reads as queued work, not as an error or a
+      stranded-traffic warning — `036`'s uniform freshness rule puts it in that bucket permanently.
 - [ ] A project with an empty `.claude/channels/`, and one with no such directory at all, both render
       without an error.
 - [ ] The Interactions pane names the lane path each route's template writes to.

@@ -7,6 +7,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
+import crypto from "node:crypto";
 import type { MaestroSession } from "./types.js";
 
 /** Hook scripts receive their payload on stdin. Unused by the desktop app; kept for the bundle. */
@@ -28,13 +29,28 @@ export function readJson<T>(p: string): T | null {
 }
 
 export function readSession(p: string): MaestroSession {
-  return readJson<MaestroSession>(p) ?? { workflow: null, generated_instances: [] };
+  return readJson<MaestroSession>(p) ?? { workflow: null, generated_instances: [], run_id: null };
 }
 
 export function writeSession(p: string, session: MaestroSession): void {
   const tmp = p + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(session, null, 2));
   fs.renameSync(tmp, p);
+}
+
+/**
+ * The run stamp channel files are marked with (`036`). Read-or-mint: a session that already has a
+ * `run_id` keeps it (every caller in one run must agree), a session that doesn't gets one written
+ * back immediately, so the very first `SubagentStart`/`SubagentStop` of a run can stamp against it.
+ * `SessionEnd` deletes `maestro_session.json` entirely, so the next run's first call here always
+ * mints a fresh id — that is the whole freshness guarantee for channel delivery.
+ */
+export function ensureSessionRunId(p: string): string {
+  const session = readSession(p);
+  if (session.run_id) return session.run_id;
+  const run_id = crypto.randomUUID();
+  writeSession(p, { ...session, run_id });
+  return run_id;
 }
 
 /**

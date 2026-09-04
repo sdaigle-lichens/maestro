@@ -65,6 +65,7 @@ export {
   readJson,
   readSession,
   writeSession,
+  ensureSessionRunId,
   appendSessionLog,
   sessionLogPath,
   SESSION_LOG_FILE,
@@ -175,6 +176,20 @@ export {
 export { syncProjectHandoffs, handoffFilePath } from "./handoff-sync.js";
 
 export { getResolvedHandoff, saveProjectHandoffOverride, resolvedRoutesFrom } from "./handoffs.js";
+
+export {
+  channelDir,
+  laneFor,
+  writeStamp,
+  readLane,
+  retire,
+  sweep,
+  formatStampedContent,
+  parseStampedContent,
+  CHANNEL_AGE_CAP_MS,
+  type ChannelEntry,
+  type SweepResult,
+} from "./handoff-channels.js";
 
 export {
   installRuntime,

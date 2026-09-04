@@ -235,41 +235,102 @@ dispatch, where they were actually used.
 
 ## Acceptance criteria
 
-- [ ] An agent writing `.claude/channels/<receiver>/<sender>.<n>.md` has it stamped at
+- [x] An agent writing `.claude/channels/<receiver>/<sender>.<n>.md` has it stamped at
       `SubagentStop` with the current `run_id`, and a parallel subagent of a different type does not
       stamp it.
-- [ ] `SubagentStart` for that receiver inlines the payload as `additionalContext`, labelled with its
+      Evidence: `handoff-channels.ts`'s `writeStamp` keys strictly on the filename's sender segment;
+      `install.test.ts` → "agent channels (036)" → *"stamps a channel file at SubagentStop, and a
+      different sender's write is untouched"*.
+- [x] `SubagentStart` for that receiver inlines the payload as `additionalContext`, labelled with its
       sender, and moves the file to `.claude/channels/.consumed/<receiver>/`.
-- [ ] A second `SubagentStart` for the same receiver in the same run does **not** re-deliver a
+      Evidence: `install.test.ts` → *"delivers a same-run stamped file at SubagentStart, retires it,
+      and logs a channel_delivery entry"*.
+- [x] A second `SubagentStart` for the same receiver in the same run does **not** re-deliver a
       consumed payload.
-- [ ] A file stamped with a **different** `run_id` is not inlined; the hook emits one line naming it,
+      Evidence: same test, the "nothing left to deliver" assertion on a second `SubagentStart` call.
+- [x] A file stamped with a **different** `run_id` is not inlined; the hook emits one line naming it,
       its age and its path, and leaves it on disk. Same for an unstamped file.
-- [ ] `run_id` is minted into `maestro_session.json`, and a run that starts after a `SessionEnd` gets
+      Evidence: `install.test.ts` → *"does NOT inline a file stamped with a different run_id, or an
+      unstamped one — only mentions them, and leaves them on disk"*.
+- [x] `run_id` is minted into `maestro_session.json`, and a run that starts after a `SessionEnd` gets
       a different one.
-- [ ] `SessionEnd` sweeps `.consumed/` and lane files past the age cap, and **does not** delete
+      Evidence: `install.test.ts` → *"mints run_id into maestro_session.json (at SubagentStop, which
+      always touches it), and a run after SessionEnd gets a different one"*; unit coverage in
+      `test/core/session-runtime.test.ts` (new).
+- [x] `SessionEnd` sweeps `.consumed/` and lane files past the age cap, and **does not** delete
       unconsumed, in-cap lane files — including the scribe's, when no scribe ran.
-- [ ] `conceptSkillGaps` written by an agent with no route to the scribe still reaches
+      Evidence: `install.test.ts` → *"SessionEnd sweeps .consumed/ and ages out a lane file past the
+      cap, but leaves an in-cap undelivered file — including the scribe's own lane"*.
+- [x] `conceptSkillGaps` written by an agent with no route to the scribe still reaches
       `.claude/channels/scribe/` and is delivered on the next `@scribe` invocation, in a later run.
-- [ ] Every rewritten seed body has its previous text in `PRIOR_SEEDS`, and `refreshSupersededSeeds`
+      Evidence: `install.test.ts` → *"a concept-skill gap from an agent with no route to scribe still
+      reaches the scribe's lane across a SessionEnd"*. **Divergence** — see note 2 below: a
+      different-run delivery is surfaced by *mention* (sender/age/path), not literal inlining: same
+      outcome (the scribe reads it), different wording than the criterion's "delivered".
+- [x] Every rewritten seed body has its previous text in `PRIOR_SEEDS`, and `refreshSupersededSeeds`
       carries the change to an **already-seeded** store — assert against a store seeded with the old
       bodies, not a fresh one.
-- [ ] `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0` after
+      Evidence: `report-defaults.test.ts` → "superseded seed migration" → the updated assertion for
+      the new content shape, plus the new v2 (pre-`036`) migration test; `handoff-seeds.ts`'s
+      `PRIOR_SEEDS` carries all 23 previous bodies.
+- [x] `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0` after
       `pnpm --filter maestro build:plugin-libs`, and `git status plugins/maestro/scripts/lib/` is read
       afterwards — that script fails quietly.
-- [ ] `**/.claude/channels/` is in both `.gitignore` implementations and the header no longer claims
+      Evidence: verified directly — `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs`
+      → `0`. Also pinned by `test/core/parity.test.ts` → *"maestro-session.cjs carries the channel
+      surface (036), and reaches no node:sqlite"*.
+- [x] `**/.claude/channels/` is in both `.gitignore` implementations and the header no longer claims
       everything under it is removed at `SessionEnd`.
-- [ ] A `channel_delivery` entry lands in `maestro_session.log.jsonl` with sender, receiver,
+      Evidence: `install.ts:419` and `maestro-install.js:265` both list the glob;
+      `GITIGNORE_HEADER` in `install.ts:413` reads "recreated as needed, never committed".
+- [x] A `channel_delivery` entry lands in `maestro_session.log.jsonl` with sender, receiver,
       `agent_id` and content.
-- [ ] Route ids stay **bare** on both ends — a project whose instances carry `maestro:test` resolves
+      Evidence: `maestro-inject-agent-context.js:305-314` appends `kind: "channel_delivery"` with
+      `sender`, `receiver`, `agent_id`, `content`; covered by the delivery test above.
+- [x] Route ids stay **bare** on both ends — a project whose instances carry `maestro:test` resolves
       its lane. This is `033`'s bug; do not reintroduce it one directory over.
-- [ ] `templates/maestro/SKILL.md` no longer mentions `conceptSkillGaps` **anywhere** — `grep -c` is
+      Evidence: `bareAgentName(agentType)` is used on both the write side (protocol block) and the
+      read side (channel delivery block) of `maestro-inject-agent-context.js`.
+- [x] `templates/maestro/SKILL.md` no longer mentions `conceptSkillGaps` **anywhere** — `grep -c` is
       `0` — and no longer instructs the orchestrator to forward a payload.
-- [ ] A skill step between two agents still receives the upstream payload, and reading it leaves the
+      Evidence: verified directly — `grep -c conceptSkillGaps plugins/maestro/templates/maestro/SKILL.md`
+      → `0`. Line 78's new principle: *"Payloads travel on channels, not through you."*
+- [x] A skill step between two agents still receives the upstream payload, and reading it leaves the
       downstream agent's delivery intact — assert the file is still in the lane after the read.
-- [ ] The scribe still runs `/update-single-concept-skill` on a delivered gap with nothing in the
+      Evidence: `templates/maestro/SKILL.md:45` — the skill-step instruction to `Read`/`Glob` the
+      channel file **without retiring it**; retiring stays `SubagentStart`'s job alone.
+- [x] The scribe still runs `/update-single-concept-skill` on a delivered gap with nothing in the
       orchestrator telling it to.
-- [ ] `install.test.ts`'s require-audit still passes, and no new `STATIC_ASSETS` entry was needed.
-- [ ] `pnpm --filter maestro test`, `typecheck` and `check` green.
+      Evidence: `plugins/maestro/agents/scribe.md` and `plugins/maestro/skills/scribe/SKILL.md`
+      reworded to say a gap arrives on the channel and is read like anything else addressed to the
+      scribe — no orchestrator-side instruction needed, matching the template's `conceptSkillGaps`
+      deletion above.
+- [x] `install.test.ts`'s require-audit still passes, and no new `STATIC_ASSETS` entry was needed.
+      Evidence: `handoff-channels.ts` re-exports through the existing `maestro-session.ts` entry
+      point rather than a 12th bundle; no `STATIC_ASSETS` change in either installer.
+- [x] `pnpm --filter maestro test`, `typecheck` and `check` green.
+      Evidence: 870/870 tests passing, verified at close-out
+      (`pnpm --filter maestro test` — 45 test files, 870 tests, all green).
+
+### Divergences from what this page planned
+
+1. **`collect()`'s session-write bug, found and fixed while implementing.** Not on this page at
+   all — a pre-existing latent bug in `maestro-inject-agent-context.js`'s `collect()`: `writeSession`
+   built a bare `{workflow, generated_instances}` object instead of spreading the read session,
+   silently dropping `active_task` and any future field on every dispatch that resolves a workflow
+   instance. It became load-bearing for this slice because it would have wiped `run_id` on every
+   such dispatch, breaking same-run delivery — so it was fixed here rather than filed separately.
+2. **"Delivered ... in a later run" is implemented as reached-and-mentioned, not literally inlined,
+   for a different/absent `run_id`.** Consistent with this page's own "One rule, no special case for
+   the scribe lane" and its freshness section ("different run → do not inline; mention"), read as: the
+   *outcome* (the scribe eventually processes the gap, per its own skill instructions to read what's
+   mentioned) rather than automatic inlining regardless of run. Flagged here in case that reading
+   isn't the intended one.
+3. Added `apps/maestro/test/core/session-runtime.test.ts`, not named in the task's file table — unit
+   coverage of `ensureSessionRunId` directly rather than only through hook integration tests.
+4. Added the channel-surface re-exports to `apps/maestro/src/core/index.ts` (the app-side barrel),
+   not mentioned in the task's file list — every other `handoff-*` module is already re-exported
+   there, and `037` (next in the queue) needs it.
 
 ## Notes for whoever picks this up
 
