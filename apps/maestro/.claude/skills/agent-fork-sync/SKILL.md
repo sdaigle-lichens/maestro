@@ -3,8 +3,8 @@ name: agent-fork-sync
 description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that its three callers — the report sync, the forked-agent sync and (since 033) the handoff sync — all call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card, and the terminal side — the maestro-step0 hook plus /maestro-update's CLI) that must always reach the same verdict. Use when changing report-sync.ts, agent-sync.ts or handoff-sync.ts, adding a fourth caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
+  version: "1.5"
+  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
 ---
 
 # Keeping a copy in step with the thing it was copied from
@@ -130,6 +130,15 @@ asserts it on mtimes *and* bytes across two consecutive calls.
   instead of re-raising the same diff on every launch.
 - **`detach`** — deletes the provenance record and touches no file. The agent becomes `decideSync`'s
   `detached` verdict, arrived at by the user.
+
+## Forking has two entry points now, one mechanism (`041`)
+
+`forkAgent` itself is unchanged, and neither is anything in this skill's decision function — a
+renamed fork writes the same provenance record and hashes the same way regardless of who called it.
+What's new is a **second UI call site**: `/workflows`' `InstancePicker`, from the all-placed dead
+end (a workflow can't place two instances on one bare agent), alongside `/agents`' "Fork into this
+project". Both go through the identical `forkAgent(...)` → `agent-forks.json` path this skill
+describes; see `agents-view` and `workflow-view` for what each caller does with the result.
 
 ## Traps
 

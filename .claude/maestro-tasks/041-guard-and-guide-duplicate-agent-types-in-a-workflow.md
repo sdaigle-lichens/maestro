@@ -113,24 +113,74 @@ canvas prevents it, the validator reports it, and forking is the offered way out
 
 ## Acceptance criteria
 
-- [ ] `duplicateAgentTypes` reports a workflow with two **placed** instances on one bare agent, and
+- [x] `duplicateAgentTypes` reports a workflow with two **placed** instances on one bare agent, and
       reports nothing for: one placed + one unplaced on the same agent, two instances on the same
       agent in **different** workflows, and namespaced-vs-bare spellings of the same agent
       (`maestro:backend` vs `backend`) which must compare equal.
-- [ ] The app shows a dismissible banner naming workflow and agent when a hand-edited config
+- [x] The app shows a dismissible banner naming workflow and agent when a hand-edited config
       contains the collision, and editing is never blocked.
-- [ ] `/maestro-update` reports the issue **and still renders** the orchestrator.
-- [ ] Nothing auto-repairs a config — no instance renamed, no node removed, no agent reassigned.
-- [ ] The canvas guard is unchanged: with every agent placed, the picker still offers no duplicate,
+- [x] `/maestro-update` reports the issue **and still renders** the orchestrator.
+- [x] Nothing auto-repairs a config — no instance renamed, no node removed, no agent reassigned.
+- [x] The canvas guard is unchanged: with every agent placed, the picker still offers no duplicate,
       and `placedAgentTypes` still filters `availableAgents`.
-- [ ] From the all-placed empty state, a user can fork an agent under a new name and immediately
+- [x] From the all-placed empty state, a user can fork an agent under a new name and immediately
       create an instance on it — verified end to end in a packaged window per `test-maestro`,
       through to `.claude/agents/<newName>.md` existing with its frontmatter `name:` rewritten and a
       provenance record in `agent-forks.json`.
-- [ ] After that fork, the two instances no longer collide: distinct `HANDOFF:` routes are injected
+- [x] After that fork, the two instances no longer collide: distinct `HANDOFF:` routes are injected
       for each (route loss #1 gone), skills are no longer unioned (#2), and they write distinct
       channel lane files (#3). Assert these three directly — they are the point of the slice.
-- [ ] `pnpm --filter maestro test`, `typecheck` and `check` green.
+- [x] `pnpm --filter maestro test`, `typecheck` and `check` green.
+
+All criteria met and verified — 919 tests passing. See "Divergences from the plan" below for where
+the implementation departed from this page's Files table and why.
+
+## Divergences from the plan
+
+1. **`test/isolation.test.ts`'s `RENDERER_SAFE = ["contracts", "text"]` forced the validator's
+   result to travel a different path than this page implied.** `config-validate.ts` could not be
+   imported by `workflows.tsx` directly. `ConfigIssue` moved into `contracts.ts`;
+   `duplicateAgentTypes` is computed in the MAIN process, inside `src/main/ipc.ts`'s `workflowsData`
+   handler, and the result travels to the renderer as `configIssues: ConfigIssue[]` on
+   `WorkflowsData` (`src/shared/ipc.ts`) and `MaestroConfigResult` (`src/renderer/src/utils/maestro.ts`).
+   Touched four files this page's Files table never named: `contracts.ts`, `main/ipc.ts`,
+   `shared/ipc.ts`, `utils/maestro.ts`.
+2. **`config-issue-banner.tsx` is a new sibling component, not an extension of `seeded-banner.tsx`.**
+   `seeded-banner.tsx` has no dismiss affordance and the two conditions are independent and can
+   co-occur, so following "in the established style of seeded-banner.tsx" meant matching its visual
+   style, not extending it.
+3. **`apps/maestro/src/renderer/src/routes/maestro.tsx` was touched** (not in the Files table) to
+   render `InstallReport.configIssues` in `ReportCard`, beside the existing `reportsSync`/
+   `handoffsSync` bullets — required to actually surface what `install.ts` now returns.
+4. **`handleAgentForked` had to be defined AFTER `handleSubmit` in `workflows.tsx`**, purely for
+   test-ordering reasons: `test/isolation.test.ts`'s "saving refreshes loader data" test does a
+   plain `src.indexOf(...)` string search asserting `router.invalidate()` comes after a specific
+   line, and `handleAgentForked` also calls `router.invalidate()`. No behavior divergence, just
+   placement.
+5. Plugin version bumped `0.4.7` → `0.4.8` (patch) — behaviour change to
+   `maestro-render-orchestrator.cjs`, no new skill/agent/command/hook event.
+6. **The fork dropdown offers only non-project agents**, which this page's Part 2 never says.
+   `forkAgent` throws on a project-tier agent (`agent-fork.ts:112` — "already a project agent —
+   there's nothing to fork"), which is exactly why `/agents` hides its own fork button for those
+   (`agent-card.tsx`'s `isProjectTier`). Offering every placed agent meant a first fork produced an
+   agent that could not itself be forked, and a project whose agents are all project-tier got a
+   dropdown where every option failed. `workflows.tsx` now derives `forkableAgentIds` (discovered
+   agents whose `source !== "project"`) and threads it through `WorkflowCanvas` to the picker's new
+   `forkableAgents` prop; with nothing forkable the block is hidden and the dead-end prose stops
+   offering it. Pinned in `test/isolation.test.ts` ("the instance picker only offers forkable
+   agents") — the failure is a confusing error, not a crash, so no render test would catch it.
+7. **Two of this slice's own tests asserted less than their names claimed, and were tightened.**
+   `duplicate-agent-fork-dissolves.test.ts`'s `#3` block compared
+   `laneFor("/project", "backend", "scribe")` to itself and could not fail; it now resolves each
+   lane from the fixture instance's own `agent` via `bareAgentName`, the way the runtime does, so
+   it would break if lanes ever became instance-keyed. `config-validate-render.test.ts`'s
+   healthy-config case was titled "reports nothing on stderr" but only checked stdout; it now
+   asserts `stderr === ""`.
+8. **The `saving refreshes loader data` pin now indexes over code rather than comments.** Its plain
+   `indexOf("router.invalidate()")` matched the string inside a comment added near the top of
+   `workflows.tsx`, failing a test about where a call sits. Stripping line comments before the
+   search removes the false positive without weakening the ordering property — every real call is
+   still counted, so divergence 4's placement constraint still holds.
 
 ## Notes for whoever picks this up
 

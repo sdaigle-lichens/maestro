@@ -1309,12 +1309,49 @@ describe("saving refreshes loader data", () => {
       expect(src).toMatch(/router\.invalidate\(\)/);
       // The invalidation must be on the success path — after the `!res.ok` bail-out, so a
       // rejected save doesn't re-run the loader and stomp the editor's state.
-      const bail = src.indexOf("if (!res.ok)");
-      const invalidate = src.indexOf("router.invalidate()");
+      // Indexed over the CODE only: a `router.invalidate()` written inside a comment earlier in
+      // the file used to fail this, which says nothing about where the call actually sits. Real
+      // calls are still all counted, so the ordering property itself is unweakened.
+      const code = src.replace(/^\s*\/\/.*$/gm, "");
+      const bail = code.indexOf("if (!res.ok)");
+      const invalidate = code.indexOf("router.invalidate()");
       expect(bail).toBeGreaterThan(-1);
       expect(invalidate).toBeGreaterThan(bail);
     });
   }
+});
+
+describe("the instance picker only offers forkable agents", () => {
+  // `forkAgent` throws on a project-tier agent — there is nothing to copy from, it already lives in
+  // `.claude/agents/` — which is why `/agents` hides its own fork button for those
+  // (`agent-card.tsx`'s `isProjectTier`). `/workflows`' picker has only agent NAMES, so the same
+  // rule can only reach it as a prop. Drop the prop anywhere along the chain and the dead end goes
+  // back to offering choices that can only fail, with a confusing error as the only symptom — no
+  // render test here sees it, hence a source-level guard.
+  it("workflows.tsx derives the list from a non-project source and passes it down", () => {
+    const src = read("src/renderer/src/routes/workflows.tsx");
+    expect(src).toMatch(/source !== "project"/);
+    expect(src).toMatch(/forkableAgents=\{forkableAgentIds\}/);
+  });
+
+  it("workflow-canvas.tsx forwards it to every InstancePicker it renders", () => {
+    const src = read("src/renderer/src/components/workflow-canvas.tsx");
+    // Both modals (add-step and condition) take the picker, and both must get the list.
+    const forwarded = src.match(/forkableAgents=\{forkableAgents\}/g) ?? [];
+    const pickers = src.match(/onForked=\{onAgentForked\}/g) ?? [];
+    expect(pickers.length).toBeGreaterThan(0);
+    expect(forwarded).toHaveLength(pickers.length);
+  });
+
+  it("instance-picker.tsx offers only forkable sources, and hides the panel when there are none", () => {
+    const src = read("src/renderer/src/components/instance-picker.tsx");
+    expect(src).toMatch(/const forkSources = unavailableAgents\.filter\(\(a\) => forkableAgents\.includes\(a\)\)/);
+    // The <select> must be built from the filtered list, never the raw placed set.
+    expect(src).toMatch(/\{forkSources\.map\(/);
+    expect(src).not.toMatch(/\{unavailableAgents\.map\(/);
+    // And the prose must not promise a fork the panel isn't rendering.
+    expect(src).toMatch(/\{canFork && \(/);
+  });
 });
 
 describe("the Claude Agent SDK is a dependency, not a bundle", () => {

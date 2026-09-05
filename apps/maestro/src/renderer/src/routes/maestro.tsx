@@ -165,6 +165,21 @@ function ReportCard({ report }: { report: InstallReport }) {
           )}
         </ul>
       )}
+      {/*
+        Duplicate-agent-type collisions (`041`) — never auto-repaired, so this is a report, not a
+        change, and it must render even when nothing else did (`report.unchanged`): the runtime can
+        be current while a hand-edited config still carries the collision. Kept out of the `ul`
+        above and its `unchanged` gate for that reason.
+      */}
+      {report.configIssues.length > 0 && (
+        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px]">
+          {report.configIssues.map((issue, i) => (
+            <li key={i} className="text-amber-500">
+              {issue.detail}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

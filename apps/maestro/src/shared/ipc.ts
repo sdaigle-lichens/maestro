@@ -38,6 +38,7 @@ import type {
   PendingLane,
   SaveResult,
   RepoDetection,
+  ConfigIssue,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
@@ -163,6 +164,7 @@ export type {
   PendingLane,
   SaveResult,
   RepoDetection,
+  ConfigIssue,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
@@ -281,6 +283,11 @@ export interface WorkflowsData {
   detection: RepoDetection | null;
   agents: DiscoveredDefinition[];
   skills: DiscoveredDefinition[];
+  /**
+   * Duplicate-agent-type collisions in `config` (`041`) — the canvas itself refuses to create one,
+   * so this is what catches a hand-edit or a merge conflict that did. Empty on a healthy config.
+   */
+  configIssues: ConfigIssue[];
 }
 
 /** Everything the /rules route needs. */

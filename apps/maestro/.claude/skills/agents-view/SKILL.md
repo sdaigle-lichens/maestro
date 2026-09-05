@@ -3,8 +3,8 @@ name: agents-view
 description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to seven different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's list of the resolved report plus one editor per outgoing handoff route (each labelled, since `037`, with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to), the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to seven places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, or why a route shows (or doesn't show) a channel lane path."
 metadata:
   type: concept-skill
-  version: "1.5"
-  last-update: 84e32c699feb0057643949e34b10502d2d0a7bb1
+  version: "1.6"
+  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
 ---
 
 # Agents View
@@ -227,6 +227,17 @@ still saves normally. The escape hatch is a free-text name input (defaulting to 
 name) plus a "Fork into this project" button in the view-mode footer
 (`data-testid="agent-fork-name"` / `"agent-fork-button"`), calling `forkAgent`
 (`src/core/agent-fork.ts`) over the `agent:fork` channel.
+
+**This page is no longer the only caller of `forkAgent` (`041`).** `/workflows`' `InstancePicker`
+offers the same renamed-fork path from its all-placed dead end — a workflow can't place two
+instances on one bare agent (`placedAgentTypes`), so forking under a new name is the supported way
+to get a second, genuinely distinct instance. Same channel, same provenance record, same
+`renameAgentInFrontmatter`/`copyAgentAttributeRows` machinery described below; the differences are
+the caller and what happens on success (there it selects the fork into the picker's own field and
+adds it to `config.agents_available`, not this page's edit session). The `isProjectTier` gate below
+travels with it: the picker is handed a `forkableAgents` list built the same way (a discovered
+agent whose `source` is not `"project"`), because `forkAgent` throws on a project agent — so
+neither surface can offer a fork that cannot happen. See `workflow-view`'s picker/fork note.
 
 - A **same-name fork** copies the template file byte-for-byte, including its `description:` line —
   shadowing is the mechanism: a project `.claude/agents/<name>.md` wins `dedupeById`'s resolution, so

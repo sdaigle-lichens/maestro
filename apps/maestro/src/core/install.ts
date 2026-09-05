@@ -37,6 +37,7 @@ import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
 import { syncProjectReports } from "./report-sync.js";
 import { syncProjectHandoffs } from "./handoff-sync.js";
+import { duplicateAgentTypes } from "./config-validate.js";
 import { detectImplAgents } from "./detect.js";
 import { discoverSkills } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
@@ -47,7 +48,7 @@ import { readAllAgentTypes } from "./agent-types.js";
 import { readAllAgentProjectTags } from "./agent-project-tags.js";
 import { GLOBAL_TAG } from "./contracts.js";
 import type { MaestroConfigV3 } from "./types.js";
-import type { InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
+import type { ConfigIssue, InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
 
 export type { InstallReport, InstallStatus, OrchestratorSkillAction };
 
@@ -662,6 +663,12 @@ export async function installRuntime(
   // writeRuntimeVersion's own read-modify-write above.
   const handoffsSync = syncProjectHandoffs(projectRoot, handoffsDbPath);
 
+  // Report, never repair: a hand-edited maestro.json (or one a merge conflict produced) can carry
+  // the duplicate-agent-type collision the canvas itself refuses to create — see
+  // config-validate.ts / task 041. Read fresh rather than reusing `seeded` above, since this must
+  // also catch the collision in an EXISTING config this run didn't touch.
+  const configIssues: ConfigIssue[] = duplicateAgentTypes(readConfig(projectRoot));
+
   const status = await installStatus(projectRoot, root);
 
   const warnings: string[] = [];
@@ -695,6 +702,7 @@ export async function installRuntime(
     status,
     reportsSync,
     handoffsSync,
+    configIssues,
   };
 }
 

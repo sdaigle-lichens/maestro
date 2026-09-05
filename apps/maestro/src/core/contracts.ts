@@ -454,6 +454,17 @@ export interface RepoDetection {
   fallback: boolean;
 }
 
+/**
+ * A problem `config-validate.ts` found in a config a human (or a merge) could have hand-edited —
+ * the canvas itself refuses to create one, so this is the check for everyone else who can write
+ * `maestro.json`. Reported only, never auto-repaired: see that module's header for why.
+ */
+export interface ConfigIssue {
+  kind: string;
+  workflow: string;
+  detail: string;
+}
+
 /** What installing the orchestrator skill did to an existing file. All four are load-bearing. */
 export type OrchestratorSkillAction = "installed" | "synced" | "unchanged" | "migrated";
 
@@ -636,6 +647,12 @@ export interface InstallReport {
   reportsSync: ReportSyncSummary;
   /** The same, for `.claude/handoffs/<sender>/<receiver>.md`, keyed by handoff id (`033`). */
   handoffsSync: HandoffSyncSummary;
+  /**
+   * Duplicate-agent-type collisions found in the project's config (`041`) — reported beside the
+   * sync summaries above, never auto-repaired. Empty on a healthy config, which is every config
+   * the canvas itself produced.
+   */
+  configIssues: ConfigIssue[];
 }
 
 /**

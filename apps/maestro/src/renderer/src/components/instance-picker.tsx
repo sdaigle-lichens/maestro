@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { MaestroInstanceV3 } from "../utils/maestro";
+import { callMain } from "../utils/call-main";
 import InstanceSkillPicker, { emptySelection, type SkillSelection } from "./instance-skill-picker";
 
 export interface InstancePickerValue {
@@ -53,6 +55,8 @@ export default function InstancePicker({
   existingInstanceNames = [],
   onEnter,
   onEscape,
+  onForked,
+  forkableAgents = [],
 }: {
   value: InstancePickerValue;
   onChange: (next: InstancePickerValue) => void;
@@ -66,6 +70,23 @@ export default function InstancePicker({
   existingInstanceNames?: string[];
   onEnter?: () => void;
   onEscape?: () => void;
+  /**
+   * Called with the new agent's name after a successful fork from the all-placed dead end below —
+   * the caller's job is to add it to `config.agents_available` so it becomes selectable here
+   * (`workflows.tsx:407`). Omit to hide the fork affordance entirely (e.g. a picker with nowhere
+   * to route the result).
+   */
+  onForked?: (newAgentName: string) => void;
+  /**
+   * The agents `forkAgent` will actually accept — every discovered agent whose `source` is not
+   * `"project"`. It throws on a project-tier agent ("already a project agent — there's nothing to
+   * fork"), which is why `/agents` hides its own fork affordance for those (`agent-card.tsx`'s
+   * `isProjectTier`); this list is how the dead end below applies the same rule instead of
+   * offering a choice that can only fail. A fork's own output is project-tier, so it correctly
+   * drops out of this list once it exists. Defaults to none — a caller that doesn't pass it gets
+   * no fork affordance, the same way omitting `onForked` does.
+   */
+  forkableAgents?: string[];
 }) {
   const set = (patch: Partial<InstancePickerValue>) => onChange({ ...value, ...patch });
   const trimmedName = value.newName.trim();
@@ -73,6 +94,35 @@ export default function InstancePicker({
   // Show the taken subagents too (disabled) so the list is never mysteriously empty.
   const allAgents = Array.from(new Set([...availableAgents, ...unavailableAgents]));
   const noFreeAgents = allAgents.length > 0 && allAgents.every((a) => unavailableAgents.includes(a));
+  // Only placed agents that a fork can actually copy — see `forkableAgents` above.
+  const forkSources = unavailableAgents.filter((a) => forkableAgents.includes(a));
+  const canFork = Boolean(onForked) && forkSources.length > 0;
+
+  const [forkSource, setForkSource] = useState("");
+  const [forkName, setForkName] = useState("");
+  const [forking, setForking] = useState(false);
+  const [forkError, setForkError] = useState<string | null>(null);
+
+  async function handleFork() {
+    const name = forkName.trim();
+    if (!forkSource || !name) return;
+    setForking(true);
+    setForkError(null);
+    try {
+      const res = await callMain(() => window.maestro.agents.fork(forkSource, name));
+      if (!res.ok) {
+        setForkError(res.error);
+        return;
+      }
+      onForked?.(res.value.name);
+      // Pre-select the fork so the user only has to name the instance and confirm.
+      set({ newAgent: res.value.name });
+      setForkSource("");
+      setForkName("");
+    } finally {
+      setForking(false);
+    }
+  }
   const tabClass = (active: boolean) =>
     `flex-1 py-1 text-[11px] font-medium cursor-pointer focus:outline-none transition-colors ${
       active ? "bg-primary text-white" : "bg-(--bg-elev) text-(--ink-2) hover:bg-(--bg)"
@@ -124,11 +174,51 @@ export default function InstancePicker({
             ))}
           </select>
           {noFreeAgents && (
-            <p className="text-[11px] text-subtle m-0">
-              Every available subagent is already placed in this workflow — a subagent can only appear once, since the
-              runtime routes handoffs by agent type. Add another subagent from the left panel, or reuse an existing
-              instance.
-            </p>
+            <div className="flex flex-col gap-2">
+              <p className="text-[11px] text-subtle m-0">
+                Every available subagent is already placed in this workflow — a subagent can only appear once, since the
+                runtime routes handoffs by agent type. Add another subagent from the left panel, reuse an existing
+                instance
+                {canFork
+                  ? ", or fork one of the agents below under a new name so it becomes a second, distinct agent."
+                  : "."}
+              </p>
+              {canFork && (
+                <div className="flex flex-col gap-1.5 rounded-lg border border-(--line) p-2">
+                  <div className="text-[10px] font-semibold text-subtle uppercase tracking-wide">
+                    Fork an agent as new
+                  </div>
+                  <select
+                    value={forkSource}
+                    onChange={(e) => setForkSource(e.target.value)}
+                    className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                  >
+                    <option value="">Fork which agent…</option>
+                    {forkSources.map((a) => (
+                      <option key={a} value={a}>
+                        {a}
+                      </option>
+                    ))}
+                  </select>
+                  <input
+                    type="text"
+                    placeholder="New agent name (e.g. backend-worker)"
+                    value={forkName}
+                    onChange={(e) => setForkName(e.target.value)}
+                    className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                  />
+                  {forkError && <p className="text-[11px] text-red-500 m-0">{forkError}</p>}
+                  <button
+                    type="button"
+                    disabled={!forkSource || !forkName.trim() || forking}
+                    onClick={() => void handleFork()}
+                    className="px-2.5 py-1.5 text-[12px] rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {forking ? "Forking…" : "Fork agent"}
+                  </button>
+                </div>
+              )}
+            </div>
           )}
           <input
             type="text"

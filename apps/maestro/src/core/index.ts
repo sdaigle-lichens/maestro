@@ -165,6 +165,7 @@ export {
 } from "./handoff-seeds.js";
 
 export { handoffRoutes, routesFrom, handoffPairs, type HandoffRoute } from "./handoff-routes.js";
+export { duplicateAgentTypes, validateConfig } from "./config-validate.js";
 
 export {
   resolveHandoff,

@@ -2,20 +2,10 @@
 
 ## Queue status
 
-**`041` and `042` are `ready`, no blockers.** 40 done, 2 ready, 0 blocked.
+**`042` is `ready`, no blockers.** 41 done, 1 ready, 0 blocked.
 
-**The plugin is at `0.4.7`.**
+**The plugin is at `0.4.8`.**
 
-- **`041-guard-and-guide-duplicate-agent-types-in-a-workflow.md`** (`ready`) — two instances of one
-  workflow on the same `agent` break four things silently, all from one root: `SubagentStart` gets
-  `agent_type` and never the instance. The severe one is route loss — `handoff-routes.ts` dedups on
-  `sender + label` with `sender` the bare agent, so one of two success edges leaving two same-agent
-  instances is discarded with nothing reported. The canvas already prevents the collision
-  (`placedAgentTypes`), so this adds the two things around that guard: a pure `config-validate.ts`
-  for hand-edited configs (the app, `/maestro-update` and install all report; nothing auto-fixes),
-  and a **fork affordance** in the picker's all-placed dead end — forking gives the second instance a
-  distinct `agent`, which dissolves all four failures at the root, and `forkAgent(..., newName)`
-  already does renamed forks with frontmatter rewrite and a provenance record.
 - **`042-attribute-a-resumed-agents-log-entries-to-the-right-card.md`** (`ready`) — the follow-on
   `039` created and `log-view` v2.2 recorded rather than fixed. `buildInstances` correlates a card's
   `input`/`offeredSkills`/`delivered` to a `dispatch` entry by `agent_id` alone, which was unique per
@@ -29,6 +19,28 @@
   order, and an `agent_id` that no longer matches the one `resumeTarget` hands `SendMessage` would be
   worse than the view sorting two runs out. Pure function, no `plugins/` change, so no version bump.
 
+- **`041-guard-and-guide-duplicate-agent-types-in-a-workflow.md`** (`done`) — two instances of one
+  workflow on the same `agent` break four things silently, all from one root: `SubagentStart` gets
+  `agent_type` and never the instance. The severe one is route loss — `handoff-routes.ts` dedups on
+  `sender + label` with `sender` the bare agent, so one of two success edges leaving two same-agent
+  instances is discarded with nothing reported. The canvas already prevented the collision
+  (`placedAgentTypes`); this added the two things around that guard: a pure `config-validate.ts`
+  (`duplicateAgentTypes`/`validateConfig`) reporting a hand-edited config's collision from three call
+  sites — a dismissible app banner, `/maestro-update` (reports, still renders), and `install.ts`
+  (beside the sync summaries) — never auto-fixing; and a **fork affordance** in the picker's
+  all-placed dead end, since forking gives the second instance a distinct `agent`, which dissolves
+  all four failures at the root. `forkAgent(..., newName)` already did renamed forks with frontmatter
+  rewrite and a provenance record; this slice just gave `/workflows`' `InstancePicker` a second call
+  site onto it, alongside `/agents`' "Fork into this project". Three dissolved failures (route loss,
+  unioned skills, colliding channel lanes) asserted directly against a hand-written before/after
+  config pair; live-window verification for the banner, non-blocking edit, and the fork end-to-end
+  through `.claude/agents/<newName>.md`'s rewritten frontmatter and its `agent-forks.json` provenance
+  record. Five divergences recorded on the page — the significant one: `test/isolation.test.ts`'s
+  `RENDERER_SAFE = ["contracts", "text"]` meant the validator (pure, but outside those two modules)
+  could not be imported by the renderer, so `duplicateAgentTypes` is computed in the MAIN process
+  (`src/main/ipc.ts`'s `workflowsData` handler) and threaded through as `configIssues` on
+  `WorkflowsData`/`MaestroConfigResult`, touching four files the page's Files table never named.
+  Plugin `0.4.7` → `0.4.8` (patch).
 - **`040-skip-re-injecting-static-context-into-a-resumed-subagent.md`** (`done`) — `SubagentStart`
   fires again on a resumed run, so `maestro-inject-agent-context.js` was re-injecting the resumed
   agent's `loaded_skills`, `referenced_skills`, `HANDOFF:` routing, per-route protocols and report

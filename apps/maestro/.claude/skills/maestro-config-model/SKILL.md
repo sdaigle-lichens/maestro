@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: 09ac67a729dace3fc5e437e956037d53771cdac8
+  version: "1.5"
+  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
 ---
 
 # Maestro config model (v3)
@@ -59,6 +59,23 @@ loaded minutes ago reverts everything the other one did in between — so `/agen
 `data:workflows` immediately before calling `config:save`, and mutates only the one instance in that
 fresh config. Any third writer of an existing slice owes the same.
 
+## Duplicate agent types are validated, not merely prevented
+
+Two placed instances in one workflow pointing at the same bare agent (`maestro:backend` vs
+`backend`) break route dedup, skill injection and channel lanes at runtime — the canvas already
+refuses to create this (`placedAgentTypes`), but a hand-edited `maestro.json` can still produce it
+(`041`). `src/core/config-validate.ts`'s `duplicateAgentTypes(cfg)` (`validateConfig` is the
+aggregate seam for future checks) reports it per workflow; it never repairs anything.
+**It cannot be imported by the renderer** — it lives outside `contracts.ts`/`text.ts`, the only two
+renderer-safe modules in `src/core` — so despite being pure, it is computed in the MAIN process
+(`src/main/ipc.ts`'s `workflowsData` handler) and threaded through as `configIssues: ConfigIssue[]`
+on `WorkflowsData`/`MaestroConfigResult`, never imported directly into `workflows.tsx`. The same
+validator also runs from `/maestro-update` (reports, still renders — never blocks) and from
+`install.ts` (reports beside the sync summaries, on `InstallReport.configIssues`) — three call
+sites sharing one validator, never auto-fixing. See `workflow-view`'s picker/fork notes and
+`agents-view`/`agent-fork-sync` for the other half (a fork is the supported way to dissolve the
+collision).
+
 ## What is machine-owned, and what lives elsewhere
 
 - `runtimeVersion` is **the one machine-owned field**. `installRuntime()` and `maestro-install.js`
@@ -77,6 +94,7 @@ fresh config. Any third writer of an existing slice owes the same.
 | -------------------------- | --------------------------------------------------------------------------------------------------- |
 | `src/core/types.ts`        | The schema — every `MaestroConfigV3` type and slice.                                                |
 | `src/core/config.ts`       | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`, `resolveGates`/`DEFAULT_GATES`. |
+| `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — pure, reports collisions across placed instances, never repairs. Computed in main, never renderer-imported. |
 | `src/core/save.ts`         | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                               |
 | `src/core/render.ts`       | Renders the orchestrator's handoff table from the config.                                           |
 | `src/core/success-path.ts` | Derives the agent→skill success path a workflow describes.                                          |

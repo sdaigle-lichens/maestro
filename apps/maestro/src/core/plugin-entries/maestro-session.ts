@@ -57,6 +57,13 @@ export {
 // the generated maestro-session.cjs at 0.
 export { handoffRoutes, routesFrom, handoffPairs, type HandoffRoute } from "../handoff-routes.js";
 
+// Config hygiene (`041`) — the collision the canvas already refuses to create (two placed
+// instances on one workflow sharing a bare agent), reported wherever a config a human may have
+// hand-edited is read: the app on load, `/maestro-update` before it re-renders, and install/update
+// sync. Pure, leans on `bareAgentName` above — costs nothing against the "no node:sqlite in
+// maestro-session.cjs" property.
+export { duplicateAgentTypes, validateConfig, type ConfigIssue } from "../config-validate.js";
+
 export {
   resolveHandoff,
   type HandoffResolution,

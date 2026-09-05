@@ -220,6 +220,40 @@ describe("installRuntime", () => {
     expect(fs.statSync(path.join(root, ".claude", "scripts", "bash-validation.sh")).mode & 0o111).toBeTruthy();
   });
 
+  // `041` — the collision the canvas refuses to create can still reach an install through a
+  // hand-edited maestro.json. Reported beside the sync summaries, never repaired, and never a
+  // reason to fail the install.
+  it("reports a duplicate-agent-type collision without failing the install", async () => {
+    const root = makeProject("p");
+    const collision: MaestroConfigV3 = {
+      ...defaultish,
+      workflow_instances: [
+        ...defaultish.workflow_instances,
+        { name: "backend-2", agent: "backend", loaded_skills: [], referenced_skills: [] },
+      ],
+      workflows: [
+        {
+          ...defaultish.workflows[0],
+          nodes: [...defaultish.workflows[0].nodes, { id: "backend-2", type: "agent", instance: "backend-2" }],
+          edges: [...defaultish.workflows[0].edges, { from: "main-session", to: "backend-2", kind: "success" }],
+        },
+      ],
+    };
+    writeConfig(root, collision);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+    expect(report.configIssues).toHaveLength(1);
+    expect(report.configIssues[0].workflow).toBe("default");
+    expect(report.configIssues[0].detail).toContain("backend-2");
+  });
+
+  it("reports no config issues for a healthy config", async () => {
+    const root = makeProject("p");
+    writeConfig(root, defaultish);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    expect(report.configIssues).toEqual([]);
+  });
+
   it("installs no handoff templates as ASSETS any more — the sync materializes them instead", async () => {
     const root = makeProject("p");
     writeConfig(root, defaultish);

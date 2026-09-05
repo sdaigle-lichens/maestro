@@ -1,10 +1,10 @@
 ---
 name: workflow-view
-description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, or why a workflow change isn't reaching the config."
+description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, why a duplicate-agent-type banner is showing and what the instance picker's fork-an-agent affordance does about it (`041`), or why a workflow change isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
+  version: "1.2"
+  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
 ---
 
 # Workflow View
@@ -86,6 +86,7 @@ Paths are relative to `apps/maestro/`.
 | The canvas (React Flow nodes/edges, all interactions)                  | `src/renderer/src/components/workflow-canvas.tsx`                                                             |
 | Reuse/create instance picker + skill pickers (shared by canvas modals) | `src/renderer/src/components/instance-picker.tsx`, `.../instance-skill-picker.tsx` (loaded/referenced toggle) |
 | Detected-chain banner + correction chips                               | `src/renderer/src/components/detected-chain.tsx`, `.../seeded-banner.tsx`                                     |
+| Duplicate-agent-type banner (`041`)                                    | `src/renderer/src/components/config-issue-banner.tsx`, validator in `src/core/config-validate.ts`             |
 | Top bar — hamburger menu, direct links, workflow selector              | `src/renderer/src/components/top-nav.tsx`, `.../hamburger-menu.tsx`                                            |
 | Renderer-side loader + save wrappers over the IPC bridge               | `src/renderer/src/utils/maestro.ts`                                                                           |
 | The typed channel contract                                             | `src/shared/ipc.ts` (`data:workflows`, `data:reseed`, `config:save`)                                          |
@@ -159,6 +160,7 @@ Built on `@xyflow/react` (React Flow). Four node types and two edge types are re
 - **Add step** (bottom `+` on every node) — every node has a bottom-center `+` button that calls `openAddStep(nodeId)`. This opens the **Add step modal**: a segmented **Agent / Human Review** picker. For Agent it renders the shared `InstancePicker` (`src/renderer/src/components/instance-picker.tsx`) — a **Reuse instance / New instance** toggle. Reuse lists unplaced instances; New takes a subagent + instance name + an `InstanceSkillPicker` (check to select a skill — referenced by default — then a per-row Loaded/Ref toggle). Human Review needs no extra input. Confirming calls `confirmAddStep()` → `resolveInstanceFromPicker` to get/create the instance, places the node at `y + INSERT_ROW_HEIGHT` below the source, and adds a `success` edge `source.bottom → new.top`. State: `addStepSourceId`, `addStepType`, `addStepPicker`; reset by `resetAddStep()`.
   - **Inserting mid-chain relinks both sides.** If the source already had an outgoing success edge, that edge is _displaced_, not dropped: `confirmAddStep` re-adds it as `new → oldTarget` (via `makeSuccessEdge`) and shifts every node at or below the insertion row down by `INSERT_ROW_HEIGHT` so the new node doesn't land on the one it displaced. The mirror case lives in `deleteNode` — removing a node that has both an incoming and an outgoing success edge re-joins predecessor → successor instead of severing the path.
   - **Already-placed subagents stay listed but disabled.** A subagent may appear at most once per workflow (the `SubagentStart` hook keys off `agent_type`), so `availableAgentsForNew` filters them out — which left the "New instance" dropdown _empty_ on the seeded workflows, where every agent is already placed. `InstancePicker` therefore also takes `unavailableAgents` and renders those as disabled `… (already in this workflow)` options, plus an explanatory line when none are free. `resolveInstanceFromPicker` returns `null` rather than falling back to an already-placed agent.
+  - **The all-placed dead end is now also a fork affordance (`041`).** When `noFreeAgents` is true, `InstancePicker` renders a "Fork an agent as new" block — pick a source, name the fork, call `window.maestro.agents.fork(source, name)` (the same `forkAgent`/`agent:fork` channel `/agents`' "Fork into this project" uses — see `agents-view`/`agent-fork-sync`) — gated on an `onForked` prop so a picker instantiation with nowhere to route the result simply omits it. The sources offered are `unavailableAgents` intersected with the `forkableAgents` prop (`workflows.tsx` derives it as the discovered agents whose `source` is not `"project"`), because `forkAgent` **throws** on a project-tier agent — there is nothing to copy from. That is the same rule `/agents` applies by hiding its own fork button on a project card, and it means a fork's own output drops out of the list once the loader reloads. With nothing forkable the whole block is hidden and the dead-end prose stops offering it, rather than presenting a dropdown whose every option fails. On success, `workflows.tsx`'s `handleAgentForked` adds the name to `config.agents_available` (reactive — `availableAgentsForNew` derives from it, so the fork is selectable with **no restart**) and calls `router.invalidate()`, which is safe mid-edit because `seedWorkflowStore` keeps the in-memory config when `projectRoot` is unchanged.
 - **Add condition** — two entry points, both opening the condition modal:
   1. Bottom-bar "Add condition" enters `__picking__` mode (crosshair cursor, source `+` buttons pulse); click a node to pick the source.
   2. A node's own left/right `+` button opens the modal for that node directly.
@@ -191,6 +193,15 @@ Saving sends only the **workflow slice** (`agents_available`, `skills_available`
 The route then calls `router.invalidate()` on the success path, after the `!res.ok` bail-out. A save is neither a navigation nor a project switch, so without it the loader data stays pinned at its load-time value and the `seeded` banner keeps telling the user their config is unsaved while it sits on disk. This is safe only because `seedWorkflowStore` bails on an unchanged `projectRoot` — re-running the loader cannot discard in-flight edits.
 
 At runtime the `SubagentStart` hook (`maestro-inject-agent-context.js`) reads that same `.claude/maestro.json` (v3) at each subagent start to inject the instance's skills + condition-edge handoff rules. It reads the file directly, so a save is visible to the next dispatched subagent with nothing in between.
+
+## Duplicate-agent-type banner (`041`)
+
+On load, `workflows.tsx` renders a dismissible `config-issue-banner.tsx` (own component, not an
+extension of `seeded-banner.tsx` — that banner has no dismiss affordance and covers an unrelated,
+independently-occurring condition) when `loaderData.configIssues` is non-empty — a hand-edited
+config with two placed instances on one bare agent, computed in main by
+`config-validate.ts`'s `duplicateAgentTypes` (see `maestro-config-model`). `key={projectRoot}` so a
+project switch remounts it with fresh dismissal state. It never blocks editing.
 
 ## Things that bite
 

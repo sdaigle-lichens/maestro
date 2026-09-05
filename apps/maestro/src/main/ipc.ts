@@ -16,6 +16,7 @@ import {
   saveConfig,
   discoverAgents,
   discoverSkills,
+  duplicateAgentTypes,
   readAllSkillTags,
   setSkillProjectTags,
   setSkillAgentTypes,
@@ -308,14 +309,35 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.workflowsData, async (): Promise<WorkflowsData> => {
     const projectRoot = currentRoot();
     if (!projectRoot) {
-      return { projectRoot: "", config: blankConfig(), seeded: false, detection: null, agents: [], skills: [] };
+      return {
+        projectRoot: "",
+        config: blankConfig(),
+        seeded: false,
+        detection: null,
+        agents: [],
+        skills: [],
+        configIssues: [],
+      };
     }
     const [agents, skills] = await Promise.all([
       discoverAgents(projectRoot, bundledAgentsDir()),
       discoverSkills(projectRoot),
     ]);
     const onDisk = readConfig(projectRoot);
-    if (onDisk) return { projectRoot, config: onDisk, seeded: false, detection: null, agents, skills };
+    // Duplicate-agent-type collisions (`041`) — the canvas refuses to create one, so this catches
+    // a hand-edit or a merge conflict. Only meaningful against an on-disk config: a freshly seeded
+    // one is always canvas-safe, and `duplicateAgentTypes` reports nothing for it either way.
+    if (onDisk) {
+      return {
+        projectRoot,
+        config: onDisk,
+        seeded: false,
+        detection: null,
+        agents,
+        skills,
+        configIssues: duplicateAgentTypes(onDisk),
+      };
+    }
 
     // First open of an unconfigured project: hand back the starter workflows so the canvas isn't
     // empty — with the implementation chain READ OFF THE REPO rather than hardcoded to
@@ -330,6 +352,7 @@ export function registerIpc(): void {
       detection,
       agents,
       skills,
+      configIssues: [],
     };
   });
 

@@ -44,6 +44,18 @@ interface WorkflowCanvasProps {
   instances: MaestroInstanceV3[];
   onChange: (w: MaestroWorkflowV3) => void;
   onInstancesChange: (instances: MaestroInstanceV3[]) => void;
+  /**
+   * A fork completed from the instance picker's all-placed dead end (`041`) — the caller's job is
+   * to add the new agent to `config.agents_available` so it's immediately selectable, and refresh
+   * whatever else needs it (the discovered-agents list). See `instance-picker.tsx`'s `onForked`.
+   */
+  onAgentForked?: (newAgentName: string) => void;
+  /**
+   * Which agents the picker's fork affordance may offer — the discovered agents that are not
+   * already project-tier, since `forkAgent` refuses those. Passed straight through to
+   * `InstancePicker`'s `forkableAgents`, which documents the rule.
+   */
+  forkableAgents?: string[];
 }
 
 // Vertical gap between a node and the step added below it.
@@ -791,6 +803,8 @@ export default function WorkflowCanvas({
   instances,
   onChange,
   onInstancesChange,
+  onAgentForked,
+  forkableAgents,
 }: WorkflowCanvasProps) {
   const [rfNodes, setRfNodes] = useState<Node[]>([]);
   const [rfEdges, setRfEdges] = useState<Edge[]>([]);
@@ -1558,6 +1572,8 @@ export default function WorkflowCanvas({
                 availableSkills={availableSkills}
                 reusableInstances={availableForReuse}
                 existingInstanceNames={existingInstanceNames}
+                onForked={onAgentForked}
+                forkableAgents={forkableAgents}
               />
             )}
 
@@ -1624,6 +1640,8 @@ export default function WorkflowCanvas({
                 existingInstanceNames={existingInstanceNames}
                 onEnter={confirmAddStep}
                 onEscape={resetAddStep}
+                onForked={onAgentForked}
+                forkableAgents={forkableAgents}
               />
             )}
 

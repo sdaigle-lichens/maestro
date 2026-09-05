@@ -42,6 +42,7 @@ __export(maestro_session_exports, {
   bareAgentName: () => bareAgentName,
   channelDir: () => channelDir,
   collectAgentSkills: () => collectAgentSkills,
+  duplicateAgentTypes: () => duplicateAgentTypes,
   ensureSessionRunId: () => ensureSessionRunId,
   formatStampedContent: () => formatStampedContent,
   handoffId: () => handoffId,
@@ -68,6 +69,7 @@ __export(maestro_session_exports, {
   splitHandoffId: () => splitHandoffId,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
+  validateConfig: () => validateConfig,
   workflowNodeLabels: () => workflowNodeLabels,
   writeSession: () => writeSession,
   writeStamp: () => writeStamp
@@ -422,6 +424,38 @@ function handoffPairs(routes) {
   return [...ids];
 }
 
+// src/core/config-validate.ts
+function duplicateAgentTypes(cfg) {
+  if (!cfg) return [];
+  const instByName = new Map(cfg.workflow_instances.map((i) => [i.name, i]));
+  const issues = [];
+  for (const wf of cfg.workflows ?? []) {
+    const placedByAgent = /* @__PURE__ */ new Map();
+    for (const node of wf.nodes ?? []) {
+      if (node.type !== "agent" || !node.instance) continue;
+      const inst = instByName.get(node.instance);
+      if (!inst) continue;
+      const agent = bareAgentName(inst.agent);
+      const names = placedByAgent.get(agent) ?? /* @__PURE__ */ new Set();
+      names.add(inst.name);
+      placedByAgent.set(agent, names);
+    }
+    for (const [agent, names] of placedByAgent) {
+      if (names.size < 2) continue;
+      const list = [...names].sort();
+      issues.push({
+        kind: "duplicate-agent-type",
+        workflow: wf.name,
+        detail: `Workflow "${wf.name}" places ${list.length} instances on agent "${agent}" (${list.join(", ")}) \u2014 the runtime routes handoffs by agent type and can only see one of them. Fork "${agent}" as a new agent so each instance is distinct.`
+      });
+    }
+  }
+  return issues;
+}
+function validateConfig(cfg) {
+  return [...duplicateAgentTypes(cfg)];
+}
+
 // src/core/handoff-seeds.ts
 var BACKEND_TO_FRONTEND = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the UI consumes>"],\n  "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n}\n```';
 var BACKEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n  "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n}\n```';
@@ -635,6 +669,7 @@ function resumeTarget(lines, cfg, session, agentType) {
   bareAgentName,
   channelDir,
   collectAgentSkills,
+  duplicateAgentTypes,
   ensureSessionRunId,
   formatStampedContent,
   handoffId,
@@ -661,6 +696,7 @@ function resumeTarget(lines, cfg, session, agentType) {
   splitHandoffId,
   successPathSteps,
   sweep,
+  validateConfig,
   workflowNodeLabels,
   writeSession,
   writeStamp

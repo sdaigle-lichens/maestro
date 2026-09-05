@@ -213,7 +213,7 @@
     ]
   },
   "041-guard-and-guide-duplicate-agent-types-in-a-workflow.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "042-attribute-a-resumed-agents-log-entries-to-the-right-card.md": {
