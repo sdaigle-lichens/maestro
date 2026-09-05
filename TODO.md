@@ -2,10 +2,40 @@
 
 ## Queue status
 
-**The queue is empty.** `038` is done; nothing is currently queued as `ready` — the next task is
-whatever gets written next.
+**`039` and `041` are `ready`, `040` is `blocked` on `039`.** 38 done, 2 ready, 1 blocked.
 
-**The plugin is at `0.4.5`.**
+**The plugin is at `0.4.5`.** `039` takes it to `0.4.6`, `040` to `0.4.7` — both patch.
+
+- **`039-resume-subagents-on-loop-back-edges.md`** (`ready`) — a condition edge routing back to an
+  agent that already ran this run **resumes** it with `SendMessage` instead of dispatching a cold
+  `Task`, so it keeps its own memory of what it built. Channels cannot cover this: a channel carries
+  the receiver's payload, not the sender's reasoning. The forward success path keeps spawning — a
+  fresh context is the point there, and restricting resume to backward edges is also what bounds the
+  context growth. Adds no new hook write: `SubagentStop` already logs
+  `{origin: <agent type>, kind: "handoff", agent_id}`, and `SessionEnd` deletes the log, so it is
+  already a per-run agent-type → agent-id index. A new `maestro-resume-target.cjs` reads it and
+  prints nothing — meaning *spawn cold* — whenever the answer would be ambiguous, notably when two
+  instances of the active workflow share one `agent`, because `SubagentStart` resolves by agent type
+  and never by instance. Confirmed from the docs that `SubagentStart`/`SubagentStop` both fire on a
+  resumed run, so nothing in `036` breaks; the page requires verifying that rather than assuming it.
+- **`040-skip-re-injecting-static-context-into-a-resumed-subagent.md`** (`blocked` on `039`) —
+  because `SubagentStart` fires again, a resumed run is re-injected with its skills, routing,
+  per-route protocols and report verbatim (~600 tokens, and the `loaded_skills` block is an
+  instruction to redo a tool call). Skip those five when the run is a resume; keep the channel
+  delivery, which is the one block that is *not* static — a payload may have arrived between the two
+  runs, and `retire()` already stops the first one being re-inlined. The resume signal is a
+  `kind:"handoff"` entry for this `agent_id` in the run's log: right lifetime, and immune to the
+  ordering race a `kind:"dispatch"` check would have against the sibling `SubagentStart` hook.
+- **`041-guard-and-guide-duplicate-agent-types-in-a-workflow.md`** (`ready`) — two instances of one
+  workflow on the same `agent` break four things silently, all from one root: `SubagentStart` gets
+  `agent_type` and never the instance. The severe one is route loss — `handoff-routes.ts` dedups on
+  `sender + label` with `sender` the bare agent, so one of two success edges leaving two same-agent
+  instances is discarded with nothing reported. The canvas already prevents the collision
+  (`placedAgentTypes`), so this adds the two things around that guard: a pure `config-validate.ts`
+  for hand-edited configs (the app, `/maestro-update` and install all report; nothing auto-fixes),
+  and a **fork affordance** in the picker's all-placed dead end — forking gives the second instance a
+  distinct `agent`, which dissolves all four failures at the root, and `forkAgent(..., newName)`
+  already does renamed forks with frontmatter rewrite and a provenance record.
 
 - **`036-move-handoff-payloads-onto-agent-channels.md`** (`done`) — the runtime half. Moved
   `handoff_details`, `filesChanged` and `conceptSkillGaps` out of an agent's final message and into
