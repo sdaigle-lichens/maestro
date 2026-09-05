@@ -2,23 +2,39 @@
 
 ## Queue status
 
-**`042` is `ready`, no blockers.** 41 done, 1 ready, 0 blocked.
+**Queue empty of ready work.** 42 done, 0 ready, 0 blocked — `042` was the last task file.
 
 **The plugin is at `0.4.8`.**
 
-- **`042-attribute-a-resumed-agents-log-entries-to-the-right-card.md`** (`ready`) — the follow-on
-  `039` created and `log-view` v2.2 recorded rather than fixed. `buildInstances` correlates a card's
+- **`042-attribute-a-resumed-agents-log-entries-to-the-right-card.md`** (`done`) — the follow-on
+  `039` created and `log-view` v2.2 recorded rather than fixed. `buildInstances` correlated a card's
   `input`/`offeredSkills`/`delivered` to a `dispatch` entry by `agent_id` alone, which was unique per
   run only while every invocation was a cold `Task`. A resumed run keeps its `agent_id`, so
-  `dispatchByAgentId` — a plain `Map` filled by one forward pass — is last-write-wins and *both*
-  cards read back the second run's spawning message and offered skills; the name fallback is wrong in
-  the mirror direction, and both cards render every delivery under that id. `offeredSkills` is the
-  one that bites: `/session-log` diffs it against the reported `skillsTriage`, so a misattributed set
-  can manufacture a phantom omission or hide a real one. Fix by bounding each lookup by position in
-  the append-only log rather than adding a correlation key — the run boundary is already in the file
-  order, and an `agent_id` that no longer matches the one `resumeTarget` hands `SendMessage` would be
-  worse than the view sorting two runs out. Pure function, no `plugins/` change, so no version bump.
-
+  `dispatchByAgentId` — a plain `Map` filled by one forward pass — was last-write-wins and *both*
+  cards read back the second run's spawning message and offered skills; the name fallback was wrong
+  in the mirror direction, and both cards rendered every delivery under that id. `offeredSkills` was
+  the one that bit hardest: `/session-log` diffs it against the reported `skillsTriage`, so a
+  misattributed set could manufacture a phantom omission or hide a real one. Fixed by bounding each
+  lookup by position in the append-only log rather than adding a correlation key: for each segment,
+  its own handoff index `h` (or `entries.length` when it has none) and the previous handoff index `p`
+  for that `agent_id` bound the dispatch lookup, the name-based fallback, and the delivery filter to
+  `(p, h)` — the run boundary is already in the file order, and an `agent_id` that no longer matched
+  the one `resumeTarget` hands `SendMessage` would be worse than the view sorting two runs out. 5 new
+  tests (927/927), 3 of which confirmed fail-before/pass-after against the pre-fix code via
+  `git stash`; live-window verification on the packaged build showed two "Backend" cards with
+  genuinely distinct Input text. **Two regressions in that first implementation were then found and
+  fixed on review** (929/929): taking `entries.length` as the upper bound for a segment with no
+  handoff let a *killed* agent's card claim a later re-dispatch of the same type — the same
+  misattribution in the mirror direction, and a genuine regression against the pre-`042` code — and
+  the same sentinel, stored into `lastEndByOrigin`, could empty the next same-origin segment's
+  window and blank its input entirely. The bound is now the end of that SEGMENT (which collapses to
+  the end of the log for a genuinely in-flight agent), and `p` is the greatest handoff index below
+  `h` rather than a list position. Two more regression tests, both confirmed fail-before/pass-after.
+  Typecheck and `pnpm check` clean. `log-view`'s "Things that bite" entry and its "Deriving
+  instances" narrative describe the fix, corrected to match; stamped to v2.3 via
+  `maestro-concept-skills.cjs`. Pure function, no `plugins/` change from this task, so no version
+  bump — but see the task page: an unrelated uncommitted edit to
+  `plugins/maestro/skills/to-maestro-tasks/SKILL.md` does need `0.4.9` if it is committed.
 - **`041-guard-and-guide-duplicate-agent-types-in-a-workflow.md`** (`done`) — two instances of one
   workflow on the same `agent` break four things silently, all from one root: `SubagentStart` gets
   `agent_type` and never the instance. The severe one is route loss — `handoff-routes.ts` dedups on

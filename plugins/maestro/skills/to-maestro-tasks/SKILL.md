@@ -1,40 +1,30 @@
 ---
 name: to-maestro-tasks
-description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs a /grilling session to sharpen intent, decomposes the work into tracer-bullet vertical slices, then writes one numbered, workflow-agnostic prompt file per slice for the Maestro orchestrator to classify and execute. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, or asks to convert a plan/spec/idea into runnable task files."
+description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the confidence-check and use-design-check gates to sharpen intent and flag a needed /design pass, decomposes the work into tracer-bullet vertical slices, then writes one numbered, workflow-agnostic prompt file per slice for the Maestro orchestrator to classify and execute. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, or asks to convert a plan/spec/idea into runnable task files."
 ---
 
 # To Maestro Tasks
 
-Convert a plan, spec, or rough idea into a queue of **ready-to-run prompt files** under `<cwd>/.claude/maestro-tasks/`. Each file is a self-contained, workflow-agnostic prompt that the `/maestro` skill can classify (Step 1) and execute end-to-end.
-
-This skill composes two upstream behaviors into one continuous session:
-
-1. **`/grilling`** — a relentless interview to sharpen the user's intent.
-2. The **tracer-bullet vertical-slice decomposition** of `to-issues` — but instead of publishing to a GitHub issue tracker, it writes local prompt files.
-
-Because everything runs in one shared context, each step naturally reuses the output of the one before it: grilling sharpens the plan, the plan drives the slice breakdown, the approved slices become files.
+Convert a plan, spec, or rough idea into a queue of **ready-to-run prompt files** under `<cwd>/.claude/maestro-tasks/`. Each file is a self-contained, workflow-agnostic prompt that the `/maestro` skill can classify and execute end-to-end.
 
 ## Process
 
-### 1. Grill the intent (skippable)
+### 1. Confidence check
 
-Run a `/grilling` session to interrogate the plan until you and the user share a clear picture of what they want to build.
+Run the `confidence-check` skill to self-assess readiness to decompose the plan into task files.
+If you get a **Score >= 0.9:** proceed straight to Step 2. Otherwise, let the `confidence-check` go through refining the idea with the user until it gets a score of above 0.9.
 
-**Skip grilling** only when the user signals the intent is already sharp — e.g. they say "skip grilling" / "already grilled", or pass a finished spec/PRD/design doc. In that case work from whatever is already in context, exactly as `to-issues` does.
+### 2. Design check
 
-### 2. Explore the codebase (optional)
-
-If you have not already explored the codebase, do so to understand the current state of the code. Slice titles and descriptions should use the project's domain vocabulary and respect any ADRs in the area you're touching. Look for prefactoring opportunities — "make the change easy, then make the easy change."
-
-(Unlike `to-issues`, there is no issue tracker or triage-label vocabulary to gather — these tasks live as local files.)
+Run the `use-design-check` skill to decide whether the work needs a `/design` pass before any slice can be written.
 
 ### 3. Draft vertical slices
 
-Break the plan into **tracer-bullet** slices. Each slice is a thin vertical cut through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
+Once you are confident about the intent and if necessary went through the design phase with the user, break the plan into **tracer-bullet** slices. Each slice is a thin vertical cut through ALL integration layers end-to-end, NOT a horizontal slice of one layer.
 
 <vertical-slice-rules>
 
-- Each slice delivers a narrow but COMPLETE path through every layer (schema, API, UI, tests)
+- Each slice delivers a narrow but COMPLETE path through every layer (e.g. schema, API, UI, tests)
 - A completed slice is demoable or verifiable on its own
 - Any prefactoring should be done first
 
@@ -56,60 +46,34 @@ Ask the user:
 
 Iterate until the user approves the breakdown.
 
-### 5. Write the task files
+### 5. Write the task files and sync the tracker
 
-Once approved, write one prompt file per slice into `<cwd>/.claude/maestro-tasks/`. Create the directory if it doesn't exist.
+Once approved, prepare one slice object per approved item — **do not write the markdown files or `status.json` by hand.** Order slices in the array exactly as the topological order from Step 4 (blockers before dependents; the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild` — choosing the workflow is the orchestrator's job (`maestro.md` Step 1), not the prompt's.
 
-**Numbering — append, never overwrite:**
-
-- Read the existing `NNN-*.md` files in `.claude/maestro-tasks/`. Find the highest existing number; new files continue from there. Never clear or overwrite existing files — the user may be mid-way through running an earlier queue.
-- Within this batch, order the slices **topologically** (blockers get lower numbers) so that running the files in numeric order is always a safe execution order.
-- Filenames: `NNN-kebab-slug.md`, zero-padded to 3 digits (`001-…`, `012-…`), the slug derived from the slice title.
-
-**File contents — the hybrid prompt envelope.** Each file is a workflow-agnostic prompt: an imperative opener (so the orchestrator can classify it as a request) wrapping the issue-style body. **Do not name agents or workflows** — choosing the workflow is the orchestrator's job (`maestro.md` Step 1), not the prompt's.
-
-<task-file-template>
-# <slice title>
-
-Implement the following vertical slice. When complete, ensure every acceptance
-criterion below is met.
-
-## What to build
-
-A concise description of this vertical slice — the end-to-end behavior, not a
-layer-by-layer implementation plan. Use the project's domain vocabulary. Avoid
-specific file paths or code snippets; they go stale fast. Exception: if a precise
-artifact (state machine, reducer, schema, type shape) encodes a decision better
-than prose, inline just the decision-rich part.
-
-## Acceptance criteria
-
-- [ ] Criterion 1
-- [ ] Criterion 2
-- [ ] Criterion 3
-
-## Blocked by
-
-- `002-other-slice.md`   (reference sibling task files by name)
-
-Or "None — can start immediately" if no blockers.
-</task-file-template>
-
-`Blocked by` references sibling task files by name. It is the **sole authored source of the dependency graph** — the next step parses it into the status tracker, and the `/maestro-tasks` view derives each task's blocked/ready state from it. Because numbering is topologically sorted, "run them in order" is always a valid path; `Blocked by` records the precise graph for anything non-linear. (The Maestro orchestrator still runs one workflow at a time and does not auto-chain these files.)
-
-Never write task **state** (done/ready/blocked) into the markdown — state lives only in `status.json`, maintained by the tracker in the next step.
-
-### 6. Sync the status tracker
-
-After writing the files, refresh `<cwd>/.claude/maestro-tasks/status.json` so the new tasks (and their `Blocked by` edges) are picked up:
-
-```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-task-status.cjs" sync
+```json
+[
+  {
+    "title": "Add login form",
+    "whatToBuild": "A concise description of this vertical slice — the end-to-end behavior, not a layer-by-layer implementation plan. Use the project's domain vocabulary. Avoid specific file paths or code snippets; they go stale fast. Exception: if a precise artifact (state machine, reducer, schema, type shape) encodes a decision better than prose, inline just the decision-rich part.",
+    "acceptanceCriteria": ["Criterion 1", "Criterion 2", "Criterion 3"],
+    "blockedBy": []
+  },
+  {
+    "title": "Wire login to session store",
+    "whatToBuild": "...",
+    "acceptanceCriteria": ["Criterion 1"],
+    "blockedBy": [0]
+  }
+]
 ```
 
-`sync` parses each file's `## Blocked by` section, adds entries for the new files, preserves any tasks already marked `done`, and recomputes every `ready`/`blocked`. It's idempotent and safe to re-run. (Uses the plugin-root script so it works even before `/maestro-install` has copied the runtime scripts into the project.)
+`blockedBy` is a list of **indices into this same array** (not filenames — the script hasn't assigned any yet). Write the array to a scratch file and run:
 
-### 7. Report
+```bash
+node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-write-tasks.cjs" <path-to-json>
+```
+
+### 6. Report
 
 Tell the user how many task files were written, the numeric range (e.g. `003–007`), and that each is ready to paste into (or run from) a session where the `/maestro` skill is invoked.
 

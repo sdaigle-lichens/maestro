@@ -4,23 +4,22 @@ Yes, any discovered agent, same list as the Tools tab. My intent is to decouple 
 
 ● Good — that confirms the scope. One consequence to flag as we go: this generalizes cleanly with what's already there, since MaestroInstanceV3.agent and the templates/handoffs/<sender>/<receiver>.md convention are already agent-name-agnostic (they key off the frontmatter name, not a fixed list). The one place Maestro does hard-code the 7-agent list is SKILL_TAGS (the skill-tagging feature) — that's a separate system and out of scope here, just flagging it so it's not confused with this effort.
 
-I want to make maestro agent agnostic. In other terms, my intent is to decouple maestro from the fixed agent list and to make it usable by any agent on the user's computer. The agents shipped with maestro are simply there to get the user started. But maestro should be usable even without the agents from the plugin. Are there places in the runtime scripts where agents from maestro are still hardcoded that should be removed ? I understand that for installation and update the templates agents can be kept. A previous session flagged that the one place Maestro does hard-code the 7-agent list is SKILL_TAGS (the skill-tagging feature). I don't know it this is still true.
+I want to make maestro runtime agent agnostic. In other terms, my intent is to decouple maestro's runtime from the fixed agent list and to make it usable by any agent on the user's computer. The agents shipped with maestro in the marketplace/plugin (backend, frontend, mobile, refactor, reviewer, scribe, test) are simply there to get the user started. But maestro should be usable even without the agents from the plugin. Are there places in the runtime scripts where agents from maestro are still hardcoded that should be removed ? I understand that for installation, uninstallation and update scripts and skills, the hardcoded agents part can be kept since we want them installed and updated so they stay relevant. A previous session flagged that the one place Maestro does hard-code the 7-agent list is SKILL_TAGS (the skill-tagging feature). I don't know it this is still true.
 
 ---
 
 - Settings to use or not maestro-tasks, add a field to maestro.json. Is set to true if user calls /to-maestro-tasks or checked in the app for the project. This will inject the related directive in the maestro skill template. Similar from the step 1 custom checks
 - Add to the maestro skill template to step 4 to ask the user if he wants to run the maestro-post-mortem skill when the session failed to do a streamlined and clean job (e.g. major review fix needed or refactor or failed to complete the task given correctly without needing a hard steering from the user).
 - Reuse the fork agent logic on agent description update in the app to add in the right panel a content tab where the full agent's content except for it's header can be edited as well
-- Update to-maestro task to go replace step 1 and 2 by:
-  1. Use confidence-check
-  2. Use design-check
-- Update the use-design-check skill to be agent agnostic and go through the list of concepts skill and read the relevants one to understand correctly the task at hand
+
+- Update the to be and go through the list of concepts skill and read the relevants one to understand correctly the task at hand
 
 ---
 
-- .claude/skills/maestro-architecture/SKILL.md
-- apps/maestro/.claude/skills/create-skills-architecture/SKILL.md
-- apps/maestro/.claude/skills/workflow-view/SKILL.md
-- .claude/skills/react-flow-canvas-geometry/SKILL.md
+I want to improve the `/use-design-check skill` skill. More specifically, I would like it:
 
-You can use the /grill-me skill to clarify the plan.
+- to be agent agnostic
+- go through a list of steps using the TaskCreate tools
+- to evaluate if it needs a design based on if it changes significantly a concept or adds/remove a concept. If concept skills are implemented in the project, the `/use-design-check` could simply check if the task is related to an existing concept and if yes, if it goes inline with the existing concept or implies a potent refactoring. This could replace the "New ressource?" criteria that is not agent agnostic and mostly related to the backend agent.
+
+Keep the skill lean, I like it's current short style.
