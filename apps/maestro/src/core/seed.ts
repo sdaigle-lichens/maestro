@@ -16,7 +16,7 @@ const CORE_INSTANCES: MaestroInstanceV3[] = [
   // The scribe alone gets a seeded `loaded_skills`: `/scribe` is the routing rule for what belongs
   // in a concept skill versus in `docs/`, and it has to be in context BEFORE the agent starts
   // writing, not offered as one option among the project's own skills. Bare name, not
-  // `maestro:scribe` — `skills_available` already lists the bundled `use-design-check` unqualified
+  // `maestro:scribe` — `skills_available` already lists the bundled `use-code-architecture-design-check` unqualified
   // (see `defaultV3Config`), and the two have to agree.
   { name: "scribe", agent: "scribe", loaded_skills: ["scribe"], referenced_skills: [] },
 ];
@@ -269,12 +269,12 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     ...CORE_INSTANCES.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) })),
   ];
   const agentsAvailable = seededAgentNames(impl);
-  // skills_available = `use-design-check` + every skill assigned to an instance. It is seeded
-  // because the Refactor workflow below leads with a `skill:use-design-check` NODE — a Step 3
+  // skills_available = `use-code-architecture-design-check` + every skill assigned to an instance. It is seeded
+  // because the Refactor workflow below leads with a `skill:use-code-architecture-design-check` NODE — a Step 3
   // inline skill step, not the Step 1 gate of the same name. The Step 1 gates are opt-in and live
   // in `gates` below; nothing here makes either of them run.
   const skillsAvailable = Array.from(
-    new Set(["use-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
+    new Set(["use-code-architecture-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
   );
   // Vertical spacing in the seeded layout grows with each instance's skill count.
   const skillCount: SkillCount = (name) => skillsFor(name).length;
@@ -286,7 +286,7 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     workflows: [
       buildWorkflow("default", "default", impl, skillCount),
       buildWorkflow("tdd", "tdd", impl, skillCount),
-      linearWorkflow("Refactor", ["skill:use-design-check", "human_review-1", "refactor"], skillCount),
+      linearWorkflow("Refactor", ["skill:use-code-architecture-design-check", "human_review-1", "refactor"], skillCount),
       linearWorkflow("Documentation", ["scribe"], skillCount),
       linearWorkflow("Review", ["reviewer"], skillCount),
       buildTestsWorkflow("Tests", impl, skillCount),
@@ -294,6 +294,6 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     rules: [],
     // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
     // well-understood request should not pay for two skill invocations it never asked for.
-    gates: { confidence_check: false, use_design_check: false },
+    gates: { confidence_check: false, use_code_architecture_design_check: false },
   };
 }

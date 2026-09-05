@@ -142,7 +142,7 @@ export interface MaestroProjectTagsSlice {
  */
 export interface MaestroGates {
   confidence_check: boolean;
-  use_design_check: boolean;
+  use_code_architecture_design_check: boolean;
 }
 
 export interface MaestroGatesSlice {

@@ -198,7 +198,7 @@ The **runtime** half — hook scripts that fire inside a session: `maestro-injec
 `maestro-step1-gates.cjs` is the odd one: not a hook, and not invoked by the model either. The
 orchestrator skill's Step 1 names it with Claude Code's `` !`command` `` syntax, so the HARNESS runs
 it while expanding the skill and injects its one line of stdout into the body — a third delivery
-channel beside hooks and prose. It prints which of `/confidence-check` and `/use-design-check` this
+channel beside hooks and prose. It prints which of `/confidence-check` and `/use-code-architecture-design-check` this
 project's `maestro.json` `gates` block turns on (`resolveGates` in `src/core/config.ts` is the
 app-side reader of the same field, behind the Step 1 gates card on `/maestro`). It exits 0 and says
 nothing on stderr under every input, because an injected command that exits non-zero aborts the

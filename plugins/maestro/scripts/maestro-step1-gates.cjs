@@ -44,7 +44,7 @@ const path = require("path");
 const LINES = {
   both:
     "Step 1 — run these two gates now, in this order, and no others: /confidence-check, then " +
-    "/use-design-check. Use the Skill tool for each, in your own context — never dispatch a " +
+    "/use-code-architecture-design-check. Use the Skill tool for each, in your own context — never dispatch a " +
     "subagent for them. If confidence is low, gather more information; if the design check raises " +
     "issues, address them. Both are gates on the same thing — that the request is understood well " +
     "enough to commit a workflow to it — so clear them before Step 2. If this project doesn't " +
@@ -55,7 +55,7 @@ const LINES = {
     "before committing a workflow to the request. If this project doesn't actually have that " +
     "skill, skip it and say so; never invent one. Then continue to Step 2.",
   design:
-    "Step 1 — run this one gate now, and no others: /use-design-check. Use the Skill tool, in your " +
+    "Step 1 — run this one gate now, and no others: /use-code-architecture-design-check. Use the Skill tool, in your " +
     "own context — never dispatch a subagent for it. If it raises issues, address them before " +
     "committing a workflow to the request. If this project doesn't actually have that skill, skip " +
     "it and say so; never invent one. Then continue to Step 2.",
@@ -79,7 +79,7 @@ function gateLine(projectDir) {
 
   // Strict `=== true`: a string, a number, null or a missing field is off, never truthy.
   const confidence = gates.confidence_check === true;
-  const design = gates.use_design_check === true;
+  const design = gates.use_code_architecture_design_check === true;
 
   if (confidence && design) return LINES.both;
   if (confidence) return LINES.confidence;

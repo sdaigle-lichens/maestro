@@ -216,13 +216,13 @@ describe("saveConfig", () => {
 
     const res = await saveConfig(root, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_design_check: false } },
+      slice: { gates: { confidence_check: true, use_code_architecture_design_check: false } },
     });
 
     expect(res.render.ok).toBe(true);
     expect(res.warnings).toEqual([]);
     expect(fs.readFileSync(skillPath, "utf8")).toBe(before); // same config in, same table out
-    expect(readConfig(root)!.gates).toEqual({ confidence_check: true, use_design_check: false });
+    expect(readConfig(root)!.gates).toEqual({ confidence_check: true, use_code_architecture_design_check: false });
     // …and the slices the user authored are untouched by it.
     expect(readConfig(root)!.workflows).toEqual(defaultish.workflows);
   });

@@ -1,6 +1,6 @@
 # Gates slice
 
-`MaestroGatesSlice` is `gates: { confidence_check: boolean; use_design_check: boolean }` — the two
+`MaestroGatesSlice` is `gates: { confidence_check: boolean; use_code_architecture_design_check: boolean }` — the two
 optional checks the orchestrator's **Step 1** runs before it classifies a request. Both default to
 **off**: `defaultV3Config` seeds them `false`, and there is no migration, so a project installed
 before `032` simply has no `gates` field.
@@ -11,12 +11,19 @@ degenerate one.
 ## `resolveGates` is the only reader, and it is deliberately paranoid
 
 ```ts
-export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_design_check: false };
+export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_code_architecture_design_check: false };
 ```
 
 `resolveGates(cfg)` reads each field with a strict `=== true`, so a missing config, an absent or
 non-object `gates`, and a value that is `"true"`, `1` or `null` all resolve to **off**. It returns a
 fresh object every call — never a shared reference a caller could mutate into the config.
+
+**The key was renamed once, and the rename was not migrated.** `use_design_check` became
+`use_code_architecture_design_check` when the gate skill was renamed. `resolveGates` reads only the
+new name with `=== true`, so an existing `maestro.json` carrying the old key resolves to **off** —
+a project that had the design gate on loses it silently, and the stale key is left in the file. The
+paranoid reader is what makes this quiet rather than an error; re-ticking the box on `/maestro`
+writes the new key.
 
 **Off is the answer to every unclear case, on purpose.** The alternative — "preserve the historical
 behaviour and run both" — would make a corrupt config quietly cost two skill invocations per

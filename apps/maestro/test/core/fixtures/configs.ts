@@ -54,7 +54,7 @@ export const defaultish: MaestroConfigV3 = {
  */
 export const withSkillNodes: MaestroConfigV3 = {
   version: 3,
-  gates: { confidence_check: true, use_design_check: false },
+  gates: { confidence_check: true, use_code_architecture_design_check: false },
   agents_available: ["frontend", "reviewer"],
   skills_available: ["react", "confidence-check"],
   workflow_instances: [

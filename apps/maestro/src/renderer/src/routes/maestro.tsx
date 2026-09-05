@@ -495,8 +495,8 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
       blurb: "Score how well the request is understood before committing a workflow to it.",
     },
     {
-      key: "use_design_check",
-      skill: "/use-design-check",
+      key: "use_code_architecture_design_check",
+      skill: "/use-code-architecture-design-check",
       blurb: "Decide whether the work needs a design pass first. Runs on its own if you leave the box above unchecked.",
     },
   ];

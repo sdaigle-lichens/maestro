@@ -3,8 +3,8 @@ name: maestro-architecture
 description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract and the three-tier resolution (project file, global sqlite store, bundled seed) behind each route's handoff_details protocol, how a route's payload travels on an agent channel (`.claude/channels/<receiver>/<sender>.1.md`) rather than through the orchestrator's own context, the run_id stamp that guards a delivery's freshness, the orchestrator skill's managed regions and its optional config-driven Step 1 gates (injected dynamic context — a third delivery channel beside hooks and template prose), and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, where a route's handoff_details payload shape comes from and how to add or change one, why a channel payload wasn't delivered or was delivered late, why /maestro ran (or skipped) the confidence and design gates, why a condition-edge loop-back resumed an agent instead of spawning a fresh Task, why a resumed subagent's injected context is five blocks shorter than a first run's (`040`), why a hand-edited config's duplicate agent type is reported as a banner, a `/maestro-update` warning and an install-report line rather than repaired (`041`), or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
+  version: "1.14"
+  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
 ---
 
 # Maestro Runtime Architecture
@@ -267,22 +267,38 @@ Note: protocol templates live **only** in the agent template files, never in `ma
   Reaching an existing install needs a plugin re-pull **and** an update — the same version trap the
   arbitration guard shipped through. See `updating-maestro`.
 - **Step 1's gates are a per-project setting and they default to OFF** (`032`). `maestro.json`'s
-  `gates: { confidence_check, use_design_check }` is resolved at invocation time by
+  `gates: { confidence_check, use_code_architecture_design_check }` is resolved at invocation time by
   `maestro-step1-gates.cjs`, whose one line of stdout is injected into the body and carries the
   whole step — which gates to run, in what order, and how. All four combinations are valid and none nests inside another. A
   seeded config has both `false`, and **every** degenerate case — no config, corrupt JSON,
   `version !== 3`, `gates` absent or not a plain object, a non-boolean value, any throw — resolves
   to the continue-to-Step-2 line, quietly, with exit 0. The checkboxes live on the desktop app's `/maestro` page;
   there is no migration, so a project installed before `032` simply has no `gates` field and skips.
-  `/confidence-check` and `/use-design-check` are still bundled in this plugin
-  (`plugins/maestro/skills/{confidence-check,use-design-check}`), but the orchestrator no longer
+  `/confidence-check` and `/use-code-architecture-design-check` are still bundled in this plugin
+  (`plugins/maestro/skills/{confidence-check,use-code-architecture-design-check}`), but the orchestrator no longer
   references them "if available" — it runs what the injected line names, and is told to say so
   rather than invent one if a named gate isn't installed.
-- **`use-design-check` means two different things and only one of them is a gate.** The seeded
-  **Refactor** workflow has a `skill:use-design-check` **node** in its success path — that is
+- **The design gate is a router, and what it routes to is a third bundled skill.**
+  `use-code-architecture-design-check` only decides RUN/SKIP; the pass itself is
+  `plugins/maestro/skills/code-architecture-design/` (deep modules, seams, the Design Brief), which
+  the model invokes with the Skill tool. Two consequences worth knowing: the check is
+  `user-invocable: false` and the design skill is **not**, so a user can reach the pass directly
+  without the gate; and both inject the project's concept list with
+  `` !`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list` `` at expansion time,
+  which is why each carries that exact command in `allowed-tools`. **`code-architecture-design` is
+  not `/design`** — that name resolves to the Claude Design canvas skill (visual mockups), which is
+  the collision the rename exists to end.
+- **`use-code-architecture-design-check` means two different things and only one of them is a gate.** The seeded
+  **Refactor** workflow has a `skill:use-code-architecture-design-check` **node** in its success path — that is
   Step 3's inline-skill mechanism, driven by `workflows`, and it is untouched by the `gates` field.
   Turning both gates off does not remove it. `seed.ts` used to call it "the always-present gate
   skill" in a comment; that was corrected in `032` because it invited exactly this confusion.
+  **The rename from `use-design-check` was not migrated in either place.** `defaultV3Config` seeds
+  the new name into `skills_available` and into the Refactor workflow's node, but an existing
+  `maestro.json` keeps `skill:use-design-check` and a `gates.use_design_check` key — a node naming a
+  skill the plugin no longer ships, and a gate flag `resolveGates` no longer reads, so a project
+  that had the design gate **on** comes back silently off. Both are hand-edits (or a `/maestro` save)
+  away, and nothing reports either.
 - **Session logs are append-only by design.** Don't switch `maestro_session.log.jsonl` back to a read-modify-write JSON array — parallel subagents would lose entries.
 - **A channel file's stamp, not its mtime, decides whether it's "this run" (`036`).** `writeStamp`
   only stamps a file left **unstamped** by `SubagentStop` — a file stamped with a stale `run_id`

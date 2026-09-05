@@ -3,8 +3,8 @@ name: concept-skills-system
 description: "Explains the concept-skill machinery the maestro plugin ships: what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the maestro-concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, or deciding whether something belongs in a concept skill or in docs/."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: 5555a3e81af2255ebb44a312f5d932bd8dbdff8f
+  version: "1.2"
+  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
 ---
 
 # Concept-skill system
@@ -71,6 +71,18 @@ Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd).
 **Never hand-edit `metadata.version` or `metadata.last-update`.** The script owns them so a version
 cannot quietly drift — and a version stuck at `1.0` makes `/update-single-concept-skill` re-research
 a concept that was already done.
+
+## `list` is a runtime contract, not just a maintenance command
+
+Two **published** plugin skills inject its stdout with Claude Code's `` !`command` `` syntax while
+the harness expands them, each granting exactly
+`Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)` in `allowed-tools`:
+`use-code-architecture-design-check` (to judge whether a task adds or reshapes a concept) and
+`code-architecture-design` (to load the concepts a new module sits next to). So `list`'s human
+output format is depended on by end users' sessions, not only by the four flows — changing its shape
+is a published-surface change, and both skills must keep the same fallback wording for the empty /
+`[shell command execution disabled by policy]` case. `--json` is the stable form for programmatic
+callers; leave it to them.
 
 ## Traps
 

@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.5"
-  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
+  version: "1.6"
+  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
 ---
 
 # Maestro config model (v3)
@@ -28,7 +28,7 @@ entry point the IPC layer calls.
 | `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names. Flat, not nested — `decideSync` tracks one thing per key and the thing here is a pair. Same absence rule as `reports?`. |
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                      |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                           |
-| `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
+| `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_code_architecture_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
 
 ## Slice merges are the load-bearing rule
 

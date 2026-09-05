@@ -165,7 +165,7 @@ var CORE_INSTANCES = [
   // The scribe alone gets a seeded `loaded_skills`: `/scribe` is the routing rule for what belongs
   // in a concept skill versus in `docs/`, and it has to be in context BEFORE the agent starts
   // writing, not offered as one option among the project's own skills. Bare name, not
-  // `maestro:scribe` — `skills_available` already lists the bundled `use-design-check` unqualified
+  // `maestro:scribe` — `skills_available` already lists the bundled `use-code-architecture-design-check` unqualified
   // (see `defaultV3Config`), and the two have to agree.
   { name: "scribe", agent: "scribe", loaded_skills: ["scribe"], referenced_skills: [] }
 ];
@@ -327,7 +327,7 @@ function defaultV3Config(implAgents, skillMap = {}) {
   ];
   const agentsAvailable = seededAgentNames(impl);
   const skillsAvailable = Array.from(
-    /* @__PURE__ */ new Set(["use-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
+    /* @__PURE__ */ new Set(["use-code-architecture-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
   );
   const skillCount = (name) => skillsFor(name).length;
   return {
@@ -338,7 +338,7 @@ function defaultV3Config(implAgents, skillMap = {}) {
     workflows: [
       buildWorkflow("default", "default", impl, skillCount),
       buildWorkflow("tdd", "tdd", impl, skillCount),
-      linearWorkflow("Refactor", ["skill:use-design-check", "human_review-1", "refactor"], skillCount),
+      linearWorkflow("Refactor", ["skill:use-code-architecture-design-check", "human_review-1", "refactor"], skillCount),
       linearWorkflow("Documentation", ["scribe"], skillCount),
       linearWorkflow("Review", ["reviewer"], skillCount),
       buildTestsWorkflow("Tests", impl, skillCount)
@@ -346,7 +346,7 @@ function defaultV3Config(implAgents, skillMap = {}) {
     rules: [],
     // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
     // well-understood request should not pay for two skill invocations it never asked for.
-    gates: { confidence_check: false, use_design_check: false }
+    gates: { confidence_check: false, use_code_architecture_design_check: false }
   };
 }
 // Annotate the CommonJS export names for ESM import in node:

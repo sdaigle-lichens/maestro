@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.7"
-  last-update: 19a84d56fa22146635222ccb1662e152cdbadb1c
+  version: "1.8"
+  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -186,6 +186,21 @@ themselves already shipped inside the plugin — all that changed is where they 
 is the part to plan for rather than the component: the asset manifest grew, so `shippedRuntimeId`
 moved and **every installed project reports stale exactly once** — and until it re-installs, its own
 copy of the hook goes on silently resolving nothing for an agent whose report is only global.
+
+`0.5.0` — `code-architecture-design` — is the eighth, and the **textbook minor**: a new directory
+under `plugins/maestro/skills/`, which is the minor row's own wording. Nothing else in the change
+argues for it — the rewiring of `use-code-architecture-design-check` and `to-maestro-tasks` is prose
+inside existing skill bodies (`0.3.5`'s patch rule), and the gate-key rename is script behaviour
+(`0.4.3`'s). It subsumes the `0.4.10` those would have shipped as on their own; a minor and the patch
+it swallows are one bump, not two.
+
+The tempting argument for a **major**, and why it fails: the table's major row says "a skill removed
+or renamed", and `use-design-check` was renamed out of existence. But the row's test is the
+consequence beside it — someone's `/command` stops resolving — and that skill is
+`user-invocable: false`, so no user ever typed it. What does break is a *config* that names it: an
+existing `maestro.json` keeps `skill:use-design-check` in its Refactor workflow and a
+`gates.use_design_check` key, neither migrated. Judge the row by its consequence column, then say the
+un-migrated part out loud in the release note — the bump component cannot carry that warning for you.
 
 ### Verify the refresh landed
 

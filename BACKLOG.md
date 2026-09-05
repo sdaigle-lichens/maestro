@@ -15,11 +15,3 @@ I want to make maestro runtime agent agnostic. In other terms, my intent is to d
 - Update the to be and go through the list of concepts skill and read the relevants one to understand correctly the task at hand
 
 ---
-
-I want to improve the `/use-design-check skill` skill. More specifically, I would like it:
-
-- to be agent agnostic
-- go through a list of steps using the TaskCreate tools
-- to evaluate if it needs a design based on if it changes significantly a concept or adds/remove a concept. If concept skills are implemented in the project, the `/use-design-check` could simply check if the task is related to an existing concept and if yes, if it goes inline with the existing concept or implies a potent refactoring. This could replace the "New ressource?" criteria that is not agent agnostic and mostly related to the backend agent.
-
-Keep the skill lean, I like it's current short style.

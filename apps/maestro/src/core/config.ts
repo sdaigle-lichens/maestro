@@ -93,7 +93,7 @@ export type ConfigSlice =
   | { sliceType: "gates"; slice: MaestroGatesSlice };
 
 /** Both gates off — what an absent, partial or corrupt `gates` field resolves to, per field. */
-export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_design_check: false };
+export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_code_architecture_design_check: false };
 
 /**
  * The one reader of `gates`. Every field is compared with a strict `=== true`, so an absent
@@ -108,7 +108,7 @@ export function resolveGates(cfg: MaestroConfigV3 | null): MaestroGates {
   if (!raw) return { ...DEFAULT_GATES };
   return {
     confidence_check: raw.confidence_check === true,
-    use_design_check: raw.use_design_check === true,
+    use_code_architecture_design_check: raw.use_code_architecture_design_check === true,
   };
 }
 

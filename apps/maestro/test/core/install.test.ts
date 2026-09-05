@@ -1614,7 +1614,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
    * Duplicating the sentence in the test would pin the wording and prove nothing about the rule.
    */
   function skipLine(root: string): string {
-    writeConfig(root, { ...defaultish, gates: { confidence_check: false, use_design_check: false } });
+    writeConfig(root, { ...defaultish, gates: { confidence_check: false, use_code_architecture_design_check: false } });
     return runGates(root).stdout;
   }
 
@@ -1655,9 +1655,9 @@ describe("maestro-step1-gates.cjs (032)", () => {
     const seen = new Set<string>();
 
     for (const confidence_check of [false, true]) {
-      for (const use_design_check of [false, true]) {
-        const label = `confidence=${confidence_check} design=${use_design_check}`;
-        writeConfig(root, { ...defaultish, gates: { confidence_check, use_design_check } });
+      for (const use_code_architecture_design_check of [false, true]) {
+        const label = `confidence=${confidence_check} design=${use_code_architecture_design_check}`;
+        writeConfig(root, { ...defaultish, gates: { confidence_check, use_code_architecture_design_check } });
         const { code, stdout, stderr } = runGates(root);
 
         expect(code, `${label} must exit 0`).toBe(0);
@@ -1667,10 +1667,10 @@ describe("maestro-step1-gates.cjs (032)", () => {
 
         // Named iff enabled — this is the whole decision the script exists to make.
         expect(stdout.includes("/confidence-check"), label).toBe(confidence_check);
-        expect(stdout.includes("/use-design-check"), label).toBe(use_design_check);
+        expect(stdout.includes("/use-code-architecture-design-check"), label).toBe(use_code_architecture_design_check);
         // Both on: confidence first. The order is part of the instruction, not incidental.
-        if (confidence_check && use_design_check) {
-          expect(stdout.indexOf("/confidence-check")).toBeLessThan(stdout.indexOf("/use-design-check"));
+        if (confidence_check && use_code_architecture_design_check) {
+          expect(stdout.indexOf("/confidence-check")).toBeLessThan(stdout.indexOf("/use-code-architecture-design-check"));
         }
         // Every state hands off to Step 2, including the one that does nothing else.
         expect(stdout, `${label} must send the orchestrator on to Step 2`).toMatch(/Step 2/);
@@ -1703,12 +1703,12 @@ describe("maestro-step1-gates.cjs (032)", () => {
         () =>
           writeRawConfig(
             root,
-            JSON.stringify({ version: 3, gates: { confidence_check: "true", use_design_check: "true" } })
+            JSON.stringify({ version: 3, gates: { confidence_check: "true", use_code_architecture_design_check: "true" } })
           ),
       ],
       [
         "gate values are numbers",
-        () => writeRawConfig(root, JSON.stringify({ version: 3, gates: { confidence_check: 1, use_design_check: 1 } })),
+        () => writeRawConfig(root, JSON.stringify({ version: 3, gates: { confidence_check: 1, use_code_architecture_design_check: 1 } })),
       ],
       ["the whole file is an array", () => writeRawConfig(root, "[]")],
       [

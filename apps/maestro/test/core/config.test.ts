@@ -74,9 +74,9 @@ describe("mergeSlice — gates", () => {
   it("sets gates and leaves every other field untouched", () => {
     const next = mergeSlice(defaultish, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_design_check: true } },
+      slice: { gates: { confidence_check: true, use_code_architecture_design_check: true } },
     });
-    expect(next.gates).toEqual({ confidence_check: true, use_design_check: true });
+    expect(next.gates).toEqual({ confidence_check: true, use_code_architecture_design_check: true });
     expect(next.agents_available).toBe(defaultish.agents_available);
     expect(next.skills_available).toBe(defaultish.skills_available);
     expect(next.workflow_instances).toBe(defaultish.workflow_instances);
@@ -88,13 +88,13 @@ describe("mergeSlice — gates", () => {
   it("replaces rather than merges — unchecking a box actually writes false", () => {
     const on = mergeSlice(defaultish, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_design_check: true } },
+      slice: { gates: { confidence_check: true, use_code_architecture_design_check: true } },
     });
     const off = mergeSlice(on, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: false, use_design_check: false } },
+      slice: { gates: { confidence_check: false, use_code_architecture_design_check: false } },
     });
-    expect(off.gates).toEqual({ confidence_check: false, use_design_check: false });
+    expect(off.gates).toEqual({ confidence_check: false, use_code_architecture_design_check: false });
   });
 
   it("starts absent on a blank config until a gates slice is saved", () => {
@@ -106,26 +106,26 @@ describe("mergeSlice — gates", () => {
   it("leaves gates alone on every other slice's save, and vice versa", () => {
     const withGates = mergeSlice(defaultish, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_design_check: false } },
+      slice: { gates: { confidence_check: true, use_code_architecture_design_check: false } },
     });
 
     const afterWorkflows = mergeSlice(withGates, {
       sliceType: "workflows",
       slice: { agents_available: ["frontend"], skills_available: [], workflow_instances: [], workflows: [] },
     });
-    expect(afterWorkflows.gates).toEqual({ confidence_check: true, use_design_check: false });
+    expect(afterWorkflows.gates).toEqual({ confidence_check: true, use_code_architecture_design_check: false });
 
     const afterRules = mergeSlice(withGates, { sliceType: "rules", slice: { rules: [] } });
-    expect(afterRules.gates).toEqual({ confidence_check: true, use_design_check: false });
+    expect(afterRules.gates).toEqual({ confidence_check: true, use_code_architecture_design_check: false });
 
     const afterTags = mergeSlice(withGates, { sliceType: "project-tags", slice: { project_tags: ["mobile"] } });
-    expect(afterTags.gates).toEqual({ confidence_check: true, use_design_check: false });
+    expect(afterTags.gates).toEqual({ confidence_check: true, use_code_architecture_design_check: false });
 
     // …and the other direction: a gates save disturbs none of the three.
     const tagged = mergeSlice(withGates, { sliceType: "project-tags", slice: { project_tags: ["backend"] } });
     const afterGates = mergeSlice(tagged, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: false, use_design_check: true } },
+      slice: { gates: { confidence_check: false, use_code_architecture_design_check: true } },
     });
     expect(afterGates.project_tags).toEqual(["backend"]);
     expect(afterGates.rules).toBe(tagged.rules);
@@ -138,7 +138,7 @@ describe("mergeSlice — gates", () => {
 
 describe("resolveGates", () => {
   it("reads a well-formed block as written", () => {
-    expect(resolveGates(withSkillNodes)).toEqual({ confidence_check: true, use_design_check: false });
+    expect(resolveGates(withSkillNodes)).toEqual({ confidence_check: true, use_code_architecture_design_check: false });
   });
 
   it("resolves an absent block, and a null config, to both off", () => {
@@ -147,8 +147,8 @@ describe("resolveGates", () => {
   });
 
   it("resolves a partial block per field, filling the missing one with false", () => {
-    const cfg = { ...defaultish, gates: { use_design_check: true } } as unknown as MaestroConfigV3;
-    expect(resolveGates(cfg)).toEqual({ confidence_check: false, use_design_check: true });
+    const cfg = { ...defaultish, gates: { use_code_architecture_design_check: true } } as unknown as MaestroConfigV3;
+    expect(resolveGates(cfg)).toEqual({ confidence_check: false, use_code_architecture_design_check: true });
   });
 
   // Strict `=== true` throughout: this is the difference between "skip" and a gate that turns
@@ -157,7 +157,7 @@ describe("resolveGates", () => {
     for (const bad of ["true", 1, {}, [], "yes"]) {
       const cfg = {
         ...defaultish,
-        gates: { confidence_check: bad, use_design_check: bad },
+        gates: { confidence_check: bad, use_code_architecture_design_check: bad },
       } as unknown as MaestroConfigV3;
       expect(resolveGates(cfg), `${JSON.stringify(bad)} must resolve to off`).toEqual(DEFAULT_GATES);
     }

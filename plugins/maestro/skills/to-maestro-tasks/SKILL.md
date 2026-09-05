@@ -1,6 +1,6 @@
 ---
 name: to-maestro-tasks
-description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the confidence-check and use-design-check gates to sharpen intent and flag a needed /design pass, decomposes the work into tracer-bullet vertical slices, then writes one numbered, workflow-agnostic prompt file per slice for the Maestro orchestrator to classify and execute. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, or asks to convert a plan/spec/idea into runnable task files."
+description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the confidence-check and use-code-architecture-design-check gates to sharpen intent and flag a needed code-architecture-design pass, decomposes the work into tracer-bullet vertical slices, then writes one numbered, workflow-agnostic prompt file per slice for the Maestro orchestrator to classify and execute. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, or asks to convert a plan/spec/idea into runnable task files."
 ---
 
 # To Maestro Tasks
@@ -16,7 +16,7 @@ If you get a **Score >= 0.9:** proceed straight to Step 2. Otherwise, let the `c
 
 ### 2. Design check
 
-Run the `use-design-check` skill to decide whether the work needs a `/design` pass before any slice can be written.
+Run the `use-code-architecture-design-check` skill to decide whether the work needs a `code-architecture-design` pass before any slice can be written. If it says RUN, invoke the `code-architecture-design` skill and carry its Design Brief into the slices below.
 
 ### 3. Draft vertical slices
 

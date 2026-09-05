@@ -71,7 +71,7 @@ describe("save against a really-installed project", () => {
     // The Refactor workflow leads with an inline skill step.
     expect(res.render.rows).toContainEqual({
       workflow: "Refactor",
-      successPath: "/use-design-check → human review → @refactor",
+      successPath: "/use-code-architecture-design-check → human review → @refactor",
     });
 
     const table = extractRegion(fs.readFileSync(orchestratorSkillPath(root), "utf8"), "HANDOFFS");
@@ -141,7 +141,7 @@ describe("save against a really-installed project", () => {
 
     await saveConfig(root, {
       sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_design_check: true } },
+      slice: { gates: { confidence_check: true, use_code_architecture_design_check: true } },
     });
     await saveConfig(root, {
       sliceType: "workflows",
