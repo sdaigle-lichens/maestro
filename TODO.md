@@ -2,7 +2,7 @@
 
 ## Queue status
 
-**`040` and `041` are `ready`.** 39 done, 2 ready, 0 blocked.
+**`040`, `041` and `042` are `ready`.** 39 done, 3 ready, 0 blocked.
 
 **The plugin is at `0.4.6`.** `040` takes it to `0.4.7` — patch.
 
@@ -24,6 +24,18 @@
   and a **fork affordance** in the picker's all-placed dead end — forking gives the second instance a
   distinct `agent`, which dissolves all four failures at the root, and `forkAgent(..., newName)`
   already does renamed forks with frontmatter rewrite and a provenance record.
+- **`042-attribute-a-resumed-agents-log-entries-to-the-right-card.md`** (`ready`) — the follow-on
+  `039` created and `log-view` v2.2 recorded rather than fixed. `buildInstances` correlates a card's
+  `input`/`offeredSkills`/`delivered` to a `dispatch` entry by `agent_id` alone, which was unique per
+  run only while every invocation was a cold `Task`. A resumed run keeps its `agent_id`, so
+  `dispatchByAgentId` — a plain `Map` filled by one forward pass — is last-write-wins and *both*
+  cards read back the second run's spawning message and offered skills; the name fallback is wrong in
+  the mirror direction, and both cards render every delivery under that id. `offeredSkills` is the
+  one that bites: `/session-log` diffs it against the reported `skillsTriage`, so a misattributed set
+  can manufacture a phantom omission or hide a real one. Fix by bounding each lookup by position in
+  the append-only log rather than adding a correlation key — the run boundary is already in the file
+  order, and an `agent_id` that no longer matches the one `resumeTarget` hands `SendMessage` would be
+  worse than the view sorting two runs out. Pure function, no `plugins/` change, so no version bump.
 
 - **`036-move-handoff-payloads-onto-agent-channels.md`** (`done`) — the runtime half. Moved
   `handoff_details`, `filesChanged` and `conceptSkillGaps` out of an agent's final message and into
