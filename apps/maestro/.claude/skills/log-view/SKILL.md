@@ -1,10 +1,10 @@
 ---
 name: log-view
-description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender, and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the maestro_session.log.jsonl it reads. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, or why a delivered channel payload does or doesn't show up on the right card."
+description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender, and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the maestro_session.log.jsonl it reads. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, or why a delivered channel payload does or doesn't show up on the right card, or why an agent that was resumed (`039`) shows another run's input on its card."
 metadata:
   type: concept-skill
-  version: "2.1"
-  last-update: 3ef7c071e6ec0d89546617a02b03d5425c649fa3
+  version: "2.2"
+  last-update: 16cf905bae2420027bd1c87905b3083b3fbd48fc
 ---
 
 # Log View
@@ -246,7 +246,7 @@ Shows the selected instance's data in three sections:
 
 `buildInstances` in `src/renderer/src/utils/session-log.ts` (pure, no Node imports) walks entries in order and starts a **new segment whenever `origin` changes**. This means:
 
-- The same agent appearing after a main-session interlude becomes a **separate step** (correct — it's a second invocation).
+- The same agent appearing after a main-session interlude becomes a **separate step** (correct — it's a second invocation). Before `039` this also meant a fresh `agent_id`, since each invocation was a cold `Task`; a **resumed** run (`SendMessage` to an agent with a completed run this session) still segments into a separate step, but now shares its `agent_id` with the run it resumed — see "Things that bite" below for what that does to correlation.
 - The main session itself segments into multiple "Main Session" steps when subagents interleave (normal for sequential Maestro dispatch).
 - Parallel subagents would fragment, but Maestro runs agents sequentially, so interleaving is rare.
 
@@ -356,6 +356,7 @@ The plain tool-call log from `maestro-session-log.js` has **no outcome data** �
 - **`maestro-subagent-log.js` runs from the plugin dir, not the project copy.** Unlike `maestro-set-session-workflow.cjs` and `maestro-render-orchestrator.cjs` (which are copied into `.claude/scripts/` at install time), the SubagentStart/Stop scripts run directly from `${CLAUDE_PLUGIN_ROOT}/scripts/`. Editing `maestro-subagent-log.js` takes effect immediately for all projects. Adding or removing the hook registration in `hooks.json` requires a new Claude session to pick up.
 - **Large messages in `input`/`output`.** A spawning message that includes injected skills + handoff templates can be several kilobytes. The right detail panel sections are scrollable. The JSONL file stores the full messages; that's intentional for debugging fidelity.
 - **`--yellow` color token.** Added in `packages/styles/scss/abstracts/_tokens.scss` alongside `--green`/`--red`. Used for "unknown" status (subagent with no parseable HANDOFF line). Both light and dark mode variants exist.
+- **A resumed run (`039`) can put two `dispatch`/`handoff` pairs under one `agent_id`, and `dispatchByAgentId` is last-write-wins.** A condition-edge loop-back that resumes an agent with a completed run this session (see `maestro-architecture`'s Runtime lifecycle) keeps the SAME `agent_id` across both invocations — `SubagentStart`/`SubagentStop` fire again, so `maestro-subagent-log.js` appends a second `dispatch`/`handoff` pair correlated to it. `buildInstances`' `dispatchByAgentId` (`session-log.ts`) is a plain `Map` filled by one forward pass calling `.set(entry.agent_id, entry)` per dispatch entry, so the SECOND (resumed) dispatch entry overwrites the first — every segment sharing that `agent_id`, including the FIRST run's own segment, reads back the resumed run's `input`/`offeredSkills` rather than its own. `deliveredByAgentId` doesn't overwrite (it pushes onto an array), so it doesn't lose data, but it does mean both segments look up the SAME list and both cards render every delivery logged under that `agent_id`, not just the ones from their own run. Segmentation itself is unaffected (still one card per `origin` change) — it is only `input`/`offeredSkills`/`delivered` that can misattribute across a resumed agent's two cards.
 - **A `channel_delivery` entry's `origin` tells you nothing about who received it (`037`).** It is
   always `"main_session"`, hardcoded by the injector, exactly like a `dispatch` entry — so grouping
   log entries by segment (the way `buildInstances` starts a new `Instance` on every `origin` change)

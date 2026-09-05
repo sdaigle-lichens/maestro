@@ -37,6 +37,7 @@ __export(maestro_session_exports, {
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
   SESSION_LOG_FILE: () => SESSION_LOG_FILE,
+  agentRunsFromLog: () => agentRunsFromLog,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
   channelDir: () => channelDir,
@@ -59,6 +60,7 @@ __export(maestro_session_exports, {
   resolveHandoff: () => resolveHandoff,
   resolveSearchList: () => resolveSearchList,
   resolveWorkflowName: () => resolveWorkflowName,
+  resumeTarget: () => resumeTarget,
   retire: () => retire,
   routesFrom: () => routesFrom,
   sessionLogPath: () => sessionLogPath,
@@ -582,12 +584,42 @@ function resolveHandoff(id, projectContent, globalDefault) {
   if (seed) return { source: "seed", content: seed, handoffId: id };
   return { source: "none", content: null, handoffId: id };
 }
+
+// src/core/agent-runs.ts
+function agentRunsFromLog(lines) {
+  const runs = [];
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const entry = line;
+    if (entry.kind !== "handoff") continue;
+    const agentType = entry.origin;
+    const agentId = entry.agent_id;
+    if (typeof agentType !== "string" || !agentType) continue;
+    if (typeof agentId !== "string" || !agentId) continue;
+    runs.push({ agentType, agentId, ts: typeof entry.ts === "string" ? entry.ts : "" });
+  }
+  return runs;
+}
+function resumeTarget(lines, cfg, session, agentType) {
+  const wantBare = bareAgentName(agentType);
+  if (!wantBare) return null;
+  const { searchList } = resolveSearchList(cfg, session);
+  const { matchedInstances } = collectAgentSkills(searchList, cfg?.workflow_instances, agentType);
+  if (new Set(matchedInstances).size > 1) return null;
+  let latest = null;
+  for (const run of agentRunsFromLog(lines)) {
+    if (bareAgentName(run.agentType) !== wantBare) continue;
+    latest = run;
+  }
+  return latest ? latest.agentId : null;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
   PRIOR_HANDOFF_SEEDS,
   SEED_HANDOFFS,
   SESSION_LOG_FILE,
+  agentRunsFromLog,
   appendSessionLog,
   bareAgentName,
   channelDir,
@@ -610,6 +642,7 @@ function resolveHandoff(id, projectContent, globalDefault) {
   resolveHandoff,
   resolveSearchList,
   resolveWorkflowName,
+  resumeTarget,
   retire,
   routesFrom,
   sessionLogPath,

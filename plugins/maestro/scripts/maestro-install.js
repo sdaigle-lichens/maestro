@@ -378,6 +378,9 @@ const STATIC_ASSETS = [
   // Step 1's gate configuration (032) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for
   // why its absence is the one that breaks an invocation outright.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // Resume-target lookup (039) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it
+  // is a project copy invoked directly by the orchestrator rather than a hook.
+  { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },

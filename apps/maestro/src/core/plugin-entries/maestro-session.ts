@@ -72,3 +72,9 @@ export {
   splitHandoffId,
   handoffId,
 } from "../handoff-seeds.js";
+
+// Resume-target resolution (`039`) — reads the same append-only log's `kind:"handoff"` entries as
+// an agent-type -> agent-id index, so a condition edge routing back to an agent that already ran
+// this run can be RESUMED instead of dispatched cold. No new state: `fs`-free, taking the log's
+// already-parsed lines.
+export { agentRunsFromLog, resumeTarget, type AgentRun } from "../agent-runs.js";

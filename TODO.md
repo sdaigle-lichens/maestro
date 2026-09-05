@@ -2,23 +2,11 @@
 
 ## Queue status
 
-**`039` and `041` are `ready`, `040` is `blocked` on `039`.** 38 done, 2 ready, 1 blocked.
+**`040` and `041` are `ready`.** 39 done, 2 ready, 0 blocked.
 
-**The plugin is at `0.4.5`.** `039` takes it to `0.4.6`, `040` to `0.4.7` — both patch.
+**The plugin is at `0.4.6`.** `040` takes it to `0.4.7` — patch.
 
-- **`039-resume-subagents-on-loop-back-edges.md`** (`ready`) — a condition edge routing back to an
-  agent that already ran this run **resumes** it with `SendMessage` instead of dispatching a cold
-  `Task`, so it keeps its own memory of what it built. Channels cannot cover this: a channel carries
-  the receiver's payload, not the sender's reasoning. The forward success path keeps spawning — a
-  fresh context is the point there, and restricting resume to backward edges is also what bounds the
-  context growth. Adds no new hook write: `SubagentStop` already logs
-  `{origin: <agent type>, kind: "handoff", agent_id}`, and `SessionEnd` deletes the log, so it is
-  already a per-run agent-type → agent-id index. A new `maestro-resume-target.cjs` reads it and
-  prints nothing — meaning *spawn cold* — whenever the answer would be ambiguous, notably when two
-  instances of the active workflow share one `agent`, because `SubagentStart` resolves by agent type
-  and never by instance. Confirmed from the docs that `SubagentStart`/`SubagentStop` both fire on a
-  resumed run, so nothing in `036` breaks; the page requires verifying that rather than assuming it.
-- **`040-skip-re-injecting-static-context-into-a-resumed-subagent.md`** (`blocked` on `039`) —
+- **`040-skip-re-injecting-static-context-into-a-resumed-subagent.md`** (`ready`, unblocked by `039`) —
   because `SubagentStart` fires again, a resumed run is re-injected with its skills, routing,
   per-route protocols and report verbatim (~600 tokens, and the `loaded_skills` block is an
   instruction to redo a tool call). Skip those five when the run is a resume; keep the channel
@@ -67,6 +55,24 @@
   fixed in a real packaged window from a genuinely cold profile (confirmed against the pre-fix code
   too, via `git stash`, so the probe wasn't passing vacuously). No `plugins/` change, so no plugin
   version bump.
+- **`039-resume-subagents-on-loop-back-edges.md`** (`done`) — a condition edge routing back to an
+  agent that already ran this session now **resumes** it by `agent_id` via `SendMessage` instead of
+  dispatching a cold `Task`, so it keeps its own memory of what it built. Adds no new hook write: a
+  new pure `apps/maestro/src/core/agent-runs.ts` (`agentRunsFromLog`, `resumeTarget`) reads the
+  `kind:"handoff"` entries `maestro-subagent-log.js` already appends on every `SubagentStop` — an
+  existing per-run agent-type → agent-id index. A new `maestro-resume-target.cjs` CLI prints a
+  resumable `agent_id` or nothing (no completed run yet, or the active workflow maps that agent type
+  to more than one distinct instance — the same ambiguity `SubagentStart`'s injection would hit).
+  `templates/maestro/SKILL.md` gained the `allowed-tools` grant for the CLI plus the routing/
+  principles prose telling the orchestrator when to resume vs. spawn cold. Three divergences
+  recorded on the page: the ambiguity check reuses `collectAgentSkills(...).matchedInstances` rather
+  than a fresh instance-walk, so it can't disagree with what `SubagentStart` actually resolves; the
+  `allowed-tools` grant needed a trailing ` *` wildcard (unlike the argument-less
+  `maestro-step1-gates.cjs` grant), since this script takes an agent-type argument;
+  `real-project.test.ts`'s single-`Bash(...)`-grant assumption had to be generalized to multi-grant
+  parsing. Live `SendMessage`-resume behavior itself (conversation history retained, refusal
+  fallback) is unverified end-to-end — no environment here can drive a live multi-agent orchestrator
+  run. Plugin `0.4.5` → `0.4.6` (patch).
 
 `.claude/maestro-tasks/status.json` is the authority — re-read it rather than trusting these lines.
 

@@ -283,6 +283,16 @@ describe("handoff bundles (033)", () => {
     expect(text.match(/node:sqlite/g) ?? []).toHaveLength(0);
   });
 
+  // `039` — the resume-target index. No legacy hand-written original to diff against (there was
+  // none), so what's pinned is that the bundle the CLI actually `require`s still carries the names
+  // it requires.
+  it("maestro-session.cjs carries the resume-target index (039)", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    for (const name of ["agentRunsFromLog", "resumeTarget"]) {
+      expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
+    }
+  });
+
   it("maestro-handoff-defaults.cjs is the sqlite tier, and only that", () => {
     const store = require(path.join(LIB, "maestro-handoff-defaults.cjs"));
     expect(Object.keys(store).sort()).toEqual(

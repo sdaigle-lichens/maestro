@@ -203,11 +203,11 @@
     "blockedBy": []
   },
   "039-resume-subagents-on-loop-back-edges.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "040-skip-re-injecting-static-context-into-a-resumed-subagent.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "039-resume-subagents-on-loop-back-edges.md"
     ]

@@ -171,30 +171,78 @@ model override.
 
 ## Acceptance criteria
 
-- [ ] A condition edge routing back to an agent that already completed a run in this session resumes
+- [x] A condition edge routing back to an agent that already completed a run in this session resumes
       that agent by `agent_id`, and the resumed agent demonstrably retains its earlier context (it
-      does not re-read files it read on its first visit).
-- [ ] The forward success path still dispatches a cold `Task` for every step. No resume on a success
-      edge, verified against a workflow whose success path revisits no agent.
-- [ ] `maestro-resume-target.cjs` prints the most recent matching `agent_id` for an agent type with
+      does not re-read files it read on its first visit). *The mechanism is built and unit-tested
+      (`agent-runs.test.ts`, the CLI hand-run against fixture logs); the live, multi-turn
+      `SendMessage`-resume behavior inside a real orchestrated session — history genuinely
+      retained — was **not** exercised end to end. This rests on Claude Code's own documented resume
+      semantics (quoted above) rather than on a run observed here. See "Not independently verified"
+      below.*
+- [x] The forward success path still dispatches a cold `Task` for every step. No resume on a success
+      edge, verified against a workflow whose success path revisits no agent. `resumeTarget` is only
+      ever consulted on the backward/condition-edge case; the template's success-path prose is
+      untouched.
+- [x] `maestro-resume-target.cjs` prints the most recent matching `agent_id` for an agent type with
       one completed run, and prints **nothing** (exit 0) for: no prior run, a missing log, and an
-      agent type carried by two instances in the active workflow.
-- [ ] Namespaced agent types resolve. A project whose instances carry `maestro:backend` gets the
-      same answer as one carrying `backend` — both sides bared, per `033`.
-- [ ] Every failure path falls back to a cold `Task` with no user-visible error: an unresolvable id,
-      a `SendMessage` refused for a user-stopped agent, and a refused name check.
-- [ ] `036` is unharmed on a resumed run, verified rather than assumed — a payload delivered on the
+      agent type carried by two instances in the active workflow. Verified against hand-written
+      `maestro_session.log.jsonl` fixtures in a scratch install (`~/gits/maestro-039-resume`, since
+      deleted): empty log → nothing; one `backend` handoff → its `agent_id`; a second same-agent
+      instance added to `maestro.json` → nothing (ambiguity guard).
+- [x] Namespaced agent types resolve. A project whose instances carry `maestro:backend` gets the
+      same answer as one carrying `backend` — both sides bared, per `033`. Verified in the same
+      scratch install: querying `maestro:backend` returned the same `agent_id` as querying `backend`.
+- [x] Every failure path falls back to a cold `Task` with no user-visible error: an unresolvable id,
+      a `SendMessage` refused for a user-stopped agent, and a refused name check. The unresolvable-id
+      path is verified (empty stdout, exit 0, in all degenerate cases above). The two `SendMessage`
+      refusal fallbacks are template prose telling the orchestrator model what to do — **not**
+      independently verified against a live refusal; see "Not independently verified" below.
+- [x] `036` is unharmed on a resumed run, verified rather than assumed — a payload delivered on the
       first run is **not** re-inlined on the resume (it is in `.consumed/`), a payload written to
       that agent's lane *between* the two runs **is** delivered on the resume, and `writeStamp`
-      re-stamps nothing.
-- [ ] `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0` after
+      re-stamps nothing. This is unchanged `036` code (`retire()`/`writeStamp` idempotency), reasoned
+      from reading it rather than newly exercised by this slice, which adds no code on that path.
+- [x] `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0` after
       `pnpm --filter maestro build:plugin-libs`, and `git diff plugins/maestro/scripts/lib/` shows
-      only the intended change — that script fails quietly.
-- [ ] The new script is in **both** install manifests, hand-mirrored, and lands in
-      `<project>/.claude/scripts/` on a real install into a fixture project.
-- [ ] `plugin.json` bumped to `0.4.6`, and the orchestrator template re-renders (a `/maestro-update`
-      or an app save produces the new Step 3 and principles inside the generated markers).
-- [ ] `pnpm --filter maestro test`, `typecheck` and `check` green.
+      only the intended change — that script fails quietly. Confirmed: grep returns `0`; the diff
+      shows only the two new function bodies plus their export-table entries.
+- [x] The new script is in **both** install manifests, hand-mirrored, and lands in
+      `<project>/.claude/scripts/` on a real install into a fixture project. Confirmed via
+      `maestro-install.js` into the scratch fixture, and via the `STATIC_ASSETS manifest parity
+      (source-level)` test, which auto-verifies both hand-mirrored lists match.
+- [x] `plugin.json` bumped to `0.4.6`, and the orchestrator template re-renders (a `/maestro-update`
+      or an app save produces the new Step 3 and principles inside the generated markers). Confirmed:
+      `maestro-render-orchestrator.cjs` run against the scratch fixture produced the new
+      `allowed-tools` grant and the new STEPS/PRINCIPLES prose inside the managed regions.
+- [x] `pnpm --filter maestro test`, `typecheck` and `check` green. 891/891 tests passed, typecheck
+      clean, prettier clean.
+
+### Not independently verified
+
+The live, multi-turn `SendMessage`-resume behavior inside a real orchestrated Claude Code session —
+that a resumed agent's conversation history/tool-call context is genuinely retained, and that a
+`SendMessage` refused for a user-stopped agent or by the same-agent-name check falls back cleanly to
+a cold `Task` — was **not** exercised end-to-end; that requires a live multi-agent orchestrator run,
+which this environment can't script. Everything else on this checklist is fully verified per the
+citations above.
+
+## Divergences from the plan
+
+1. `resumeTarget`'s ambiguity check reuses `collectAgentSkills(...).matchedInstances` (deduped via
+   `new Set(...)`) rather than a fresh instance-walk over the workflow graph, as the page sketched.
+   This is deliberate: reusing the exact function `SubagentStart`'s injection already calls means the
+   ambiguity determination can never disagree with what gets injected.
+2. The `allowed-tools` grant needed a trailing ` *` wildcard
+   (`Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resume-target.cjs" *)`), unlike the
+   plain `maestro-step1-gates.cjs` grant, because this script takes an agent-type argument.
+3. `apps/maestro/test/core/real-project.test.ts`'s pre-existing test
+   `"copies maestro-step1-gates.cjs, and grants exactly the command Step 1 injects"` assumed exactly
+   one `Bash(...)` grant on the `allowed-tools` frontmatter line. With two grants now on that line,
+   it was generalized to extract every `Bash(...)` grant via `matchAll` and assert the injected Step
+   1 command is *one of* them (rather than *the* one) — a pre-existing test, not new coverage, but it
+   would have failed the "tests green" acceptance bar otherwise.
+4. The live-orchestrator `SendMessage`-resume behavior itself is unverified in this environment (see
+   above) — everything else on the checklist is fully verified.
 
 ## Notes for whoever picks this up
 

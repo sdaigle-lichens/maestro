@@ -105,6 +105,11 @@ describe("save against a really-installed project", () => {
   // 032. Two separate things the REAL installer has to get right for the injected Step 1, and
   // only this suite runs it: the script is copied, and the skill it wrote grants the exact command
   // it also invokes.
+  //
+  // `039` added a second `Bash(...)` grant (for maestro-resume-target.cjs) to the same
+  // `allowed-tools` line, so this now parses every grant on the line rather than assuming there is
+  // only one — none of the granted commands contain parentheses, so a non-greedy per-grant scan
+  // splits them cleanly.
   it("copies maestro-step1-gates.cjs, and grants exactly the command Step 1 injects", () => {
     expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"))).toBe(true);
 
@@ -113,15 +118,17 @@ describe("save against a really-installed project", () => {
     // The grant and the invocation are written in two places in the template, and a permission
     // check that returns anything but `allow` ABORTS the whole skill invocation — so a one-byte
     // drift between them is a /maestro that cannot start. One assertion, so they cannot drift.
-    const granted = /^allowed-tools:\s*Bash\((.+)\)\s*$/m.exec(skill);
-    expect(granted, "no allowed-tools Bash(...) line in the installed skill").not.toBeNull();
+    const line = /^allowed-tools:\s*(.+)$/m.exec(skill);
+    expect(line, "no allowed-tools line in the installed skill").not.toBeNull();
+    const grants = [...line![1].matchAll(/Bash\(([^()]*)\)/g)].map((m) => m[1]);
+    expect(grants.length, "no allowed-tools Bash(...) grant in the installed skill").toBeGreaterThan(0);
 
     const steps = extractRegion(skill, "STEPS")!;
     const injected = /^!`(.+)`\s*$/m.exec(steps);
     expect(injected, "no !`command` line inside the STEPS region").not.toBeNull();
 
-    expect(injected![1]).toBe(granted![1]);
-    expect(injected![1]).toContain("maestro-step1-gates.cjs");
+    expect(grants).toContain(injected![1]);
+    expect(grants.some((g) => g.includes("maestro-step1-gates.cjs"))).toBe(true);
   });
 
   // Frontmatter lives OUTSIDE the managed regions, so a re-sync must not touch it — which is also

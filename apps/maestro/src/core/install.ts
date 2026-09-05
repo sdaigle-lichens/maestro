@@ -164,6 +164,12 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // exiting non-zero aborts the skill), which is why maestro-check-runtime.cjs checks for this
   // file by name.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // Resume-target lookup (`039`) for a condition-edge loop-back: whether the agent the edge points
+  // to already ran this session, and if so which `agent_id` to resume instead of dispatching a
+  // cold `Task`. Invoked by the orchestrator directly (granted in the template's `allowed-tools`),
+  // not by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as every other
+  // orchestrator-invoked script above.
+  { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
