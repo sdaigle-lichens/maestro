@@ -87,25 +87,77 @@ are already correct, and this is entirely a reader-side fix.
 
 ## Acceptance criteria
 
-- [ ] A fixture log with two `dispatch`/`handoff` pairs sharing one `agent_id` (a resumed agent)
+- [x] A fixture log with two `dispatch`/`handoff` pairs sharing one `agent_id` (a resumed agent)
       produces two cards, each showing **its own** run's `input` and `offeredSkills` — asserted by a
-      unit test that fails against the current code.
-- [ ] The same fixture gives each card only the `channel_delivery` entries logged during its own
-      run; a delivery arriving between the two runs lands on the second card, not both.
-- [ ] A twice-**spawned** agent (two runs, two distinct `agent_id`s — the pre-`039` shape) still
-      correlates exactly as it does today; the existing tests for that path pass unchanged.
-- [ ] A segment whose `handoff` entry is missing (in-flight or killed agent) still resolves its
+      unit test that fails against the current code. Confirmed against pre-fix code via `git stash`
+      on the source file alone; the new test failed there and passes after the fix.
+- [x] The same fixture gives each card only the `channel_delivery` entries logged during its own
+      run; a delivery arriving between the two runs lands on the second card, not both. Same
+      fail-before/pass-after confirmation as above.
+- [x] A twice-**spawned** agent (two runs, two distinct `agent_id`s — the pre-`039` shape) still
+      correlates exactly as it does today; the existing tests for that path pass unchanged. New
+      regression test added for this shape too; all pre-existing tests still pass.
+- [x] A segment whose `handoff` entry is missing (in-flight or killed agent) still resolves its
       spawning `input`, bounded by the end of the log.
-- [ ] The name-based fallback is bounded by the same window, so it can no longer hand a later
-      segment the first run's dispatch.
-- [ ] The entry → index map is built once per `buildInstances` call, not per segment.
-- [ ] `session-log.ts` still imports nothing from Node.
-- [ ] `pnpm --filter maestro test` passes; `pnpm check` and `pnpm --filter maestro typecheck` clean.
-- [ ] Verified in a real window per `test-maestro` — a `maestro_session.log.jsonl` containing a
-      resumed agent, opened in `/session-log`, shows two cards whose Input panels differ.
-- [ ] `log-view`'s v2.2 "Things that bite" entry is rewritten to describe the fix rather than the
-      bug, and the skill's `metadata.version`/`last-update` are updated **by
-      `maestro-concept-skills.cjs`**, never by hand.
+- [x] The name-based fallback is bounded by the same window, so it can no longer hand a later
+      segment the first run's dispatch. Confirmed fail-before/pass-after.
+- [x] The entry → index map is built once per `buildInstances` call, not per segment —
+      `handoffIndexByInstance` is filled during the existing single segmentation pass, and the
+      `dispatchesByAgentId`/`handoffIndicesByAgentId`/`deliveriesByAgentId` maps are built in one
+      forward sweep before the per-instance loop.
+- [x] `session-log.ts` still imports nothing from Node.
+- [x] `pnpm --filter maestro test` passes (927/927 — 922 pre-existing + 5 new); `pnpm check` and
+      `pnpm --filter maestro typecheck` both clean.
+- [x] Verified in a real window per `test-maestro` — a `maestro_session.log.jsonl` containing a
+      resumed `backend` agent (two `dispatch`/`handoff` pairs sharing `agent_id: "resumed-1"`) was
+      opened in `/session-log` on the packaged build via CDP: two "Backend" cards rendered, and
+      their Input panels read distinctly — "FIRST RUN — implement the button component" vs. "SECOND
+      RUN — fix the failing test after resume". Zero console errors during the probe.
+- [x] `log-view`'s v2.2 "Things that bite" entry is rewritten to describe the fix rather than the
+      bug (the "Deriving instances" narrative section was updated too, for the same correctness),
+      and the skill's `metadata.version`/`last-update` were updated by
+      `maestro-concept-skills.cjs stamp log-view --bump minor` (now v2.3) — never by hand.
+
+## Divergences
+
+**1 — the upper bound for a handoff-less segment is the end of that SEGMENT, not `entries.length`.**
+The page says "Treat the end of the log as its upper bound", and the first implementation took that
+literally. That is right only when the handoff-less segment really is the last one for its origin.
+When a killed agent (no `SubagentStop`, so no `handoff` entry) is followed by a re-dispatch of the
+same agent type, an open-ended window lets the *first* card reach forward and claim the *second*
+run's dispatch — reintroducing, in the mirror direction, exactly the misattribution this task
+exists to remove. Verified: on that fixture the first implementation rendered `"SECOND"` on both
+cards where the PRE-`042` code rendered `"FIRST"`/`"SECOND"` correctly, i.e. it was a regression,
+not a pre-existing wrinkle. A segment is a contiguous run of entries, so
+`inst.startIndex + inst.entries.length` is the correct bound and collapses to `entries.length` for a
+genuinely in-flight agent, which keeps the page's stated intent intact.
+
+The same sentinel also leaked into `lastEndByOrigin`: a handoff-less segment recorded the end of the
+*log* as the lower bound for the next segment of that origin, so if that next segment took the
+name-based fallback its window `(p, h)` was empty and its card rendered **no input at all** — a new
+data loss, where the pre-`042` code at least showed the wrong-but-present first dispatch. Fixed by
+the same change.
+
+**2 — `p` is found by comparison, not by locating `h` in the handoff list.** `runs.indexOf(h)`
+assumes the segment's recorded handoff index is the one carrying the `agent_id`. It is not, if a
+segment holds more than one `handoff` entry and the last lacks an `agent_id`: `indexOf` returns
+`-1`, `p` silently degrades to `-1`, and the lower bound is lost. Taking the greatest handoff index
+`< h` is the same cost and has no such precondition.
+
+Both are covered by new regression tests (`keeps a killed agent's card on its OWN dispatch…` and
+`a handoff-less segment does not poison the name-fallback window…`), each confirmed to fail against
+the first implementation and pass after.
+
+**3 — `log-view` v2.3's text was corrected to match.** Its "Deriving instances" narrative and its
+"Things that bite" entry both stated `entries.length` as the sentinel; both now say the end of the
+segment, and the description of `p` names the comparison rather than a list position.
+
+**Not a divergence, but an open item on the working tree:** `plugins/maestro/skills/to-maestro-tasks/SKILL.md`
+carries an uncommitted one-word edit that is unrelated to this task. It is still a change under
+`plugins/`, and `plugin.json` is at `0.4.8` — already committed at `e90c2a9`. Per `CLAUDE.md` that
+edit needs a bump to `0.4.9` (patch) if it is committed, or it reaches nobody: the marketplace cache
+is keyed on the version string. The claim that "no plugin version bump was needed" is true of this
+task's own changes and false of the tree as it stands.
 
 ## Scribe handoff
 

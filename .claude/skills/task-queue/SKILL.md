@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, and the two implementations (tasks.ts and maestro-tasks.cjs) that must agree. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, or when a close from the UI and one from the orchestrator disagree."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.1"
+  last-update: e90c2a974a94dc6c1709097f36b4563af9bdd468
 ---
 
 # Task queue
@@ -28,6 +28,12 @@ instructions to a specific agent. Classification is the orchestrator's job at ru
 `blockedBy` is parsed out of the task file itself (`parseBlockedBy`) and cascades: a task is ready
 only when everything it names is done. `closeTask` recomputes the cascade, which is why closing one
 task can make several ready at once.
+
+`/to-maestro-tasks` no longer hand-assembles the files for a fresh batch: it hands
+`maestro-write-tasks.cjs` a JSON array of slices (title, body, `blockedBy` as indices into that same
+array), and the script assigns numbers/slugs, renders each file, and calls `sync()` in one pass —
+folding what used to be two separate steps (write the files, then run `maestro-task-status.cjs sync`)
+into one script call.
 
 ## Two implementations that must agree
 
@@ -64,7 +70,8 @@ A warning here is advisory. Work that legitimately falls outside the active work
 | `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`. |
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
 | `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |
-| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI. |
+| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`). |
+| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. |
 | `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |
 | `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view. |
 
