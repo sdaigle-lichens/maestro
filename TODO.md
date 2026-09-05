@@ -2,18 +2,10 @@
 
 ## Queue status
 
-**`040`, `041` and `042` are `ready`.** 39 done, 3 ready, 0 blocked.
+**`041` and `042` are `ready`, no blockers.** 40 done, 2 ready, 0 blocked.
 
-**The plugin is at `0.4.6`.** `040` takes it to `0.4.7` — patch.
+**The plugin is at `0.4.7`.**
 
-- **`040-skip-re-injecting-static-context-into-a-resumed-subagent.md`** (`ready`, unblocked by `039`) —
-  because `SubagentStart` fires again, a resumed run is re-injected with its skills, routing,
-  per-route protocols and report verbatim (~600 tokens, and the `loaded_skills` block is an
-  instruction to redo a tool call). Skip those five when the run is a resume; keep the channel
-  delivery, which is the one block that is *not* static — a payload may have arrived between the two
-  runs, and `retire()` already stops the first one being re-inlined. The resume signal is a
-  `kind:"handoff"` entry for this `agent_id` in the run's log: right lifetime, and immune to the
-  ordering race a `kind:"dispatch"` check would have against the sibling `SubagentStart` hook.
 - **`041-guard-and-guide-duplicate-agent-types-in-a-workflow.md`** (`ready`) — two instances of one
   workflow on the same `agent` break four things silently, all from one root: `SubagentStart` gets
   `agent_type` and never the instance. The severe one is route loss — `handoff-routes.ts` dedups on
@@ -37,6 +29,20 @@
   order, and an `agent_id` that no longer matches the one `resumeTarget` hands `SendMessage` would be
   worse than the view sorting two runs out. Pure function, no `plugins/` change, so no version bump.
 
+- **`040-skip-re-injecting-static-context-into-a-resumed-subagent.md`** (`done`) — `SubagentStart`
+  fires again on a resumed run, so `maestro-inject-agent-context.js` was re-injecting the resumed
+  agent's `loaded_skills`, `referenced_skills`, `HANDOFF:` routing, per-route protocols and report
+  verbatim into a context that already had them. Gated all five behind a new
+  `hasCompletedRun(lines, agentId)` (`apps/maestro/src/core/agent-runs.ts`, beside `039`'s
+  `resumeTarget`) reading the same `kind:"handoff"` log index — order-independent against the sibling
+  hook's `kind:"dispatch"` write for the same run, immune to `036`'s `run_id`-scoped log lifetime. A
+  resumed run gets one reminder line instead; channel delivery and the `⚠️` warning are unconditional
+  either way, since a payload may be new since the agent's last run. Measured against the real
+  installed hooks (`backend` agent, `defaultish` fixture): first run 2371 chars (~593 tokens),
+  resumed run 91 chars (~23 tokens) — a ~570-token saving, in line with the ~600-token estimate (this
+  fixture's `backend` agent has no configured report, so that block wasn't exercised in the
+  measurement). No divergences from the plan beyond implementation detail — see the task page.
+  Plugin `0.4.6` → `0.4.7` (patch).
 - **`036-move-handoff-payloads-onto-agent-channels.md`** (`done`) — the runtime half. Moved
   `handoff_details`, `filesChanged` and `conceptSkillGaps` out of an agent's final message and into
   `.claude/channels/<receiver>/<sender>.1.md`, delivered by the `SubagentStart` hook, stamped with a

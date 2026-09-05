@@ -42,6 +42,33 @@ export function agentRunsFromLog(lines: unknown[]): AgentRun[] {
 }
 
 /**
+ * Whether `agentId` has a `kind:"handoff"` entry anywhere in this session's log — i.e. this
+ * `SubagentStart` is a RESUME (the orchestrator `SendMessage`d an agent that already completed a
+ * run this session) rather than a first dispatch (`040`).
+ *
+ * Deliberately keyed on `handoff`, never `dispatch`: the sibling `SubagentStart` hook
+ * (`maestro-subagent-log.js`) writes a `dispatch` entry carrying this SAME `agent_id`, and both
+ * hooks sit in one matcher with no ordering guarantee between them. A `dispatch` entry IS
+ * written for a run that has NOT finished — which is exactly the race — so keying on it would
+ * risk this hook finding the sibling's own entry for the CURRENT run and misreading a first run
+ * as a resume. A `handoff` entry is only ever written at `SubagentStop`, so it cannot exist yet
+ * for an unfinished run: immune to that race by construction.
+ *
+ * A missing or unreadable log — no lines, or nothing matches — answers `false`: the safe
+ * direction is to fall through to a first run's full injection, never to the one-line reminder.
+ */
+export function hasCompletedRun(lines: unknown[], agentId: string): boolean {
+  if (!agentId) return false;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const entry = line as Record<string, unknown>;
+    if (entry.kind !== "handoff") continue;
+    if (entry.agent_id === agentId) return true;
+  }
+  return false;
+}
+
+/**
  * The `agent_id` a loop-back to `agentType` should resume, or `null` when a cold `Task` is the
  * only safe answer:
  *

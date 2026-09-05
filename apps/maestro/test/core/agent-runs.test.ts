@@ -4,7 +4,7 @@
 // fixtures don't carry.
 
 import { describe, it, expect } from "vitest";
-import { agentRunsFromLog, resumeTarget } from "../../src/core/agent-runs.js";
+import { agentRunsFromLog, resumeTarget, hasCompletedRun } from "../../src/core/agent-runs.js";
 import type { MaestroConfigV3, MaestroSession } from "../../src/core/types.js";
 
 function handoff(agentType: string, agentId: string, ts = "2026-01-01T00:00:00.000Z") {
@@ -146,5 +146,34 @@ describe("resumeTarget", () => {
 
   it("ignores runs of a different agent type", () => {
     expect(resumeTarget([handoff("test", "run-1")], singleInstanceCfg, session, "backend")).toBeNull();
+  });
+});
+
+describe("hasCompletedRun", () => {
+  it("is false when the agent_id has no handoff entry yet — a first run", () => {
+    expect(hasCompletedRun([], "id-1")).toBe(false);
+    expect(hasCompletedRun([handoff("backend", "id-1")], "id-2")).toBe(false);
+  });
+
+  it("is true once a handoff entry for that exact agent_id exists — a resume", () => {
+    expect(hasCompletedRun([handoff("backend", "id-1")], "id-1")).toBe(true);
+  });
+
+  it("never matches a dispatch entry for the same agent_id — only handoff counts", () => {
+    // The sibling SubagentStart hook writes a `dispatch` entry with the SAME agent_id for THIS
+    // run, before SubagentStop ever runs. Matching it would misread a first run as a resume.
+    expect(hasCompletedRun([dispatch("backend", "id-1")], "id-1")).toBe(false);
+  });
+
+  it("classifies two agent_ids independently — one resuming doesn't make the other look resumed", () => {
+    const lines = [dispatch("backend", "id-2"), handoff("backend", "id-1")];
+    expect(hasCompletedRun(lines, "id-1")).toBe(true);
+    expect(hasCompletedRun(lines, "id-2")).toBe(false);
+  });
+
+  it("degrades to false (not a resume) for a missing agent_id, empty log, or malformed lines", () => {
+    expect(hasCompletedRun([handoff("backend", "id-1")], "")).toBe(false);
+    expect(hasCompletedRun(undefined as unknown as unknown[], "id-1")).toBe(false);
+    expect(hasCompletedRun(["not an object", null, { kind: "handoff" }], "id-1")).toBe(false);
   });
 });

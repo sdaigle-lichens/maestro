@@ -77,4 +77,8 @@ export {
 // an agent-type -> agent-id index, so a condition edge routing back to an agent that already ran
 // this run can be RESUMED instead of dispatched cold. No new state: `fs`-free, taking the log's
 // already-parsed lines.
-export { agentRunsFromLog, resumeTarget, type AgentRun } from "../agent-runs.js";
+//
+// `hasCompletedRun` (`040`) reads the same index for a different question — not "which agent_id
+// should this resume", but "is THIS SubagentStart itself a resume" — so `maestro-inject-agent-context.js`
+// can skip re-injecting static context that's already in the resumed agent's history.
+export { agentRunsFromLog, resumeTarget, hasCompletedRun, type AgentRun } from "../agent-runs.js";

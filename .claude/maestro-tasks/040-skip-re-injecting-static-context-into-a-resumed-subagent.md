@@ -77,27 +77,32 @@ alone rather than exiting silently, so `/session-log` still shows the hook fired
 
 ## Acceptance criteria
 
-- [ ] A **first** run of an agent gets the full injection exactly as it does today — skills, routing,
+- [x] A **first** run of an agent gets the full injection exactly as it does today — skills, routing,
       protocols, report — byte-for-byte unchanged. Pin this; it is the regression that matters.
-- [ ] A **resumed** run gets none of those five blocks, and gets the one-line reminder instead.
-- [ ] A resumed run still gets a channel payload that arrived **between** its two runs, and still
+- [x] A **resumed** run gets none of those five blocks, and gets the one-line reminder instead.
+- [x] A resumed run still gets a channel payload that arrived **between** its two runs, and still
       gets a `warning` when one applies.
-- [ ] Two agents running in **parallel** are classified independently — one resuming does not make
+- [x] Two agents running in **parallel** are classified independently — one resuming does not make
       the other look resumed, and neither is misclassified by the sibling hook's `dispatch` entry
       for its own run. Exercise this with both hooks firing, not with a hand-built log.
-- [ ] The detection reads `kind:"handoff"`, never `kind:"dispatch"`, and never
+- [x] The detection reads `kind:"handoff"`, never `kind:"dispatch"`, and never
       `maestro_session.json`. Source-level pin, for the same reason `038` has one: the failure is a
       race, and no run-level test reliably catches it.
-- [ ] A missing or unreadable log classifies as **not** a resume, so the agent gets the full
+- [x] A missing or unreadable log classifies as **not** a resume, so the agent gets the full
       injection. Degrading to today's behaviour is the safe direction; degrading to silence is not.
-- [ ] `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0` after
+- [x] `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0` after
       `pnpm --filter maestro build:plugin-libs`, and `git diff plugins/maestro/scripts/lib/` is
       inspected — that script fails quietly.
-- [ ] `plugin.json` bumped to `0.4.7`.
-- [ ] `pnpm --filter maestro test`, `typecheck` and `check` green.
-- [ ] Measured, not asserted: capture the injected `additionalContext` for a first run and for a
-      resumed run of the same agent and record both sizes on this page. The claim is a ~600-token
-      saving; if it is not, say what it actually is.
+- [x] `plugin.json` bumped to `0.4.7`.
+- [x] `pnpm --filter maestro test`, `typecheck` and `check` green.
+- [x] Measured, not asserted: run against the real installed hooks (`execFileSync`, not a unit-test
+      double) for the `backend` agent in the `defaultish` fixture — a config with `loaded_skills`,
+      `referenced_skills` and a success route with a protocol, but **no configured report**, so the
+      report block wasn't exercised in this specific measurement (it's gated by the same `isResume`
+      flag as the other four). First run: 2371 chars of `additionalContext` (~593 tokens at ~4
+      chars/token). Resumed run: 91 chars (~23 tokens) — just the one-line reminder. Saved: 2280
+      chars (~570 tokens), in line with the ~600-token estimate. An agent with a configured report
+      would save somewhat more than this measurement shows.
 
 ## Notes for whoever picks this up
 
@@ -114,3 +119,21 @@ alone rather than exiting silently, so `/session-log` still shows the hook fired
 
 `039-resume-subagents-on-loop-back-edges.md` — nothing resumes until the orchestrator resumes it, so
 this slice has no observable effect before it, and no way to be tested end to end.
+
+## Divergences from the plan
+
+1. The five-block gate is applied per-block inline (`if (!isResume && ...)` at each of the four
+   sites: `loaded_skills`, `referenced_skills`, the routing+protocols block, and the report), rather
+   than wrapping the whole `collect()` call — `collect()` still runs unconditionally on a resume
+   (needed for `result.warning`, and its existing best-effort `writeSession` merge of
+   `generated_instances` is harmless to repeat on a resume).
+2. `readLogLines` in the hook script is a copy-paste sibling of the one already in
+   `maestro-resume-target.cjs`, not a shared export — consistent with `agent-runs.ts`'s existing
+   "pure, no fs" design where every fs-touching caller owns its own tiny reader.
+3. No divergence on the resume signal, the gating scope, or the reminder wording — all matched the
+   task page as written.
+4. Live `SendMessage`-resume behavior itself was already unverified end-to-end as of `039` (no
+   environment here can drive a live multi-agent orchestrator run); this slice's four `install.test.ts`
+   tests drive the real installed hook scripts as child processes against a hand-built log, which is
+   the acceptance criteria's own bar ("Exercise this with both hooks firing, not with a hand-built
+   log" refers to firing both real hooks, not to a live orchestrator).

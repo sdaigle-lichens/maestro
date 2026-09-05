@@ -47,6 +47,7 @@ __export(maestro_session_exports, {
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
+  hasCompletedRun: () => hasCompletedRun,
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
   laneFor: () => laneFor,
@@ -600,6 +601,16 @@ function agentRunsFromLog(lines) {
   }
   return runs;
 }
+function hasCompletedRun(lines, agentId) {
+  if (!agentId) return false;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const entry = line;
+    if (entry.kind !== "handoff") continue;
+    if (entry.agent_id === agentId) return true;
+  }
+  return false;
+}
 function resumeTarget(lines, cfg, session, agentType) {
   const wantBare = bareAgentName(agentType);
   if (!wantBare) return null;
@@ -629,6 +640,7 @@ function resumeTarget(lines, cfg, session, agentType) {
   handoffId,
   handoffPairs,
   handoffRoutes,
+  hasCompletedRun,
   isSeededHandoff,
   isValidHandoffId,
   laneFor,

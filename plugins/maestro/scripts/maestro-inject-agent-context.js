@@ -28,6 +28,17 @@
 // static `## Mandatory Output Format` section it replaced always did. See
 // apps/maestro/src/core/report-resolution.ts for the same order, applied pure-side for the app's
 // /agents page.
+//
+// `SubagentStart` fires again on a RESUME (`039` — a condition edge routing back to an agent that
+// already ran this session, `SendMessage`d instead of dispatched cold). Everything above except
+// the channel delivery and the warning is therefore already verbatim in the resumed agent's own
+// history — re-injecting it is 500-700 tokens of exact repetition, and `loaded_skills` is worse
+// than waste: it is an instruction to redo a tool call. `040` detects that case with
+// `hasCompletedRun` (a `kind:"handoff"` entry already logged for this `agent_id`, in the SAME
+// per-run log `039` reads) and swaps the five static blocks — loaded/referenced skills, HANDOFF
+// routing, per-route protocols, and the report — for one line. The channel delivery is NOT
+// skipped: a payload may have arrived in this agent's lane between its two runs, and it doesn't
+// duplicate on its own (`retire()` already moved the first run's file to `.consumed/`).
 
 const fs = require("fs");
 const path = require("path");
@@ -48,7 +59,32 @@ const {
   resolveHandoff,
   readLane,
   retire,
+  sessionLogPath,
+  hasCompletedRun,
 } = require("./lib/maestro-session.cjs");
+
+// The resume signal (`040`): a `kind:"handoff"` entry already logged for this `agent_id`, read
+// straight off disk — best-effort, exactly like maestro-resume-target.cjs's own copy of this same
+// tiny reader. A missing or unreadable log comes back `[]`, which `hasCompletedRun` answers
+// `false` for, so the safe fall-through is a first run's full injection.
+function readLogLines(p) {
+  let text;
+  try {
+    text = fs.readFileSync(p, "utf8");
+  } catch {
+    return [];
+  }
+  const lines = [];
+  for (const raw of text.split("\n")) {
+    if (!raw.trim()) continue;
+    try {
+      lines.push(JSON.parse(raw));
+    } catch {
+      // A malformed line is skipped, not fatal — best-effort read of a hook-written log.
+    }
+  }
+  return lines;
+}
 
 // ── handoff protocol resolution — three tiers, one shared decision ─────────
 
@@ -210,18 +246,24 @@ function collectReportContext(cfg, projectDir, agentType) {
 
   const result = cfg && cfg.version === 3 ? collect(cfg, path.join(projectDir, ".claude", "maestro_session.json"), agentType) : null;
 
+  // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
+  // `dispatch`, never maestro_session.json) is the right, race-proof signal.
+  const isResume = payload.agent_id
+    ? hasCompletedRun(readLogLines(sessionLogPath(path.join(projectDir, ".claude"))), payload.agent_id)
+    : false;
+
   if (result) {
     if (result.warning) {
       parts.push(`⚠️ Maestro warning: ${result.warning}`);
     }
-    if (result.loadedSkills.length > 0) {
+    if (!isResume && result.loadedSkills.length > 0) {
       parts.push(
         `Skills to load for the \`${agentType}\` agent instance (maestro.json v3, loaded_skills): ${result.loadedSkills.join(", ")}.\n\n` +
           `Load each one with the Skill tool before starting your work, then follow your agent file as written.`
       );
     }
 
-    if (result.referencedSkills.length > 0) {
+    if (!isResume && result.referencedSkills.length > 0) {
       parts.push(
         `Skills available to the \`${agentType}\` agent instance (maestro.json v3, referenced_skills): ${result.referencedSkills.join(", ")}.\n\n` +
           `Do NOT bulk-load these up front — but they exist because they document logic you would otherwise have to ` +
@@ -234,7 +276,14 @@ function collectReportContext(cfg, projectDir, agentType) {
     }
   }
 
-  if (result && result.routes.length > 0) {
+  // Replaces loaded_skills, referenced_skills, HANDOFF routing, the per-route protocols and the
+  // report below — not silence. Placed before the channel delivery, which is the one block that
+  // is NOT static and is never skipped.
+  if (isResume) {
+    parts.push("Resumed run — the skills, handoff routes and output format from your first run still apply.");
+  }
+
+  if (!isResume && result && result.routes.length > 0) {
     const hasSuccess = result.routes.some((r) => r.label === "success");
     const lines = result.routes.map((r) => {
       const to = r.receiver ? ` (routes to \`${r.receiver}\`)` : "";
@@ -333,9 +382,13 @@ function collectReportContext(cfg, projectDir, agentType) {
   }
 
   // Independent of everything above: fires whenever the agent type resolves to ANY report
-  // (project or global), regardless of whether `result` matched a workflow instance at all.
-  const reportPart = collectReportContext(cfg, projectDir, agentType);
-  if (reportPart) parts.push(reportPart);
+  // (project or global), regardless of whether `result` matched a workflow instance at all. Still
+  // one of the five static blocks `040` skips on a resume — it governs the NEW final message the
+  // resumed agent is about to write, but that message is already in its history from the first run.
+  if (!isResume) {
+    const reportPart = collectReportContext(cfg, projectDir, agentType);
+    if (reportPart) parts.push(reportPart);
+  }
 
   if (parts.length === 0) process.exit(0);
 

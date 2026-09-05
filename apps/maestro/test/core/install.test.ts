@@ -1267,6 +1267,125 @@ describe("the installed hooks actually run", () => {
     });
   });
 
+  // `040`. Same COPIED-hook harness as `036` above, but exercising BOTH sibling hooks
+  // (`maestro-subagent-log.cjs` at SubagentStop, then `maestro-inject-agent-context.cjs` at the
+  // next SubagentStart) rather than a hand-built log — the acceptance criterion that matters most
+  // here is a race between the two hooks' own writes, which a hand-built log can't reproduce.
+  describe("resume-aware injection (040)", () => {
+    function stop(root: string, agentType: string, agentId: string, msg = "HANDOFF: success") {
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStop",
+        agent_type: agentType,
+        agent_id: agentId,
+        last_assistant_message: msg,
+      });
+    }
+
+    function inject(root: string, agentType: string, agentId: string): string {
+      return JSON.parse(
+        runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: agentType, agent_id: agentId })
+      ).hookSpecificOutput.additionalContext as string;
+    }
+
+    it("gives a first run the full injection byte-for-byte, and a resumed run the one-line reminder instead", async () => {
+      const root = makeProject("resume");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      // First run: agent_id "a1" has no completed run in the log yet.
+      const first = inject(root, "backend", "a1");
+      expect(first).toContain("expressjs"); // backend's loaded_skills
+      expect(first).toContain("Skills to load for the `backend` agent instance");
+      expect(first).toContain("Handoff routing for the `backend` agent");
+      expect(first).toContain("write the shape for the route you take");
+      expect(first).not.toContain("Resumed run —");
+
+      // Rerunning the SAME first-run payload must be pinned identical — the regression that
+      // matters. Nothing about this call touches the log, so it's deterministic.
+      expect(inject(root, "backend", "a1")).toBe(first);
+
+      // `a1` completes a run — the resume signal.
+      stop(root, "backend", "a1");
+
+      // Same agent_id, same agent_type: now a resume.
+      const resumed = inject(root, "backend", "a1");
+      expect(resumed).toContain(
+        "Resumed run — the skills, handoff routes and output format from your first run still apply."
+      );
+      expect(resumed).not.toContain("expressjs");
+      expect(resumed).not.toContain("Skills to load for the");
+      expect(resumed).not.toContain("Skills available to the");
+      expect(resumed).not.toContain("Handoff routing for the");
+      expect(resumed).not.toContain("write the shape for the route you take");
+    });
+
+    it("still delivers a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
+      const root = makeProject("resume-warn");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      // An active workflow name that matches nothing in maestro.json — the union-and-warn branch.
+      fs.writeFileSync(
+        path.join(root, ".claude", "maestro_session.json"),
+        JSON.stringify({ workflow: "not-a-real-workflow", generated_instances: [] })
+      );
+
+      stop(root, "backend", "a1"); // a1 completes its first run — the resume signal for next time
+
+      // A payload arrives in backend's lane between the two runs.
+      const laneDir = path.join(root, ".claude", "channels", "backend");
+      fs.mkdirSync(laneDir, { recursive: true });
+      fs.writeFileSync(path.join(laneDir, "test.1.md"), "NEW SINCE THE FIRST RUN\n");
+      stop(root, "test", "t1"); // test's own SubagentStop stamps its own write with this run's id
+
+      const resumed = inject(root, "backend", "a1");
+      expect(resumed).toContain(
+        "Resumed run — the skills, handoff routes and output format from your first run still apply."
+      );
+      expect(resumed).toContain("⚠️ Maestro warning:");
+      expect(resumed).toContain("not-a-real-workflow");
+      expect(resumed).toContain("Delivered to your channel");
+      expect(resumed).toContain("NEW SINCE THE FIRST RUN");
+    });
+
+    it("classifies two agents running in parallel independently — one resuming does not make the other look resumed", async () => {
+      const root = makeProject("resume-parallel");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      // `backend` (a1) completes a run. `test` (t1) is dispatched for the FIRST time — its
+      // sibling SubagentStart hook writes a `dispatch` entry carrying t1's agent_id, which must
+      // not be mistaken for a completed run of its own.
+      stop(root, "backend", "a1");
+      runHook(root, "maestro-subagent-log.cjs", {
+        cwd: root,
+        hook_event_name: "SubagentStart",
+        agent_type: "test",
+        agent_id: "t1",
+        last_assistant_message: null,
+      });
+
+      const backendResumed = inject(root, "backend", "a1");
+      expect(backendResumed).toContain("Resumed run —");
+
+      const testFirstRun = inject(root, "test", "t1");
+      expect(testFirstRun).not.toContain("Resumed run —");
+      expect(testFirstRun).toContain("Handoff routing for the `test` agent");
+    });
+
+    it("classifies a first run as not-a-resume with no session log on disk at all", async () => {
+      const root = makeProject("resume-cold");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      expect(fs.existsSync(path.join(root, ".claude", "maestro_session.log.jsonl"))).toBe(false);
+
+      const first = inject(root, "backend", "a1");
+      expect(first).not.toContain("Resumed run —");
+      expect(first).toContain("Handoff routing for the `backend` agent");
+    });
+  });
+
   // The other half of "the installed hooks actually run": what the PLUGIN's copy of the same hook
   // does while the project is running its own. Both used to fire — every tool call logged twice —
   // and this runs the plugin's real script, from the real plugins/maestro/scripts/, to show it

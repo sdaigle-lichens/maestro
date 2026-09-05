@@ -293,6 +293,13 @@ describe("handoff bundles (033)", () => {
     }
   });
 
+  // `040` — the resume-detection predicate `maestro-inject-agent-context.js` gates the five
+  // static injection blocks on. Same bundle, same reason: the hook `require()`s this by name.
+  it("maestro-session.cjs carries hasCompletedRun (040)", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    expect(Object.keys(session)).toContain("hasCompletedRun");
+  });
+
   it("maestro-handoff-defaults.cjs is the sqlite tier, and only that", () => {
     const store = require(path.join(LIB, "maestro-handoff-defaults.cjs"));
     expect(Object.keys(store).sort()).toEqual(
