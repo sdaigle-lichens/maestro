@@ -87,10 +87,15 @@ written to, so deleting a shipped pair from a store with any other row in it is 
 tier below would answer for that route again. `deleteHandoffDefault`'s own re-seed-when-emptied
 covers the empty-table case, not this one.
 
-**The pair roster in the Create row is `BUNDLED_AGENT_NAMES`** (`contracts.ts`), the seven bundled
-bare names — not a project's `agents_available`, because `/templates` threads no project context at
-all and a global default has to be authorable with nothing open. Create refuses a same-agent pair,
-and creating a pair that already exists SELECTS it rather than clobbering the body.
+**The pair roster in the Create row is a user-picked project's own `agents_available`** (`043`),
+read through a new `template:agents-available` channel (`readAgentsAvailable`, reused from the
+concept-skills CLI's own read). The tab holds the picked project as LOCAL state — `ProjectSelect`'s
+caller-supplied-`onChange` pattern from `/tools` — never the app's globally-open project, so picking
+one here cannot end the live session or retarget any other route. With no project picked, or the
+picked one has no `agents_available`, the roster is empty and Create stays disabled; there is no
+bundled-name fallback (`BUNDLED_AGENT_NAMES` was removed from `contracts.ts` in `043`). Create
+refuses a same-agent pair, and creating a pair that already exists SELECTS it rather than clobbering
+the body.
 
 Files: `apps/maestro/src/core/handoff-defaults.ts` (the store),
 `apps/maestro/src/core/handoff-seeds.ts` (the seed tier, import-free),

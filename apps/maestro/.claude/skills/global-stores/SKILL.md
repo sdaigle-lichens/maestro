@@ -110,8 +110,9 @@ Two guards bound the write, and both are about not lying to the user:
   plugin update overwrites, so an edit there is discarded, not merely unowned.
   `describeUneditableSource` gives each its own message — see `agents-view`. `contracts.ts` is
   otherwise interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` /
-  `AVATAR_CATEGORIES` / `AGENT_TYPES` / `034`'s `BUNDLED_AGENT_NAMES`) so the renderer can decide
-  from `source` alone with no round trip.
+  `AVATAR_CATEGORIES` / `AGENT_TYPES`) so the renderer can decide from `source` alone with no round
+  trip. (`034`'s `BUNDLED_AGENT_NAMES` used to join this list; `043` removed it once the Handoffs
+  tab's pair roster moved to a picked project's own `agents_available` — see `handoff-defaults.md`.)
 - `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's
   read-only bundled agents report why instead of appearing to save.
 

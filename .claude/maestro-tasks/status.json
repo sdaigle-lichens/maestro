@@ -219,5 +219,9 @@
   "042-attribute-a-resumed-agents-log-entries-to-the-right-card.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "043-global-handoffs-tab-picks-agent-names-from-a-real-project-instead-of-the-bundled-7.md": {
+    "status": "done",
+    "blockedBy": []
   }
 }

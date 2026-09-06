@@ -312,18 +312,6 @@ export interface ResolvedHandoffRoute {
 }
 
 /**
- * The agents Maestro itself ships, bare names — the fixed roster the `/templates` Handoffs tab's
- * pair dropdowns offer.
- *
- * Fixed rather than a project's `agents_available` on purpose: `/templates` threads no project
- * context at all, and a global default has to be authorable without one open. Bare names because
- * both halves of a handoff id are (`maestro:test` is `test` here) — see `handoff-seeds.ts`.
- *
- * A literal deliberate exception to "contracts.ts is interfaces only", same as `AGENT_TYPES`.
- */
-export const BUNDLED_AGENT_NAMES = ["backend", "frontend", "mobile", "refactor", "reviewer", "scribe", "test"] as const;
-
-/**
  * The closed set of agent-type tags the `/templates` page's Agent Types tab assigns one of to each
  * agent, backed by `agent-types.ts`'s own global sqlite store — singular per agent (an agent has
  * exactly one type, not a set), unlike a skill's `agentTypes` dimension, which may hold several

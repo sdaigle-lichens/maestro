@@ -8,9 +8,11 @@
 // gets a new tab here instead of a new hamburger entry — which is exactly how Handoffs arrived
 // (`034`), over `handoff-defaults.ts`'s own `~/.claude/maestro-handoff-defaults.sqlite`.
 //
-// No project context anywhere on this page — no ProjectSelect, no projectRoot threaded into any
-// of its calls. Every store behind it (report-defaults.ts, agent-types.ts, project-tags.ts) is
-// global, not project-scoped.
+// No project context anywhere on this page's own loader — no projectRoot threaded into any of the
+// calls above. Every store behind it (report-defaults.ts, agent-types.ts, project-tags.ts) is
+// global, not project-scoped. The one exception is the Handoffs tab's own Create row (`043`): it
+// carries a LOCAL ProjectSelect purely to source its pair-picker's agent names, never touching the
+// app's globally-open project — see that component's header comment.
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";

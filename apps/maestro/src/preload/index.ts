@@ -80,6 +80,7 @@ const api: MaestroApi = {
       save: (handoffId, content) => ipcRenderer.invoke(IPC.templateHandoffSave, handoffId, content),
       remove: (handoffId) => ipcRenderer.invoke(IPC.templateHandoffDelete, handoffId),
     },
+    agentsAvailable: (projectRoot) => ipcRenderer.invoke(IPC.templateAgentsAvailable, projectRoot),
     // `projectScoped` is forwarded as a plain flag, never a path — main resolves it against its
     // own `currentRoot()`. See `MaestroApi.templates`'s doc comment.
     agentTypes: {

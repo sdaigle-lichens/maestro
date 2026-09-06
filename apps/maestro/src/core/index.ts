@@ -58,6 +58,11 @@ export {
   type ConfigSlice,
 } from "./config.js";
 
+// Only consumer besides the concept-skills CLI's own entry point: the /templates Handoffs tab's
+// project picker, which needs the same "what agents does this project actually have" read the
+// concept-skills scripts already use — see `template:agents-available` in main/ipc.ts.
+export { readAgentsAvailable } from "./concept-skills.js";
+
 export { orchestratorSkillPath, successPath, handoffTable, renderOrchestrator, type RenderResult } from "./render.js";
 
 export {

@@ -136,7 +136,6 @@ export {
   AVATAR_PARTS,
   AVATAR_REQUIRED_CATEGORIES,
   AGENT_TYPES,
-  BUNDLED_AGENT_NAMES,
   EDITABLE_AGENT_SOURCES,
   isEditableAgentSource,
 } from "../core/contracts.js";
@@ -433,6 +432,13 @@ export const IPC = {
   templateHandoffsList: "template:handoffs:list",
   templateHandoffSave: "template:handoffs:save",
   templateHandoffDelete: "template:handoffs:delete",
+
+  // The Handoffs tab's own project picker (`043`): a LOCAL "which project am I viewing" the tab
+  // added for itself, distinct from every other channel on this page, which stays global. Reads
+  // the same `agents_available` `readAgentsAvailable` already gives the concept-skills CLI — no
+  // new store. `projectRoot` is validated the same way `data:tools`'s is: it must name the current
+  // or a recent project, or the call falls back to the open project (or `[]` with none open).
+  templateAgentsAvailable: "template:agents-available",
 
   // /agents' Interactions pane — the PROJECT tier for handoffs, exactly as `reportGet`/`reportSave`
   // are for reports. `handoffRoutes` answers "which routes leave this agent, and what template is
@@ -740,8 +746,9 @@ export interface MaestroApi {
     };
     /**
      * The Handoffs tab. Same tier and same intent as `reports` above, plus the lifecycle a report
-     * default has no need of: the pair roster is the bundled agents crossed with themselves, so a
-     * user can author a route Maestro never shipped, and anything creatable must be removable.
+     * default has no need of: the pair roster is a user-picked project's own `agents_available`
+     * (`043`; `agentsAvailable` below is how the tab reads it), so a user can author a route for
+     * agents Maestro never shipped, and anything creatable must be removable.
      *
      * `list` carries the seeded id set alongside the rows because `isSeededHandoff` lives behind
      * the `src/core` boundary. `save` upserts — writing an id with no row inserts it at version 1,
@@ -754,6 +761,14 @@ export interface MaestroApi {
       save(handoffId: string, content: string): Promise<HandoffDefault>;
       remove(handoffId: string): Promise<void>;
     };
+    /**
+     * The Handoffs tab's pair-roster source (`043`). Reads ONE project's `agents_available` — the
+     * project is whichever one the tab is locally viewing, never the app's globally-open project
+     * (picking one here must not call `project.open`/`pick`). `projectRoot` must name the current
+     * or a recent project; anything else falls back to the open project, and no project open (or
+     * none picked yet) reads back `[]` rather than rejecting — the tab disables Create on empty.
+     */
+    agentsAvailable(projectRoot: string): Promise<string[]>;
     /** The Agent Types tab: one type per agent, global by default — see the namespace doc above. */
     agentTypes: {
       /**

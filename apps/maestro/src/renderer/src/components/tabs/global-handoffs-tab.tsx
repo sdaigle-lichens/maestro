@@ -3,19 +3,24 @@
 // shape, so the two tabs read as the same app. What differs is that a handoff default has a full
 // LIFECYCLE where a report default has none.
 //
-//   - CREATE is two dropdowns over the bundled agent roster plus the ordinary upsert — writing an
-//     id with no row inserts it at version 1, so nothing new was needed in the store. Sender and
-//     receiver must differ, and creating a pair that already exists SELECTS it rather than
-//     clobbering the body somebody wrote.
+//   - CREATE is two dropdowns over a user-picked project's own agent roster plus the ordinary
+//     upsert — writing an id with no row inserts it at version 1, so nothing new was needed in the
+//     store. Sender and receiver must differ, and creating a pair that already exists SELECTS it
+//     rather than clobbering the body somebody wrote.
 //   - DELETE is offered only for a pair the user created.
 //   - RESET TO DEFAULT replaces Delete for the 23 pairs Maestro ships, and is a plain save of
 //     `SEED_HANDOFFS[id]`. That is not a nicety: `seedIfEmpty` only fires on a store that has never
 //     been written to, so a plain delete of a shipped pair would be irreversible. Main refuses one
 //     regardless of what this file renders — see `template:handoffs:delete`.
 //
-// THE PAIR PICKER IS THE FIXED BUNDLED ROSTER, not a project's `agents_available`, because
-// /templates threads no project context at all — no ProjectSelect, no projectRoot in any call. A
-// global default has to be authorable with nothing open.
+// THE PAIR PICKER READS A PROJECT'S OWN `agents_available` (`043`), via the tab's own LOCAL
+// "which project am I viewing" state — `ProjectSelect`'s caller-supplied-`onChange` pattern from
+// `/tools`, never `useProject().open()`/`pick()` — so picking one here never touches the app's
+// globally-open project, ends the live session, or retargets any other route. `/templates` still
+// threads no project context anywhere ELSE on the page; this tab is the one exception, because a
+// global default's pair roster has to come from somewhere and the bundled 7 agent names Maestro
+// ships aren't every agent a project may have. With no project picked (or the picked one has no
+// `agents_available`), the roster is empty and Create stays disabled — never a bundled fallback.
 //
 // Both halves of an id are BARE agent names (`test`, never `maestro:test`): the id is joined
 // straight into `.claude/handoffs/<sender>/<receiver>.md` and validated against
@@ -27,11 +32,12 @@ import Button from "@repo/ui/button";
 import { Textarea } from "@repo/ui/field";
 import { toast } from "@repo/ui/toast";
 import { callMain } from "../../utils/call-main";
-import { BUNDLED_AGENT_NAMES, type HandoffDefaultsListing } from "../../../../shared/ipc";
+import { type HandoffDefaultsListing } from "../../../../shared/ipc";
+import ProjectSelect from "../project-select";
+import { useProject } from "../../utils/project-context";
+import { resolveAgentPickerState } from "../../utils/handoff-picker";
 
 type Phase = "idle" | "saving" | "deleting";
-
-const AGENT_OPTIONS = BUNDLED_AGENT_NAMES.map((a) => ({ id: a, name: a }));
 
 /**
  * The renderer's own split of a `"<sender>/<receiver>"` id. Deliberately not an import of
@@ -49,8 +55,48 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
   const [content, setContent] = useState("");
   const [phase, setPhase] = useState<Phase>("idle");
   const [dirty, setDirty] = useState(false);
-  const [sender, setSender] = useState<string>(BUNDLED_AGENT_NAMES[0]);
-  const [receiver, setReceiver] = useState<string>(BUNDLED_AGENT_NAMES[6]);
+  const [sender, setSender] = useState<string>("");
+  const [receiver, setReceiver] = useState<string>("");
+
+  // The Create row's own project — LOCAL to this tab, per the header comment: never the app's
+  // globally-open project. `current` seeds it so a project already open shows its agents right
+  // away, exactly as `/tools`'s `viewedRoot` does; a fresh window with nothing open leaves it null.
+  const { current, recent } = useProject();
+  const [viewedRoot, setViewedRoot] = useState<string | null>(current?.root ?? null);
+  const [projectAgents, setProjectAgents] = useState<string[]>([]);
+
+  // Adopt `current` whenever the viewed root is missing or no longer known — the same mount-time
+  // race and fix as `/tools`' `viewedRoot` (see that route's comment): `ProjectProvider` starts
+  // with `current: null` and resolves it asynchronously, so a tab rendered before that resolves
+  // would otherwise show "No project" forever even once the real one is known.
+  useEffect(() => {
+    if (!current) return;
+    const known = [current.root, ...recent.map((r) => r.root)];
+    if (!viewedRoot || !known.includes(viewedRoot)) setViewedRoot(current.root);
+  }, [viewedRoot, current, recent]);
+
+  useEffect(() => {
+    if (!viewedRoot) {
+      setProjectAgents([]);
+      return;
+    }
+    let cancelled = false;
+    void callMain(() => window.maestro.templates.agentsAvailable(viewedRoot)).then((res) => {
+      if (!cancelled && res.ok) setProjectAgents(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  const { options: agentOptions, createDisabled: noAgentsToPick } = resolveAgentPickerState(viewedRoot, projectAgents);
+
+  // Keep the two dropdowns pointed at real options whenever the roster changes underneath them —
+  // a new project's agents, or the same project's list resolving after the tab mounted.
+  useEffect(() => {
+    setSender((prev) => (agentOptions.includes(prev) ? prev : (agentOptions[0] ?? "")));
+    setReceiver((prev) => (agentOptions.includes(prev) ? prev : (agentOptions[1] ?? agentOptions[0] ?? "")));
+  }, [agentOptions]);
 
   // The shipped set never changes while the tab is open — it is a constant compiled into the app,
   // not a store read — so it stays on the loader payload rather than in state.
@@ -176,11 +222,26 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
         */}
         <div className="flex-none border-t border-(--line) p-3 flex flex-col gap-2" data-testid="handoff-create">
           <div className="text-[11px] text-(--ink-3) uppercase tracking-wide">New route</div>
-          <AgentPicker id="handoff-from" label="from" value={sender} onChange={setSender} />
-          <AgentPicker id="handoff-to" label="to" value={receiver} onChange={setReceiver} />
-          <Button icon={<Plus size={13} />} disabled={busy || sender === receiver} onClick={handleCreate}>
+          <div className="flex items-center justify-between gap-2">
+            <span className="text-[11.5px] text-(--ink-3)">agents from</span>
+            <ProjectSelect value={viewedRoot} onChange={setViewedRoot} />
+          </div>
+          <AgentPicker id="handoff-from" label="from" value={sender} onChange={setSender} options={agentOptions} />
+          <AgentPicker id="handoff-to" label="to" value={receiver} onChange={setReceiver} options={agentOptions} />
+          <Button
+            icon={<Plus size={13} />}
+            disabled={busy || noAgentsToPick || !sender || !receiver || sender === receiver}
+            onClick={handleCreate}
+          >
             Create
           </Button>
+          {noAgentsToPick && (
+            <p className="text-[11px] text-(--ink-3) m-0">
+              {viewedRoot
+                ? "This project has no configured agents to pick from."
+                : "Pick a project above to choose which agents can hand off to each other."}
+            </p>
+          )}
         </div>
       </div>
 
@@ -312,11 +373,13 @@ function AgentPicker({
   label,
   value,
   onChange,
+  options,
 }: {
   id: string;
   label: string;
   value: string;
   onChange: (value: string) => void;
+  options: string[];
 }) {
   return (
     <label htmlFor={id} className="flex items-center gap-2 text-[11.5px] text-(--ink-3)">
@@ -324,12 +387,14 @@ function AgentPicker({
       <select
         id={id}
         value={value}
+        disabled={options.length === 0}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 h-[28px] px-2 rounded-md bg-(--bg-2) border border-(--line-2) text-(--ink) font-mono text-[12px] outline-none focus:border-(--primary) cursor-pointer"
+        className="flex-1 h-[28px] px-2 rounded-md bg-(--bg-2) border border-(--line-2) text-(--ink) font-mono text-[12px] outline-none focus:border-(--primary) cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
       >
-        {AGENT_OPTIONS.map((o) => (
-          <option key={o.id} value={o.id}>
-            {o.name}
+        {options.length === 0 && <option value="">—</option>}
+        {options.map((name) => (
+          <option key={name} value={name}>
+            {name}
           </option>
         ))}
       </select>

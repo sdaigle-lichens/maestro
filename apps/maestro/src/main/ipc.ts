@@ -73,6 +73,7 @@ import {
   deleteHandoffDefault,
   isSeededHandoff,
   SEED_HANDOFFS,
+  readAgentsAvailable,
   readAllAgentTypes,
   setAgentType,
   readAllProjectTags,
@@ -598,6 +599,13 @@ export function registerIpc(): void {
       throw new Error(`${handoffId} is one of Maestro's own handoff protocols — reset it to the default instead.`);
     }
     deleteHandoffDefault(handoffId);
+  });
+  // The tab's own project picker (`043`), not the app's open project — `resolveProjectRoot`
+  // validates `viewingRoot` against current+recent the same way `data:tools` does, and a project
+  // with no `maestro.json` (or none picked yet, so main sees no root at all) reads back `[]`.
+  ipcMain.handle(IPC.templateAgentsAvailable, (_e, viewingRoot?: string): string[] => {
+    const root = resolveProjectRoot(viewingRoot);
+    return root ? readAgentsAvailable(root) : [];
   });
   ipcMain.handle(IPC.templateAgentTypesList, (_e, projectScoped?: boolean): Record<string, AgentType> => {
     return readAllAgentTypes(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
