@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.8"
-  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
+  version: "1.11"
+  last-update: 90907a794bc0067dc869dce6aa459382d6ea198e
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -212,9 +212,30 @@ ls "$P/scripts/maestro-inject-agent-context.js"   # exists
 
 Then `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.
 
-### What `031`, `0.4.0`, `032`, `033` and `035` changed in the copied set
+`0.5.2` — the Step 4 task-routing gate (`046`) — is the ninth, and the same shape as `0.4.1`: a new
+`STATIC_ASSETS` entry (`maestro-step4-gate.cjs`, mirroring `maestro-step1-gates.cjs`'s contract) and
+an additive optional `maestro.json` field (`use_maestro_tasks`), not a published surface. Patch.
 
-Six more files now ride path 1 into every project — and `033` took ~23 away:
+`0.5.3` — auto-enabling task routing (`047`) — is the tenth, and the same shape as `0.4.0`'s two
+registrations rather than `0.4.0`'s own bump reason: a new `HOOK_SCRIPTS` entry
+(`maestro-enable-task-routing`, the writer `0.5.2` left unbuilt) registered on `UserPromptExpansion`
+and `PreToolUse` — **events the plugin already registers**, just a new matcher on the first and a
+second command sharing an existing matcher block on the second. `0.4.0` earned its minor because it
+added `UserPromptExpansion` as a **top-level key** `hooks.json` had never had; here that key, and the
+`PreToolUse`/`Skill` matcher, already exist. No skill, agent, or command added or renamed. Patch.
+
+`0.5.4` — the Step 4 post-mortem prompt (`049`) — is the eleventh, and the plainest patch of the
+set: no new file at all, on either side of the manifest. The whole change is two sentences of
+static template prose added inside the `Maestro:STEPS` region of `templates/maestro/SKILL.md`,
+which every install/update already re-syncs — no script, no `maestro.json` field, no skill, agent,
+command or hook event. It sits right beside `046`'s task-routing line in Step 4 but shares none of
+its shape: that one is a `STATIC_ASSETS` entry injected via `` !`command` ``; this one is prose the
+model reads directly, gated on the session's own judgement rather than a config field. Patch, by
+the table's plainest row: a behaviour change to an existing template.
+
+### What `031`, `0.4.0`, `032`, `033`, `035`, `046` and `047` changed in the copied set
+
+Seven more files now ride path 1 into every project — and `033` took ~23 away:
 
 | Copied to | From | Why it is copied rather than run from the plugin |
 | --- | --- | --- |
@@ -222,6 +243,8 @@ Six more files now ride path 1 into every project — and `033` took ~23 away:
 | `.claude/scripts/lib/maestro-agent-sync.cjs` | `plugins/maestro/scripts/lib/` | The generated bundle that CLI requires — and, since `0.4.0`, the `maestro-step0` hook, which calls `computeAgentSync` from it directly. |
 | `.claude/scripts/maestro-step0.cjs` (`0.4.0`) | `plugins/maestro/scripts/maestro-step0.js` | A **`HOOK_SCRIPTS`** entry, not a `STATIC_ASSET` — so it gets the `.js` → `.cjs` rename, and it needs its two `settings.json` registrations merged in as well as the file copied. |
 | `.claude/scripts/maestro-step1-gates.cjs` (`032`) | `plugins/maestro/scripts/` | A `STATIC_ASSET`. The orchestrator's Step 1 injects it as `` !`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"` ``, so it must be a project copy like every other `$CLAUDE_PROJECT_DIR` script. **This is the one whose absence is fatal rather than degrading** — see below. |
+| `.claude/scripts/maestro-step4-gate.cjs` (`046`) | `plugins/maestro/scripts/` | A `STATIC_ASSET`, same contract and same fatal-if-missing shape as the Step 1 row above, injected by Step 4 instead. `maestro-check-runtime.cjs`'s `SKILL_INVOKED_SCRIPTS` gained it alongside `maestro-step1-gates.cjs`. |
+| `.claude/scripts/maestro-enable-task-routing.cjs` (`047`) | `plugins/maestro/scripts/maestro-enable-task-routing.js` | A **`HOOK_SCRIPTS`** entry, not a `STATIC_ASSET` — the `.js` → `.cjs` rename applies, like `maestro-step0`. Dual-registered on the same two events as `maestro-step0`, with its own matcher on `UserPromptExpansion` and sharing the `Skill` matcher on `PreToolUse`. Injects nothing; its only effect is the `use_maestro_tasks` write. |
 | `.claude/scripts/lib/maestro-report-defaults.cjs` + `lib/maestro-handoff-defaults.cjs` (`035`) | `plugins/maestro/scripts/lib/` | `maestro-inject-agent-context` `require`s both, so `.claude/scripts/` has to hold them or the two global sqlite tiers do not exist for a project on its own copy. **This is the one whose absence is invisible rather than fatal**: both requires sit inside a try/catch, so the resolution failure is swallowed and the plugin's copy — which has the whole `lib/` beside it in the cache — goes on answering, making the arbitration winner decide what an agent is told. |
 
 **`033` removed a whole group.** The ~23 `templates/handoffs/**.md` no longer ride path 1 at all:
@@ -233,9 +256,9 @@ install. The shipped floor rides inside `lib/maestro-session.cjs` instead, which
 trap in a new place: edit `handoff-seeds.ts` without re-running `build:plugin-libs` and every hook
 keeps serving the old protocol, silently.
 
-Five are in `STATIC_ASSETS` and `maestro-step0` in `HOOK_SCRIPTS`, in **both** implementations
-(`install.ts` and `maestro-install.js`) — the manifests are mirrored by hand, so a file added to one
-and not the other is a bug. Since `032`, `test/core/parity.test.ts` asserts the two `STATIC_ASSETS`
+Six are in `STATIC_ASSETS` and `maestro-step0` and `maestro-enable-task-routing` (`047`) are in
+`HOOK_SCRIPTS`, in **both** implementations (`install.ts` and `maestro-install.js`) — the manifests
+are mirrored by hand, so a file added to one and not the other is a bug. Since `032`, `test/core/parity.test.ts` asserts the two `STATIC_ASSETS`
 `src` sets are **equal**, so that particular bug now fails a named test; since `035`,
 `test/core/install.test.ts` additionally scans every copied script for relative `require()`
 specifiers and asserts the manifest copies each target, so a lib forgotten in *both* lists fails

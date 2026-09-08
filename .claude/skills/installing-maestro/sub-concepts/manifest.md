@@ -6,11 +6,11 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups — 19 files:
+Everything lands under `<project>/.claude/`. Three groups — 20 files:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`) |
+| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-step4-gate` (`046`) |
 | Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
@@ -40,9 +40,9 @@ entry copies it. Static rather than a spawn, precisely because the failing branc
 caught exception. (`install.ts`'s comment on the shared-libs block says this test lives in
 `parity.test.ts` — it does not; flagged, not edited here.)
 
-**The `.js` → `.cjs` rename is load-bearing.** The five `HOOK_SCRIPTS`
+**The `.js` → `.cjs` rename is load-bearing.** The six `HOOK_SCRIPTS`
 (`maestro-inject-agent-context`, `maestro-subagent-log`, `maestro-session-log`,
-`maestro-validate-tasks`, `maestro-step0`) keep `.js` in the plugin, whose directory has no `package.json` declaring
+`maestro-validate-tasks`, `maestro-step0`, `maestro-enable-task-routing` (`047`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
 a module type. Inside a project the same file may sit under `"type": "module"`, which makes node
 parse their `require()` as ESM and fail the hook **on every tool call**. Scripts already named
 `.cjs` in the plugin are copied under their existing names. Add a hook script to the wrong list and
@@ -56,8 +56,8 @@ them is not an asset copy but a **sync**: `syncProjectHandoffs()` materialises
 `syncedFrom{version,hash}` in `maestro.json`'s `handoffs` slice, and leaves an edited file alone.
 The shipped floor is `SEED_HANDOFFS`, a constant bundled into `lib/maestro-session.cjs`, so it
 needs no file on disk to answer. Consequence for this manifest: an install's file count dropped
-from ~37 to 17 (19 since `035`), and adding a handoff pair no longer touches `shippedRuntimeId` — it is a seed edit
-plus a `build:plugin-libs`.
+from ~37 to 17 (19 since `035`, 20 since `046`), and adding a handoff pair no longer touches
+`shippedRuntimeId` — it is a seed edit plus a `build:plugin-libs`.
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
 by the **harness** rather than by a hook or by the model — the orchestrator's Step 1 names it in a
@@ -67,6 +67,20 @@ reported stale once and re-copied; and a project **missing** it does not degrade
 `/maestro` outright (`node` on an absent file exits 1, and a non-zero exit aborts the invocation),
 which is why `maestro-check-runtime.cjs` grew a presence check over it — see the staleness
 sub-concept.
+
+**`046` added a sibling, `maestro-step4-gate.cjs`, same shape.** Same harness-invoked,
+exit-0-unconditional, one-line-of-stdout contract, resolving `use_maestro_tasks` instead of `gates`
+and injected by Step 4 instead of Step 1. `maestro-check-runtime.cjs`'s `SKILL_INVOKED_SCRIPTS`
+gained it too, for the same fatal-if-missing reason.
+
+**`047` added a second dual-registered hook, `maestro-enable-task-routing`, same shape as
+`maestro-step0`.** It is the writer `046` left unbuilt: fires on `UserPromptExpansion` (matcher
+`to-maestro-tasks`) and `PreToolUse` (matcher `Skill`, alongside `maestro-step0`'s own registration
+on that same matcher — two commands under one matcher block, like `SubagentStop`'s two-hook shape),
+and flips `use_maestro_tasks` to `true` in `.claude/maestro.json` on first invocation. It is a
+`HOOK_SCRIPTS` entry (the `.js` → `.cjs` rename applies), not a `STATIC_ASSET`, and adds no new
+`STATIC_ASSETS` entry of its own — `shippedRuntimeId` still moves, because the manifest's hook
+registrations are part of what it hashes.
 
 **Both of `031`'s additions are `STATIC_ASSETS`, not `HOOK_SCRIPTS`** — they are already `.cjs` in
 the plugin and are not hooks, so they are copied under their existing names with no rename. They are
@@ -86,13 +100,15 @@ ephemeral files, so a double fire is unobservable (see the hook-arbitration sub-
 
 ## Hooks — `HOOK_REGISTRATIONS`
 
-Nine entries, written into the project's `.claude/settings.json`, mirroring the plugin's
-`hooks.json` one-for-one:
+Eleven entries (`047`; nine before it), written into the project's `.claude/settings.json`,
+mirroring the plugin's `hooks.json` one-for-one:
 
 | Event                 | Matcher      | Script                             |
 | --------------------- | ------------ | ---------------------------------- |
 | `UserPromptExpansion` | `maestro`    | `maestro-step0.cjs`                |
 | `PreToolUse`          | `Skill`      | `maestro-step0.cjs`                |
+| `UserPromptExpansion` | `to-maestro-tasks` | `maestro-enable-task-routing.cjs` (`047`) |
+| `PreToolUse`          | `Skill`      | `maestro-enable-task-routing.cjs` (`047`) |
 | `SubagentStart` | `.*`         | `maestro-inject-agent-context.cjs` |
 | `SubagentStart` | `.*`         | `maestro-subagent-log.cjs`         |
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |
@@ -101,9 +117,11 @@ Nine entries, written into the project's `.claude/settings.json`, mirroring the 
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
-`id` is `<Event>:<script>`, unique because two scripts are registered on two events each
-(`maestro-subagent-log` on SubagentStart/Stop, `maestro-step0` on the two entrances to the
-orchestrator — a typed `/maestro`, and a `Skill` tool call). **`SubagentStop`
+`id` is `<Event>:<script>`, unique because now **three** scripts are registered on two events each
+(`maestro-subagent-log` on SubagentStart/Stop, `maestro-step0` and, since `047`,
+`maestro-enable-task-routing` on the two entrances to a skill invocation — a typed slash command, and
+a `Skill` tool call — each keyed by its own matcher on `UserPromptExpansion` but **sharing** the
+`Skill` matcher on `PreToolUse` with `maestro-step0`, two commands under one matcher block). **`SubagentStop`
 is included even though the plan lists four events** — without it the session log has dispatch
 entries with no matching handoff and `/session-log` renders half a conversation.
 

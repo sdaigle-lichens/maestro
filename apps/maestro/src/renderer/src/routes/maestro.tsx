@@ -9,6 +9,7 @@ import {
   FolderOpen,
   GitBranch,
   Inbox,
+  ListChecks,
   PowerOff,
   RefreshCw,
   ShieldCheck,
@@ -27,6 +28,7 @@ import type {
   GatesData,
   PendingLane,
   ProjectTagsData,
+  TaskRoutingData,
   UninstallPlan,
   UninstallReport,
 } from "../../../shared/ipc";
@@ -538,6 +540,77 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
   );
 }
 
+/**
+ * The post-install Step 4 task-routing section. Structurally `GatesCard` above — a single checkbox
+ * that writes `maestro.json` on every click with no Save button — for the same reason: it is the
+ * same kind of thing (`046`, `048`).
+ *
+ * What it writes is read by nothing in this app: `maestro-step4-gate.cjs` reads `use_maestro_tasks`
+ * at `/maestro` invocation time and prints the Step 4 directive line the orchestrator injects. So a
+ * change here shows up in the NEXT orchestration, not in anything on screen.
+ */
+function TaskRoutingCard({ viewedRoot }: { viewedRoot: string }) {
+  const [data, setData] = useState<TaskRoutingData | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.taskRouting()).then((res) => {
+      if (!cancelled && res.ok) setData(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!data) return null;
+
+  const toggle = async () => {
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.taskRouting.set(!data.useMaestroTasks));
+      if (!res.ok) {
+        toast(<>Could not save task routing: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setData({ useMaestroTasks: res.value });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <ListChecks size={12} /> Task routing
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Whether the <span className="font-mono">/maestro</span> orchestrator's Step 4 suggests running{" "}
+        <span className="font-mono">/to-maestro-tasks</span> to queue up follow-up work after a rough session. Off by
+        default. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
+        of the next orchestration.
+      </p>
+      <label
+        className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+          busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={data.useMaestroTasks}
+          disabled={busy}
+          onChange={() => void toggle()}
+          className="mt-0.5 accent-primary cursor-pointer"
+        />
+        <span>
+          Use maestro tasks
+          <span className="block text-(--ink-3)">Nudge toward queuing follow-up work with /to-maestro-tasks.</span>
+        </span>
+      </label>
+    </div>
+  );
+}
+
 /** `oldestAgeMs` in the words `/maestro` shows beside a lane — never sub-hour, this is a backlog view. */
 function formatAge(ms: number): string {
   const hours = ms / (60 * 60 * 1000);
@@ -865,6 +938,8 @@ function InstallPage() {
           {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           {status?.installed && viewedRoot && <GatesCard key={viewedRoot} viewedRoot={viewedRoot} />}
+
+          {status?.installed && viewedRoot && <TaskRoutingCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           <div className="flex items-center gap-2">
             <Button

@@ -1670,7 +1670,9 @@ describe("maestro-step1-gates.cjs (032)", () => {
         expect(stdout.includes("/use-code-architecture-design-check"), label).toBe(use_code_architecture_design_check);
         // Both on: confidence first. The order is part of the instruction, not incidental.
         if (confidence_check && use_code_architecture_design_check) {
-          expect(stdout.indexOf("/confidence-check")).toBeLessThan(stdout.indexOf("/use-code-architecture-design-check"));
+          expect(stdout.indexOf("/confidence-check")).toBeLessThan(
+            stdout.indexOf("/use-code-architecture-design-check")
+          );
         }
         // Every state hands off to Step 2, including the one that does nothing else.
         expect(stdout, `${label} must send the orchestrator on to Step 2`).toMatch(/Step 2/);
@@ -1703,12 +1705,19 @@ describe("maestro-step1-gates.cjs (032)", () => {
         () =>
           writeRawConfig(
             root,
-            JSON.stringify({ version: 3, gates: { confidence_check: "true", use_code_architecture_design_check: "true" } })
+            JSON.stringify({
+              version: 3,
+              gates: { confidence_check: "true", use_code_architecture_design_check: "true" },
+            })
           ),
       ],
       [
         "gate values are numbers",
-        () => writeRawConfig(root, JSON.stringify({ version: 3, gates: { confidence_check: 1, use_code_architecture_design_check: 1 } })),
+        () =>
+          writeRawConfig(
+            root,
+            JSON.stringify({ version: 3, gates: { confidence_check: 1, use_code_architecture_design_check: 1 } })
+          ),
       ],
       ["the whole file is an array", () => writeRawConfig(root, "[]")],
       [
@@ -1763,5 +1772,305 @@ describe("maestro-step1-gates.cjs (032)", () => {
     const after = check();
     expect(after.action).toBe("update");
     expect(after.reason).toContain("maestro-step1-gates.cjs");
+  });
+});
+
+// Same shape as maestro-step1-gates.cjs's suite above, for the Step 4 gate (`046`) that reads
+// `use_maestro_tasks` and tells the orchestrator whether to consider /to-maestro-tasks.
+describe("maestro-step4-gate.cjs (046)", () => {
+  /** Runs the COPY in the project, not the plugin's original — that is what a session executes. */
+  function runGate(root: string): { code: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-step4-gate.cjs")], {
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    });
+    return { code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr };
+  }
+
+  /** Writes maestro.json verbatim — including shapes `writeConfig` would never produce. */
+  function writeRawConfig(root: string, body: string): void {
+    fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "maestro.json"), body);
+  }
+
+  async function installed(name: string): Promise<string> {
+    const root = makeProject(name);
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    return root;
+  }
+
+  it("is copied into the project by installRuntime", async () => {
+    const root = await installed("step4-copied");
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-step4-gate.cjs"))).toBe(true);
+    expect(runtimeAssets(PLUGIN_ROOT).map((a) => a.dest)).toContain(".claude/scripts/maestro-step4-gate.cjs");
+  });
+
+  it("prints the directive line only when use_maestro_tasks is true, otherwise the neutral line", async () => {
+    const root = await installed("step4-onoff");
+
+    writeConfig(root, { ...defaultish, use_maestro_tasks: true });
+    const on = runGate(root);
+    expect(on.code).toBe(0);
+    expect(on.stderr).toBe("");
+    expect(on.stdout.endsWith("\n")).toBe(true);
+    expect(on.stdout.trimEnd().split("\n")).toHaveLength(1);
+    expect(on.stdout).toMatch(/to-maestro-tasks/);
+
+    writeConfig(root, { ...defaultish, use_maestro_tasks: false });
+    const off = runGate(root);
+    expect(off.code).toBe(0);
+    expect(off.stderr).toBe("");
+    expect(off.stdout.endsWith("\n")).toBe(true);
+    expect(off.stdout.trimEnd().split("\n")).toHaveLength(1);
+    expect(off.stdout).not.toMatch(/to-maestro-tasks/);
+
+    expect(on.stdout).not.toBe(off.stdout);
+  });
+
+  it("falls back to the neutral line — exit 0, empty stderr — on every degenerate input", async () => {
+    const root = await installed("step4-degenerate");
+    const configPath = path.join(root, ".claude", "maestro.json");
+
+    writeConfig(root, { ...defaultish, use_maestro_tasks: false });
+    const off = runGate(root).stdout;
+    expect(off).not.toMatch(/to-maestro-tasks/);
+
+    const cases: [string, () => void][] = [
+      ["maestro.json missing", () => fs.rmSync(configPath)],
+      ["corrupt JSON", () => writeRawConfig(root, "{ not json at all")],
+      ["empty file", () => writeRawConfig(root, "")],
+      ["version 2", () => writeRawConfig(root, JSON.stringify({ version: 2, use_maestro_tasks: true }))],
+      ["use_maestro_tasks absent", () => writeConfig(root, { ...defaultish, use_maestro_tasks: undefined })],
+      [
+        "use_maestro_tasks is a string",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, use_maestro_tasks: "true" })),
+      ],
+      [
+        "use_maestro_tasks is a number",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, use_maestro_tasks: 1 })),
+      ],
+      [
+        "use_maestro_tasks is null",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, use_maestro_tasks: null })),
+      ],
+      ["the whole file is an array", () => writeRawConfig(root, "[]")],
+      [
+        ".claude/maestro.json is a directory",
+        () => {
+          fs.rmSync(configPath, { force: true });
+          fs.mkdirSync(configPath);
+        },
+      ],
+    ];
+
+    for (const [label, mutate] of cases) {
+      mutate();
+      const { code, stdout, stderr } = runGate(root);
+      expect(code, `${label} must exit 0`).toBe(0);
+      expect(stderr, `${label} must say nothing on stderr`).toBe("");
+      expect(stdout, `${label} must resolve to exactly the neutral line`).toBe(off);
+      fs.rmSync(configPath, { recursive: true, force: true });
+    }
+  });
+
+  it("reports a project missing the script as stale, and re-installing as the fix", async () => {
+    const root = await installed("step4-stale");
+    expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(false);
+
+    fs.rmSync(path.join(root, ".claude", "scripts", "maestro-step4-gate.cjs"));
+    expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(true);
+
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    expect((await installStatus(root, PLUGIN_ROOT)).stale).toBe(false);
+  });
+
+  it("makes maestro-check-runtime say update when the script is gone", async () => {
+    const root = await installed("step4-check");
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    const check = (): { action: string; reason?: string } =>
+      JSON.parse(
+        execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
+          encoding: "utf8",
+          env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: path.join(tmp, "home-check-step4") },
+        })
+      );
+
+    expect(check().action).toBe("continue");
+    fs.rmSync(path.join(root, ".claude", "scripts", "maestro-step4-gate.cjs"));
+    const after = check();
+    expect(after.action).toBe("update");
+    expect(after.reason).toContain("maestro-step4-gate.cjs");
+  });
+});
+
+// The hook half of `047`: dual-registered exactly like maestro-step0.js, but it injects nothing —
+// it exists only for the config write side effect that flips use_maestro_tasks on the first
+// /to-maestro-tasks invocation, so what matters here is WHICH invocations flip it, that every other
+// field survives byte-for-byte, and that every failure mode degrades to silence rather than noise.
+describe("maestro-enable-task-routing.cjs (047)", () => {
+  /** Runs the COPY in the project, not the plugin's original — that is what a session executes. */
+  function runEnable(root: string, payload: unknown): { code: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-enable-task-routing.cjs")], {
+      input: JSON.stringify(payload),
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    });
+    return { code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr };
+  }
+
+  /** Writes maestro.json verbatim — including shapes `writeConfig` would never produce. */
+  function writeRawConfig(root: string, body: string): void {
+    fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "maestro.json"), body);
+  }
+
+  const configPath = (root: string) => path.join(root, ".claude", "maestro.json");
+  const readRawConfig = (root: string) => fs.readFileSync(configPath(root), "utf8");
+
+  async function installed(name: string): Promise<string> {
+    const root = makeProject(name);
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    return root;
+  }
+
+  const expansion = (root: string, command: string) => ({
+    cwd: root,
+    hook_event_name: "UserPromptExpansion",
+    command_name: command,
+  });
+  const skillCall = (root: string, skill: string) => ({
+    cwd: root,
+    hook_event_name: "PreToolUse",
+    tool_name: "Skill",
+    tool_input: { skill },
+  });
+
+  it("is copied into the project by installRuntime and registered on both events", async () => {
+    const root = await installed("route-copied");
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-enable-task-routing.cjs"))).toBe(true);
+    expect(runtimeAssets(PLUGIN_ROOT).map((a) => a.dest)).toContain(".claude/scripts/maestro-enable-task-routing.cjs");
+
+    const settings = readSettings(root);
+    expect(commandsFor(settings, "UserPromptExpansion")).toContain(
+      'node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-enable-task-routing.cjs"'
+    );
+    expect(commandsFor(settings, "PreToolUse")).toContain(
+      'node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-enable-task-routing.cjs"'
+    );
+  });
+
+  it("flips use_maestro_tasks to true on /to-maestro-tasks, via both entrances, and on nothing else", async () => {
+    const root = await installed("route-fires");
+
+    // Neither the plugin's own commands nor another skill's Skill-tool call trips it.
+    runEnable(root, expansion(root, "to-maestro-tasks-planning")); // shares the prefix, must not match
+    expect(readConfig(root)?.use_maestro_tasks).not.toBe(true);
+    runEnable(root, expansion(root, "maestro"));
+    expect(readConfig(root)?.use_maestro_tasks).not.toBe(true);
+    runEnable(root, skillCall(root, "maestro:maestro-update"));
+    expect(readConfig(root)?.use_maestro_tasks).not.toBe(true);
+    runEnable(root, { ...skillCall(root, "to-maestro-tasks"), tool_name: "Bash" });
+    expect(readConfig(root)?.use_maestro_tasks).not.toBe(true);
+
+    // The user typing the command.
+    const typed = runEnable(root, expansion(root, "to-maestro-tasks"));
+    expect(typed.code).toBe(0);
+    expect(typed.stderr).toBe("");
+    expect(readConfig(root)?.use_maestro_tasks).toBe(true);
+
+    // Reset, then the other entrance: the model invoking the skill itself, plugin-namespaced.
+    writeConfig(root, defaultish);
+    const viaSkill = runEnable(root, skillCall(root, "plugin:to-maestro-tasks"));
+    expect(viaSkill.code).toBe(0);
+    expect(viaSkill.stderr).toBe("");
+    expect(readConfig(root)?.use_maestro_tasks).toBe(true);
+  });
+
+  it("injects nothing on either event — no stdout, no additionalContext, ever", async () => {
+    const root = await installed("route-silent");
+
+    const typed = runEnable(root, expansion(root, "to-maestro-tasks"));
+    expect(typed.stdout).toBe("");
+
+    writeConfig(root, defaultish);
+    const viaSkill = runEnable(root, skillCall(root, "to-maestro-tasks"));
+    expect(viaSkill.stdout).toBe("");
+  });
+
+  it("mutates only use_maestro_tasks, leaving every other field byte-for-byte in a re-parse", async () => {
+    const root = await installed("route-isolated");
+    const before = readConfig(root)!;
+
+    runEnable(root, expansion(root, "to-maestro-tasks"));
+
+    const after = readConfig(root)!;
+    expect(after.use_maestro_tasks).toBe(true);
+    expect({ ...after, use_maestro_tasks: undefined }).toEqual({ ...before, use_maestro_tasks: undefined });
+  });
+
+  it("serializes exactly as writeConfig does: two-space indent, no trailing newline", async () => {
+    const root = await installed("route-serialization");
+    runEnable(root, expansion(root, "to-maestro-tasks"));
+
+    const raw = readRawConfig(root);
+    expect(raw.endsWith("\n")).toBe(false);
+    expect(raw).toBe(JSON.stringify(JSON.parse(raw), null, 2));
+  });
+
+  it("is a no-op once already true — no write, content and mtime unchanged", async () => {
+    const root = await installed("route-noop");
+    writeConfig(root, { ...defaultish, use_maestro_tasks: true });
+    const before = readRawConfig(root);
+    const mtimeBefore = fs.statSync(configPath(root)).mtimeMs;
+
+    // A filesystem mtime clock can be coarser than the gap between these two calls; without a
+    // pause a same-tick no-op write would look identical to a real one, silently trivializing this
+    // whole assertion. 20ms is comfortably past the coarsest common tick (Windows' ~15ms) and short
+    // enough not to be worth ever noticing in CI.
+    await new Promise((r) => setTimeout(r, 20));
+
+    const run = runEnable(root, expansion(root, "to-maestro-tasks"));
+    expect(run.code).toBe(0);
+    expect(readRawConfig(root)).toBe(before);
+    expect(fs.statSync(configPath(root)).mtimeMs).toBe(mtimeBefore);
+  });
+
+  it("degrades to silence — exit 0, no stderr, no crash, no file created — on every failure mode", async () => {
+    const root = await installed("route-degenerate");
+
+    const cases: [string, () => void][] = [
+      ["maestro.json missing", () => fs.rmSync(configPath(root), { force: true })],
+      ["corrupt JSON", () => writeRawConfig(root, "{ not json at all")],
+      ["empty file", () => writeRawConfig(root, "")],
+      ["the whole file is an array", () => writeRawConfig(root, "[]")],
+      ["the whole file is a string", () => writeRawConfig(root, '"nope"')],
+    ];
+
+    for (const [label, mutate] of cases) {
+      fs.rmSync(configPath(root), { recursive: true, force: true });
+      mutate();
+      const run = runEnable(root, expansion(root, "to-maestro-tasks"));
+      expect(run.code, `${label} must exit 0`).toBe(0);
+      expect(run.stderr, `${label} must say nothing on stderr`).toBe("");
+      if (label === "maestro.json missing") {
+        expect(fs.existsSync(configPath(root)), `${label} must not create a file`).toBe(false);
+      }
+    }
+  });
+
+  it("stands down when the project registers its own copy of the hook", async () => {
+    const root = await installed("route-arbitration");
+    // Same arbitration maestro-step0.js's tests rely on: the plugin's copy, running from a
+    // marketplace-shaped root, must not also fire once the project owns this hook itself.
+    const pluginCopy = path.join(PLUGIN_ROOT, "scripts", "maestro-enable-task-routing.js");
+    const res = spawnSync("node", [pluginCopy], {
+      input: JSON.stringify(expansion(root, "to-maestro-tasks")),
+      encoding: "utf8",
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+    });
+    expect(res.status ?? -1).toBe(0);
+    expect(readConfig(root)?.use_maestro_tasks).not.toBe(true);
   });
 });

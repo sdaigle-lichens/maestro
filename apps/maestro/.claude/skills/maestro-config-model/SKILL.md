@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.6"
-  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
+  version: "1.9"
+  last-update: 90907a794bc0067dc869dce6aa459382d6ea198e
 ---
 
 # Maestro config model (v3)
@@ -29,21 +29,23 @@ entry point the IPC layer calls.
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                      |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                           |
 | `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_code_architecture_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
+| `use_maestro_tasks?`                    | A SIBLING of `gates`, not nested in it (`046`). The orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off** — resolved by `resolveUseMaestroTasks`, same strict-boolean discipline as `resolveGates`. |
 
 ## Slice merges are the load-bearing rule
 
-Saves never write the whole file. `ConfigSlice` is a union of exactly four shapes — `workflows`,
-`rules`, `project-tags`, `gates` — and `mergeSlice` copies only that slice's fields onto the current
-config. The comment on it is explicit about why: **this separation is the reason `/workflows` saves can't
-clobber `/rules` assignments and vice versa, and widening any branch to write another's fields
-reintroduces that bug.** Adding a field means deciding which slice owns it, not appending to
-whichever save path is nearest.
+Saves never write the whole file. `ConfigSlice` is a union of exactly five shapes — `workflows`,
+`rules`, `project-tags`, `gates`, `task-routing` (`046`) — and `mergeSlice` copies only that slice's
+fields onto the current config. The comment on it is explicit about why: **this separation is the
+reason `/workflows` saves can't clobber `/rules` assignments and vice versa, and widening any branch
+to write another's fields reintroduces that bug.** Adding a field means deciding which slice owns
+it, not appending to whichever save path is nearest.
 
-**`mergeSlice` has four explicit `sliceType` tests and no `else`, on purpose** (`032`). It used to
-end in a catch-all `else` that happened to mean `project-tags`; that is a latent instance of exactly
-the clobbering bug the function's own header warns about, because the *next* slice added would have
-silently inherited the previous one's write. A fifth slice must add a fifth test — being forgotten
-should be a no-op, never a wrong write.
+**`mergeSlice` has five explicit `sliceType` tests and no `else`, on purpose** (`032`, `046`). It
+used to end in a catch-all `else` that happened to mean `project-tags`; that is a latent instance of
+exactly the clobbering bug the function's own header warns about, because the *next* slice added
+would have silently inherited the previous one's write. `046`'s `task-routing` arm writes only
+`use_maestro_tasks`. A sixth slice must add a sixth test — being forgotten should be a no-op, never
+a wrong write.
 
 **`reports` and `handoffs` have no `mergeSlice` arm at all, and that is not an omission.** They are
 never written through `config:save`. Their writers are the install-time syncs (`report-sync.ts`,
@@ -117,3 +119,6 @@ collision).
 - [Project tags slice](sub-concepts/project-tags-slice.md) — catalog membership.
 - [Gates slice](sub-concepts/gates-slice.md) — the orchestrator's optional Step 1 gates, and how an
   absent or malformed value resolves.
+- [Task-routing slice](sub-concepts/task-routing-slice.md) — the `use_maestro_tasks` sibling of
+  `gates`, its two writers (`maestro-enable-task-routing.js` and `TaskRoutingCard`, `047`/`048`),
+  and Step 4's `maestro-step4-gate.cjs` reader.

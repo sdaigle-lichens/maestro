@@ -142,6 +142,10 @@ const HOOK_SCRIPTS = [
   // `require`s maestro-check-runtime.cjs (a STATIC_ASSET, already copied beside it) and, when it
   // is there, lib/maestro-agent-sync.cjs.
   "maestro-step0",
+  // Auto-enables Step 4 task routing the first time /to-maestro-tasks is invoked (`047`). Same two
+  // entrances as maestro-step0 above, registered on the SAME two events — it injects nothing, only
+  // flips `use_maestro_tasks` in maestro.json.
+  "maestro-enable-task-routing",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -165,6 +169,11 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // exiting non-zero aborts the skill), which is why maestro-check-runtime.cjs checks for this
   // file by name.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // The orchestrator's Step 4 task-routing configuration (`046`), read at invocation time and
+  // injected into the skill body by a !`command` line appended after Step 4's mark-task-done
+  // prose. Same shape as maestro-step1-gates.cjs above — a project copy invoked by
+  // $CLAUDE_PROJECT_DIR path, granted in the template's `allowed-tools`, exits 0 unconditionally.
+  { src: "scripts/maestro-step4-gate.cjs", dest: ".claude/scripts/maestro-step4-gate.cjs" },
   // Resume-target lookup (`039`) for a condition-edge loop-back: whether the agent the edge points
   // to already ran this session, and if so which `agent_id` to resume instead of dispatching a
   // cold `Task`. Invoked by the orchestrator directly (granted in the template's `allowed-tools`),
@@ -281,6 +290,9 @@ function nodeHook(event: HookEvent, matcher: string, script: string): HookRegist
 export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("UserPromptExpansion", "maestro", "maestro-step0.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-step0.cjs"),
+  // `047`: the same two entrances, watching for /to-maestro-tasks instead of /maestro.
+  nodeHook("UserPromptExpansion", "to-maestro-tasks", "maestro-enable-task-routing.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-enable-task-routing.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),

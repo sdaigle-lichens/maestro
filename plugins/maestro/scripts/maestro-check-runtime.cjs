@@ -82,10 +82,13 @@ try {
 }
 
 // Runtime scripts the orchestrator skill invokes BY PATH, so a project that lacks one cannot run
-// the step that names it. `maestro-step1-gates.cjs` is the sharp case: it is injected with
-// !`node …`, and a non-zero exit there aborts the invocation outright.
+// the step that names it. `maestro-step1-gates.cjs` and `maestro-step4-gate.cjs` (`046`) are the
+// sharp cases: both are injected with !`node …`, and a non-zero exit there aborts the invocation
+// outright — every !`command` in the body expands before the model sees any of it, so a project
+// missing either script fails on EVERY /maestro invocation, not just one that reaches Step 4.
 const SKILL_INVOKED_SCRIPTS = [
   "maestro-step1-gates.cjs",
+  "maestro-step4-gate.cjs",
   "maestro-set-session-workflow.cjs",
   "maestro-task-status.cjs",
 ];

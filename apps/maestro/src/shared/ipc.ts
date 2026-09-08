@@ -26,6 +26,7 @@ import type {
   MaestroRulesSlice,
   MaestroGates,
   MaestroGatesSlice,
+  MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -155,6 +156,7 @@ export type {
   MaestroRulesSlice,
   MaestroGates,
   MaestroGatesSlice,
+  MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -362,11 +364,22 @@ export interface GatesData {
   gates: MaestroGates;
 }
 
+/**
+ * What `/maestro`'s Step 4 task-routing checkbox needs, and what it writes back. The sibling of
+ * `GatesData` for `use_maestro_tasks` (`046`) — the app writes `maestro.json.use_maestro_tasks`
+ * here, and `maestro-step4-gate.cjs` reads it at invocation time to print the Step 4 directive.
+ */
+export interface TaskRoutingData {
+  /** Resolved via `resolveUseMaestroTasks`, never raw: absent or non-boolean reads back as false. */
+  useMaestroTasks: boolean;
+}
+
 export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
-  | { sliceType: "gates"; slice: MaestroGatesSlice };
+  | { sliceType: "gates"; slice: MaestroGatesSlice }
+  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
 
 export const IPC = {
   projectGet: "project:get",
@@ -403,6 +416,13 @@ export const IPC = {
   // flag implies nothing about which agents or skills the project has.
   gatesData: "data:gates",
   gatesSet: "project:gates:set",
+
+  // `/maestro`'s Step 4 task-routing checkbox — the `use_maestro_tasks` sibling of the pair above
+  // (`046`, `048`). `data:task-routing` reads the project's resolved value (false when no project
+  // is open, same fallback as `data:gates`); `project:task-routing:set` saves the `task-routing`
+  // slice and returns what was saved. Also no second cross-slice write, same reasoning as gates.
+  taskRoutingData: "data:task-routing",
+  taskRoutingSet: "project:task-routing:set",
 
   // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
   // global default, else none) — the SAME resolution `report-resolution.ts` gives the
@@ -646,6 +666,14 @@ export interface MaestroApi {
        */
       set(gates: MaestroGates): Promise<MaestroGates>;
     };
+    taskRouting: {
+      /**
+       * Set the OPEN project's `use_maestro_tasks` to exactly `value` — `/maestro`'s task-routing
+       * checkbox calls this on EVERY click, with no Save button. Saves the `task-routing` slice and
+       * nothing else, and returns what was saved. Rejects when no project is open.
+       */
+      set(value: boolean): Promise<boolean>;
+    };
     tags: {
       /**
        * Toggle the OPEN project's `project_tags` to exactly `tags` — `/maestro`'s post-install
@@ -707,6 +735,12 @@ export interface MaestroApi {
      * exactly what the runtime script resolves them to as well.
      */
     gates(): Promise<GatesData>;
+    /**
+     * `/maestro`'s Step 4 task-routing checkbox: the open project's RESOLVED `use_maestro_tasks`.
+     * Never rejects — no project open, or an absent/non-boolean value, both read back as false,
+     * exactly what `maestro-step4-gate.cjs` resolves them to as well.
+     */
+    taskRouting(): Promise<TaskRoutingData>;
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;

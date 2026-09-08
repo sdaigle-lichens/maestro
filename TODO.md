@@ -1,31 +1,8 @@
 # Todo
 
-Read the task from `.claude/maestro-tasks/046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md`. Then, from `.claude` and `apps/maestro/.claude`, select the skills related to the task's
-feature to get the context and tools needed. In all cases you will at least need:
+There is no queued task right now. Every task file under `.claude/maestro-tasks/` (001 through 049,
+the highest numbered) is `"done"` in `status.json`, and none are `"ready"` or newly unblocked.
 
-- apps/maestro/.claude/skills/test-maestro/SKILL.md
-- .claude/skills/installing-maestro/SKILL.md
-
-and then whichever of these the task actually touches:
-
-- .claude/skills/maestro-architecture/SKILL.md
-- .claude/skills/updating-maestro/SKILL.md
-- .claude/skills/react-flow-canvas-geometry/SKILL.md
-- .claude/skills/task-queue/SKILL.md
-- apps/maestro/.claude/skills/agent-fork-sync/SKILL.md
-- apps/maestro/.claude/skills/agents-view/SKILL.md
-- apps/maestro/.claude/skills/claude-session-bridge/SKILL.md
-- apps/maestro/.claude/skills/create-skills-architecture/SKILL.md
-- apps/maestro/.claude/skills/global-stores/SKILL.md
-- apps/maestro/.claude/skills/maestro-config-model/SKILL.md
-- apps/maestro/.claude/skills/plugin-libs-parity/SKILL.md
-- apps/maestro/.claude/skills/workflow-view/SKILL.md
-
-Then do the task. When you are done, call the scribe agent, send it a summary of your code changes,
-and ask it to use the `/scribe` skill and the `/update-concept-skills` skill to update the project's
-concept skills. Also ask it to tick the acceptance criteria on the task page, record any divergences
-from what the page planned, set the task to `done` in `status.json`, and update this `TODO.md` for
-the next run.
-
-**Any change under `plugins/<name>/` must bump that plugin's `plugin.json` `version`** — see
-`.claude/skills/updating-maestro/` for which component.
+To get a new task: run `/to-maestro-tasks` with a plan or idea to queue up fresh prompt files, or
+check `.claude/maestro-tasks/status.json` directly if one might already be queued from another
+session.

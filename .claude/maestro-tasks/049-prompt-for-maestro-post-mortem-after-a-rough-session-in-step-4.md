@@ -11,10 +11,12 @@ This is independent of the `use_maestro_tasks` setting and its gate script from 
 
 ## Acceptance criteria
 
-- [ ] Step 4 of the rendered orchestrator skill contains a short (2-4 sentence) instruction telling the model to ask the user about running maestro-post-mortem
-- [ ] The instruction is explicitly gated on the session not having gone cleanly (major review fix needed, refactor needed, or the task not completed correctly on the first pass without heavy user steering) and explicitly says not to ask on a clean run
-- [ ] The addition sits inside the managed Maestro:STEPS region so it reaches existing installs via /maestro-update, and does not disturb the existing mark-task-done instructions or the task-routing directive/gate line from the first task
-- [ ] Plugin version bumped (patch — behavior change to an existing template, no new skill/agent/command/hook event)
+- [x] Step 4 of the rendered orchestrator skill contains a short (2-4 sentence) instruction telling the model to ask the user about running maestro-post-mortem
+- [x] The instruction is explicitly gated on the session not having gone cleanly (major review fix needed, refactor needed, or the task not completed correctly on the first pass without heavy user steering) and explicitly says not to ask on a clean run
+- [x] The addition sits inside the managed Maestro:STEPS region so it reaches existing installs via /maestro-update, and does not disturb the existing mark-task-done instructions or the task-routing directive/gate line from the first task
+- [x] Plugin version bumped (patch — behavior change to an existing template, no new skill/agent/command/hook event)
+
+No divergences from the task page's plan.
 
 ## Blocked by
 

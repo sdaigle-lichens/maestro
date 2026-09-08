@@ -1,7 +1,7 @@
 ---
 name: maestro
 description: "Orchestrates Maestro workflows: classifies the user's request, runs the project's configured Step 1 gates, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
-allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resume-target.cjs" *)
+allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resume-target.cjs" *), Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step4-gate.cjs")
 ---
 
 # Maestro Orchestrator
@@ -70,6 +70,10 @@ node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-task-status.cjs" done
 ```
 
 (You can still pass an explicit filename — `done 002-add-login.md` — to override.) The script flips that file to `done` and recomputes the queue's `status.json` so any dependents whose blockers are now all done become `ready` — you don't compute the cascade yourself. Then mark the mark-task-done task complete. If `active_task` is empty (the run wasn't invoked from a task file), there is no mark-task-done task and you skip this step.
+
+!`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step4-gate.cjs"`
+
+Before finishing, judge whether this session went cleanly: did it need a major review fix, a mid-task refactor, or did the task fail to land correctly on the first pass without heavy steering from the user? If so, ask the user once whether they'd like to run `/maestro-post-mortem` now. If the session was clean, skip this question entirely — don't ask it on every task.
 <!-- Maestro:STEPS:END -->
 
 <!-- Maestro:PRINCIPLES:START -->

@@ -55,6 +55,7 @@ export {
   mergeSlice,
   resolveGates,
   DEFAULT_GATES,
+  resolveUseMaestroTasks,
   type ConfigSlice,
 } from "./config.js";
 

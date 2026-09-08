@@ -9,6 +9,7 @@ import {
   readConfig,
   resolveGates,
   DEFAULT_GATES,
+  resolveUseMaestroTasks,
   blankConfig,
   defaultV3Config,
   seededAgentNames,
@@ -130,6 +131,7 @@ import type {
   ProjectTagsData,
   GatesData,
   MaestroGates,
+  TaskRoutingData,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -413,6 +415,15 @@ export function registerIpc(): void {
     return { gates: resolveGates(readConfig(projectRoot)) };
   });
 
+  // `/maestro`'s Step 4 task-routing checkbox. Never rejects, same reasoning as `data:gates`: no
+  // project open, or an absent/non-boolean `use_maestro_tasks`, both resolve to false via
+  // `resolveUseMaestroTasks`.
+  ipcMain.handle(IPC.taskRoutingData, (): TaskRoutingData => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { useMaestroTasks: false };
+    return { useMaestroTasks: resolveUseMaestroTasks(readConfig(projectRoot)) };
+  });
+
   // ── the read-only surface folded in from help-server ──────────────────
   // Two loaders, four tabs and two doc views. help-server ran six server functions for the same
   // screens, two of which each re-read `installed_plugins.json` to compute their own `isInstalled`
@@ -497,6 +508,18 @@ export function registerIpc(): void {
     // checks the file's, so a bad payload can only ever write two booleans.
     const resolved = resolveGates({ gates } as MaestroConfigV3);
     await saveConfig(projectRoot, { sliceType: "gates", slice: { gates: resolved } });
+    return resolved;
+  });
+
+  // `/maestro`'s Step 4 task-routing checkbox. One slice write and nothing else — same reasoning
+  // as `project:gates:set` above.
+  ipcMain.handle(IPC.taskRoutingSet, async (_e, value: boolean): Promise<boolean> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    // Resolved, not trusted: mirrors the gates handler's discipline of re-checking the renderer's
+    // payload the same way the runtime script checks the file's.
+    const resolved = resolveUseMaestroTasks({ version: 3, use_maestro_tasks: value } as MaestroConfigV3);
+    await saveConfig(projectRoot, { sliceType: "task-routing", slice: { use_maestro_tasks: resolved } });
     return resolved;
   });
 

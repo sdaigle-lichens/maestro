@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.8"
-  last-update: 7d9972492e8941ebabb500dda544ddd621eb29a6
+  version: "1.10"
+  last-update: 90907a794bc0067dc869dce6aa459382d6ea198e
 ---
 
 # Installing Maestro
@@ -76,8 +76,10 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/scripts/maestro-install.js`                 | 631   | The terminal implementation of the same manifest — including its own `syncProjectHandoffs()`, which `require`s `decideSync` and `handoffRoutes` from the generated libs rather than re-deriving them. |
 | `plugins/maestro/scripts/maestro-uninstall.js`               | 204   | The terminal implementation of the same removal.                                              |
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
+| `plugins/maestro/scripts/maestro-enable-task-routing.js`     | —     | `047`'s addition, dual-registered the same way (`UserPromptExpansion` on `to-maestro-tasks`, `PreToolUse` on `Skill`, sharing that matcher's block with `maestro-step0.js`). Injects nothing — its only effect is flipping `maestro.json`'s `use_maestro_tasks` to `true` the first time `/to-maestro-tasks` is invoked. |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging a project by hand; nothing in the orchestrator runs it. |
-| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the only asset invoked by the *harness* rather than by a hook or the model: the orchestrator's Step 1 injects it with `` !`command` ``. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
+| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the first asset invoked by the *harness* rather than by a hook or the model: the orchestrator's Step 1 injects it with `` !`command` ``. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
+| `plugins/maestro/scripts/maestro-step4-gate.cjs`              | —     | `046`'s addition — same harness-invoked, exit-0-unconditional contract as the row above, for Step 4 instead of Step 1: resolves `maestro.json`'s `use_maestro_tasks` and prints a line naming `/to-maestro-tasks` when on, a neutral line when off. |
 | `plugins/maestro/scripts/maestro-agent-forks.cjs`            | 127   | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. The hook calls `computeAgentSync` directly; this CLI is the user-facing half. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
@@ -135,12 +137,13 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   specifiers and asserts the manifest copies each one. See the manifest sub-concept.
 - **Changing the asset list makes every installed project stale exactly once.** `031` added two
   (`maestro-agent-forks.cjs` and its `lib/maestro-agent-sync.cjs`), `032` added one
-  (`maestro-step1-gates.cjs`), `033` **removed ~23** (every `templates/handoffs/**.md`), and `035`
-  added two (`lib/maestro-report-defaults.cjs`, `lib/maestro-handoff-defaults.cjs`), so
-  `shippedRuntimeId` moved each time and every project reports stale on its next check and
-  re-copies. Expected, and the only way a runtime file ever arrives or leaves — but worth saying out
-  loud, because "everything went stale after my change" reads like a bug. Note the digest is over
-  the manifest, so this fires whether or not any *existing* file changed.
+  (`maestro-step1-gates.cjs`), `033` **removed ~23** (every `templates/handoffs/**.md`), `035`
+  added two (`lib/maestro-report-defaults.cjs`, `lib/maestro-handoff-defaults.cjs`), and `046` added
+  one more (`maestro-step4-gate.cjs`), so `shippedRuntimeId` moved each time and every project
+  reports stale on its next check and re-copies. Expected, and the only way a runtime file ever
+  arrives or leaves — but worth saying out loud, because "everything went stale after my change"
+  reads like a bug. Note the digest is over the manifest, so this fires whether or not any
+  *existing* file changed.
 - **`refreshStaleRuntime` never installs fresh.** It fires on project _selection_, so auto-installing
   would put Maestro into every repo the user happens to open. It also uses a raw parse rather than
   `readConfig()`'s blank-on-corrupt fallback, so a corrupt config is never silently rewritten.

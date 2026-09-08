@@ -235,23 +235,23 @@
     ]
   },
   "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "047-auto-enable-task-routing-when-to-maestro-tasks-is-invoked.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md"
     ]
   },
   "048-expose-the-task-routing-setting-in-the-app-s-project-settings.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md"
     ]
   },
   "049-prompt-for-maestro-post-mortem-after-a-rough-session-in-step-4.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md"
     ]

@@ -15,12 +15,25 @@ Finally, register `maestro-step4-gate.cjs` as a project-only static asset in BOT
 
 ## Acceptance criteria
 
-- [ ] resolveUseMaestroTasks(cfg) returns false for every degenerate input (absent field, corrupt/null config, version !== 3, a non-boolean value like a string or number) and true only for a literal `true`, mirroring resolveGates's existing test coverage style
-- [ ] mergeSlice gains an explicit sliceType === "task-routing" arm that writes only use_maestro_tasks and leaves every other slice (workflows, rules, gates, project_tags, reports, handoffs) byte-identical
-- [ ] maestro-step4-gate.cjs takes no arguments, always exits 0, never writes to stderr under any input (missing file, corrupt JSON, wrong version, non-boolean value), and always prints exactly one newline-terminated line — verified for both the true and the false/absent/corrupt cases
-- [ ] A hand-edited maestro.json with use_maestro_tasks: true produces a rendered Step 4 (via /maestro-install or /maestro-update) that shows the /to-maestro-tasks directive line; false or absent produces the neutral line — in both cases the existing mark-task-done instructions are unchanged
-- [ ] maestro-step4-gate.cjs is copied into a freshly installed or updated project by both installRuntime() (apps/maestro) and maestro-install.js/maestro-update (plugin), matching how maestro-step1-gates.cjs is delivered today
-- [ ] plugins/maestro/.claude-plugin/plugin.json's version is bumped
+- [x] resolveUseMaestroTasks(cfg) returns false for every degenerate input (absent field, corrupt/null config, version !== 3, a non-boolean value like a string or number) and true only for a literal `true`, mirroring resolveGates's existing test coverage style — `test/core/config.test.ts` › `describe("resolveUseMaestroTasks (046)")`
+- [x] mergeSlice gains an explicit sliceType === "task-routing" arm that writes only use_maestro_tasks and leaves every other slice (workflows, rules, gates, project_tags, reports, handoffs) byte-identical — `test/core/config.test.ts` › `describe("mergeSlice — task-routing (046)")`
+- [x] maestro-step4-gate.cjs takes no arguments, always exits 0, never writes to stderr under any input (missing file, corrupt JSON, wrong version, non-boolean value), and always prints exactly one newline-terminated line — verified for both the true and the false/absent/corrupt cases — `test/core/install.test.ts` › `describe("maestro-step4-gate.cjs (046)")`, on/off contract test + ~9-case degenerate-input table
+- [x] A hand-edited maestro.json with use_maestro_tasks: true produces a rendered Step 4 (via /maestro-install or /maestro-update) that shows the /to-maestro-tasks directive line; false or absent produces the neutral line — in both cases the existing mark-task-done instructions are unchanged — manual end-to-end verification against `maestro-install.js` + `maestro-render-orchestrator.cjs` in a scratch project
+- [x] maestro-step4-gate.cjs is copied into a freshly installed or updated project by both installRuntime() (apps/maestro) and maestro-install.js/maestro-update (plugin), matching how maestro-step1-gates.cjs is delivered today — asset-copied test in `test/core/install.test.ts` (046) + `test/core/parity.test.ts` `STATIC_ASSETS manifest parity`
+- [x] plugins/maestro/.claude-plugin/plugin.json's version is bumped — `0.5.1` → `0.5.2` (patch)
+
+## Divergence from plan
+
+`plugins/maestro/scripts/maestro-check-runtime.cjs`'s `SKILL_INVOKED_SCRIPTS` gained
+`"maestro-step4-gate.cjs"` (alongside the existing `maestro-step1-gates.cjs`), with the comment
+above the list updated to explain why both Step 1 and Step 4 gate scripts are the "fatal if
+missing" case. Not in the original acceptance criteria above, but follows directly from Step 4's
+`!`command`` line sharing Step 1's failure mode: a missing script kills `/maestro` outright rather
+than degrading, since all `!`command`` lines in a skill body are expanded before the model sees the
+prompt, on every invocation, not just ones that reach Step 4. Without this addition, a project that
+manually deleted `maestro-step4-gate.cjs` post-install would get no staleness warning before
+`/maestro` started failing outright. Verified with a `maestro-check-runtime.cjs` integration test
+proving a missing `maestro-step4-gate.cjs` reports `action: "update"` with the filename in `reason`.
 
 ## Blocked by
 

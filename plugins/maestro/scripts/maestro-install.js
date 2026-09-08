@@ -288,6 +288,9 @@ const HOOK_REGISTRATIONS = [
   // through the Skill tool (PreToolUse) — see the script's own header.
   nodeHook("UserPromptExpansion", "maestro", "maestro-step0.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-step0.cjs"),
+  // `047`: the same two entrances, watching for /to-maestro-tasks instead of /maestro.
+  nodeHook("UserPromptExpansion", "to-maestro-tasks", "maestro-enable-task-routing.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-enable-task-routing.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -363,6 +366,8 @@ const HOOK_SCRIPTS = [
   "maestro-session-log",
   "maestro-validate-tasks",
   "maestro-step0",
+  // Auto-enables Step 4 task routing the first time /to-maestro-tasks is invoked (047).
+  "maestro-enable-task-routing",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the
@@ -378,6 +383,9 @@ const STATIC_ASSETS = [
   // Step 1's gate configuration (032) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for
   // why its absence is the one that breaks an invocation outright.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // Step 4's task-routing configuration (046) — see apps/maestro/src/core/install.ts's
+  // STATIC_ASSETS for the full rationale; same shape as maestro-step1-gates.cjs above.
+  { src: "scripts/maestro-step4-gate.cjs", dest: ".claude/scripts/maestro-step4-gate.cjs" },
   // Resume-target lookup (039) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it
   // is a project copy invoked directly by the orchestrator rather than a hook.
   { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },

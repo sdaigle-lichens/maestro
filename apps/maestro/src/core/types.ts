@@ -102,6 +102,14 @@ export interface MaestroConfigV3 {
    * is the one reader, and `maestro-step1-gates.cjs` mirrors it for the runtime.
    */
   gates?: MaestroGates;
+  /**
+   * Whether the orchestrator's Step 4 should suggest running `/to-maestro-tasks` to queue up
+   * follow-up work. A SIBLING of `gates`, never nested inside it: `gates` is documented
+   * specifically as the orchestrator's Step 1 gates, and this is a Step 4 concern with its own
+   * write story. Absent means off — the same opt-in stance `gates` takes, resolved by
+   * `resolveUseMaestroTasks` in `config.ts`; `maestro-step4-gate.cjs` mirrors it for the runtime.
+   */
+  use_maestro_tasks?: boolean;
 }
 
 /**
@@ -147,6 +155,10 @@ export interface MaestroGates {
 
 export interface MaestroGatesSlice {
   gates: MaestroGates;
+}
+
+export interface MaestroTaskRoutingSlice {
+  use_maestro_tasks: boolean;
 }
 
 /**

@@ -15,6 +15,7 @@ import type {
   MaestroGatesSlice,
   MaestroProjectTagsSlice,
   MaestroRulesSlice,
+  MaestroTaskRoutingSlice,
   MaestroWorkflowsSlice,
 } from "./types.js";
 
@@ -90,7 +91,8 @@ export type ConfigSlice =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
-  | { sliceType: "gates"; slice: MaestroGatesSlice };
+  | { sliceType: "gates"; slice: MaestroGatesSlice }
+  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
 
 /** Both gates off — what an absent, partial or corrupt `gates` field resolves to, per field. */
 export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_code_architecture_design_check: false };
@@ -110,6 +112,19 @@ export function resolveGates(cfg: MaestroConfigV3 | null): MaestroGates {
     confidence_check: raw.confidence_check === true,
     use_code_architecture_design_check: raw.use_code_architecture_design_check === true,
   };
+}
+
+/**
+ * The one reader of `use_maestro_tasks`. Mirrors `resolveGates`'s strict `=== true` comparison: an
+ * absent field, a corrupt/null config, a `version !== 3` config, and a non-boolean value (a
+ * string, a number, `null`) all resolve to `false` rather than to something truthy.
+ *
+ * `maestro-step4-gate.cjs` reimplements this rule for the runtime (it can't import from src/core),
+ * so a change here needs the same change there.
+ */
+export function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean {
+  if (!cfg || cfg.version !== 3) return false;
+  return cfg.use_maestro_tasks === true;
 }
 
 /**
@@ -136,6 +151,8 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
     next.project_tags = input.slice.project_tags;
   } else if (input.sliceType === "gates") {
     next.gates = input.slice.gates;
+  } else if (input.sliceType === "task-routing") {
+    next.use_maestro_tasks = input.slice.use_maestro_tasks;
   }
   return next;
 }
