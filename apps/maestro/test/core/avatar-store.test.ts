@@ -52,7 +52,7 @@ describe("getAvatar / setAvatar", () => {
   });
 
   it("rejects a category id that isn't a real option", () => {
-    const bad = { ...fullLayers(), body: "not-a-real-id" };
+    const bad = { ...fullLayers(), sex: "not-a-real-id" };
     expect(() => setAvatar("reviewer", bad as AvatarLayers, dbPath)).toThrow();
   });
 
@@ -60,6 +60,40 @@ describe("getAvatar / setAvatar", () => {
     const bad = fullLayers();
     delete (bad as Partial<AvatarLayers>).eyes;
     expect(() => setAvatar("reviewer", bad, dbPath)).toThrow();
+  });
+
+  it("round-trips a hex eyesColor", () => {
+    const layers = { ...fullLayers(), eyes: "brows", eyesColor: "#a0522d" };
+    setAvatar("reviewer", layers, dbPath);
+    expect(getAvatar("reviewer", dbPath)).toEqual(layers);
+  });
+
+  it("round-trips a null eyesColor (the upstream color, unrecolored)", () => {
+    const layers = { ...fullLayers(), eyes: "brows", eyesColor: null };
+    setAvatar("reviewer", layers, dbPath);
+    expect(getAvatar("reviewer", dbPath)).toEqual(layers);
+  });
+
+  it("rejects an eyesColor that isn't a #rrggbb hex string", () => {
+    const bad = { ...fullLayers(), eyesColor: "chartreuse" };
+    expect(() => setAvatar("reviewer", bad as AvatarLayers, dbPath)).toThrow();
+  });
+
+  it("round-trips a hex hairColor", () => {
+    const layers = { ...fullLayers(), hair: "bob", hairColor: "#8b5fbf" };
+    setAvatar("reviewer", layers, dbPath);
+    expect(getAvatar("reviewer", dbPath)).toEqual(layers);
+  });
+
+  it("round-trips a null hairColor (the upstream color, unrecolored)", () => {
+    const layers = { ...fullLayers(), hair: "bob", hairColor: null };
+    setAvatar("reviewer", layers, dbPath);
+    expect(getAvatar("reviewer", dbPath)).toEqual(layers);
+  });
+
+  it("rejects a hairColor that isn't a #rrggbb hex string", () => {
+    const bad = { ...fullLayers(), hairColor: "chartreuse" };
+    expect(() => setAvatar("reviewer", bad as AvatarLayers, dbPath)).toThrow();
   });
 });
 

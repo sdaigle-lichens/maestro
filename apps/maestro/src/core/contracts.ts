@@ -39,17 +39,24 @@ export const GLOBAL_TAG = "global";
 
 /**
  * The agent avatar picker's part categories, bottom→top in the same order the layers composite in
- * (`body` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
- * must stay in agreement with this order.
+ * (`sex` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
+ * must stay in agreement with this order. `sex` alone drives TWO drawn layers (a body silhouette
+ * and a head silhouette) — see the manifest's `SEX_LAYER_URLS` — because the upstream pack has no
+ * single "body+head" asset and the two crops must stay in lockstep with one male/female choice
+ * rather than being pickable independently.
  *
  * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG` above:
  * the renderer needs the actual array to render one row per category, not just the type.
  */
-export const AVATAR_CATEGORIES = ["body", "head", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
+export const AVATAR_CATEGORIES = ["sex", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
 export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number];
 
-/** body/head/eyes are always rendered (never "none"); the rest may be null. */
-export const AVATAR_REQUIRED_CATEGORIES: readonly AvatarCategory[] = ["body", "head", "eyes"];
+/**
+ * `sex`/`eyes`/`torso`/`legs` are always rendered (never "none"); `hair`/`feet`/`hat` may be null.
+ * Torso and legs were made required rather than optional: an unclothed torso/legs composite (the
+ * "naked" state a `null` used to produce) is not a look the picker offers any more.
+ */
+export const AVATAR_REQUIRED_CATEGORIES: readonly AvatarCategory[] = ["sex", "eyes", "torso", "legs"];
 
 export interface AvatarPartOption {
   id: string;
@@ -64,18 +71,27 @@ export interface AvatarPartOption {
  * file per id; see `manifest.ts`'s `BODY_VARIANT_CATEGORIES`/`resolveAvatarUrl`. `hat` is NOT
  * variant-aware: the upstream pack only ever cut one `adult` size for it.
  *
- * No "Child" body/head option: measured by compositing (see the session that added this comment) —
+ * No "Child" option anywhere: measured by compositing (see the session that added this comment) —
  * every worn item and the eye layer are cropped and positioned for an ADULT frame, so pairing them
- * with the child body/head produces severe, not cosmetic, misalignment (oversized torso floating
+ * with a child body/head produces severe, not cosmetic, misalignment (oversized torso floating
  * off the shoulders, eyes rendering down near the chin). The upstream LPC pack has no child-sized
  * cut for any of those layers, so there is no fix short of dropping the option.
+ *
+ * The `eyes` list ships only the upstream pack's own credited shapes (every `eyes/human/*` mood
+ * variant has no entry in the pack's own `CREDITS.csv` and is deliberately not used here, same
+ * policy as the missing Child option) — no baked-in color variants. Color is a separate, freeform
+ * choice: `AvatarLayers.eyesColor`, applied at render time to whichever of `EYE_RECOLOR_SHAPES` is
+ * selected (see `recolorImage` in the renderer's `utils/recolor.ts`). This replaced an earlier
+ * design of 20 pre-baked palette-swapped PNGs, one per named color — a continuous picker offers
+ * strictly more choice for less asset weight, once the recolor is a cheap runtime canvas operation
+ * rather than something that has to be pre-rendered.
+ *
+ * `hair` gets the same treatment via `AvatarLayers.hairColor`/`HAIR_RECOLOR_SHAPES` — every
+ * hairstyle in the upstream pack is drawn with the same flat-ink-over-three-tone-shading pattern
+ * the eyebrows are, so the one recolor algorithm covers both categories with no per-shape tuning.
  */
 export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
-  body: [
-    { id: "male", name: "Male" },
-    { id: "female", name: "Female" },
-  ],
-  head: [
+  sex: [
     { id: "male", name: "Male" },
     { id: "female", name: "Female" },
   ],
@@ -83,6 +99,7 @@ export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
     { id: "brows", name: "Brows" },
     { id: "cyclops", name: "Cyclops" },
     { id: "cyclops2", name: "Cyclops (alt)" },
+    { id: "brows_thin", name: "Thin Brows" },
   ],
   hair: [
     { id: "plain", name: "Plain" },
@@ -90,35 +107,131 @@ export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
     { id: "bob", name: "Bob" },
     { id: "buzzcut", name: "Buzzcut" },
     { id: "dreadlocks_short", name: "Short Dreadlocks" },
+    { id: "pixie", name: "Pixie Cut" },
+    { id: "afro", name: "Afro" },
+    { id: "curly_short", name: "Curly Short" },
+    { id: "mop", name: "Mop" },
+    { id: "cornrows", name: "Cornrows" },
+    { id: "unkempt", name: "Unkempt" },
+    { id: "high_and_tight", name: "High & Tight" },
+    { id: "flat_top_fade", name: "Flat Top Fade" },
+    { id: "curly_short2", name: "Curly Short (Alt)" },
+    { id: "spiked", name: "Spiked" },
+    { id: "cowlick", name: "Cowlick" },
+    { id: "jewfro", name: "Jewfro" },
+    { id: "natural", name: "Natural" },
+    { id: "longhawk", name: "Long Hawk" },
+    { id: "swoop", name: "Swoop" },
   ],
   torso: [
     { id: "tshirt", name: "T-Shirt" },
     { id: "tshirt_buttoned", name: "Buttoned Shirt" },
     { id: "leather_armour", name: "Leather Armor" },
     { id: "plate_armour", name: "Plate Armor" },
+    { id: "chainmail", name: "Chainmail" },
+    { id: "legion_armour", name: "Legion Armor" },
+    { id: "longsleeve", name: "Long-Sleeve Shirt" },
+    { id: "polo", name: "Polo Shirt" },
+    { id: "vneck", name: "V-Neck Shirt" },
+    { id: "overalls", name: "Overalls" },
+    { id: "suspenders", name: "Suspenders" },
+    { id: "shortsleeve_plain", name: "Short-Sleeve Shirt" },
+    { id: "henley", name: "Henley Shirt" },
+    { id: "scoop_sweater", name: "Scoop Neck Sweater" },
+    { id: "scoop_tee", name: "Scoop Neck Tee" },
+    { id: "sleeveless2", name: "Sleeveless Shirt" },
+    { id: "longsleeve_buttoned", name: "Buttoned Overshirt" },
+    { id: "longsleeve_vneck", name: "Long V-Neck Shirt" },
   ],
   legs: [
     { id: "pants", name: "Pants" },
     { id: "shorts", name: "Shorts" },
     { id: "skirt_plain", name: "Plain Skirt" },
     { id: "skirt_legion", name: "Legion Skirt" },
+    { id: "formal", name: "Formal Trousers" },
+    { id: "cuffed", name: "Cuffed Trousers" },
+    { id: "leggings", name: "Leggings" },
+    { id: "hose", name: "Hose" },
+    { id: "pantaloons", name: "Pantaloons" },
+    { id: "formal_striped", name: "Pinstripe Trousers" },
+    { id: "leggings2", name: "Tight Leggings" },
+    { id: "plate_greaves", name: "Plate Greaves" },
+    { id: "cargo_pants", name: "Cargo Pants" },
   ],
   feet: [
     { id: "shoes_basic", name: "Shoes" },
     { id: "boots_basic", name: "Boots" },
     { id: "sandals", name: "Sandals" },
     { id: "shoes_ghillies", name: "Ghillie Shoes" },
+    { id: "boots_fold", name: "Cuffed Boots" },
+    { id: "boots_rimmed", name: "Rimmed Boots" },
+    { id: "slippers", name: "Slippers" },
+    { id: "socks_high", name: "High Socks" },
+    { id: "plate_boots", name: "Plate Boots" },
+    { id: "socks_ankle", name: "Ankle Socks" },
+    { id: "socks_tabi", name: "Tabi Socks" },
+    { id: "shoes_revised", name: "Pointed Shoes" },
+    { id: "shoes_sara", name: "Strappy Shoes" },
+    { id: "boots_revised", name: "Riding Boots" },
+    { id: "sabatons", name: "Sabatons" },
   ],
   hat: [
     { id: "bandana", name: "Bandana" },
     { id: "bowler", name: "Bowler Hat" },
     { id: "crown", name: "Crown" },
     { id: "barbarian_helmet", name: "Barbarian Helmet" },
+    { id: "tophat", name: "Top Hat" },
+    { id: "legion_helmet", name: "Legion Helmet" },
+    { id: "hood", name: "Hood" },
+    { id: "wizard", name: "Wizard Hat" },
+    { id: "cavalier", name: "Cavalier Hat" },
+    { id: "mail", name: "Mail Coif" },
+    { id: "norman", name: "Norman Helmet" },
+    { id: "tiara", name: "Tiara" },
+    { id: "hood_sack", name: "Sack Hood" },
+    { id: "leather_cap", name: "Leather Cap" },
+    { id: "kerchief", name: "Kerchief" },
+    { id: "bonnie", name: "Bonnet" },
+    { id: "celestial_moon", name: "Crescent Moon Hat" },
+    { id: "headband_thick", name: "Headband" },
+    { id: "visor_round", name: "Round Visor" },
   ],
 };
 
-/** One id per category, or null for an optional category left empty. */
-export type AvatarLayers = Record<AvatarCategory, string | null>;
+/**
+ * The `eyes` shapes a color applies to — plain eyebrow line art, recolorable because it is drawn in
+ * one flat ink color over a three-tone (highlight/mid/shadow) shading pattern that survives a hue
+ * swap. `cyclops`/`cyclops2` are a single eye shape rather than an eyebrow and are excluded: the
+ * same hue swap would recolor the iris along with everything else, which reads as broken rather
+ * than styled.
+ */
+export const EYE_RECOLOR_SHAPES: readonly string[] = ["brows", "brows_thin"];
+
+/**
+ * Every `hair` shape is recolorable — unlike `eyes`, none of them is a fixed-color feature the way
+ * `cyclops`'s iris is, so there is no subset to exclude. Kept as an explicit list (rather than
+ * reading `AVATAR_PARTS.hair` at the call site) for the same reason `EYE_RECOLOR_SHAPES` is: a
+ * future hair asset that shouldn't recolor (a hat-attached hairpiece, say) has somewhere to be
+ * excluded without touching the render pipeline.
+ */
+export const HAIR_RECOLOR_SHAPES: readonly string[] = AVATAR_PARTS.hair.map((opt) => opt.id);
+
+/** `#rrggbb`, case-insensitive — the one shape `eyesColor`/`hairColor` may take. */
+export const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
+
+/**
+ * One id per category, or null for an optional category left empty — plus `eyesColor`/`hairColor`,
+ * freeform hex colors applied at render time when `eyes`/`hair` is one of `EYE_RECOLOR_SHAPES`/
+ * `HAIR_RECOLOR_SHAPES` (see `recolorImage` in the renderer's `utils/recolor.ts`). `null`/absent
+ * draws the shape in its native upstream color. They sit outside the `Record<AvatarCategory, …>`
+ * shape rather than being folded into `eyes`/`hair` themselves (e.g. `"brows#a0522d"`) because they
+ * are not a *choice among options* the way every other category is — `AVATAR_PARTS.eyes`/`.hair`
+ * stay the closed, validated set of shapes, and the color is an open value beside them.
+ */
+export type AvatarLayers = Record<AvatarCategory, string | null> & {
+  eyesColor?: string | null;
+  hairColor?: string | null;
+};
 
 /**
  * Where an agent/skill was discovered: "project", "user" (global ~/.claude), the bundled

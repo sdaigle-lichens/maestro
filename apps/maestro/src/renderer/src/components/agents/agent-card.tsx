@@ -6,8 +6,7 @@
 // taller than its content (which view mode always is, having no category row and no arrows) the
 // three groups spread instead of bunching at the top.
 
-import { useEffect, useState } from "react";
-import { GitFork, Pencil } from "lucide-react";
+import { Copy, Pencil } from "lucide-react";
 import {
   AGENT_TYPES,
   GLOBAL_TAG,
@@ -160,14 +159,10 @@ export default function AgentCard({
   onStartEdit: () => void;
   onCancel: () => void;
   onSave: () => void;
-  /** "Fork into this project" — the read-only card's escape hatch. `newName` is the free-text field. */
+  /** "Copy into the project" — the read-only card's escape hatch. Always shadows under the same name. */
   onFork: (newName: string) => void;
 }) {
   const isProjectTier = source === "project";
-  // Local, and reset whenever the selected agent changes — a rename typed for one agent must not
-  // survive onto the next one selected, the same trap `activeCat` would fall into without a reset.
-  const [forkName, setForkName] = useState(name);
-  useEffect(() => setForkName(name), [name]);
 
   return (
     <div className="max-w-[500px] mx-auto px-7 pt-7 pb-14">
@@ -184,7 +179,7 @@ export default function AgentCard({
             {/* Consistent with which of the left pane's two sections this agent is listed under. */}
             <span
               title={isProjectTier ? "Lives in this project's .claude/agents/" : `Resolved from the ${source} tier`}
-              className="flex-none font-mono text-[10px] uppercase tracking-[0.08em] border border-(--line-2) rounded px-[7px] py-[2px] text-(--ink-3)"
+              className="flex-none font-mono text-[10px] uppercase tracking-[0.08em] border border-(--line-2) rounded pl-[9px] pr-[7px] pt-[2px] pb-[3px] text-(--ink-3)"
             >
               {isProjectTier ? "Project" : "Global"}
             </span>
@@ -202,7 +197,7 @@ export default function AgentCard({
               ))}
             </select>
           ) : (
-            <span className={`${PRIMARY_CHIP} flex-none text-[11px] uppercase tracking-[0.06em] px-2.5 py-1`}>
+            <span className={`${PRIMARY_CHIP} flex-none text-[11px] uppercase tracking-[0.06em] px-2.5 pt-1 pb-[5px]`}>
               {type}
             </span>
           )}
@@ -330,35 +325,22 @@ export default function AgentCard({
           {isProjectTier ? (
             <span />
           ) : (
-            // "Fork into this project" sits exactly where the read-only description just told the
-            // user they'd hit a wall — a next step, not just a refusal. Same name by default
-            // (shadowing, not a rival); the field is a free-text escape hatch for a variant
-            // genuinely wanted beside the original.
-            <div className="flex items-center gap-2">
-              <input
-                value={forkName}
-                onChange={(e) => setForkName(e.target.value)}
-                disabled={forking}
-                title="The forked agent's name — same as the original shadows it; a different one keeps both"
-                data-testid="agent-fork-name"
-                className={`w-[168px] font-mono ${FIELD_CONTROL}`}
-              />
-              <button
-                type="button"
-                onClick={() => onFork(forkName)}
-                disabled={forking || forkName.trim().length === 0}
-                title="Copy this agent's file into this project's .claude/agents/"
-                data-testid="agent-fork-button"
-                className={FOOTER_BUTTON}
-              >
-                <GitFork size={13} />
-                {forking ? "Forking…" : "Fork into this project"}
-              </button>
-            </div>
+            // "Copy into the project" sits exactly where the read-only description just told the
+            // user they'd hit a wall — a next step, not just a refusal. Always shadows the original
+            // under the same name.
+            <button
+              type="button"
+              onClick={() => onFork(name)}
+              disabled={forking}
+              title={forking ? "Copying…" : "Copy into the project"}
+              data-testid="agent-fork-button"
+              className={FOOTER_BUTTON}
+            >
+              <Copy size={13} />
+            </button>
           )}
           <button type="button" onClick={onStartEdit} title="Edit agent" className={FOOTER_BUTTON}>
             <Pencil size={13} />
-            Edit agent
           </button>
         </div>
       )}

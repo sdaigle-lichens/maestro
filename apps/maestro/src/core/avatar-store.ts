@@ -18,7 +18,7 @@
 import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
-import { AVATAR_CATEGORIES, AVATAR_PARTS, type AvatarCategory, type AvatarLayers } from "./contracts.js";
+import { AVATAR_CATEGORIES, AVATAR_PARTS, HEX_COLOR_RE, type AvatarCategory, type AvatarLayers } from "./contracts.js";
 
 /** `~/.claude/maestro-avatars.sqlite` — one store, every project on this machine. */
 export const DEFAULT_AVATAR_DB_PATH = path.join(os.homedir(), ".claude", "maestro-avatars.sqlite");
@@ -48,12 +48,19 @@ function dropLegacySchema(db: DatabaseSync): void {
 function isValidLayers(value: unknown): value is AvatarLayers {
   if (typeof value !== "object" || value === null) return false;
   const v = value as Record<string, unknown>;
-  return AVATAR_CATEGORIES.every((cat: AvatarCategory) => {
+  const categoriesOk = AVATAR_CATEGORIES.every((cat: AvatarCategory) => {
     const id = v[cat];
     if (id === null) return true;
     if (typeof id !== "string") return false;
     return AVATAR_PARTS[cat].some((opt) => opt.id === id);
   });
+  if (!categoriesOk) return false;
+  return isValidColor(v.eyesColor) && isValidColor(v.hairColor);
+}
+
+function isValidColor(value: unknown): boolean {
+  if (value === undefined || value === null) return true;
+  return typeof value === "string" && HEX_COLOR_RE.test(value);
 }
 
 /**

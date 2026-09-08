@@ -66,8 +66,7 @@ export const RIGHT_PANE_MIN = 280;
 export const RIGHT_PANE_MAX = 720;
 
 export const CATEGORY_LABELS: Record<AvatarCategory, string> = {
-  body: "Body",
-  head: "Head",
+  sex: "Sex",
   eyes: "Eyes",
   hair: "Hair",
   torso: "Torso",
@@ -135,7 +134,7 @@ export function clampText(text: string, max = 108): string {
 
 /**
  * The next option in a category's cycle, wrapping at both ends. Optional categories include `null`
- * ("none") in the pool; the three required ones (body/head/eyes) never do — a character with no
+ * ("none") in the pool; the required ones (sex/eyes/torso/legs) never do — a character with no
  * body is not a character.
  */
 export function cycleOption(options: string[], required: boolean, current: string | null, dir: 1 | -1): string | null {

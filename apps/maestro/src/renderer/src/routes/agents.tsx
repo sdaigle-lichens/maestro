@@ -95,7 +95,11 @@ function sourceLabel(source: ResolvedReport["source"]): string {
 }
 
 function sameLayers(a: AvatarLayers, b: AvatarLayers): boolean {
-  return AVATAR_CATEGORIES.every((cat) => a[cat] === b[cat]);
+  return (
+    AVATAR_CATEGORIES.every((cat) => a[cat] === b[cat]) &&
+    (a.eyesColor ?? null) === (b.eyesColor ?? null) &&
+    (a.hairColor ?? null) === (b.hairColor ?? null)
+  );
 }
 
 function sameSkills(a: AgentSkill[], b: AgentSkill[]): boolean {

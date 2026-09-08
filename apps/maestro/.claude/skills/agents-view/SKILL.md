@@ -1,10 +1,10 @@
 ---
 name: agents-view
-description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to seven different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's list of the resolved report plus one editor per outgoing handoff route (each labelled, since `037`, with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to), the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to seven places, why a description is written to the agent's own .md, why an agent's description can't be edited, how 'Fork into this project' works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, or why a route shows (or doesn't show) a channel lane path."
+description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to seven different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's list of the resolved report plus one editor per outgoing handoff route (each labelled, since `037`, with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to), the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to seven places, why a description is written to the agent's own .md, why an agent's description can't be edited, how the "Copy into the project" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, or why a route shows (or doesn't show) a channel lane path."
 metadata:
   type: concept-skill
-  version: "1.6"
-  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
+  version: "1.11"
+  last-update: 86e1dcb38fe2e03101547bc30d1981e6ef3df53f
 ---
 
 # Agents View
@@ -172,10 +172,47 @@ as a side effect of visiting `/agents`.
 
 ## The avatar block
 
-`agent-avatar-block.tsx` is a **tabs-and-arrows** editor: eight category buttons pick the active
-category, the two arrows cycle that category's options, and a dice button randomises all eight.
-Optional categories include `null` ("none") in the cycle; the three required ones (body/head/eyes) do
-not.
+`agent-avatar-block.tsx` is a **tabs-and-arrows** editor: seven category buttons (sex, eyes, hair,
+torso, legs, feet, hat) pick the active category, the two arrows cycle that category's options, and
+a dice button randomises all seven. "Sex" merges what used to be separate body/head categories —
+picking male/female drives both the body and head silhouette layers at once (see `SEX_LAYER_URLS`
+in `manifest.ts`), since the upstream pack always ships them as a matched pair. Optional categories
+include `null` ("none") in the cycle; the four required ones (sex, eyes, torso, legs) do not — torso
+and legs have no unclothed option.
+
+`eyes` and `hair` each carry one extra control beside the tabs/arrows, a shared `ColorControl`
+(`agent-avatar-block.tsx`; `avatar-picker.tsx` has its own copy sized for its swatch-row layout):
+`eyes` shows it when the selected shape is "Brows" or "Thin Brows" (`EYE_RECOLOR_SHAPES` in
+`contracts.ts`), writing `AvatarLayers.eyesColor`; `hair` shows it for *every* hairstyle
+(`HAIR_RECOLOR_SHAPES` — unlike eyes, there's no shape to exclude, since none of the 20 hairstyles
+is a fixed-color feature the way `cyclops`'s iris is), writing `AvatarLayers.hairColor`. Both are a
+freeform hex, recolored onto the sprite live in `avatar-canvas.tsx` via the same `recolorImage()`
+call (`utils/recolor.ts`: convert to HSL, replace hue+saturation, keep lightness so the shading
+survives) — every hair sprite in the upstream pack turned out to already use the identical
+flat-ink-over-shading pattern the eyebrows do, so one algorithm covers both categories with no
+per-shape tuning. This replaced an earlier fixed list of 20 pre-baked palette-swapped eyebrow PNGs,
+one per named color — `eyesColor`/`hairColor` sit outside the `Record<AvatarCategory, string |
+null>` shape (neither is a *choice among options* the way every other field is), so `AvatarLayers`
+is `Record<AvatarCategory, string | null> & { eyesColor?: string | null; hairColor?: string |
+null }`. "Cyclops"/"Cyclops (alt)" ignore the color entirely — they're a single eye shape, not an
+eyebrow, and the control is hidden while either is selected.
+
+**`ColorControl`'s swatch previews `color ?? native`, never a placeholder unrelated to the shape.**
+`nativeEyesColor(id)`/`nativeHairColor(id)` (`utils/avatar.ts`) look up a per-shape hex sampled
+offline from the shipped PNG — the weighted average RGB of every opaque pixel — so the swatch and
+the hidden `<input type="color">`'s own value both start at what that specific shape actually looks
+like unrecolored, rather than one fixed dark brown shared by every shape regardless of its real
+color. `NATIVE_EYES_COLORS`/`NATIVE_HAIR_COLORS` are parity-tested against `EYE_RECOLOR_SHAPES`/
+`HAIR_RECOLOR_SHAPES` in `avatar-parity.test.ts`, same discipline as the shape lists themselves — an
+id with no sampled entry falls back to `#4a2e1a`, which parity rules out ever being reached.
+
+**Reset lives inside the swatch, not as a separate sibling control.** A small `×` badge renders
+absolutely positioned in the swatch's own corner, shown only once `color !== null`, so the layout
+doesn't shift as a color is set/cleared the way a conditionally-rendered sibling button did before.
+"Select color" is an always-visible text button beside the swatch that opens the native picker via a
+`useRef` + `.click()` on the hidden input, rather than the swatch itself being the click target
+(a `<label>` wrapping the hidden input can't stay the trigger once a nested Reset button needs to
+intercept its own clicks without also re-opening the picker underneath it).
 
 This **supersedes `avatar-picker.tsx`'s swatch-rows layout on this page only** — that component is
 still what `/create-subagent` renders, so it was not deleted. The two were prototyped side by side:
@@ -223,31 +260,33 @@ that global tier are [`global-stores`](../global-stores/SKILL.md)' subject, not 
 ## Forking a global agent
 
 Only the description locks on a Global-tier card (see "Things that bite" below) — every other field
-still saves normally. The escape hatch is a free-text name input (defaulting to the agent's own
-name) plus a "Fork into this project" button in the view-mode footer
-(`data-testid="agent-fork-name"` / `"agent-fork-button"`), calling `forkAgent`
-(`src/core/agent-fork.ts`) over the `agent:fork` channel.
+still saves normally. The escape hatch is an icon-only Copy button in the view-mode footer
+(`data-testid="agent-fork-button"`, title "Copy into the project"), calling `forkAgent`
+(`src/core/agent-fork.ts`) over the `agent:fork` channel with the agent's own name — this card
+always shadows, never renames; there is no free-text field here.
 
 **This page is no longer the only caller of `forkAgent` (`041`).** `/workflows`' `InstancePicker`
-offers the same renamed-fork path from its all-placed dead end — a workflow can't place two
-instances on one bare agent (`placedAgentTypes`), so forking under a new name is the supported way
-to get a second, genuinely distinct instance. Same channel, same provenance record, same
-`renameAgentInFrontmatter`/`copyAgentAttributeRows` machinery described below; the differences are
-the caller and what happens on success (there it selects the fork into the picker's own field and
-adds it to `config.agents_available`, not this page's edit session). The `isProjectTier` gate below
-travels with it: the picker is handed a `forkableAgents` list built the same way (a discovered
-agent whose `source` is not `"project"`), because `forkAgent` throws on a project agent — so
-neither surface can offer a fork that cannot happen. See `workflow-view`'s picker/fork note.
+offers a *renamed*-fork path from its all-placed dead end, with its own free-text field — a
+workflow can't place two instances on one bare agent (`placedAgentTypes`), so forking under a new
+name is the supported way to get a second, genuinely distinct instance. Same channel, same
+provenance record, same `renameAgentInFrontmatter`/`copyAgentAttributeRows` machinery described
+below; the differences are the caller, the fact that a name can be typed at all, and what happens
+on success (there it selects the fork into the picker's own field and adds it to
+`config.agents_available`, not this page's edit session). The `isProjectTier` gate below travels
+with it: the picker is handed a `forkableAgents` list built the same way (a discovered agent whose
+`source` is not `"project"`), because `forkAgent` throws on a project agent — so neither surface can
+offer a fork that cannot happen. See `workflow-view`'s picker/fork note.
 
-- A **same-name fork** copies the template file byte-for-byte, including its `description:` line —
-  shadowing is the mechanism: a project `.claude/agents/<name>.md` wins `dedupeById`'s resolution, so
-  the list shows one row, now sourced from the project.
-- A **renamed fork** rewrites only the frontmatter `name:` line and calls
-  `copyAgentAttributeRows(fromName, toName, projectRoot)` to copy the avatar/type/project-tag rows to
-  the new name — see `global-stores`. The read side stays global/name-only (the template is always a
-  global-tier agent); the write side scopes to the fork's own project (`030`), since the copy always
-  lands on a project-tier agent. A same-name fork needs no copy: the shadowing row *is* the
-  template's own global row.
+- A **same-name fork** — the only kind this card's Copy button performs — copies the template file
+  byte-for-byte, including its `description:` line — shadowing is the mechanism: a project
+  `.claude/agents/<name>.md` wins `dedupeById`'s resolution, so the list shows one row, now sourced
+  from the project.
+- A **renamed fork**, reachable only from `/workflows`' `InstancePicker`, rewrites only the
+  frontmatter `name:` line and calls `copyAgentAttributeRows(fromName, toName, projectRoot)` to copy
+  the avatar/type/project-tag rows to the new name — see `global-stores`. The read side stays
+  global/name-only (the template is always a global-tier agent); the write side scopes to the fork's
+  own project (`030`), since the copy always lands on a project-tier agent. A same-name fork needs no
+  copy: the shadowing row *is* the template's own global row.
 
 Every fork — same-name or renamed — writes a provenance record to
 `<projectRoot>/.claude/agent-forks.json` (`AgentForkRecord`: `sourceTier: "user" | "plugin"`,

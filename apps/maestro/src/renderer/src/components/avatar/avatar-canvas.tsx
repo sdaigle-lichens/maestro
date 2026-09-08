@@ -2,8 +2,9 @@
 // smoothing — the picker's live preview, and the /agents detail pane's saved-avatar display.
 
 import { useEffect, useRef } from "react";
-import { AVATAR_RENDER_ORDER, resolveAvatarUrl } from "../../assets/avatar/manifest";
-import type { AvatarLayers } from "../../../../shared/ipc";
+import { AVATAR_RENDER_ORDER, SEX_LAYER_URLS, resolveAvatarUrl } from "../../assets/avatar/manifest";
+import { EYE_RECOLOR_SHAPES, HAIR_RECOLOR_SHAPES, type AvatarLayers } from "../../../../shared/ipc";
+import { recolorImage } from "../../utils/recolor";
 
 const SPRITE_SIZE = 64;
 
@@ -14,6 +15,12 @@ function loadImage(src: string): Promise<HTMLImageElement> {
     img.onerror = () => reject(new Error(`Failed to load ${src}`));
     img.src = src;
   });
+}
+
+/** A layer to draw: its source URL, and a color to recolor it to before drawing (or null). */
+interface LayerSpec {
+  url: string;
+  recolor: string | null;
 }
 
 export default function AvatarCanvas({
@@ -40,12 +47,29 @@ export default function AvatarCanvas({
     if (!canvas || !ctx) return;
 
     let cancelled = false;
-    const urls = AVATAR_RENDER_ORDER.map((cat) => {
+    // The head silhouette isn't a category with its own AvatarLayers slot — it's a second image
+    // `sex` always draws, right after `torso` and before `eyes` (see AVATAR_RENDER_ORDER's header).
+    const specs: (LayerSpec | null)[] = [];
+    for (const cat of AVATAR_RENDER_ORDER) {
       const id = layers[cat];
-      return id ? (resolveAvatarUrl(cat, id, layers.body) ?? null) : null;
-    }).filter((url): url is string => url !== null);
+      const url = id ? (resolveAvatarUrl(cat, id, layers.sex) ?? null) : null;
+      let recolor: string | null = null;
+      if (id && cat === "eyes" && EYE_RECOLOR_SHAPES.includes(id)) recolor = layers.eyesColor ?? null;
+      else if (id && cat === "hair" && HAIR_RECOLOR_SHAPES.includes(id)) recolor = layers.hairColor ?? null;
+      specs.push(url ? { url, recolor } : null);
+      if (cat === "torso") {
+        const headUrl = SEX_LAYER_URLS.head[layers.sex ?? "male"] ?? null;
+        specs.push(headUrl ? { url: headUrl, recolor: null } : null);
+      }
+    }
+    const specList = specs.filter((spec): spec is LayerSpec => spec !== null);
 
-    void Promise.all(urls.map(loadImage))
+    void Promise.all(
+      specList.map(async (spec) => {
+        const img = await loadImage(spec.url);
+        return spec.recolor ? recolorImage(img, spec.recolor) : img;
+      })
+    )
       .then((images) => {
         if (cancelled) return;
         ctx.imageSmoothingEnabled = false;
