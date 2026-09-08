@@ -46,6 +46,13 @@ export interface AgentDraft {
    * `/workflows` edge, where it would imply it was editing that edge's payload shape alone.
    */
   handoffs: Record<string, string>;
+  /**
+   * The Content tab's body (`045`) — everything after the closing frontmatter `---`. Editable via
+   * a textarea only when the agent is project-tier, the same gate `descriptionEditable` uses; Save
+   * writes it back preserving the frontmatter block byte-for-byte, the inverse of how the
+   * description write preserves the body and rewrites inside the block.
+   */
+  content: string;
 }
 
 /**

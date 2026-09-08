@@ -21,10 +21,15 @@ import {
   rebaseOnClaudeDir,
   type AgentEntry,
 } from "@repo/claude-fs";
-import { EDITABLE_AGENT_SOURCES, isEditableAgentSource, type AgentDescriptionResult } from "./contracts.js";
+import {
+  EDITABLE_AGENT_SOURCES,
+  isEditableAgentSource,
+  type AgentContentResult,
+  type AgentDescriptionResult,
+} from "./contracts.js";
 
 export { EDITABLE_AGENT_SOURCES, isEditableAgentSource };
-export type { AgentDescriptionResult };
+export type { AgentContentResult, AgentDescriptionResult };
 
 /** An agent's definition file, plus the tier it was found in — the same `source` `discoverAgents` reports. */
 export interface AgentFileRef {
@@ -117,6 +122,43 @@ function quoteYaml(s: string): string {
 export const FRONTMATTER = /^---\s*\n([\s\S]*?)\n---/;
 
 /**
+ * Everything after the closing frontmatter `---` — byte-identical to the source file's own
+ * content from that point on, since it is a plain `slice` past `match[0]` and never a re-render
+ * of the parsed frontmatter (the same technique `replaceDescriptionInFrontmatter` uses to leave a
+ * body untouched). A file with no frontmatter block has no distinct body to carve out of it, so
+ * the whole file is returned rather than thrown on — this is a read for display, not a write.
+ */
+export function extractAgentBody(contents: string): string {
+  const match = contents.match(FRONTMATTER);
+  return match ? contents.slice(match[0].length) : contents;
+}
+
+/**
+ * Replace everything after the closing frontmatter `---` with `body`, leaving the frontmatter
+ * block — everything between and including the two `---` delimiters — byte-for-byte unchanged.
+ * The inverse of `replaceDescriptionInFrontmatter`, which rewrites inside the block and leaves the
+ * body untouched: this one is `match[0] + body`, the same slice point `extractAgentBody` reads
+ * from, so a round trip through `extractAgentBody` and back reproduces the source exactly.
+ */
+export function replaceBodyInFrontmatter(contents: string, body: string): string {
+  const match = contents.match(FRONTMATTER);
+  if (!match) throw new Error("This agent's file has no frontmatter block to preserve.");
+  return match[0] + body;
+}
+
+/**
+ * The selected agent's markdown body for `/agents`' Content tab — the file resolved through the
+ * SAME tier order `findAgentFile` already walks for the description editor, so the tab can never
+ * show a different agent's file than the rest of the page is describing.
+ */
+export async function getAgentBody(projectRoot: string, bundledDir: string | null, agentName: string): Promise<string> {
+  const ref = await findAgentFile(projectRoot, bundledDir, agentName);
+  if (!ref) throw new Error(`No definition file found for "${agentName}".`);
+  const contents = fs.readFileSync(ref.file, "utf8");
+  return extractAgentBody(contents);
+}
+
+/**
  * Rewrite the `description:` line of a frontmatter block, leaving every other line — and the body
  * below it — byte-identical.
  *
@@ -188,4 +230,34 @@ export async function setAgentDescription(
   const contents = fs.readFileSync(ref.file, "utf8");
   fs.writeFileSync(ref.file, replaceDescriptionInFrontmatter(contents, normalized), "utf8");
   return { description: normalized, file: ref.file, source: ref.source };
+}
+
+/**
+ * Write one agent's markdown body back into its own definition file — the Content tab's write
+ * path (`045`), gated on the SAME `EDITABLE_AGENT_SOURCES` check as `setAgentDescription`, since a
+ * body this app can't own is a body a plugin update or a machine-wide file would silently discard
+ * an edit to. Unlike a description, the body is never normalized — it is a textarea's raw value,
+ * written verbatim, so the file on disk is exactly what was on screen.
+ */
+export async function setAgentContent(
+  projectRoot: string,
+  bundledDir: string | null,
+  agentName: string,
+  body: string
+): Promise<AgentContentResult> {
+  const ref = await findAgentFile(projectRoot, bundledDir, agentName);
+  if (!ref) throw new Error(`No definition file found for "${agentName}".`);
+  if (!isEditableAgentSource(ref.source)) {
+    throw new Error(describeUneditableSource(agentName, ref.source));
+  }
+
+  try {
+    fs.accessSync(ref.file, fs.constants.W_OK);
+  } catch {
+    throw new Error(`${ref.file} is not writable — this build ships it read-only.`);
+  }
+
+  const contents = fs.readFileSync(ref.file, "utf8");
+  fs.writeFileSync(ref.file, replaceBodyInFrontmatter(contents, body), "utf8");
+  return { file: ref.file, source: ref.source };
 }

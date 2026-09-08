@@ -281,6 +281,18 @@ export interface AgentDescriptionResult {
 }
 
 /**
+ * What writing an agent's markdown BODY back into its own definition file did (`045`) — the
+ * Content tab's write path, the inverse of `AgentDescriptionResult`: that one rewrites inside the
+ * frontmatter block and leaves the body untouched, this one rewrites the body and leaves the
+ * frontmatter block byte-for-byte untouched. No `content` echo — the caller already holds the
+ * value it just wrote, unlike a description, which is normalized on the way in.
+ */
+export interface AgentContentResult {
+  file: string;
+  source: string;
+}
+
+/**
  * The `DiscoveredDefinition.source` tiers whose agent files this app will write a description
  * into: the project's own `.claude/agents/`. Every other tier is a file this app does not own —
  * `user` (`~/.claude/agents/`) belongs to no project and is shared by every project on the

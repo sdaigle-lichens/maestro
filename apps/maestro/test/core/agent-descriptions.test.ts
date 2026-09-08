@@ -11,10 +11,14 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
   describeUneditableSource,
+  extractAgentBody,
   findAgentFile,
+  getAgentBody,
   isEditableAgentSource,
   normalizeAgentDescription,
+  replaceBodyInFrontmatter,
   replaceDescriptionInFrontmatter,
+  setAgentContent,
   setAgentDescription,
 } from "../../src/core/agent-descriptions.js";
 
@@ -61,6 +65,90 @@ describe("replaceDescriptionInFrontmatter", () => {
 
   it("refuses a file with no frontmatter at all", () => {
     expect(() => replaceDescriptionInFrontmatter("# Just a heading\n", "x")).toThrow(/no frontmatter/);
+  });
+});
+
+describe("extractAgentBody", () => {
+  it("is byte-identical to the source file's own content after the frontmatter block", () => {
+    const source = `---\nname: scribe\ndescription: Old text.\ntools: Read\n---\n# Scribe Agent\n\nYou are the documentation steward.\n\n- one\n- two\n`;
+    const body = extractAgentBody(source);
+    // The reader's own contract: whatever follows the closing `---`, unparsed and unmodified.
+    expect(source).toBe(source.slice(0, source.length - body.length) + body);
+    expect(source.endsWith(body)).toBe(true);
+    expect(body).toBe("\n# Scribe Agent\n\nYou are the documentation steward.\n\n- one\n- two\n");
+  });
+
+  it("returns the whole file when there is no frontmatter block to carve a body out of", () => {
+    expect(extractAgentBody("# Just a heading\n")).toBe("# Just a heading\n");
+  });
+});
+
+describe("replaceBodyInFrontmatter", () => {
+  it("reproduces the source frontmatter block byte-for-byte, changing only the body", () => {
+    const frontmatterBlock = '---\nname: scribe\ndescription: "Old text."\ntools: Read\n---';
+    const source = `${frontmatterBlock}\n# Scribe Agent\n\nOld body.\n`;
+    const out = replaceBodyInFrontmatter(source, "\n# New Agent\n\nNew body.\n");
+
+    expect(out.startsWith(frontmatterBlock)).toBe(true);
+    expect(out).toBe(`${frontmatterBlock}\n# New Agent\n\nNew body.\n`);
+    expect(extractAgentBody(out)).toBe("\n# New Agent\n\nNew body.\n");
+  });
+
+  it("round-trips through extractAgentBody: replacing with the same body reproduces the source exactly", () => {
+    const source = `---\nname: scribe\ndescription: Old.\n---\n# Scribe Agent\n\nYou are the documentation steward.\n`;
+    const body = extractAgentBody(source);
+    expect(replaceBodyInFrontmatter(source, body)).toBe(source);
+  });
+
+  it("refuses a file with no frontmatter block to preserve", () => {
+    expect(() => replaceBodyInFrontmatter("# Just a heading\n", "new body")).toThrow(/no frontmatter/);
+  });
+});
+
+describe("getAgentBody", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-agent-body-"));
+    fs.mkdirSync(path.join(root, ".claude", "agents"), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  it("reads the project tier's file and returns its body byte-identical to the source", async () => {
+    const source = `---\nname: scribe\ndescription: Old.\n---\n# Scribe Agent\n\nYou are the documentation steward.\n`;
+    fs.writeFileSync(path.join(root, ".claude", "agents", "scribe.md"), source, "utf8");
+
+    const body = await getAgentBody(root, null, "scribe");
+
+    expect(body).toBe("\n# Scribe Agent\n\nYou are the documentation steward.\n");
+    expect(source.endsWith(body)).toBe(true);
+  });
+
+  it("resolves across every tier in the same order findAgentFile does — project ahead of bundled", async () => {
+    const bundled = path.join(root, "bundled");
+    fs.mkdirSync(bundled);
+    fs.writeFileSync(
+      path.join(bundled, "scribe.md"),
+      `---\nname: scribe\ndescription: Bundled.\n---\nBundled body.\n`,
+      "utf8"
+    );
+
+    // No project-tier scribe: falls through to the bundled ("maestro") tier.
+    expect(await getAgentBody(root, bundled, "scribe")).toBe("\nBundled body.\n");
+
+    fs.writeFileSync(
+      path.join(root, ".claude", "agents", "scribe.md"),
+      `---\nname: scribe\ndescription: Project.\n---\nProject body.\n`,
+      "utf8"
+    );
+    expect(await getAgentBody(root, bundled, "scribe")).toBe("\nProject body.\n");
+  });
+
+  it("rejects an agent with no definition file at all", async () => {
+    await expect(getAgentBody(root, null, "ghost")).rejects.toThrow(/No definition file/);
   });
 });
 
@@ -165,5 +253,56 @@ describe("setAgentDescription", () => {
 
   it("rejects an agent with no definition file at all", async () => {
     await expect(setAgentDescription(root, null, "ghost", "Hello.")).rejects.toThrow(/No definition file/);
+  });
+});
+
+describe("setAgentContent", () => {
+  let root: string;
+
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-agent-content-"));
+    fs.mkdirSync(path.join(root, ".claude", "agents"), { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(root, { recursive: true, force: true });
+  });
+
+  const agentPath = () => path.join(root, ".claude", "agents", "scribe.md");
+
+  it("writes the project tier's file, preserving the frontmatter block byte-for-byte", async () => {
+    const frontmatterBlock = '---\nname: scribe\ndescription: "Old text."\ntools: Read\n---';
+    fs.writeFileSync(agentPath(), `${frontmatterBlock}\n${BODY}`, "utf8");
+
+    const result = await setAgentContent(root, null, "scribe", "\n# New body\n\nRewritten.\n");
+
+    expect(result).toEqual({ file: agentPath(), source: "project" });
+    const written = fs.readFileSync(agentPath(), "utf8");
+    expect(written.startsWith(frontmatterBlock)).toBe(true);
+    expect(written).toBe(`${frontmatterBlock}\n# New body\n\nRewritten.\n`);
+  });
+
+  it("writing the same body back reproduces the source exactly — idempotent, byte for byte", async () => {
+    const source = file("name: scribe\ndescription: Old.");
+    fs.writeFileSync(agentPath(), source, "utf8");
+
+    await setAgentContent(root, null, "scribe", extractAgentBody(source));
+
+    expect(fs.readFileSync(agentPath(), "utf8")).toBe(source);
+  });
+
+  it("refuses to edit a bundled-tier agent's content — the throw names the plugin, and the file is untouched", async () => {
+    const bundled = path.join(root, "bundled");
+    fs.mkdirSync(bundled);
+    fs.writeFileSync(path.join(bundled, "scribe.md"), file("name: scribe\ndescription: Bundled."), "utf8");
+
+    await expect(setAgentContent(root, bundled, "scribe", "New body.")).rejects.toThrow(
+      describeUneditableSource("scribe", "maestro")
+    );
+    expect(fs.readFileSync(path.join(bundled, "scribe.md"), "utf8")).toContain(BODY);
+  });
+
+  it("rejects an agent with no definition file at all", async () => {
+    await expect(setAgentContent(root, null, "ghost", "Hello.")).rejects.toThrow(/No definition file/);
   });
 });

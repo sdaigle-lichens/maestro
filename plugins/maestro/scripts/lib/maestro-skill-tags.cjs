@@ -47,6 +47,114 @@ var import_node_sqlite = require("node:sqlite");
 
 // src/core/contracts.ts
 var GLOBAL_TAG = "global";
+var AVATAR_PARTS = {
+  sex: [
+    { id: "male", name: "Male" },
+    { id: "female", name: "Female" }
+  ],
+  eyes: [
+    { id: "brows", name: "Brows" },
+    { id: "cyclops", name: "Cyclops" },
+    { id: "cyclops2", name: "Cyclops (alt)" },
+    { id: "brows_thin", name: "Thin Brows" }
+  ],
+  hair: [
+    { id: "plain", name: "Plain" },
+    { id: "bangslong", name: "Long Bangs" },
+    { id: "bob", name: "Bob" },
+    { id: "buzzcut", name: "Buzzcut" },
+    { id: "dreadlocks_short", name: "Short Dreadlocks" },
+    { id: "pixie", name: "Pixie Cut" },
+    { id: "afro", name: "Afro" },
+    { id: "curly_short", name: "Curly Short" },
+    { id: "mop", name: "Mop" },
+    { id: "cornrows", name: "Cornrows" },
+    { id: "unkempt", name: "Unkempt" },
+    { id: "high_and_tight", name: "High & Tight" },
+    { id: "flat_top_fade", name: "Flat Top Fade" },
+    { id: "curly_short2", name: "Curly Short (Alt)" },
+    { id: "spiked", name: "Spiked" },
+    { id: "cowlick", name: "Cowlick" },
+    { id: "jewfro", name: "Jewfro" },
+    { id: "natural", name: "Natural" },
+    { id: "longhawk", name: "Long Hawk" },
+    { id: "swoop", name: "Swoop" }
+  ],
+  torso: [
+    { id: "tshirt", name: "T-Shirt" },
+    { id: "tshirt_buttoned", name: "Buttoned Shirt" },
+    { id: "leather_armour", name: "Leather Armor" },
+    { id: "plate_armour", name: "Plate Armor" },
+    { id: "chainmail", name: "Chainmail" },
+    { id: "legion_armour", name: "Legion Armor" },
+    { id: "longsleeve", name: "Long-Sleeve Shirt" },
+    { id: "polo", name: "Polo Shirt" },
+    { id: "vneck", name: "V-Neck Shirt" },
+    { id: "overalls", name: "Overalls" },
+    { id: "suspenders", name: "Suspenders" },
+    { id: "shortsleeve_plain", name: "Short-Sleeve Shirt" },
+    { id: "henley", name: "Henley Shirt" },
+    { id: "scoop_sweater", name: "Scoop Neck Sweater" },
+    { id: "scoop_tee", name: "Scoop Neck Tee" },
+    { id: "sleeveless2", name: "Sleeveless Shirt" },
+    { id: "longsleeve_buttoned", name: "Buttoned Overshirt" },
+    { id: "longsleeve_vneck", name: "Long V-Neck Shirt" }
+  ],
+  legs: [
+    { id: "pants", name: "Pants" },
+    { id: "shorts", name: "Shorts" },
+    { id: "skirt_plain", name: "Plain Skirt" },
+    { id: "skirt_legion", name: "Legion Skirt" },
+    { id: "formal", name: "Formal Trousers" },
+    { id: "cuffed", name: "Cuffed Trousers" },
+    { id: "leggings", name: "Leggings" },
+    { id: "hose", name: "Hose" },
+    { id: "pantaloons", name: "Pantaloons" },
+    { id: "formal_striped", name: "Pinstripe Trousers" },
+    { id: "leggings2", name: "Tight Leggings" },
+    { id: "plate_greaves", name: "Plate Greaves" },
+    { id: "cargo_pants", name: "Cargo Pants" }
+  ],
+  feet: [
+    { id: "shoes_basic", name: "Shoes" },
+    { id: "boots_basic", name: "Boots" },
+    { id: "sandals", name: "Sandals" },
+    { id: "shoes_ghillies", name: "Ghillie Shoes" },
+    { id: "boots_fold", name: "Cuffed Boots" },
+    { id: "boots_rimmed", name: "Rimmed Boots" },
+    { id: "slippers", name: "Slippers" },
+    { id: "socks_high", name: "High Socks" },
+    { id: "plate_boots", name: "Plate Boots" },
+    { id: "socks_ankle", name: "Ankle Socks" },
+    { id: "socks_tabi", name: "Tabi Socks" },
+    { id: "shoes_revised", name: "Pointed Shoes" },
+    { id: "shoes_sara", name: "Strappy Shoes" },
+    { id: "boots_revised", name: "Riding Boots" },
+    { id: "sabatons", name: "Sabatons" }
+  ],
+  hat: [
+    { id: "bandana", name: "Bandana" },
+    { id: "bowler", name: "Bowler Hat" },
+    { id: "crown", name: "Crown" },
+    { id: "barbarian_helmet", name: "Barbarian Helmet" },
+    { id: "tophat", name: "Top Hat" },
+    { id: "legion_helmet", name: "Legion Helmet" },
+    { id: "hood", name: "Hood" },
+    { id: "wizard", name: "Wizard Hat" },
+    { id: "cavalier", name: "Cavalier Hat" },
+    { id: "mail", name: "Mail Coif" },
+    { id: "norman", name: "Norman Helmet" },
+    { id: "tiara", name: "Tiara" },
+    { id: "hood_sack", name: "Sack Hood" },
+    { id: "leather_cap", name: "Leather Cap" },
+    { id: "kerchief", name: "Kerchief" },
+    { id: "bonnie", name: "Bonnet" },
+    { id: "celestial_moon", name: "Crescent Moon Hat" },
+    { id: "headband_thick", name: "Headband" },
+    { id: "visor_round", name: "Round Visor" }
+  ]
+};
+var HAIR_RECOLOR_SHAPES = AVATAR_PARTS.hair.map((opt) => opt.id);
 
 // src/core/skill-tags.ts
 var DEFAULT_SKILL_TAGS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-skill-tags.sqlite");

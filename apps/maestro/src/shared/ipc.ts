@@ -116,6 +116,7 @@ import type {
   AvatarLayers,
   AgentType,
   AgentDescriptionResult,
+  AgentContentResult,
   AgentForkResult,
   AgentForkRecord,
   AgentSyncAction,
@@ -244,6 +245,7 @@ export type {
   AvatarLayers,
   AgentType,
   AgentDescriptionResult,
+  AgentContentResult,
   AgentForkResult,
   AgentForkRecord,
   AgentSyncAction,
@@ -521,6 +523,17 @@ export const IPC = {
   // exactly one agent, for exactly one explicit review action. See `src/core/agent-sync.ts`.
   agentSync: "agent:sync",
   agentSyncApply: "agent:sync:apply",
+
+  // The /agents page's Content tab — the selected agent's markdown BODY (everything after the
+  // closing frontmatter `---`), read-only, resolved through the same tier order `agentDescribe`
+  // walks. See `src/core/agent-descriptions.ts`'s `getAgentBody`.
+  agentContent: "agent:content",
+
+  // The Content tab's write path (`045`) — the eighth write path in the /agents edit session,
+  // gated on the SAME `isEditableAgentSource` check as `agentDescribe`. Preserves the frontmatter
+  // block byte-for-byte and rewrites only the body beneath it — the inverse of what `agentDescribe`
+  // does. See `src/core/agent-descriptions.ts`'s `setAgentContent`.
+  agentContentSave: "agent:content:save",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -869,6 +882,21 @@ export interface MaestroApi {
      * rewrites an agent's `.md`, and it does so one agent at a time on purpose.
      */
     syncApply(agentName: string, action: AgentSyncAction): Promise<AgentSyncApplyResult>;
+    /**
+     * The Content tab's one round trip: the selected agent's markdown BODY — everything after the
+     * closing frontmatter `---`, for a file resolved through the same tier order `describe` walks
+     * (project, user, maestro/bundled, then every installed plugin). Rejects when no tier has a
+     * definition file for the name, the same "a stale list" failure `describe` reports.
+     */
+    content(agentName: string): Promise<string>;
+    /**
+     * The Content tab's write path (`045`) — the eighth write path in the /agents edit session.
+     * Rejects on the same grounds as `describe` (no definition file, an un-editable tier, a
+     * read-only file), and preserves the frontmatter block byte-for-byte, rewriting only the body
+     * beneath it — the inverse of what `describe` rewrites. The body is written verbatim, with no
+     * normalization: unlike a description it is not a single frontmatter line.
+     */
+    saveContent(agentName: string, content: string): Promise<AgentContentResult>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;

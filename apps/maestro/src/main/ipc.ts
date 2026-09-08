@@ -25,6 +25,8 @@ import {
   setAvatar,
   readAllAvatars,
   setAgentDescription,
+  getAgentBody,
+  setAgentContent,
   forkAgent,
   computeAgentSync,
   applyAgentSync,
@@ -120,6 +122,7 @@ import type {
   HandoffDefaultsListing,
   AgentType,
   AgentDescriptionResult,
+  AgentContentResult,
   AgentForkResult,
   AgentSyncAction,
   AgentSyncApplyResult,
@@ -668,6 +671,17 @@ export function registerIpc(): void {
   // to save.
   ipcMain.handle(IPC.agentDescribe, (_e, agentName: string, description: string): Promise<AgentDescriptionResult> => {
     return setAgentDescription(currentRoot() ?? "", bundledAgentsDir(), agentName, description);
+  });
+
+  // The Content tab's one round trip — the same tier order as `agentDescribe`, read-only.
+  ipcMain.handle(IPC.agentContent, (_e, agentName: string): Promise<string> => {
+    return getAgentBody(currentRoot() ?? "", bundledAgentsDir(), agentName);
+  });
+
+  // The Content tab's write path (`045`) — the eighth write path in the /agents edit session, same
+  // `currentRoot()` and editability discipline as `agentDescribe` above.
+  ipcMain.handle(IPC.agentContentSave, (_e, agentName: string, content: string): Promise<AgentContentResult> => {
+    return setAgentContent(currentRoot() ?? "", bundledAgentsDir(), agentName, content);
   });
 
   // "Fork into this project" — the card's escape hatch for the three tiers `agent:describe`

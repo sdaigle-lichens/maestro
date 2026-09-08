@@ -80,6 +80,7 @@ interface AgentAttributes {
 const EMPTY_ATTRIBUTES: AgentAttributes = { types: {}, projectTags: {}, avatars: {}, catalog: [] };
 const NO_REPORT: ResolvedReport = { source: "none", content: "" };
 const NO_ROUTES: ResolvedHandoffRoute[] = [];
+const NO_CONTENT = "";
 
 /** The draft's starting point: whatever tier each route currently resolves to. */
 function handoffsOf(routes: ResolvedHandoffRoute[]): Record<string, string> {
@@ -141,6 +142,10 @@ function AgentsPage() {
   // The routes leaving the selected agent, already resolved. Project-scoped like the report, and
   // refetched with it for the same reason.
   const [routes, setRoutes] = useState<ResolvedHandoffRoute[]>(NO_ROUTES);
+  // The Content tab's body, refetched per selection alongside the report and routes — same
+  // per-agent, project-scoped pattern, so switching agents refreshes it even while that tab is
+  // the one on screen.
+  const [content, setContent] = useState<string>(NO_CONTENT);
 
   const [draft, setDraft] = useState<AgentDraft | null>(null);
   const [pendingEdit, setPendingEdit] = useState(false);
@@ -198,18 +203,22 @@ function AgentsPage() {
     if (!selected) {
       setReport(NO_REPORT);
       setRoutes(NO_ROUTES);
+      setContent(NO_CONTENT);
       return;
     }
     let cancelled = false;
     void Promise.all([
       callMain(() => window.maestro.reports.get(selected)),
       callMain(() => window.maestro.handoffs.routes(selected)),
-    ]).then(([rep, rts]) => {
+      callMain(() => window.maestro.agents.content(selected)),
+    ]).then(([rep, rts, cnt]) => {
       if (cancelled) return;
       if (!rep.ok) toast(<>Could not load this agent&rsquo;s report: {rep.error}</>, { variant: "error" });
       if (!rts.ok) toast(<>Could not load this agent&rsquo;s handoffs: {rts.error}</>, { variant: "error" });
+      if (!cnt.ok) toast(<>Could not load this agent&rsquo;s content: {cnt.error}</>, { variant: "error" });
       setReport(rep.ok ? rep.value : NO_REPORT);
       setRoutes(rts.ok ? rts.value : NO_ROUTES);
+      setContent(cnt.ok ? cnt.value : NO_CONTENT);
     });
     return () => {
       cancelled = true;
@@ -250,13 +259,18 @@ function AgentsPage() {
       skills: skillsOf(instance),
       report: report.content,
       handoffs: handoffsOf(routes),
+      content,
     };
-  }, [agent, attributes, instance, report, routes]);
+  }, [agent, attributes, instance, report, routes, content]);
 
   const live = draft ?? base;
   const editing = draft !== null;
 
   const descriptionEditable = agent !== null && isEditableAgentSource(agent.source);
+  // The Content tab's body is editable under the SAME gate as the description (`045`) — a body
+  // this app can't own is a body a plugin update or a machine-wide file would silently discard an
+  // edit to, exactly the argument `EDITABLE_AGENT_SOURCES` already makes about descriptions.
+  const contentEditable = descriptionEditable;
   const skillsEditable = instance !== null && workflows !== null && !workflows.seeded;
   /**
    * One line of explanation, and it lives in the card's FOOTER rather than beside the field it
@@ -418,6 +432,13 @@ function AgentsPage() {
         const res = await callMain(() => window.maestro.agents.describe(d.id, d.description));
         if (!res.ok) failures.push(`description: ${res.error}`);
       }
+      // The Content tab's write path (`045`) — same editability gate as the description, and its
+      // own named failure so a bad body doesn't block or discard the other six writes' results.
+      if (contentEditable && d.content !== base.content) {
+        const res = await callMain(() => window.maestro.agents.saveContent(d.id, d.content));
+        if (res.ok) setContent(d.content);
+        else failures.push(`content: ${res.error}`);
+      }
       if (skillsEditable && !sameSkills(d.skills, base.skills)) {
         const error = await saveSkills(d);
         if (error) failures.push(`skills: ${error}`);
@@ -529,6 +550,16 @@ function AgentsPage() {
   const paneNote = selected
     ? `${sourceLabel(report.source)} — saving always writes this project's override at .claude/reports/${selected}.md, so editing this agent never changes what another agent resolves to.`
     : null;
+
+  // The Content tab's own explanatory note (`045`) — a hand-written parallel of `footerNote`'s
+  // uneditable-source branch, not a shared import: the renderer can only pull `contracts`/`text`
+  // out of `src/core`, so `describeUneditableSource` isn't reachable here. Check both if you
+  // change one. Null when the tab is editable — nothing needs explaining there.
+  const contentNote = contentEditable
+    ? null
+    : agent?.source === "user"
+      ? "This agent lives in ~/.claude/agents — machine-wide, shared by every project on this machine, so its content is locked here. Fork it into this project to edit it."
+      : `Shipped by the ${agent?.source} plugin — a plugin update overwrites this file, so its content is locked here. Fork it into this project to edit it.`;
 
   return (
     <div
@@ -642,6 +673,9 @@ function AgentsPage() {
               report={live?.report ?? ""}
               reportNote={paneNote}
               routes={routes}
+              content={live?.content ?? content}
+              contentEditable={contentEditable}
+              contentNote={contentNote}
               handoffs={live?.handoffs ?? {}}
               editing={editing}
               open={rightOpen}
@@ -649,6 +683,7 @@ function AgentsPage() {
               onToggleOpen={() => setRightOpen((v) => !v)}
               onStartEdit={() => startEdit()}
               onReport={(value) => patch({ report: value })}
+              onContent={(value) => patch({ content: value })}
               onHandoff={(handoffId, value) =>
                 setDraft((d) => (d ? { ...d, handoffs: { ...d.handoffs, [handoffId]: value } } : d))
               }

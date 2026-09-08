@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the eleven plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.6"
-  last-update: 7d9972492e8941ebabb500dda544ddd621eb29a6
+  version: "1.7"
+  last-update: 4a94620c64a136a5b12d3df435b0b033a32f17a9
 ---
 
 # Core ↔ plugin parity
@@ -30,6 +30,17 @@ a source module that stops reaching the plugin while the hooks go on running the
 So after changing anything in `plugin-entries/` or in a `src/core` module one of them pulls in,
 re-run the build and **read `git diff plugins/maestro/scripts/lib/`** rather than trusting green
 tests. The root `CLAUDE.md` states the same rule.
+
+**`contracts.ts` counts as "a module one of them pulls in", even though no `plugin-entries/*.ts`
+imports it directly (`045`).** Several entries import a `src/core` module that in turn imports a
+type or a value export (`EDITABLE_AGENT_SOURCES` and friends) from `contracts.ts`, so a change
+there is transitively bundled. This drift sat unnoticed in the repo for a while: `045` found
+`maestro-agent-sync.cjs`, `maestro-agent-types.cjs` and `maestro-skill-tags.cjs` already stale
+against `contracts.ts` before that task's own edits — most likely left behind by an earlier commit
+that touched `contracts.ts` without re-running `build:plugin-libs`. The rule is the same as above,
+just easy to miss because the diff that triggers it never touches `plugin-entries/` at all: **a
+commit that touches `contracts.ts` needs `build:plugin-libs`, whether or not it touches
+`plugin-entries/*.ts` directly.**
 
 ## The export surface is a superset, not an identity
 

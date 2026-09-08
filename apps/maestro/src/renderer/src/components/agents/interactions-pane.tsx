@@ -14,10 +14,17 @@
 // commits the report AND every changed handoff alongside the description, type, tag, skills and
 // avatar, and Cancel discards all of it together.
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowRight, PanelRightClose, PanelRightOpen, Pencil } from "lucide-react";
 import { ICON_BUTTON, PENCIL_BUTTON, PRIMARY_CHIP, RIGHT_PANE_MAX, RIGHT_PANE_MIN } from "./agent-shared";
 import type { ResolvedHandoffRoute } from "../../../../shared/ipc";
+
+type PaneTab = "interactions" | "content";
+
+const TAB_BUTTON =
+  "h-[26px] px-[10px] rounded-md text-[11.5px] cursor-pointer transition-colors duration-[120ms] border";
+const TAB_BUTTON_ACTIVE = "bg-(--primary-dim) border-(--primary-dim-2) text-(--primary)";
+const TAB_BUTTON_INACTIVE = "bg-transparent border-transparent text-(--ink-2) hover:text-(--ink) hover:bg-(--bg-3)";
 
 /** The tier a body resolved from, in the pane's own words. Four cases — see `ResolvedHandoff`. */
 const HANDOFF_TIER: Record<ResolvedHandoffRoute["source"], string> = {
@@ -31,6 +38,9 @@ export default function InteractionsPane({
   report,
   reportNote,
   routes,
+  content,
+  contentEditable,
+  contentNote,
   handoffs,
   editing,
   open,
@@ -38,6 +48,7 @@ export default function InteractionsPane({
   onToggleOpen,
   onStartEdit,
   onReport,
+  onContent,
   onHandoff,
   onWidth,
 }: {
@@ -45,6 +56,15 @@ export default function InteractionsPane({
   reportNote: string | null;
   /** The routes leaving the selected agent, in the graph walk's own order. */
   routes: ResolvedHandoffRoute[];
+  /**
+   * The selected agent's markdown body — everything after the closing frontmatter `---` — for the
+   * Content tab. The DRAFT value while editing (`045`), same as `report`/`handoffs` below.
+   */
+  content: string;
+  /** Whether the Content tab's body may be edited — project-tier only, same gate as the description. */
+  contentEditable: boolean;
+  /** Why the Content tab is locked, when it is. Null when `contentEditable`. */
+  contentNote: string | null;
   /** The DRAFT bodies, keyed by handoff id — what the editors show and what Save compares. */
   handoffs: Record<string, string>;
   editing: boolean;
@@ -53,10 +73,12 @@ export default function InteractionsPane({
   onToggleOpen: () => void;
   onStartEdit: () => void;
   onReport: (value: string) => void;
+  onContent: (value: string) => void;
   onHandoff: (handoffId: string, value: string) => void;
   onWidth: (width: number) => void;
 }) {
   const asideRef = useRef<HTMLElement>(null);
+  const [tab, setTab] = useState<PaneTab>("interactions");
 
   /**
    * The drag writes the width straight to the DOM and only tells React on mouseup. A setState per
@@ -107,6 +129,57 @@ export default function InteractionsPane({
       </div>
 
       {open && (
+        <div className="flex-none flex items-center gap-1.5 px-4 pb-3" data-testid="interactions-tabs">
+          <button
+            type="button"
+            data-testid="interactions-tab-interactions"
+            onClick={() => setTab("interactions")}
+            className={`${TAB_BUTTON} ${tab === "interactions" ? TAB_BUTTON_ACTIVE : TAB_BUTTON_INACTIVE}`}
+          >
+            Interactions
+          </button>
+          <button
+            type="button"
+            data-testid="interactions-tab-content"
+            onClick={() => setTab("content")}
+            className={`${TAB_BUTTON} ${tab === "content" ? TAB_BUTTON_ACTIVE : TAB_BUTTON_INACTIVE}`}
+          >
+            Content
+          </button>
+        </div>
+      )}
+
+      {open && tab === "content" && (
+        // Everything after the closing frontmatter `---`, resolved through the same tier order the
+        // description editor walks (`044`). Editable via a textarea when `contentEditable` (`045`)
+        // — same project-tier gate as the description — with its own pencil so the tab can start
+        // the card's edit session without switching tabs first.
+        <div data-testid="agent-content" className="flex-1 min-h-0 overflow-y-auto px-4 pb-3.5 flex flex-col gap-2.5">
+          {!editing && contentEditable && (
+            <div className="flex-none flex items-center justify-end">
+              <button type="button" onClick={onStartEdit} title="Edit this agent's content" className={PENCIL_BUTTON}>
+                <Pencil size={12} />
+              </button>
+            </div>
+          )}
+          {editing && contentEditable ? (
+            <textarea
+              data-testid="agent-content-editor"
+              value={content}
+              onChange={(e) => onContent(e.target.value)}
+              placeholder="This agent has no content yet."
+              className="flex-1 min-h-0 w-full resize-none p-3 rounded-[10px] bg-(--bg-2) border border-(--line-2) text-(--ink) font-mono text-[11.5px] leading-[1.65] outline-none focus:border-(--primary)"
+            />
+          ) : (
+            <pre className="flex-1 min-h-0 m-0 overflow-y-auto whitespace-pre-wrap p-3 rounded-[10px] bg-(--sunken) border border-(--line) text-(--ink-2) font-mono text-[11.5px] leading-[1.65]">
+              {content || "No content."}
+            </pre>
+          )}
+          {contentNote && <p className="m-0 text-[10.5px] leading-[1.55] text-(--ink-3) text-pretty">{contentNote}</p>}
+        </div>
+      )}
+
+      {open && tab === "interactions" && (
         // ONE scroll region for the whole list. Each entry's editor grows to its own content (see
         // `Entry`), so the pane scrolls rather than every box inside it — a page with six routes
         // would otherwise give you seven scrollbars.

@@ -1,10 +1,10 @@
 ---
 name: agents-view
-description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to seven different write paths on Save, why only the description locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's list of the resolved report plus one editor per outgoing handoff route (each labelled, since `037`, with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to), the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to seven places, why a description is written to the agent's own .md, why an agent's description can't be edited, how the "Copy into the project" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, or why a route shows (or doesn't show) a channel lane path."
+description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the "Copy into the project" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body."
 metadata:
   type: concept-skill
-  version: "1.11"
-  last-update: 86e1dcb38fe2e03101547bc30d1981e6ef3df53f
+  version: "1.13"
+  last-update: 4a94620c64a136a5b12d3df435b0b033a32f17a9
 ---
 
 # Agents View
@@ -57,7 +57,7 @@ carried is **gone**, and its removal fixed a latent split: the list was fetched 
 while `reports.get` resolved against `currentRoot()`, so the two could describe different projects.
 Everything on this page now reads the open project, and only the nav's folder button changes it.
 
-## One edit session, seven write paths
+## One edit session, eight write paths
 
 Pressing Edit — from the card footer, a list row's pencil, or *any* of the Interactions pane's
 pencils — clones the agent into a **draft** via `cloneDraft(base)` (`agents.tsx`), which deep-copies
@@ -73,12 +73,26 @@ out to the channel that owns each field:
 | type | `template:agent-types:save` | `~/.claude/maestro-agent-types.sqlite` — global, or this project's own row |
 | project tag | `template:agent-project-tags:save` | `~/.claude/maestro-agent-project-tags.sqlite` — global, or this project's own row |
 | description | `agent:describe` | **the agent's own `.md` frontmatter** |
+| content (`045`) | `agent:content:save` | **the same `.md`'s body**, everything past the frontmatter block |
 | skills | `config:save` (workflows slice) | `.claude/maestro.json`'s `workflow_instances` |
 
 Each write is attempted only when that field actually changed, and **failures are collected per
 field**: a partial failure toasts what failed and **stays in edit mode**, rather than closing the
-editor as if the whole save had landed. There is no transaction across seven destinations — the
+editor as if the whole save had landed. There is no transaction across eight destinations — the
 honest alternative is to say which parts got through.
+
+**Content is the eighth path, and the mirror image of the description write (`045`).**
+`setAgentContent` (`agent-descriptions.ts`) resolves the file through the same `findAgentFile`
+walk and the same `EDITABLE_AGENT_SOURCES` gate `setAgentDescription` uses, then calls
+`replaceBodyInFrontmatter(contents, body)` — `match[0] + body`, the exact inverse of
+`replaceDescriptionInFrontmatter`: that one rewrites inside the frontmatter block and leaves the
+body untouched, this one keeps the frontmatter block byte-for-byte and replaces everything after
+it. Unlike the description, the body is **never normalized** — a textarea's raw multi-line value is
+written verbatim, since a body is free text and not a single frontmatter value. `handleSave()`
+checks it right after the description block (`d.content !== base.content`), pushes a failure as
+`content: <error>` into the same `failures` array, and calls `setContent(d.content)` on success so
+the Content tab reflects the new body with no re-fetch. `AgentContentResult` carries `{ file,
+source }` and, deliberately, no `content` echo — the caller already holds the value it just wrote.
 
 **The handoff path is the only one that is a list.** `handleSave()` loops `d.handoffs`, skips every
 body equal to `base.handoffs[id]`, and pushes a failure as `handoff <id>: <error>` into the same
@@ -101,10 +115,11 @@ name" section for the store-level mechanism.
 
 Two of these are documented in depth elsewhere rather than restated here:
 
-- **Why the description is a file write and not a seventh store** — see the "The exception: a
-  description is not a store" section of [`global-stores`](../global-stores/SKILL.md). Short version:
-  type/tag/avatar are Maestro's own metadata, but a description is the line Claude Code itself reads
-  to decide when to dispatch the agent.
+- **Why the description (and, since `045`, the content) is a file write and not a store** — see the
+  "The exception: a description is not a store" section of [`global-stores`](../global-stores/SKILL.md).
+  Short version: type/tag/avatar are Maestro's own metadata, but a description and a body are what
+  Claude Code itself reads to decide when to dispatch the agent and how it behaves — the same
+  argument, extended to the second file-backed field.
 - **Why the skills write re-reads before writing** — see `maestro-config-model`'s read-before-write
   rule and `workflow-view`'s "no longer the only writer" note.
 
@@ -133,13 +148,14 @@ must not stop the page from loading.
 per-agent `avatar:get` would have been one sqlite open per agent on every render — see
 `global-stores`' avatars sub-concept.
 
-**Two things are refetched per selection, in one `Promise.all`** (`034`): `reports.get(agent)` and
-`handoffs.routes(agent)`. They are the per-agent, project-scoped pair — everything else arrives with
-the global attributes in `refresh()`'s bulk reads. `handoff:routes` is deliberately **one** call for
-every row the Interactions pane will render rather than a `get` per route: the graph walk that
-produces the list (`handoff-routes.ts`) is not renderer-safe, and a fan-out would reopen the global
-sqlite store once per row on every click. Either read failing toasts on its own and falls back to
-`NO_REPORT` / `NO_ROUTES`; neither stops the other.
+**Three things are refetched per selection, in one `Promise.all`** (`034`, `content` added `044`):
+`reports.get(agent)`, `handoffs.routes(agent)`, and `agents.content(agent)`. They are the per-agent
+pair (now a triple), project-scoped — everything else arrives with the global attributes in
+`refresh()`'s bulk reads. `handoff:routes` is deliberately **one** call for every row the
+Interactions pane will render rather than a `get` per route: the graph walk that produces the list
+(`handoff-routes.ts`) is not renderer-safe, and a fan-out would reopen the global sqlite store once
+per row on every click. Each read failing toasts on its own and falls back to `NO_REPORT` /
+`NO_ROUTES` / `NO_CONTENT`; none of the three stops the others.
 
 ## Skills are the instance's, not the agent's
 
@@ -225,10 +241,46 @@ need the room).
 
 ## The Interactions pane (`034`)
 
-The right pane is a **list of header + body pairs**: the agent's resolved report first, headed
-"Main Session", then **one entry per outgoing handoff route** the project's workflow graph wires.
-`agents.tsx` holds them as `routes: ResolvedHandoffRoute[]` and the draft mirrors the bodies in
-`AgentDraft.handoffs`, keyed by `"<sender>/<receiver>"`.
+**The pane is now two tabs** (`044`): **Interactions** (default, everything below in this section,
+byte-for-byte unchanged) and **Content** — read-only in `044`, and since `045` the edit session's
+**eighth write path** for a project-tier agent. Tab state (`useState<"interactions" | "content">`)
+is **local to `interactions-pane.tsx`**, not lifted to the route: it has no bearing on the edit
+session or Save/Cancel, unlike everything else the pane holds. `data-testid="interactions-tabs"`
+plus one `data-testid="interactions-tab-<name>"` button per tab; the interactions list keeps
+`data-testid="interactions-list"` but is now gated on `tab === "interactions"` too, and the new pane
+is `data-testid="agent-content"`.
+
+The body comes from `getAgentBody(projectRoot, bundledDir, agentName)` (`agent-descriptions.ts`),
+which resolves the file through the **same** `findAgentFile` tier walk (project → user → maestro →
+plugins) the description editor already uses — so the Content tab can never show a different
+agent's file than the rest of the page — then returns `extractAgentBody(contents)`, a plain slice
+past the `FRONTMATTER` match (the same technique `replaceDescriptionInFrontmatter` uses to leave a
+body untouched, so it's byte-identical by construction). The channel (`agent:content`) returns a
+plain `string`, with no tier/source label — unlike the report and handoff entries below, nothing
+here needs to say which tier answered, since there is exactly one file per agent, not one per tier.
+Refetched per selection in the **same** `Promise.all` as `reports.get`/`handoffs.routes` (below),
+so switching agents while the Content tab is active refreshes it too.
+
+**Editability is gated on the SAME `contentEditable = descriptionEditable` boolean the description
+field already uses (`045`)** — kept as its own named variable in `agents.tsx` rather than inlining
+`descriptionEditable` a second time, purely so the write-path block and the pane props read
+self-documenting. In view mode on a project-tier agent, the Content tab renders its own pencil
+(`title="Edit this agent's content"`, `PENCIL_BUTTON`) that starts the shared edit session without
+switching tabs first. In edit mode it swaps the read-only `<pre>` for
+`<textarea data-testid="agent-content-editor">`, filling the available height (`flex-1 min-h-0`,
+native scroll) — deliberately **not** the Interactions tab's auto-grow-to-content behaviour, since a
+markdown body can run very long and this pane has no cap/fade the way those entries do. On a
+non-project-tier agent the tab stays read-only in edit mode, with `contentNote` rendered below the
+block — a **hand-written parallel** of the card's own footer note (same reasoning as the footer note
+below: the renderer can't reach `describeUneditableSource`, which lives in `agent-descriptions.ts`,
+a non-renderer-safe module, so the two strings can drift and are not a shared import). The existing
+"Copy into the project" fork button is the escape hatch — forking copies the full file, body
+included, so a freshly forked agent's Content tab is editable with no further changes needed.
+
+The right pane's **Interactions** tab is a **list of header + body pairs**: the agent's resolved
+report first, headed "Main Session", then **one entry per outgoing handoff route** the project's
+workflow graph wires. `agents.tsx` holds them as `routes: ResolvedHandoffRoute[]` and the draft
+mirrors the bodies in `AgentDraft.handoffs`, keyed by `"<sender>/<receiver>"`.
 
 - **A route header reads `→ receiver`**, plus ` · <label>` when the edge is a condition edge. Each
   entry has its own auto-growing textarea (the pane scrolls, the boxes don't) and its own pencil,
@@ -355,16 +407,19 @@ file. Read that first; what follows is only what is true of this page.
   declaration** until the next render, so every later measurement in the same probe silently loses the
   floor and reports a card that "doesn't respect its minimum". Save the previous inline value and
   restore *that*. This cost a probe run.
-- **The description is not editable for every agent — as of `029`, only `project`-tier is.**
-  `EDITABLE_AGENT_SOURCES` in `contracts.ts` is `["project"]`; every other tier renders a read-only
-  paragraph even in edit mode. The renderer decides from `DiscoveredDefinition.source` alone, with no
-  round trip — which is why that constant is a value export from an otherwise interfaces-only file.
+- **The description — and, since `045`, the Content tab body — is not editable for every agent, as
+  of `029`, only `project`-tier is.** `EDITABLE_AGENT_SOURCES` in `contracts.ts` is `["project"]`;
+  every other tier renders a read-only paragraph (description) or `<pre>` (content) even in edit
+  mode. The renderer decides from `DiscoveredDefinition.source` alone, with no round trip — which is
+  why that constant is a value export from an otherwise interfaces-only file.
   `describeUneditableSource(agentName, source)` (`agent-descriptions.ts`) gives the thrown refusal a
-  tier-specific message: `user`-tier says the agent is machine-wide and points at forking rather than
-  claiming it was "created" anywhere (there is no such place); `maestro`/plugin-tier names the plugin
-  and says an update overwrites the file. The card's own footer note is a **separate, hand-written
+  tier-specific message, shared verbatim by both fields' server-side rejection: `user`-tier says the
+  agent is machine-wide and points at forking rather than claiming it was "created" anywhere (there
+  is no such place); `maestro`/plugin-tier names the plugin and says an update overwrites the file.
+  The card's own footer note and the Content tab's `contentNote` are each a **separate, hand-written
   parallel** of that message (`agents.tsx`), not a shared import — the renderer can only pull
-  `contracts`/`text` out of `src/core`, so the two strings can drift; check both if you change one.
+  `contracts`/`text` out of `src/core`, so the three strings can drift; check all of them if you
+  change one.
 - **A pencil on an _unselected_ row cannot build the draft immediately.** That agent's report is still
   in flight, so `startEdit` sets `selected` plus a `pendingEdit` flag and an effect builds the draft
   once `base` resolves. Building it inline would clone a draft carrying the previously selected
@@ -393,14 +448,14 @@ file. Read that first; what follows is only what is true of this page.
 
 | File | Role |
 | --- | --- |
-| `src/renderer/src/routes/agents.tsx` | State, the draft (`cloneDraft`, `handoffsOf`), the seven-way save, the round trips. |
-| `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` (incl. `034`'s `handoffs: Record<handoffId, string>`) / `AgentSkill`, the constants, `clampText`, `cycleOption`, `PANE_SURFACES`, the shared class strings. |
+| `src/renderer/src/routes/agents.tsx` | State, the draft (`cloneDraft`, `handoffsOf`), the eight-way save, the round trips. |
+| `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` (incl. `034`'s `handoffs: Record<handoffId, string>` and `045`'s `content: string`) / `AgentSkill`, the constants, `clampText`, `cycleOption`, `PANE_SURFACES`, the shared class strings. |
 | `src/renderer/src/components/agents/agent-list.tsx` | Left pane. Holds the `/create-subagent` link. |
 | `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card + the Edit/Cancel/Save footer. |
 | `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |
-| `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane: the report + one entry per route, `HANDOFF_TIER`, the resize handle, one auto-growing editor per entry. |
+| `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane: the Interactions/Content tab strip (`044`), the report + one entry per route, `HANDOFF_TIER`, the resize handle, one auto-growing editor per entry, and (`045`) the Content tab's own pencil, `agent-content-editor` textarea and `contentNote` for a project-tier agent. |
 | `src/core/handoffs.ts` | `resolvedRoutesFrom(projectRoot, agent, dbPath?)` — the pane's one round trip, and `saveProjectHandoffOverride`, its write. |
-| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, and `describeUneditableSource`'s tier-specific refusals. |
+| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, `describeUneditableSource`'s tier-specific refusals, (`044`) `extractAgentBody`/`getAgentBody` for the Content tab, and (`045`) `replaceBodyInFrontmatter`/`setAgentContent`, the tab's write path. |
 | `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, and `copyAgentAttributeRows`. Re-exports everything below. |
 | `src/core/agent-fork-record.ts` | The sidecar and the hashing/merging helpers, split out of `agent-fork.ts` in `031` so nothing sqlite-shaped reaches the generated bundle. |
 | `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts`. |
@@ -418,9 +473,9 @@ file. Read that first; what follows is only what is true of this page.
 - [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — the mechanism behind the fork review on
   this page: the one decision function `report-sync.ts` shares, the two staleness triggers, and
   what update / keep / detach write.
-- [`global-stores`](../global-stores/SKILL.md) — five of the seven write paths, why the sixth
-  (description) deliberately is not one, and where `copyAgentAttributeRows` reads/writes those same
-  three stores for a renamed fork.
+- [`global-stores`](../global-stores/SKILL.md) — five of the eight write paths, why the description
+  and (`045`) the content deliberately are not stores, and where `copyAgentAttributeRows`
+  reads/writes those same three stores for a renamed fork.
 - [`maestro-config-model`](../maestro-config-model/SKILL.md) — the workflows slice this page is the
   second writer of, and the read-before-write rule that follows.
 - [`workflow-view`](../workflow-view/SKILL.md) — the other writer, and where `loaded_skills` /

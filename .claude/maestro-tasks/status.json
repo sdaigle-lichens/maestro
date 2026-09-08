@@ -225,11 +225,11 @@
     "blockedBy": []
   },
   "044-read-only-content-tab-for-agent-markdown-body.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "045-editable-content-tab-as-the-edit-session-s-eighth-write-path.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "044-read-only-content-tab-for-agent-markdown-body.md"
     ]

@@ -114,6 +114,8 @@ const api: MaestroApi = {
     fork: (agentName, newName) => ipcRenderer.invoke(IPC.agentFork, agentName, newName),
     sync: () => ipcRenderer.invoke(IPC.agentSync),
     syncApply: (agentName, action) => ipcRenderer.invoke(IPC.agentSyncApply, agentName, action),
+    content: (agentName) => ipcRenderer.invoke(IPC.agentContent, agentName),
+    saveContent: (agentName, content) => ipcRenderer.invoke(IPC.agentContentSave, agentName, content),
   },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),

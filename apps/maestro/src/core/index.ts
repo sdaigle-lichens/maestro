@@ -502,10 +502,15 @@ export {
   setAgentDescription,
   normalizeAgentDescription,
   replaceDescriptionInFrontmatter,
+  extractAgentBody,
+  getAgentBody,
+  replaceBodyInFrontmatter,
+  setAgentContent,
   isEditableAgentSource,
   EDITABLE_AGENT_SOURCES,
   type AgentFileRef,
   type AgentDescriptionResult,
+  type AgentContentResult,
 } from "./agent-descriptions.js";
 
 // Agent avatars — global, keyed by agent name, same shape as skill-tags.ts. See ./avatar-store.ts.
