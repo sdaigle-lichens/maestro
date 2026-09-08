@@ -223,5 +223,15 @@
   "043-global-handoffs-tab-picks-agent-names-from-a-real-project-instead-of-the-bundled-7.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "044-read-only-content-tab-for-agent-markdown-body.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "045-editable-content-tab-as-the-edit-session-s-eighth-write-path.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "044-read-only-content-tab-for-agent-markdown-body.md"
+    ]
   }
 }

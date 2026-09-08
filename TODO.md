@@ -1,6 +1,6 @@
 # Todo
 
-Read the task from `.claude/maestro-tasks/<NNN>-<slug>.md`. Then, from `.claude` and `apps/maestro/.claude`, select the skills related to the task's
+Read the task from `.claude/maestro-tasks/044-read-only-content-tab-for-agent-markdown-body.md`. Then, from `.claude` and `apps/maestro/.claude`, select the skills related to the task's
 feature to get the context and tools needed. In all cases you will at least need:
 
 - apps/maestro/.claude/skills/test-maestro/SKILL.md
