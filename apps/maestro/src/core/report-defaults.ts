@@ -22,6 +22,15 @@
 // The `/templates` page's Reports tab is the UI that writes here — `writeAgentReportDefault`
 // below. Every write it makes is one agent -> one report, keyed by the agent's own name; it never
 // creates the id-sharing indirection the schema allows for (see the header note above).
+//
+// DELIBERATELY NOT REKEYED BY (project_root, agent_name) — unlike agent-types.ts,
+// agent-project-tags.ts and avatar-store.ts (030). Those three are Maestro's own metadata about an
+// agent INSTANCE and the "same everywhere" assumption is genuinely false for a project-tier one.
+// This store is a different kind of thing: it is already the GLOBAL FALLBACK TIER by definition —
+// "what a reviewer outputs by default on this machine" — and every project already has its own
+// override at `.claude/reports/<name>.md`, resolved project → global → none by `resolveReport`.
+// Rekeying `agent_reports`/`reports` by project would collapse that two-tier design into one tier
+// with two names for the same thing. `030` leaves this file alone on purpose.
 
 import fs from "node:fs";
 import os from "node:os";
@@ -34,6 +43,23 @@ export type { ReportDefault };
 /** `~/.claude/maestro-report-defaults.sqlite` — one store, every project on this machine. */
 export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude", "maestro-report-defaults.sqlite");
 
+// `036`: a concept-skill gap no longer travels as a `conceptSkillGaps` field in the JSON report —
+// it goes on the scribe's own channel, unconditionally, whether or not this run's workflow wires a
+// route to `@scribe` at all. That is what makes a gap reachable even from an agent with no scribe
+// edge: `SubagentStart` delivers whatever is waiting in `.claude/channels/scribe/` the next time
+// `@scribe` is invoked, in this run or a later one. `filesChanged` is dropped outright rather than
+// moved — `grep` found it had zero consumers, and the files-changed information a *receiving*
+// agent actually needs already travels per-route, inside the `handoff-seeds.ts` shapes that most
+// routes already carry as `files_added_removed_renamed`.
+function conceptGapsChannelNote(subagent: string): string {
+  return (
+    "If a concept skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
+    '`{ "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file."
+  );
+}
+
 function backendLikeReport(subagent: string): string {
   return (
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
@@ -43,10 +69,11 @@ function backendLikeReport(subagent: string): string {
     `  "subagent": "${subagent}",\n` +
     '  "verdict": "SUCCESS | FAIL",\n' +
     '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
-    '  "filesChanged": ["<file1>", "<file2>"],\n' +
     '  "description": "<summary of what was implemented>"\n' +
     "}\n" +
-    "```"
+    "```\n" +
+    "\n" +
+    conceptGapsChannelNote(subagent)
   );
 }
 
@@ -60,13 +87,18 @@ const SCRIBE_REPORT =
   '  "agentsMdUpdated": 0,\n' +
   '  "docsUpdated": 0,\n' +
   '  "claudeFilesUpdated": 0,\n' +
+  '  "conceptSkillsUpdated": 0,\n' +
   '  "changelogUpdated": false,\n' +
   '  "description": "<summary of what was updated>"\n' +
   "}\n" +
   "```\n" +
   "\n" +
   '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
-  "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
+  "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.\n" +
+  "\n" +
+  "`conceptSkillsUpdated` counts concept skills you created or revised — it is a subset of " +
+  "`claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept " +
+  "list moved without reading the whole summary.";
 
 const TEST_REPORT =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
@@ -77,10 +109,11 @@ const TEST_REPORT =
   '  "verdict": "SUCCESS | FAIL",\n' +
   '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
   '  "testResult": "<N passed, N failed>",\n' +
-  '  "filesChanged": ["<file1>", "<file2>"],\n' +
   '  "description": "<summary of what was tested>"\n' +
   "}\n" +
-  "```";
+  "```\n" +
+  "\n" +
+  conceptGapsChannelNote("test");
 
 /**
  * The exact bodies stripped from `plugins/maestro/agents/{backend,frontend,mobile,scribe,test}.md`
@@ -96,6 +129,126 @@ const SEED_REPORTS: Record<string, string> = {
   scribe: SCRIBE_REPORT,
   test: TEST_REPORT,
 };
+
+// ---------------------------------------------------------------------------
+// Superseded seeds
+// ---------------------------------------------------------------------------
+
+/**
+ * Every body this file has ever seeded, per agent, newest-superseded first.
+ *
+ * `seedIfEmpty` only fires on a store that has never been written to, so on any machine that has
+ * ever opened this db, editing `SEED_REPORTS` above does NOTHING — the new field is in the source,
+ * the agents never see it, and nothing reports the discrepancy. That is the failure this list
+ * exists to close.
+ *
+ * The rule is the one `report-sync.ts` already applies one tier down: a row whose content matches a
+ * superseded seed VERBATIM was never touched by a human, so it is safe to move forward; a row that
+ * matches nothing here is either current or hand-edited, and either way is left alone. Comparing
+ * against known-old content rather than a stored "did we migrate yet" flag is what makes it safe to
+ * run on every open and safe to run twice.
+ *
+ * When you change a body in `SEED_REPORTS`, move its previous text here verbatim. A body that is
+ * changed without being recorded here simply stops propagating — silently.
+ */
+const PRIOR_SEEDS: Record<string, string[]> = (() => {
+  // v1: before `conceptSkillGaps` / `conceptSkillsUpdated` (the concept-skills feature).
+  const backendLikeV1 = (subagent: string): string =>
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    `  "subagent": "${subagent}",\n` +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was implemented>"\n' +
+    "}\n" +
+    "```";
+
+  const scribeV1 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "scribe",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "agentsMdUpdated": 0,\n' +
+    '  "docsUpdated": 0,\n' +
+    '  "claudeFilesUpdated": 0,\n' +
+    '  "changelogUpdated": false,\n' +
+    '  "description": "<summary of what was updated>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
+    "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
+
+  const testV1 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "test",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "testResult": "<N passed, N failed>",\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was tested>"\n' +
+    "}\n" +
+    "```";
+
+  // v2 (`036`): `conceptSkillGaps` and `filesChanged` were IN the JSON report, and the concept-gaps
+  // note pointed at the field rather than at the scribe's channel. Superseded when both moved off
+  // the report entirely — `conceptSkillGaps` onto `.claude/channels/scribe/`, `filesChanged` onto
+  // nothing (zero consumers; what a receiver needs already travels per-route on its own channel).
+  const conceptGapsFieldNoteV2 =
+    "`conceptSkillGaps` is how a concept skill gets better: if one of the concept skills you loaded " +
+    "was missing something you had to work out from the code yourself, say which skill and what was " +
+    "missing, so the main session knows to hand it to the scribe. Leave the array empty when nothing " +
+    "was missing — do not invent a gap to fill the field.";
+
+  const backendLikeV2 = (subagent: string): string =>
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    `  "subagent": "${subagent}",\n` +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was implemented>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    conceptGapsFieldNoteV2;
+
+  const testV2 =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "test",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n' +
+    '  "testResult": "<N passed, N failed>",\n' +
+    '  "filesChanged": ["<file1>", "<file2>"],\n' +
+    '  "description": "<summary of what was tested>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    conceptGapsFieldNoteV2;
+
+  return {
+    backend: [backendLikeV1("backend"), backendLikeV2("backend")],
+    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend")],
+    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile")],
+    scribe: [scribeV1],
+    test: [testV1, testV2],
+  };
+})();
 
 function openDb(dbPath: string): DatabaseSync {
   // Can be opened on a machine where `~/.claude` itself doesn't exist yet (no Claude Code session
@@ -117,7 +270,38 @@ function openDb(dbPath: string): DatabaseSync {
     )
   `);
   seedIfEmpty(db);
+  refreshSupersededSeeds(db);
   return db;
+}
+
+/**
+ * Move any row still carrying a superseded seed body forward to the current one, bumping its
+ * `version` so `report-sync.ts` refreshes the project copies it has already materialized.
+ *
+ * A row the user edited matches nothing in `PRIOR_SEEDS` and is left exactly as it is — the same
+ * "never clobber a customization" rule `syncProjectReports` applies to `.claude/reports/*.md`.
+ * Idempotent: after one pass the content matches the CURRENT seed, which is not in the prior list.
+ */
+function refreshSupersededSeeds(db: DatabaseSync): void {
+  const select = db.prepare(
+    "SELECT r.report_id AS id, r.content AS content, r.version AS version" +
+      " FROM reports r JOIN agent_reports a ON a.report_id = r.report_id WHERE a.agent_name = ?"
+  );
+  const update = db.prepare("UPDATE reports SET content = ?, version = ? WHERE report_id = ?");
+
+  db.exec("BEGIN");
+  try {
+    for (const [agentName, current] of Object.entries(SEED_REPORTS)) {
+      const row = select.get(agentName) as { id: string; content: string; version: number } | undefined;
+      if (!row) continue;
+      if (!(PRIOR_SEEDS[agentName] ?? []).includes(row.content)) continue;
+      update.run(current, row.version + 1, row.id);
+    }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
 }
 
 /** Idempotent: only runs when `reports` has never been written to, on THIS db file. */
@@ -167,8 +351,7 @@ export function readReportById(
   const db = openDb(dbPath);
   try {
     const row = db.prepare("SELECT content, version FROM reports WHERE report_id = ?").get(reportId) as
-      | { content: string; version: number }
-      | undefined;
+      { content: string; version: number } | undefined;
     return row ?? null;
   } finally {
     db.close();
@@ -215,14 +398,16 @@ export function writeAgentReportDefault(
     db.exec("BEGIN");
     try {
       const existing = db.prepare("SELECT version FROM reports WHERE report_id = ?").get(agentName) as
-        | { version: number }
-        | undefined;
+        { version: number } | undefined;
       const version = existing ? existing.version + 1 : 1;
       db.prepare(
         `INSERT INTO reports (report_id, content, version) VALUES (?, ?, ?)
          ON CONFLICT(report_id) DO UPDATE SET content = excluded.content, version = excluded.version`
       ).run(agentName, content, version);
-      db.prepare("INSERT OR REPLACE INTO agent_reports (agent_name, report_id) VALUES (?, ?)").run(agentName, agentName);
+      db.prepare("INSERT OR REPLACE INTO agent_reports (agent_name, report_id) VALUES (?, ?)").run(
+        agentName,
+        agentName
+      );
       db.exec("COMMIT");
       return { reportId: agentName, content, version };
     } catch (err) {

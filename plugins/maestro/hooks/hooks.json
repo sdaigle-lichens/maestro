@@ -1,5 +1,27 @@
 {
   "hooks": {
+    "UserPromptExpansion": [
+      {
+        "matcher": "maestro",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step0.js"]
+          }
+        ]
+      },
+      {
+        "matcher": "to-maestro-tasks",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-enable-task-routing.js"]
+          }
+        ]
+      }
+    ],
     "SubagentStart": [
       {
         "matcher": ".*",
@@ -37,6 +59,21 @@
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-log.js"]
+          }
+        ]
+      },
+      {
+        "matcher": "Skill",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step0.js"]
+          },
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-enable-task-routing.js"]
           }
         ]
       }

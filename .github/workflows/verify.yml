@@ -1,0 +1,53 @@
+# The gate that makes `check` mean something.
+#
+# `check` (prettier --check) failed in every workspace from the day this repo was imported until
+# f807948, because the import dropped the root .prettierrc. Nothing caught that for the same reason
+# nothing would catch it today: `pnpm verify` only ever ran when someone chose to run it, and a
+# command that has never passed is a command nobody runs twice. A check that fails on day one is
+# not a check.
+#
+# So this runs verify on every push and every pull request. It passes as of the commit that adds
+# it, which is the property that matters -- the next failure is a new one, and it is attributable.
+name: verify
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      # 22, not latest: src/core reaches for `node:sqlite` (avatar-store.ts, skill-tags.ts) to
+      # avoid a native module, and that needs a Node new enough to have it.
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      # check + typecheck + test. `check` is first on purpose: formatting is the cheapest thing to
+      # get wrong and the cheapest to fix, and `prettier --check` names every offending file.
+      - run: pnpm verify
+
+      # The generated half of the plugin. plugins/maestro/scripts/lib/*.cjs is bundled from
+      # apps/maestro/src/core, and nothing in verify would notice it going stale -- the plugin's
+      # hooks would just quietly keep running the older bundle in every project that installed it.
+      # Rebuild and fail if the checked-in output moved.
+      - name: plugin libs are in sync with their sources
+        run: |
+          node apps/maestro/scripts/build-plugin-libs.mjs
+          git diff --exit-code -- plugins/maestro/scripts/lib/ || {
+            echo "::error::plugins/maestro/scripts/lib/ is stale. Run: node apps/maestro/scripts/build-plugin-libs.mjs"
+            exit 1
+          }

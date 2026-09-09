@@ -71,7 +71,7 @@ describe("save against a really-installed project", () => {
     // The Refactor workflow leads with an inline skill step.
     expect(res.render.rows).toContainEqual({
       workflow: "Refactor",
-      successPath: "/use-design-check → human review → @refactor",
+      successPath: "/use-code-architecture-design-check → human review → @refactor",
     });
 
     const table = extractRegion(fs.readFileSync(orchestratorSkillPath(root), "utf8"), "HANDOFFS");
@@ -100,6 +100,63 @@ describe("save against a really-installed project", () => {
     }
     // Frontmatter and any prose outside the regions survive verbatim.
     expect(after.split("<!-- Maestro:STEPS:START -->")[0]).toBe(before.split("<!-- Maestro:STEPS:START -->")[0]);
+  });
+
+  // 032. Two separate things the REAL installer has to get right for the injected Step 1, and
+  // only this suite runs it: the script is copied, and the skill it wrote grants the exact command
+  // it also invokes.
+  //
+  // `039` added a second `Bash(...)` grant (for maestro-resume-target.cjs) to the same
+  // `allowed-tools` line, so this now parses every grant on the line rather than assuming there is
+  // only one — none of the granted commands contain parentheses, so a non-greedy per-grant scan
+  // splits them cleanly.
+  it("copies maestro-step1-gates.cjs, and grants exactly the command Step 1 injects", () => {
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"))).toBe(true);
+
+    const skill = fs.readFileSync(orchestratorSkillPath(root), "utf8");
+
+    // The grant and the invocation are written in two places in the template, and a permission
+    // check that returns anything but `allow` ABORTS the whole skill invocation — so a one-byte
+    // drift between them is a /maestro that cannot start. One assertion, so they cannot drift.
+    const line = /^allowed-tools:\s*(.+)$/m.exec(skill);
+    expect(line, "no allowed-tools line in the installed skill").not.toBeNull();
+    const grants = [...line![1].matchAll(/Bash\(([^()]*)\)/g)].map((m) => m[1]);
+    expect(grants.length, "no allowed-tools Bash(...) grant in the installed skill").toBeGreaterThan(0);
+
+    const steps = extractRegion(skill, "STEPS")!;
+    const injected = /^!`(.+)`\s*$/m.exec(steps);
+    expect(injected, "no !`command` line inside the STEPS region").not.toBeNull();
+
+    expect(grants).toContain(injected![1]);
+    expect(grants.some((g) => g.includes("maestro-step1-gates.cjs"))).toBe(true);
+  });
+
+  // Frontmatter lives OUTSIDE the managed regions, so a re-sync must not touch it — which is also
+  // why an already-installed project needs a purge-and-reinstall to receive the new allowed-tools
+  // line. See plugins/maestro/skills/maestro-update/SKILL.md.
+  it("leaves everything before the STEPS marker byte-identical across a managed-region re-sync", async () => {
+    const skillPath = orchestratorSkillPath(root);
+    const before = fs.readFileSync(skillPath, "utf8");
+    const seeded = defaultV3Config(["backend"]);
+
+    await saveConfig(root, {
+      sliceType: "gates",
+      slice: { gates: { confidence_check: true, use_code_architecture_design_check: true } },
+    });
+    await saveConfig(root, {
+      sliceType: "workflows",
+      slice: {
+        agents_available: seeded.agents_available,
+        skills_available: seeded.skills_available,
+        workflow_instances: seeded.workflow_instances,
+        workflows: seeded.workflows,
+      },
+    });
+
+    const after = fs.readFileSync(skillPath, "utf8");
+    const head = (t: string) => t.split("<!-- Maestro:STEPS:START -->")[0];
+    expect(head(after)).toBe(head(before));
+    expect(head(after)).toContain("allowed-tools: Bash(");
   });
 
   it("places a rule file and keeps the workflow slice", async () => {

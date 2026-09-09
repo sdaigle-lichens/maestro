@@ -1,6 +1,10 @@
 ---
 name: log-view
-description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, and how the maestro-session-log.js / maestro-subagent-log.js hooks write the maestro_session.log.jsonl it reads. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why a step has no status icon, or how dispatch/handoff entries are produced by the hooks."
+description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender, how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`), and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the maestro_session.log.jsonl it reads. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`)."
+metadata:
+  type: concept-skill
+  version: "2.3"
+  last-update: e90c2a974a94dc6c1709097f36b4563af9bdd468
 ---
 
 # Log View
@@ -22,12 +26,12 @@ This is the **read side** of the Maestro runtime: it displays what the hook scri
 │ Workflow   │                                      │                                   │
 │            │  ┌────────────────────────────────┐  │  Input                            │
 │ ✓ Main Ses │  │ Main Session                   │  │  Create a button component…       │
-│ ✓ Backend  │  │ - calling `backend` agent      │  │                                   │
+│ ✓ Backend  │  │ - calling `backend` agent      │  │  Delivered from @scribe  channel   │
 │ ✓ Human R  │  │ - …                            │  │  Process                          │
 │ ✗ Test     │  └────────────────────────────────┘  │  - [Backend]: read file `…`       │
 │ ✓ Backend  │                                      │  - [Backend]: wrote file `…`      │
 │ ✓ Test     │  ┌════════════════════════════════┐  │  - …                              │
-│ ⚠ Reviewer │  ║ Backend (1)          «green»   ║  │                                   │
+│ ⚠ Reviewer │  ║ Backend (1)  ⤓1     «green»    ║  │                                   │
 │ ✓ Scribe   │  ║ - calling backend agent        ║  │  Output                           │
 │            │  ║ - [Backend]: read file `…`     ║  │  Created a button component …     │
 │            │  ║ - [Backend]: wrote file `…`    ║  │                                   │
@@ -88,13 +92,16 @@ TopNav (every Maestro page): "● Session Log" dot driven by useSessionLog().con
 
 ```
 Active Maestro session
-  PreToolUse hook   → maestro-session-log.js  → tool-call entry (ts, origin, log)
-  SubagentStart     → maestro-subagent-log.js → dispatch entry  (kind:"dispatch", agent, agent_id, input)
-  SubagentStop      → maestro-subagent-log.js → handoff entry   (kind:"handoff", agent_id, status, label, output)
-  SessionEnd        → maestro-session-cleanup.sh → DELETE maestro_session.log.jsonl
+  PreToolUse hook   → maestro-session-log.js       → tool-call entry      (ts, origin, log)
+  SubagentStart     → maestro-subagent-log.js       → dispatch entry      (kind:"dispatch", agent, agent_id, input)
+  SubagentStart     → maestro-inject-agent-context.js → channel_delivery entry (kind:"channel_delivery", sender, receiver, agent_id, content) — (`036`/`037`)
+  SubagentStop      → maestro-subagent-log.js       → handoff entry       (kind:"handoff", agent_id, status, label, output)
+  SessionEnd        → maestro-session-cleanup.sh    → DELETE maestro_session.log.jsonl
 ```
 
-All three hooks append to the same file. All are no-ops when `maestro.json` is absent. The file is deleted at SessionEnd, so the empty state is normal.
+All four hooks append to the same file. All are no-ops when `maestro.json` is absent. The file is deleted at SessionEnd, so the empty state is normal.
+
+**`channel_delivery` is written by the INJECTOR, not the logger script.** `maestro-inject-agent-context.js` is the same `SubagentStart` hook that inlines a channel payload as `additionalContext` (see `maestro-architecture`'s HANDOFF routing contract) — it appends this log entry itself, at the same moment, so the log has a durable record of what was inlined without a second hook reading the same channel file. `origin` is hardcoded `"main_session"` on this entry, same as a `dispatch` entry — it is not written into the receiving agent's own segment, which is exactly why `buildInstances` correlates it by `agent_id` across the whole array rather than by which segment it landed in (see below).
 
 ## File-by-file map
 
@@ -106,7 +113,7 @@ Renderer paths are relative to `apps/maestro/`.
 | Left step list with status icons (CircleCheck/CircleX/AlertTriangle)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |
 | Center framed log pane, click-to-select, live indicator, per-section anchors                                                   | `src/renderer/src/components/session-log-view.tsx`                                    |
 | Right detail panel: Input/Process/Output sections                                                                              | `src/renderer/src/components/session-log-detail.tsx`                                  |
-| **The tail itself** — polls the JSONL, pushes `log:init`/`log:entry`/`log:reset`                                               | `src/main/ipc.ts`                                                                     |
+| **The tail itself** — polls the JSONL, pushes `log:init`/`log:entry`/`log:reset`; `tails` (running watchers) and `logSubscribers` (who asked, `038`) are separate sets | `src/main/ipc.ts`                                                                     |
 | The typed channel contract                                                                                                     | `src/shared/ipc.ts` (`log:subscribe`, `log:unsubscribe`, and the three push channels) |
 | App-wide subscriber: `SessionLogProvider`, `useSessionLog()`                                                                   | `src/renderer/src/utils/session-log-context.tsx`                                      |
 | `parseLogLines` + `readSessionLog`                                                                                             | `session-log.ts` in `apps/maestro/src/core/`                                          |
@@ -117,6 +124,8 @@ Renderer paths are relative to `apps/maestro/`.
 | Yellow color tokens (`--yellow`, `--yellow-dim`)                                                                               | `packages/styles/scss/abstracts/_tokens.scss`                                         |
 | **Writer — tool-call entries** (PreToolUse, matcher `.*`)                                                                      | `plugins/maestro/scripts/maestro-session-log.js`                             |
 | **Writer — dispatch + handoff entries** (SubagentStart/Stop, matcher `.*`)                                                     | `plugins/maestro/scripts/maestro-subagent-log.js`                            |
+| **Writer — `channel_delivery` entries** (SubagentStart, matcher `.*`)                                                          | `plugins/maestro/scripts/maestro-inject-agent-context.js`                    |
+| The read-only `pendingLanes()` — `/maestro`'s undrained-backlog view, NOT this route's data (`037`)                            | `handoff-channels.ts` in `apps/maestro/src/core/`                             |
 | Shared append helper (`appendSessionLog`, `readStdin`)                                                                         | `plugins/maestro/scripts/lib/maestro-session.cjs`                            |
 | Hook registration (all three hooks registered here)                                                                            | `plugins/maestro/hooks/hooks.json`                                           |
 | Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_session.log.jsonl`                                     |
@@ -150,6 +159,16 @@ interface SessionLogEntry {
   // Present only on transition entries (SubagentStop with NO agent_type):
   kind?: "transition";
   output?: string; // the final message of the non-workflow turn (e.g. "waiting on the user")
+
+  // Present only on channel_delivery entries (SubagentStart, `036`/`037`) — a payload the injector
+  // inlined for the RECEIVING agent's next invocation. origin is always "main_session" here, same
+  // as a dispatch entry; agent_id is the receiver's own dispatch/handoff correlation key, NOT a
+  // fresh id of its own.
+  kind?: "channel_delivery";
+  agent_id?: string; // the receiving instance's agent_id — same key input/offeredSkills use
+  sender?: string; // bare agent name that wrote the payload
+  receiver?: string; // bare agent name it was delivered to
+  content?: string; // the payload body, inlined verbatim (no stamp — that's stripped before logging)
 }
 ```
 
@@ -175,8 +194,13 @@ interface Instance {
   output: string | null; // final message from this segment's handoff entry
   skillsTriage: SkillsTriage | null; // parsed { loaded[], skipped[{id,reason}] } from the agent's report
   offeredSkills: { loaded: string[]; referenced: string[] } | null; // from the dispatch entry's offered_skills
+  delivered: ChannelDelivery[]; // channel_delivery entries logged at THIS instance's own SubagentStart (`037`); [] not omitted
 }
 ```
+
+`ChannelDelivery` is `{ sender, receiver, agent_id, content }` — the shape the detail panel's
+"Delivered from @`<sender>`" block renders (`session-log-detail.tsx`). Always an array, even when
+empty, so a template never has to special-case "no deliveries" from "not yet computed".
 
 `skillsTriage` is parsed from `output` by `parseSkillsTriage` (pure, in `session-log.ts`): it grabs the last fenced ` ```json ` block, `JSON.parse`s it, and reads the `skillsTriage` field every skill-receiving agent emits in its final report (see `plugins/maestro/agents/*.md`). Any parse/shape failure yields `null`, so the section is simply omitted — fully backward compatible with older logs and agents that don't emit it. The triage data is already in `output`; that parse is a pure read-side interpretation.
 
@@ -195,6 +219,7 @@ A thin (180px) vertical list of step names with status icons. Each row:
 - **Click** → `onSelect(id)` → `setActiveId(id)` + `scrollIntoView` on the matching center-pane section.
 - **Active step** → `font-medium` + a `border-b-2` underline colored by status (green/red/yellow).
 - **Skills badge** (right-aligned, only when `inst.skillsTriage` is set) → compact `<loaded>` in `--green`, `/<skipped>` in `--yellow`, and `/<unaccounted>` in `--red`. Lets you scan which steps skipped or silently dropped skills without opening each detail panel.
+- **Delivery count** (`037`) → an `Inbox` icon + `inst.delivered.length` when non-zero, the same at-a-glance class of signal as the skills badge. Omitted when `delivered` is empty.
 
 ## Center pane — framed log (`session-log-view.tsx`)
 
@@ -204,14 +229,14 @@ A header row ("Agents Flow" + `● live` indicator) above a scrollable body of p
 - **Selected frame** → `border-2` colored by status: `border-[var(--green)]` / `border-[var(--red)]` / `border-[var(--yellow)]` / `border-[var(--line-2)]` (transition, neutral).
 - **Default frame** → `border border-(--line)`.
 - Content: humanized log lines via `humanizeLog(entry)`, same as before.
-- **Section header** shows the `displayName` and, when `inst.skillsTriage` is set, a `<N> loaded · <N> skipped · <N> unaccounted` badge (green / yellow / red — each segment shown only when non-zero).
+- **Section header** shows the `displayName` and, when `inst.skillsTriage` is set, a `<N> loaded · <N> skipped · <N> unaccounted` badge (green / yellow / red — each segment shown only when non-zero). It also shows a delivery count (`037`), the same value as the left pane's badge.
 
 ## Right pane — detail panel (`session-log-detail.tsx`)
 
 Shows the selected instance's data in three sections:
 
 - **Header:** "Logs: {displayName}"
-- **Input:** the instance's `input` field — the full spawning message sent by the main session. Shows "No input captured" for main_session instances or when no dispatch entry exists.
+- **Input:** the instance's `input` field — the full spawning message sent by the main session — followed by each entry in `inst.delivered` (`037`), rendered as "Delivered from @`<sender>`" plus a "channel" badge and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when `delivered` is empty; shows "No input captured" for main_session instances or when there is neither a dispatch entry nor a delivery.
 - **Process:** the humanized log lines (same content as the center pane section for this step).
 - **Skills Triage:** (only when `instance.skillsTriage` is set) the agent's own account of which injected skills it loaded vs deliberately skipped, audited against what was offered. **Loaded** render as green chips; **Unaccounted** (`unaccountedSkills(instance)` — offered but reported in neither loaded nor skipped) render as red chips; **Skipped** render as `id — reason`, with a hollow reason (`< 8` chars) flagged in `--yellow`. Hollow reasons surface lazy _explicit_ skips; the red unaccounted group surfaces skills the agent dropped _silently_ — caught by diffing the dispatch entry's `offered_skills` against the report.
 - **Output:** the instance's `output` field — the agent's full final message including the HANDOFF line. Shows "No output captured" for main_session or when no handoff entry exists.
@@ -221,11 +246,24 @@ Shows the selected instance's data in three sections:
 
 `buildInstances` in `src/renderer/src/utils/session-log.ts` (pure, no Node imports) walks entries in order and starts a **new segment whenever `origin` changes**. This means:
 
-- The same agent appearing after a main-session interlude becomes a **separate step** (correct — it's a second invocation).
+- The same agent appearing after a main-session interlude becomes a **separate step** (correct — it's a second invocation). Before `039` this also meant a fresh `agent_id`, since each invocation was a cold `Task`; a **resumed** run (`SendMessage` to an agent with a completed run this session) still segments into a separate step, but now shares its `agent_id` with the run it resumed. `042` bounds every agent_id lookup by position in the log so the two segments still each get their own `input`/`offeredSkills`/`delivered` — see below and "Things that bite".
 - The main session itself segments into multiple "Main Session" steps when subagents interleave (normal for sequential Maestro dispatch).
 - Parallel subagents would fragment, but Maestro runs agents sequentially, so interleaving is rare.
 
-**Status/label/output** are populated from the first `kind:"handoff"` entry found within the segment (matching `origin`); a `kind:"transition"` entry instead sets `status:"transition"` and keeps its message as `output`. **Input** is correlated by `agent_id`: find the handoff's `agent_id`, then find the dispatch entry with the same `agent_id` anywhere in the full `entries[]`. Fallback: if no handoff entry exists (agent didn't produce one), search for a dispatch entry matching by `agent` type.
+**Status/label/output** are populated from the first `kind:"handoff"` entry found within the segment (matching `origin`); a `kind:"transition"` entry instead sets `status:"transition"` and keeps its message as `output`. **Input** is correlated by `agent_id`, bounded by position in the log (`042`): resolve the segment's own handoff index `h` (or, when the segment has no handoff — an in-flight or killed agent — the end of THAT SEGMENT, which for a genuinely in-flight agent is the end of the log; not `entries.length` unconditionally, or a killed agent's card would reach forward and claim the dispatch of a later run of the same type) and the previous handoff index `p` — the nearest handoff for that same `agent_id` sitting before `h`, `-1` when there is none, then take the *latest* `dispatch` entry for that `agent_id` whose index falls in `(p, h)` — not the last one in the whole file. Fallback: if the segment's handoff has no `agent_id` (or there is no handoff at all), search for a `dispatch` entry matching by `agent` type instead, over the same `(p, h)` window — `p`/`h` here come from `lastEndByOrigin`, tracking the end of the previous segment sharing that `origin`, since there's no `agent_id` to key off in this branch.
+
+**Deliveries are windowed the same way, over the same `agent_id` (`037`, bounded by `042`).** Every
+`channel_delivery` entry in `entries[]` is grouped up front into a `Map<agent_id, {index, delivery}[]>`
+(entries preserved in log order), because a `channel_delivery` entry's `origin` is hardcoded
+`"main_session"` by the injector and lands in whichever main_session segment happens to be current at
+write time — **never** in the receiving instance's own segment. Segment membership therefore cannot be
+used to attach a delivery; only `agent_id` can. For each non-main-session instance, the SAME id that
+already resolved `input`/`offeredSkills` looks the map up, filtered to entries whose index falls in
+that instance's own `(p, h)` window — so a delivery logged between two runs of a resumed agent lands on
+the later run's card only, never both. An `agent_id` matching no instance is simply never pulled out of
+the map — nothing crashes, nothing attaches to an arbitrary instance; it is just absent from every
+card. This is why `delivered` is populated in the *same* per-instance loop as `input`/`offeredSkills`,
+not a separate pass.
 
 ## Runtime — how the log gets written
 
@@ -311,6 +349,7 @@ The plain tool-call log from `maestro-session-log.js` has **no outcome data** �
 - **`reset` event on SessionEnd.** When the JSONL file disappears (deleted by `maestro-session-cleanup.sh`), the server emits `reset: {}` and `lineCount` drops to 0. The provider clears `entries`, the page shows the empty state. A new session's `init` event re-fills it. This is the normal SessionEnd → new session cycle without a page reload.
 - **`window.maestro.log.subscribe` is single-owner.** Main keeps one tail per `webContents.id` and stops the old one before starting a new one — so a second subscriber _steals_ the tail, and the first unsubscribe then stops it for both. The owner is `SessionLogProvider`; every other consumer reads from it with `useSessionLog()`. A test pins the call site to that one file.
 - **The tail is retargeted on a project switch**, in `main/ipc.ts`. Without that, the window keeps streaming the previously-opened repo's session log while showing the new project everywhere else.
+- **`tails` and `logSubscribers` answer two different questions, and `retargetTails` needs the second one.** `tails` (`Map<webContentsId, stop>`) is "which windows have a running watcher"; `logSubscribers` (`Set<number>`, `038`) is "which windows asked for one". They're the same set only while a project is open — a window that subscribes with no project open gets an empty `logInit` and `startTail` returns before ever touching `tails`, so `retargetTails` iterating `tails.keys()` would never revisit it once a project opened, leaving `/session-log` dead for that window's whole life. `logSubscribe` adds to `logSubscribers` *before* calling `startTail`; both `logUnsubscribe` and the window's `destroyed` listener remove from it. `retargetTails` reads `logSubscribers`, never `tails.keys()` and never `BrowserWindow.getAllWindows()` (the latter would start a tail for a window that never subscribed at all).
 - **Live stream is app-wide.** `SessionLogProvider` mounts in `__root.tsx`, so the subscription is maintained on every page. Entries accumulate in context even while the user is on `/workflows` or `/rules`; `/session-log` sees the full current state when you navigate to it.
 - **There is no loader; the first paint is empty.** The provider starts with `entries: []` until main's `init` push arrives, so navigating to the route shows a brief empty state — acceptable for a debugging tool, and the alternative is a loader that races the subscription.
 - **Instances segment by origin change.** The same agent appearing twice in the log produces two steps — that's intentional (second run = second step). Parallel subagents would interleave their tool-call lines, fragmenting into many steps. Maestro runs subagents sequentially, so this is normally not an issue in practice. `agent_id` correlation keeps input↔output paired correctly even in edge-case interleaving.
@@ -319,3 +358,18 @@ The plain tool-call log from `maestro-session-log.js` has **no outcome data** �
 - **`maestro-subagent-log.js` runs from the plugin dir, not the project copy.** Unlike `maestro-set-session-workflow.cjs` and `maestro-render-orchestrator.cjs` (which are copied into `.claude/scripts/` at install time), the SubagentStart/Stop scripts run directly from `${CLAUDE_PLUGIN_ROOT}/scripts/`. Editing `maestro-subagent-log.js` takes effect immediately for all projects. Adding or removing the hook registration in `hooks.json` requires a new Claude session to pick up.
 - **Large messages in `input`/`output`.** A spawning message that includes injected skills + handoff templates can be several kilobytes. The right detail panel sections are scrollable. The JSONL file stores the full messages; that's intentional for debugging fidelity.
 - **`--yellow` color token.** Added in `packages/styles/scss/abstracts/_tokens.scss` alongside `--green`/`--red`. Used for "unknown" status (subagent with no parseable HANDOFF line). Both light and dark mode variants exist.
+- **A resumed run (`039`) puts two `dispatch`/`handoff` pairs under one `agent_id` — `buildInstances` bounds every lookup by log POSITION rather than by `agent_id` alone, so the two cards don't cross-contaminate (`042`).** A condition-edge loop-back that resumes an agent with a completed run this session (see `maestro-architecture`'s Runtime lifecycle) keeps the SAME `agent_id` across both invocations — `SubagentStart`/`SubagentStop` fire again, so `maestro-subagent-log.js` appends a second `dispatch`/`handoff` pair correlated to it. Before `042`, `dispatchByAgentId` was a plain `Map` filled by one forward pass (last-write-wins), so BOTH segments — including the first run's own — read back the resumed run's `input`/`offeredSkills`, and `deliveredByAgentId` (pushing onto an array, so no data loss but no separation either) meant both cards rendered every delivery logged under that `agent_id`. The fix: for each segment, resolve its own handoff index `h` (or the end of that segment when there is none — an in-flight/killed agent) and the previous handoff index `p` for that `agent_id` (`-1` when there is none), then bound the dispatch lookup, the name-based fallback, and the delivery filter all to `(p, h)` — the log is append-only, so a run's own boundary is already implicit in file order; no new hook state (no run counter, no id change) was needed. Segmentation itself was never affected (still one card per `origin` change) — it was only `input`/`offeredSkills`/`delivered` that could misattribute across a resumed agent's two cards.
+- **A `channel_delivery` entry's `origin` tells you nothing about who received it (`037`).** It is
+  always `"main_session"`, hardcoded by the injector, exactly like a `dispatch` entry — so grouping
+  log entries by segment (the way `buildInstances` starts a new `Instance` on every `origin` change)
+  would put every delivery on a Main Session card, never on the agent it was delivered to. The only
+  correct correlation key is `agent_id`, shared with the receiving instance's own dispatch/handoff.
+  If a delivery is ever missing from the card it plainly belongs on, check that its `agent_id`
+  actually matches that instance's `handoff?.agent_id ?? dispatch?.agent_id` before suspecting the
+  render layer.
+- **`channels:pending` (the `/maestro` backlog view) is a DIFFERENT read of a DIFFERENT thing.** This
+  route shows deliveries that already happened, reconstructed from the append-only log; `/maestro`'s
+  `pendingLanes()` (`src/core/handoff-channels.ts`) shows undelivered files still sitting in
+  `.claude/channels/`. Neither reads the other's data source, and neither writes anything — see
+  `maestro-architecture` for the channel file lifecycle and `agents-view` for where a route's channel
+  path (`.claude/channels/<receiver>/<sender>.1.md`) is surfaced as a label.

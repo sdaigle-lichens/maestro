@@ -12,12 +12,15 @@
 //   .claude/settings.json, pointing at $CLAUDE_PROJECT_DIR/.claude/scripts/, makes "update this
 //   project's runtime" a file copy the app can do and the user can see.
 //
+//   What the registrations this file writes then MEAN to the plugin's own copy of the same hooks
+//   is hook-arbitration.ts: the plugin's copy stands down for any hook the project registers here,
+//   so both being installed is a precedence rule and not the double-firing it used to be.
+//
 // Three rules this file exists to enforce:
 //
-//   1. PROJECT-LOCAL, NEVER GLOBAL. Every path written is under `projectRoot`. The user's
-//      ~/.claude is read (to notice the plugin is also installed) and never written — an
-//      installer that registered hooks globally would silently change every other repo on the
-//      machine.
+//   1. PROJECT-LOCAL, NEVER GLOBAL. Every path written is under `projectRoot`, and the user's
+//      ~/.claude is never written — an installer that registered hooks globally would silently
+//      change every other repo on the machine.
 //   2. MERGE, NEVER CLOBBER. settings.json is a file users hand-edit. Unknown keys, unrelated
 //      hooks and other matchers survive; an unparseable file aborts the install instead of being
 //      replaced with `{}` (which is what the legacy script did, losing the user's content).
@@ -29,21 +32,23 @@ import fs from "node:fs";
 import path from "node:path";
 import { createHash } from "node:crypto";
 import { execFileSync } from "node:child_process";
-import { getInstalledPlugins } from "@repo/claude-fs";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
 import { syncProjectReports } from "./report-sync.js";
+import { syncProjectHandoffs } from "./handoff-sync.js";
+import { duplicateAgentTypes } from "./config-validate.js";
 import { detectImplAgents } from "./detect.js";
 import { discoverSkills } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
 import { defaultV3Config, seededAgentNames } from "./seed.js";
+import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
 import { readAllProjectTags, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
 import { readAllAgentTypes } from "./agent-types.js";
 import { readAllAgentProjectTags } from "./agent-project-tags.js";
 import { GLOBAL_TAG } from "./contracts.js";
 import type { MaestroConfigV3 } from "./types.js";
-import type { InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
+import type { ConfigIssue, InstallReport, InstallStatus, OrchestratorSkillAction } from "./contracts.js";
 
 export type { InstallReport, InstallStatus, OrchestratorSkillAction };
 
@@ -133,6 +138,14 @@ const HOOK_SCRIPTS = [
   "maestro-subagent-log",
   "maestro-session-log",
   "maestro-validate-tasks",
+  // The orchestrator's Step 0, run as a hook rather than as prose the model executes. It
+  // `require`s maestro-check-runtime.cjs (a STATIC_ASSET, already copied beside it) and, when it
+  // is there, lib/maestro-agent-sync.cjs.
+  "maestro-step0",
+  // Auto-enables Step 4 task routing the first time /to-maestro-tasks is invoked (`047`). Same two
+  // entrances as maestro-step0 above, registered on the SAME two events — it injects nothing, only
+  // flips `use_maestro_tasks` in maestro.json.
+  "maestro-enable-task-routing",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -140,18 +153,65 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/maestro-set-session-workflow.cjs", dest: ".claude/scripts/maestro-set-session-workflow.cjs" },
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
   { src: "scripts/maestro-task-status.cjs", dest: ".claude/scripts/maestro-task-status.cjs" },
-  // Step 0's cheap staleness check — see maestro-architecture / task 027. Invoked directly by the
-  // orchestrator, not registered as a hook.
+  // The cheap staleness check — see maestro-architecture / task 027. Not registered as a hook
+  // itself: it is `require`d by maestro-step0 (which is). Its CLI half stays for a human debugging
+  // a project by hand; the orchestrator skill no longer runs it.
   { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
+  // Forked-agent sync (`031`) — list / diff / update / keep / detach, driven by the `maestro` and
+  // `maestro-update` skills. Copied into the project rather than left at ${CLAUDE_PLUGIN_ROOT} for
+  // the same reason every other orchestrator-invoked script is: the orchestrator calls it by
+  // $CLAUDE_PROJECT_DIR path, and a project-local copy is refreshable without a version bump.
+  { src: "scripts/maestro-agent-forks.cjs", dest: ".claude/scripts/maestro-agent-forks.cjs" },
+  // The orchestrator's Step 1 gate configuration (`032`), read at invocation time and injected
+  // into the skill body by the !`command` line in the STEPS region. Not a hook, and not required
+  // by one: it is spawned by the harness expanding the skill. Its absence is the one asset gap
+  // that BREAKS an invocation rather than degrading it (node exits 1, and an injected command
+  // exiting non-zero aborts the skill), which is why maestro-check-runtime.cjs checks for this
+  // file by name.
+  { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // The orchestrator's Step 4 task-routing configuration (`046`), read at invocation time and
+  // injected into the skill body by a !`command` line appended after Step 4's mark-task-done
+  // prose. Same shape as maestro-step1-gates.cjs above — a project copy invoked by
+  // $CLAUDE_PROJECT_DIR path, granted in the template's `allowed-tools`, exits 0 unconditionally.
+  { src: "scripts/maestro-step4-gate.cjs", dest: ".claude/scripts/maestro-step4-gate.cjs" },
+  // Resume-target lookup (`039`) for a condition-edge loop-back: whether the agent the edge points
+  // to already ran this session, and if so which `agent_id` to resume instead of dispatching a
+  // cold `Task`. Invoked by the orchestrator directly (granted in the template's `allowed-tools`),
+  // not by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as every other
+  // orchestrator-invoked script above.
+  { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
+  //
+  // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
+  // to resolve from `.claude/scripts/`, including the ones written inside a try/catch. A lib the
+  // manifest forgets does not fail — the catch swallows the resolution error and the tier it
+  // backs silently stops existing, but only for a project running its own copy of the hook. The
+  // plugin's copy, running from the marketplace cache with the whole `lib/` beside it, keeps
+  // answering, so which copy won the arbitration decides what an agent is told. `035` found the
+  // two sqlite tiers below missing for exactly that reason. `test/core/install.test.ts` now scans
+  // the copied scripts for `require("./lib/…")` and pins every name it finds against this list.
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
+  { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
+  // The two global sqlite tiers maestro-inject-agent-context requires (`035`). Reports have no
+  // seed tier at all, so without this file a project-local hook resolves NO output format for an
+  // agent whose report is only global — the failure that motivated the slice. Handoffs do have a
+  // seed (it rides inside maestro-session.cjs), so the same gap there degraded to the shipped
+  // protocol instead of to nothing; it is copied all the same, because the global row is the tier
+  // `/templates`' Handoffs tab writes and a route wired after the last install has no
+  // materialized project file to answer from. Both requires stay inside a try/catch: `node`
+  // < 22.5 has no `node:sqlite`, and the copy being present does not make it importable.
+  { src: "scripts/lib/maestro-report-defaults.cjs", dest: ".claude/scripts/lib/maestro-report-defaults.cjs" },
+  { src: "scripts/lib/maestro-handoff-defaults.cjs", dest: ".claude/scripts/lib/maestro-handoff-defaults.cjs" },
   // PreToolUse Bash guard that blocks reading .env secrets. Runs as a bare command, hence +x.
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
-  // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh — see that file's header:
-  // the .sh also tears down the per-project web-app container, which is the plugin's business
-  // and not something a project-local install should inherit.
+  // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh, which does the same three
+  // deletions and nothing more (its container teardown went with M5) — the twin is node because
+  // the .sh parses the hook payload with python3, which a project cannot assume is installed.
+  // It is also the one hook with no arbitration guard: both copies `rm -f` the same three files,
+  // so a double fire is unobservable and a bash reimplementation of hook-arbitration.ts to
+  // suppress a no-op would cost more than it saves.
   { src: "scripts/maestro-session-cleanup.cjs", dest: ".claude/scripts/maestro-session-cleanup.cjs" },
   ...HOOK_SCRIPTS.map((name) => ({
     src: `scripts/${name}.js`,
@@ -160,41 +220,27 @@ const STATIC_ASSETS: RuntimeAsset[] = [
 ];
 
 /**
- * Handoff-protocol templates, installed to `.claude/templates/handoffs/`.
+ * Every file the app copies into a project, in a stable order.
  *
- * `maestro-inject-agent-context` looks for `<project>/.claude/handoffs/<sender>/<receiver>.md`
- * first and falls back to `<script dir>/../templates/handoffs/…`. From the copied script that
- * second path is exactly `.claude/templates/handoffs/`, so installing there needs no change to
- * the script AND leaves `.claude/handoffs/` free as the user's override — copying into the
- * override location would overwrite a customised protocol on every update.
+ * THE HANDOFF TEMPLATES USED TO BE HERE (`033`). Roughly 23 of the ~37 files an install wrote were
+ * `templates/handoffs/<sender>/<receiver>.md` copied to `.claude/templates/handoffs/`, which is
+ * where the injector's fallback looked. They are gone, and the argument is the same one
+ * `syncedFrom` was built on one directory over: a fallback that every install blind-overwrites can
+ * never hold an opinion, so a user who edited one lost the edit silently. The tier that holds an
+ * opinion now is `~/.claude/maestro-handoff-defaults.sqlite`, and what an install materializes from
+ * it is `.claude/handoffs/<sender>/<receiver>.md` — tracked in `maestro.json`'s `handoffs` slice,
+ * for exactly the routes the project's workflows wire, and never overwritten once edited. See
+ * `handoff-sync.ts`. `pluginRoot` is kept in the signature because callers pass it and because a
+ * future asset may need it again; nothing reads it today.
  */
-function handoffAssets(pluginRoot: string): RuntimeAsset[] {
-  const base = path.join(pluginRoot, "templates", "handoffs");
-  if (!fs.existsSync(base)) return [];
-  const out: RuntimeAsset[] = [];
-  const walk = (rel: string) => {
-    for (const entry of fs
-      .readdirSync(path.join(base, rel), { withFileTypes: true })
-      .sort((a, b) => a.name.localeCompare(b.name))) {
-      const next = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(next);
-      else if (entry.name.endsWith(".md")) {
-        out.push({ src: `templates/handoffs/${next}`, dest: `.claude/templates/handoffs/${next}` });
-      }
-    }
-  };
-  walk("");
-  return out;
-}
-
-/** Every file the app copies into a project, in a stable order. */
-export function runtimeAssets(pluginRoot?: string): RuntimeAsset[] {
-  return [...STATIC_ASSETS, ...handoffAssets(requirePluginRoot(pluginRoot))];
+export function runtimeAssets(_pluginRoot?: string): RuntimeAsset[] {
+  return [...STATIC_ASSETS];
 }
 
 // ── the hooks ──────────────────────────────────────────────────────────────
 
-export type HookEvent = "SubagentStart" | "SubagentStop" | "PreToolUse" | "PostToolUse" | "SessionEnd";
+export type HookEvent =
+  "UserPromptExpansion" | "SubagentStart" | "SubagentStop" | "PreToolUse" | "PostToolUse" | "SessionEnd";
 
 export interface HookRegistration {
   event: HookEvent;
@@ -234,8 +280,19 @@ function nodeHook(event: HookEvent, matcher: string, script: string): HookRegist
  *
  * SubagentStop IS included even though the plan lists only four events — without it the session log
  * has dispatch entries with no matching handoff, and /session-log renders half a conversation.
+ *
+ * UserPromptExpansion is back, for a different reason than the container launches M5 deleted: it is
+ * the one event that fires when a user TYPES `/maestro`, matched on the command name, which is what
+ * lets the readiness check run before the orchestrator's prompt reaches the model. Its PreToolUse
+ * twin covers the other entrance — the model invoking the skill through the Skill tool — because
+ * no expansion happens on that path. Both point at the same script.
  */
 export const HOOK_REGISTRATIONS: HookRegistration[] = [
+  nodeHook("UserPromptExpansion", "maestro", "maestro-step0.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-step0.cjs"),
+  // `047`: the same two entrances, watching for /to-maestro-tasks instead of /maestro.
+  nodeHook("UserPromptExpansion", "to-maestro-tasks", "maestro-enable-task-routing.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-enable-task-routing.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -251,39 +308,21 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
-// Exported for uninstall.ts, which is this file's mirror: it has to read the same settings.json
+// Re-exported for uninstall.ts, which is this file's mirror: it has to read the same settings.json
 // with the same tolerance for keys neither module wrote.
-export interface HookCommand {
-  type?: string;
-  command?: string;
-  [k: string]: unknown;
-}
-export interface HookEntry {
-  matcher?: string;
-  hooks?: HookCommand[];
-  [k: string]: unknown;
-}
-export interface Settings {
-  hooks?: Partial<Record<string, HookEntry[]>>;
-  [k: string]: unknown;
-}
+export type { HookCommand, HookEntry, Settings } from "./hook-arbitration.js";
 
 /**
  * Is this registration already in `settings`?
  *
- * Keyed on the script's basename appearing anywhere in a command string for the same event, not
- * on an exact command match: users re-quote paths, and a second entry that only differs by
- * quoting would fire the hook twice — the failure the whole idempotency requirement is about.
+ * `settingsRegisterScript` is shared with the runtime guard in hook-arbitration.ts on purpose: the
+ * installer uses it so a re-quoted command doesn't get a duplicate entry that fires the hook twice,
+ * and the plugin's copy of a hook uses the same test to decide the project owns that hook and stand
+ * down. Two answers to "is this script registered here?" that could disagree would put those two
+ * mechanisms at odds.
  */
 function hasHook(settings: Settings, reg: HookRegistration): boolean {
-  const entries = settings.hooks?.[reg.event];
-  if (!Array.isArray(entries)) return false;
-  return entries.some(
-    (e) =>
-      e &&
-      Array.isArray(e.hooks) &&
-      e.hooks.some((h) => h && typeof h.command === "string" && h.command.includes(reg.script))
-  );
+  return settingsRegisterScript(settings, reg.event, reg.script);
 }
 
 /** Add every missing registration to `settings` in place. Returns the ids added. */
@@ -386,12 +425,17 @@ export function installOrchestratorSkill(
   return { action: "synced", regions: synced, backup: null };
 }
 
-const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated each session, removed at SessionEnd";
+// `036`: not everything under this header is removed at SessionEnd any more — a channel file
+// survives it (only `.consumed/` and anything past the age cap is swept) — so the header no longer
+// claims that of the whole block. It is still all ephemeral, project-local state that regenerates
+// on its own and has no business in git.
+const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated as needed, never committed";
 
 const GITIGNORE_ENTRIES = [
   "**/.claude/maestro_session.json",
   "**/.claude/maestro_session.log.jsonl",
   "**/.claude/maestro_session_tasks.json",
+  "**/.claude/channels/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */
@@ -455,20 +499,6 @@ function runtimeDigest(assets: RuntimeAsset[], read: (a: RuntimeAsset) => Buffer
   // without touching a script still makes every installed project out of date.
   for (const reg of HOOK_REGISTRATIONS) h.update(reg.id).update("\0").update(reg.command).update("\n");
   return h.digest("hex").slice(0, 12);
-}
-
-/** Is the maestro plugin — whose hooks.json registers the same hooks — installed too? */
-async function pluginHooksActive(projectRoot: string): Promise<boolean> {
-  try {
-    const installed = await getInstalledPlugins();
-    return installed.some(
-      (p) =>
-        p.pluginName === "maestro" &&
-        (!p.projectPath || path.resolve(p.projectPath) === path.resolve(projectRoot))
-    );
-  } catch {
-    return false;
-  }
 }
 
 export async function installStatus(projectRoot: string, pluginRoot?: string): Promise<InstallStatus> {
@@ -536,7 +566,6 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
       return fs.existsSync(dest) ? fs.readFileSync(dest) : null;
     }),
     stale,
-    pluginHooksActive: await pluginHooksActive(projectRoot),
     settingsUnreadable,
   };
 }
@@ -555,13 +584,15 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
  * exposed only so tests don't touch the real machine's `~/.claude/maestro-report-defaults.sqlite`
  * (mirrors `skill-tags.ts`'s tests taking an explicit `dbPath`); every real caller omits it.
  * `projectTagsDbPath` is the same test-isolation escape hatch for the first-install seed's read of
- * the global Project Tags catalog, below.
+ * the global Project Tags catalog, below, and `handoffsDbPath` for the handoff sync's read of
+ * `~/.claude/maestro-handoff-defaults.sqlite`.
  */
 export async function installRuntime(
   projectRoot: string,
   pluginRoot?: string,
   reportsDbPath?: string,
-  projectTagsDbPath?: string
+  projectTagsDbPath?: string,
+  handoffsDbPath?: string
 ): Promise<InstallReport> {
   if (!projectRoot) throw new Error("No project is open.");
   if (!fs.existsSync(projectRoot)) throw new Error(`${projectRoot} does not exist.`);
@@ -617,7 +648,11 @@ export async function installRuntime(
     for (const name of seededAgentNames(detection.implAgents)) {
       agentAttrs[name] = { type: types[name] ?? "developer", projectTag: projectTagsByAgent[name] ?? GLOBAL_TAG };
     }
-    const skillMap = skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), agentAttrs);
+    const skillMap = skillMapFromTags(
+      readAllSkillTags(),
+      skills.map((s) => s.id),
+      agentAttrs
+    );
     const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
     const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
     const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
@@ -635,6 +670,16 @@ export async function installRuntime(
   // exist in whatever form it's going to (stamped runtimeVersion above), so a reports slice
   // written here isn't immediately clobbered by writeRuntimeVersion's own read-modify-write.
   const reportsSync = syncProjectReports(projectRoot, reportsDbPath);
+  // Same placement, same reasoning, one tier over: the candidate routes come from the config this
+  // run has just guaranteed exists, and the slice it writes must not be clobbered by
+  // writeRuntimeVersion's own read-modify-write above.
+  const handoffsSync = syncProjectHandoffs(projectRoot, handoffsDbPath);
+
+  // Report, never repair: a hand-edited maestro.json (or one a merge conflict produced) can carry
+  // the duplicate-agent-type collision the canvas itself refuses to create — see
+  // config-validate.ts / task 041. Read fresh rather than reusing `seeded` above, since this must
+  // also catch the collision in an EXISTING config this run didn't touch.
+  const configIssues: ConfigIssue[] = duplicateAgentTypes(readConfig(projectRoot));
 
   const status = await installStatus(projectRoot, root);
 
@@ -642,11 +687,6 @@ export async function installRuntime(
   if (orchestratorSkill.action === "migrated") {
     warnings.push(
       `The orchestrator skill predates Maestro's managed regions, so it was replaced. Your previous version is at ${orchestratorSkill.backup} — copy any custom prose back across.`
-    );
-  }
-  if (status.pluginHooksActive) {
-    warnings.push(
-      "The maestro plugin is also installed on this machine and registers the same hooks globally, so tool calls will be logged twice in this project. Disable the plugin to let the project-local install take over — the app does not edit your global Claude configuration."
     );
   }
 
@@ -667,10 +707,14 @@ export async function installRuntime(
       !runtimeVersionUpdated &&
       configSeeded === null &&
       reportsSync.materialized.length === 0 &&
-      reportsSync.refreshed.length === 0,
+      reportsSync.refreshed.length === 0 &&
+      handoffsSync.materialized.length === 0 &&
+      handoffsSync.refreshed.length === 0,
     warnings,
     status,
     reportsSync,
+    handoffsSync,
+    configIssues,
   };
 }
 
@@ -688,7 +732,9 @@ export async function installRuntime(
 export async function refreshStaleRuntime(
   projectRoot: string,
   pluginRoot?: string,
-  reportsDbPath?: string
+  reportsDbPath?: string,
+  projectTagsDbPath?: string,
+  handoffsDbPath?: string
 ): Promise<InstallReport | null> {
   const root = requirePluginRoot(pluginRoot);
   // A raw parse, not readConfig()'s blank-on-corrupt fallback: this trigger fires on every project
@@ -703,5 +749,5 @@ export async function refreshStaleRuntime(
   if (cfg.runtimeVersion === shipped) return null;
   const status = await installStatus(projectRoot, root);
   if (!status.installed) return null;
-  return installRuntime(projectRoot, root, reportsDbPath);
+  return installRuntime(projectRoot, root, reportsDbPath, projectTagsDbPath, handoffsDbPath);
 }

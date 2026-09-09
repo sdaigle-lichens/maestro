@@ -32,3 +32,8 @@ dispatch, and handoff to `maestro_session.log.jsonl`. `/session-log` live-tails 
 panes, turning the raw entries into a readable timeline of which agent ran, what it did, and how it
 handed off to the next step. This is a different session from the chat pane — it's watching a
 terminal session you started separately, not the one you're talking to in the pane.
+
+When one agent hands work to another, the payload it passes along shows up in the receiving
+agent's own **Input** panel, labelled "Delivered from @\<sender\>" — and the left list and card both
+show a small count when a step received one. If that payload is still waiting on an agent that
+hasn't run yet, it shows up instead as a backlog item on the project's Maestro page (see below).

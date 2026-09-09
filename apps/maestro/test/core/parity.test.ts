@@ -8,6 +8,9 @@
 
 import { describe, it, expect } from "vitest";
 import { createRequire } from "node:module";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 
 import {
   successPathSteps,
@@ -20,8 +23,10 @@ import {
 } from "../../src/core/success-path.js";
 import { replaceRegion, extractRegion, syncManagedRegions } from "../../src/core/skill-regions.js";
 import { allConfigs } from "./fixtures/configs.js";
+import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
 
 const require = createRequire(import.meta.url);
+const here = path.dirname(fileURLToPath(import.meta.url));
 const legacySession = require("./fixtures/legacy/maestro-session.cjs");
 const legacyRegions = require("./fixtures/legacy/maestro-skill-regions.cjs");
 
@@ -213,5 +218,141 @@ describe("skill-regions parity", () => {
         "writeSession",
       ].sort()
     );
+  });
+});
+
+// `033`'s two bundles. Unlike the parity blocks above, these read the LIVE generated files rather
+// than a snapshot — the question is not "does the port still behave like the hand-written
+// original" (there was no hand-written original) but "does the bundle the hook actually `require`s
+// still carry the names it requires, and only the dependencies it may have". Both fail silently:
+// build-plugin-libs.mjs is load-bearing and quiet, and a missing export is a hook that degrades
+// instead of throwing.
+describe("handoff bundles (033)", () => {
+  const LIB = path.resolve(here, "../../../../plugins/maestro/scripts/lib");
+
+  it("maestro-session.cjs carries the seed tier, the route walk and the resolution", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    for (const name of [
+      "handoffRoutes",
+      "routesFrom",
+      "handoffPairs",
+      "resolveHandoff",
+      "SEED_HANDOFFS",
+      "PRIOR_HANDOFF_SEEDS",
+      "isSeededHandoff",
+      "isValidHandoffId",
+      "splitHandoffId",
+      "handoffId",
+    ]) {
+      expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
+    }
+    expect(Object.keys(session.SEED_HANDOFFS)).toHaveLength(23);
+    expect(session.SEED_HANDOFFS).toEqual(SEED_HANDOFFS);
+  });
+
+  // THE property this whole split exists for. `handoff-seeds.ts` imports nothing that reaches
+  // node:sqlite so that the hook's UNCONDITIONAL require of this bundle still answers on a `node`
+  // older than 22.5 — the same check `031` pinned on maestro-agent-sync.cjs. Adding a store import
+  // to handoff-seeds.ts or handoff-routes.ts breaks it, the bundle still builds, and only a
+  // bare-`node` run notices.
+  it("maestro-session.cjs reaches no node:sqlite", () => {
+    const text = fs.readFileSync(path.join(LIB, "maestro-session.cjs"), "utf8");
+    expect(text.match(/node:sqlite/g) ?? []).toHaveLength(0);
+  });
+
+  it("maestro-session.cjs carries the channel surface (036), and reaches no node:sqlite", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    for (const name of [
+      "channelDir",
+      "laneFor",
+      "writeStamp",
+      "readLane",
+      "retire",
+      "sweep",
+      "formatStampedContent",
+      "parseStampedContent",
+      "CHANNEL_AGE_CAP_MS",
+      "ensureSessionRunId",
+    ]) {
+      expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
+    }
+    // Re-asserted here rather than only above: handoff-channels.ts is `fs`/`path` only by design,
+    // and a store import creeping into it would defeat the whole point of re-exporting it from
+    // the bundle every hook requires UNCONDITIONALLY.
+    const text = fs.readFileSync(path.join(LIB, "maestro-session.cjs"), "utf8");
+    expect(text.match(/node:sqlite/g) ?? []).toHaveLength(0);
+  });
+
+  // `039` — the resume-target index. No legacy hand-written original to diff against (there was
+  // none), so what's pinned is that the bundle the CLI actually `require`s still carries the names
+  // it requires.
+  it("maestro-session.cjs carries the resume-target index (039)", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    for (const name of ["agentRunsFromLog", "resumeTarget"]) {
+      expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
+    }
+  });
+
+  // `040` — the resume-detection predicate `maestro-inject-agent-context.js` gates the five
+  // static injection blocks on. Same bundle, same reason: the hook `require()`s this by name.
+  it("maestro-session.cjs carries hasCompletedRun (040)", () => {
+    const session = require(path.join(LIB, "maestro-session.cjs"));
+    expect(Object.keys(session)).toContain("hasCompletedRun");
+  });
+
+  it("maestro-handoff-defaults.cjs is the sqlite tier, and only that", () => {
+    const store = require(path.join(LIB, "maestro-handoff-defaults.cjs"));
+    expect(Object.keys(store).sort()).toEqual(
+      [
+        "DEFAULT_HANDOFF_DEFAULTS_DB_PATH",
+        "deleteHandoffDefault",
+        "readAllHandoffDefaults",
+        "readHandoffDefault",
+        "writeHandoffDefault",
+      ].sort()
+    );
+    // Externalized, not inlined — the require() that can throw has to stay a require() for the
+    // hook's own try/catch to catch (see build-plugin-libs.mjs's `external` list).
+    expect(fs.readFileSync(path.join(LIB, "maestro-handoff-defaults.cjs"), "utf8")).toContain('require("node:sqlite")');
+  });
+});
+
+// The two STATIC_ASSETS manifests are mirrored BY HAND — `install.ts` says so and
+// `maestro-install.js` says so back. Nothing generates either, and the differential test above
+// only compares what a run produced, so a file added to one list and forgotten in the other is
+// invisible until a project installed from the terminal is missing a script the app's projects
+// have. This reads both sources and pins the two `src` sets equal.
+describe("STATIC_ASSETS manifest parity (source-level)", () => {
+  const REPO = path.resolve(here, "../../../..");
+
+  /** Every `src:` string inside the file's `STATIC_ASSETS = [...]` literal. */
+  function manifestSrcs(file: string): string[] {
+    const text = fs.readFileSync(file, "utf8");
+    // The DECLARATION, not the first mention — both files talk about `STATIC_ASSETS` in comments
+    // above it, and the TS one writes `STATIC_ASSETS: RuntimeAsset[] = [`, whose type annotation
+    // carries an empty pair of brackets that a naive `indexOf("[")` stops on.
+    const decl = /STATIC_ASSETS[^=\n]*=\s*\[/.exec(text);
+    expect(decl, `no STATIC_ASSETS declaration in ${file}`).not.toBeNull();
+    const open = decl!.index + decl![0].length - 1;
+    // Balanced-bracket scan: the literal contains no nested arrays today, but a `.map(...)` tail
+    // does carry brackets after it, so stopping at the first `]` would be wrong tomorrow.
+    let depth = 0;
+    let end = open;
+    for (let i = open; i < text.length; i++) {
+      if (text[i] === "[") depth++;
+      else if (text[i] === "]" && --depth === 0) {
+        end = i;
+        break;
+      }
+    }
+    const body = text.slice(open, end);
+    return [...body.matchAll(/src:\s*["'`]([^"'`]+)["'`]/g)].map((m) => m[1]).sort();
+  }
+
+  it("the app's manifest and the plugin script's list exactly the same files", () => {
+    const app = manifestSrcs(path.join(REPO, "apps/maestro/src/core/install.ts"));
+    const plugin = manifestSrcs(path.join(REPO, "plugins/maestro/scripts/maestro-install.js"));
+    expect(app.length).toBeGreaterThan(5); // the scan found a real list, not an empty match
+    expect(plugin).toEqual(app);
   });
 });

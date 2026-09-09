@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, AlertTriangle, Circle } from "lucide-react";
+import { CircleCheck, CircleX, AlertTriangle, Circle, Inbox } from "lucide-react";
 import { unaccountedSkills } from "../utils/session-log";
 import type { Instance } from "../utils/session-log";
 
@@ -43,17 +43,28 @@ export default function SessionLogCards({ instances, activeId, onSelect }: Sessi
           >
             <StatusIcon status={inst.status} />
             <span className="text-[13px] text-(--ink) truncate">{inst.displayName}</span>
-            {inst.skillsTriage && (
-              <span className="ml-auto shrink-0 text-[10px] font-mono" title="skills loaded / skipped / unaccounted">
-                <span className="text-(--green)">{inst.skillsTriage.loaded.length}</span>
-                {inst.skillsTriage.skipped.length > 0 && (
-                  <span className="text-(--yellow)">/{inst.skillsTriage.skipped.length}</span>
-                )}
-                {unaccountedSkills(inst).length > 0 && (
-                  <span className="text-(--red)">/{unaccountedSkills(inst).length}</span>
-                )}
-              </span>
-            )}
+            <span className="ml-auto shrink-0 flex items-center gap-1.5">
+              {inst.skillsTriage && (
+                <span className="text-[10px] font-mono" title="skills loaded / skipped / unaccounted">
+                  <span className="text-(--green)">{inst.skillsTriage.loaded.length}</span>
+                  {inst.skillsTriage.skipped.length > 0 && (
+                    <span className="text-(--yellow)">/{inst.skillsTriage.skipped.length}</span>
+                  )}
+                  {unaccountedSkills(inst).length > 0 && (
+                    <span className="text-(--red)">/{unaccountedSkills(inst).length}</span>
+                  )}
+                </span>
+              )}
+              {inst.delivered.length > 0 && (
+                <span
+                  className="flex items-center gap-0.5 text-[10px] font-mono text-(--ink-3)"
+                  title={`${inst.delivered.length} channel deliveries`}
+                >
+                  <Inbox size={10} />
+                  {inst.delivered.length}
+                </span>
+              )}
+            </span>
           </button>
         );
       })}

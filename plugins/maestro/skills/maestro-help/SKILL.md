@@ -20,6 +20,17 @@ Pick only the doc(s) relevant to the user's question — do not read all of them
 | Chat/session pane, the session log | `${CLAUDE_SKILL_DIR}/../../../../apps/maestro/docs/app/session-and-log.md` |
 | Tools dashboard, Maestro Tasks, install/runtime, the Create flows | `${CLAUDE_SKILL_DIR}/../../../../apps/maestro/docs/app/tools-tasks-runtime.md` |
 
+## Concept skills
+
+"How do I document this project for my agents?" is answered by the plugin's three concept-skill
+flows rather than by a doc. A **concept skill** is a `.claude/skills/<id>/SKILL.md` explaining one
+core concept of the project, marked in its frontmatter `metadata:` map and written for Claude and its
+subagents rather than for humans. `/create-concept-skills` builds the list, `/update-concept-skills`
+reconciles it after the code moves, `/update-single-concept-skill` takes one from skeleton to
+useful, and `/scribe` is the rule for what belongs in a concept skill versus in `docs/`. The whole
+scheme — the marker, the version arithmetic, the script — is documented in
+`${CLAUDE_SKILL_DIR}/../create-concept-skills/README.md`; read that before answering from memory.
+
 ## Claude Code concepts
 
 There is no local `docs/` folder for these in this repo — **`WebFetch`** the official docs instead

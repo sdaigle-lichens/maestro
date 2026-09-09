@@ -81,10 +81,28 @@ export async function discoverAgents(projectRoot: string, bundledDir: string | n
     getInstalledPluginAgents(),
   ]);
   return dedupeById([
-    ...project.map((a) => ({ id: a.name, description: a.description, source: "project", projectTags: [], agentTypes: [] })),
+    ...project.map((a) => ({
+      id: a.name,
+      description: a.description,
+      source: "project",
+      projectTags: [],
+      agentTypes: [],
+    })),
     ...user.map((a) => ({ id: a.name, description: a.description, source: "user", projectTags: [], agentTypes: [] })),
-    ...bundled.map((a) => ({ id: a.name, description: a.description, source: "maestro", projectTags: [], agentTypes: [] })),
-    ...plugins.map((a) => ({ id: a.name, description: a.description, source: a.plugin, projectTags: [], agentTypes: [] })),
+    ...bundled.map((a) => ({
+      id: a.name,
+      description: a.description,
+      source: "maestro",
+      projectTags: [],
+      agentTypes: [],
+    })),
+    ...plugins.map((a) => ({
+      id: a.name,
+      description: a.description,
+      source: a.plugin,
+      projectTags: [],
+      agentTypes: [],
+    })),
   ]).sort((a, b) => a.id.localeCompare(b.id));
 }
 

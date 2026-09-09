@@ -147,9 +147,113 @@
     ]
   },
   "027-auto-update-the-runtime-bundle.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "004-install-and-update-the-runtime-from-the-app.md"
+    ]
+  },
+  "028-restore-the-prettier-config-and-make-check-pass-again.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "029-make-project-the-only-editable-agent-tier.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "030-key-the-agent-stores-by-namespace-not-name.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "031-keep-forked-agents-in-step-with-their-template.md": {
+    "status": "done",
+    "blockedBy": [
+      "029-make-project-the-only-editable-agent-tier.md"
+    ]
+  },
+  "032-make-the-orchestrator-gates-optional.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "033-customizable-handoff-templates.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "034-edit-handoff-templates-in-the-app.md": {
+    "status": "done",
+    "blockedBy": [
+      "033-customizable-handoff-templates.md"
+    ]
+  },
+  "035-reach-the-global-report-tier-from-a-project-local-hook.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "036-move-handoff-payloads-onto-agent-channels.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "037-surface-agent-channels-in-the-app.md": {
+    "status": "done",
+    "blockedBy": [
+      "036-move-handoff-payloads-onto-agent-channels.md"
+    ]
+  },
+  "038-start-the-log-tail-for-a-window-that-subscribed-before-a-project.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "039-resume-subagents-on-loop-back-edges.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "040-skip-re-injecting-static-context-into-a-resumed-subagent.md": {
+    "status": "done",
+    "blockedBy": [
+      "039-resume-subagents-on-loop-back-edges.md"
+    ]
+  },
+  "041-guard-and-guide-duplicate-agent-types-in-a-workflow.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "042-attribute-a-resumed-agents-log-entries-to-the-right-card.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "043-global-handoffs-tab-picks-agent-names-from-a-real-project-instead-of-the-bundled-7.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "044-read-only-content-tab-for-agent-markdown-body.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "045-editable-content-tab-as-the-edit-session-s-eighth-write-path.md": {
+    "status": "done",
+    "blockedBy": [
+      "044-read-only-content-tab-for-agent-markdown-body.md"
+    ]
+  },
+  "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "047-auto-enable-task-routing-when-to-maestro-tasks-is-invoked.md": {
+    "status": "done",
+    "blockedBy": [
+      "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md"
+    ]
+  },
+  "048-expose-the-task-routing-setting-in-the-app-s-project-settings.md": {
+    "status": "done",
+    "blockedBy": [
+      "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md"
+    ]
+  },
+  "049-prompt-for-maestro-post-mortem-after-a-rough-session-in-step-4.md": {
+    "status": "done",
+    "blockedBy": [
+      "046-add-the-use-maestro-tasks-setting-and-the-step-4-gate-script.md"
     ]
   }
 }

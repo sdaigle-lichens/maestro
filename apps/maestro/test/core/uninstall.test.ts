@@ -32,11 +32,14 @@ let tmp: string;
 let REPORTS_DB: string;
 // Same isolation for the first-install seed's read of the global Project Tags catalog.
 let PROJECT_TAGS_DB: string;
+// And the handoff-defaults store `033`'s sync reads, for the same reason.
+let HANDOFFS_DB: string;
 
 beforeEach(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-uninstall-"));
   REPORTS_DB = path.join(tmp, "report-defaults.sqlite");
   PROJECT_TAGS_DB = path.join(tmp, "project-tags.sqlite");
+  HANDOFFS_DB = path.join(tmp, "handoff-defaults.sqlite");
 });
 
 afterEach(() => {
@@ -54,7 +57,7 @@ function makeProject(name: string): string {
 async function installed(name = "p"): Promise<string> {
   const root = makeProject(name);
   writeConfig(root, defaultish);
-  await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+  await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
   for (const file of ["maestro_session.json", "maestro_session.log.jsonl", "maestro_session_tasks.json"]) {
     fs.writeFileSync(path.join(root, ".claude", file), "{}\n");
   }
@@ -219,7 +222,7 @@ describe("hooks and settings the app did not add", () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify(handEdited, null, 2));
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
     const settings = readSettings(root);
@@ -303,20 +306,24 @@ describe("purge", () => {
   it("leaves the project as it found it — no empty scaffolding, nothing outside .claude", async () => {
     const root = makeProject("p");
     fs.writeFileSync(path.join(root, "README.md"), "# mine\n");
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
-    // .claude has nothing left in it EXCEPT the materialized reports (.claude/reports/*.md) — the
-    // first install now seeds maestro.json immediately, which is what let the report-sync step
-    // materialize a global default's content for each seeded agent that has one. Those files are
-    // report content, not an install artifact — the same reason a hand-authored report override
-    // survives a plain uninstall — so purge (which only removes what THIS install put down as
-    // runtime scaffolding) correctly leaves them alone; no orphaned skills/, scripts/, templates/
-    // or settings.json.
+    // .claude has nothing left in it EXCEPT the materialized reports (.claude/reports/*.md) and,
+    // since `033`, the materialized handoff protocols (.claude/handoffs/<sender>/<receiver>.md) —
+    // the first install seeds maestro.json immediately, which is what lets both sync steps
+    // materialize a global default's content for each candidate that has one. Those files are
+    // CONTENT, not install scaffolding — the same reason a hand-authored report override survives
+    // a plain uninstall — so purge (which only removes what THIS install put down as runtime
+    // scaffolding) correctly leaves them alone; no orphaned skills/, scripts/, templates/ or
+    // settings.json.
     expect(filesUnder(path.join(root, ".claude"))).toEqual(
       expect.arrayContaining(["reports/backend.md", "reports/scribe.md", "reports/test.md"])
     );
-    expect(filesUnder(path.join(root, ".claude")).filter((f) => !f.startsWith("reports/"))).toEqual([]);
+    expect(filesUnder(path.join(root, ".claude")).some((f) => f.startsWith("handoffs/"))).toBe(true);
+    expect(
+      filesUnder(path.join(root, ".claude")).filter((f) => !f.startsWith("reports/") && !f.startsWith("handoffs/"))
+    ).toEqual([]);
     expect(fs.existsSync(path.join(root, ".claude", "scripts"))).toBe(false);
     expect(fs.existsSync(path.join(root, ".claude", "skills"))).toBe(false);
     expect(fs.existsSync(path.join(root, ".claude", "templates"))).toBe(false);
@@ -340,7 +347,7 @@ describe("purge", () => {
     expect(fs.existsSync(orphan)).toBe(false);
   });
 
-  it("never touches .claude/handoffs — the user's override, not an install location", async () => {
+  it("never touches .claude/handoffs — the project's own protocols, which purge does not own", async () => {
     const root = await installed();
     fs.mkdirSync(path.join(root, ".claude", "handoffs", "backend"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "handoffs", "backend", "frontend.md"), "my protocol\n");
@@ -350,7 +357,19 @@ describe("purge", () => {
     expect(fs.readFileSync(path.join(root, ".claude", "handoffs", "backend", "frontend.md"), "utf8")).toBe(
       "my protocol\n"
     );
-    // But the copies the app installed under templates/ are gone.
+  });
+
+  it("still removes .claude/templates/handoffs, which only an install before 0.4.2 wrote", async () => {
+    const root = await installed();
+    // Nothing installs here any more (`033`), so this is what a project set up by an older
+    // release looks like: 23 orphans a purge must still sweep.
+    fs.mkdirSync(path.join(root, ".claude", "templates", "handoffs", "backend"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "templates", "handoffs", "backend", "test.md"), "old default\n");
+
+    const plan = uninstallPlan(root, PLUGIN_ROOT);
+    expect(plan.purgeFiles).toContain(".claude/templates/handoffs/backend/test.md");
+
+    await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
     expect(fs.existsSync(path.join(root, ".claude", "templates", "handoffs"))).toBe(false);
   });
 
@@ -358,7 +377,7 @@ describe("purge", () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify({ model: "opus" }, null, 2));
-    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
@@ -403,9 +422,9 @@ describe("the file-based task queue (.claude/maestro-tasks/)", () => {
     const root = await installed();
     seedTasks(root);
 
-    await expect(
-      uninstallRuntime(root, { deleteMaestroTasks: true, pluginRoot: PLUGIN_ROOT })
-    ).rejects.toThrow(/deleteMaestroTasks requires purge/);
+    await expect(uninstallRuntime(root, { deleteMaestroTasks: true, pluginRoot: PLUGIN_ROOT })).rejects.toThrow(
+      /deleteMaestroTasks requires purge/
+    );
     // Nothing touched — the rejection happens before any deletion.
     expect(fs.existsSync(path.join(root, ".claude", "maestro-tasks", "001-foo.md"))).toBe(true);
   });
@@ -467,7 +486,7 @@ describe("install after uninstall", () => {
     const config = readConfig(root);
 
     await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     expect(report.hooksAdded.sort()).toEqual(HOOK_REGISTRATIONS.map((h) => h.id).sort());
     expect(report.status.installed).toBe(true);
@@ -479,7 +498,7 @@ describe("install after uninstall", () => {
     const root = await installed();
     await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
 
-    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB);
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
     expect(report.orchestratorSkill.action).toBe("installed");
     expect(report.status.installed).toBe(true);

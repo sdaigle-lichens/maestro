@@ -1,6 +1,10 @@
 ---
 name: rule-view
 description: "Explains how the /rules view in the Maestro desktop app is built end-to-end: the left rule selectors (on-disk project rules + installable vibe-rules), the center directory tree (rule-tree.tsx), how assignments map to the MaestroConfigV3 `rules` slice in .claude/maestro.json, and how the rule files are moved/installed on save. Use when the user is working inside apps/maestro and asks how the rules view works, how rules get assigned to the project root or directory paths, how rule files get moved or installed, how vibe-rules integrate, why a rule isn't showing up, or why a rule assignment isn't reaching the config."
+metadata:
+  type: concept-skill
+  version: "1.0"
+  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
 ---
 
 # Rule View

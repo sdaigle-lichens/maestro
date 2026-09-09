@@ -9,7 +9,15 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import type { MaestroConfigV3, MaestroProjectTagsSlice, MaestroRulesSlice, MaestroWorkflowsSlice } from "./types.js";
+import type {
+  MaestroConfigV3,
+  MaestroGates,
+  MaestroGatesSlice,
+  MaestroProjectTagsSlice,
+  MaestroRulesSlice,
+  MaestroTaskRoutingSlice,
+  MaestroWorkflowsSlice,
+} from "./types.js";
 
 export function maestroJsonPath(projectRoot: string): string {
   return path.join(projectRoot, ".claude", "maestro.json");
@@ -82,13 +90,53 @@ export function writeRuntimeVersion(projectRoot: string, version: string): boole
 export type ConfigSlice =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
-  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice };
+  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
+  | { sliceType: "gates"; slice: MaestroGatesSlice }
+  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
+
+/** Both gates off — what an absent, partial or corrupt `gates` field resolves to, per field. */
+export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_code_architecture_design_check: false };
+
+/**
+ * The one reader of `gates`. Every field is compared with a strict `=== true`, so an absent
+ * block, a `gates` that isn't a plain object, and a gate whose value is a string, a number or
+ * `null` all resolve to off rather than to something truthy.
+ *
+ * `maestro-step1-gates.cjs` reimplements this rule for the runtime (it can't import from
+ * src/core), so a change here needs the same change there.
+ */
+export function resolveGates(cfg: MaestroConfigV3 | null): MaestroGates {
+  const raw = cfg && typeof cfg.gates === "object" && cfg.gates !== null ? (cfg.gates as Partial<MaestroGates>) : null;
+  if (!raw) return { ...DEFAULT_GATES };
+  return {
+    confidence_check: raw.confidence_check === true,
+    use_code_architecture_design_check: raw.use_code_architecture_design_check === true,
+  };
+}
+
+/**
+ * The one reader of `use_maestro_tasks`. Mirrors `resolveGates`'s strict `=== true` comparison: an
+ * absent field, a corrupt/null config, a `version !== 3` config, and a non-boolean value (a
+ * string, a number, `null`) all resolve to `false` rather than to something truthy.
+ *
+ * `maestro-step4-gate.cjs` reimplements this rule for the runtime (it can't import from src/core),
+ * so a change here needs the same change there.
+ */
+export function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean {
+  if (!cfg || cfg.version !== 3) return false;
+  return cfg.use_maestro_tasks === true;
+}
 
 /**
  * Merge one slice into a config, leaving the other slices untouched.
  *
  * This separation is the reason /workflows saves can't clobber /rules assignments and vice
  * versa — widening any branch to write another's fields reintroduces that bug.
+ *
+ * EVERY arm is an explicit `sliceType` test and there is no trailing `else`. There used to be one,
+ * holding `project-tags`, which is a latent version of exactly the bug above: the next slice added
+ * would have silently inherited the project-tags write. Adding an arm is the whole cost of adding
+ * a slice — pay it here rather than debugging a clobber later.
  */
 export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): MaestroConfigV3 {
   const next: MaestroConfigV3 = { ...current, version: 3 };
@@ -99,8 +147,12 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
     next.workflows = input.slice.workflows;
   } else if (input.sliceType === "rules") {
     next.rules = input.slice.rules;
-  } else {
+  } else if (input.sliceType === "project-tags") {
     next.project_tags = input.slice.project_tags;
+  } else if (input.sliceType === "gates") {
+    next.gates = input.slice.gates;
+  } else if (input.sliceType === "task-routing") {
+    next.use_maestro_tasks = input.slice.use_maestro_tasks;
   }
   return next;
 }

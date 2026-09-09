@@ -8,14 +8,24 @@
 
 import { describe, it, expect } from "vitest";
 
-import { AVATAR_CATEGORIES, AVATAR_PARTS, type AvatarCategory } from "../../src/core/contracts.js";
+import {
+  AVATAR_CATEGORIES,
+  AVATAR_PARTS,
+  AVATAR_REQUIRED_CATEGORIES,
+  EYE_RECOLOR_SHAPES,
+  HAIR_RECOLOR_SHAPES,
+  HEX_COLOR_RE,
+  type AvatarCategory,
+} from "../../src/core/contracts.js";
 import {
   AVATAR_LAYER_URLS,
   AVATAR_RENDER_ORDER,
   BODY_VARIANT_CATEGORIES,
+  SEX_LAYER_URLS,
   resolveAvatarUrl,
   type BodyVariantCategory,
 } from "../../src/renderer/src/assets/avatar/manifest.js";
+import { NATIVE_EYES_COLORS, NATIVE_HAIR_COLORS } from "../../src/renderer/src/utils/avatar.js";
 
 const VARIANT_SET: readonly string[] = BODY_VARIANT_CATEGORIES;
 const FLAT_CATEGORIES = AVATAR_CATEGORIES.filter(
@@ -89,16 +99,61 @@ describe("avatar contracts/manifest parity", () => {
     expect(new Set(AVATAR_RENDER_ORDER).size).toBe(AVATAR_CATEGORIES.length);
   });
 
-  it("body and head are required categories, never optional", () => {
-    // Both must always be rendered per the asset-sourcing notes: body is headless (neck down) and
-    // head sits in the same frame's empty upper portion — a picker that let either go "none"
-    // would leave a hole in the composite.
-    expect(AVATAR_CATEGORIES).toContain("body");
-    expect(AVATAR_CATEGORIES).toContain("head");
+  it("sex/eyes/torso/legs are required categories, never optional", () => {
+    // sex must always be rendered (a picker that let it go "none" would leave a hole where the
+    // body/head silhouette belongs), and torso/legs no longer offer a "naked" none option either.
+    expect(AVATAR_REQUIRED_CATEGORIES).toContain("sex");
+    expect(AVATAR_REQUIRED_CATEGORIES).toContain("eyes");
+    expect(AVATAR_REQUIRED_CATEGORIES).toContain("torso");
+    expect(AVATAR_REQUIRED_CATEGORIES).toContain("legs");
   });
 
-  it("body/head have no Child option — every worn layer is cut for an adult frame", () => {
-    expect(AVATAR_PARTS.body.map((o) => o.id)).not.toContain("child");
-    expect(AVATAR_PARTS.head.map((o) => o.id)).not.toContain("child");
+  it("hair/feet/hat stay optional", () => {
+    expect(AVATAR_REQUIRED_CATEGORIES).not.toContain("hair");
+    expect(AVATAR_REQUIRED_CATEGORIES).not.toContain("feet");
+    expect(AVATAR_REQUIRED_CATEGORIES).not.toContain("hat");
+  });
+
+  it("sex has no Child option — every worn layer is cut for an adult frame", () => {
+    expect(AVATAR_PARTS.sex.map((o) => o.id)).not.toContain("child");
+  });
+
+  it("SEX_LAYER_URLS has a body and a head URL for every sex option, and they differ", () => {
+    for (const opt of AVATAR_PARTS.sex) {
+      expect(typeof SEX_LAYER_URLS.body[opt.id]).toBe("string");
+      expect(typeof SEX_LAYER_URLS.head[opt.id]).toBe("string");
+      expect(SEX_LAYER_URLS.body[opt.id]).not.toBe(SEX_LAYER_URLS.head[opt.id]);
+    }
+  });
+
+  it("AVATAR_LAYER_URLS.sex is the same object as SEX_LAYER_URLS.body — one swatch thumbnail source", () => {
+    expect(AVATAR_LAYER_URLS.sex).toBe(SEX_LAYER_URLS.body);
+  });
+
+  it("every EYE_RECOLOR_SHAPES id names a real eyes option", () => {
+    const eyeIds = AVATAR_PARTS.eyes.map((o) => o.id);
+    for (const id of EYE_RECOLOR_SHAPES) expect(eyeIds).toContain(id);
+  });
+
+  it("every HAIR_RECOLOR_SHAPES id names a real hair option, and vice versa", () => {
+    const hairIds = AVATAR_PARTS.hair.map((o) => o.id);
+    expect([...HAIR_RECOLOR_SHAPES].sort()).toEqual([...hairIds].sort());
+  });
+
+  it("every EYE_RECOLOR_SHAPES id has a sampled native color, and vice versa", () => {
+    expect(Object.keys(NATIVE_EYES_COLORS).sort()).toEqual([...EYE_RECOLOR_SHAPES].sort());
+    for (const hex of Object.values(NATIVE_EYES_COLORS)) expect(HEX_COLOR_RE.test(hex)).toBe(true);
+  });
+
+  it("every HAIR_RECOLOR_SHAPES id has a sampled native color, and vice versa", () => {
+    expect(Object.keys(NATIVE_HAIR_COLORS).sort()).toEqual([...HAIR_RECOLOR_SHAPES].sort());
+    for (const hex of Object.values(NATIVE_HAIR_COLORS)) expect(HEX_COLOR_RE.test(hex)).toBe(true);
+  });
+
+  it("HEX_COLOR_RE accepts #rrggbb and rejects everything else", () => {
+    expect(HEX_COLOR_RE.test("#a0522d")).toBe(true);
+    expect(HEX_COLOR_RE.test("#FFF")).toBe(false);
+    expect(HEX_COLOR_RE.test("a0522d")).toBe(false);
+    expect(HEX_COLOR_RE.test("chartreuse")).toBe(false);
   });
 });

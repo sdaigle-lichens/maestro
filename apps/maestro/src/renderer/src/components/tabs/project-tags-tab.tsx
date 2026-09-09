@@ -95,9 +95,9 @@ export default function ProjectTagsTab({
     <>
       <div className="rounded-lg border border-(--line) p-4 mb-4">
         <p className="text-[12px] text-(--ink-3) m-0 mb-4">
-          The project-classification categories detection looks for evidence of on a repo's first open.
-          A tag added beyond backend/frontend/mobile is catalogued here, but detection won&apos;t find
-          evidence for it on its own — it's picked manually wherever a project's category is assigned.
+          The project-classification categories detection looks for evidence of on a repo's first open. A tag added
+          beyond backend/frontend/mobile is catalogued here, but detection won&apos;t find evidence for it on its own —
+          it's picked manually wherever a project's category is assigned.
         </p>
 
         <div className="flex items-center gap-1.5 flex-wrap mb-4">
@@ -135,7 +135,12 @@ export default function ProjectTagsTab({
               if (e.key === "Enter") void handleAdd();
             }}
           />
-          <Button variant="primary" icon={<Plus size={13} />} disabled={busy || !draft.trim()} onClick={() => void handleAdd()}>
+          <Button
+            variant="primary"
+            icon={<Plus size={13} />}
+            disabled={busy || !draft.trim()}
+            onClick={() => void handleAdd()}
+          >
             Add
           </Button>
         </div>
@@ -143,11 +148,11 @@ export default function ProjectTagsTab({
 
       <div className="rounded-lg border border-(--line) overflow-hidden">
         <p className="text-[12px] text-(--ink-3) m-0 p-4 pb-0">
-          Which of the tags above each agent belongs to — the <b>project tag</b>, distinct from the Agent
-          Types tab&apos;s developer/planner/reviewer/annotator/tester classification. An agent tagged{" "}
-          <span className="font-mono text-(--ink-2)">global</span> applies to every project regardless of
-          category (reviewer, scribe, test, refactor); the rest match the project&apos;s own selected tags
-          on <span className="font-mono text-(--ink-2)">/maestro</span>.
+          Which of the tags above each agent belongs to — the <b>project tag</b>, distinct from the Agent Types
+          tab&apos;s developer/planner/reviewer/annotator/tester classification. An agent tagged{" "}
+          <span className="font-mono text-(--ink-2)">global</span> applies to every project regardless of category
+          (reviewer, scribe, test, refactor); the rest match the project&apos;s own selected tags on{" "}
+          <span className="font-mono text-(--ink-2)">/maestro</span>.
         </p>
         <div className="mt-3">
           {agentNames.length === 0 ? (
@@ -156,10 +161,7 @@ export default function ProjectTagsTab({
             agentNames.map((name) => {
               const dirty = agentDrafts[name] !== agentTags[name];
               return (
-                <div
-                  key={name}
-                  className="flex items-center gap-3 px-4 py-3 border-b border-(--line) last:border-0"
-                >
+                <div key={name} className="flex items-center gap-3 px-4 py-3 border-b border-(--line) last:border-0">
                   <div className="font-mono text-[13px] text-(--ink) w-28 shrink-0">{name}</div>
                   <div className="w-48">
                     <Select

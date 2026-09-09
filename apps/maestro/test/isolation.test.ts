@@ -476,9 +476,10 @@ describe("the create-* routes", () => {
     // nobody finds, just from a different component now.
     const tabFor: Record<(typeof routes)[number], string> = {
       // Skills and Agents moved off /tools onto their own pages — see routes/skills.tsx,
-      // routes/agents.tsx.
+      // routes/agents.tsx. /agents' own "+ New agent" link sits at the foot of its LEFT PANE
+      // rather than in the route file, so that is where this looks for it.
       "create-skill": "src/renderer/src/routes/skills.tsx",
-      "create-subagent": "src/renderer/src/routes/agents.tsx",
+      "create-subagent": "src/renderer/src/components/agents/agent-list.tsx",
       "create-plugin": "src/renderer/src/components/tabs/command-center.tsx",
       "create-marketplace": "src/renderer/src/components/tabs/marketplace.tsx",
     };
@@ -1260,6 +1261,38 @@ describe("session log tail ownership", () => {
       .map((f) => path.relative(appRoot, f));
     expect(callSites).toEqual(["src/renderer/src/utils/session-log-context.tsx"]);
   });
+
+  // `038`: `tails` only holds windows with a RUNNING watcher, which a window that subscribed
+  // before a project was open is not — `startTail` returns before `tails.set` on a null root. So
+  // `retargetTails` reading `tails.keys()` (the fix's predecessor bug) or enumerating every open
+  // `BrowserWindow` (starting a watcher for a window that never subscribed) are each wrong in a
+  // way no render test catches; this is a source-level guard for the same reason the "saving
+  // refreshes loader data" block below is one.
+  it("retargetTails reads logSubscribers, not tails.keys() or every open window", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const body = ipc.slice(ipc.indexOf("function retargetTails"), ipc.indexOf("function startTail"));
+    // Iterates the subscribers, not the tails map's own keys (the predecessor bug) — resolving a
+    // known id's webContents via `BrowserWindow.getAllWindows().find(...)`, same as startTail
+    // does, is fine; iterating over EVERY open window as the outer loop is not, since that starts
+    // a watcher for a window that never asked for one.
+    expect(body).toMatch(/for \(const id of \[\.\.\.logSubscribers\]\)/);
+    expect(body).not.toMatch(/tails\.keys\(\)/);
+    expect(body).not.toMatch(/for \([^)]*of BrowserWindow\.getAllWindows\(\)\)/);
+  });
+
+  it("logSubscribers is maintained by the subscribe handler and both teardown paths", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    // Registered before startTail runs, so a null-root subscribe is still remembered.
+    const subscribeHandler = ipc.slice(ipc.indexOf("IPC.logSubscribe,"), ipc.indexOf("IPC.logUnsubscribe,"));
+    const addIdx = subscribeHandler.indexOf("logSubscribers.add(");
+    const startIdx = subscribeHandler.indexOf("startTail(");
+    expect(addIdx).toBeGreaterThan(-1);
+    expect(startIdx).toBeGreaterThan(addIdx);
+    // Removed on unsubscribe and on window destruction.
+    expect(subscribeHandler).toMatch(/destroyed["'],\s*\(\)\s*=>\s*\{[\s\S]*?logSubscribers\.delete\(/);
+    const unsubscribeHandler = ipc.slice(ipc.indexOf("IPC.logUnsubscribe,"), ipc.indexOf("IPC.logUnsubscribe,") + 200);
+    expect(unsubscribeHandler).toMatch(/logSubscribers\.delete\(/);
+  });
 });
 
 describe("saving refreshes loader data", () => {
@@ -1276,12 +1309,49 @@ describe("saving refreshes loader data", () => {
       expect(src).toMatch(/router\.invalidate\(\)/);
       // The invalidation must be on the success path — after the `!res.ok` bail-out, so a
       // rejected save doesn't re-run the loader and stomp the editor's state.
-      const bail = src.indexOf("if (!res.ok)");
-      const invalidate = src.indexOf("router.invalidate()");
+      // Indexed over the CODE only: a `router.invalidate()` written inside a comment earlier in
+      // the file used to fail this, which says nothing about where the call actually sits. Real
+      // calls are still all counted, so the ordering property itself is unweakened.
+      const code = src.replace(/^\s*\/\/.*$/gm, "");
+      const bail = code.indexOf("if (!res.ok)");
+      const invalidate = code.indexOf("router.invalidate()");
       expect(bail).toBeGreaterThan(-1);
       expect(invalidate).toBeGreaterThan(bail);
     });
   }
+});
+
+describe("the instance picker only offers forkable agents", () => {
+  // `forkAgent` throws on a project-tier agent — there is nothing to copy from, it already lives in
+  // `.claude/agents/` — which is why `/agents` hides its own fork button for those
+  // (`agent-card.tsx`'s `isProjectTier`). `/workflows`' picker has only agent NAMES, so the same
+  // rule can only reach it as a prop. Drop the prop anywhere along the chain and the dead end goes
+  // back to offering choices that can only fail, with a confusing error as the only symptom — no
+  // render test here sees it, hence a source-level guard.
+  it("workflows.tsx derives the list from a non-project source and passes it down", () => {
+    const src = read("src/renderer/src/routes/workflows.tsx");
+    expect(src).toMatch(/source !== "project"/);
+    expect(src).toMatch(/forkableAgents=\{forkableAgentIds\}/);
+  });
+
+  it("workflow-canvas.tsx forwards it to every InstancePicker it renders", () => {
+    const src = read("src/renderer/src/components/workflow-canvas.tsx");
+    // Both modals (add-step and condition) take the picker, and both must get the list.
+    const forwarded = src.match(/forkableAgents=\{forkableAgents\}/g) ?? [];
+    const pickers = src.match(/onForked=\{onAgentForked\}/g) ?? [];
+    expect(pickers.length).toBeGreaterThan(0);
+    expect(forwarded).toHaveLength(pickers.length);
+  });
+
+  it("instance-picker.tsx offers only forkable sources, and hides the panel when there are none", () => {
+    const src = read("src/renderer/src/components/instance-picker.tsx");
+    expect(src).toMatch(/const forkSources = unavailableAgents\.filter\(\(a\) => forkableAgents\.includes\(a\)\)/);
+    // The <select> must be built from the filtered list, never the raw placed set.
+    expect(src).toMatch(/\{forkSources\.map\(/);
+    expect(src).not.toMatch(/\{unavailableAgents\.map\(/);
+    // And the prose must not promise a fork the panel isn't rendering.
+    expect(src).toMatch(/\{canFork && \(/);
+  });
 });
 
 describe("the Claude Agent SDK is a dependency, not a bundle", () => {

@@ -1,129 +1,531 @@
-// /agents — replaces the Tools "Agents" tab, the same graduation /skills got when it grew an
-// inline editor: a tab-behind-a-hamburger stopped fitting once there was something to DO here
-// beyond reading a table.
+// /agents — browse the project's subagents, read the report a run would actually receive, and
+// edit an agent's properties and its cosmetic avatar in place.
 //
-// Left pane is the exact same list `DiscoveredDefinitionsList` renders today (no new status
-// badge — confirmed against the task), sourced from the shared `data:tools` payload exactly as
-// /skills reuses it for its own list. Right pane shows the RESOLVED report for the selected
-// agent — project override, else global default, else empty — via `reports:get`/`reports:save`,
-// which is the same `report-resolution.ts` order the SubagentStart hook uses, so this page can
-// never show something other than what a run would actually receive.
+// Three panes inside the real TopNav: the agent list, the agent card, and the Interactions pane.
+// A single horizontal scroller wraps the pane row at a 1120px floor, so a narrow window scrolls
+// rather than crushing the centre column.
 //
-// Save semantics: any edit + save always writes a PROJECT override keyed by the agent's OWN name
-// (`reports:save` -> `saveProjectReportOverride`), never whatever id it may have inherited from
-// the global tier. It is a plain file write — no Claude session, no claude:preview/run, no token.
+// ONE EDIT SESSION, SEVEN WRITE PATHS. Pressing Edit — from the card footer, a list row's pencil,
+// or an Interactions pencil — clones the agent into a draft and every control edits the draft.
+// Nothing touches disk until Save, which then fans out to the channel that owns each field:
+//
+//   report        reports:save                     -> .claude/reports/<agent>.md, a PROJECT override
+//   handoffs      handoff:save                     -> .claude/handoffs/<sender>/<receiver>.md, ditto
+//   avatar        avatar:set                       -> ~/.claude/maestro-avatars.sqlite
+//   type          template:agent-types:save        -> ~/.claude/maestro-agent-types.sqlite
+//   project tag   template:agent-project-tags:save -> ~/.claude/maestro-agent-project-tags.sqlite
+//   description   agent:describe                   -> the agent's OWN .md frontmatter
+//   skills        config:save (workflows slice)    -> .claude/maestro.json's workflow_instances
+//
+// The handoff path is the only one that is a LIST: one write per route the user actually edited,
+// each of them a project override that drops that pair's `syncedFrom`. Same discipline as the rest
+// — attempted only where the body changed, failures collected per route and named in the toast.
+//
+// The avatar/type/project-tag writes carry a `projectScoped` flag (030): true only when the agent
+// being edited is project-tier, so its row lands under this project alone rather than the one
+// shared global row a `user`/`maestro`/plugin agent still resolves to from every project.
+//
+// The description is the odd one and deliberately so: it is the line Claude Code itself reads to
+// decide when to dispatch the agent, so a copy kept beside the app would show one sentence here
+// while every run used another. See src/core/agent-descriptions.ts.
+//
+// Skills are the instance's, not the agent's: `loaded_skills` are injected by the SubagentStart
+// hook before the agent works, `referenced_skills` are only offered. Each chip carries a toggle
+// between the two, because a control that showed only "attached" would silently demote every
+// loaded skill on the next save.
 
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useState } from "react";
-import { AlertTriangle, FileText, Save, Pencil } from "lucide-react";
-import Button from "@repo/ui/button";
-import { Textarea } from "@repo/ui/field";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { AlertTriangle, Users } from "lucide-react";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
-import ProjectSelect from "../components/project-select";
-import DiscoveredDefinitionsList from "../components/tabs/discovered-definitions";
-import CreateLink from "../components/tabs/create-link";
-import AvatarCanvas from "../components/avatar/avatar-canvas";
-import AvatarPicker from "../components/avatar/avatar-picker";
+import AgentList, { type AgentListItem } from "../components/agents/agent-list";
+import AgentCard from "../components/agents/agent-card";
+import AgentForkReview from "../components/agents/agent-fork-review";
+import InteractionsPane from "../components/agents/interactions-pane";
+import { PANE_SURFACES, RIGHT_PANE_DEFAULT, type AgentDraft, type AgentSkill } from "../components/agents/agent-shared";
 import { defaultAvatarLayers } from "../utils/avatar";
 import { callMain, type CallResult } from "../utils/call-main";
 import { getToolsData, type ToolsData } from "../utils/tools";
 import { useProject } from "../utils/project-context";
-import type { AvatarLayers } from "../../../shared/ipc";
+import {
+  AGENT_TYPES,
+  AVATAR_CATEGORIES,
+  GLOBAL_TAG,
+  isEditableAgentSource,
+  type AgentSyncAction,
+  type AgentSyncSummary,
+  type AgentType,
+  type AvatarCategory,
+  type AvatarLayers,
+  type MaestroInstanceV3,
+  type ResolvedHandoffRoute,
+  type ResolvedReport,
+  type WorkflowsData,
+} from "../../../shared/ipc";
 
 export const Route = createFileRoute("/agents")({
   loader: async () => callMain(() => getToolsData()),
   component: AgentsPage,
 });
 
-type ReportSource = "project" | "global" | "none";
-type Phase = "idle" | "loading" | "saving";
+/** The per-agent attributes that live in a global store rather than on the agent's own file. */
+interface AgentAttributes {
+  types: Record<string, AgentType>;
+  projectTags: Record<string, string>;
+  avatars: Record<string, AvatarLayers>;
+  catalog: string[];
+}
 
-function sourceLabel(source: ReportSource): string {
+const EMPTY_ATTRIBUTES: AgentAttributes = { types: {}, projectTags: {}, avatars: {}, catalog: [] };
+const NO_REPORT: ResolvedReport = { source: "none", content: "" };
+const NO_ROUTES: ResolvedHandoffRoute[] = [];
+const NO_CONTENT = "";
+
+/** The draft's starting point: whatever tier each route currently resolves to. */
+function handoffsOf(routes: ResolvedHandoffRoute[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const route of routes) if (route.handoffId) out[route.handoffId] = route.content;
+  return out;
+}
+
+function sourceLabel(source: ResolvedReport["source"]): string {
   if (source === "project") return "Project override";
   if (source === "global") return "Global default";
   return "No report configured";
 }
 
+function sameLayers(a: AvatarLayers, b: AvatarLayers): boolean {
+  return (
+    AVATAR_CATEGORIES.every((cat) => a[cat] === b[cat]) &&
+    (a.eyesColor ?? null) === (b.eyesColor ?? null) &&
+    (a.hairColor ?? null) === (b.hairColor ?? null)
+  );
+}
+
+function sameSkills(a: AgentSkill[], b: AgentSkill[]): boolean {
+  return a.length === b.length && a.every((s, i) => s.id === b[i].id && s.mode === b[i].mode);
+}
+
+/**
+ * A deep-enough copy for an edit session: `layers`, `skills` and `handoffs` are all mutated in
+ * place by the controls, so a shallow spread would edit `base` and make Cancel a no-op.
+ */
+function cloneDraft(base: AgentDraft): AgentDraft {
+  return {
+    ...base,
+    layers: { ...base.layers },
+    skills: base.skills.map((s) => ({ ...s })),
+    handoffs: { ...base.handoffs },
+  };
+}
+
+/** The instance's two skill lists, flattened into the chip model the card renders. */
+function skillsOf(instance: MaestroInstanceV3 | null): AgentSkill[] {
+  if (!instance) return [];
+  return [
+    ...instance.loaded_skills.map((id): AgentSkill => ({ id, mode: "loaded" })),
+    ...instance.referenced_skills.map((id): AgentSkill => ({ id, mode: "referenced" })),
+  ];
+}
+
 function AgentsPage() {
   const loaderResult = Route.useLoaderData();
-  const { current, recent } = useProject();
-  const [viewedRoot, setViewedRoot] = useState<string | null>(current?.root ?? null);
+  const { current } = useProject();
+
   const [result, setResult] = useState<CallResult<ToolsData>>(loaderResult);
+  const [workflows, setWorkflows] = useState<WorkflowsData | null>(null);
+  const [attributes, setAttributes] = useState<AgentAttributes>(EMPTY_ATTRIBUTES);
 
   const [selected, setSelected] = useState<string | null>(null);
-  const [content, setContent] = useState("");
-  const [source, setSource] = useState<ReportSource>("none");
-  const [phase, setPhase] = useState<Phase>("idle");
-  const [dirty, setDirty] = useState(false);
+  const [report, setReport] = useState<ResolvedReport>(NO_REPORT);
+  // The routes leaving the selected agent, already resolved. Project-scoped like the report, and
+  // refetched with it for the same reason.
+  const [routes, setRoutes] = useState<ResolvedHandoffRoute[]>(NO_ROUTES);
+  // The Content tab's body, refetched per selection alongside the report and routes — same
+  // per-agent, project-scoped pattern, so switching agents refreshes it even while that tab is
+  // the one on screen.
+  const [content, setContent] = useState<string>(NO_CONTENT);
 
-  // The agent's saved avatar — null means nothing has been saved for this name yet, in which case
-  // the canvas falls back to a neutral placeholder. `avatarDraft` is only set while editing.
-  const [avatar, setAvatar] = useState<AvatarLayers | null>(null);
-  const [avatarDraft, setAvatarDraft] = useState<AvatarLayers | null>(null);
-  const [avatarSaving, setAvatarSaving] = useState(false);
+  const [draft, setDraft] = useState<AgentDraft | null>(null);
+  const [pendingEdit, setPendingEdit] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [forking, setForking] = useState(false);
+  // `031`: which of this project's forked agents are still in step with their template. A READ —
+  // computing it writes nothing to `.claude/agents/` — refreshed alongside everything else, so a
+  // fork, an update or a detach is reflected without a second round trip of its own.
+  const [forkSync, setForkSync] = useState<AgentSyncSummary | null>(null);
+  const [syncing, setSyncing] = useState(false);
+  const [activeCat, setActiveCat] = useState<AvatarCategory>("hair");
+  const [query, setQuery] = useState("");
+  const [leftOpen, setLeftOpen] = useState(true);
+  const [rightOpen, setRightOpen] = useState(true);
+  const [rightWidth, setRightWidth] = useState(RIGHT_PANE_DEFAULT);
 
-  // Same "adopt the app's current project once it's known" fix as /tools and /skills.
-  useEffect(() => {
-    if (!current) return;
-    const known = [current.root, ...recent.map((r) => r.root)];
-    if (!viewedRoot || !known.includes(viewedRoot)) setViewedRoot(current.root);
-  }, [viewedRoot, current, recent]);
+  const projectRoot = current?.root ?? null;
 
-  useEffect(() => {
-    let cancelled = false;
-    void callMain(() => getToolsData(viewedRoot ?? undefined)).then((res) => {
-      if (!cancelled) setResult(res);
+  // Everything on this page reads the OPEN project — the report resolution, the workflow instances
+  // and the agent list all have to agree about which project they describe, and only the top nav's
+  // folder button changes it.
+  //
+  // `projectScoped: true` on the three classification reads (030) is what makes this the MERGED
+  // view: the open project's own project-tier rows overlay the global ones, so a project agent
+  // shows this project's classification rather than some other project's same-named one.
+  const refresh = useCallback(async () => {
+    const [tools, flows, types, tags, avatars, catalog, sync] = await Promise.all([
+      callMain(() => getToolsData()),
+      callMain(() => window.maestro.data.workflows()),
+      callMain(() => window.maestro.templates.agentTypes.list(true)),
+      callMain(() => window.maestro.templates.agentProjectTags.list(true)),
+      callMain(() => window.maestro.avatar.list(true)),
+      callMain(() => window.maestro.templates.projectTags.list()),
+      callMain(() => window.maestro.agents.sync()),
+    ]);
+    setResult(tools);
+    setWorkflows(flows.ok ? flows.value : null);
+    setAttributes({
+      types: types.ok ? types.value : {},
+      projectTags: tags.ok ? tags.value : {},
+      avatars: avatars.ok ? avatars.value : {},
+      catalog: catalog.ok ? catalog.value : [],
     });
-    return () => {
-      cancelled = true;
-    };
-  }, [viewedRoot]);
+    setForkSync(sync.ok ? sync.value : null);
+  }, []);
 
   useEffect(() => {
-    if (!selected) return;
-    let cancelled = false;
-    setPhase("loading");
-    void callMain(() => window.maestro.reports.get(selected)).then((res) => {
-      if (cancelled) return;
-      setPhase("idle");
-      if (!res.ok) {
-        toast(<>Could not load this agent&rsquo;s report: {res.error}</>, { variant: "error" });
-        return;
-      }
-      setContent(res.value.content);
-      setSource(res.value.source);
-      setDirty(false);
-    });
-    return () => {
-      cancelled = true;
-    };
-    // Re-fetch whenever the selected agent OR the viewed project changes — the same agent name in
-    // a different project can resolve to a different report.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selected, viewedRoot]);
+    void refresh();
+  }, [refresh, projectRoot]);
 
-  // The avatar is global by agent name, so it does NOT depend on viewedRoot — unlike the report
-  // above, the same agent name has the same look in every project.
+  // The report and this agent's handoff routes are the per-agent, project-scoped things, so they
+  // are what is refetched per selection. Avatars arrive with the rest of the global attributes, in
+  // one read; `handoff:routes` is one call for every route rather than one per row.
   useEffect(() => {
-    setAvatarDraft(null);
     if (!selected) {
-      setAvatar(null);
+      setReport(NO_REPORT);
+      setRoutes(NO_ROUTES);
+      setContent(NO_CONTENT);
       return;
     }
     let cancelled = false;
-    void callMain(() => window.maestro.avatar.get(selected)).then((res) => {
+    void Promise.all([
+      callMain(() => window.maestro.reports.get(selected)),
+      callMain(() => window.maestro.handoffs.routes(selected)),
+      callMain(() => window.maestro.agents.content(selected)),
+    ]).then(([rep, rts, cnt]) => {
       if (cancelled) return;
-      if (!res.ok) {
-        toast(<>Could not load this agent&rsquo;s avatar: {res.error}</>, { variant: "error" });
-        return;
-      }
-      setAvatar(res.value);
+      if (!rep.ok) toast(<>Could not load this agent&rsquo;s report: {rep.error}</>, { variant: "error" });
+      if (!rts.ok) toast(<>Could not load this agent&rsquo;s handoffs: {rts.error}</>, { variant: "error" });
+      if (!cnt.ok) toast(<>Could not load this agent&rsquo;s content: {cnt.error}</>, { variant: "error" });
+      setReport(rep.ok ? rep.value : NO_REPORT);
+      setRoutes(rts.ok ? rts.value : NO_ROUTES);
+      setContent(cnt.ok ? cnt.value : NO_CONTENT);
     });
     return () => {
       cancelled = true;
     };
-  }, [selected]);
+  }, [selected, projectRoot]);
+
+  const data = result.ok ? result.value : null;
+  const config = workflows?.config ?? null;
+
+  // The draft's avatar wins for the selected row, so the list thumb tracks the arrows live while
+  // the user is cycling parts. Agents with nothing saved fall back to the neutral placeholder.
+  const listItems: AgentListItem[] = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    return (data?.agents ?? [])
+      .filter((a) => !q || a.id.toLowerCase().includes(q) || a.description.toLowerCase().includes(q))
+      .map((a) => ({
+        id: a.id,
+        description: a.description,
+        source: a.source,
+        layers: (a.id === selected && draft ? draft.layers : attributes.avatars[a.id]) ?? defaultAvatarLayers(),
+      }));
+  }, [data, query, selected, draft, attributes.avatars]);
+
+  const agent = data?.agents.find((a) => a.id === selected) ?? null;
+  const instance = useMemo<MaestroInstanceV3 | null>(
+    () => config?.workflow_instances.find((i) => i.agent === selected) ?? null,
+    [config, selected]
+  );
+
+  const base: AgentDraft | null = useMemo(() => {
+    if (!agent) return null;
+    return {
+      id: agent.id,
+      description: agent.description,
+      type: attributes.types[agent.id] ?? AGENT_TYPES[0],
+      projectTag: attributes.projectTags[agent.id] ?? GLOBAL_TAG,
+      layers: attributes.avatars[agent.id] ?? defaultAvatarLayers(),
+      skills: skillsOf(instance),
+      report: report.content,
+      handoffs: handoffsOf(routes),
+      content,
+    };
+  }, [agent, attributes, instance, report, routes, content]);
+
+  const live = draft ?? base;
+  const editing = draft !== null;
+
+  const descriptionEditable = agent !== null && isEditableAgentSource(agent.source);
+  // The Content tab's body is editable under the SAME gate as the description (`045`) — a body
+  // this app can't own is a body a plugin update or a machine-wide file would silently discard an
+  // edit to, exactly the argument `EDITABLE_AGENT_SOURCES` already makes about descriptions.
+  const contentEditable = descriptionEditable;
+  const skillsEditable = instance !== null && workflows !== null && !workflows.seeded;
+  /**
+   * One line of explanation, and it lives in the card's FOOTER rather than beside the field it
+   * describes: anything inside the card changes the card's height, and the card being the same
+   * height in both modes is what stops the page reflowing under the pointer on Edit.
+   *
+   * A caveat outranks the ordinary case — a field the user is about to find disabled matters more
+   * than where a working one writes to.
+   */
+  const footerNote = !instance
+    ? `${selected ?? "This agent"} isn't in this project's workflow yet — add it on /workflows to give it skills.`
+    : workflows?.seeded
+      ? "This project has no maestro.json yet — save a workflow on /workflows before editing skills here."
+      : !descriptionEditable
+        ? agent?.source === "user"
+          ? "This agent lives in ~/.claude/agents — machine-wide, shared by every project on this machine, so its description is locked here. Fork it into this project to edit that; type, project tag, avatar, report and skills still save normally."
+          : `Shipped by the ${agent?.source} plugin — a plugin update overwrites this file, so its description is locked here. Fork it into this project to edit that; type, project tag, avatar, report and skills still save normally.`
+        : "The description is written back into this agent's own .md — it is the line Claude Code reads when deciding to dispatch it.";
+
+  const projectTagOptions = useMemo(() => {
+    const seen = [GLOBAL_TAG, ...attributes.catalog];
+    if (live && !seen.includes(live.projectTag)) seen.push(live.projectTag);
+    return [...new Set(seen)];
+  }, [attributes.catalog, live]);
+
+  const nextSkill = useMemo(() => {
+    if (!live || !config) return null;
+    const attached = new Set(live.skills.map((s) => s.id));
+    return config.skills_available.find((s) => !attached.has(s)) ?? null;
+  }, [live, config]);
+
+  function startEdit(id?: string) {
+    const target = id ?? selected;
+    if (!target) return;
+    if (target !== selected) {
+      // A pencil on an unselected row selects it first; its report and avatar are still loading, so
+      // the draft is built on the next render instead of from stale state.
+      setSelected(target);
+      setDraft(null);
+      setPendingEdit(true);
+      return;
+    }
+    if (base) setDraft(cloneDraft(base));
+  }
+
+  // A pencil press on a row that wasn't selected: enter edit as soon as that agent's data lands.
+  useEffect(() => {
+    if (!pendingEdit || !base) return;
+    setDraft(cloneDraft(base));
+    setPendingEdit(false);
+  }, [pendingEdit, base]);
+
+  function patch(next: Partial<AgentDraft>) {
+    setDraft((d) => (d ? { ...d, ...next } : d));
+  }
+
+  function toggleSkill(index: number) {
+    setDraft((d) =>
+      d
+        ? {
+            ...d,
+            // Ticking selects as REFERENCED, the same default the workflow canvas's instance picker
+            // uses: offering a skill is the reversible choice, loading it costs context on every run.
+            skills: d.skills.map((s, i) => (i === index ? { ...s, mode: s.mode === null ? "referenced" : null } : s)),
+          }
+        : d
+    );
+  }
+
+  function cycleSkillMode(index: number) {
+    setDraft((d) =>
+      d
+        ? {
+            ...d,
+            skills: d.skills.map((s, i) =>
+              i === index ? { ...s, mode: s.mode === "loaded" ? "referenced" : "loaded" } : s
+            ),
+          }
+        : d
+    );
+  }
+
+  function addSkill() {
+    if (!nextSkill) return;
+    setDraft((d) => (d ? { ...d, skills: [...d.skills, { id: nextSkill, mode: "referenced" }] } : d));
+  }
+
+  async function saveSkills(d: AgentDraft): Promise<string | null> {
+    if (!instance) return null;
+    // Re-read the config immediately before writing it: this page holds it for as long as the user
+    // is reading, and the workflows canvas may have saved in between. The slice merge replaces the
+    // whole workflows block, so a stale copy would silently revert someone else's edit.
+    const fresh = await callMain(() => window.maestro.data.workflows());
+    if (!fresh.ok) return fresh.error;
+    const cfg = fresh.value.config;
+    const loaded = d.skills.filter((s) => s.mode === "loaded").map((s) => s.id);
+    const referenced = d.skills.filter((s) => s.mode === "referenced").map((s) => s.id);
+    const res = await callMain(() =>
+      window.maestro.config.save({
+        sliceType: "workflows",
+        slice: {
+          agents_available: cfg.agents_available,
+          skills_available: cfg.skills_available,
+          workflow_instances: cfg.workflow_instances.map((inst) =>
+            inst.name === instance.name ? { ...inst, loaded_skills: loaded, referenced_skills: referenced } : inst
+          ),
+          workflows: cfg.workflows,
+        },
+      })
+    );
+    return res.ok ? null : res.error;
+  }
+
+  async function handleSave() {
+    const d = draft;
+    if (!d || !base) return;
+    setSaving(true);
+    const failures: string[] = [];
+    // Scope the classification writes to THIS project only when the agent being edited actually
+    // is project-tier (030) — a `user`/`maestro`/plugin agent still resolves to the one shared
+    // global row from any project, so it must keep writing there.
+    const projectScoped = agent?.source === "project";
+    try {
+      if (d.report !== base.report) {
+        const res = await callMain(() => window.maestro.reports.save(d.id, d.report));
+        if (res.ok) setReport(res.value);
+        else failures.push(`report: ${res.error}`);
+      }
+      // One write per route whose body actually changed. Not batched into a single channel call:
+      // each is its own file, and a partial failure has to be able to name which route it was.
+      // Each one lands as this project's override and drops that pair's `syncedFrom`, so the
+      // resolved SOURCE moves too — hence the re-read below rather than a local patch of `routes`.
+      let handoffsWritten = false;
+      for (const [id, body] of Object.entries(d.handoffs)) {
+        if (body === base.handoffs[id]) continue;
+        const res = await callMain(() => window.maestro.handoffs.save(id, body));
+        if (res.ok) handoffsWritten = true;
+        else failures.push(`handoff ${id}: ${res.error}`);
+      }
+      if (handoffsWritten) {
+        const res = await callMain(() => window.maestro.handoffs.routes(d.id));
+        if (res.ok) setRoutes(res.value);
+      }
+      if (!sameLayers(d.layers, base.layers)) {
+        const res = await callMain(() => window.maestro.avatar.set(d.id, d.layers, projectScoped));
+        if (!res.ok) failures.push(`avatar: ${res.error}`);
+      }
+      if (d.type !== base.type) {
+        const res = await callMain(() => window.maestro.templates.agentTypes.save(d.id, d.type, projectScoped));
+        if (!res.ok) failures.push(`type: ${res.error}`);
+      }
+      if (d.projectTag !== base.projectTag) {
+        const res = await callMain(() =>
+          window.maestro.templates.agentProjectTags.save(d.id, d.projectTag, projectScoped)
+        );
+        if (!res.ok) failures.push(`project tag: ${res.error}`);
+      }
+      if (descriptionEditable && d.description.trim() !== base.description.trim()) {
+        const res = await callMain(() => window.maestro.agents.describe(d.id, d.description));
+        if (!res.ok) failures.push(`description: ${res.error}`);
+      }
+      // The Content tab's write path (`045`) — same editability gate as the description, and its
+      // own named failure so a bad body doesn't block or discard the other six writes' results.
+      if (contentEditable && d.content !== base.content) {
+        const res = await callMain(() => window.maestro.agents.saveContent(d.id, d.content));
+        if (res.ok) setContent(d.content);
+        else failures.push(`content: ${res.error}`);
+      }
+      if (skillsEditable && !sameSkills(d.skills, base.skills)) {
+        const error = await saveSkills(d);
+        if (error) failures.push(`skills: ${error}`);
+      }
+
+      await refresh();
+
+      if (failures.length > 0) {
+        toast(<>Some changes could not be saved — {failures.join("; ")}</>, { variant: "error" });
+        return;
+      }
+      setDraft(null);
+      toast(
+        <>
+          Saved <span className="font-mono text-(--ink)">{d.id}</span>.
+        </>
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  // "Fork into this project" — the read-only card's escape hatch. A read plus a write, no Claude
+  // session, no token; the refresh() afterwards is what MOVES the row from Global to Project, which
+  // is the confirmation the fork worked. Select the forked name so the card follows the move.
+  async function handleFork(newName: string) {
+    if (!selected) return;
+    setForking(true);
+    try {
+      const res = await callMain(() => window.maestro.agents.fork(selected, newName));
+      if (!res.ok) {
+        toast(<>Could not fork this agent: {res.error}</>, { variant: "error" });
+        return;
+      }
+      await refresh();
+      setSelected(res.value.name);
+      toast(
+        <>
+          Forked into <span className="font-mono text-(--ink)">{res.value.file}</span>.
+        </>
+      );
+    } finally {
+      setForking(false);
+    }
+  }
+
+  // The review action. One agent, one named action, and the ONLY thing on this page that can
+  // rewrite an agent's body — which is why it is a button press and not something the sync does on
+  // its own. `refresh()` afterwards re-computes the summary, so the block below the card either
+  // goes green or disappears.
+  async function handleSyncAction(action: AgentSyncAction) {
+    if (!selected) return;
+    setSyncing(true);
+    try {
+      const res = await callMain(() => window.maestro.agents.syncApply(selected, action));
+      if (!res.ok) {
+        toast(
+          <>
+            Could not {action} this fork: {res.error}
+          </>,
+          { variant: "error" }
+        );
+        return;
+      }
+      await refresh();
+      toast(
+        action === "update" ? (
+          <>
+            Took the template&rsquo;s body for <span className="font-mono text-(--ink)">{selected}</span> — your
+            description is unchanged.
+          </>
+        ) : action === "keep" ? (
+          <>
+            Kept <span className="font-mono text-(--ink)">{selected}</span> as it is — you&rsquo;ll be asked again when
+            its template moves.
+          </>
+        ) : (
+          <>
+            Detached <span className="font-mono text-(--ink)">{selected}</span> — its file is untouched and Maestro no
+            longer tracks it.
+          </>
+        )
+      );
+    } finally {
+      setSyncing(false);
+    }
+  }
 
   if (!result.ok) {
     return (
@@ -142,166 +544,152 @@ function AgentsPage() {
     );
   }
 
-  const data = result.value;
+  const forkEntry = forkSync?.entries.find((e) => e.agentName === selected) ?? null;
+  const diverged = forkSync?.diverged ?? [];
 
-  async function handleSave() {
-    if (!selected) return;
-    setPhase("saving");
-    try {
-      const res = await callMain(() => window.maestro.reports.save(selected, content));
-      if (!res.ok) {
-        toast(<>Could not save the report: {res.error}</>, { variant: "error" });
-        return;
-      }
-      setSource(res.value.source);
-      setDirty(false);
-      toast(
-        <>
-          Saved as this project&rsquo;s override for <span className="font-mono text-(--ink)">{selected}</span>.
-        </>
-      );
-    } finally {
-      setPhase("idle");
-    }
-  }
+  const paneNote = selected
+    ? `${sourceLabel(report.source)} — saving always writes this project's override at .claude/reports/${selected}.md, so editing this agent never changes what another agent resolves to.`
+    : null;
 
-  async function handleSaveAvatar() {
-    if (!selected || !avatarDraft) return;
-    setAvatarSaving(true);
-    try {
-      const res = await callMain(() => window.maestro.avatar.set(selected, avatarDraft));
-      if (!res.ok) {
-        toast(<>Could not save the avatar: {res.error}</>, { variant: "error" });
-        return;
-      }
-      setAvatar(res.value);
-      setAvatarDraft(null);
-      toast(
-        <>
-          Avatar saved for <span className="font-mono text-(--ink)">{selected}</span>.
-        </>
-      );
-    } finally {
-      setAvatarSaving(false);
-    }
-  }
+  // The Content tab's own explanatory note (`045`) — a hand-written parallel of `footerNote`'s
+  // uneditable-source branch, not a shared import: the renderer can only pull `contracts`/`text`
+  // out of `src/core`, so `describeUneditableSource` isn't reachable here. Check both if you
+  // change one. Null when the tab is editable — nothing needs explaining there.
+  const contentNote = contentEditable
+    ? null
+    : agent?.source === "user"
+      ? "This agent lives in ~/.claude/agents — machine-wide, shared by every project on this machine, so its content is locked here. Fork it into this project to edit it."
+      : `Shipped by the ${agent?.source} plugin — a plugin update overwrites this file, so its content is locked here. Fork it into this project to edit it.`;
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
-      <TopNav />
+    <div
+      className="w-full h-screen bg-(--bg) font-sans text-[13px] text-(--ink) overflow-hidden flex flex-col"
+      style={PANE_SURFACES}
+    >
+      {/*
+        One horizontal scroller wrapping the nav AND the pane row, so chrome and content scroll
+        together and nothing clips on a narrow window. This is a desktop window — there are no
+        breakpoints, just a floor.
+      */}
+      <div className="flex-1 min-h-0 overflow-x-auto flex flex-col">
+        <div className="flex-1 min-h-0 min-w-[1120px] flex flex-col">
+          <TopNav />
 
-      <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: "1fr 420px" }}>
-        {/* Left pane — the discovered-agents list, unchanged from the old Tools tab. */}
-        <div className="overflow-y-auto">
-          <div className="mx-auto max-w-3xl px-6 pb-16 pt-10">
-            <div className="mb-8 flex items-start justify-between gap-4">
-              <div>
-                <span className="section-label mb-3 inline-block">AI Dev Tools</span>
-                <h1 className="text-2xl font-semibold text-(--ink) m-0 mb-1">Agents</h1>
-                <p className="text-[13px] text-subtle m-0">
-                  Every subagent this project, this machine, or an installed plugin makes available. Select one to
-                  see its resolved report.
-                </p>
-              </div>
-              <ProjectSelect value={viewedRoot} onChange={setViewedRoot} />
-            </div>
+          <div className="flex-1 min-h-0 flex">
+            <AgentList
+              items={listItems}
+              selected={selected}
+              open={leftOpen}
+              query={query}
+              onQueryChange={setQuery}
+              onToggleOpen={() => setLeftOpen((v) => !v)}
+              onSelect={(id) => {
+                setSelected(id);
+                setDraft(null);
+              }}
+              onEdit={(id) => startEdit(id)}
+            />
 
-            <div className="flex flex-col gap-6">
-              <DiscoveredDefinitionsList
-                items={data.agents}
-                emptyLabel="agents"
-                selectedId={selected}
-                onSelect={setSelected}
-              />
-              <CreateLink to="/create-subagent" label="Create a subagent" />
-            </div>
-          </div>
-        </div>
-
-        {/* Right pane — the resolved report for the selected agent, one freeform editor. */}
-        <div className="border-l border-(--line) overflow-y-auto flex flex-col p-4 gap-3">
-          {!selected ? (
-            <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-(--ink-2)">
-              <FileText size={18} className="text-(--ink-3)" />
-              <p className="text-[12px] m-0">Select an agent on the left to view its resolved report.</p>
-            </div>
-          ) : (
-            <>
-              <div className="flex items-center justify-between gap-2">
-                <div>
-                  <div className="font-mono text-[13px] text-(--ink)">{selected}</div>
-                  <div className="text-[11px] text-(--ink-3)">{sourceLabel(source)}</div>
-                </div>
-                <Button
-                  variant="primary"
-                  icon={phase === "saving" ? undefined : <Save size={13} />}
-                  loading={phase === "saving"}
-                  disabled={!dirty || phase === "loading"}
-                  onClick={() => void handleSave()}
+            <main className="flex-1 min-w-[560px] overflow-y-auto bg-(--bg)">
+              {/*
+                The entry point `/maestro`'s count links to. Chips rather than a modal: the review
+                is per agent, and picking which one to look at is the first thing to do.
+              */}
+              {diverged.length > 0 && (
+                <div
+                  data-testid="agent-fork-diverged"
+                  data-count={diverged.length}
+                  className="mx-6 mt-6 flex items-center gap-2 flex-wrap px-3 py-2 rounded-lg text-[12px] bg-amber-500/10"
                 >
-                  Save
-                </Button>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 rounded-lg bg-(--bg-elev) border border-(--line)">
-                <div className="rounded-md border border-(--line) bg-(--bg-2) p-1.5 shrink-0">
-                  <AvatarCanvas layers={avatar ?? defaultAvatarLayers()} size={72} />
+                  <AlertTriangle size={14} className="shrink-0 text-amber-500" />
+                  <span className="text-(--ink-2)">
+                    {diverged.length} forked agent{diverged.length === 1 ? "" : "s"} differ
+                    {diverged.length === 1 ? "s" : ""} from {diverged.length === 1 ? "its" : "their"} template:
+                  </span>
+                  {diverged.map((name) => (
+                    <button
+                      key={name}
+                      type="button"
+                      onClick={() => {
+                        setSelected(name);
+                        setDraft(null);
+                      }}
+                      className="font-mono text-[11px] px-2 h-6 rounded-full border border-amber-500/40 text-amber-500 hover:bg-amber-500/10 cursor-pointer focus:outline-none"
+                    >
+                      {name}
+                    </button>
+                  ))}
                 </div>
-                <div className="flex-1 flex flex-col gap-2 min-w-0">
-                  <div className="text-[11px] text-(--ink-3)">
-                    {avatar ? "Cosmetic avatar — purely visual." : "No avatar saved yet for this agent."}
-                  </div>
-                  {avatarDraft === null ? (
-                    <div>
-                      <Button
-                        variant="secondary"
-                        icon={<Pencil size={13} />}
-                        onClick={() => setAvatarDraft(avatar ?? defaultAvatarLayers())}
-                      >
-                        Customize
-                      </Button>
-                    </div>
-                  ) : (
-                    <div className="flex flex-col gap-2">
-                      <AvatarPicker value={avatarDraft} onChange={setAvatarDraft} />
-                      <div className="flex items-center gap-2">
-                        <Button
-                          variant="primary"
-                          icon={avatarSaving ? undefined : <Save size={13} />}
-                          loading={avatarSaving}
-                          onClick={() => void handleSaveAvatar()}
-                        >
-                          Save avatar
-                        </Button>
-                        <Button variant="ghost" disabled={avatarSaving} onClick={() => setAvatarDraft(null)}>
-                          Cancel
-                        </Button>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex-1 min-h-0 flex flex-col">
-                <Textarea
-                  id="agent-report-editor"
-                  value={content}
-                  onChange={(v) => {
-                    setContent(v);
-                    setDirty(true);
-                  }}
-                  rows={24}
-                  placeholder="No report configured for this agent. Write one here — saving creates this project's override."
+              )}
+              {live ? (
+                <AgentCard
+                  name={live.id}
+                  source={agent?.source ?? "project"}
+                  description={live.description}
+                  type={live.type}
+                  projectTag={live.projectTag}
+                  projectTagOptions={projectTagOptions}
+                  layers={live.layers}
+                  skills={live.skills}
+                  editing={editing}
+                  saving={saving}
+                  forking={forking}
+                  activeCat={activeCat}
+                  descriptionEditable={descriptionEditable}
+                  skillsEditable={skillsEditable}
+                  footerNote={footerNote}
+                  nextSkill={nextSkill}
+                  onActiveCat={setActiveCat}
+                  onDescription={(description) => patch({ description })}
+                  onType={(type) => patch({ type })}
+                  onProjectTag={(projectTag) => patch({ projectTag })}
+                  onLayers={(layers) => patch({ layers })}
+                  onToggleSkill={toggleSkill}
+                  onCycleSkillMode={cycleSkillMode}
+                  onAddSkill={addSkill}
+                  onStartEdit={() => startEdit()}
+                  onCancel={() => setDraft(null)}
+                  onSave={() => void handleSave()}
+                  onFork={(newName) => void handleFork(newName)}
                 />
-              </div>
+              ) : (
+                <div className="h-full flex flex-col items-center justify-center gap-2 text-center text-(--ink-2)">
+                  <Users size={18} className="text-(--ink-3)" />
+                  <p className="text-[12px] m-0">Select an agent on the left to see its card.</p>
+                </div>
+              )}
 
-              <p className="text-[11px] text-(--ink-3) m-0">
-                Saving always writes a project override at{" "}
-                <span className="font-mono">.claude/reports/{selected}.md</span> — editing this agent never changes
-                what another agent resolves to, even one currently sharing the same global default.
-              </p>
-            </>
-          )}
+              {/*
+                Below the card, never inside it: `CARD_MIN_HEIGHT` is a measured constant that keeps
+                the card the same height in view and edit mode, and a conditional diff block inside
+                would make that height vary by agent. See the `agents-view` skill.
+              */}
+              {live && forkEntry && !editing && (
+                <AgentForkReview entry={forkEntry} busy={syncing} onAction={(a) => void handleSyncAction(a)} />
+              )}
+            </main>
+
+            <InteractionsPane
+              report={live?.report ?? ""}
+              reportNote={paneNote}
+              routes={routes}
+              content={live?.content ?? content}
+              contentEditable={contentEditable}
+              contentNote={contentNote}
+              handoffs={live?.handoffs ?? {}}
+              editing={editing}
+              open={rightOpen}
+              width={rightWidth}
+              onToggleOpen={() => setRightOpen((v) => !v)}
+              onStartEdit={() => startEdit()}
+              onReport={(value) => patch({ report: value })}
+              onContent={(value) => patch({ content: value })}
+              onHandoff={(handoffId, value) =>
+                setDraft((d) => (d ? { ...d, handoffs: { ...d.handoffs, [handoffId]: value } } : d))
+              }
+              onWidth={setRightWidth}
+            />
+          </div>
         </div>
       </div>
     </div>

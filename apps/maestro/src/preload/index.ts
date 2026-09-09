@@ -28,6 +28,12 @@ const api: MaestroApi = {
     tags: {
       set: (tags) => ipcRenderer.invoke(IPC.projectTagsSet, tags),
     },
+    gates: {
+      set: (gates) => ipcRenderer.invoke(IPC.gatesSet, gates),
+    },
+    taskRouting: {
+      set: (value) => ipcRenderer.invoke(IPC.taskRoutingSet, value),
+    },
   },
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
@@ -46,6 +52,8 @@ const api: MaestroApi = {
     globalDocs: () => ipcRenderer.invoke(IPC.globalDocsData),
     globalDoc: (group, slug) => ipcRenderer.invoke(IPC.globalDocContent, group, slug),
     projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
+    gates: () => ipcRenderer.invoke(IPC.gatesData),
+    taskRouting: () => ipcRenderer.invoke(IPC.taskRoutingData),
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),
@@ -53,6 +61,12 @@ const api: MaestroApi = {
   reports: {
     get: (agentName) => ipcRenderer.invoke(IPC.reportGet, agentName),
     save: (agentName, content) => ipcRenderer.invoke(IPC.reportSave, agentName, content),
+  },
+  // The same pair for handoff protocols. `routes` reads the open project's graph and resolves each
+  // route in one call — the walk is main's, so the renderer never has to know how a route is found.
+  handoffs: {
+    routes: (agentName) => ipcRenderer.invoke(IPC.handoffRoutes, agentName),
+    save: (handoffId, content) => ipcRenderer.invoke(IPC.handoffSave, handoffId, content),
   },
   // The /templates page's write path for the GLOBAL tier — its own namespace, not `reports.*`
   // above, for the same reason that pair is scoped to a project override: conflating the two would
@@ -63,9 +77,20 @@ const api: MaestroApi = {
       list: () => ipcRenderer.invoke(IPC.templateReportsList),
       save: (agentName, content) => ipcRenderer.invoke(IPC.templateReportSave, agentName, content),
     },
+    // `remove` refuses a seeded id in MAIN, not here — the tab renders Reset to default for those
+    // instead, and this bridge stays a forwarder with no policy of its own.
+    handoffs: {
+      list: () => ipcRenderer.invoke(IPC.templateHandoffsList),
+      save: (handoffId, content) => ipcRenderer.invoke(IPC.templateHandoffSave, handoffId, content),
+      remove: (handoffId) => ipcRenderer.invoke(IPC.templateHandoffDelete, handoffId),
+    },
+    agentsAvailable: (projectRoot) => ipcRenderer.invoke(IPC.templateAgentsAvailable, projectRoot),
+    // `projectScoped` is forwarded as a plain flag, never a path — main resolves it against its
+    // own `currentRoot()`. See `MaestroApi.templates`'s doc comment.
     agentTypes: {
-      list: () => ipcRenderer.invoke(IPC.templateAgentTypesList),
-      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentTypeSave, agentName, tag),
+      list: (projectScoped) => ipcRenderer.invoke(IPC.templateAgentTypesList, projectScoped),
+      save: (agentName, tag, projectScoped) =>
+        ipcRenderer.invoke(IPC.templateAgentTypeSave, agentName, tag, projectScoped),
     },
     projectTags: {
       list: () => ipcRenderer.invoke(IPC.templateProjectTagsList),
@@ -73,17 +98,28 @@ const api: MaestroApi = {
       remove: (tag) => ipcRenderer.invoke(IPC.templateProjectTagRemove, tag),
     },
     agentProjectTags: {
-      list: () => ipcRenderer.invoke(IPC.templateAgentProjectTagsList),
-      save: (agentName, tag) => ipcRenderer.invoke(IPC.templateAgentProjectTagSave, agentName, tag),
+      list: (projectScoped) => ipcRenderer.invoke(IPC.templateAgentProjectTagsList, projectScoped),
+      save: (agentName, tag, projectScoped) =>
+        ipcRenderer.invoke(IPC.templateAgentProjectTagSave, agentName, tag, projectScoped),
     },
   },
   skillTags: {
     setProjectTags: (skillId, tags) => ipcRenderer.invoke(IPC.skillProjectTagsSet, skillId, tags),
     setAgentTypes: (skillId, tags) => ipcRenderer.invoke(IPC.skillAgentTypesSet, skillId, tags),
   },
+  // `projectScoped` — same discipline as `templates` above.
   avatar: {
-    get: (agentName) => ipcRenderer.invoke(IPC.avatarGet, agentName),
-    set: (agentName, layers) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers),
+    get: (agentName, projectScoped) => ipcRenderer.invoke(IPC.avatarGet, agentName, projectScoped),
+    set: (agentName, layers, projectScoped) => ipcRenderer.invoke(IPC.avatarSet, agentName, layers, projectScoped),
+    list: (projectScoped) => ipcRenderer.invoke(IPC.avatarList, projectScoped),
+  },
+  agents: {
+    describe: (agentName, description) => ipcRenderer.invoke(IPC.agentDescribe, agentName, description),
+    fork: (agentName, newName) => ipcRenderer.invoke(IPC.agentFork, agentName, newName),
+    sync: () => ipcRenderer.invoke(IPC.agentSync),
+    syncApply: (agentName, action) => ipcRenderer.invoke(IPC.agentSyncApply, agentName, action),
+    content: (agentName) => ipcRenderer.invoke(IPC.agentContent, agentName),
+    saveContent: (agentName, content) => ipcRenderer.invoke(IPC.agentContentSave, agentName, content),
   },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),
@@ -207,6 +243,9 @@ const api: MaestroApi = {
   },
   shell: {
     reveal: (target) => ipcRenderer.invoke(IPC.revealInFolder, target),
+  },
+  channels: {
+    pending: () => ipcRenderer.invoke(IPC.channelsPending),
   },
 };
 

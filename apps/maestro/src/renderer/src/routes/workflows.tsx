@@ -7,6 +7,7 @@ import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import WorkflowCanvas from "../components/workflow-canvas";
 import SeededBanner from "../components/seeded-banner";
+import ConfigIssueBanner from "../components/config-issue-banner";
 import DetectedChain from "../components/detected-chain";
 import { groupBySource, sourceLabel, CollapsibleGroup } from "../components/source-group";
 import { callMain } from "../utils/call-main";
@@ -67,6 +68,14 @@ function WorkflowsPage() {
 
   const allAgents = bundledAgents;
   const allSkills = projectSkills;
+
+  // What the instance picker's fork affordance (`041`) may offer as a source. `forkAgent` throws
+  // on a project-tier agent — there is nothing to copy from, it is already in `.claude/agents/` —
+  // which is why `/agents` hides its own fork button for those (`agent-card.tsx`'s
+  // `isProjectTier`). Deriving the list here applies the same rule rather than letting the picker
+  // offer a choice that can only fail; a fork's own output is project-tier, so it drops out of
+  // this list the moment the loader invalidation below reloads the discovered agents.
+  const forkableAgentIds = bundledAgents.filter((a) => a.source !== "project").map((a) => a.id);
 
   const openCreateWorkflow = () => {
     setNewWorkflowName("");
@@ -171,6 +180,23 @@ function WorkflowsPage() {
     }
   };
 
+  /**
+   * The instance picker's fork-into-a-second-agent affordance (`041`) just wrote
+   * `.claude/agents/<newAgentName>.md` and its provenance record. Two things make it selectable
+   * immediately, without a restart: add it to `config.agents_available` (the store update is what
+   * `availableAgentsForNew` below is reactively derived from), and invalidate the loader so
+   * `bundledAgents` — the discovered-agents list `/workflows`' left panel renders — picks up the
+   * new file too. Safe to call mid-edit: `seedWorkflowStore` keeps the in-memory config when
+   * `projectRoot` is unchanged, so this cannot discard unsaved canvas edits.
+   */
+  const handleAgentForked = (newAgentName: string) => {
+    if (!config) return;
+    if (!config.agents_available.includes(newAgentName)) {
+      storeSetAgentsAvailable([...config.agents_available, newAgentName]);
+    }
+    void router.invalidate();
+  };
+
   // Guard: store not yet seeded
   if (!config) return null;
 
@@ -205,6 +231,8 @@ function WorkflowsPage() {
           press Save workflows to write them.
         </SeededBanner>
       )}
+
+      <ConfigIssueBanner key={loaderData.projectRoot} issues={loaderData.configIssues} />
 
       <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: "280px 1fr" }}>
         {/* Left pane. Split into a scrollable body and a footer that never scrolls out of view —
@@ -409,6 +437,8 @@ function WorkflowsPage() {
               instances={config.workflow_instances}
               onChange={(wf) => storeUpdateWorkflow(activeWorkflowIdx, wf)}
               onInstancesChange={storeSetInstances}
+              onAgentForked={handleAgentForked}
+              forkableAgents={forkableAgentIds}
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center gap-3">

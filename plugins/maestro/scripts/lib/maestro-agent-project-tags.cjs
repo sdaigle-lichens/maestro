@@ -44,7 +44,11 @@ var import_node_fs = __toESM(require("node:fs"), 1);
 var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
-var DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-agent-project-tags.sqlite");
+var DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = import_node_path.default.join(
+  import_node_os.default.homedir(),
+  ".claude",
+  "maestro-agent-project-tags.sqlite"
+);
 var SEED_AGENT_PROJECT_TAGS = {
   backend: "backend",
   frontend: "frontend",
@@ -57,21 +61,32 @@ var SEED_AGENT_PROJECT_TAGS = {
 function openDb(dbPath) {
   import_node_fs.default.mkdirSync(import_node_path.default.dirname(dbPath), { recursive: true });
   const db = new import_node_sqlite.DatabaseSync(dbPath);
+  dropLegacySchema(db);
   db.exec(`
     CREATE TABLE IF NOT EXISTS agent_project_tags (
-      agent_name  TEXT PRIMARY KEY,
-      project_tag TEXT NOT NULL
+      project_root TEXT NOT NULL DEFAULT '',
+      agent_name   TEXT NOT NULL,
+      project_tag  TEXT NOT NULL,
+      PRIMARY KEY (project_root, agent_name)
     )
   `);
   seedIfEmpty(db);
   return db;
+}
+function dropLegacySchema(db) {
+  const cols = db.prepare("PRAGMA table_info(agent_project_tags)").all();
+  if (cols.length > 0 && !cols.some((c) => c.name === "project_root")) {
+    db.exec("DROP TABLE agent_project_tags");
+  }
 }
 function seedIfEmpty(db) {
   const row = db.prepare("SELECT COUNT(*) AS n FROM agent_project_tags").get();
   if (row.n > 0) return;
   db.exec("BEGIN");
   try {
-    const insert = db.prepare("INSERT INTO agent_project_tags (agent_name, project_tag) VALUES (?, ?)");
+    const insert = db.prepare(
+      "INSERT INTO agent_project_tags (project_root, agent_name, project_tag) VALUES ('', ?, ?)"
+    );
     for (const [agentName, tag] of Object.entries(SEED_AGENT_PROJECT_TAGS)) insert.run(agentName, tag);
     db.exec("COMMIT");
   } catch (err) {
@@ -79,10 +94,12 @@ function seedIfEmpty(db) {
     throw err;
   }
 }
-function readAllAgentProjectTags(dbPath = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH) {
+function readAllAgentProjectTags(dbPath = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH, projectRoot) {
   const db = openDb(dbPath);
   try {
-    const rows = db.prepare("SELECT agent_name AS agentName, project_tag AS projectTag FROM agent_project_tags ORDER BY agent_name").all();
+    const rows = db.prepare(
+      "SELECT agent_name AS agentName, project_tag AS projectTag FROM agent_project_tags WHERE project_root = '' OR project_root = ? ORDER BY project_root ASC, agent_name ASC"
+    ).all(projectRoot ?? "");
     const out = {};
     for (const row of rows) out[row.agentName] = row.projectTag;
     return out;
@@ -90,8 +107,8 @@ function readAllAgentProjectTags(dbPath = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH) {
     db.close();
   }
 }
-function agentsForProjectTags(tags, dbPath = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH) {
-  const all = readAllAgentProjectTags(dbPath);
+function agentsForProjectTags(tags, dbPath = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH, projectRoot) {
+  const all = readAllAgentProjectTags(dbPath, projectRoot);
   const wanted = new Set(tags);
   return Object.keys(all).filter((agentName) => wanted.has(all[agentName])).sort();
 }

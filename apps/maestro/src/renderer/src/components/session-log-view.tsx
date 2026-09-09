@@ -59,23 +59,28 @@ export default function SessionLogView({
                 <span className="text-(--ink-3) text-[10px] font-semibold uppercase tracking-wider">
                   {inst.displayName}
                 </span>
-                {inst.skillsTriage && (
-                  <span className="text-[10px] font-mono">
-                    <span className="text-(--green)">{inst.skillsTriage.loaded.length} loaded</span>
-                    {inst.skillsTriage.skipped.length > 0 && (
-                      <span className="text-(--yellow)">
-                        {" · "}
-                        {inst.skillsTriage.skipped.length} skipped
-                      </span>
-                    )}
-                    {unaccountedSkills(inst).length > 0 && (
-                      <span className="text-(--red)">
-                        {" · "}
-                        {unaccountedSkills(inst).length} unaccounted
-                      </span>
-                    )}
-                  </span>
-                )}
+                <span className="flex items-center gap-2">
+                  {inst.skillsTriage && (
+                    <span className="text-[10px] font-mono">
+                      <span className="text-(--green)">{inst.skillsTriage.loaded.length} loaded</span>
+                      {inst.skillsTriage.skipped.length > 0 && (
+                        <span className="text-(--yellow)">
+                          {" · "}
+                          {inst.skillsTriage.skipped.length} skipped
+                        </span>
+                      )}
+                      {unaccountedSkills(inst).length > 0 && (
+                        <span className="text-(--red)">
+                          {" · "}
+                          {unaccountedSkills(inst).length} unaccounted
+                        </span>
+                      )}
+                    </span>
+                  )}
+                  {inst.delivered.length > 0 && (
+                    <span className="text-[10px] font-mono text-(--ink-3)">{inst.delivered.length} delivered</span>
+                  )}
+                </span>
               </div>
 
               {lines.length > 0 ? (

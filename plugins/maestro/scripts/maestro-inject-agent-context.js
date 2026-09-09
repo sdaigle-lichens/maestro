@@ -4,14 +4,22 @@
 // in the active workflow, and emits as additionalContext:
 //   1a. loaded_skills     — skills to load (Skill tool) before working,
 //   1b. referenced_skills — skills available, loaded only if the task needs them,
-//   2. the HANDOFF routing lines this agent may emit (success + condition labels),
-//   3. the per-route handoff_details payload protocol (from the
-//      templates/handoffs/<sender>/<target>.md template) so the whole
-//      communication layer lives here rather than in each agent file.
+//   2. the HANDOFF routing lines this agent may emit (success + condition labels), each paired
+//      with the channel file to WRITE its payload to (`.claude/channels/<receiver>/<sender>.1.md`),
+//      resolved across three tiers (.claude/handoffs/<sender>/<receiver>.md, then
+//      ~/.claude/maestro-handoff-defaults.sqlite, then the seed constant that ships inside
+//      lib/maestro-session.cjs) so the whole communication layer lives here rather than in
+//      each agent file.
 // The skills/routing block above is a no-op when maestro.json is absent, not v3, or the agent
 // type is not mapped to any workflow node.
 //
-// A SECOND, INDEPENDENT branch resolves this agent's "Mandatory Output Format" report (project
+// A THIRD, INDEPENDENT branch (`036`) delivers whatever is waiting for this agent's BARE type in
+// `.claude/channels/<bareAgentType>/` — same-run files inlined and retired, everything else only
+// mentioned. See apps/maestro/src/core/handoff-channels.ts. Gated on nothing but the lane having
+// files in it: a channel is a filesystem fact, not a workflow-routing one, which is what lets a
+// gap reach `@scribe` on a later run even when this run's workflow never wired a route to it.
+//
+// A FOURTH, INDEPENDENT branch resolves this agent's "Mandatory Output Format" report (project
 // override at .claude/reports/<id>.md, else the global default in
 // ~/.claude/maestro-report-defaults.sqlite, else nothing) and injects it as its own
 // additionalContext part. Deliberately NOT gated on matchedInstances / a resolved workflow, and
@@ -20,6 +28,17 @@
 // static `## Mandatory Output Format` section it replaced always did. See
 // apps/maestro/src/core/report-resolution.ts for the same order, applied pure-side for the app's
 // /agents page.
+//
+// `SubagentStart` fires again on a RESUME (`039` — a condition edge routing back to an agent that
+// already ran this session, `SendMessage`d instead of dispatched cold). Everything above except
+// the channel delivery and the warning is therefore already verbatim in the resumed agent's own
+// history — re-injecting it is 500-700 tokens of exact repetition, and `loaded_skills` is worse
+// than waste: it is an instruction to redo a tool call. `040` detects that case with
+// `hasCompletedRun` (a `kind:"handoff"` entry already logged for this `agent_id`, in the SAME
+// per-run log `039` reads) and swaps the five static blocks — loaded/referenced skills, HANDOFF
+// routing, per-route protocols, and the report — for one line. The channel delivery is NOT
+// skipped: a payload may have arrived in this agent's lane between its two runs, and it doesn't
+// duplicate on its own (`retire()` already moved the first run's file to `.consumed/`).
 
 const fs = require("fs");
 const path = require("path");
@@ -29,35 +48,85 @@ const {
   resolveWorkflowName,
   readSession,
   writeSession,
+  ensureSessionRunId,
+  appendSessionLog,
   resolveSearchList,
   collectAgentSkills,
   bareAgentName,
+  projectOwnsHook,
+  handoffRoutes,
+  routesFrom,
+  resolveHandoff,
+  readLane,
+  retire,
+  sessionLogPath,
+  hasCompletedRun,
 } = require("./lib/maestro-session.cjs");
 
-// Read the handoff_details payload template for a sender -> receiver edge.
-// Convention: handoffs/<sender>/<receiver>.md (dir names === agent `name`). Kept
-// out of the agents/ tree so Claude Code doesn't register the frontmatter-less
-// templates as phantom agents. Checked project-local first (so target=project
-// agents can override), then the bundled plugin copy. Returns content or null.
-function readHandoffProtocol(projectDir, sender, receiver) {
-  const candidates = [
-    path.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`),
-    path.join(__dirname, "..", "templates", "handoffs", sender, `${receiver}.md`),
-  ];
-  for (const p of candidates) {
+// The resume signal (`040`): a `kind:"handoff"` entry already logged for this `agent_id`, read
+// straight off disk — best-effort, exactly like maestro-resume-target.cjs's own copy of this same
+// tiny reader. A missing or unreadable log comes back `[]`, which `hasCompletedRun` answers
+// `false` for, so the safe fall-through is a first run's full injection.
+function readLogLines(p) {
+  let text;
+  try {
+    text = fs.readFileSync(p, "utf8");
+  } catch {
+    return [];
+  }
+  const lines = [];
+  for (const raw of text.split("\n")) {
+    if (!raw.trim()) continue;
     try {
-      const body = fs.readFileSync(p, "utf8").trim();
-      if (body) return body;
+      lines.push(JSON.parse(raw));
     } catch {
-      // try next candidate
+      // A malformed line is skipped, not fatal — best-effort read of a hook-written log.
     }
   }
-  return null;
+  return lines;
+}
+
+// ── handoff protocol resolution — three tiers, one shared decision ─────────
+
+// The project tier: `.claude/handoffs/<sender>/<receiver>.md`, which install now MATERIALIZES for
+// every route the workflows wire (see apps/maestro/src/core/handoff-sync.ts) rather than leaving
+// as an undocumented escape hatch. There is no second file candidate any more: the plugin's
+// `templates/handoffs/` copy is gone, because an installer that blind-overwrites its own fallback
+// on every run means a user's edit there disappears silently.
+function readProjectHandoff(projectDir, handoffId) {
+  try {
+    const [sender, receiver] = handoffId.split("/");
+    const body = fs.readFileSync(path.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`), "utf8").trim();
+    return body || null;
+  } catch {
+    return null;
+  }
+}
+
+// The global tier: ~/.claude/maestro-handoff-defaults.sqlite. Wrapped in try/catch like every
+// other caller of a generated sqlite lib — an older `node` on this session's PATH (< 22.5, no
+// node:sqlite) or a missing bundle degrades to null, and `resolveHandoff` then falls through to
+// the SEED, which travels inside lib/maestro-session.cjs and needs no sqlite at all. That
+// fall-through is the whole reason the seeds were split out of the store.
+function readGlobalHandoff(handoffId) {
+  try {
+    const { readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs");
+    return readHandoffDefault(handoffId);
+  } catch {
+    return null;
+  }
+}
+
+// Project file -> global row -> shipped seed -> nothing. `resolveHandoff` is the same pure
+// function apps/maestro's own surfaces call, so the hook and the app cannot disagree about what
+// an agent will be told to emit.
+function handoffProtocol(projectDir, handoffId) {
+  const resolved = resolveHandoff(handoffId, readProjectHandoff(projectDir, handoffId), readGlobalHandoff(handoffId));
+  return resolved.content;
 }
 
 function collect(cfg, sessionPath, agentType) {
   const instances = cfg.workflow_instances || [];
-  const workflows = cfg.workflows || [];
 
   const session = readSession(sessionPath);
 
@@ -75,54 +144,26 @@ function collect(cfg, sessionPath, agentType) {
     agentType
   );
 
-  const instByName = (name) => instances.find((i) => i.name === name);
-  const wantAgent = bareAgentName(agentType);
-
-  // routeKey ("success" | condition label) -> target agent name (may be null)
-  const routes = new Map();
-
-  for (const wf of searchList) {
-    const nodeById = (id) => (wf.nodes || []).find((n) => n.id === id);
-
-    // Resolve a node to the agent that will actually receive the handoff.
-    // Agent nodes resolve directly; along a success path we step through
-    // non-agent nodes (e.g. human_review) to the next agent.
-    const agentOfNode = (node, followSuccess) => {
-      if (!node) return null;
-      if (node.type === "agent") {
-        const inst = instByName(node.instance);
-        return inst ? inst.agent : null;
-      }
-      if (!followSuccess) return null;
-      const next = (wf.edges || []).find((e) => e.from === node.id && e.kind === "success");
-      return next ? agentOfNode(nodeById(next.to), true) : null;
-    };
-
-    for (const node of wf.nodes || []) {
-      if (node.type !== "agent") continue;
-      const inst = instByName(node.instance);
-      if (!inst || bareAgentName(inst.agent) !== wantAgent) continue;
-      for (const edge of wf.edges || []) {
-        if (edge.from !== node.id) continue;
-        if (edge.kind === "success") {
-          const target = agentOfNode(nodeById(edge.to), true);
-          if (!routes.has("success")) routes.set("success", target);
-        } else if (edge.kind === "condition" && edge.label) {
-          // A condition edge needs a label to be routable; unlabeled ones are
-          // skipped (the orchestrator can't match a HANDOFF line to them).
-          if (!routes.has(edge.label)) routes.set(edge.label, agentOfNode(nodeById(edge.to), false));
-        }
-      }
-    }
-  }
+  // The route walk USED TO LIVE HERE, inline. It is `handoffRoutes()` in
+  // apps/maestro/src/core/handoff-routes.ts now, reached through the generated lib, because the
+  // install-time sync has to answer the same question — "which handoffs does this project have?"
+  // — and two implementations is how the materialized files and the injected protocols drift.
+  // Both ends come back BARE, which is the fix for a project whose instances carry namespaced
+  // agents (`maestro:test`): the receiver used to be compared and pathed un-bared and resolved no
+  // protocol at all, silently.
+  const routes = routesFrom(handoffRoutes(searchList, instances), agentType);
 
   if (matchedInstances.length === 0) return null;
 
-  // Record the generated instances in the session (best-effort).
+  // Record the generated instances in the session (best-effort). Spread the session read above
+  // rather than building a bare object — `run_id` (`036`) and anything else a caller has already
+  // set (e.g. `active_task`, from maestro-set-session-workflow.cjs) must survive this write, or a
+  // channel file stamped earlier in the SAME run stops matching what this hook mints next.
   try {
     const generated = session.generated_instances || [];
     for (const name of matchedInstances) if (!generated.includes(name)) generated.push(name);
     writeSession(sessionPath, {
+      ...session,
       workflow: activeWorkflowName || resolveWorkflowName(cfg),
       generated_instances: generated,
     });
@@ -133,7 +174,7 @@ function collect(cfg, sessionPath, agentType) {
   return {
     loadedSkills: loadedList,
     referencedSkills: referencedList,
-    routes: Array.from(routes, ([label, target]) => ({ label, target })),
+    routes,
     warning,
   };
 }
@@ -190,6 +231,12 @@ function collectReportContext(cfg, projectDir, agentType) {
   if (!agentType) process.exit(0);
 
   const projectDir = process.env.CLAUDE_PROJECT_DIR || payload.cwd || process.cwd();
+
+  // Both delivery paths can register this hook. When the project registers its own copy, THIS
+  // copy — the plugin's, running from the marketplace cache — stands down, so nothing fires twice.
+  // A no-op in the copy installed into the project. See src/core/hook-arbitration.ts.
+  if (projectOwnsHook(__filename, projectDir, payload.hook_event_name)) process.exit(0);
+
   // May be null (absent), or present but not v3 — either way the skills/routing block below is
   // skipped, but `cfg` (even null) is still passed to the report branch, which has its own,
   // looser no-op condition (see collectReportContext's header comment).
@@ -199,18 +246,24 @@ function collectReportContext(cfg, projectDir, agentType) {
 
   const result = cfg && cfg.version === 3 ? collect(cfg, path.join(projectDir, ".claude", "maestro_session.json"), agentType) : null;
 
+  // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
+  // `dispatch`, never maestro_session.json) is the right, race-proof signal.
+  const isResume = payload.agent_id
+    ? hasCompletedRun(readLogLines(sessionLogPath(path.join(projectDir, ".claude"))), payload.agent_id)
+    : false;
+
   if (result) {
     if (result.warning) {
       parts.push(`⚠️ Maestro warning: ${result.warning}`);
     }
-    if (result.loadedSkills.length > 0) {
+    if (!isResume && result.loadedSkills.length > 0) {
       parts.push(
         `Skills to load for the \`${agentType}\` agent instance (maestro.json v3, loaded_skills): ${result.loadedSkills.join(", ")}.\n\n` +
           `Load each one with the Skill tool before starting your work, then follow your agent file as written.`
       );
     }
 
-    if (result.referencedSkills.length > 0) {
+    if (!isResume && result.referencedSkills.length > 0) {
       parts.push(
         `Skills available to the \`${agentType}\` agent instance (maestro.json v3, referenced_skills): ${result.referencedSkills.join(", ")}.\n\n` +
           `Do NOT bulk-load these up front — but they exist because they document logic you would otherwise have to ` +
@@ -223,10 +276,17 @@ function collectReportContext(cfg, projectDir, agentType) {
     }
   }
 
-  if (result && result.routes.length > 0) {
+  // Replaces loaded_skills, referenced_skills, HANDOFF routing, the per-route protocols and the
+  // report below — not silence. Placed before the channel delivery, which is the one block that
+  // is NOT static and is never skipped.
+  if (isResume) {
+    parts.push("Resumed run — the skills, handoff routes and output format from your first run still apply.");
+  }
+
+  if (!isResume && result && result.routes.length > 0) {
     const hasSuccess = result.routes.some((r) => r.label === "success");
     const lines = result.routes.map((r) => {
-      const to = r.target ? ` (routes to \`${r.target}\`)` : "";
+      const to = r.receiver ? ` (routes to \`${r.receiver}\`)` : "";
       return r.label === "success"
         ? `- \`HANDOFF: success\` — continue along the workflow's success path${to}.`
         : `- \`HANDOFF: ${r.label}\` — when that condition applies${to}.`;
@@ -237,28 +297,98 @@ function collectReportContext(cfg, projectDir, agentType) {
         (hasSuccess ? "" : "\n(No success path leaves this node — it only feeds back via the condition above.)")
     );
 
-    // Per-route payload protocol, sourced from templates/handoffs/<sender>/<target>.md
-    // so the communication contract is owned here, not duplicated in the agent
-    // files. Only emitted for routes whose target has a template.
+    // Per-route payload protocol, resolved across the three tiers above so the communication
+    // contract is owned here rather than duplicated in the agent files. Only emitted for routes
+    // whose pair resolves to something — a wired route with no template anywhere (`scribe ->
+    // reviewer`) is silently skipped, exactly as the install-time sync skips it.
+    //
+    // `036`: the payload no longer rides in the final-message JSON. Each route names the CHANNEL
+    // FILE to write it to instead — `.claude/channels/<receiver>/<sender>.1.md` — which the
+    // receiving agent's own SubagentStart delivers on its next invocation. The orchestrator never
+    // sees the content at all.
+    const bareAgent = bareAgentName(agentType);
     const protocols = [];
     for (const r of result.routes) {
-      if (!r.target) continue;
-      const proto = readHandoffProtocol(projectDir, bareAgentName(agentType), r.target);
+      if (!r.receiver) continue;
+      const proto = handoffProtocol(projectDir, `${r.sender}/${r.receiver}`);
       if (!proto) continue;
-      protocols.push(`Route \`HANDOFF: ${r.label}\` → \`${r.target}\`:\n\n${proto}`);
+      protocols.push(
+        `Route \`HANDOFF: ${r.label}\` → \`${r.receiver}\` — write this to ` +
+          `\`.claude/channels/${r.receiver}/${bareAgent}.1.md\`:\n\n${proto}`
+      );
     }
     if (protocols.length > 0) {
       parts.push(
-        `When you hand off, set the \`handoff_details\` field of your output JSON to the shape for the route you take ` +
-          `(use \`null\` when nothing applies):\n\n${protocols.join("\n\n")}`
+        `When you hand off, write the shape for the route you take to your channel file, verbatim ` +
+          `(skip the write, or write an empty JSON object, when nothing applies):\n\n${protocols.join("\n\n")}`
       );
     }
   }
 
+  // ── channel delivery — independent of workflow matching ────────────────
+  //
+  // `036`: whatever is waiting for this agent in `.claude/channels/<bare agentType>/`, resolved
+  // for the BARE agent type exactly like the report tier below — `maestro:test` reads the `test`
+  // lane, the bug `033` fixed on both ends of a route id. Same-run deliveries are inlined and
+  // retired (moved to `.consumed/`, never deleted); anything else is only mentioned, never
+  // inlined — see the header of handoff-channels.ts for why.
+  {
+    const bareAgent = bareAgentName(agentType);
+    const entries = readLane(projectDir, bareAgent);
+    if (entries.length > 0) {
+      const sessionPath = path.join(projectDir, ".claude", "maestro_session.json");
+      const runId = ensureSessionRunId(sessionPath);
+      const delivered = entries.filter((e) => e.runId === runId);
+      const waiting = entries.filter((e) => e.runId !== runId);
+
+      if (delivered.length > 0) {
+        const blocks = delivered.map((e) => `From \`${e.sender}\` (\`${e.fileName}\`):\n\n${e.body.trim()}`);
+        parts.push(
+          `Delivered to your channel (\`.claude/channels/${bareAgent}/\`) — inlined verbatim, nothing to re-derive:\n\n` +
+            blocks.join("\n\n---\n\n")
+        );
+        const claudeDir = path.join(projectDir, ".claude");
+        for (const e of delivered) {
+          retire(projectDir, bareAgent, e);
+          try {
+            appendSessionLog(claudeDir, {
+              ts: new Date().toISOString(),
+              origin: "main_session",
+              kind: "channel_delivery",
+              sender: e.sender,
+              receiver: bareAgent,
+              agent_id: payload.agent_id || "",
+              content: e.body.trim(),
+              log: `channel: ${e.sender} → ${bareAgent}`,
+            });
+          } catch {
+            // Best-effort — never fail the hook on a logging error.
+          }
+        }
+      }
+
+      if (waiting.length > 0) {
+        const days = (ms) => `${(ms / (24 * 60 * 60 * 1000)).toFixed(1)}d`;
+        const lines = waiting.map(
+          (e) =>
+            `- from \`${e.sender}\`, ${days(e.ageMs)} old${e.runId ? "" : " (unstamped)"}: \`.claude/channels/${bareAgent}/${e.fileName}\``
+        );
+        parts.push(
+          `Waiting in your channel but NOT from this run (not inlined — read the file yourself if it's ` +
+            `relevant to this task):\n${lines.join("\n")}`
+        );
+      }
+    }
+  }
+
   // Independent of everything above: fires whenever the agent type resolves to ANY report
-  // (project or global), regardless of whether `result` matched a workflow instance at all.
-  const reportPart = collectReportContext(cfg, projectDir, agentType);
-  if (reportPart) parts.push(reportPart);
+  // (project or global), regardless of whether `result` matched a workflow instance at all. Still
+  // one of the five static blocks `040` skips on a resume — it governs the NEW final message the
+  // resumed agent is about to write, but that message is already in its history from the first run.
+  if (!isResume) {
+    const reportPart = collectReportContext(cfg, projectDir, agentType);
+    if (reportPart) parts.push(reportPart);
+  }
 
   if (parts.length === 0) process.exit(0);
 

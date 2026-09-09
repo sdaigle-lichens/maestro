@@ -113,7 +113,12 @@ export function readAllSkillTags(dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): R
   }
 }
 
-function replaceAll(table: "skill_project_tags" | "skill_agent_types", skillId: string, tags: string[], dbPath: string): string[] {
+function replaceAll(
+  table: "skill_project_tags" | "skill_agent_types",
+  skillId: string,
+  tags: string[],
+  dbPath: string
+): string[] {
   const clean = Array.from(new Set(tags)).sort();
   const db = openDb(dbPath);
   try {
@@ -134,12 +139,20 @@ function replaceAll(table: "skill_project_tags" | "skill_agent_types", skillId: 
 }
 
 /** Replace-all: `skillId`'s project tags become exactly `tags` (deduped), in one transaction. */
-export function setSkillProjectTags(skillId: string, tags: string[], dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): string[] {
+export function setSkillProjectTags(
+  skillId: string,
+  tags: string[],
+  dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH
+): string[] {
   return replaceAll("skill_project_tags", skillId, tags, dbPath);
 }
 
 /** Replace-all: `skillId`'s agent types become exactly `tags` (deduped), in one transaction. */
-export function setSkillAgentTypes(skillId: string, tags: string[], dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): string[] {
+export function setSkillAgentTypes(
+  skillId: string,
+  tags: string[],
+  dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH
+): string[] {
   return replaceAll("skill_agent_types", skillId, tags, dbPath);
 }
 

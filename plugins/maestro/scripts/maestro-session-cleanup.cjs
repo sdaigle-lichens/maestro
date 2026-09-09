@@ -2,9 +2,17 @@
 // SessionEnd hook — the PROJECT-LOCAL cleanup, copied into <project>/.claude/scripts/ by the
 // desktop app's installer (apps/maestro/src/core/install.ts).
 //
-// It removes the ephemeral Maestro session files and nothing else:
+// It removes the ephemeral Maestro session files:
 //   maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json
 // The source of truth (.claude/maestro.json) and the orchestrator skill are kept.
+//
+// Then (`036`) it SWEEPS `.claude/channels/` — retiring `.consumed/` outright and aging out
+// anything left in a live lane past the cap, via `sweep()` in
+// apps/maestro/src/core/handoff-channels.ts (re-exported through lib/maestro-session.cjs, so this
+// script and the delivery hook cannot disagree about what "too old" means). A channel file is
+// deliberately NOT flushed here the way the three ephemeral files above are: a lane the receiving
+// agent hasn't been invoked yet (the routine case for an abandoned `human review` stop) still has
+// to survive SessionEnd, or the whole feature loses its point.
 //
 // Why this exists next to maestro-session-cleanup.sh, now that both do the same thing: the .sh
 // runs from the plugin, this runs from the project, and node rather than bash is what makes the
@@ -15,7 +23,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { readStdin } = require("./lib/maestro-session.cjs");
+const { readStdin, sweep } = require("./lib/maestro-session.cjs");
 
 const EPHEMERAL = ["maestro_session.json", "maestro_session.log.jsonl", "maestro_session_tasks.json"];
 
@@ -34,6 +42,11 @@ async function main() {
     } catch {
       // A session file we cannot delete is not worth failing the session's exit over.
     }
+  }
+  try {
+    sweep(cwd);
+  } catch {
+    // Same discipline as the deletions above — not worth failing the session's exit over.
   }
 }
 

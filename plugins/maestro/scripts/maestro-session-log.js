@@ -9,7 +9,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { readStdin, appendSessionLog } = require("./lib/maestro-session.cjs");
+const { readStdin, appendSessionLog, projectOwnsHook } = require("./lib/maestro-session.cjs");
 
 // Short, human-readable summary of a tool call for the session log.
 function summarize(toolName, ti) {
@@ -46,6 +46,11 @@ function summarize(toolName, ti) {
 
   const cwd = p.cwd || "";
   if (!cwd) process.exit(0);
+
+  // Both delivery paths can register this hook. When the project registers its own copy, THIS
+  // copy — the plugin's, running from the marketplace cache — stands down, so nothing fires twice.
+  // A no-op in the copy installed into the project. See src/core/hook-arbitration.ts.
+  if (projectOwnsHook(__filename, cwd, p.hook_event_name)) process.exit(0);
 
   const claudeDir = path.join(cwd, ".claude");
   if (!fs.existsSync(path.join(claudeDir, "maestro.json"))) process.exit(0); // only log Maestro-configured projects

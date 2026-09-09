@@ -1,5 +1,7 @@
 import { titleFromName, stripNamespace } from "./text";
-import type { SessionLogEntry } from "./maestro-session-log";
+import type { SessionLogEntry, ChannelDelivery } from "./maestro-session-log";
+
+export type { ChannelDelivery };
 
 /**
  * An agent's account of which injected skills it loaded vs deliberately skipped,
@@ -34,6 +36,12 @@ export interface Instance {
   skillsTriage: SkillsTriage | null;
   /** Skills the SubagentStart hook offered (from the dispatch entry), null when absent. */
   offeredSkills: { loaded: string[]; referenced: string[] } | null;
+  /**
+   * `kind: "channel_delivery"` entries logged at THIS instance's own SubagentStart (`036`/`037`) —
+   * matched by `agent_id`, same as `input`. Empty, never omitted, so a template need not special-case
+   * "no deliveries" from "not yet computed".
+   */
+  delivered: ChannelDelivery[];
 }
 
 /**
@@ -45,6 +53,9 @@ export interface Instance {
  */
 export function buildInstances(entries: SessionLogEntry[]): Instance[] {
   const instances: Instance[] = [];
+  // Index (in `entries`) of each instance's own handoff entry, by instance.id. `null` until a
+  // handoff for that segment is seen; a still-open segment (in-flight/killed agent) keeps it null.
+  const handoffIndexByInstance: (number | null)[] = [];
   let current: Instance | null = null;
 
   for (let i = 0; i < entries.length; i++) {
@@ -63,8 +74,10 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
         output: null,
         skillsTriage: null,
         offeredSkills: null,
+        delivered: [],
       };
       instances.push(current);
+      handoffIndexByInstance.push(null);
     }
 
     current.entries.push(entry);
@@ -74,6 +87,7 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
       current.status = entry.status ?? "unknown";
       current.label = entry.label ?? null;
       current.output = entry.output ?? null;
+      handoffIndexByInstance[current.id] = i;
     } else if (entry.kind === "transition") {
       // A non-workflow boundary — keep its message for the detail panel but
       // mark it neutral so it doesn't render as a failed/unknown handoff.
@@ -82,35 +96,116 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
     }
   }
 
-  // Second pass: correlate input from dispatch entries (matched by agent_id).
-  // The dispatch entry lives in the main_session segment but its agent_id links
-  // it to the subagent segment it spawned.
-  const dispatchByAgentId = new Map<string, SessionLogEntry>();
-  for (const entry of entries) {
+  // Second pass, one forward sweep: index dispatch/handoff/channel_delivery entries by agent_id,
+  // each list in log order. `agent_id` alone stopped being a unique key once `039` let a
+  // condition-edge loop-back RESUME an agent instead of spawning it cold — a resumed run keeps its
+  // agent_id, so `SubagentStart`/`SubagentStop` append a second dispatch/handoff pair under the same
+  // id. The lists below are still grouped by agent_id, but every lookup against them is bounded by
+  // POSITION (see the per-instance loop) — the log is append-only, so the run boundary is already
+  // there in file order, one run's entries sit strictly between the previous run's handoff and its
+  // own.
+  const dispatchesByAgentId = new Map<string, { index: number; entry: SessionLogEntry }[]>();
+  const handoffIndicesByAgentId = new Map<string, number[]>();
+  const deliveriesByAgentId = new Map<string, { index: number; delivery: ChannelDelivery }[]>();
+
+  for (let i = 0; i < entries.length; i++) {
+    const entry = entries[i];
     if (entry.kind === "dispatch" && entry.agent_id) {
-      dispatchByAgentId.set(entry.agent_id, entry);
+      const list = dispatchesByAgentId.get(entry.agent_id) ?? [];
+      list.push({ index: i, entry });
+      dispatchesByAgentId.set(entry.agent_id, list);
+    } else if (entry.kind === "handoff" && entry.agent_id) {
+      const list = handoffIndicesByAgentId.get(entry.agent_id) ?? [];
+      list.push(i);
+      handoffIndicesByAgentId.set(entry.agent_id, list);
+    } else if (entry.kind === "channel_delivery" && entry.agent_id) {
+      const list = deliveriesByAgentId.get(entry.agent_id) ?? [];
+      list.push({
+        index: i,
+        delivery: {
+          sender: entry.sender ?? "",
+          receiver: entry.receiver ?? "",
+          agent_id: entry.agent_id,
+          content: entry.content ?? "",
+        },
+      });
+      deliveriesByAgentId.set(entry.agent_id, list);
     }
   }
 
-  // For each subagent segment, find the dispatch entry whose agent_id matches
-  // the handoff entry in that segment.
+  // Bound for the name-based fallback when a segment has no agent_id to key off (no handoff yet,
+  // or a handoff missing agent_id): the end of the previous segment sharing this origin, so a
+  // fallback search can't reach into a later run of the same agent type.
+  const lastEndByOrigin = new Map<string, number>();
+
+  // For each subagent segment, correlate its dispatch/deliveries bounded by its own run's window
+  // in the log rather than by agent_id alone.
   for (const inst of instances) {
     if (inst.origin === "main_session") continue;
 
-    // Find the dispatch entry that spawned this segment: prefer agent_id
-    // correlation via the handoff, fall back to the first dispatch of this type.
     const handoff = inst.entries.find((e) => e.kind === "handoff" && e.agent_id);
-    let dispatch = handoff?.agent_id ? dispatchByAgentId.get(handoff.agent_id) : undefined;
-    if (!dispatch) {
-      dispatch = entries.find((e) => e.kind === "dispatch" && e.agent === inst.origin && e.input);
+    const ownHandoffIndex = handoffIndexByInstance[inst.id];
+    // No handoff (still running, or killed before SubagentStop): fall back to the END OF THIS
+    // SEGMENT, which for a genuinely in-flight agent IS the end of the log — a card for one should
+    // still show its spawning message. Not `entries.length` unconditionally: a segment is a
+    // contiguous run of entries, so when a killed agent is followed by a re-dispatch of the same
+    // type, an open-ended window would reach past this segment and hand it the LATER run's
+    // dispatch — the very misattribution this bounding exists to prevent.
+    const h = ownHandoffIndex ?? inst.startIndex + inst.entries.length;
+    const agentId = handoff?.agent_id;
+
+    let p: number;
+    if (agentId) {
+      // The nearest earlier run of the same agent_id. Searched by comparison rather than by
+      // locating `h` in the list, so a segment whose last handoff is not the one carrying the
+      // agent_id still gets a real lower bound instead of silently falling back to -1.
+      p = -1;
+      for (const idx of handoffIndicesByAgentId.get(agentId) ?? []) {
+        if (idx < h && idx > p) p = idx;
+      }
+    } else {
+      p = lastEndByOrigin.get(inst.origin) ?? -1;
     }
+
+    // The latest dispatch with this agent_id whose index is < h — not the last one in the file.
+    let dispatch: SessionLogEntry | undefined;
+    if (agentId) {
+      const runs = dispatchesByAgentId.get(agentId) ?? [];
+      for (let k = runs.length - 1; k >= 0; k--) {
+        if (runs[k].index > p && runs[k].index < h) {
+          dispatch = runs[k].entry;
+          break;
+        }
+      }
+    }
+    if (!dispatch) {
+      // Name-based fallback, bounded by the same (p, h) window: the latest dispatch for this
+      // origin with an input, in range.
+      for (let i = entries.length - 1; i >= 0; i--) {
+        const e = entries[i];
+        if (e.kind === "dispatch" && e.agent === inst.origin && e.input && i > p && i < h) {
+          dispatch = e;
+          break;
+        }
+      }
+    }
+
     if (dispatch) {
       inst.input = dispatch.input ?? null;
       inst.offeredSkills = dispatch.offered_skills ?? null;
     }
 
+    // Deliveries logged at this instance's own SubagentStart — same key as input/offeredSkills
+    // above, windowed to (p, h) so a delivery between two runs lands on the later one only.
+    const deliveryKey = agentId ?? dispatch?.agent_id;
+    inst.delivered = deliveryKey
+      ? (deliveriesByAgentId.get(deliveryKey) ?? []).filter((d) => d.index > p && d.index < h).map((d) => d.delivery)
+      : [];
+
     // Parse the skills triage out of the agent's final report.
     inst.skillsTriage = parseSkillsTriage(inst.output);
+
+    lastEndByOrigin.set(inst.origin, h);
   }
 
   return instances;

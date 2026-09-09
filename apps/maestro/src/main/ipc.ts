@@ -7,6 +7,9 @@
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import {
   readConfig,
+  resolveGates,
+  DEFAULT_GATES,
+  resolveUseMaestroTasks,
   blankConfig,
   defaultV3Config,
   seededAgentNames,
@@ -14,12 +17,20 @@ import {
   saveConfig,
   discoverAgents,
   discoverSkills,
+  duplicateAgentTypes,
   readAllSkillTags,
   setSkillProjectTags,
   setSkillAgentTypes,
   skillMapFromTags,
   getAvatar,
   setAvatar,
+  readAllAvatars,
+  setAgentDescription,
+  getAgentBody,
+  setAgentContent,
+  forkAgent,
+  computeAgentSync,
+  applyAgentSync,
   discoverProjectRules,
   discoverRuleLibrary,
   discoverProjectTree,
@@ -31,6 +42,7 @@ import {
   scaffoldCreate,
   nodeGit,
   tailSessionLog,
+  pendingLanes,
   installStatus,
   installRuntime,
   refreshStaleRuntime,
@@ -57,6 +69,14 @@ import {
   saveProjectReportOverride,
   readAllAgentReportDefaults,
   writeAgentReportDefault,
+  resolvedRoutesFrom,
+  saveProjectHandoffOverride,
+  readAllHandoffDefaults,
+  writeHandoffDefault,
+  deleteHandoffDefault,
+  isSeededHandoff,
+  SEED_HANDOFFS,
+  readAgentsAvailable,
   readAllAgentTypes,
   setAgentType,
   readAllProjectTags,
@@ -93,11 +113,25 @@ import type {
   InstallStatus,
   UninstallPlan,
   UninstallReport,
+  PendingLane,
   ProjectState,
   ResolvedReport,
   ReportDefault,
+  ResolvedHandoff,
+  ResolvedHandoffRoute,
+  HandoffDefault,
+  HandoffDefaultsListing,
   AgentType,
+  AgentDescriptionResult,
+  AgentContentResult,
+  AgentForkResult,
+  AgentSyncAction,
+  AgentSyncApplyResult,
+  AgentSyncSummary,
   ProjectTagsData,
+  GatesData,
+  MaestroGates,
+  TaskRoutingData,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -105,7 +139,7 @@ import type {
   UsageStatsView,
   WorkflowsData,
 } from "../shared/ipc.js";
-import { bundledAgentsDir, bundledPluginDir, maestroAppDocsDir } from "./bundled-assets.js";
+import { bundledAgentsDir, bundledPluginDir, bundledPluginVersion, maestroAppDocsDir } from "./bundled-assets.js";
 import {
   answerPermission,
   answerQuestion,
@@ -138,6 +172,18 @@ import { currentRoot, forgetProject, getState, openProject } from "./project-sto
  */
 const tails = new Map<number, () => void>();
 
+/**
+ * Windows that asked for a tail, whether or not one is running yet.
+ *
+ * `tails` answers "which windows have a running watcher", which is the wrong set for
+ * `retargetTails` to read: a window that subscribed with no project open has no tail (a null root
+ * makes `startTail` send an empty `logInit` and return before ever touching `tails`), so it would
+ * never be revisited once a project opened. This set is added to in the `logSubscribe` handler
+ * BEFORE `startTail` runs, and removed on unsubscribe/destroy — so it always answers "who asked",
+ * independent of whether a watcher is currently running for them.
+ */
+const logSubscribers = new Set<number>();
+
 function broadcast(channel: string, payload?: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(channel, payload);
@@ -154,7 +200,7 @@ function stopTail(webContentsId: number): void {
  * window would keep streaming the previously-opened repo's session log.
  */
 function retargetTails(): void {
-  for (const id of [...tails.keys()]) {
+  for (const id of [...logSubscribers]) {
     stopTail(id);
     const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === id)?.webContents;
     if (wc) startTail(wc.id);
@@ -192,7 +238,9 @@ function startTail(webContentsId: number): void {
 function resolveProjectRoot(projectRoot?: string): string {
   if (!projectRoot) return currentRoot();
   const state = getState();
-  const allowed = state.current ? [state.current.root, ...state.recent.map((r) => r.root)] : state.recent.map((r) => r.root);
+  const allowed = state.current
+    ? [state.current.root, ...state.recent.map((r) => r.root)]
+    : state.recent.map((r) => r.root);
   if (allowed.includes(projectRoot)) return projectRoot;
   console.warn(`[ipc] ignoring unrecognised projectRoot "${projectRoot}"; falling back to the open project`);
   return currentRoot();
@@ -222,7 +270,11 @@ function seededAgentAttrs(implAgents: string[]): Record<string, AgentAttrs> {
  * and to `implAgents`'s seeded agents' own attributes, per `skillMapFromTags`'s guards.
  */
 function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]) {
-  return skillMapFromTags(readAllSkillTags(), skills.map((s) => s.id), seededAgentAttrs(implAgents));
+  return skillMapFromTags(
+    readAllSkillTags(),
+    skills.map((s) => s.id),
+    seededAgentAttrs(implAgents)
+  );
 }
 
 function announce(state: ProjectState): ProjectState {
@@ -263,14 +315,35 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.workflowsData, async (): Promise<WorkflowsData> => {
     const projectRoot = currentRoot();
     if (!projectRoot) {
-      return { projectRoot: "", config: blankConfig(), seeded: false, detection: null, agents: [], skills: [] };
+      return {
+        projectRoot: "",
+        config: blankConfig(),
+        seeded: false,
+        detection: null,
+        agents: [],
+        skills: [],
+        configIssues: [],
+      };
     }
     const [agents, skills] = await Promise.all([
       discoverAgents(projectRoot, bundledAgentsDir()),
       discoverSkills(projectRoot),
     ]);
     const onDisk = readConfig(projectRoot);
-    if (onDisk) return { projectRoot, config: onDisk, seeded: false, detection: null, agents, skills };
+    // Duplicate-agent-type collisions (`041`) — the canvas refuses to create one, so this catches
+    // a hand-edit or a merge conflict. Only meaningful against an on-disk config: a freshly seeded
+    // one is always canvas-safe, and `duplicateAgentTypes` reports nothing for it either way.
+    if (onDisk) {
+      return {
+        projectRoot,
+        config: onDisk,
+        seeded: false,
+        detection: null,
+        agents,
+        skills,
+        configIssues: duplicateAgentTypes(onDisk),
+      };
+    }
 
     // First open of an unconfigured project: hand back the starter workflows so the canvas isn't
     // empty — with the implementation chain READ OFF THE REPO rather than hardcoded to
@@ -285,6 +358,7 @@ export function registerIpc(): void {
       detection,
       agents,
       skills,
+      configIssues: [],
     };
   });
 
@@ -330,6 +404,24 @@ export function registerIpc(): void {
     const projectRoot = currentRoot();
     if (!projectRoot) return { catalog, selected: [] };
     return { catalog, selected: readConfig(projectRoot)?.project_tags ?? [] };
+  });
+
+  // `/maestro`'s Step 1 gates card. Never rejects: the card renders on a route that is reachable
+  // with no project open, and both-off is the honest answer there — the same answer an absent or
+  // corrupt `gates` block resolves to, via the same `resolveGates`.
+  ipcMain.handle(IPC.gatesData, (): GatesData => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { gates: { ...DEFAULT_GATES } };
+    return { gates: resolveGates(readConfig(projectRoot)) };
+  });
+
+  // `/maestro`'s Step 4 task-routing checkbox. Never rejects, same reasoning as `data:gates`: no
+  // project open, or an absent/non-boolean `use_maestro_tasks`, both resolve to false via
+  // `resolveUseMaestroTasks`.
+  ipcMain.handle(IPC.taskRoutingData, (): TaskRoutingData => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { useMaestroTasks: false };
+    return { useMaestroTasks: resolveUseMaestroTasks(readConfig(projectRoot)) };
   });
 
   // ── the read-only surface folded in from help-server ──────────────────
@@ -405,6 +497,32 @@ export function registerIpc(): void {
   // agent whose stored `agent-project-tags.ts` assignment newly matches one of the ADDED tags —
   // never on an unchecked one, so unchecking a tag can't silently rip an agent out of a graph the
   // user has already wired up; that stays a manual /workflows edit.
+  // `/maestro`'s Step 1 gates checkboxes. One slice write and nothing else — a gate flag says
+  // which skills the ORCHESTRATOR runs in its own context, which implies nothing about the
+  // project's agents or skills, so there is no cross-slice follow-up here of the kind
+  // `project:tags:set` below has to make.
+  ipcMain.handle(IPC.gatesSet, async (_e, gates: MaestroGates): Promise<MaestroGates> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    // Resolved, not trusted: the renderer's shape is checked the same way the runtime script
+    // checks the file's, so a bad payload can only ever write two booleans.
+    const resolved = resolveGates({ gates } as MaestroConfigV3);
+    await saveConfig(projectRoot, { sliceType: "gates", slice: { gates: resolved } });
+    return resolved;
+  });
+
+  // `/maestro`'s Step 4 task-routing checkbox. One slice write and nothing else — same reasoning
+  // as `project:gates:set` above.
+  ipcMain.handle(IPC.taskRoutingSet, async (_e, value: boolean): Promise<boolean> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    // Resolved, not trusted: mirrors the gates handler's discipline of re-checking the renderer's
+    // payload the same way the runtime script checks the file's.
+    const resolved = resolveUseMaestroTasks({ version: 3, use_maestro_tasks: value } as MaestroConfigV3);
+    await saveConfig(projectRoot, { sliceType: "task-routing", slice: { use_maestro_tasks: resolved } });
+    return resolved;
+  });
+
   ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");
@@ -413,7 +531,10 @@ export function registerIpc(): void {
 
     const newlyAdded = tags.filter((t) => !before.has(t));
     if (newlyAdded.length > 0) {
-      const matchingAgents = agentsForProjectTags(newlyAdded);
+      // Scoped to THIS project (030): otherwise a project-tier agent belonging to some other
+      // project, sharing both this agent's name and the newly-added tag, could get pulled into a
+      // graph it has nothing to do with.
+      const matchingAgents = agentsForProjectTags(newlyAdded, undefined, projectRoot);
       const current = readConfig(projectRoot);
       if (current) {
         const agentsAvailable = new Set(current.agents_available);
@@ -456,24 +577,83 @@ export function registerIpc(): void {
     return saveProjectReportOverride(projectRoot, agentName, content);
   });
 
-  // ── templates (/templates page — the GLOBAL tier's write path) ──────
-  // No `currentRoot()` anywhere here — same discipline as the avatar handlers below: this store
-  // isn't project-scoped, so nothing on this page needs a project open.
+  // ── handoffs (/agents page, Interactions pane) ──────────────────────
+  // The pair above, one tier over. `routes` is a READ of the open project's graph plus the
+  // resolution of each route it finds — never rejects on no project, exactly as `reportGet`
+  // doesn't: with nothing open there is no graph, so there are no routes, and an empty pane is the
+  // honest answer rather than an error.
+  ipcMain.handle(IPC.handoffRoutes, (_e, agentName: string): ResolvedHandoffRoute[] => {
+    return resolvedRoutesFrom(currentRoot() ?? "", agentName);
+  });
+  // Plain file write. Always a PROJECT override for the open project, and it drops `syncedFrom` —
+  // see saveProjectHandoffOverride's header.
+  ipcMain.handle(IPC.handoffSave, (_e, handoffId: string, content: string): ResolvedHandoff => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    return saveProjectHandoffOverride(projectRoot, handoffId, content);
+  });
+
+  // ── templates (/templates page — the GLOBAL tier's write path — AND /agents' per-agent
+  //    classification, which shares these same three stores with a different intent) ──────
+  //
+  // `/templates` never sends `projectScoped`, so it always sees/edits the machine-wide fallback —
+  // no `currentRoot()` involved on that path, and nothing on that page needs a project open.
+  // `/agents` sends `projectScoped: true` only for a `project`-tier agent (never for a
+  // `user`/`maestro`/plugin one, which still resolves to the one shared global row from any
+  // project — `030`). The renderer never sends a path: `projectScoped` is a plain flag, and main
+  // resolves it against ITS OWN `currentRoot()`, the same "a caller states intent, never nominates
+  // a directory" discipline `scaffold.ts`'s create-* flows already follow.
   ipcMain.handle(IPC.templateReportsList, (): Record<string, ReportDefault> => readAllAgentReportDefaults());
   ipcMain.handle(IPC.templateReportSave, (_e, agentName: string, content: string): ReportDefault => {
     return writeAgentReportDefault(agentName, content);
   });
-  ipcMain.handle(IPC.templateAgentTypesList, (): Record<string, AgentType> => readAllAgentTypes());
-  ipcMain.handle(IPC.templateAgentTypeSave, (_e, agentName: string, tag: AgentType): AgentType => {
-    return setAgentType(agentName, tag);
+  // Same tier, one store over. The seeded id list travels WITH the rows rather than as its own
+  // channel: they are read together and rendered together, and a tab that had the rows but not
+  // the list would render Delete on a pair the store refuses to delete.
+  ipcMain.handle(IPC.templateHandoffsList, (): HandoffDefaultsListing => {
+    return { rows: readAllHandoffDefaults(), seeded: SEED_HANDOFFS };
   });
+  ipcMain.handle(IPC.templateHandoffSave, (_e, handoffId: string, content: string): HandoffDefault => {
+    return writeHandoffDefault(handoffId, content);
+  });
+  // THE REFUSAL LIVES HERE, not in the tab. `deleteHandoffDefault` re-seeds the whole table when a
+  // delete empties it, and `seedIfEmpty` fires on nothing else — so a delete of a shipped pair on a
+  // store with other rows in it is permanent, and no tier below would answer for that route again.
+  // The tab offers Reset to default for those instead; this makes that the only way, whoever calls.
+  ipcMain.handle(IPC.templateHandoffDelete, (_e, handoffId: string): void => {
+    if (isSeededHandoff(handoffId)) {
+      throw new Error(`${handoffId} is one of Maestro's own handoff protocols — reset it to the default instead.`);
+    }
+    deleteHandoffDefault(handoffId);
+  });
+  // The tab's own project picker (`043`), not the app's open project — `resolveProjectRoot`
+  // validates `viewingRoot` against current+recent the same way `data:tools` does, and a project
+  // with no `maestro.json` (or none picked yet, so main sees no root at all) reads back `[]`.
+  ipcMain.handle(IPC.templateAgentsAvailable, (_e, viewingRoot?: string): string[] => {
+    const root = resolveProjectRoot(viewingRoot);
+    return root ? readAgentsAvailable(root) : [];
+  });
+  ipcMain.handle(IPC.templateAgentTypesList, (_e, projectScoped?: boolean): Record<string, AgentType> => {
+    return readAllAgentTypes(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+  });
+  ipcMain.handle(
+    IPC.templateAgentTypeSave,
+    (_e, agentName: string, tag: AgentType, projectScoped?: boolean): AgentType => {
+      return setAgentType(agentName, tag, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+    }
+  );
   ipcMain.handle(IPC.templateProjectTagsList, (): string[] => readAllProjectTags());
   ipcMain.handle(IPC.templateProjectTagAdd, (_e, tag: string): string[] => addProjectTag(tag));
   ipcMain.handle(IPC.templateProjectTagRemove, (_e, tag: string): string[] => removeProjectTag(tag));
-  ipcMain.handle(IPC.templateAgentProjectTagsList, (): Record<string, string> => readAllAgentProjectTags());
-  ipcMain.handle(IPC.templateAgentProjectTagSave, (_e, agentName: string, tag: string): string => {
-    return setAgentProjectTag(agentName, tag);
+  ipcMain.handle(IPC.templateAgentProjectTagsList, (_e, projectScoped?: boolean): Record<string, string> => {
+    return readAllAgentProjectTags(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
+  ipcMain.handle(
+    IPC.templateAgentProjectTagSave,
+    (_e, agentName: string, tag: string, projectScoped?: boolean): string => {
+      return setAgentProjectTag(agentName, tag, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+    }
+  );
 
   // ── skill tags ───────────────────────────────────────────────────────
   // Global, keyed by skill id — no project involved. Two independent dimensions, two independent
@@ -488,14 +668,71 @@ export function registerIpc(): void {
   });
 
   // ── agent avatars ───────────────────────────────────────────────────
-  // Global, keyed by agent name — no project involved, and no token: purely cosmetic. Note these
-  // do NOT call currentRoot() — avatar storage isn't project-scoped.
-  ipcMain.handle(IPC.avatarGet, (_e, agentName: string): AvatarLayers | null => {
-    return getAvatar(agentName);
+  // Global by default, keyed by agent name, no token: purely cosmetic. Same `projectScoped`
+  // discipline as the templates handlers above — `/agents` and `create-subagent`'s `target:
+  // "project"` field pass it for a project-tier agent; everything else (including `/templates`,
+  // were it ever to grow an avatar tab) omits it and stays global.
+  ipcMain.handle(IPC.avatarGet, (_e, agentName: string, projectScoped?: boolean): AvatarLayers | null => {
+    return getAvatar(agentName, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
-  ipcMain.handle(IPC.avatarSet, (_e, agentName: string, layers: AvatarLayers): AvatarLayers => {
-    return setAvatar(agentName, layers);
+  ipcMain.handle(
+    IPC.avatarSet,
+    (_e, agentName: string, layers: AvatarLayers, projectScoped?: boolean): AvatarLayers => {
+      return setAvatar(agentName, layers, undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
+    }
+  );
+  ipcMain.handle(IPC.avatarList, (_e, projectScoped?: boolean): Record<string, AvatarLayers> => {
+    return readAllAvatars(undefined, projectScoped ? (currentRoot() ?? undefined) : undefined);
   });
+
+  // ── agent descriptions ──────────────────────────────────────────────
+  // The one handler that edits a subagent definition in place. `currentRoot()` matters here even
+  // though the other per-agent attributes ignore it: the project tier outranks the user, bundled
+  // and plugin ones, so which file this writes depends on which project is open — exactly as the
+  // list the user is looking at does. Every refusal is a throw with a reason (see
+  // `setAgentDescription`), so a read-only or plugin-owned agent reports why rather than appearing
+  // to save.
+  ipcMain.handle(IPC.agentDescribe, (_e, agentName: string, description: string): Promise<AgentDescriptionResult> => {
+    return setAgentDescription(currentRoot() ?? "", bundledAgentsDir(), agentName, description);
+  });
+
+  // The Content tab's one round trip — the same tier order as `agentDescribe`, read-only.
+  ipcMain.handle(IPC.agentContent, (_e, agentName: string): Promise<string> => {
+    return getAgentBody(currentRoot() ?? "", bundledAgentsDir(), agentName);
+  });
+
+  // The Content tab's write path (`045`) — the eighth write path in the /agents edit session, same
+  // `currentRoot()` and editability discipline as `agentDescribe` above.
+  ipcMain.handle(IPC.agentContentSave, (_e, agentName: string, content: string): Promise<AgentContentResult> => {
+    return setAgentContent(currentRoot() ?? "", bundledAgentsDir(), agentName, content);
+  });
+
+  // "Fork into this project" — the card's escape hatch for the three tiers `agent:describe`
+  // refuses. Same `currentRoot()` discipline as above: which project's `.claude/agents/` the copy
+  // lands in depends on which project is open.
+  ipcMain.handle(IPC.agentFork, (_e, agentName: string, newName?: string): Promise<AgentForkResult> => {
+    return forkAgent(currentRoot() ?? "", bundledAgentsDir(), bundledPluginVersion(), agentName, newName);
+  });
+
+  // ── forked-agent sync (031) ─────────────────────────────────────────
+  // A read and a write, deliberately two channels: `agent:sync` runs on every project selection
+  // and must be incapable of touching `.claude/agents/`, while `agent:sync:apply` writes one file
+  // for one named action the user pressed a button for.
+  //
+  // `bundled` is this build's own `plugins/maestro`, handed in so a dev checkout resolves the
+  // `maestro` plugin's templates even when no marketplace ever installed it; every other plugin
+  // falls through to `~/.claude/plugins/installed_plugins.json` — which is what a bare terminal
+  // session reads too, so the two paths compare against the same files.
+  const agentSyncOptions = () => ({ bundled: { agentsDir: bundledAgentsDir(), version: bundledPluginVersion() } });
+  ipcMain.handle(IPC.agentSync, (): Promise<AgentSyncSummary> => {
+    return computeAgentSync(currentRoot() ?? "", agentSyncOptions());
+  });
+  ipcMain.handle(
+    IPC.agentSyncApply,
+    (_e, agentName: string, action: AgentSyncAction): Promise<AgentSyncApplyResult> => {
+      return applyAgentSync(currentRoot() ?? "", agentName, action, agentSyncOptions());
+    }
+  );
 
   // ── tasks ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));
@@ -512,13 +749,11 @@ export function registerIpc(): void {
   // open — so main resolves every path it writes to. The one exception is create-marketplace's
   // target directory, which is the whole point of that form and is validated as absolute and shown
   // in the scaffold's report.
-  ipcMain.handle(
-    IPC.createOptions,
-    (): CreateOptions => ({
-      marketplaces: listMarketplaces(),
-      projectRoot: currentRoot() ?? "",
-    })
-  );
+  ipcMain.handle(IPC.createOptions, async (): Promise<CreateOptions> => ({
+    marketplaces: listMarketplaces(),
+    projectRoot: currentRoot() ?? "",
+    agentTemplates: await discoverAgents(currentRoot() ?? "", bundledAgentsDir()),
+  }));
 
   // Throws on an invalid request or a failed write, so the caller must go through `callMain` —
   // "the write failed and here is why" has to reach the user, not an unhandled rejection.
@@ -576,7 +811,10 @@ export function registerIpc(): void {
     ): Promise<UninstallReport> => {
       const root = resolveProjectRoot(viewingRoot);
       if (!root) throw new Error("No project is open.");
-      return uninstallRuntime(root, { purge: opts?.purge === true, deleteMaestroTasks: opts?.deleteMaestroTasks === true });
+      return uninstallRuntime(root, {
+        purge: opts?.purge === true,
+        deleteMaestroTasks: opts?.deleteMaestroTasks === true,
+      });
     }
   );
 
@@ -602,20 +840,18 @@ export function registerIpc(): void {
     return previewClaudeRun(root, request, { settings: nodeSettings() });
   });
 
-  ipcMain.handle(
-    IPC.claudeRun,
-    async (e, token: string): Promise<ClaudeRunResult> =>
-      runPreviewedClaude(token, {
-        // Chunk by chunk, as it arrives. The token identifies the run on both sides, so the renderer
-        // can route output from the first byte without waiting for this handler to resolve.
-        output: (chunk) => {
-          if (!e.sender.isDestroyed()) e.sender.send(IPC_EVENTS.claudeOutput, { token, ...chunk });
-        },
-        // The same plugin the pane loads, for the same reason and with the same caveat: without it
-        // the create-* skills the prompt names resolve to nothing at all. `026` deleted the inlined
-        // copies of that guidance, so this line is what a headless run finishes an artifact with.
-        pluginDir: bundledPluginDir(),
-      })
+  ipcMain.handle(IPC.claudeRun, async (e, token: string): Promise<ClaudeRunResult> =>
+    runPreviewedClaude(token, {
+      // Chunk by chunk, as it arrives. The token identifies the run on both sides, so the renderer
+      // can route output from the first byte without waiting for this handler to resolve.
+      output: (chunk) => {
+        if (!e.sender.isDestroyed()) e.sender.send(IPC_EVENTS.claudeOutput, { token, ...chunk });
+      },
+      // The same plugin the pane loads, for the same reason and with the same caveat: without it
+      // the create-* skills the prompt names resolve to nothing at all. `026` deleted the inlined
+      // copies of that guidance, so this line is what a headless run finishes an artifact with.
+      pluginDir: bundledPluginDir(),
+    })
   );
 
   ipcMain.handle(IPC.claudeCancel, (_e, token: string): void => {
@@ -683,9 +919,8 @@ export function registerIpc(): void {
   // A grant taken back. It removes an entry main is already holding and can only ever NARROW what
   // the session may read — which is why a path is allowed to cross here while granting sends a
   // scope word and lets main resolve the path from the prompt it asked.
-  ipcMain.handle(
-    IPC.sessionRevoke,
-    async (e, id: string, target: string): Promise<boolean> => revokeGrant(e.sender.id, id, target)
+  ipcMain.handle(IPC.sessionRevoke, async (e, id: string, target: string): Promise<boolean> =>
+    revokeGrant(e.sender.id, id, target)
   );
 
   // The door in the spend ceiling. A session that reached it ended cleanly and kept its record —
@@ -701,14 +936,12 @@ export function registerIpc(): void {
   // the other two take an id that must have been on a list this window was given. That check is the
   // whole difference from `session:continue`, where an id is a key into main's own record and here
   // it names a file in the CLI's store.
-  ipcMain.handle(
-    IPC.sessionResumable,
-    async (e): Promise<ResumableSession[]> => listResumableSessions(e.sender.id, currentRoot() ?? "")
+  ipcMain.handle(IPC.sessionResumable, async (e): Promise<ResumableSession[]> =>
+    listResumableSessions(e.sender.id, currentRoot() ?? "")
   );
 
-  ipcMain.handle(
-    IPC.sessionResumeDetail,
-    async (e, id: string): Promise<ResumeDisclosure> => describeResume(e.sender.id, currentRoot() ?? "", id)
+  ipcMain.handle(IPC.sessionResumeDetail, async (e, id: string): Promise<ResumeDisclosure> =>
+    describeResume(e.sender.id, currentRoot() ?? "", id)
   );
 
   // The attach itself, and the one call on this surface that opens a session against a transcript
@@ -721,14 +954,12 @@ export function registerIpc(): void {
   // The two header controls that change a LIVE session without ending it. Both values are checked
   // in main against a list main itself produced — the effort levels the query is configured from,
   // and the models the CLI reported — so neither can put an arbitrary string into the session.
-  ipcMain.handle(
-    IPC.sessionEffort,
-    async (e, id: string, effort: SessionEffort): Promise<boolean> => setSessionEffort(e.sender.id, id, effort)
+  ipcMain.handle(IPC.sessionEffort, async (e, id: string, effort: SessionEffort): Promise<boolean> =>
+    setSessionEffort(e.sender.id, id, effort)
   );
 
-  ipcMain.handle(
-    IPC.sessionModel,
-    async (e, id: string, model: string | null): Promise<boolean> => setSessionModel(e.sender.id, id, model)
+  ipcMain.handle(IPC.sessionModel, async (e, id: string, model: string | null): Promise<boolean> =>
+    setSessionModel(e.sender.id, id, model)
   );
 
   ipcMain.handle(IPC.sessionEnd, (e): void => endSession(e.sender.id));
@@ -743,25 +974,38 @@ export function registerIpc(): void {
   //
   // Never rejects: a machine with neither ccusage nor npx is a normal machine, and the tab says so
   // rather than handing the renderer an error boundary.
-  ipcMain.handle(
-    IPC.statsPreview,
-    (_e, view: UsageStatsView): UsageStatsPreview => previewUsageStats(currentRoot() ?? "", view)
+  ipcMain.handle(IPC.statsPreview, (_e, view: UsageStatsView): UsageStatsPreview =>
+    previewUsageStats(currentRoot() ?? "", view)
   );
 
-  ipcMain.handle(
-    IPC.statsRun,
-    async (_e, token: string, view: UsageStatsView): Promise<UsageStatsResult> => runUsageStats(token, view)
+  ipcMain.handle(IPC.statsRun, async (_e, token: string, view: UsageStatsView): Promise<UsageStatsResult> =>
+    runUsageStats(token, view)
   );
 
   // ── session log ──────────────────────────────────────────────────────
   // No separate snapshot channel: `subscribe` emits the full snapshot as its first `init`, so a
   // second way to ask for the same bytes is surface with no consumer.
   ipcMain.handle(IPC.logSubscribe, (e) => {
+    logSubscribers.add(e.sender.id);
     startTail(e.sender.id);
-    e.sender.once("destroyed", () => stopTail(e.sender.id));
+    e.sender.once("destroyed", () => {
+      logSubscribers.delete(e.sender.id);
+      stopTail(e.sender.id);
+    });
   });
 
-  ipcMain.handle(IPC.logUnsubscribe, (e) => stopTail(e.sender.id));
+  ipcMain.handle(IPC.logUnsubscribe, (e) => {
+    logSubscribers.delete(e.sender.id);
+    stopTail(e.sender.id);
+  });
+
+  // ── channels (037) ───────────────────────────────────────────────────
+  // Read-only: every receiver lane holding at least one undelivered file, right now. No project
+  // open reads back `[]`, matching `reportGet`'s "an empty answer is honest, not an error".
+  ipcMain.handle(IPC.channelsPending, (): PendingLane[] => {
+    const root = currentRoot();
+    return root ? pendingLanes(root) : [];
+  });
 
   // ── shell ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.revealInFolder, (_e, target: string) => {
@@ -771,6 +1015,7 @@ export function registerIpc(): void {
 
 export function disposeIpc(): void {
   for (const id of [...tails.keys()]) stopTail(id);
+  logSubscribers.clear();
   // A cancelled run's child is spawned detached, so it outlives us by design unless it is killed.
   // Without this, quitting the app leaves Claude running against the user's repo with no window
   // left to stop it from.

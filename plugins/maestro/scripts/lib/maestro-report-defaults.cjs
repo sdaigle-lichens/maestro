@@ -45,8 +45,34 @@ var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
 var DEFAULT_REPORT_DEFAULTS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-report-defaults.sqlite");
+function conceptGapsChannelNote(subagent) {
+  return `If a concept skill you loaded was missing something you had to work out from the code yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: \`{ "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }] }\`. Leave it unwritten when nothing was missing \u2014 do not write a gap just to fill the file.`;
+}
 function backendLikeReport(subagent) {
   return `Always return a JSON report at the end of your work. Output it as a fenced \`json\` code block:
+
+\`\`\`json
+{
+  "subagent": "${subagent}",
+  "verdict": "SUCCESS | FAIL",
+  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },
+  "description": "<summary of what was implemented>"
+}
+\`\`\`
+
+` + conceptGapsChannelNote(subagent);
+}
+var SCRIBE_REPORT = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "scribe",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "agentsMdUpdated": 0,\n  "docsUpdated": 0,\n  "claudeFilesUpdated": 0,\n  "conceptSkillsUpdated": 0,\n  "changelogUpdated": false,\n  "description": "<summary of what was updated>"\n}\n```\n\n"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. Use the counts to keep the handoff message small \u2014 do not list individual file names unless the caller asks.\n\n`conceptSkillsUpdated` counts concept skills you created or revised \u2014 it is a subset of `claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept list moved without reading the whole summary.';
+var TEST_REPORT = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "testResult": "<N passed, N failed>",\n  "description": "<summary of what was tested>"\n}\n```\n\n' + conceptGapsChannelNote("test");
+var SEED_REPORTS = {
+  backend: backendLikeReport("backend"),
+  frontend: backendLikeReport("frontend"),
+  mobile: backendLikeReport("mobile"),
+  scribe: SCRIBE_REPORT,
+  test: TEST_REPORT
+};
+var PRIOR_SEEDS = (() => {
+  const backendLikeV1 = (subagent) => `Always return a JSON report at the end of your work. Output it as a fenced \`json\` code block:
 
 \`\`\`json
 {
@@ -57,16 +83,32 @@ function backendLikeReport(subagent) {
   "description": "<summary of what was implemented>"
 }
 \`\`\``;
+  const scribeV1 = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "scribe",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "agentsMdUpdated": 0,\n  "docsUpdated": 0,\n  "claudeFilesUpdated": 0,\n  "changelogUpdated": false,\n  "description": "<summary of what was updated>"\n}\n```\n\n"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. Use the counts to keep the handoff message small \u2014 do not list individual file names unless the caller asks.';
+  const testV1 = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "testResult": "<N passed, N failed>",\n  "filesChanged": ["<file1>", "<file2>"],\n  "description": "<summary of what was tested>"\n}\n```';
+  const conceptGapsFieldNoteV2 = "`conceptSkillGaps` is how a concept skill gets better: if one of the concept skills you loaded was missing something you had to work out from the code yourself, say which skill and what was missing, so the main session knows to hand it to the scribe. Leave the array empty when nothing was missing \u2014 do not invent a gap to fill the field.";
+  const backendLikeV2 = (subagent) => `Always return a JSON report at the end of your work. Output it as a fenced \`json\` code block:
+
+\`\`\`json
+{
+  "subagent": "${subagent}",
+  "verdict": "SUCCESS | FAIL",
+  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },
+  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],
+  "filesChanged": ["<file1>", "<file2>"],
+  "description": "<summary of what was implemented>"
 }
-var SCRIBE_REPORT = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "scribe",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "agentsMdUpdated": 0,\n  "docsUpdated": 0,\n  "claudeFilesUpdated": 0,\n  "changelogUpdated": false,\n  "description": "<summary of what was updated>"\n}\n```\n\n"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. Use the counts to keep the handoff message small \u2014 do not list individual file names unless the caller asks.';
-var TEST_REPORT = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "testResult": "<N passed, N failed>",\n  "filesChanged": ["<file1>", "<file2>"],\n  "description": "<summary of what was tested>"\n}\n```';
-var SEED_REPORTS = {
-  backend: backendLikeReport("backend"),
-  frontend: backendLikeReport("frontend"),
-  mobile: backendLikeReport("mobile"),
-  scribe: SCRIBE_REPORT,
-  test: TEST_REPORT
-};
+\`\`\`
+
+` + conceptGapsFieldNoteV2;
+  const testV2 = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n  "testResult": "<N passed, N failed>",\n  "filesChanged": ["<file1>", "<file2>"],\n  "description": "<summary of what was tested>"\n}\n```\n\n' + conceptGapsFieldNoteV2;
+  return {
+    backend: [backendLikeV1("backend"), backendLikeV2("backend")],
+    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend")],
+    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile")],
+    scribe: [scribeV1],
+    test: [testV1, testV2]
+  };
+})();
 function openDb(dbPath) {
   import_node_fs.default.mkdirSync(import_node_path.default.dirname(dbPath), { recursive: true });
   const db = new import_node_sqlite.DatabaseSync(dbPath);
@@ -84,7 +126,27 @@ function openDb(dbPath) {
     )
   `);
   seedIfEmpty(db);
+  refreshSupersededSeeds(db);
   return db;
+}
+function refreshSupersededSeeds(db) {
+  const select = db.prepare(
+    "SELECT r.report_id AS id, r.content AS content, r.version AS version FROM reports r JOIN agent_reports a ON a.report_id = r.report_id WHERE a.agent_name = ?"
+  );
+  const update = db.prepare("UPDATE reports SET content = ?, version = ? WHERE report_id = ?");
+  db.exec("BEGIN");
+  try {
+    for (const [agentName, current] of Object.entries(SEED_REPORTS)) {
+      const row = select.get(agentName);
+      if (!row) continue;
+      if (!(PRIOR_SEEDS[agentName] ?? []).includes(row.content)) continue;
+      update.run(current, row.version + 1, row.id);
+    }
+    db.exec("COMMIT");
+  } catch (err) {
+    db.exec("ROLLBACK");
+    throw err;
+  }
 }
 function seedIfEmpty(db) {
   const row = db.prepare("SELECT COUNT(*) AS n FROM reports").get();

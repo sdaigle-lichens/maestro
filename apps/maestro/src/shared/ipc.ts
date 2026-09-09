@@ -24,6 +24,9 @@ import type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroGates,
+  MaestroGatesSlice,
+  MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -32,13 +35,21 @@ import type {
   TreeNode,
   MaestroTask,
   SessionLogEntry,
+  ChannelDelivery,
+  PendingLane,
   SaveResult,
   RepoDetection,
+  ConfigIssue,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
   ResolvedReport,
   ReportDefault,
+  HandoffSyncSummary,
+  ResolvedHandoff,
+  ResolvedHandoffRoute,
+  HandoffDefault,
+  HandoffDefaultsListing,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -105,6 +116,15 @@ import type {
   AvatarPartOption,
   AvatarLayers,
   AgentType,
+  AgentDescriptionResult,
+  AgentContentResult,
+  AgentForkResult,
+  AgentForkRecord,
+  AgentSyncAction,
+  AgentSyncApplyResult,
+  AgentSyncEntry,
+  AgentSyncSummary,
+  DiffLine,
 } from "../core/contracts.js";
 
 // The one runtime (non-type) import in this file. `contracts.ts` is renderer-safe — no fs, no
@@ -117,7 +137,12 @@ export {
   AVATAR_CATEGORIES,
   AVATAR_PARTS,
   AVATAR_REQUIRED_CATEGORIES,
+  EYE_RECOLOR_SHAPES,
+  HAIR_RECOLOR_SHAPES,
+  HEX_COLOR_RE,
   AGENT_TYPES,
+  EDITABLE_AGENT_SOURCES,
+  isEditableAgentSource,
 } from "../core/contracts.js";
 
 export type {
@@ -129,6 +154,9 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
+  MaestroGates,
+  MaestroGatesSlice,
+  MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -137,13 +165,21 @@ export type {
   TreeNode,
   MaestroTask,
   SessionLogEntry,
+  ChannelDelivery,
+  PendingLane,
   SaveResult,
   RepoDetection,
+  ConfigIssue,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
   ResolvedReport,
   ReportDefault,
+  HandoffSyncSummary,
+  ResolvedHandoff,
+  ResolvedHandoffRoute,
+  HandoffDefault,
+  HandoffDefaultsListing,
   UninstallPlan,
   UninstallReport,
   ClaudeRequest,
@@ -210,6 +246,15 @@ export type {
   AvatarPartOption,
   AvatarLayers,
   AgentType,
+  AgentDescriptionResult,
+  AgentContentResult,
+  AgentForkResult,
+  AgentForkRecord,
+  AgentSyncAction,
+  AgentSyncApplyResult,
+  AgentSyncEntry,
+  AgentSyncSummary,
+  DiffLine,
 };
 
 /** A project the app has opened, as remembered in the recent-projects list. */
@@ -244,6 +289,11 @@ export interface WorkflowsData {
   detection: RepoDetection | null;
   agents: DiscoveredDefinition[];
   skills: DiscoveredDefinition[];
+  /**
+   * Duplicate-agent-type collisions in `config` (`041`) — the canvas itself refuses to create one,
+   * so this is what catches a hand-edit or a merge conflict that did. Empty on a healthy config.
+   */
+  configIssues: ConfigIssue[];
 }
 
 /** Everything the /rules route needs. */
@@ -303,10 +353,33 @@ export interface ProjectTagsData {
   selected: string[];
 }
 
+/**
+ * What `/maestro`'s Step 1 gates card needs, and what it writes back. Half of the pair that drives
+ * the orchestrator's injected Step 1: the app writes `maestro.json.gates` here, and
+ * `maestro-step1-gates.cjs` reads it at invocation time and prints the one directive line the
+ * skill body injects. Nothing else connects the two — there is no shared code path.
+ */
+export interface GatesData {
+  /** Resolved, never raw: an absent, partial or corrupt `gates` block reads back as both false. */
+  gates: MaestroGates;
+}
+
+/**
+ * What `/maestro`'s Step 4 task-routing checkbox needs, and what it writes back. The sibling of
+ * `GatesData` for `use_maestro_tasks` (`046`) — the app writes `maestro.json.use_maestro_tasks`
+ * here, and `maestro-step4-gate.cjs` reads it at invocation time to print the Step 4 directive.
+ */
+export interface TaskRoutingData {
+  /** Resolved via `resolveUseMaestroTasks`, never raw: absent or non-boolean reads back as false. */
+  useMaestroTasks: boolean;
+}
+
 export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
-  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice };
+  | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
+  | { sliceType: "gates"; slice: MaestroGatesSlice }
+  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
 
 export const IPC = {
   projectGet: "project:get",
@@ -336,6 +409,21 @@ export const IPC = {
   projectTagsData: "data:project-tags",
   projectTagsSet: "project:tags:set",
 
+  // `/maestro`'s Step 1 gates checkboxes — the pair that drives the orchestrator's INJECTED Step 1.
+  // `data:gates` reads the project's resolved gates (both off when no project is open, so the card
+  // can render on a route reachable in that state); `project:gates:set` saves the `gates` slice and
+  // returns what was saved. Unlike `project:tags:set` there is no second cross-slice write: a gate
+  // flag implies nothing about which agents or skills the project has.
+  gatesData: "data:gates",
+  gatesSet: "project:gates:set",
+
+  // `/maestro`'s Step 4 task-routing checkbox — the `use_maestro_tasks` sibling of the pair above
+  // (`046`, `048`). `data:task-routing` reads the project's resolved value (false when no project
+  // is open, same fallback as `data:gates`); `project:task-routing:set` saves the `task-routing`
+  // slice and returns what was saved. Also no second cross-slice write, same reasoning as gates.
+  taskRoutingData: "data:task-routing",
+  taskRoutingSet: "project:task-routing:set",
+
   // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
   // global default, else none) — the SAME resolution `report-resolution.ts` gives the
   // SubagentStart hook, so the page can never show something other than what a run would actually
@@ -356,11 +444,42 @@ export const IPC = {
   templateReportsList: "template:reports:list",
   templateReportSave: "template:reports:save",
 
-  // The /templates page's Agent Types tab — same global, no-project-needed shape as the Reports
-  // pair above, backed by `agent-types.ts`'s own `~/.claude/maestro-agent-types.sqlite`.
-  // `templateAgentTypesList` wraps `readAllAgentTypes`; `templateAgentTypeSave` wraps
-  // `setAgentType` — a plain replace, not a version bump, since an agent type has no project-tier
-  // counterpart for any sync step to compare against.
+  // The /templates page's Handoffs tab — the same pair one tier over, plus a DELETE, because a
+  // handoff default has a full lifecycle where a report default does not: the pair roster is the
+  // bundled agents crossed with themselves, so the user can create one Maestro never shipped, and
+  // anything creatable has to be removable. `templateHandoffDelete` refuses a SEEDED id (main's
+  // check, not the tab's) — `SEED_HANDOFFS` is the store's floor and `seedIfEmpty` only fires on a
+  // store that has never been written to, so deleting a shipped pair would be irreversible. The
+  // tab offers "Reset to default" for those instead, which is an ordinary save of the seed body.
+  //
+  // `templateHandoffsList` returns the rows AND the seeded id list (`HandoffDefaultsListing`):
+  // `isSeededHandoff` lives in `handoff-seeds.ts`, which the renderer cannot import.
+  templateHandoffsList: "template:handoffs:list",
+  templateHandoffSave: "template:handoffs:save",
+  templateHandoffDelete: "template:handoffs:delete",
+
+  // The Handoffs tab's own project picker (`043`): a LOCAL "which project am I viewing" the tab
+  // added for itself, distinct from every other channel on this page, which stays global. Reads
+  // the same `agents_available` `readAgentsAvailable` already gives the concept-skills CLI — no
+  // new store. `projectRoot` is validated the same way `data:tools`'s is: it must name the current
+  // or a recent project, or the call falls back to the open project (or `[]` with none open).
+  templateAgentsAvailable: "template:agents-available",
+
+  // /agents' Interactions pane — the PROJECT tier for handoffs, exactly as `reportGet`/`reportSave`
+  // are for reports. `handoffRoutes` answers "which routes leave this agent, and what template is
+  // in effect for each" in one round trip, because the graph walk (`handoff-routes.ts`) is not
+  // renderer-safe and a per-route resolve would reopen the global store once per row.
+  // `handoffSave` always writes `.claude/handoffs/<sender>/<receiver>.md` and DROPS `syncedFrom`.
+  handoffRoutes: "handoff:routes",
+  handoffSave: "handoff:save",
+
+  // The /templates page's Agent Types tab — backed by `agent-types.ts`'s own
+  // `~/.claude/maestro-agent-types.sqlite`. `templateAgentTypesList` wraps `readAllAgentTypes`;
+  // `templateAgentTypeSave` wraps `setAgentType` — a plain replace, not a version bump, since an
+  // agent type has no project-tier counterpart for any sync step to compare against.
+  //
+  // ALSO the channel `/agents` reads/writes an agent's type through (`030`) — see `MaestroApi`'s
+  // `templates` doc comment for the `projectScoped` flag that tells the two apart.
   templateAgentTypesList: "template:agent-types:list",
   templateAgentTypeSave: "template:agent-types:save",
 
@@ -374,10 +493,13 @@ export const IPC = {
   templateProjectTagRemove: "template:project-tags:remove",
 
   // The SAME tab's second section: which of the catalog's tags (or "global") each bundled/project
-  // agent belongs to — a global, one-per-agent assignment backed by its own
+  // agent belongs to — a one-per-agent assignment backed by its own
   // `~/.claude/maestro-agent-project-tags.sqlite` (agent-project-tags.ts). Distinct from the
   // Agent Types tab's unrelated developer/planner/reviewer/annotator/tester classification, and
   // called "project tag" rather than "agent type" for exactly that reason — that name was taken.
+  //
+  // ALSO the channel `/agents` reads/writes an agent's project tag through (`030`) — see
+  // `MaestroApi`'s `templates` doc comment for the `projectScoped` flag that tells the two apart.
   templateAgentProjectTagsList: "template:agent-project-tags:list",
   templateAgentProjectTagSave: "template:agent-project-tags:save",
 
@@ -387,11 +509,51 @@ export const IPC = {
   skillProjectTagsSet: "skill-tags:project-tags:set",
   skillAgentTypesSet: "skill-tags:agent-types:set",
 
-  // An agent's cosmetic avatar in the global (`~/.claude/maestro-avatars.sqlite`) store — see
-  // `src/core/avatar-store.ts`. No project involved, and no token: purely cosmetic, keyed by the
-  // agent's name, same as `skillProjectTagsSet` is keyed by skill id.
+  // An agent's cosmetic avatar in the `~/.claude/maestro-avatars.sqlite` store — see
+  // `src/core/avatar-store.ts`. No token: purely cosmetic, keyed by the agent's name, same as
+  // `skillProjectTagsSet` is keyed by skill id — global by default, project-scoped (`030`) when
+  // called with `projectScoped: true`. All three of get/set/list take it, so a project-tier
+  // agent's avatar cannot be written to one tier and read back from the other.
+  // See `MaestroApi.avatar`'s doc comment.
   avatarGet: "avatar:get",
   avatarSet: "avatar:set",
+  // Every stored avatar in one round trip — the /agents list draws a thumb per row, and a per-row
+  // `avatar:get` would open the sqlite store once per agent on every render.
+  avatarList: "avatar:list",
+
+  // The /agents card's Description field. The ONE channel that edits a subagent definition in
+  // place: unlike an agent's type, project tag or avatar — Maestro's own metadata, kept in global
+  // sqlite stores keyed by agent name — a description is the frontmatter line Claude Code itself
+  // reads to decide when to dispatch the agent, so an override kept beside the file would make
+  // this page show one sentence while every run used another. Resolves the file through
+  // `discoverAgents`' own tier order and refuses any tier this app does not own — see
+  // `src/core/agent-descriptions.ts`.
+  agentDescribe: "agent:describe",
+
+  // "Fork into this project" — the card's escape hatch for the three tiers `agent:describe`
+  // refuses. A read (resolve the template through `discoverAgents`' own tier order) plus a write
+  // to `.claude/agents/<name>.md`, no Claude session, no token — same shape as `reportSave`. See
+  // `src/core/agent-fork.ts`.
+  agentFork: "agent:fork",
+
+  // `031` — keeping a fork in step with the template it came from. TWO channels for the same
+  // reason install/status and install/run are two: `agent:sync` is a pure READ that computes a
+  // summary on project selection and writes nothing to `.claude/agents/` (those files may be
+  // committed, and a diff nobody asked for is hard to explain), while `agent:sync:apply` writes
+  // exactly one agent, for exactly one explicit review action. See `src/core/agent-sync.ts`.
+  agentSync: "agent:sync",
+  agentSyncApply: "agent:sync:apply",
+
+  // The /agents page's Content tab — the selected agent's markdown BODY (everything after the
+  // closing frontmatter `---`), read-only, resolved through the same tier order `agentDescribe`
+  // walks. See `src/core/agent-descriptions.ts`'s `getAgentBody`.
+  agentContent: "agent:content",
+
+  // The Content tab's write path (`045`) — the eighth write path in the /agents edit session,
+  // gated on the SAME `isEditableAgentSource` check as `agentDescribe`. Preserves the frontmatter
+  // block byte-for-byte and rewrites only the body beneath it — the inverse of what `agentDescribe`
+  // does. See `src/core/agent-descriptions.ts`'s `setAgentContent`.
+  agentContentSave: "agent:content:save",
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
@@ -468,6 +630,12 @@ export const IPC = {
   logSubscribe: "log:subscribe",
   logUnsubscribe: "log:unsubscribe",
 
+  // `/maestro`'s Channels block (`037`) — every `.claude/channels/<receiver>/` lane holding at
+  // least one undelivered file, right now. READ-ONLY: `036`'s hooks are the only thing that
+  // delivers, retires or sweeps a channel file; this just reads `handoff-channels.ts`'s
+  // `pendingLanes()`, the same functions those hooks use, re-exported to the app.
+  channelsPending: "channels:pending",
+
   revealInFolder: "shell:reveal",
 } as const;
 
@@ -490,6 +658,22 @@ export interface MaestroApi {
     open(root: string): Promise<ProjectState>;
     forget(root: string): Promise<ProjectState>;
     onChanged(cb: (state: ProjectState) => void): () => void;
+    gates: {
+      /**
+       * Set the OPEN project's Step 1 gates to exactly `gates` — `/maestro`'s Step 1 gates card
+       * calls this on EVERY checkbox change, with no Save button. Saves the `gates` slice and
+       * nothing else, and returns what was saved. Rejects when no project is open.
+       */
+      set(gates: MaestroGates): Promise<MaestroGates>;
+    };
+    taskRouting: {
+      /**
+       * Set the OPEN project's `use_maestro_tasks` to exactly `value` — `/maestro`'s task-routing
+       * checkbox calls this on EVERY click, with no Save button. Saves the `task-routing` slice and
+       * nothing else, and returns what was saved. Rejects when no project is open.
+       */
+      set(value: boolean): Promise<boolean>;
+    };
     tags: {
       /**
        * Toggle the OPEN project's `project_tags` to exactly `tags` — `/maestro`'s post-install
@@ -545,6 +729,18 @@ export interface MaestroApi {
      * `selected: []`.
      */
     projectTags(): Promise<ProjectTagsData>;
+    /**
+     * `/maestro`'s Step 1 gates card: the open project's RESOLVED gates. Never rejects — no
+     * project open, or an absent/corrupt `gates` block, both read back as two falses, which is
+     * exactly what the runtime script resolves them to as well.
+     */
+    gates(): Promise<GatesData>;
+    /**
+     * `/maestro`'s Step 4 task-routing checkbox: the open project's RESOLVED `use_maestro_tasks`.
+     * Never rejects — no project open, or an absent/non-boolean value, both read back as false,
+     * exactly what `maestro-step4-gate.cjs` resolves them to as well.
+     */
+    taskRouting(): Promise<TaskRoutingData>;
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;
@@ -560,10 +756,33 @@ export interface MaestroApi {
     save(agentName: string, content: string): Promise<ResolvedReport>;
   };
   /**
+   * The /agents page's Interactions pane — the same pair as `reports` above, one tier over.
+   *
+   * `routes` is deliberately not a `get(handoffId)`: the pane lists one entry per outgoing route
+   * from the project's graph, and the walk that produces that list (`handoff-routes.ts`) is not
+   * renderer-safe. It comes back already resolved, so the pane makes ONE round trip per selection
+   * rather than one plus one per row.
+   *
+   * `save` takes the `"<sender>/<receiver>"` id the route it came from carries, and always writes
+   * this project's own `.claude/handoffs/<sender>/<receiver>.md`, dropping `syncedFrom` — a
+   * hand-authored save stops tracking the global default and becomes the project's answer.
+   */
+  handoffs: {
+    routes(agentName: string): Promise<ResolvedHandoffRoute[]>;
+    save(handoffId: string, content: string): Promise<ResolvedHandoff>;
+  };
+  /**
    * The /templates page — the GLOBAL tier's write path, and the reason it is its own namespace
    * rather than a widened `reports.*` above: that pair always resolves/writes a PROJECT override
    * for the OPEN project, and this always edits the machine-wide fallback tier every project
    * without an override falls back to. No project needed — nothing here is gated on one being open.
+   *
+   * `agentTypes` and `agentProjectTags` are also where `/agents` reads and writes an agent's
+   * classification, with a different intent (`030`): a `user`/`maestro`/plugin-tier agent is the
+   * same agent everywhere, so editing it from either page writes the one shared global row — but a
+   * `project`-tier agent is one project's own file, and `/agents` passes `projectScoped: true` for
+   * one of those so its row can't be read back from, or overwritten by, another project. `/templates`
+   * never passes it and always sees/edits the global tier, exactly as before.
    */
   templates: {
     reports: {
@@ -575,12 +794,43 @@ export interface MaestroApi {
        */
       save(agentName: string, content: string): Promise<ReportDefault>;
     };
-    /** The Agent Types tab: one type per agent, global, no project needed. */
+    /**
+     * The Handoffs tab. Same tier and same intent as `reports` above, plus the lifecycle a report
+     * default has no need of: the pair roster is a user-picked project's own `agents_available`
+     * (`043`; `agentsAvailable` below is how the tab reads it), so a user can author a route for
+     * agents Maestro never shipped, and anything creatable must be removable.
+     *
+     * `list` carries the seeded id set alongside the rows because `isSeededHandoff` lives behind
+     * the `src/core` boundary. `save` upserts — writing an id with no row inserts it at version 1,
+     * which is how a pair is created. `remove` REFUSES a seeded id: `SEED_HANDOFFS` is the store's
+     * floor and a delete of a shipped pair could not be undone, so the tab offers those a Reset to
+     * default (an ordinary `save` of the seed body) instead.
+     */
+    handoffs: {
+      list(): Promise<HandoffDefaultsListing>;
+      save(handoffId: string, content: string): Promise<HandoffDefault>;
+      remove(handoffId: string): Promise<void>;
+    };
+    /**
+     * The Handoffs tab's pair-roster source (`043`). Reads ONE project's `agents_available` — the
+     * project is whichever one the tab is locally viewing, never the app's globally-open project
+     * (picking one here must not call `project.open`/`pick`). `projectRoot` must name the current
+     * or a recent project; anything else falls back to the open project, and no project open (or
+     * none picked yet) reads back `[]` rather than rejecting — the tab disables Create on empty.
+     */
+    agentsAvailable(projectRoot: string): Promise<string[]>;
+    /** The Agent Types tab: one type per agent, global by default — see the namespace doc above. */
     agentTypes: {
-      /** Every agent's type, keyed by agent name. */
-      list(): Promise<Record<string, AgentType>>;
-      /** Replace one agent's type with `tag`. */
-      save(agentName: string, tag: AgentType): Promise<AgentType>;
+      /**
+       * Every agent's type, keyed by agent name. `projectScoped: true` (only ever from `/agents`)
+       * overlays the OPEN project's own project-tier rows on top of the global ones.
+       */
+      list(projectScoped?: boolean): Promise<Record<string, AgentType>>;
+      /**
+       * Replace one agent's type with `tag`. `projectScoped: true` writes the OPEN project's own
+       * row instead of the global one — pass it only when the agent being edited is project-tier.
+       */
+      save(agentName: string, tag: AgentType, projectScoped?: boolean): Promise<AgentType>;
     };
     /**
      * The Project Tags tab: a global catalog, not a per-item assignment — add/remove a tag name,
@@ -595,13 +845,13 @@ export interface MaestroApi {
     /**
      * The SAME tab's second section: one project tag (or "global") per agent — the OTHER half of
      * the project ↔ agent mapping, distinct from `agentTypes` above. `save` returns the stored
-     * value back, same echo discipline as `agentTypes.save`.
+     * value back, same echo discipline as `agentTypes.save`. Same `projectScoped` discipline too.
      */
     agentProjectTags: {
       /** Every agent's project tag, keyed by agent name. */
-      list(): Promise<Record<string, string>>;
+      list(projectScoped?: boolean): Promise<Record<string, string>>;
       /** Replace one agent's project tag with `tag` (a catalog entry, or "global"). */
-      save(agentName: string, tag: string): Promise<string>;
+      save(agentName: string, tag: string, projectScoped?: boolean): Promise<string>;
     };
   };
   /**
@@ -614,12 +864,73 @@ export interface MaestroApi {
     setAgentTypes(skillId: string, tags: string[]): Promise<string[]>;
   };
   /**
-   * An agent's cosmetic avatar — global, keyed by agent name, edited from the create-subagent form
-   * and the /agents detail pane. `get` resolves null when nothing has been saved for that name yet.
+   * An agent's cosmetic avatar — global by default, keyed by agent name, edited from the
+   * create-subagent form and the /agents detail pane. `get` resolves null when nothing has been
+   * saved for that name yet.
+   *
+   * `projectScoped: true` (`030`) scopes all three calls to the OPEN project instead of the global
+   * tier — pass it only when the agent is project-tier (a `target: "project"` create-subagent, or
+   * an `/agents` edit of a project agent); a `user`/`maestro`/plugin-tier agent's avatar stays the
+   * one shared global row.
    */
   avatar: {
-    get(agentName: string): Promise<AvatarLayers | null>;
-    set(agentName: string, layers: AvatarLayers): Promise<AvatarLayers>;
+    get(agentName: string, projectScoped?: boolean): Promise<AvatarLayers | null>;
+    set(agentName: string, layers: AvatarLayers, projectScoped?: boolean): Promise<AvatarLayers>;
+    /** Every agent with a saved avatar, keyed by agent name. Agents without one are simply absent. */
+    list(projectScoped?: boolean): Promise<Record<string, AvatarLayers>>;
+  };
+  /**
+   * An agent's own `description`, written back into the `.md` it was discovered in. REJECTS rather
+   * than no-opping when the agent has no definition file, when its tier is not one of
+   * `EDITABLE_AGENT_SOURCES` (an installed plugin's agents live in a cache the next update
+   * overwrites), when the file is read-only (a packaged build's bundled agents), or when its
+   * frontmatter uses a description shape this app can't rewrite without corrupting it. Echoes back
+   * the normalized description and the file it changed.
+   */
+  agents: {
+    describe(agentName: string, description: string): Promise<AgentDescriptionResult>;
+    /**
+     * Fork a `user`/`maestro`/plugin-tier agent into this project's `.claude/agents/`. `newName`
+     * defaults to the template's own name — shadowing, not a rival: a project agent with the same
+     * name wins `discoverAgents`' own tier order, so the list shows one row, sourced from the
+     * project. A different `newName` writes a coexisting agent instead, with its frontmatter
+     * `name:` rewritten to match.
+     *
+     * Rejects when the agent is already project-tier (nothing to fork FROM), when `newName` isn't
+     * kebab-case, or when it collides with a file already in `.claude/agents/`.
+     */
+    fork(agentName: string, newName?: string): Promise<AgentForkResult>;
+    /**
+     * Which of this project's forked agents are still in step with their template (`031`).
+     *
+     * A pure read — it writes nothing, so it is safe to run on every project selection. The verdict
+     * per agent comes from the same `decideSync` the report sync uses, so this page, the `/maestro`
+     * count and the `maestro`/`maestro-update` skills cannot disagree about whether a fork is stale.
+     * An agent with no provenance record — hand-authored, or detached — is not in the result at all.
+     */
+    sync(): Promise<AgentSyncSummary>;
+    /**
+     * Apply ONE review action to ONE forked agent: `update` (take the new body, keep my
+     * description), `keep` (leave it, stay tracked, ask again next version) or `detach` (drop the
+     * provenance record — it is just a project agent now). The only call in this namespace that
+     * rewrites an agent's `.md`, and it does so one agent at a time on purpose.
+     */
+    syncApply(agentName: string, action: AgentSyncAction): Promise<AgentSyncApplyResult>;
+    /**
+     * The Content tab's one round trip: the selected agent's markdown BODY — everything after the
+     * closing frontmatter `---`, for a file resolved through the same tier order `describe` walks
+     * (project, user, maestro/bundled, then every installed plugin). Rejects when no tier has a
+     * definition file for the name, the same "a stale list" failure `describe` reports.
+     */
+    content(agentName: string): Promise<string>;
+    /**
+     * The Content tab's write path (`045`) — the eighth write path in the /agents edit session.
+     * Rejects on the same grounds as `describe` (no definition file, an un-editable tier, a
+     * read-only file), and preserves the frontmatter block byte-for-byte, rewriting only the body
+     * beneath it — the inverse of what `describe` rewrites. The body is written verbatim, with no
+     * normalization: unlike a description it is not a single frontmatter line.
+     */
+    saveContent(agentName: string, content: string): Promise<AgentContentResult>;
   };
   tasks: {
     list(): Promise<MaestroTask[]>;
@@ -683,10 +994,7 @@ export interface MaestroApi {
      * `projectRoot` trails `opts` here rather than leading, so the existing
      * `uninstall({ purge, deleteMaestroTasks })` call sites keep type-checking untouched.
      */
-    uninstall(
-      opts?: { purge?: boolean; deleteMaestroTasks?: boolean },
-      projectRoot?: string
-    ): Promise<UninstallReport>;
+    uninstall(opts?: { purge?: boolean; deleteMaestroTasks?: boolean }, projectRoot?: string): Promise<UninstallReport>;
   };
   /**
    * The `claude -p` bridge. Two operations, and the split is the security design.
@@ -902,5 +1210,18 @@ export interface MaestroApi {
   };
   shell: {
     reveal(target: string): Promise<void>;
+  };
+  /**
+   * `/maestro`'s Channels block (`037`) — every receiver lane in `.claude/channels/` holding at
+   * least one undelivered file, right now.
+   *
+   * READ-ONLY, and there is exactly one call because there is exactly one thing to ask: `036`'s
+   * hooks are the only code that delivers (`SubagentStart`), retires (the same hook, by moving a
+   * file to `.consumed/`) or sweeps (`SessionEnd`) a channel file. This never does any of that —
+   * it is the read `pendingLanes()` already computes, so a second implementation of the lifetime
+   * rule never has the chance to drift from the hooks'.
+   */
+  channels: {
+    pending(): Promise<PendingLane[]>;
   };
 }

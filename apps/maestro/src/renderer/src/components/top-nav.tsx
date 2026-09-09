@@ -42,7 +42,8 @@ import HamburgerMenu from "./hamburger-menu";
  * into the hamburger menu, and Create's four routes are reached instead from buttons at the
  * bottom of the Marketplace/Plugins/Agents/Skills tabs on /tools.
  */
-export const NAV_LINK = "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] text-(--ink-2) hover:text-(--ink)";
+export const NAV_LINK =
+  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] text-(--ink-2) hover:text-(--ink)";
 export const MENU_ITEM =
   "flex items-center gap-2 px-3 py-1.5 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink)";
 

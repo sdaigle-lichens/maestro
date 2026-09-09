@@ -9,13 +9,14 @@ right-hand pane.
 
 ## Architecture docs live in `.claude/skills/`
 
-Six of them — the long-form reference; this file is the short one.
+Seven of them — the long-form reference; this file is the short one.
 
 | Skill                        | Covers                                                                                                                       |
 | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `maestro-architecture`       | the **runtime** — install pipeline, orchestrator + hook lifecycle, the four config/state files, the HANDOFF routing contract |
 | `workflow-view`              | `/workflows` — the React Flow canvas and how the diagram maps to `maestro.json`                                              |
 | `rule-view`                  | `/rules` — the two rule selectors, the directory tree, and how a save moves rule files                                      |
+| `agents-view`                | `/agents` — the three panes, the one edit session that fans out to six write paths, the skill chips |
 | `log-view`                   | `/session-log` — the three panes, how entries become instances, and how the hooks write the log it reads                     |
 | `create-skills-architecture` | the four `create-*` flows — scaffold, confirmation dialog, consuming prompts                                                 |
 | `updating-maestro`           | how a runtime change actually reaches a project, on either delivery path                                                     |
@@ -49,8 +50,15 @@ second.
 | `seed.ts` / `label-layout.ts`           | The starter workflows an unconfigured project opens with (pure)                        |
 | `detect.ts`                             | Which implementation agent(s) the repo needs, and the evidence for it                  |
 | `discovery.ts` / `fs-scan.ts`           | The agents, skills, rules and directory tree a project can pick from                   |
+| `concept-skills.ts`                     | The project's concept skills — the `.claude/skills/*` whose frontmatter `metadata.type` is `concept-skill`, which explain its core concepts to agents. `metadata` is the Agent Skills spec's home for third-party data and one of the six fields that survive a claude.ai upload / `package_skill.py`; an invented top-level key is a HARD ERROR on those paths, so this must never move out of `metadata`, and it must be read with `parseFrontmatterMetadata` — `parseFrontmatter` flattens nesting and cannot tell `metadata.version` from a top-level `version`. Discovery walks EVERY `.claude/skills` in the tree (`skillSearchDirs` in `fs-scan.ts`), unlike `discoverSkills`, which reads one. Owns the `major.minor` arithmetic, the in-place frontmatter stamp, and the repo-level record at `<project>/.claude/concept-skills.json` — its own file, NOT a block on `maestro.json`, because concept skills are a plain `.claude/skills` convention and a repo must be able to keep a reconciled list of them with Maestro nowhere in sight. `readAgentsAvailable` is the one function here that still reads `maestro.json`, since nothing else knows what agents a project runs. Driven from `plugins/maestro/scripts/maestro-concept-skills.cjs` by the three `/…-concept-skill(s)` flows |
 | `skill-tags.ts`                         | A skill's backend/frontend/mobile/refactor/reviewer/scribe/test tags — global, keyed by skill id, in `~/.claude/maestro-skill-tags.sqlite` (`node:sqlite`, not a native module). `skillMapFromTags` is the pure tags→`SkillMap` lookup both `data:workflows`/`data:reseed` and `/maestro-install`'s terminal path converge on. `parseSkillTagsBlock`/`applySkillTagsBlock` are the "Update skill tags" pane flow's other half — see `claude-session.ts` |
 | `install.ts` / `uninstall.ts`           | Installs the runtime into a project, reports staleness, removes it                     |
+| `sync-decision.ts`                      | The ONE materialize / refresh / skip-as-customized / never-touched rule (pure, no `fs`). Lifted out of `report-sync.ts` by `031` so the report path and the forked-agent path cannot drift — the caller answers "what is the hash over" and "has the template moved" and this answers the verdict |
+| `handoff-seeds.ts` / `handoff-defaults.ts` / `handoff-routes.ts` / `handoff-resolution.ts` / `handoff-sync.ts` / `handoffs.ts` | The `handoff_details` protocol a route's sender must emit (`033`), in the same three-tier shape as reports: project file → `~/.claude/maestro-handoff-defaults.sqlite` → the shipped seed. `handoff-seeds.ts` **imports nothing** on purpose — it rides into the SubagentStart hook inside `lib/maestro-session.cjs`, so the floor still answers on a `node` older than 22.5; the store is a separate bundle the hook `require`s in a try/catch. `handoff-routes.ts` is the route walk lifted out of the hook so the install-time sync and the hook cannot disagree about which routes exist. `handoff-sync.ts` is `decideSync`'s third caller — and since `034` its `no-template` branch clears a `syncedFrom` left tracking a deleted global row, a change `plugins/maestro/scripts/maestro-install.js` carries its own copy of. `handoffs.ts` adds `resolvedRoutesFrom(projectRoot, agent)` (`034`), the one round trip behind `/agents`' Interactions pane. Both editable tiers now have a surface: `/templates` → Handoffs tab writes the global row, `/agents` → Interactions pane writes the project override. Ids are `"<sender>/<receiver>"` with BARE agent names, validated before any `path.join` |
+| `agent-fork.ts` / `agent-fork-record.ts` | Forking a global-tier agent into the project, and the `agent-forks.json` provenance sidecar. Split so the sidecar + frontmatter arithmetic reach the plugin bundle WITHOUT `node:sqlite`, which `copyAgentAttributeRows` drags in |
+| `agent-sync.ts`                         | Whether each forked agent is still in step with its template. `computeAgentSync` READS ONLY — it runs on project selection and writes nothing to `.claude/agents/`; `applyAgentSync` is the one writer, for one explicit update / keep / detach |
+| `diff.ts`                               | A line diff (pure), so the `/agents` review card and the `maestro`/`maestro-update` skills render the same array |
+| `hook-arbitration.ts`                   | Which copy of a hook runs when the plugin and a project-local install both register it |
 | `session-runtime.ts` / `session-log.ts` | Ephemeral session file, append-only log, the tail                                      |
 | `claude-cli.ts`                         | Where the `claude` CLI is, decided with `fs` and not with PATH alone                   |
 | `claude-preview.ts`                     | Builds the prompt and issues a token. **Cannot spawn**                                 |
@@ -87,13 +95,20 @@ repo.
 pnpm --filter maestro build:plugin-libs
 ```
 
-Bundles `src/core/plugin-entries/*.ts` to CJS and writes them over:
+Bundles `src/core/plugin-entries/*.ts` to CJS and writes them over every `.cjs` in
+`plugins/maestro/scripts/lib/` **except `maestro-tasks.cjs`** — one per entry in
+`build-plugin-libs.mjs`'s `entries` array, which is the list:
 
-- `plugins/maestro/scripts/lib/maestro-session.cjs`
-- `plugins/maestro/scripts/lib/maestro-skill-regions.cjs`
-- `plugins/maestro/scripts/lib/maestro-seed.cjs`
+- `maestro-session.cjs`, `maestro-skill-regions.cjs`, `maestro-seed.cjs`
+- `maestro-skill-tags.cjs`, `maestro-report-defaults.cjs`, `maestro-project-tags.cjs`,
+  `maestro-agent-project-tags.cjs`, `maestro-agent-types.cjs`
+- `maestro-concept-skills.cjs`
+- `maestro-agent-sync.cjs` — forked-agent staleness (`031`), behind `maestro-agent-forks.cjs`
+- `maestro-handoff-defaults.cjs` — the handoff global store (`033`), `require`d by
+  `maestro-inject-agent-context.js` **inside a try/catch**; the seed tier ships in
+  `maestro-session.cjs` instead, so `grep -c "node:sqlite" …/lib/maestro-session.cjs` must stay `0`
 
-**Those three files are generated. Do not hand-edit them** — edit the TypeScript source and re-run
+**Those files are generated. Do not hand-edit them** — edit the TypeScript source and re-run
 the build. They are committed because a project installs them by file copy, so they must exist in
 the repo rather than being produced at install time. (`lib/maestro-tasks.cjs` in the same directory
 is _not_ generated; it is hand-written and has no banner.)
@@ -111,8 +126,9 @@ suite. Two of its settings exist for exactly that reason and are not incidental:
   solution file (`files: []`, references only), so `absWorkingDir` must resolve to a config that
   actually sets `strict`, or the bundles silently come out non-strict.
 
-The export surface of each bundle must stay identical to what the hook scripts `require()`;
-`test/core/parity.test.ts` asserts the name lists.
+The export surface of each bundle must stay a **superset** of what the hook scripts `require()` —
+adding an export is safe, renaming or removing one breaks a script running outside this workspace;
+`test/core/parity.test.ts` asserts the original name lists are still all there.
 
 `src/shared/ipc.ts` is the typed channel contract between the three processes. Types that cross the
 boundary come from `src/core/contracts.ts`, **not** `src/core/index.ts`. The barrel re-exports `fs`
@@ -177,7 +193,16 @@ the Claude bridge below.
 The **runtime** half — hook scripts that fire inside a session: `maestro-inject-agent-context`
 (SubagentStart), `maestro-subagent-log` (SubagentStart/Stop), `maestro-session-log` (PreToolUse),
 `maestro-validate-tasks` (PostToolUse), `maestro-session-cleanup` (SessionEnd),
-`maestro-set-session-workflow.cjs`, `bash-validation.sh`.
+`maestro-set-session-workflow.cjs`, `maestro-step1-gates.cjs`, `bash-validation.sh`.
+
+`maestro-step1-gates.cjs` is the odd one: not a hook, and not invoked by the model either. The
+orchestrator skill's Step 1 names it with Claude Code's `` !`command` `` syntax, so the HARNESS runs
+it while expanding the skill and injects its one line of stdout into the body — a third delivery
+channel beside hooks and prose. It prints which of `/confidence-check` and `/use-code-architecture-design-check` this
+project's `maestro.json` `gates` block turns on (`resolveGates` in `src/core/config.ts` is the
+app-side reader of the same field, behind the Step 1 gates card on `/maestro`). It exits 0 and says
+nothing on stderr under every input, because an injected command that exits non-zero aborts the
+whole `/maestro` invocation before the model sees a word of it.
 
 They need a session to _run_, but not to be **installed**: `/maestro` (the desktop app route,
 formerly `/install`) copies them into `<project>/.claude/scripts/` and registers them in the
@@ -1013,12 +1038,18 @@ never opens this tab should not carry it.
   `"type": "module"` makes node parse their `require()` as ESM — the hook then fails on _every
   tool call_ with "require is not defined in ES module scope". Nothing catches this but running a
   copied script from inside such a project, which `test/install.test.ts` does.
-- **Two things can register Maestro's hooks, and both firing is a visible bug.** A project
-  installed from `/maestro` (formerly `/install`) has them in its own settings; the `maestro` plugin registers
-  the same ones globally from its `hooks.json`. With both, every tool call is logged twice and
-  every subagent gets its context injected twice. `InstallStatus.pluginHooksActive` detects it and
-  the route says so — it does not "fix" it, because the fix is in the user's global configuration
-  and the app does not write there.
+- **Two things can register Maestro's hooks, and the plugin's copy stands down per hook.** A
+  project installed from `/maestro` (formerly `/install`) has them in its own settings; the
+  `maestro` plugin registers the same ones globally from its `hooks.json`. Both firing used to log
+  every tool call twice and inject every subagent's context twice. `projectOwnsHook`
+  (`src/core/hook-arbitration.ts`) now arbitrates it: each of the plugin's four hook scripts exits 0
+  for a hook the project registers itself, and still runs for every hook it doesn't. The test is on
+  the **registration**, never on the copied script existing — a plain (non-purging) uninstall leaves
+  `.claude/scripts/` on disk, and keying on the file would suppress the plugin in favour of hooks
+  nobody runs. `InstallStatus.pluginHooksActive` and its warnings are gone. The guard ships in the
+  plugin's own copy of the scripts, so it reaches a machine only on a `plugin.json` version bump
+  (`0.3.3`) and re-pull. `maestro-session-cleanup.sh` deliberately has no guard: both copies `rm -f`
+  the same three files, so a double fire is unobservable.
 - **Uninstall has two levels and the destructive one is never the default.** Plain uninstall
   unregisters the hooks and deletes the ephemeral session files, and **keeps `maestro.json`** —
   a user turning the hooks off has not asked to lose their workflow graph and rule assignments.

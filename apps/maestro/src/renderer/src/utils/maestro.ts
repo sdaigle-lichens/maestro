@@ -14,6 +14,7 @@ import type {
   MaestroRuleV3,
   DiscoveredDefinition,
   RepoDetection,
+  ConfigIssue,
   SaveResult,
   SaveInput,
   TreeNode,
@@ -28,6 +29,7 @@ export type {
   MaestroWorkflowV3,
   MaestroRuleV3,
   RepoDetection,
+  ConfigIssue,
   SaveResult,
 };
 
@@ -49,6 +51,8 @@ export interface MaestroConfigResult {
   detection: RepoDetection | null;
   bundledAgents: BundledAgent[];
   projectSkills: ProjectSkill[];
+  /** Duplicate-agent-type collisions in `config` (`041`). Empty on a healthy config. */
+  configIssues: ConfigIssue[];
 }
 
 export async function getMaestroConfig(): Promise<MaestroConfigResult> {
@@ -60,6 +64,7 @@ export async function getMaestroConfig(): Promise<MaestroConfigResult> {
     detection: data.detection,
     bundledAgents: data.agents,
     projectSkills: data.skills,
+    configIssues: data.configIssues,
   };
 }
 
@@ -94,6 +99,7 @@ export async function getRulesData(): Promise<MaestroRulesResult> {
     detection: null,
     bundledAgents: [],
     projectSkills: [],
+    configIssues: [],
     tree: d.tree,
     availableRules: d.projectRules,
     vibeRules: d.vibeRules,

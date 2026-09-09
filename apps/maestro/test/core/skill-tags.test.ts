@@ -224,7 +224,9 @@ describe("parseSkillTagsBlock", () => {
   });
 
   it("rejects a row missing either dimension", () => {
-    expect(parseSkillTagsBlock('```update-skill-tags\n{"my-skill": {"projectTags": ["backend"]}}\n```', CATALOG)).toBeNull();
+    expect(
+      parseSkillTagsBlock('```update-skill-tags\n{"my-skill": {"projectTags": ["backend"]}}\n```', CATALOG)
+    ).toBeNull();
   });
 
   it("rejects a non-object payload", () => {

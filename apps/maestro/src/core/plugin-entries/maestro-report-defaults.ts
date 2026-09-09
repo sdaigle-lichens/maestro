@@ -8,4 +8,8 @@
 // older system `node` (this runs under whatever `node` is on the session's PATH, not Electron's
 // bundled one) degrades to "no global default" — no report injected, no crash.
 
-export { readAgentReportDefault, readAllAgentReportDefaults, DEFAULT_REPORT_DEFAULTS_DB_PATH } from "../report-defaults.js";
+export {
+  readAgentReportDefault,
+  readAllAgentReportDefaults,
+  DEFAULT_REPORT_DEFAULTS_DB_PATH,
+} from "../report-defaults.js";

@@ -3,7 +3,7 @@
 // This is the analytic half of the check — it re-uses the same box model `label-layout.ts` places
 // against, so on its own it only proves the placement is self-consistent. The model itself was
 // calibrated against a rendered Electron window, and the fix was verified there; see
-// `.claude/skills/test-maestro-desktop` and the notes in `label-layout.ts`.
+// `.claude/skills/test-maestro` and the notes in `label-layout.ts`.
 
 import { describe, it, expect } from "vitest";
 

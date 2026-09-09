@@ -9,18 +9,19 @@
 //      - predates the markers → backed up to SKILL.md.bak and replaced with the
 //        template (there is no safe way to locate the managed regions in it);
 //        reported as `migratedOrchestratorSkill` so the skill can tell the user.
-//   2. copies runtime scripts + handoff templates → <project>/.claude/scripts/ and
-//      <project>/.claude/templates/handoffs/ (always refreshed). Includes the hook scripts
+//   2. copies runtime scripts → <project>/.claude/scripts/ (always refreshed). Includes the hook scripts
 //      (maestro-inject-agent-context, maestro-subagent-log, maestro-session-log,
-//      maestro-validate-tasks — copied as .cjs) and maestro-session-cleanup.cjs, so every hook
+//      maestro-validate-tasks, maestro-step0 — copied as .cjs) and maestro-session-cleanup.cjs, so every hook
 //      this install registers runs from a project-local copy rather than
 //      ${CLAUDE_PLUGIN_ROOT} — see apps/maestro/src/core/install.ts's header for why.
 //   3. merges the full Maestro hook set into <project>/.claude/settings.json (preserves other
-//      keys): the bash-validation PreToolUse guard plus SubagentStart/SubagentStop/PreToolUse/
-//      PostToolUse/SessionEnd, mirroring plugins/ai-tools-manager/hooks/hooks.json one-for-one.
+//      keys): the bash-validation PreToolUse guard plus UserPromptExpansion/SubagentStart/
+//      SubagentStop/PreToolUse/PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json
+//      one-for-one.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
-//      .claude/maestro_session*.{json,jsonl} across the repo / monorepo (the `**/` glob covers
-//      root-level .claude/ too, so no per-package .gitignore is needed)
+//      .claude/maestro_session*.{json,jsonl} AND .claude/channels/ (`036`) across the repo /
+//      monorepo (the `**/` glob covers root-level .claude/ too, so no per-package .gitignore is
+//      needed)
 //   5. seeds <project>/.claude/maestro.json from defaultV3Config — ONLY when absent. An existing
 //      config is the user's authored graph and is never touched. `project_tags` is stamped onto
 //      that same seed from `--project-tags`, intersected with the live Project Tags catalog.
@@ -29,7 +30,7 @@
 // so it runs afterwards via maestro-render-orchestrator.cjs (the /maestro-install and
 // /maestro-update skills both do this as their next step).
 //
-// This manifest (STATIC_ASSETS / HOOK_SCRIPTS / handoffAssets / HOOK_REGISTRATIONS below) mirrors
+// This manifest (STATIC_ASSETS / HOOK_SCRIPTS / HOOK_REGISTRATIONS below) mirrors
 // apps/maestro/src/core/install.ts's one-for-one. If this list and that one ever diverge again,
 // that's a bug in one of them — see that file's `RuntimeAsset`/`HOOK_REGISTRATIONS` for the
 // reasoning behind each entry.
@@ -183,7 +184,10 @@ for (const map of [tagSkillMap, claudeSkillMap]) {
   }
 }
 
-const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated each session, removed at SessionEnd";
+// `036`: not everything under this header is removed at SessionEnd any more — a channel file
+// survives it (only `.consumed/` and anything past the age cap is swept) — so the header no
+// longer claims that of the whole block.
+const GITIGNORE_HEADER = "# Maestro ephemeral session state — recreated as needed, never committed";
 
 function ensureDir(d) {
   if (!fs.existsSync(d)) fs.mkdirSync(d, { recursive: true });
@@ -258,6 +262,7 @@ function ensureRepoRootGitignore(repoRoot) {
     "**/.claude/maestro_session.json",
     "**/.claude/maestro_session.log.jsonl",
     "**/.claude/maestro_session_tasks.json",
+    "**/.claude/channels/",
   ]);
 }
 
@@ -274,10 +279,18 @@ function nodeHook(event, matcher, script) {
 }
 
 // What this install registers in the project's `.claude/settings.json`. Mirrors
-// plugins/ai-tools-manager/hooks/hooks.json one-for-one (see apps/maestro/src/core/install.ts's
+// plugins/maestro/hooks/hooks.json one-for-one (see apps/maestro/src/core/install.ts's
 // HOOK_REGISTRATIONS, which this list is kept in lockstep with) — every hook the plugin would
 // otherwise run from ${CLAUDE_PLUGIN_ROOT}, plus the bash-validation guard.
 const HOOK_REGISTRATIONS = [
+  // The orchestrator's Step 0. Two events because there are two entrances: the user typing
+  // `/maestro` (UserPromptExpansion, matched on the command name) and the model invoking the skill
+  // through the Skill tool (PreToolUse) — see the script's own header.
+  nodeHook("UserPromptExpansion", "maestro", "maestro-step0.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-step0.cjs"),
+  // `047`: the same two entrances, watching for /to-maestro-tasks instead of /maestro.
+  nodeHook("UserPromptExpansion", "to-maestro-tasks", "maestro-enable-task-routing.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-enable-task-routing.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -352,6 +365,9 @@ const HOOK_SCRIPTS = [
   "maestro-subagent-log",
   "maestro-session-log",
   "maestro-validate-tasks",
+  "maestro-step0",
+  // Auto-enables Step 4 task routing the first time /to-maestro-tasks is invoked (047).
+  "maestro-enable-task-routing",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the
@@ -361,9 +377,27 @@ const STATIC_ASSETS = [
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
   { src: "scripts/maestro-task-status.cjs", dest: ".claude/scripts/maestro-task-status.cjs" },
   { src: "scripts/maestro-check-runtime.cjs", dest: ".claude/scripts/maestro-check-runtime.cjs" },
+  // Forked-agent sync (031) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it is
+  // copied into the project rather than run from ${CLAUDE_PLUGIN_ROOT}.
+  { src: "scripts/maestro-agent-forks.cjs", dest: ".claude/scripts/maestro-agent-forks.cjs" },
+  // Step 1's gate configuration (032) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for
+  // why its absence is the one that breaks an invocation outright.
+  { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // Step 4's task-routing configuration (046) — see apps/maestro/src/core/install.ts's
+  // STATIC_ASSETS for the full rationale; same shape as maestro-step1-gates.cjs above.
+  { src: "scripts/maestro-step4-gate.cjs", dest: ".claude/scripts/maestro-step4-gate.cjs" },
+  // Resume-target lookup (039) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it
+  // is a project copy invoked directly by the orchestrator rather than a hook.
+  { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
+  { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
+  // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
+  // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
+  // silently, and why the handoff store is copied even though its seed would have covered it.
+  { src: "scripts/lib/maestro-report-defaults.cjs", dest: ".claude/scripts/lib/maestro-report-defaults.cjs" },
+  { src: "scripts/lib/maestro-handoff-defaults.cjs", dest: ".claude/scripts/lib/maestro-handoff-defaults.cjs" },
   { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh — that one also tears down the
   // per-project web-app container, which is the plugin's business and not a project-local install's.
@@ -371,30 +405,12 @@ const STATIC_ASSETS = [
   ...HOOK_SCRIPTS.map((name) => ({ src: `scripts/${name}.js`, dest: `.claude/scripts/${name}.cjs` })),
 ];
 
-// Handoff-protocol templates, installed to `.claude/templates/handoffs/`. See
-// apps/maestro/src/core/install.ts's handoffAssets() for why that destination (not
-// `.claude/handoffs/`, which is left free as the user's override).
-function handoffAssets(pluginRoot) {
-  const base = path.join(pluginRoot, "templates", "handoffs");
-  if (!fs.existsSync(base)) return [];
-  const out = [];
-  const walk = (rel) => {
-    for (const entry of fs
-      .readdirSync(path.join(base, rel), { withFileTypes: true })
-      .sort((a, b) => a.name.localeCompare(b.name))) {
-      const next = rel ? `${rel}/${entry.name}` : entry.name;
-      if (entry.isDirectory()) walk(next);
-      else if (entry.name.endsWith(".md")) {
-        out.push({ src: `templates/handoffs/${next}`, dest: `.claude/templates/handoffs/${next}` });
-      }
-    }
-  };
-  walk("");
-  return out;
-}
-
-function runtimeAssets(pluginRoot) {
-  return [...STATIC_ASSETS, ...handoffAssets(pluginRoot)];
+// The handoff templates USED TO BE COPIED HERE, into `.claude/templates/handoffs/`. They are gone
+// (`033`) — see apps/maestro/src/core/install.ts's runtimeAssets() for the argument. What replaces
+// them is syncProjectHandoffs() below, which materializes `.claude/handoffs/<sender>/<receiver>.md`
+// for the routes the project's workflows actually wire and records what it copied.
+function runtimeAssets() {
+  return [...STATIC_ASSETS];
 }
 
 // Report sync — mirrors apps/maestro/src/core/report-sync.ts's syncProjectReports() exactly (see
@@ -472,6 +488,93 @@ function syncProjectReports(configPath, projectDir) {
   return summary;
 }
 
+// Handoff sync — mirrors apps/maestro/src/core/handoff-sync.ts's syncProjectHandoffs() (see that
+// file's header for the full reasoning). Unlike the report mirror above, this one does NOT restate
+// the five branches: `decideSync` comes out of lib/maestro-agent-sync.cjs, which is the same
+// compiled `sync-decision.ts` the app runs, and `handoffRoutes` out of lib/maestro-session.cjs, so
+// the terminal path and the app cannot disagree about either the candidate routes or the verdict.
+//
+// The store read is the one thing wrapped in its own try/catch: `node:sqlite` may not exist on
+// this session's `node`, and with no global tier there is nothing to sync FROM — the seed still
+// reaches agents through the hook, which requires it out of maestro-session.cjs.
+function syncProjectHandoffs(configPath, projectDir) {
+  const summary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
+  if (!fs.existsSync(configPath)) return summary;
+  const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
+  if (cfg.version !== 3) return summary;
+
+  const { handoffRoutes, handoffPairs, isValidHandoffId } = require("./lib/maestro-session.cjs");
+  const { decideSync } = require("./lib/maestro-agent-sync.cjs");
+
+  let readHandoffDefault;
+  try {
+    ({ readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs"));
+  } catch {
+    return summary; // no node:sqlite on this node — degrade to nothing synced
+  }
+
+  const handoffs = { ...(cfg.handoffs || {}) };
+  const wired = handoffPairs(handoffRoutes(cfg.workflows, cfg.workflow_instances));
+  const candidates = [...new Set([...Object.keys(handoffs), ...wired])].filter(isValidHandoffId);
+  let changed = false;
+
+  for (const id of candidates) {
+    const entry = handoffs[id];
+    const global = readHandoffDefault(id);
+
+    const [sender, receiver] = id.split("/");
+    const filePath = path.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`);
+    const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+
+    const tracking = entry
+      ? entry.syncedFrom
+        ? { kind: "tracked", hash: entry.syncedFrom.hash }
+        : { kind: "detached" }
+      : { kind: "untracked" };
+
+    const verdict = decideSync({
+      tracking,
+      localHash: onDisk === null ? null : sha256(onDisk),
+      hasTemplate: global !== null,
+      templateAdvanced: !!global && !!(entry && entry.syncedFrom) && global.version > entry.syncedFrom.version,
+    });
+
+    // `no-template` is the only silent branch that still writes. A global row deleted on the app's
+    // /templates Handoffs tab leaves this project's entry tracking a version that no longer exists
+    // and can never advance; the file stays (the project tier is the user's own and wins at the
+    // hook either way) and the dead tracking is cleared. Mirrors handoff-sync.ts exactly.
+    if (verdict === "no-template") {
+      if (entry && entry.syncedFrom) {
+        handoffs[id] = { id };
+        changed = true;
+      }
+      continue;
+    }
+    if (verdict === "detached") continue;
+
+    if (verdict === "materialize" || verdict === "refresh") {
+      fs.mkdirSync(path.dirname(filePath), { recursive: true });
+      fs.writeFileSync(filePath, global.content);
+      handoffs[id] = { id, syncedFrom: { version: global.version, hash: sha256(global.content) } };
+      summary[verdict === "materialize" ? "materialized" : "refreshed"].push(id);
+      changed = true;
+      continue;
+    }
+
+    if (verdict === "stale-customized") {
+      summary.staleCustomized.push(id);
+      continue;
+    }
+
+    summary.unchanged.push(id);
+  }
+
+  if (changed) {
+    fs.writeFileSync(configPath, JSON.stringify({ ...cfg, handoffs }, null, 2));
+  }
+  return summary;
+}
+
 try {
   const claudeDir = path.join(projectDir, ".claude");
   const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
@@ -485,12 +588,12 @@ try {
     path.join(orchestratorSkillDir, "SKILL.md")
   );
 
-  // Runtime scripts + handoff templates the orchestrator / hooks invoke via $CLAUDE_PROJECT_DIR.
+  // Runtime scripts the orchestrator / hooks invoke via $CLAUDE_PROJECT_DIR.
   // They run in-place inside the project, whose package.json may declare "type": "module" — so
   // hook scripts are copied as .cjs to stay CommonJS regardless. Only files that differ are
   // rewritten, so a second run reports nothing left to do.
   const scriptsWritten = [];
-  for (const asset of runtimeAssets(pluginRoot)) {
+  for (const asset of runtimeAssets()) {
     const from = path.join(pluginRoot, ...asset.src.split("/"));
     const to = path.join(projectDir, ...asset.dest.split("/"));
     const source = fs.readFileSync(from);
@@ -534,6 +637,7 @@ try {
   }
 
   const reportsSync = syncProjectReports(configPath, projectDir);
+  const handoffsSync = syncProjectHandoffs(configPath, projectDir);
 
   process.stdout.write(
     JSON.stringify({
@@ -550,6 +654,7 @@ try {
       runtimeVersion,
       runtimeVersionUpdated,
       reportsSync,
+      handoffsSync,
     }) + "\n"
   );
 } catch (err) {

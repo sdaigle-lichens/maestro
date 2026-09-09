@@ -18,7 +18,7 @@ The ephemeral `maestro_session_tasks.json` the script always deletes is neither 
 
 1. **Decide the scope.** Ask the user (or infer from their request):
    - default — remove the Maestro hooks from settings (session files cleared); `maestro.json` and the orchestrator skill are kept
-   - `--purge` — also delete `.claude/skills/maestro/SKILL.md`, the copied runtime scripts (the `maestro-*.cjs` hook and helper scripts, `bash-validation.sh`, `lib/*.cjs`, and the installed `templates/handoffs/` protocols), **and** the user-authored config (`.claude/maestro.json`) — everything the install pipeline produced. Use this only when the user wants Maestro fully gone. If `maestro.json` is tracked in git, the deletion will show up as a working-tree change to commit. Purge mode also makes the script *report* on any Maestro tasks (see step 3) — it never deletes them without a separate, explicitly-confirmed follow-up run.
+   - `--purge` — also delete `.claude/skills/maestro/SKILL.md`, the copied runtime scripts (the `maestro-*.cjs` hook and helper scripts, `bash-validation.sh`, `lib/*.cjs`, and any `templates/handoffs/` protocols an install before 0.4.2 left behind — never `.claude/handoffs/`, which is the project's own), **and** the user-authored config (`.claude/maestro.json`) — everything the install pipeline produced. Use this only when the user wants Maestro fully gone. If `maestro.json` is tracked in git, the deletion will show up as a working-tree change to commit. Purge mode also makes the script *report* on any Maestro tasks (see step 3) — it never deletes them without a separate, explicitly-confirmed follow-up run.
 
 2. **Run the uninstaller** from the project root:
 

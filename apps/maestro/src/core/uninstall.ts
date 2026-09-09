@@ -22,8 +22,15 @@
 //   3. PURGE DELETES WHAT INSTALL CREATED — no more, no less. Targets come from the runtime
 //      manifest plus a sweep of the two directories the app owns (`.claude/scripts/` and
 //      `.claude/templates/handoffs/`), so a project installed by an OLDER release is not left with
-//      orphans of scripts that release shipped. `.claude/handoffs/` is the user's override
-//      location and is never touched.
+//      orphans of scripts that release shipped. `.claude/templates/handoffs/` is exactly that case
+//      as of `033`: NOTHING installs there any more, and the sweep stays precisely so a project
+//      installed before `0.4.2` does not keep 23 orphaned files forever.
+//
+//      `.claude/handoffs/` is a different thing and is STILL never touched, by either level. It is
+//      now where install materializes a project's tracked copies (`handoff-sync.ts`) — but a
+//      hand-edit there is the user's own content, the slice records nothing a purge could use to
+//      tell an edited copy from a fresh one, and the same argument that keeps `maestro.json` out of
+//      a plain uninstall keeps every file here out of both.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -47,8 +54,10 @@ export type { UninstallPlan, UninstallReport };
 
 export interface UninstallOptions {
   /**
-   * Also delete the orchestrator skill, the copied runtime scripts, the installed handoff
-   * protocols and `maestro.json`. Destructive and irreversible — never default it to true.
+   * Also delete the orchestrator skill, the copied runtime scripts, any handoff protocols an
+   * older release installed under `.claude/templates/handoffs/`, and `maestro.json`. Destructive
+   * and irreversible — never default it to true. `.claude/handoffs/` survives a purge; see this
+   * file's header.
    */
   purge?: boolean;
   /**
@@ -206,10 +215,10 @@ function looksAppInstalled(rel: string): boolean {
 /**
  * Everything a purge would delete, project-relative, existing-only.
  *
- * MOST CONSEQUENTIAL FIRST. A full install is ~37 files, nearly all of them handoff templates, and
- * the confirmation renders this list in order — with `maestro.json` last it would sit below the
- * fold of the scroll box, which is the one file the user cannot get back. De-duplicated because
- * the manifest and the sweep overlap on every current install.
+ * MOST CONSEQUENTIAL FIRST. The list runs to a dozen-odd scripts, and the confirmation renders it
+ * in order — with `maestro.json` last it would sit below the fold of the scroll box, which is the
+ * one file the user cannot get back. De-duplicated because the manifest and the sweep overlap on
+ * every current install.
  */
 export function purgeTargets(projectRoot: string, pluginRoot?: string): string[] {
   const rel = (abs: string) => path.relative(projectRoot, abs).split(path.sep).join("/");
@@ -371,12 +380,11 @@ export async function uninstallRuntime(projectRoot: string, options: UninstallOp
 
   const status = await installStatus(projectRoot, pluginRoot);
 
+  // No warning about the maestro plugin's own hooks here. It registers them globally and they do
+  // keep firing in a project this uninstall just unregistered — which is the FALLBACK, not a fault:
+  // the plugin's copy of each hook stands down only while the project registers its own
+  // (hook-arbitration.ts), so removing those registrations is what hands the work back to it.
   const warnings: string[] = [];
-  if (status.pluginHooksActive) {
-    warnings.push(
-      "The maestro plugin is also installed on this machine and registers Maestro's hooks globally, so they will keep firing in this project. Disable the plugin to stop them — the app does not edit your global Claude configuration."
-    );
-  }
   if (purge && status.configFile) {
     warnings.push(`${maestroJsonPath(projectRoot)} could not be deleted.`);
   }

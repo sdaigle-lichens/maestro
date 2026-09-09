@@ -80,3 +80,25 @@ export function rulesFilesIn(dir: string): string[] {
 export function ruleSearchDirs(root: string): string[] {
   return [root, ...Array.from(walkDirs(root, { skipClaudeDir: true }), (d) => d.absolute)];
 }
+
+/** `<dir>/.claude/skills`, or null when there is no such directory. */
+export function skillsDirIn(dir: string): string | null {
+  const skillsDir = path.join(dir, ".claude", "skills");
+  try {
+    return fs.statSync(skillsDir).isDirectory() ? skillsDir : null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Every `.claude/skills` directory in the tree — the same shape as `ruleSearchDirs`, and for the
+ * same reason. In a monorepo a skill lives next to the code it describes (`apps/x/.claude/skills`),
+ * so anything that reads only `<root>/.claude/skills` — `discoverSkills` does — is blind to most
+ * of them. Callers that want the whole picture walk this instead.
+ */
+export function skillSearchDirs(root: string): string[] {
+  return ruleSearchDirs(root)
+    .map(skillsDirIn)
+    .filter((d): d is string => d !== null);
+}

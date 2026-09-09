@@ -2,7 +2,13 @@ import { createContext, useCallback, useContext, useEffect, useState } from "rea
 import { toast } from "@repo/ui/toast";
 import { callMain, type CallResult } from "./call-main";
 import { useProject } from "./project-context";
-import type { InstallReport, InstallStatus, UninstallPlan, UninstallReport } from "../../../shared/ipc";
+import type {
+  AgentSyncSummary,
+  InstallReport,
+  InstallStatus,
+  UninstallPlan,
+  UninstallReport,
+} from "../../../shared/ipc";
 
 /**
  * What to name in the "Maestro runtime updated" notice, in the order a reader would want them:
@@ -20,6 +26,13 @@ function describeRuntimeRefresh(report: InstallReport): string {
 interface InstallContextValue {
   /** null until the first status lands, and whenever no project is open. */
   status: InstallStatus | null;
+  /**
+   * `031`: which of this project's forked agents are still in step with their template, computed
+   * on project selection alongside the install status. A READ — it writes nothing to
+   * `.claude/agents/` — which is what makes it safe to run automatically. `/maestro` shows the
+   * count and links to `/agents`, where the per-agent review lives.
+   */
+  agentSync: AgentSyncSummary | null;
   /** Set when the status call itself failed — the badge stays silent, /install explains. */
   error: string | null;
   refresh(): Promise<void>;
@@ -40,6 +53,7 @@ const noProject = { ok: false, error: "No project is open." } as const;
 
 const InstallContext = createContext<InstallContextValue>({
   status: null,
+  agentSync: null,
   error: null,
   refresh: async () => {},
   install: async () => noProject,
@@ -61,11 +75,13 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
   const { current } = useProject();
   const root = current?.root ?? null;
   const [status, setStatus] = useState<InstallStatus | null>(null);
+  const [agentSync, setAgentSync] = useState<AgentSyncSummary | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
     if (!root) {
       setStatus(null);
+      setAgentSync(null);
       setError(null);
       return;
     }
@@ -87,6 +103,11 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
       setStatus(null);
       setError(res.error);
     }
+    // Swallowed the same way the auto-refresh above is, and for the same reason: a project with no
+    // forks at all is the common case, and a failure to answer "are your forks current" must never
+    // take the install status down with it.
+    const forks = await callMain(() => window.maestro.agents.sync());
+    setAgentSync(forks.ok ? forks.value : null);
   }, [root]);
 
   useEffect(() => {
@@ -119,7 +140,7 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
   );
 
   return (
-    <InstallContext.Provider value={{ status, error, refresh, install, uninstallPlan, uninstall }}>
+    <InstallContext.Provider value={{ status, agentSync, error, refresh, install, uninstallPlan, uninstall }}>
       {children}
     </InstallContext.Provider>
   );

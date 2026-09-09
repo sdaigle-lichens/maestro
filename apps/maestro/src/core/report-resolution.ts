@@ -46,3 +46,17 @@ export function resolveReport(
   }
   return { source: "none", content: null, reportId: null };
 }
+
+/**
+ * A report id becomes `.claude/reports/<id>.md`, so it is joined into a path — and it comes from
+ * `maestro.json`, which is a file the user hand-edits and a foreign repo may ship. `033` added the
+ * equivalent guard to `handoff-defaults.ts`/`handoff-sync.ts` and fixed this one at the same time:
+ * the exposure was latent here, with no guard at all, through `entry.id` and through an agent name
+ * taken straight from `agents_available`.
+ *
+ * Stricter than `isValidDocSlug` (which only bans separators) because a report id has never been
+ * anything but a bare agent-style name — there is no legitimate value this rejects.
+ */
+export function isValidReportId(reportId: unknown): reportId is string {
+  return typeof reportId === "string" && /^[A-Za-z0-9_-]+$/.test(reportId);
+}

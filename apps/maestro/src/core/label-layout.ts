@@ -13,7 +13,7 @@
 // overwrites it.
 //
 // The numbers below are the canvas's real render metrics, measured in a window rather than read
-// off the Tailwind classes — see `.claude/skills/test-maestro-desktop`.
+// off the Tailwind classes — see `.claude/skills/test-maestro`.
 //
 // One asymmetry shapes the whole design. A node's **x** extent is exact: the cards are fixed
 // widths and the seed chooses the columns. Its **height** is not knowable here — skill chips wrap
@@ -245,7 +245,9 @@ export function placeConditionLabels(workflow: MaestroWorkflowV3, skillCount: Sk
     const exitsLeft = (e.sourceHandle ?? "right") === "left";
     const sourceRight = source.x + source.w;
     const sourceLeft = source.x;
-    const candidates = exitsLeft ? lanes.filter((l) => l.end <= sourceLeft) : lanes.filter((l) => l.start >= sourceRight);
+    const candidates = exitsLeft
+      ? lanes.filter((l) => l.end <= sourceLeft)
+      : lanes.filter((l) => l.start >= sourceRight);
     const lane =
       candidates.sort((a, b) => Math.abs(a.center - anchor.x) - Math.abs(b.center - anchor.x))[0] ??
       (exitsLeft ? lanes[0] : lanes[lanes.length - 1]);

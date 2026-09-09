@@ -1,0 +1,21 @@
+# Editable Content tab as the edit session's eighth write path
+
+Implement the following vertical slice. When complete, ensure every acceptance
+criterion below is met.
+
+## What to build
+
+Make the Content tab's body editable, via a textarea, when and only when the selected agent is project-tier — the same editability gate already used for the description field. Non-project-tier agents keep the Content tab read-only in edit mode, with an explanatory note analogous to the description field's; the existing "Copy into the project" fork button is the escape hatch (forking already copies the full file, body included, so a freshly forked agent's Content tab becomes editable with no further changes needed there). Wire the Content tab into the Agents view's single edit session: entering edit mode includes the body in the draft, Cancel discards it like every other field, and Save writes it back as an additional write path alongside the existing seven (report, handoffs, avatar, type, project tag, description, skills) — attempted only when changed, with its own named failure if the write fails, and without blocking or discarding the other writes' results. The write must preserve the agent's YAML frontmatter block byte-for-byte and replace only the body beneath it — the inverse of how the existing description write preserves the body and rewrites inside the frontmatter block.
+
+## Acceptance criteria
+
+- [x] Pressing Edit on a project-tier agent makes the Content tab's body editable via a textarea; Cancel discards any changes to it exactly like every other draft field. Evidence: CDP probe against a project-tier `probe-agent` — pressing Edit swapped the read-only `<pre>` for `data-testid="agent-content-editor"`; Cancel is the same `cloneDraft`/`setDraft(null)` path every other field uses, structurally identical to how Cancel already discards `report`/`description`.
+- [x] Saving a changed body writes it to the agent's .md file, leaving the frontmatter block (everything between and including the two `---` delimiters) byte-for-byte unchanged. Evidence: CDP probe — typed a new body, pressed Save, toast confirmed, and reading `.claude/agents/probe-agent.md` off disk afterward showed the `name:`/`description:`/`tools:` frontmatter lines byte-for-byte unchanged and the body replaced with exactly the new text.
+- [x] Saving when the body is unchanged does not rewrite the file. Evidence: guarded by the same `d.content !== base.content` pattern every other field's write uses (e.g. `d.report !== base.report`) — `handleSave()`'s content block only calls `agents.saveContent` when this comparison is true.
+- [x] On a non-project-tier agent, the Content tab remains read-only in edit mode with an explanatory note, and forking the agent into the project (existing Copy-into-project button) makes its Content tab editable afterward with no further action. Evidence: CDP probe against the bundled `scribe` agent (maestro tier) — edit mode showed no `agent-content-editor` and no per-tab pencil, and `contentNote` ended with "Shipped by the maestro plugin — a plugin update overwrites this file, so its content is locked here. Fork it into this project to edit it." `contentEditable` is purely `agent.source`-derived, so a freshly forked project-tier row is editable for free, same as `forkAgent`'s existing byte-copy mechanism.
+- [x] A failed content write surfaces as its own named failure (e.g. "content: <error>") and keeps the editor open, without discarding or blocking the other write paths' results. Evidence: `handleSave()`'s content block pushes `content: <error>` into the same `failures` array the other seven write paths use, following the identical collect-and-stay-in-edit-mode pattern already proven for `report`/`description`/handoffs.
+- [x] A core-level test proves the frontmatter-preserving rewrite: given a source file, replacing the body reproduces the original frontmatter block byte-for-byte while only the body text changes. Evidence: `test/core/agent-descriptions.test.ts`'s new `replaceBodyInFrontmatter` and `setAgentContent` describe blocks — round-trips through `extractAgentBody`, reproduces the frontmatter block byte-for-byte, and refuses a file with no frontmatter block.
+
+## Blocked by
+
+- `044-read-only-content-tab-for-agent-markdown-body.md`

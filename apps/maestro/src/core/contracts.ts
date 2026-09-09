@@ -21,6 +21,9 @@ export type {
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
   MaestroProjectTagsSlice,
+  MaestroGates,
+  MaestroGatesSlice,
+  MaestroTaskRoutingSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
   MaestroSession,
@@ -37,17 +40,24 @@ export const GLOBAL_TAG = "global";
 
 /**
  * The agent avatar picker's part categories, bottom→top in the same order the layers composite in
- * (`body` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
- * must stay in agreement with this order.
+ * (`sex` first, `hat` last) — see `AVATAR_RENDER_ORDER` in the renderer's asset manifest, which
+ * must stay in agreement with this order. `sex` alone drives TWO drawn layers (a body silhouette
+ * and a head silhouette) — see the manifest's `SEX_LAYER_URLS` — because the upstream pack has no
+ * single "body+head" asset and the two crops must stay in lockstep with one male/female choice
+ * rather than being pickable independently.
  *
  * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG` above:
  * the renderer needs the actual array to render one row per category, not just the type.
  */
-export const AVATAR_CATEGORIES = ["body", "head", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
+export const AVATAR_CATEGORIES = ["sex", "eyes", "hair", "torso", "legs", "feet", "hat"] as const;
 export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number];
 
-/** body/head/eyes are always rendered (never "none"); the rest may be null. */
-export const AVATAR_REQUIRED_CATEGORIES: readonly AvatarCategory[] = ["body", "head", "eyes"];
+/**
+ * `sex`/`eyes`/`torso`/`legs` are always rendered (never "none"); `hair`/`feet`/`hat` may be null.
+ * Torso and legs were made required rather than optional: an unclothed torso/legs composite (the
+ * "naked" state a `null` used to produce) is not a look the picker offers any more.
+ */
+export const AVATAR_REQUIRED_CATEGORIES: readonly AvatarCategory[] = ["sex", "eyes", "torso", "legs"];
 
 export interface AvatarPartOption {
   id: string;
@@ -62,18 +72,27 @@ export interface AvatarPartOption {
  * file per id; see `manifest.ts`'s `BODY_VARIANT_CATEGORIES`/`resolveAvatarUrl`. `hat` is NOT
  * variant-aware: the upstream pack only ever cut one `adult` size for it.
  *
- * No "Child" body/head option: measured by compositing (see the session that added this comment) —
+ * No "Child" option anywhere: measured by compositing (see the session that added this comment) —
  * every worn item and the eye layer are cropped and positioned for an ADULT frame, so pairing them
- * with the child body/head produces severe, not cosmetic, misalignment (oversized torso floating
+ * with a child body/head produces severe, not cosmetic, misalignment (oversized torso floating
  * off the shoulders, eyes rendering down near the chin). The upstream LPC pack has no child-sized
  * cut for any of those layers, so there is no fix short of dropping the option.
+ *
+ * The `eyes` list ships only the upstream pack's own credited shapes (every `eyes/human/*` mood
+ * variant has no entry in the pack's own `CREDITS.csv` and is deliberately not used here, same
+ * policy as the missing Child option) — no baked-in color variants. Color is a separate, freeform
+ * choice: `AvatarLayers.eyesColor`, applied at render time to whichever of `EYE_RECOLOR_SHAPES` is
+ * selected (see `recolorImage` in the renderer's `utils/recolor.ts`). This replaced an earlier
+ * design of 20 pre-baked palette-swapped PNGs, one per named color — a continuous picker offers
+ * strictly more choice for less asset weight, once the recolor is a cheap runtime canvas operation
+ * rather than something that has to be pre-rendered.
+ *
+ * `hair` gets the same treatment via `AvatarLayers.hairColor`/`HAIR_RECOLOR_SHAPES` — every
+ * hairstyle in the upstream pack is drawn with the same flat-ink-over-three-tone-shading pattern
+ * the eyebrows are, so the one recolor algorithm covers both categories with no per-shape tuning.
  */
 export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
-  body: [
-    { id: "male", name: "Male" },
-    { id: "female", name: "Female" },
-  ],
-  head: [
+  sex: [
     { id: "male", name: "Male" },
     { id: "female", name: "Female" },
   ],
@@ -81,6 +100,7 @@ export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
     { id: "brows", name: "Brows" },
     { id: "cyclops", name: "Cyclops" },
     { id: "cyclops2", name: "Cyclops (alt)" },
+    { id: "brows_thin", name: "Thin Brows" },
   ],
   hair: [
     { id: "plain", name: "Plain" },
@@ -88,35 +108,131 @@ export const AVATAR_PARTS: Record<AvatarCategory, AvatarPartOption[]> = {
     { id: "bob", name: "Bob" },
     { id: "buzzcut", name: "Buzzcut" },
     { id: "dreadlocks_short", name: "Short Dreadlocks" },
+    { id: "pixie", name: "Pixie Cut" },
+    { id: "afro", name: "Afro" },
+    { id: "curly_short", name: "Curly Short" },
+    { id: "mop", name: "Mop" },
+    { id: "cornrows", name: "Cornrows" },
+    { id: "unkempt", name: "Unkempt" },
+    { id: "high_and_tight", name: "High & Tight" },
+    { id: "flat_top_fade", name: "Flat Top Fade" },
+    { id: "curly_short2", name: "Curly Short (Alt)" },
+    { id: "spiked", name: "Spiked" },
+    { id: "cowlick", name: "Cowlick" },
+    { id: "jewfro", name: "Jewfro" },
+    { id: "natural", name: "Natural" },
+    { id: "longhawk", name: "Long Hawk" },
+    { id: "swoop", name: "Swoop" },
   ],
   torso: [
     { id: "tshirt", name: "T-Shirt" },
     { id: "tshirt_buttoned", name: "Buttoned Shirt" },
     { id: "leather_armour", name: "Leather Armor" },
     { id: "plate_armour", name: "Plate Armor" },
+    { id: "chainmail", name: "Chainmail" },
+    { id: "legion_armour", name: "Legion Armor" },
+    { id: "longsleeve", name: "Long-Sleeve Shirt" },
+    { id: "polo", name: "Polo Shirt" },
+    { id: "vneck", name: "V-Neck Shirt" },
+    { id: "overalls", name: "Overalls" },
+    { id: "suspenders", name: "Suspenders" },
+    { id: "shortsleeve_plain", name: "Short-Sleeve Shirt" },
+    { id: "henley", name: "Henley Shirt" },
+    { id: "scoop_sweater", name: "Scoop Neck Sweater" },
+    { id: "scoop_tee", name: "Scoop Neck Tee" },
+    { id: "sleeveless2", name: "Sleeveless Shirt" },
+    { id: "longsleeve_buttoned", name: "Buttoned Overshirt" },
+    { id: "longsleeve_vneck", name: "Long V-Neck Shirt" },
   ],
   legs: [
     { id: "pants", name: "Pants" },
     { id: "shorts", name: "Shorts" },
     { id: "skirt_plain", name: "Plain Skirt" },
     { id: "skirt_legion", name: "Legion Skirt" },
+    { id: "formal", name: "Formal Trousers" },
+    { id: "cuffed", name: "Cuffed Trousers" },
+    { id: "leggings", name: "Leggings" },
+    { id: "hose", name: "Hose" },
+    { id: "pantaloons", name: "Pantaloons" },
+    { id: "formal_striped", name: "Pinstripe Trousers" },
+    { id: "leggings2", name: "Tight Leggings" },
+    { id: "plate_greaves", name: "Plate Greaves" },
+    { id: "cargo_pants", name: "Cargo Pants" },
   ],
   feet: [
     { id: "shoes_basic", name: "Shoes" },
     { id: "boots_basic", name: "Boots" },
     { id: "sandals", name: "Sandals" },
     { id: "shoes_ghillies", name: "Ghillie Shoes" },
+    { id: "boots_fold", name: "Cuffed Boots" },
+    { id: "boots_rimmed", name: "Rimmed Boots" },
+    { id: "slippers", name: "Slippers" },
+    { id: "socks_high", name: "High Socks" },
+    { id: "plate_boots", name: "Plate Boots" },
+    { id: "socks_ankle", name: "Ankle Socks" },
+    { id: "socks_tabi", name: "Tabi Socks" },
+    { id: "shoes_revised", name: "Pointed Shoes" },
+    { id: "shoes_sara", name: "Strappy Shoes" },
+    { id: "boots_revised", name: "Riding Boots" },
+    { id: "sabatons", name: "Sabatons" },
   ],
   hat: [
     { id: "bandana", name: "Bandana" },
     { id: "bowler", name: "Bowler Hat" },
     { id: "crown", name: "Crown" },
     { id: "barbarian_helmet", name: "Barbarian Helmet" },
+    { id: "tophat", name: "Top Hat" },
+    { id: "legion_helmet", name: "Legion Helmet" },
+    { id: "hood", name: "Hood" },
+    { id: "wizard", name: "Wizard Hat" },
+    { id: "cavalier", name: "Cavalier Hat" },
+    { id: "mail", name: "Mail Coif" },
+    { id: "norman", name: "Norman Helmet" },
+    { id: "tiara", name: "Tiara" },
+    { id: "hood_sack", name: "Sack Hood" },
+    { id: "leather_cap", name: "Leather Cap" },
+    { id: "kerchief", name: "Kerchief" },
+    { id: "bonnie", name: "Bonnet" },
+    { id: "celestial_moon", name: "Crescent Moon Hat" },
+    { id: "headband_thick", name: "Headband" },
+    { id: "visor_round", name: "Round Visor" },
   ],
 };
 
-/** One id per category, or null for an optional category left empty. */
-export type AvatarLayers = Record<AvatarCategory, string | null>;
+/**
+ * The `eyes` shapes a color applies to — plain eyebrow line art, recolorable because it is drawn in
+ * one flat ink color over a three-tone (highlight/mid/shadow) shading pattern that survives a hue
+ * swap. `cyclops`/`cyclops2` are a single eye shape rather than an eyebrow and are excluded: the
+ * same hue swap would recolor the iris along with everything else, which reads as broken rather
+ * than styled.
+ */
+export const EYE_RECOLOR_SHAPES: readonly string[] = ["brows", "brows_thin"];
+
+/**
+ * Every `hair` shape is recolorable — unlike `eyes`, none of them is a fixed-color feature the way
+ * `cyclops`'s iris is, so there is no subset to exclude. Kept as an explicit list (rather than
+ * reading `AVATAR_PARTS.hair` at the call site) for the same reason `EYE_RECOLOR_SHAPES` is: a
+ * future hair asset that shouldn't recolor (a hat-attached hairpiece, say) has somewhere to be
+ * excluded without touching the render pipeline.
+ */
+export const HAIR_RECOLOR_SHAPES: readonly string[] = AVATAR_PARTS.hair.map((opt) => opt.id);
+
+/** `#rrggbb`, case-insensitive — the one shape `eyesColor`/`hairColor` may take. */
+export const HEX_COLOR_RE = /^#[0-9a-f]{6}$/i;
+
+/**
+ * One id per category, or null for an optional category left empty — plus `eyesColor`/`hairColor`,
+ * freeform hex colors applied at render time when `eyes`/`hair` is one of `EYE_RECOLOR_SHAPES`/
+ * `HAIR_RECOLOR_SHAPES` (see `recolorImage` in the renderer's `utils/recolor.ts`). `null`/absent
+ * draws the shape in its native upstream color. They sit outside the `Record<AvatarCategory, …>`
+ * shape rather than being folded into `eyes`/`hair` themselves (e.g. `"brows#a0522d"`) because they
+ * are not a *choice among options* the way every other category is — `AVATAR_PARTS.eyes`/`.hair`
+ * stay the closed, validated set of shapes, and the color is an open value beside them.
+ */
+export type AvatarLayers = Record<AvatarCategory, string | null> & {
+  eyesColor?: string | null;
+  hairColor?: string | null;
+};
 
 /**
  * Where an agent/skill was discovered: "project", "user" (global ~/.claude), the bundled
@@ -154,6 +270,92 @@ export interface ResolvedReport {
 }
 
 /**
+ * What writing an agent's `description` back into its own definition file did — see
+ * `agent-descriptions.ts`. `file` and `source` are echoed so the page can say WHICH file it
+ * changed: an agent's description is not stored beside the app like its type or avatar, it is the
+ * frontmatter line Claude Code itself reads.
+ */
+export interface AgentDescriptionResult {
+  description: string;
+  file: string;
+  source: string;
+}
+
+/**
+ * What writing an agent's markdown BODY back into its own definition file did (`045`) — the
+ * Content tab's write path, the inverse of `AgentDescriptionResult`: that one rewrites inside the
+ * frontmatter block and leaves the body untouched, this one rewrites the body and leaves the
+ * frontmatter block byte-for-byte untouched. No `content` echo — the caller already holds the
+ * value it just wrote, unlike a description, which is normalized on the way in.
+ */
+export interface AgentContentResult {
+  file: string;
+  source: string;
+}
+
+/**
+ * The `DiscoveredDefinition.source` tiers whose agent files this app will write a description
+ * into: the project's own `.claude/agents/`. Every other tier is a file this app does not own —
+ * `user` (`~/.claude/agents/`) belongs to no project and is shared by every project on the
+ * machine, `maestro` is this repo's bundled agents (in a packaged build, read-only resources
+ * inside `app.asar`), and an installed plugin's agents live in a version-keyed marketplace cache
+ * the next update overwrites. All three are un-editable for the same underlying reason — an edit
+ * would be silently discarded or silently shared — which is why forking (`agent-fork.ts`) exists:
+ * it turns "you can't edit this" into "here is a project copy you can".
+ *
+ * A literal deliberate exception to "contracts.ts is interfaces only", same as `GLOBAL_TAG`: the
+ * /agents page decides whether to render an editable description from the agent's `source` alone,
+ * with no round trip.
+ */
+export const EDITABLE_AGENT_SOURCES: readonly string[] = ["project"];
+
+export function isEditableAgentSource(source: string): boolean {
+  return EDITABLE_AGENT_SOURCES.includes(source);
+}
+
+/**
+ * What forking one agent into the open project wrote — see `src/core/agent-fork.ts`. `name` is
+ * the resolved (possibly renamed) agent id, echoed back because a caller cannot otherwise learn
+ * what a same-name fork request actually landed as if the target already existed under a
+ * different casing, etc. — same discipline as `ScaffoldResult.name`.
+ */
+export interface AgentForkResult {
+  name: string;
+  file: string;
+}
+
+/**
+ * Where a forked agent's template came from, and enough of it to sync or diff against later
+ * (`031`). Written to a project-local sidecar (`agent-fork.ts`'s `agent-forks.json`), never into
+ * the forked agent's own frontmatter — Maestro's own bookkeeping does not belong in a file Claude
+ * Code itself reads, the same argument `EDITABLE_AGENT_SOURCES` makes about descriptions.
+ *
+ * `sourceTier` is `"user"` (machine-wide, no plugin) or `"plugin"` (bundled Maestro or an
+ * installed marketplace plugin); `sourcePlugin` names which plugin for the latter and is null for
+ * `"user"`. `templateBodyHash` is over the template's body with its `description:` frontmatter
+ * line normalised out — see `hashAgentBody` — because a description is expected to diverge the
+ * moment someone edits it, and hashing the whole file would mark every fork as modified on the
+ * first edit of the one field this app itself lets you change.
+ */
+export interface AgentForkRecord {
+  agentName: string;
+  sourceTier: "user" | "plugin";
+  sourcePlugin: string | null;
+  pluginVersion: string | null;
+  templateBodyHash: string;
+  templateBody: string;
+  forkedAt: string;
+  /**
+   * "Keep as fork" (`031`): the template state the user has already looked at and declined. Absent
+   * until they decline one. `agent-sync.ts` compares the template against this when it is set and
+   * against the fork baseline otherwise, which is what makes the review say "ask me again next
+   * version" rather than re-raising the same diff on every launch. Dropping it (or the whole
+   * record, which is what detach does) simply re-opens the question.
+   */
+  acknowledgedFrom?: { pluginVersion: string | null; templateBodyHash: string } | null;
+}
+
+/**
  * One row in the global report-defaults store (`report-defaults.ts`) — the fallback tier
  * `/agents` falls back to when an agent has no project override, and what the `/templates` page's
  * Reports tab edits directly. `version` is what `report-sync.ts` compares against a project's
@@ -163,6 +365,76 @@ export interface ReportDefault {
   reportId: string;
   content: string;
   version: number;
+}
+
+/**
+ * One row in the global handoff-defaults store (`handoff-defaults.ts`) — the middle of the three
+ * tiers `handoff-resolution.ts` resolves, and what `034`'s `/templates` Handoffs tab edits.
+ * `version` is what `handoff-sync.ts` compares against a project's `syncedFrom.version`.
+ *
+ * `handoffId` is `"<sender>/<receiver>"`, bare names both sides — the store's own primary key, not
+ * an indirection like `ReportDefault.reportId`.
+ */
+export interface HandoffDefault {
+  handoffId: string;
+  content: string;
+  version: number;
+}
+
+/**
+ * What's in effect for one handoff route, as resolved by `handoff-resolution.ts`.
+ *
+ * `source` carries one tier more than `ResolvedReport`: `"seed"` means the global store had no
+ * answer (usually because `node:sqlite` isn't available to the process asking) and what is in
+ * effect is the constant Maestro ships. `034`'s UI needs the distinction to say whether editing
+ * the global default would change anything.
+ */
+export interface ResolvedHandoff {
+  source: "project" | "global" | "seed" | "none";
+  /** Empty string for "none" — the editor's resting state, never null on the wire. */
+  content: string;
+}
+
+/**
+ * What `template:handoffs:list` hands the `/templates` Handoffs tab: every global row, plus which
+ * ids Maestro itself ships.
+ *
+ * The second field is on the wire because `isSeededHandoff` lives in `handoff-seeds.ts`, which the
+ * renderer cannot import — `test/isolation.test.ts` allows only `contracts.ts` and `text.ts` across
+ * that boundary. It is what picks **Reset to default** over **Delete** for a row, so it has to be
+ * knowledge the renderer holds rather than something it infers from the content.
+ */
+export interface HandoffDefaultsListing {
+  rows: Record<string, HandoffDefault>;
+  /**
+   * `SEED_HANDOFFS` itself — every id Maestro ships, mapped to the body it ships for it, whether
+   * or not the store currently has a row for that id.
+   *
+   * The bodies travel rather than just the ids because **Reset to default** is a plain save of
+   * `SEED_HANDOFFS[id]`: sending only the key set would need a second channel to fetch the body
+   * back the moment the button is pressed, for ~9 KB of constants read once with the rows.
+   */
+  seeded: Record<string, string>;
+}
+
+/**
+ * One outgoing route from an agent, with the template in effect for it — one entry per row in
+ * `/agents`' Interactions pane.
+ *
+ * `handoffId` is null exactly when `receiver` is: an edge leading nowhere an agent can be reached
+ * is still a real route (the orchestrator can emit the HANDOFF line for it), there is just no pair
+ * to key a template on, so the pane shows it and offers no editor.
+ */
+export interface ResolvedHandoffRoute {
+  /** The agent emitting the HANDOFF line. Always a BARE name. */
+  sender: string;
+  /** The receiving agent, BARE — or null for an edge that reaches no agent. */
+  receiver: string | null;
+  /** `"success"`, or the condition edge's own label. */
+  label: string;
+  handoffId: string | null;
+  source: ResolvedHandoff["source"];
+  content: string;
 }
 
 /**
@@ -208,11 +480,11 @@ export interface SessionLogEntry {
   ts: string;
   origin: string;
   log: string;
-  /** Set on dispatch/handoff entries written by maestro-subagent-log.js. */
-  kind?: "dispatch" | "handoff" | "transition";
+  /** Set on dispatch/handoff/channel_delivery entries written by the hooks. */
+  kind?: "dispatch" | "handoff" | "transition" | "channel_delivery";
   /** dispatch: the subagent's agent_type */
   agent?: string;
-  /** shared key linking a dispatch↔handoff pair */
+  /** shared key linking a dispatch↔handoff pair, and (037) a channel_delivery to its receiver's dispatch */
   agent_id?: string;
   /** dispatch only: full spawning message (main session → agent) */
   input?: string;
@@ -224,6 +496,44 @@ export interface SessionLogEntry {
   label?: string | null;
   /** handoff only: full final message (agent → main session) */
   output?: string;
+  /** channel_delivery only: the bare agent name that wrote the payload */
+  sender?: string;
+  /** channel_delivery only: the bare agent name it was delivered to */
+  receiver?: string;
+  /** channel_delivery only: the payload, inlined verbatim */
+  content?: string;
+}
+
+/**
+ * One `kind: "channel_delivery"` log entry (`036`'s `SubagentStart` inlining, `037`'s reading of
+ * it) — a payload delivered to the RECEIVING agent's own dispatch, not the sender's. `/session-log`
+ * attaches these to the receiving `Instance`, matched by `agent_id` the same way `input` is.
+ */
+export interface ChannelDelivery {
+  sender: string;
+  receiver: string;
+  agent_id: string;
+  content: string;
+}
+
+/**
+ * One receiver's `.claude/channels/<receiver>/` lane, as `handoff-channels.ts`'s `pendingLanes()`
+ * (`037`) computes it — read-only, for `/maestro`'s Channels block.
+ *
+ * `current` is entries stamped with the LIVE session's own `run_id` — normal in-flight traffic that
+ * the next matching `SubagentStart` will inline. `stranded` is everything else (a foreign `run_id`,
+ * or unstamped) — `036`'s injector only ever MENTIONS these, never inlines them. A lane whose count
+ * is entirely `stranded` is not an error: the scribe's `conceptSkillGaps` lane lives there by
+ * construction the moment one `SessionEnd` passes with no scribe invoked, and is exactly the
+ * backlog the channel design means to make visible rather than silently remembered.
+ */
+export interface PendingLane {
+  receiver: string;
+  count: number;
+  /** Age, in ms, of the oldest file still in the lane. */
+  oldestAgeMs: number;
+  current: number;
+  stranded: number;
 }
 
 export interface RenderResult {
@@ -258,6 +568,17 @@ export interface RepoDetection {
   fallback: boolean;
 }
 
+/**
+ * A problem `config-validate.ts` found in a config a human (or a merge) could have hand-edited —
+ * the canvas itself refuses to create one, so this is the check for everyone else who can write
+ * `maestro.json`. Reported only, never auto-repaired: see that module's header for why.
+ */
+export interface ConfigIssue {
+  kind: string;
+  workflow: string;
+  detail: string;
+}
+
 /** What installing the orchestrator skill did to an existing file. All four are load-bearing. */
 export type OrchestratorSkillAction = "installed" | "synced" | "unchanged" | "migrated";
 
@@ -289,12 +610,6 @@ export interface InstallStatus {
   installedRuntimeId: string;
   /** Installed, but something is missing or older than what the app ships. */
   stale: boolean;
-  /**
-   * The maestro plugin is installed for this machine, so its hooks.json registers the
-   * same runtime hooks globally — every tool call would be logged twice. The app never edits the
-   * user's global configuration, so this is reported, not fixed.
-   */
-  pluginHooksActive: boolean;
   /** `.claude/settings.json` exists but is not valid JSON — install would refuse to touch it. */
   settingsUnreadable: boolean;
 }
@@ -309,6 +624,107 @@ export interface ReportSyncSummary {
   /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
   staleCustomized: string[];
   unchanged: string[];
+}
+
+/**
+ * The same four buckets, over `.claude/handoffs/<sender>/<receiver>.md` — each entry a
+ * `"<sender>/<receiver>"` handoff id rather than an agent name, and each id in exactly one list.
+ *
+ * A wired route whose pair has no template anywhere (`scribe -> reviewer`) appears in NO bucket:
+ * `decideSync` returns `no-template`, no file is written, and there is nothing to tell the user.
+ */
+export interface HandoffSyncSummary {
+  materialized: string[];
+  refreshed: string[];
+  /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
+  staleCustomized: string[];
+  unchanged: string[];
+}
+
+/** One line of a line-diff, as `src/core/diff.ts` produces it. `ctx` is unchanged context. */
+export interface DiffLine {
+  kind: "add" | "del" | "ctx";
+  text: string;
+}
+
+/**
+ * What `031`'s per-agent review shows for ONE forked agent, and the verdict behind it.
+ *
+ * `verdict` comes from the same `decideSync` the report sync uses (`sync-decision.ts`), so the
+ * terminal and the app cannot disagree about whether a fork is stale. What differs from a report:
+ * the hash is over the body only (`hashAgentBody` — name and description normalised out), and
+ * "the template advanced" needs a plugin VERSION-STRING inequality *and* a changed body for a
+ * plugin-tier fork, against a content-hash comparison alone for a `user`-tier one. See
+ * `agent-sync.ts`.
+ */
+export interface AgentSyncEntry {
+  agentName: string;
+  verdict: SyncVerdictName;
+  sourceTier: "user" | "plugin";
+  /** Which plugin ships the template, or null for a `user`-tier fork. */
+  sourcePlugin: string | null;
+  /** The plugin version the fork is tracking (its acknowledgement, else its baseline). */
+  trackedVersion: string | null;
+  /** The plugin version shipping the template right now. Null for a `user`-tier fork. */
+  templateVersion: string | null;
+  /** The forked agent's own file, and its current description. */
+  file: string;
+  description: string | null;
+  /** Where the template resolved to now — null when it no longer exists anywhere. */
+  templateFile: string | null;
+  templateDescription: string | null;
+  /**
+   * The template has moved past what this fork tracks — a plugin VERSION-STRING inequality *and* a
+   * changed body for a plugin-tier fork, a body-hash comparison for a `user`-tier one (a bump that
+   * never touched this agent is the plugin moving, not the template). Carried alongside `verdict`
+   * because `decideSync` answers `stale-customized` BEFORE it consults this (the user's edit
+   * outranks everything), and a customized fork whose template has not moved is nothing to tell
+   * anyone about. See `AgentSyncSummary.diverged`.
+   */
+  templateAdvanced: boolean;
+  /**
+   * The fork's body diffed against what "update" would write: the template's current contents with
+   * the fork's own name and description carried over. Empty when there is nothing to show.
+   */
+  diff: DiffLine[];
+}
+
+/**
+ * The same four buckets `ReportSyncSummary` uses, over forked agents — but READ-ONLY. Computing
+ * this writes nothing to `.claude/agents/`: those files may be committed, and a diff nobody asked
+ * for is hard to explain. So the past tense is aspirational here — `refreshed` means "would be
+ * refreshed if you asked", and `materialized` means the fork's own file has gone missing while its
+ * provenance record remains.
+ */
+export interface AgentSyncSummary {
+  materialized: string[];
+  refreshed: string[];
+  staleCustomized: string[];
+  unchanged: string[];
+  /**
+   * The headline count — "N forked agents differ from their template". Refreshable forks, plus the
+   * customized ones whose template HAS moved (an update exists that cannot be applied for them).
+   * A customized fork sitting on an unchanged template is not in here: it is simply a fork doing
+   * its job, and counting it would leave a badge lit forever.
+   */
+  diverged: string[];
+  entries: AgentSyncEntry[];
+}
+
+/** `sync-decision.ts`'s `SyncVerdict`, restated here so the renderer never imports that module. */
+export type SyncVerdictName = "detached" | "no-template" | "materialize" | "refresh" | "stale-customized" | "unchanged";
+
+/** What the `/agents` review offers per diverged fork, and what the skills prompt for. */
+export type AgentSyncAction = "update" | "keep" | "detach";
+
+/** What one applied review action actually did. */
+export interface AgentSyncApplyResult {
+  agentName: string;
+  action: AgentSyncAction;
+  /** The agent file rewritten (`update` only). */
+  fileWritten: string | null;
+  /** The provenance record afterwards — null once detached. */
+  record: AgentForkRecord | null;
 }
 
 /** What an install actually changed on disk. */
@@ -343,6 +759,14 @@ export interface InstallReport {
   status: InstallStatus;
   /** What the report sync step did — materialized/refreshed/flagged-as-customized/unchanged. */
   reportsSync: ReportSyncSummary;
+  /** The same, for `.claude/handoffs/<sender>/<receiver>.md`, keyed by handoff id (`033`). */
+  handoffsSync: HandoffSyncSummary;
+  /**
+   * Duplicate-agent-type collisions found in the project's config (`041`) — reported beside the
+   * sync summaries above, never auto-repaired. Empty on a healthy config, which is every config
+   * the canvas itself produced.
+   */
+  configIssues: ConfigIssue[];
 }
 
 /**
@@ -445,6 +869,14 @@ export interface CreateOptions {
   marketplaces: MarketplaceEntry[];
   /** The open project's root, or "" — where `target: "project"` writes. */
   projectRoot: string;
+  /**
+   * Every agent this machine can currently see — `/create-subagent`'s Template field seeds a new
+   * form from one of these. Restricted to `target: "project"` on the FORM side (not filtered out
+   * of this list): forking a third-party plugin's agent into your own plugin would be republishing
+   * someone else's work, but the same list is exactly what `target: "project"` legitimately wants
+   * to offer.
+   */
+  agentTemplates: DiscoveredDefinition[];
 }
 
 /**

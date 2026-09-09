@@ -10,7 +10,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { readJson, successPathSteps } = require("./lib/maestro-session.cjs");
+const { readJson, successPathSteps, duplicateAgentTypes } = require("./lib/maestro-session.cjs");
 const { replaceRegion } = require("./lib/maestro-skill-regions.cjs");
 
 // Derived success path (never stored in maestro.json) for a single workflow.
@@ -40,10 +40,16 @@ function render(projectDir) {
   const skillPath = path.join(projectDir, ".claude", "skills", "maestro", "SKILL.md");
   if (!fs.existsSync(skillPath)) return { ok: false, reason: "maestro/SKILL.md not found" };
 
+  // Report before writing, never in place of writing — a config a human hand-edited (or a merge
+  // conflict resolved) can carry the collision the canvas refuses to create. Refusing to render
+  // over it would leave the project with a STALE orchestrator, which is worse than a rendered one
+  // plus a warning. See config-validate.ts / task 041.
+  const issues = duplicateAgentTypes(cfg);
+
   let text = fs.readFileSync(skillPath, "utf8");
   text = replaceRegion(text, "HANDOFFS", handoffTable(cfg));
   fs.writeFileSync(skillPath, text);
-  return { ok: true };
+  return { ok: true, issues };
 }
 
 if (require.main === module) {
@@ -52,6 +58,9 @@ if (require.main === module) {
   if (!r.ok) {
     process.stderr.write(`maestro-render-orchestrator: ${r.reason}\n`);
     process.exit(1);
+  }
+  for (const issue of r.issues) {
+    process.stderr.write(`maestro-render-orchestrator: ${issue.detail}\n`);
   }
   process.stdout.write("Maestro orchestrator skill re-rendered from .claude/maestro.json\n");
 }

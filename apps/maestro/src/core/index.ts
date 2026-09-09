@@ -53,8 +53,16 @@ export {
   serializeConfig,
   writeConfig,
   mergeSlice,
+  resolveGates,
+  DEFAULT_GATES,
+  resolveUseMaestroTasks,
   type ConfigSlice,
 } from "./config.js";
+
+// Only consumer besides the concept-skills CLI's own entry point: the /templates Handoffs tab's
+// project picker, which needs the same "what agents does this project actually have" read the
+// concept-skills scripts already use — see `template:agents-available` in main/ipc.ts.
+export { readAgentsAvailable } from "./concept-skills.js";
 
 export { orchestratorSkillPath, successPath, handoffTable, renderOrchestrator, type RenderResult } from "./render.js";
 
@@ -63,6 +71,7 @@ export {
   readJson,
   readSession,
   writeSession,
+  ensureSessionRunId,
   appendSessionLog,
   sessionLogPath,
   SESSION_LOG_FILE,
@@ -120,23 +129,19 @@ export {
   type ReportDefault,
 } from "./report-defaults.js";
 
-export { resolveReport, type ReportResolution, type ReportSource, type GlobalReportInput } from "./report-resolution.js";
+export {
+  resolveReport,
+  isValidReportId,
+  type ReportResolution,
+  type ReportSource,
+  type GlobalReportInput,
+} from "./report-resolution.js";
 
 export { syncProjectReports } from "./report-sync.js";
 
-export {
-  readAllAgentTypes,
-  setAgentType,
-  DEFAULT_AGENT_TYPES_DB_PATH,
-  type AgentType,
-} from "./agent-types.js";
+export { readAllAgentTypes, setAgentType, DEFAULT_AGENT_TYPES_DB_PATH, type AgentType } from "./agent-types.js";
 
-export {
-  readAllProjectTags,
-  addProjectTag,
-  removeProjectTag,
-  DEFAULT_PROJECT_TAGS_DB_PATH,
-} from "./project-tags.js";
+export { readAllProjectTags, addProjectTag, removeProjectTag, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
 
 export {
   readAllAgentProjectTags,
@@ -146,6 +151,53 @@ export {
 } from "./agent-project-tags.js";
 
 export { getResolvedReport, saveProjectReportOverride } from "./reports.js";
+
+export {
+  readHandoffDefault,
+  readAllHandoffDefaults,
+  writeHandoffDefault,
+  deleteHandoffDefault,
+  DEFAULT_HANDOFF_DEFAULTS_DB_PATH,
+  type HandoffDefault,
+} from "./handoff-defaults.js";
+
+export {
+  SEED_HANDOFFS,
+  PRIOR_SEEDS as PRIOR_HANDOFF_SEEDS,
+  isSeededHandoff,
+  isValidHandoffId,
+  splitHandoffId,
+  handoffId,
+} from "./handoff-seeds.js";
+
+export { handoffRoutes, routesFrom, handoffPairs, type HandoffRoute } from "./handoff-routes.js";
+export { duplicateAgentTypes, validateConfig } from "./config-validate.js";
+
+export {
+  resolveHandoff,
+  type HandoffResolution,
+  type HandoffSource,
+  type GlobalHandoffInput,
+} from "./handoff-resolution.js";
+
+export { syncProjectHandoffs, handoffFilePath } from "./handoff-sync.js";
+
+export { getResolvedHandoff, saveProjectHandoffOverride, resolvedRoutesFrom } from "./handoffs.js";
+
+export {
+  channelDir,
+  laneFor,
+  writeStamp,
+  readLane,
+  retire,
+  sweep,
+  pendingLanes,
+  formatStampedContent,
+  parseStampedContent,
+  CHANNEL_AGE_CAP_MS,
+  type ChannelEntry,
+  type SweepResult,
+} from "./handoff-channels.js";
 
 export {
   installRuntime,
@@ -443,5 +495,61 @@ export {
 
 export { GLOBAL_TAG } from "./contracts.js";
 
+// An agent's own `description`, written back into the .md it was discovered in — the one per-agent
+// attribute that is NOT a global sqlite store, because Claude Code reads this line itself. See
+// ./agent-descriptions.ts.
+export {
+  findAgentFile,
+  setAgentDescription,
+  normalizeAgentDescription,
+  replaceDescriptionInFrontmatter,
+  extractAgentBody,
+  getAgentBody,
+  replaceBodyInFrontmatter,
+  setAgentContent,
+  isEditableAgentSource,
+  EDITABLE_AGENT_SOURCES,
+  type AgentFileRef,
+  type AgentDescriptionResult,
+  type AgentContentResult,
+} from "./agent-descriptions.js";
+
 // Agent avatars — global, keyed by agent name, same shape as skill-tags.ts. See ./avatar-store.ts.
-export { getAvatar, setAvatar, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";
+export { getAvatar, setAvatar, readAllAvatars, DEFAULT_AVATAR_DB_PATH } from "./avatar-store.js";
+
+// Forking a global-tier agent into the open project's .claude/agents/ — the escape hatch
+// EDITABLE_AGENT_SOURCES narrowing to ["project"] exists to point people at. See ./agent-fork.ts.
+export {
+  forkAgent,
+  readAgentForks,
+  agentForksPath,
+  hashAgentBody,
+  bodyForHashing,
+  mergeForkBody,
+  removeAgentFork,
+  renameAgentInFrontmatter,
+  writeAgentForkRecord,
+  type AgentForkRecord,
+  type AgentForkResult,
+} from "./agent-fork.js";
+
+// The materialize / refresh / skip-as-customized / never-touched rule, lifted out of
+// report-sync.ts so the report path and the agent path cannot drift (`031`). Pure — no fs.
+export { decideSync, type SyncDecisionInput, type SyncTracking, type SyncVerdict } from "./sync-decision.js";
+
+// A line diff, computed in main so the /agents review card and the skills' terminal output render
+// the same array. Pure. See ./diff.ts.
+export { diffLines, hasChanges, unifiedDiffText, type DiffLine } from "./diff.js";
+
+// Keeping a forked agent in step with the template it was forked from. `computeAgentSync` READS
+// ONLY; `applyAgentSync` is the one writer, and only for an explicit per-agent review action.
+export {
+  computeAgentSync,
+  applyAgentSync,
+  type AgentSyncAction,
+  type AgentSyncApplyResult,
+  type AgentSyncEntry,
+  type AgentSyncOptions,
+  type AgentSyncSummary,
+  type PluginTemplateSource,
+} from "./agent-sync.js";

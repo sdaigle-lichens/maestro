@@ -1,12 +1,37 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useCallback, useEffect, useState } from "react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
-import { AlertTriangle, Check, Download, FolderOpen, PowerOff, RefreshCw, Tag as TagIcon, Trash2, X } from "lucide-react";
+import {
+  AlertTriangle,
+  Check,
+  Download,
+  FolderOpen,
+  GitBranch,
+  Inbox,
+  ListChecks,
+  PowerOff,
+  RefreshCw,
+  ShieldCheck,
+  Tag as TagIcon,
+  Trash2,
+  X,
+} from "lucide-react";
 import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
-import type { InstallReport, InstallStatus, ProjectTagsData, UninstallPlan, UninstallReport } from "../../../shared/ipc";
+import { useInstall } from "../utils/install-context";
+import type {
+  AgentSyncSummary,
+  InstallReport,
+  InstallStatus,
+  GatesData,
+  PendingLane,
+  ProjectTagsData,
+  TaskRoutingData,
+  UninstallPlan,
+  UninstallReport,
+} from "../../../shared/ipc";
 
 export const Route = createFileRoute("/maestro")({
   component: InstallPage,
@@ -116,6 +141,45 @@ function ReportCard({ report }: { report: InstallReport }) {
               <span className="font-mono text-(--ink-3)">{report.reportsSync.staleCustomized.join(", ")}</span>
             </li>
           )}
+          {/*
+            The same three lines one tier over (`033`/`034`). Entries are `"<sender>/<receiver>"`
+            handoff ids rather than agent names, and a wired route with no template at any tier
+            appears in NO bucket — nothing was written, so there is nothing to report.
+          */}
+          {report.handoffsSync.materialized.length > 0 && (
+            <li>
+              Handoff protocol{report.handoffsSync.materialized.length === 1 ? "" : "s"} materialized from the global
+              default: <span className="font-mono text-(--ink-3)">{report.handoffsSync.materialized.join(", ")}</span>
+            </li>
+          )}
+          {report.handoffsSync.refreshed.length > 0 && (
+            <li>
+              Handoff protocol{report.handoffsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global
+              default: <span className="font-mono text-(--ink-3)">{report.handoffsSync.refreshed.join(", ")}</span>
+            </li>
+          )}
+          {report.handoffsSync.staleCustomized.length > 0 && (
+            <li>
+              Handoff protocol{report.handoffsSync.staleCustomized.length === 1 ? "" : "s"} stale but customized — left
+              alone since you edited {report.handoffsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
+              <span className="font-mono text-(--ink-3)">{report.handoffsSync.staleCustomized.join(", ")}</span>
+            </li>
+          )}
+        </ul>
+      )}
+      {/*
+        Duplicate-agent-type collisions (`041`) — never auto-repaired, so this is a report, not a
+        change, and it must render even when nothing else did (`report.unchanged`): the runtime can
+        be current while a hand-edited config still carries the collision. Kept out of the `ul`
+        above and its `unchanged` gate for that reason.
+      */}
+      {report.configIssues.length > 0 && (
+        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px]">
+          {report.configIssues.map((issue, i) => (
+            <li key={i} className="text-amber-500">
+              {issue.detail}
+            </li>
+          ))}
         </ul>
       )}
     </div>
@@ -348,11 +412,11 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
         <TagIcon size={12} /> Project tags
       </div>
       <p className="text-[12px] text-(--ink-2) m-0">
-        Which of the catalog&rsquo;s categories this project belongs to. Tags matched from repo detection at
-        install time are pre-checked; adding one may add a matching bundled agent (backend/frontend/mobile) to{" "}
-        <span className="font-mono">agents_available</span> — unchecking never removes one, that stays a manual
-        edit on Workflows. Edited from the same catalog as the <span className="font-mono">/templates</span>{" "}
-        page&rsquo;s Project Tags tab.
+        Which of the catalog&rsquo;s categories this project belongs to. Tags matched from repo detection at install
+        time are pre-checked; adding one may add a matching bundled agent (backend/frontend/mobile) to{" "}
+        <span className="font-mono">agents_available</span> — unchecking never removes one, that stays a manual edit on
+        Workflows. Edited from the same catalog as the <span className="font-mono">/templates</span> page&rsquo;s
+        Project Tags tab.
       </p>
       {data.catalog.length === 0 ? (
         <p className="text-[12px] text-(--ink-3) m-0">
@@ -382,6 +446,279 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
           })}
         </div>
       )}
+    </div>
+  );
+}
+
+/**
+ * The post-install Step 1 gates section. Structurally `ProjectTagsCard` above — a checkbox card
+ * that writes `maestro.json` on every click with no Save button — because it is the same kind of
+ * thing, and the two should stay easy to read side by side.
+ *
+ * What it writes is read by nothing in this app: `maestro-step1-gates.cjs` reads `gates` at
+ * `/maestro` invocation time and prints the one line the orchestrator's Step 1 injects. So a
+ * change here shows up in the NEXT orchestration, not in anything on screen.
+ */
+function GatesCard({ viewedRoot }: { viewedRoot: string }) {
+  const [data, setData] = useState<GatesData | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.gates()).then((res) => {
+      if (!cancelled && res.ok) setData(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!data) return null;
+
+  const toggle = async (key: keyof GatesData["gates"]) => {
+    const next = { ...data.gates, [key]: !data.gates[key] };
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.gates.set(next));
+      if (!res.ok) {
+        toast(<>Could not save the Step 1 gates: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setData({ gates: res.value });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const rows: { key: keyof GatesData["gates"]; skill: string; blurb: string }[] = [
+    {
+      key: "confidence_check",
+      skill: "/confidence-check",
+      blurb: "Score how well the request is understood before committing a workflow to it.",
+    },
+    {
+      key: "use_code_architecture_design_check",
+      skill: "/use-code-architecture-design-check",
+      blurb: "Decide whether the work needs a design pass first. Runs on its own if you leave the box above unchecked.",
+    },
+  ];
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <ShieldCheck size={12} /> Step 1 gates
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Which gate skills the <span className="font-mono">/maestro</span> orchestrator runs before it classifies a
+        request. Both start off — uncheck both and Step 1 is skipped entirely, and the run goes straight to matching a
+        workflow. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
+        of the next orchestration.
+      </p>
+      <div className="flex flex-col gap-2">
+        {rows.map((row) => (
+          <label
+            key={row.key}
+            className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+              busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={data.gates[row.key]}
+              disabled={busy}
+              onChange={() => void toggle(row.key)}
+              className="mt-0.5 accent-primary cursor-pointer"
+            />
+            <span>
+              Run <span className="font-mono">{row.skill}</span>
+              <span className="block text-(--ink-3)">{row.blurb}</span>
+            </span>
+          </label>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+/**
+ * The post-install Step 4 task-routing section. Structurally `GatesCard` above — a single checkbox
+ * that writes `maestro.json` on every click with no Save button — for the same reason: it is the
+ * same kind of thing (`046`, `048`).
+ *
+ * What it writes is read by nothing in this app: `maestro-step4-gate.cjs` reads `use_maestro_tasks`
+ * at `/maestro` invocation time and prints the Step 4 directive line the orchestrator injects. So a
+ * change here shows up in the NEXT orchestration, not in anything on screen.
+ */
+function TaskRoutingCard({ viewedRoot }: { viewedRoot: string }) {
+  const [data, setData] = useState<TaskRoutingData | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.taskRouting()).then((res) => {
+      if (!cancelled && res.ok) setData(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!data) return null;
+
+  const toggle = async () => {
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.taskRouting.set(!data.useMaestroTasks));
+      if (!res.ok) {
+        toast(<>Could not save task routing: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setData({ useMaestroTasks: res.value });
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <ListChecks size={12} /> Task routing
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Whether the <span className="font-mono">/maestro</span> orchestrator's Step 4 suggests running{" "}
+        <span className="font-mono">/to-maestro-tasks</span> to queue up follow-up work after a rough session. Off by
+        default. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
+        of the next orchestration.
+      </p>
+      <label
+        className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+          busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+        }`}
+      >
+        <input
+          type="checkbox"
+          checked={data.useMaestroTasks}
+          disabled={busy}
+          onChange={() => void toggle()}
+          className="mt-0.5 accent-primary cursor-pointer"
+        />
+        <span>
+          Use maestro tasks
+          <span className="block text-(--ink-3)">Nudge toward queuing follow-up work with /to-maestro-tasks.</span>
+        </span>
+      </label>
+    </div>
+  );
+}
+
+/** `oldestAgeMs` in the words `/maestro` shows beside a lane — never sub-hour, this is a backlog view. */
+function formatAge(ms: number): string {
+  const hours = ms / (60 * 60 * 1000);
+  if (hours < 24) return `${Math.max(1, Math.round(hours))} hour${Math.round(hours) === 1 ? "" : "s"}`;
+  const days = hours / 24;
+  const rounded = days < 10 ? Math.round(days * 10) / 10 : Math.round(days);
+  return `${rounded} day${rounded === 1 ? "" : "s"}`;
+}
+
+/**
+ * `037`'s entry point — every `.claude/channels/<receiver>/` lane still holding a file, right now.
+ *
+ * READ-ONLY, same discipline as `ForkedAgentsCard` below: nothing here delivers, retires or sweeps
+ * a channel file — that is entirely `036`'s hooks' job, inside a live session. This just names what
+ * is waiting, and whether the CURRENT run (if one is live) will deliver it or it is queued for an
+ * agent nothing has invoked yet — which is a backlog, not an error, and is worded that way rather
+ * than as "stranded".
+ */
+function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
+  const [lanes, setLanes] = useState<PendingLane[] | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.channels.pending()).then((res) => {
+      if (!cancelled && res.ok) setLanes(res.value);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!lanes || lanes.length === 0) return null;
+
+  return (
+    <div
+      data-testid="maestro-channels"
+      data-lanes={lanes.length}
+      className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+    >
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <Inbox size={12} /> Channels
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Payloads waiting in <span className="font-mono">.claude/channels/</span> for an agent that hasn&rsquo;t consumed
+        them yet. A route with no workflow to it — like the scribe&rsquo;s concept-skill gaps — simply queues here until
+        that agent is next invoked, which can be a later run.
+      </p>
+      <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
+        {lanes.map((lane) => (
+          <li
+            key={lane.receiver}
+            data-testid={`channel-lane-${lane.receiver}`}
+            className="text-[12px] flex flex-wrap items-baseline gap-x-1.5"
+          >
+            <span className="font-mono text-(--ink)">{lane.receiver}</span>
+            <span className="text-(--ink-2)">{lane.count} pending</span>
+            <span className="text-(--ink-3)">
+              {lane.stranded === 0
+                ? "— will be delivered this run"
+                : lane.current > 0
+                  ? `— ${lane.current} this run, ${lane.stranded} queued (oldest ${formatAge(lane.oldestAgeMs)})`
+                  : `— queued for ${lane.receiver}, from a previous run (oldest ${formatAge(lane.oldestAgeMs)})`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+/**
+ * `031`'s entry point, and deliberately only that: a COUNT and a link, not a modal.
+ *
+ * The summary behind it is computed on project selection (see `InstallProvider`) and writes
+ * nothing — those `.claude/agents/*.md` may be committed, and a diff nobody asked for is hard to
+ * explain. The per-agent review, the diff and the update / keep / detach actions all live on
+ * `/agents`, where the agent itself is already on screen.
+ *
+ * Renders nothing when no fork has diverged, which is the normal state.
+ */
+function ForkedAgentsCard({ summary }: { summary: AgentSyncSummary }) {
+  const count = summary.diverged.length;
+  if (count === 0) return null;
+  return (
+    <div
+      data-testid="maestro-diverged-forks"
+      data-count={count}
+      className="flex flex-col gap-2 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+    >
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <GitBranch size={12} /> Forked agents
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        <b>
+          {count} forked agent{count === 1 ? "" : "s"} differ{count === 1 ? "s" : ""} from{" "}
+          {count === 1 ? "its" : "their"} template
+        </b>{" "}
+        — <span className="font-mono text-(--ink-3)">{summary.diverged.join(", ")}</span>. Nothing has been rewritten:
+        reviewing each one is how you take the new body, keep the fork as it is, or detach it.
+      </p>
+      <div>
+        <Link
+          to="/agents"
+          className="inline-flex items-center gap-1.5 text-[12px] text-primary underline cursor-pointer"
+        >
+          Review them on /agents
+        </Link>
+      </div>
     </div>
   );
 }
@@ -454,6 +791,7 @@ function StatusCard({ status }: { status: InstallStatus }) {
  */
 function InstallPage() {
   const { current } = useProject();
+  const { agentSync } = useInstall();
   const viewedRoot = current?.root ?? null;
   const [status, setStatus] = useState<InstallStatus | null>(null);
   const [statusError, setStatusError] = useState<string | null>(null);
@@ -591,17 +929,17 @@ function InstallPage() {
             </Note>
           )}
 
-          {status?.pluginHooksActive && (
-            <Note variant="warn">
-              The <span className="font-mono">maestro</span> plugin is also installed on this machine and
-              registers the same hooks globally, so tool calls would be logged twice here. Disable the plugin to let
-              this project-local install take over — the app will not edit your global configuration for you.
-            </Note>
-          )}
-
           {status && <StatusCard status={status} />}
 
+          {agentSync && <ForkedAgentsCard summary={agentSync} />}
+
+          {status?.installed && viewedRoot && <ChannelsCard key={viewedRoot} viewedRoot={viewedRoot} />}
+
           {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
+
+          {status?.installed && viewedRoot && <GatesCard key={viewedRoot} viewedRoot={viewedRoot} />}
+
+          {status?.installed && viewedRoot && <TaskRoutingCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           <div className="flex items-center gap-2">
             <Button
