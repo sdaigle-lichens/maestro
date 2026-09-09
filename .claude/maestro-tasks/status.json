@@ -298,5 +298,9 @@
   "059-a-purge-leaves-materialized-files-legible-not-frozen.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "060-the-terminal-uninstall-stops-hand-mirroring-the-install-manifest.md": {
+    "status": "done",
+    "blockedBy": []
   }
 }

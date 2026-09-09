@@ -35,6 +35,13 @@
 // that's a bug in one of them — see that file's `RuntimeAsset`/`HOOK_REGISTRATIONS` for the
 // reasoning behind each entry.
 //
+// EXPORTS `HOOK_REGISTRATIONS`, `STATIC_ASSETS` and `runtimeAssets` (with no other side effect —
+// requiring this file does not touch a project) so that maestro-uninstall.js can derive which hook
+// scripts and which assets are ITS OWN from this file's manifest, rather than re-typing a second
+// list by hand — the `060` fix for that pair drifting. Everything else in this file that reads or
+// writes a project only runs when invoked as a CLI (`require.main === module`), which is what
+// makes requiring it safe.
+//
 //   node maestro-install.js [projectDir] [--impl-agents backend,frontend] \
 //     [--skill-map '{"frontend":["react"]}'] [--project-tags backend,frontend]
 //
@@ -67,58 +74,6 @@ const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
 const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
-
-// argv: [projectDir] [--impl-agents a,b] [--skill-map '{"agent":["skill"]}']
-// Parsed positionally-first so the long-standing `maestro-install.js <dir>` call still works.
-const argv = process.argv.slice(2);
-const positional = [];
-const flags = {};
-for (let i = 0; i < argv.length; i++) {
-  if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
-  else positional.push(argv[i]);
-}
-
-const projectDir = positional[0] || process.env.CLAUDE_PROJECT_DIR || process.cwd();
-const pluginRoot = path.resolve(__dirname, "..");
-
-const implAgents = (flags["impl-agents"] || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-// Independent of --impl-agents — this is the confirmed selection from the Project Tags catalog,
-// not necessarily the same set as the implementation chain (the catalog can hold more than
-// backend/frontend/mobile). Intersected against the LIVE catalog below, same guard the app's
-// installRuntime() applies, so a stale or hand-typed flag value can't record a tag that was
-// removed from (or never added to) `~/.claude/maestro-project-tags.sqlite`.
-const projectTagsFlag = (flags["project-tags"] || "")
-  .split(",")
-  .map((s) => s.trim())
-  .filter(Boolean);
-
-// Wrapped in try/catch: an older `node` on this session's PATH (no node:sqlite) or a store that's
-// never been written to just means an empty catalog — the install proceeds with no project_tags
-// recorded, same as omitting the flag entirely.
-let projectTagsCatalog = [];
-try {
-  const { readAllProjectTags } = require("./lib/maestro-project-tags.cjs");
-  projectTagsCatalog = readAllProjectTags();
-} catch {
-  // node:sqlite unavailable, or the catalog store doesn't exist yet.
-}
-const projectTags = projectTagsFlag.filter((t) => projectTagsCatalog.includes(t));
-
-let claudeSkillMap = {};
-if (flags["skill-map"]) {
-  try {
-    const parsed = JSON.parse(flags["skill-map"]);
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) claudeSkillMap = parsed;
-  } catch {
-    // A malformed skill map seeds an empty one rather than failing the install — the user can
-    // still attach skills in the desktop app, and losing the install over a quoting mistake in a
-    // prompt-built argument is the worse outcome.
-  }
-}
 
 // Same walk bound as maestro-apply-rules.js's `findProjectRuleFile` and
 // apps/maestro/src/core/fs-scan.ts's `walkDirs` — the project root plus every subdirectory up to
@@ -187,42 +142,6 @@ function discoverProjectSkillIds(root) {
     }
   }
   return ids;
-}
-
-// The tag-derived half of the skillMap — deterministic, no Claude session involved. Read fresh
-// from the global `~/.claude/maestro-skill-tags.sqlite` store REGARDLESS of what `--skill-map`
-// carries, so a skill the user has already tagged in the Maestro desktop app's Skills tab lands in
-// the right agent's referenced_skills even if the SKILL.md step that built `--skill-map` never
-// looked at it. A skill's tags are matched against each seeded agent INSTANCE's own stored type
-// (maestro-agent-types.cjs) and project tag (maestro-agent-project-tags.cjs) — the same two
-// attributes `apps/maestro/src/main/ipc.ts`'s `skillMapForSeed` reads, so both installers converge
-// on the same seed given the same global stores. Wrapped in try/catch: an older `node` on this
-// session's PATH (this script runs under whatever `node` invoked it, not Electron's bundled one) or
-// a missing db file just means no tags to add — the install proceeds exactly as it did before this
-// feature existed.
-let tagSkillMap = {};
-try {
-  const { readAllSkillTags, skillMapFromTags } = require("./lib/maestro-skill-tags.cjs");
-  const { readAllAgentTypes } = require("./lib/maestro-agent-types.cjs");
-  const { readAllAgentProjectTags } = require("./lib/maestro-agent-project-tags.cjs");
-  const types = readAllAgentTypes();
-  const projectTagsByAgent = readAllAgentProjectTags();
-  const agentAttrs = {};
-  for (const name of seededAgentNames(implAgents)) {
-    agentAttrs[name] = { type: types[name] || "developer", projectTag: projectTagsByAgent[name] || "global" };
-  }
-  tagSkillMap = skillMapFromTags(readAllSkillTags(), discoverProjectSkillIds(projectDir), agentAttrs);
-} catch {
-  // node:sqlite unavailable, or no tags have ever been set — proceed with Claude's map alone.
-}
-
-// Union, not override: an agent may pick up skills from both sources, deduped by `defaultV3Config`
-// itself (`skillsFor` runs every agent's list through `new Set`).
-const skillMap = {};
-for (const map of [tagSkillMap, claudeSkillMap]) {
-  for (const agent of Object.keys(map)) {
-    (skillMap[agent] ??= []).push(...map[agent]);
-  }
 }
 
 // `036`: not everything under this header is removed at SessionEnd any more — a channel file
@@ -312,7 +231,7 @@ const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
 // Byte-for-byte as the legacy installer wrote it — unquoted and un-prefixed. Unlike the node
 // hooks below, this one predates project-local hooks entirely, so re-quoting it here would
 // duplicate the entry on every project the old skill already installed and orphan it on uninstall
-// (which removes it by exact string match). Kept as its own constant for that reason.
+// (which removes it by exact string match).
 const BASH_VALIDATION_COMMAND = `${SCRIPTS_VAR}/bash-validation.sh`;
 
 function nodeHook(event, matcher, script) {
@@ -323,6 +242,10 @@ function nodeHook(event, matcher, script) {
 // plugins/maestro/hooks/hooks.json one-for-one (see apps/maestro/src/core/install.ts's
 // HOOK_REGISTRATIONS, which this list is kept in lockstep with) — every hook the plugin would
 // otherwise run from ${CLAUDE_PLUGIN_ROOT}, plus the bash-validation guard.
+//
+// EXPORTED (below) so maestro-uninstall.js can derive its own removal set — `HOOK_REGISTRATIONS
+// .map(r => r.script)` — from THIS list, rather than hand-typing a second one that silently falls
+// behind whenever a hook is added here.
 const HOOK_REGISTRATIONS = [
   // The orchestrator's Step 0. Two events because there are two entrances: the user typing
   // `/maestro` (UserPromptExpansion, matched on the command name) and the model invoking the skill
@@ -413,6 +336,9 @@ const HOOK_SCRIPTS = [
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the
 // plugin root / project root respectively.
+//
+// EXPORTED (below, via runtimeAssets()) so maestro-uninstall.js's purge can target exactly what
+// THIS release installs, without re-typing the list.
 const STATIC_ASSETS = [
   { src: "scripts/maestro-set-session-workflow.cjs", dest: ".claude/scripts/maestro-set-session-workflow.cjs" },
   { src: "scripts/maestro-render-orchestrator.cjs", dest: ".claude/scripts/maestro-render-orchestrator.cjs" },
@@ -631,89 +557,187 @@ function syncProjectHandoffs(configPath, projectDir) {
   return summary;
 }
 
-try {
-  const claudeDir = path.join(projectDir, ".claude");
-  const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
-  const scriptsDir = path.join(claudeDir, "scripts");
-  ensureDir(orchestratorSkillDir);
-  ensureDir(scriptsDir);
-  ensureDir(path.join(scriptsDir, "lib"));
+// ── the manifest is importable with no side effect; everything below runs the CLI only ──────────
 
-  const orchestratorSkill = installOrchestratorSkill(
-    path.join(pluginRoot, "templates", "maestro", "SKILL.md"),
-    path.join(orchestratorSkillDir, "SKILL.md")
-  );
+module.exports = { HOOK_REGISTRATIONS, STATIC_ASSETS, runtimeAssets };
 
-  // Runtime scripts the orchestrator / hooks invoke via $CLAUDE_PROJECT_DIR.
-  // They run in-place inside the project, whose package.json may declare "type": "module" — so
-  // hook scripts are copied as .cjs to stay CommonJS regardless. Only files that differ are
-  // rewritten, so a second run reports nothing left to do.
-  const scriptsWritten = [];
-  for (const asset of runtimeAssets()) {
-    const from = path.join(pluginRoot, ...asset.src.split("/"));
-    const to = path.join(projectDir, ...asset.dest.split("/"));
-    const source = fs.readFileSync(from);
-    if (fs.existsSync(to) && fs.readFileSync(to).equals(source)) continue;
-    ensureDir(path.dirname(to));
-    fs.writeFileSync(to, source);
-    if (asset.executable) fs.chmodSync(to, 0o755);
-    scriptsWritten.push(asset.dest);
+function main() {
+  // argv: [projectDir] [--impl-agents a,b] [--skill-map '{"agent":["skill"]}']
+  // Parsed positionally-first so the long-standing `maestro-install.js <dir>` call still works.
+  const argv = process.argv.slice(2);
+  const positional = [];
+  const flags = {};
+  for (let i = 0; i < argv.length; i++) {
+    if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
+    else positional.push(argv[i]);
   }
 
-  const { setBashHook, hooksAdded } = mergeSettings(path.join(claudeDir, "settings.json"));
-  const wroteRepoGitignore = ensureRepoRootGitignore(findRepoRoot(projectDir));
+  const projectDir = positional[0] || process.env.CLAUDE_PROJECT_DIR || process.cwd();
+  const pluginRoot = path.resolve(__dirname, "..");
 
-  // Seed maestro.json only when there isn't one. An existing config is the user's own graph —
-  // re-seeding it would silently discard every workflow and rule assignment they authored.
-  // The format matches apps/maestro/src/core's writeConfig exactly (2-space indent, NO trailing
-  // newline), so a project seeded here and then saved from the desktop app shows no diff.
-  const configPath = path.join(claudeDir, "maestro.json");
-  let seededConfig = false;
-  if (!fs.existsSync(configPath)) {
-    const seeded = { ...defaultV3Config(implAgents, skillMap), project_tags: projectTags };
-    fs.writeFileSync(configPath, JSON.stringify(seeded, null, 2));
-    seededConfig = true;
+  const implAgents = (flags["impl-agents"] || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  // Independent of --impl-agents — this is the confirmed selection from the Project Tags catalog,
+  // not necessarily the same set as the implementation chain (the catalog can hold more than
+  // backend/frontend/mobile). Intersected against the LIVE catalog below, same guard the app's
+  // installRuntime() applies, so a stale or hand-typed flag value can't record a tag that was
+  // removed from (or never added to) `~/.claude/maestro-project-tags.sqlite`.
+  const projectTagsFlag = (flags["project-tags"] || "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+  // Wrapped in try/catch: an older `node` on this session's PATH (no node:sqlite) or a store that's
+  // never been written to just means an empty catalog — the install proceeds with no project_tags
+  // recorded, same as omitting the flag entirely.
+  let projectTagsCatalog = [];
+  try {
+    const { readAllProjectTags } = require("./lib/maestro-project-tags.cjs");
+    projectTagsCatalog = readAllProjectTags();
+  } catch {
+    // node:sqlite unavailable, or the catalog store doesn't exist yet.
   }
+  const projectTags = projectTagsFlag.filter((t) => projectTagsCatalog.includes(t));
 
-  // Stamp runtimeVersion last, after every file it describes is current on disk. Mirrors
-  // apps/maestro/src/core/install.ts's installRuntime() so both delivery paths produce the same
-  // result — see that file's writeRuntimeVersion for why this no-ops when maestro.json is still
-  // absent (a missing --impl-agents/no-git-repo edge case) rather than half-seeding one here.
-  const { version: runtimeVersion } = JSON.parse(
-    fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8")
-  );
-  let runtimeVersionUpdated = false;
-  if (fs.existsSync(configPath)) {
-    const current = JSON.parse(fs.readFileSync(configPath, "utf8"));
-    if (current.runtimeVersion !== runtimeVersion) {
-      current.runtimeVersion = runtimeVersion;
-      fs.writeFileSync(configPath, JSON.stringify(current, null, 2));
-      runtimeVersionUpdated = true;
+  let claudeSkillMap = {};
+  if (flags["skill-map"]) {
+    try {
+      const parsed = JSON.parse(flags["skill-map"]);
+      if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) claudeSkillMap = parsed;
+    } catch {
+      // A malformed skill map seeds an empty one rather than failing the install — the user can
+      // still attach skills in the desktop app, and losing the install over a quoting mistake in a
+      // prompt-built argument is the worse outcome.
     }
   }
 
-  const reportsSync = syncProjectReports(configPath, projectDir);
-  const handoffsSync = syncProjectHandoffs(configPath, projectDir);
+  // The tag-derived half of the skillMap — deterministic, no Claude session involved. Read fresh
+  // from the global `~/.claude/maestro-skill-tags.sqlite` store REGARDLESS of what `--skill-map`
+  // carries, so a skill the user has already tagged in the Maestro desktop app's Skills tab lands in
+  // the right agent's referenced_skills even if the SKILL.md step that built `--skill-map` never
+  // looked at it. A skill's tags are matched against each seeded agent INSTANCE's own stored type
+  // (maestro-agent-types.cjs) and project tag (maestro-agent-project-tags.cjs) — the same two
+  // attributes `apps/maestro/src/main/ipc.ts`'s `skillMapForSeed` reads, so both installers converge
+  // on the same seed given the same global stores. Wrapped in try/catch: an older `node` on this
+  // session's PATH (this script runs under whatever `node` invoked it, not Electron's bundled one) or
+  // a missing db file just means no tags to add — the install proceeds exactly as it did before this
+  // feature existed.
+  let tagSkillMap = {};
+  try {
+    const { readAllSkillTags, skillMapFromTags } = require("./lib/maestro-skill-tags.cjs");
+    const { readAllAgentTypes } = require("./lib/maestro-agent-types.cjs");
+    const { readAllAgentProjectTags } = require("./lib/maestro-agent-project-tags.cjs");
+    const types = readAllAgentTypes();
+    const projectTagsByAgent = readAllAgentProjectTags();
+    const agentAttrs = {};
+    for (const name of seededAgentNames(implAgents)) {
+      agentAttrs[name] = { type: types[name] || "developer", projectTag: projectTagsByAgent[name] || "global" };
+    }
+    tagSkillMap = skillMapFromTags(readAllSkillTags(), discoverProjectSkillIds(projectDir), agentAttrs);
+  } catch {
+    // node:sqlite unavailable, or no tags have ever been set — proceed with Claude's map alone.
+  }
 
-  process.stdout.write(
-    JSON.stringify({
-      ok: true,
-      installedOrchestratorSkill: orchestratorSkill.action === "installed",
-      orchestratorSkill,
-      scriptsWritten,
-      setBashHook,
-      hooksAdded,
-      wroteRepoGitignore,
-      seededConfig,
-      implAgents: seededConfig ? implAgents : undefined,
-      projectTags: seededConfig ? projectTags : undefined,
-      runtimeVersion,
-      runtimeVersionUpdated,
-      reportsSync,
-      handoffsSync,
-    }) + "\n"
-  );
-} catch (err) {
-  process.stderr.write(`maestro-install: ${err.message}\n`);
-  process.exit(1);
+  // Union, not override: an agent may pick up skills from both sources, deduped by `defaultV3Config`
+  // itself (`skillsFor` runs every agent's list through `new Set`).
+  const skillMap = {};
+  for (const map of [tagSkillMap, claudeSkillMap]) {
+    for (const agent of Object.keys(map)) {
+      (skillMap[agent] ??= []).push(...map[agent]);
+    }
+  }
+
+  try {
+    const claudeDir = path.join(projectDir, ".claude");
+    const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
+    const scriptsDir = path.join(claudeDir, "scripts");
+    ensureDir(orchestratorSkillDir);
+    ensureDir(scriptsDir);
+    ensureDir(path.join(scriptsDir, "lib"));
+
+    const orchestratorSkill = installOrchestratorSkill(
+      path.join(pluginRoot, "templates", "maestro", "SKILL.md"),
+      path.join(orchestratorSkillDir, "SKILL.md")
+    );
+
+    // Runtime scripts the orchestrator / hooks invoke via $CLAUDE_PROJECT_DIR.
+    // They run in-place inside the project, whose package.json may declare "type": "module" — so
+    // hook scripts are copied as .cjs to stay CommonJS regardless. Only files that differ are
+    // rewritten, so a second run reports nothing left to do.
+    const scriptsWritten = [];
+    for (const asset of runtimeAssets()) {
+      const from = path.join(pluginRoot, ...asset.src.split("/"));
+      const to = path.join(projectDir, ...asset.dest.split("/"));
+      const source = fs.readFileSync(from);
+      if (fs.existsSync(to) && fs.readFileSync(to).equals(source)) continue;
+      ensureDir(path.dirname(to));
+      fs.writeFileSync(to, source);
+      if (asset.executable) fs.chmodSync(to, 0o755);
+      scriptsWritten.push(asset.dest);
+    }
+
+    const { setBashHook, hooksAdded } = mergeSettings(path.join(claudeDir, "settings.json"));
+    const wroteRepoGitignore = ensureRepoRootGitignore(findRepoRoot(projectDir));
+
+    // Seed maestro.json only when there isn't one. An existing config is the user's own graph —
+    // re-seeding it would silently discard every workflow and rule assignment they authored.
+    // The format matches apps/maestro/src/core's writeConfig exactly (2-space indent, NO trailing
+    // newline), so a project seeded here and then saved from the desktop app shows no diff.
+    const configPath = path.join(claudeDir, "maestro.json");
+    let seededConfig = false;
+    if (!fs.existsSync(configPath)) {
+      const seeded = { ...defaultV3Config(implAgents, skillMap), project_tags: projectTags };
+      fs.writeFileSync(configPath, JSON.stringify(seeded, null, 2));
+      seededConfig = true;
+    }
+
+    // Stamp runtimeVersion last, after every file it describes is current on disk. Mirrors
+    // apps/maestro/src/core/install.ts's installRuntime() so both delivery paths produce the same
+    // result — see that file's writeRuntimeVersion for why this no-ops when maestro.json is still
+    // absent (a missing --impl-agents/no-git-repo edge case) rather than half-seeding one here.
+    const { version: runtimeVersion } = JSON.parse(
+      fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8")
+    );
+    let runtimeVersionUpdated = false;
+    if (fs.existsSync(configPath)) {
+      const current = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      if (current.runtimeVersion !== runtimeVersion) {
+        current.runtimeVersion = runtimeVersion;
+        fs.writeFileSync(configPath, JSON.stringify(current, null, 2));
+        runtimeVersionUpdated = true;
+      }
+    }
+
+    const reportsSync = syncProjectReports(configPath, projectDir);
+    const handoffsSync = syncProjectHandoffs(configPath, projectDir);
+
+    process.stdout.write(
+      JSON.stringify({
+        ok: true,
+        installedOrchestratorSkill: orchestratorSkill.action === "installed",
+        orchestratorSkill,
+        scriptsWritten,
+        setBashHook,
+        hooksAdded,
+        wroteRepoGitignore,
+        seededConfig,
+        implAgents: seededConfig ? implAgents : undefined,
+        projectTags: seededConfig ? projectTags : undefined,
+        runtimeVersion,
+        runtimeVersionUpdated,
+        reportsSync,
+        handoffsSync,
+      }) + "\n"
+    );
+  } catch (err) {
+    process.stderr.write(`maestro-install: ${err.message}\n`);
+    process.exit(1);
+  }
+}
+
+if (require.main === module) {
+  main();
 }

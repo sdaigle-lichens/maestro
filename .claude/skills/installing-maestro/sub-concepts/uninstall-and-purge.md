@@ -29,6 +29,20 @@ That queue is user-authored content, not an install artifact. A purge _reports_ 
 `uninstallPlan` carries `maestroTasks` — so the UI can show the user what a follow-up would take,
 and the script never prompts: the calling skill owns that confirmation. See `task-queue`.
 
+**Since `060` the terminal skill asks about all three surviving directories, one at a time, not
+just the task queue — the app's side of this is unchanged.** `.claude/reports/` and
+`.claude/handoffs/` used to be mentioned in the purge report and nothing more, so a user reading it
+couldn't tell "deliberately never deleted" from "forgot to ask". `maestro-uninstall.js` gained two
+more independent, purge-gated flags — `--delete-materialized-reports` and
+`--delete-materialized-handoffs` — matching the shape `--delete-maestro-tasks` already had: each
+requires `--purge`, each is refused without it, and the script still prompts for none of them — the
+`maestro-uninstall` skill asks per directory (skipping one that is empty or absent, and never
+folding the three into one all-or-nothing question) and passes only the flags the user agreed to on
+one follow-up run. This is deliberately **terminal-only**: `uninstallRuntime()`'s `UninstallOptions`
+still carries only `deleteMaestroTasks`, and the two directories remain exactly what the header
+above already said — never touched by the app, at either level. The app's confirmation dialog was
+not the gap this closed; the terminal report reading like a silent omission was.
+
 ## Remove only our own
 
 A hook command is Maestro's only if it points into `.claude/scripts/` **and** names a script the
@@ -87,5 +101,27 @@ rather than cosmetic: it is what the confirmation renders. With `maestro.json` l
 below the fold of the scroll box — the one file the user cannot get back. The list is far shorter
 than it was (an install writes 17 files, not ~37), but the ordering rule is unchanged.
 
+**`maestro-uninstall.js` used to re-type both halves of this by hand, and fell behind (`060`).**
+Its hook-script list was a hardcoded array last touched before `maestro-agent-forks.cjs`,
+`maestro-resume-target.cjs`, `maestro-step1-gates.cjs` and `maestro-step4-gate.cjs` existed, and its
+purge-target list was a second hardcoded array with the same four missing — so a purge on a
+current-release project reported `removedHooks: false` and "nothing to purge" for work it had
+simply never looked for, silently. The fix ports the app's own reasoning rather than adding the
+four entries by hand (which would only restore parity until the fifth asset): `maestro-uninstall.js`
+now `require`s `HOOK_REGISTRATIONS` and `runtimeAssets` straight out of `maestro-install.js` — no
+second manifest to fall behind — and carries its own `looksAppInstalled()`, the same narrow
+`maestro-`/`bash-validation.sh` predicate `uninstall.ts` uses, over a **recursive** sweep of
+`.claude/scripts/` (so `lib/*.cjs` orphans are caught too) plus `.claude/templates/handoffs/`.
+`maestro-install.js`'s manifest data (`HOOK_REGISTRATIONS`, `STATIC_ASSETS`, `runtimeAssets`) is
+therefore importable with no side effect — everything that reads or writes a project in that file
+runs only behind `require.main === module`, which is what makes requiring it from
+`maestro-uninstall.js` safe. Hook removal keys on the same basename-inside-the-command match
+`hasHook()`/`uninstall.ts`'s `maestroScriptIn()` use, ported in full (a regex extraction compared
+against the exact basename) rather than the substring `.includes()` test the old script used, so a
+user's own `maestro-session-log-wrapper.cjs` still can't be claimed by
+`maestro-session-log.cjs`.
+
 Files: `apps/maestro/src/core/uninstall.ts`, `plugins/maestro/scripts/maestro-uninstall.js`,
-`plugins/maestro/skills/maestro-uninstall/SKILL.md`. Test: `test/core/uninstall.test.ts`.
+`plugins/maestro/scripts/maestro-install.js` (source of the manifest the uninstaller requires),
+`plugins/maestro/skills/maestro-uninstall/SKILL.md`. Test: `test/core/uninstall.test.ts`,
+`test/core/uninstall-plugin-script.test.ts`.

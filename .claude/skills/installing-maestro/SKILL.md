@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
+  version: "1.14"
+  last-update: 289b06eb9262bd4a6e7f7451c99c74b65fa348ed
 ---
 
 # Installing Maestro
@@ -73,8 +73,8 @@ is a copy or an append that re-running completes.
 | `apps/maestro/src/core/install.ts`                           | 703   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
 | `apps/maestro/src/core/uninstall.ts`                         | 410   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
 | `apps/maestro/src/core/hook-arbitration.ts`                  | 144   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand`, and `samePath` (see the hook-arbitration sub-concept). |
-| `plugins/maestro/scripts/maestro-install.js`                 | 631   | The terminal implementation of the same manifest — including its own `syncProjectHandoffs()` and, since `059`, `syncProjectReports()`, both of which `require` `decideSync` from the generated libs rather than re-deriving it. |
-| `plugins/maestro/scripts/maestro-uninstall.js`               | 204   | The terminal implementation of the same removal.                                              |
+| `plugins/maestro/scripts/maestro-install.js`                 | 743   | The terminal implementation of the same manifest — including its own `syncProjectHandoffs()` and, since `059`, `syncProjectReports()`, both of which `require` `decideSync` from the generated libs rather than re-deriving it. Its `HOOK_REGISTRATIONS`/`STATIC_ASSETS`/`runtimeAssets` are also `module.exports`ed with no side effect (`060`) — everything that reads or writes a project lives behind `require.main === module` — so `maestro-uninstall.js` can `require` them instead of re-typing a second manifest. |
+| `plugins/maestro/scripts/maestro-uninstall.js`               | 298   | The terminal implementation of the same removal — `require`s its hook-script and asset lists from `maestro-install.js` rather than hand-maintaining them (`060`). |
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-enable-task-routing.js`     | —     | `047`'s addition, dual-registered the same way (`UserPromptExpansion` on `to-maestro-tasks`, `PreToolUse` on `Skill`, sharing that matcher's block with `maestro-step0.js`). Injects nothing — its only effect is flipping `maestro.json`'s `use_maestro_tasks` to `true` the first time `/to-maestro-tasks` is invoked. |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging a project by hand; nothing in the orchestrator runs it. |
