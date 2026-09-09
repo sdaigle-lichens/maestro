@@ -24,7 +24,27 @@ Each of these stores seeds on first read and has an existing per-agent pattern t
 
 At the end of this slice nothing detects an IaC repository yet and no workflow references the new agent — it is registered and selectable, and that is the whole of it.
 
+Note: an agent carries exactly ONE project tag — that is deliberate, not a limitation to work
+around. Seed the new agent with its own category as a single value, not `"global"`.
+
 Note: this slice changes published plugin surface (`plugins/maestro/agents/`), so it carries a `plugin.json` version bump per the repo's rule. A new agent is the published surface growing, so the bump is minor.
+
+## Skills to use
+
+Load these before you start — they carry what this task needs, and reading them beats
+rediscovering the same thing from source:
+
+- `global-stores` — the six machine-wide stores this registers the agent in, and why each is global rather than per-project
+- `create-subagent` — authoring the agent file itself — frontmatter, body, and where it lives
+- `plugin-libs-parity` — the generated bundle behind those stores, and why it must never be hand-edited
+- `updating-maestro` — which version component to bump, and why nothing reads its magnitude
+
+## When you're done
+
+End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
+is written. This slice changes behaviour that the concept skills already describe, so updating them
+is part of the change rather than a follow-up.
 
 ## Acceptance criteria
 
@@ -34,6 +54,7 @@ Note: this slice changes published plugin surface (`plugins/maestro/agents/`), s
 - [ ] The stripped report body seeded in report defaults matches what was removed from the agent file
 - [ ] Existing assertions about the bundled seven still pass, updated only where a count or an exhaustive list genuinely had to grow
 - [ ] `plugin.json` version is bumped minor, and the bump is the only version change in the slice
+- [ ] Handed off to the @scribe agent with the `scribe` skill loaded, and the concept skills this change affects are updated
 
 ## Blocked by
 

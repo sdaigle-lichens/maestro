@@ -277,5 +277,13 @@
     "blockedBy": [
       "052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md"
     ]
+  },
+  "055-the-install-s-project-tags-question-suggests-what-detection-found.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "056-install-discovery-sees-every-skills-directory-in-the-tree.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

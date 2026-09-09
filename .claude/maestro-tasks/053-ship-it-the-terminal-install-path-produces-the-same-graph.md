@@ -17,6 +17,22 @@ Three distinct things, each with its own silent failure mode.
 
 The acceptance test for the whole feature is that both install paths agree: the deterministic desktop path and the terminal path must produce the same starter configuration for the same infrastructure repository, because they are meant to be the same seeding function reached two ways.
 
+## Skills to use
+
+Load these before you start — they carry what this task needs, and reading them beats
+rediscovering the same thing from source:
+
+- `plugin-libs-parity` — regenerating the bundle, and why a stale one fails silently with a green suite
+- `updating-maestro` — the two delivery paths and the version-bump rule that decides whether a change reaches anyone
+- `installing-maestro` — the terminal install path whose output must match the app's
+
+## When you're done
+
+End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
+is written. This slice changes behaviour that the concept skills already describe, so updating them
+is part of the change rather than a follow-up.
+
 ## Acceptance criteria
 
 - [ ] The generated seeding bundle is rebuilt from source, and its diff is inspected and explained rather than assumed correct
@@ -25,6 +41,7 @@ The acceptance test for the whole feature is that both install paths agree: the 
 - [ ] The install skill's account of which agents a seed creates reflects that the set is now chain-dependent
 - [ ] `plugin.json` version is bumped, with the component chosen to match what a consumer of the plugin sees change
 - [ ] Running the terminal install against an infrastructure repository and seeding the same repository through the desktop app produce the same starter configuration
+- [ ] Handed off to the @scribe agent with the `scribe` skill loaded, and the concept skills this change affects are updated
 
 ## Blocked by
 

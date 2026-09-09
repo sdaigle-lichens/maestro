@@ -17,6 +17,21 @@ Detection today classifies a repository into backend, frontend and mobile by mat
 
 At the end of this slice the target repository detects as infrastructure with legible evidence, but still seeds the existing application workflow set with the new agent slotted in as its implementation step. That is a coherent intermediate state, not a broken one.
 
+## Skills to use
+
+Load these before you start — they carry what this task needs, and reading them beats
+rediscovering the same thing from source:
+
+- `installing-maestro` — where repo detection sits in the install pipeline and what consumes its result
+- `workflow-view` — how the detected chain and its evidence render on the canvas, and the chips that correct it
+
+## When you're done
+
+End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
+is written. This slice changes behaviour that the concept skills already describe, so updating them
+is part of the change rather than a follow-up.
+
 ## Acceptance criteria
 
 - [ ] A repository whose only signal is an infrastructure directory or manifest detects as the infra chain, not as the fallback
@@ -26,6 +41,7 @@ At the end of this slice the target repository detects as infrastructure with le
 - [ ] Detection still performs no model call, no network call and no subprocess, and still reads a bounded directory set
 - [ ] Every existing detection assertion for backend, frontend, mobile, fullstack and the fallback passes unchanged
 - [ ] Opening the target infrastructure repository in the desktop app shows the detected chain with evidence naming its infrastructure directory
+- [ ] Handed off to the @scribe agent with the `scribe` skill loaded, and the concept skills this change affects are updated
 
 ## Blocked by
 

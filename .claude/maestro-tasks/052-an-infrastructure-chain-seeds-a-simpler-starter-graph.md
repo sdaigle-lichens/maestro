@@ -23,6 +23,23 @@ Any other chain — including a chain the user has corrected on the canvas to ho
 
 The existing multi-step workflow builder is not the place for this. Its body is mostly testing, refactor-audit and multi-implementation-agent splitting, all of which the simple path skips; a third mode there would guard off most of the function and put the profile decision in two places.
 
+## Skills to use
+
+Load these before you start — they carry what this task needs, and reading them beats
+rediscovering the same thing from source:
+
+- `installing-maestro` — what a first install seeds, and that it seeds only when the config is absent
+- `maestro-config-model` — the `workflow_instances` and `workflows` slices this writes, and the slice-merge discipline
+- `workflow-view` — the canvas, the chain chips, and the reseed round trip that rebuilds the graph
+- `react-flow-canvas-geometry` — condition-edge label placement, which every seeded graph is asserted on
+
+## When you're done
+
+End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
+is written. This slice changes behaviour that the concept skills already describe, so updating them
+is part of the change rather than a follow-up.
+
 ## Acceptance criteria
 
 - [ ] A chain of exactly the infrastructure agent seeds three workflows — the simple default plus the review-only and documentation-only ones — and instances for only the agents those workflows reference
@@ -33,6 +50,7 @@ The existing multi-step workflow builder is not the place for this. Its body is 
 - [ ] Condition-edge labels in the seeded infrastructure graph are placed clear of nodes, as the existing layout assertion requires of every seeded graph
 - [ ] Every existing seeding assertion for application chains passes unchanged
 - [ ] Correcting the chain on the canvas to add an application agent swaps the seeded set from three workflows to six, and correcting it back swaps it in return
+- [ ] Handed off to the @scribe agent with the `scribe` skill loaded, and the concept skills this change affects are updated
 
 ## Blocked by
 
