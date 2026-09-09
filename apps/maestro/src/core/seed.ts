@@ -274,7 +274,10 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
   // inline skill step, not the Step 1 gate of the same name. The Step 1 gates are opt-in and live
   // in `gates` below; nothing here makes either of them run.
   const skillsAvailable = Array.from(
-    new Set(["use-code-architecture-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
+    new Set([
+      "use-code-architecture-design-check",
+      ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills]),
+    ])
   );
   // Vertical spacing in the seeded layout grows with each instance's skill count.
   const skillCount: SkillCount = (name) => skillsFor(name).length;
@@ -286,7 +289,11 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     workflows: [
       buildWorkflow("default", "default", impl, skillCount),
       buildWorkflow("tdd", "tdd", impl, skillCount),
-      linearWorkflow("Refactor", ["skill:use-code-architecture-design-check", "human_review-1", "refactor"], skillCount),
+      linearWorkflow(
+        "Refactor",
+        ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+        skillCount
+      ),
       linearWorkflow("Documentation", ["scribe"], skillCount),
       linearWorkflow("Review", ["reviewer"], skillCount),
       buildTestsWorkflow("Tests", impl, skillCount),

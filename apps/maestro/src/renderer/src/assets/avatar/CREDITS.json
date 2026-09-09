@@ -20,11 +20,7 @@
         "Johannes Sj\u00f6lund (wulax)",
         "Stephen Challener (Redshrike)"
       ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -55,11 +51,7 @@
         "Johannes Sj\u00f6lund (wulax)",
         "Stephen Challener (Redshrike)"
       ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -78,16 +70,8 @@
       "id": "male",
       "name": "Male",
       "sourcePath": "spritesheets/head/heads/human/male/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "Benjamin K. Smith (BenCreating)",
-        "Stephen Challener (Redshrike)"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["bluecarrot16", "Benjamin K. Smith (BenCreating)", "Stephen Challener (Redshrike)"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-character-bases"
@@ -98,32 +82,17 @@
       "id": "female",
       "name": "Female",
       "sourcePath": "spritesheets/head/heads/human/female/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "Benjamin K. Smith (BenCreating)",
-        "Stephen Challener (Redshrike)"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
-      "urls": [
-        "https://opengameart.org/content/",
-        "https://opengameart.org/content/lpc-character-bases"
-      ]
+      "authors": ["bluecarrot16", "Benjamin K. Smith (BenCreating)", "Stephen Challener (Redshrike)"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+      "urls": ["https://opengameart.org/content/", "https://opengameart.org/content/lpc-character-bases"]
     },
     {
       "category": "eyes",
       "id": "brows",
       "name": "Brows",
       "sourcePath": "spritesheets/eyes/eyebrows/thick/adult/idle.png",
-      "authors": [
-        "ElizaWy"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
+      "authors": ["ElizaWy"],
+      "licenses": ["OGA-BY 3.0"],
       "urls": [
         "https://github.com/ElizaWy/LPC/tree/main/Characters/Hair",
         "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
@@ -134,48 +103,26 @@
       "id": "cyclops",
       "name": "Cyclops",
       "sourcePath": "spritesheets/eyes/cyclops/adult/idle.png",
-      "authors": [
-        "kirts",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "CC0"
-      ],
-      "urls": [
-        "https://opengameart.org/content/cyclops-and-his-eye"
-      ]
+      "authors": ["kirts", "JaidynReiman"],
+      "licenses": ["CC0"],
+      "urls": ["https://opengameart.org/content/cyclops-and-his-eye"]
     },
     {
       "category": "eyes",
       "id": "cyclops2",
       "name": "Cyclops (alt)",
       "sourcePath": "spritesheets/eyes/cyclops2/adult/idle.png",
-      "authors": [
-        "kirts",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "CC0"
-      ],
-      "urls": [
-        "https://opengameart.org/content/cyclops-and-his-eye"
-      ]
+      "authors": ["kirts", "JaidynReiman"],
+      "licenses": ["CC0"],
+      "urls": ["https://opengameart.org/content/cyclops-and-his-eye"]
     },
     {
       "category": "hair",
       "id": "plain",
       "name": "Plain",
       "sourcePath": "spritesheets/hair/plain/adult/idle.png",
-      "authors": [
-        "JaidynReiman",
-        "Manuel Riecke (MrBeast)",
-        "Joe White"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman", "Manuel Riecke (MrBeast)", "Joe White"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/ponytail-and-plain-hairstyles",
@@ -187,14 +134,8 @@
       "id": "bangslong",
       "name": "Long Bangs",
       "sourcePath": "spritesheets/hair/bangslong/adult/idle.png",
-      "authors": [
-        "JaidynReiman",
-        "Manuel Riecke (MrBeast)"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman", "Manuel Riecke (MrBeast)"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
         "https://opengameart.org/content/lpc-expanded-hair"
@@ -205,13 +146,8 @@
       "id": "bob",
       "name": "Bob",
       "sourcePath": "spritesheets/hair/bob/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenses": ["CC0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
@@ -223,28 +159,17 @@
       "id": "buzzcut",
       "name": "Buzzcut",
       "sourcePath": "spritesheets/hair/buzzcut/adult/idle.png",
-      "authors": [
-        "ElizaWy"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
-      "urls": [
-        "https://opengameart.org/content/lpc-hair"
-      ]
+      "authors": ["ElizaWy"],
+      "licenses": ["OGA-BY 3.0"],
+      "urls": ["https://opengameart.org/content/lpc-hair"]
     },
     {
       "category": "hair",
       "id": "dreadlocks_short",
       "name": "Short Dreadlocks",
       "sourcePath": "spritesheets/hair/dreadlocks_short/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenses": ["CC0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
@@ -258,15 +183,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -276,15 +194,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -301,15 +212,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt_buttoned/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -319,15 +223,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt_buttoned/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -344,16 +241,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/armour/leather/male/idle.png",
-          "authors": [
-            "Johannes Sj\u00f6lund (wulax)",
-            "bluecarrot16",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["Johannes Sj\u00f6lund (wulax)", "bluecarrot16", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "https://opengameart.org/content/lpc-clothing-updates",
@@ -369,11 +258,7 @@
             "bluecarrot16",
             "JaidynReiman"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "https://opengameart.org/content/lpc-combat-armor-for-women",
@@ -397,11 +282,7 @@
             "Michael Whitlock (bigbeargames)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "https://opengameart.org/content/lpc-combat-armor-for-women"
@@ -416,11 +297,7 @@
             "Matthew Krohn (makrohn)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "https://opengameart.org/content/lpc-combat-armor-for-women",
@@ -444,11 +321,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0",
-            "CC-BY-SA 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0", "CC-BY-SA 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -467,11 +340,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0",
-            "CC-BY-SA 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0", "CC-BY-SA 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -495,10 +364,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-pants"
@@ -507,15 +373,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/shorts/shorts/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -538,14 +397,8 @@
             "Ahmad3366",
             "JaidynReiman"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         },
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
@@ -557,14 +410,8 @@
             "Ahmad3366",
             "JaidynReiman"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         }
       }
     },
@@ -575,17 +422,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/legs/skirts/legion/male/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "Nila122",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "Nila122", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-roman-armor",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -595,17 +433,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/skirts/legion/thin/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "Nila122",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "Nila122", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-roman-armor",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -621,16 +450,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/shoes/basic/male/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "bluecarrot16",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "bluecarrot16", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -640,16 +461,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 CREDITS.csv's own note reads \"edited for female base by Joe White\".",
           "sourcePath": "spritesheets/feet/shoes/basic/thin/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "Joe White",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "Joe White", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -665,17 +478,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/boots/basic/male/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "bluecarrot16",
-            "Nila122"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "bluecarrot16", "Nila122"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-clothes-and-hair",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -684,17 +488,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on feet/shoes_basic above.",
           "sourcePath": "spritesheets/feet/boots/basic/thin/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "bluecarrot16",
-            "Nila122"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "bluecarrot16", "Nila122"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-clothes-and-hair",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -709,18 +504,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/sandals/male/idle.png",
-          "authors": [
-            "Nila122",
-            "JaidynReiman",
-            "Matthew Krohn (makrohn)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["Nila122", "JaidynReiman", "Matthew Krohn (makrohn)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-roman-armor",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -730,18 +515,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on feet/shoes_basic above.",
           "sourcePath": "spritesheets/feet/sandals/thin/idle.png",
-          "authors": [
-            "Nila122",
-            "JaidynReiman",
-            "Matthew Krohn (makrohn)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["Nila122", "JaidynReiman", "Matthew Krohn (makrohn)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-roman-armor",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -764,10 +539,7 @@
             "laetissima",
             "Matthew Krohn (makrohn)"
           ],
-          "licenses": [
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-2-characters",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -784,10 +556,7 @@
             "laetissima",
             "Matthew Krohn (makrohn)"
           ],
-          "licenses": [
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-2-characters",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -801,16 +570,8 @@
       "id": "bandana",
       "name": "Bandana",
       "sourcePath": "spritesheets/hat/cloth/bandana/adult/idle.png",
-      "authors": [
-        "Matthew Krohn (makrohn)",
-        "JaidynReiman",
-        "Marcel van de Steeg (MadMarcel)",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0"
-      ],
+      "authors": ["Matthew Krohn (makrohn)", "JaidynReiman", "Marcel van de Steeg (MadMarcel)", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-female-orcogregoblintroll-base-walkcycle",
         "https://github.com/makrohn/Universal-LPC-spritesheet/commit/f50007cb47c235d8896cafae7a613f0b6a9a09a8?short_path=02b86d4#diff-02b86d45789a3e3e8e79519c7d17d15c9e6ecc9b4ddecb1bcd8dfbbaef430b75",
@@ -822,13 +583,8 @@
       "id": "bowler",
       "name": "Bowler Hat",
       "sourcePath": "spritesheets/hat/formal/bowler/adult/idle.png",
-      "authors": [
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["bluecarrot16"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-gentleman",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -839,14 +595,8 @@
       "id": "crown",
       "name": "Crown",
       "sourcePath": "spritesheets/hat/formal/crown/adult/idle.png",
-      "authors": [
-        "DarkwallLKE",
-        "Charles Sanchez (CharlesGabriel)"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["DarkwallLKE", "Charles Sanchez (CharlesGabriel)"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-crown",
@@ -858,18 +608,8 @@
       "id": "barbarian_helmet",
       "name": "Barbarian Helmet",
       "sourcePath": "spritesheets/hat/helmet/barbarian/adult/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "JaidynReiman",
-        "Napsio (Vitruvian Studio)"
-      ],
-      "licenses": [
-        "CC-BY 3.0",
-        "CC-BY 4.0",
-        "OGA-BY 3.0",
-        "GPL 2.0",
-        "GPL 3.0"
-      ],
+      "authors": ["bluecarrot16", "JaidynReiman", "Napsio (Vitruvian Studio)"],
+      "licenses": ["CC-BY 3.0", "CC-BY 4.0", "OGA-BY 3.0", "GPL 2.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-helmets",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -880,12 +620,8 @@
       "id": "brows_thin",
       "name": "Thin Brows",
       "sourcePath": "spritesheets/eyes/eyebrows/thin/adult/idle.png",
-      "authors": [
-        "ElizaWy"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
+      "authors": ["ElizaWy"],
+      "licenses": ["OGA-BY 3.0"],
       "urls": [
         "https://github.com/ElizaWy/LPC/tree/main/Characters/Hair",
         "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
@@ -896,14 +632,8 @@
       "id": "pixie",
       "name": "Pixie Cut",
       "sourcePath": "spritesheets/hair/pixie/adult/idle.png",
-      "authors": [
-        "JaidynReiman",
-        "Manuel Riecke (MrBeast)"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman", "Manuel Riecke (MrBeast)"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-expanded-hair"
@@ -914,27 +644,17 @@
       "id": "afro",
       "name": "Afro",
       "sourcePath": "spritesheets/hair/afro/adult/idle.png",
-      "authors": [
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
-      "urls": [
-        "https://opengameart.org/content/lpc-hair"
-      ]
+      "authors": ["bluecarrot16"],
+      "licenses": ["CC0"],
+      "urls": ["https://opengameart.org/content/lpc-hair"]
     },
     {
       "category": "hair",
       "id": "curly_short",
       "name": "Curly Short",
       "sourcePath": "spritesheets/hair/curly_short/adult/idle.png",
-      "authors": [
-        "ElizaWy"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
+      "authors": ["ElizaWy"],
+      "licenses": ["OGA-BY 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
@@ -945,14 +665,8 @@
       "id": "mop",
       "name": "Mop",
       "sourcePath": "spritesheets/hair/mop/adult/idle.png",
-      "authors": [
-        "Radomir Dopieralski",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Radomir Dopieralski", "bluecarrot16"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/alternate-lpc-character-sprites-george",
         "https://opengameart.org/content/lpc-hair"
@@ -963,13 +677,8 @@
       "id": "cornrows",
       "name": "Cornrows",
       "sourcePath": "spritesheets/hair/cornrows/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenses": ["CC0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
@@ -981,13 +690,8 @@
       "id": "tophat",
       "name": "Top Hat",
       "sourcePath": "spritesheets/hat/formal/tophat/adult/idle.png",
-      "authors": [
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["bluecarrot16"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-gentleman",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1005,12 +709,7 @@
         "Matthew Krohn (makrohn)",
         "Johannes Sj\u00f6lund (wulax)"
       ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 2.0",
-        "GPL 3.0"
-      ],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-roman-armor",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1021,15 +720,8 @@
       "id": "hood",
       "name": "Hood",
       "sourcePath": "spritesheets/hat/cloth/hood/adult/idle.png",
-      "authors": [
-        "Johannes Sj\u00f6lund (wulax)",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Johannes Sj\u00f6lund (wulax)", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1040,14 +732,8 @@
       "id": "wizard",
       "name": "Wizard Hat",
       "sourcePath": "spritesheets/hat/magic/celestial/adult/idle.png",
-      "authors": [
-        "Napsio (Vitruvian Studio)",
-        "Michael Whitlock (bigbeargames)",
-        "Tracy"
-      ],
-      "licenses": [
-        "CC-BY 3.0"
-      ],
+      "authors": ["Napsio (Vitruvian Studio)", "Michael Whitlock (bigbeargames)", "Tracy"],
+      "licenses": ["CC-BY 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-celestial-wizard-hats",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1058,13 +744,8 @@
       "id": "cavalier",
       "name": "Cavalier Hat",
       "sourcePath": "spritesheets/hat/pirate/cavalier/adult/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
+      "authors": ["bluecarrot16", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-pirates",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1077,35 +758,15 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/chainmail/male/idle.png",
-          "authors": [
-            "Johannes Sj\u00f6lund (wulax)",
-            "Napsio (Vitruvian Studio)",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "authors": ["Johannes Sj\u00f6lund (wulax)", "Napsio (Vitruvian Studio)", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         },
         "female": {
           "sourcePath": "spritesheets/torso/chainmail/female/idle.png",
-          "authors": [
-            "Johannes Sj\u00f6lund (wulax)",
-            "Napsio (Vitruvian Studio)",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "authors": ["Johannes Sj\u00f6lund (wulax)", "Napsio (Vitruvian Studio)", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         }
       }
     },
@@ -1116,39 +777,15 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/armour/legion/male/idle.png",
-          "authors": [
-            "Napsio (Vitruvian Studio)",
-            "JaidynReiman",
-            "bluecarrot16",
-            "Nila122"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-roman-armor"
-          ]
+          "authors": ["Napsio (Vitruvian Studio)", "JaidynReiman", "bluecarrot16", "Nila122"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-roman-armor"]
         },
         "female": {
           "sourcePath": "spritesheets/torso/armour/legion/female/idle.png",
-          "authors": [
-            "Napsio (Vitruvian Studio)",
-            "JaidynReiman",
-            "bluecarrot16",
-            "Nila122"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-roman-armor"
-          ]
+          "authors": ["Napsio (Vitruvian Studio)", "JaidynReiman", "bluecarrot16", "Nila122"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-roman-armor"]
         }
       }
     },
@@ -1159,15 +796,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve/male/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -1179,17 +809,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve/female/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-7-womens-shirts",
@@ -1209,15 +830,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/shortsleeve_polo/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -1227,15 +841,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/shortsleeve_polo/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -1252,15 +859,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt_vneck/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -1270,15 +870,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt_vneck/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -1302,11 +895,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -1325,11 +914,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -1354,10 +939,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -1367,15 +949,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/cuffed/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -1400,10 +975,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-pants"
@@ -1421,9 +993,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/sara-wizard",
             "https://opengameart.org/content/lpc-sara",
@@ -1448,10 +1018,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-pants"
@@ -1460,15 +1027,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/hose/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -1484,18 +1044,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/legs/pantaloons/male/idle.png",
-          "authors": [
-            "Nila122",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 2.0",
-            "GPL 3.0",
-            "CC-BY-SA 3.0"
-          ],
+          "authors": ["Nila122", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "GPL 2.0", "GPL 3.0", "CC-BY-SA 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-pirates",
             "https://opengameart.org/content/more-lpc-clothes-and-hair",
@@ -1505,18 +1055,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/pantaloons/thin/idle.png",
-          "authors": [
-            "Nila122",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "authors": ["Nila122", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-pirates",
             "https://opengameart.org/content/more-lpc-clothes-and-hair",
@@ -1532,14 +1072,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/boots/fold/male/idle.png",
-          "authors": [
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -1548,14 +1082,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/boots/fold/thin/idle.png",
-          "authors": [
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -1570,14 +1098,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/boots/rimmed/male/idle.png",
-          "authors": [
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -1586,14 +1108,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/boots/rimmed/thin/idle.png",
-          "authors": [
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -1608,16 +1124,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/slippers/male/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "JaidynReiman",
-            "Joe White",
-            "Luke Mehl"
-          ],
-          "licenses": [
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "JaidynReiman", "Joe White", "Luke Mehl"],
+          "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/thin-mage-clothing-set",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -1627,16 +1135,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/slippers/thin/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "JaidynReiman",
-            "Joe White",
-            "Luke Mehl"
-          ],
-          "licenses": [
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "JaidynReiman", "Joe White", "Luke Mehl"],
+          "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/thin-mage-clothing-set",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -1659,10 +1159,7 @@
             "Stephen Challener (Redshrike)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -1671,13 +1168,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/socks/high/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -1693,34 +1185,16 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/armour/plate/male/idle.png",
-          "authors": [
-            "Matthew Krohn (makrohn)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "authors": ["Matthew Krohn (makrohn)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         },
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/armour/plate/thin/idle.png",
-          "authors": [
-            "Matthew Krohn (makrohn)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "authors": ["Matthew Krohn (makrohn)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         }
       }
     },
@@ -1729,14 +1203,8 @@
       "id": "unkempt",
       "name": "Unkempt",
       "sourcePath": "spritesheets/hair/unkempt/adult/idle.png",
-      "authors": [
-        "JaidynReiman",
-        "Manuel Riecke (MrBeast)"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman", "Manuel Riecke (MrBeast)"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-expanded-hair"
@@ -1747,14 +1215,8 @@
       "id": "high_and_tight",
       "name": "High & Tight",
       "sourcePath": "spritesheets/hair/high_and_tight/adult/idle.png",
-      "authors": [
-        "Skorpio",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Skorpio", "bluecarrot16"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-skorpios-scifi-sprite-pack",
         "https://opengameart.org/content/lpc-hair"
@@ -1765,13 +1227,8 @@
       "id": "flat_top_fade",
       "name": "Flat Top Fade",
       "sourcePath": "spritesheets/hair/flat_top_fade/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenses": ["CC0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
@@ -1783,12 +1240,8 @@
       "id": "curly_short2",
       "name": "Curly Short (Alt)",
       "sourcePath": "spritesheets/hair/curly_short2/adult/idle.png",
-      "authors": [
-        "ElizaWy"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
+      "authors": ["ElizaWy"],
+      "licenses": ["OGA-BY 3.0"],
       "urls": [
         "https://github.com/ElizaWy/LPC/tree/main/Characters/Hair",
         "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
@@ -1799,12 +1252,8 @@
       "id": "spiked",
       "name": "Spiked",
       "sourcePath": "spritesheets/hair/spiked/adult/idle.png",
-      "authors": [
-        "kcilds/Rocetti/Eredah"
-      ],
-      "licenses": [
-        "CC-BY 4.0"
-      ],
+      "authors": ["kcilds/Rocetti/Eredah"],
+      "licenses": ["CC-BY 4.0"],
       "urls": [
         "https://opengameart.org/content/eredah-rpg-character-base-48x64-ongoing",
         "https://opengameart.org/content/lpc-hair"
@@ -1815,13 +1264,8 @@
       "id": "cowlick",
       "name": "Cowlick",
       "sourcePath": "spritesheets/hair/cowlick/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenses": ["CC0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
@@ -1833,15 +1277,8 @@
       "id": "jewfro",
       "name": "Jewfro",
       "sourcePath": "spritesheets/hair/jewfro/adult/idle.png",
-      "authors": [
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0+",
-        "CC-BY 3.0+",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman"],
+      "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-1-hairstyle-2-hair-extensions-3-previously-unofficially-released-hairstyles",
         "https://github.com/jrconway3/Universal-LPC-spritesheet/commit/46ddcf05a0e43e7aa6ffd47d350eef0eb529ac24"
@@ -1852,13 +1289,8 @@
       "id": "natural",
       "name": "Natural",
       "sourcePath": "spritesheets/hair/natural/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "bluecarrot16"
-      ],
-      "licenses": [
-        "CC0"
-      ],
+      "authors": ["ElizaWy", "bluecarrot16"],
+      "licenses": ["CC0"],
       "urls": [
         "https://opengameart.org/content/lpc-hair",
         "https://github.com/ElizaWy/LPC/blob/main/Characters/Hair",
@@ -1870,14 +1302,8 @@
       "id": "longhawk",
       "name": "Long Hawk",
       "sourcePath": "spritesheets/hair/longhawk/adult/idle.png",
-      "authors": [
-        "JaidynReiman",
-        "Manuel Riecke (MrBeast)"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman", "Manuel Riecke (MrBeast)"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-expanded-hair"
@@ -1888,14 +1314,8 @@
       "id": "swoop",
       "name": "Swoop",
       "sourcePath": "spritesheets/hair/swoop/adult/idle.png",
-      "authors": [
-        "JaidynReiman",
-        "Manuel Riecke (MrBeast)"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman", "Manuel Riecke (MrBeast)"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
         "https://opengameart.org/content/lpc-expanded-hair"
@@ -1906,16 +1326,8 @@
       "id": "mail",
       "name": "Mail Coif",
       "sourcePath": "spritesheets/hat/helmet/mail/adult/idle.png",
-      "authors": [
-        "Napsio (Vitruvian Studio)",
-        "Johannes Sj\u00f6lund (wulax)",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Napsio (Vitruvian Studio)", "Johannes Sj\u00f6lund (wulax)", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1926,16 +1338,8 @@
       "id": "norman",
       "name": "Norman Helmet",
       "sourcePath": "spritesheets/hat/helmet/norman/adult/idle.png",
-      "authors": [
-        "ElizaWy",
-        "Sander Frenken (castelonia)"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 4.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["ElizaWy", "Sander Frenken (castelonia)"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 4.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-realistic-helmet-pack",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1946,13 +1350,8 @@
       "id": "tiara",
       "name": "Tiara",
       "sourcePath": "spritesheets/hat/formal/tiara/adult/idle.png",
-      "authors": [
-        "Luke Mehl"
-      ],
-      "licenses": [
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Luke Mehl"],
+      "licenses": ["CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/female-mage-clothing-set",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1963,15 +1362,8 @@
       "id": "hood_sack",
       "name": "Sack Hood",
       "sourcePath": "spritesheets/hat/cloth/hood_sack/adult/idle.png",
-      "authors": [
-        "Nila122",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Nila122", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-lizard-headgear",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -1982,16 +1374,8 @@
       "id": "leather_cap",
       "name": "Leather Cap",
       "sourcePath": "spritesheets/hat/cloth/leather_cap/adult/idle.png",
-      "authors": [
-        "Johannes Sj\u00f6lund (wulax)",
-        "Matthew Krohn (Makrohn)",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["Johannes Sj\u00f6lund (wulax)", "Matthew Krohn (Makrohn)", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -2002,17 +1386,8 @@
       "id": "kerchief",
       "name": "Kerchief",
       "sourcePath": "spritesheets/hat/pirate/kerchief/adult/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "JaidynReiman",
-        "Nila122"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 3.0",
-        "GPL 2.0",
-        "GPL 3.0"
-      ],
+      "authors": ["bluecarrot16", "JaidynReiman", "Nila122"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 2.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/more-lpc-clothes-and-hair",
         "https://opengameart.org/content/lpc-pirates",
@@ -2024,13 +1399,8 @@
       "id": "bonnie",
       "name": "Bonnet",
       "sourcePath": "spritesheets/hat/pirate/bonnie/adult/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0"
-      ],
+      "authors": ["bluecarrot16", "JaidynReiman"],
+      "licenses": ["OGA-BY 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-pirates",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -2041,14 +1411,8 @@
       "id": "celestial_moon",
       "name": "Crescent Moon Hat",
       "sourcePath": "spritesheets/hat/magic/celestial_moon/adult/idle.png",
-      "authors": [
-        "Napsio (Vitruvian Studio)",
-        "Michael Whitlock (bigbeargames)",
-        "Tracy"
-      ],
-      "licenses": [
-        "CC-BY 3.0"
-      ],
+      "authors": ["Napsio (Vitruvian Studio)", "Michael Whitlock (bigbeargames)", "Tracy"],
+      "licenses": ["CC-BY 3.0"],
       "urls": [
         "https:/opengameart.org/content/lpc-celestial-wizard-hats",
         "https:/opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -2059,14 +1423,8 @@
       "id": "headband_thick",
       "name": "Headband",
       "sourcePath": "spritesheets/hat/headband/thick/adult/idle.png",
-      "authors": [
-        "JaidynReiman"
-      ],
-      "licenses": [
-        "OGA-BY 3.0+",
-        "CC-BY 3.0+",
-        "GPL 3.0"
-      ],
+      "authors": ["JaidynReiman"],
+      "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-relm-hair-xlong-ponytail",
         "https://opengameart.org/content/lpc-expanded-hats-facial-helmets"
@@ -2077,17 +1435,8 @@
       "id": "visor_round",
       "name": "Round Visor",
       "sourcePath": "spritesheets/hat/visor/round/adult/idle.png",
-      "authors": [
-        "bluecarrot16",
-        "ElizaWy",
-        "Sander Frenken (castelonia)"
-      ],
-      "licenses": [
-        "OGA-BY 3.0",
-        "CC-BY-SA 4.0",
-        "CC-BY-SA 3.0",
-        "GPL 3.0"
-      ],
+      "authors": ["bluecarrot16", "ElizaWy", "Sander Frenken (castelonia)"],
+      "licenses": ["OGA-BY 3.0", "CC-BY-SA 4.0", "CC-BY-SA 3.0", "GPL 3.0"],
       "urls": [
         "https://opengameart.org/content/lpc-realistic-helmet-pack",
         "https://opengameart.org/content/lpc-helmets-mega-pack",
@@ -2101,15 +1450,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/aprons/overalls/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "bluecarrot16",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["ElizaWy", "bluecarrot16", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "http://opengameart.org/content/lpc-clothing-updates"
@@ -2117,15 +1459,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/aprons/overalls/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "bluecarrot16",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["ElizaWy", "bluecarrot16", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "http://opengameart.org/content/lpc-clothing-updates"
@@ -2140,13 +1475,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/aprons/suspenders/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
@@ -2154,13 +1484,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/aprons/suspenders/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more"
@@ -2175,17 +1500,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/shortsleeve/male/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "http://opengameart.org/content/lpc-revised-character-basics",
@@ -2197,17 +1513,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/shortsleeve/female/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-7-womens-shirts",
@@ -2227,15 +1534,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve2/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2245,15 +1545,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve2/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2270,16 +1563,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/scoop/male/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "http://opengameart.org/content/lpc-clothing-updates",
@@ -2291,16 +1576,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/scoop/female/idle.png",
-          "authors": [
-            "bluecarrot16",
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "authors": ["bluecarrot16", "ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-pregnancy-bases-maternity-wear",
@@ -2321,15 +1598,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt_scoop/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2339,15 +1609,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/shortsleeve/tshirt_scoop/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2364,15 +1627,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/sleeveless/sleeveless2/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2382,15 +1638,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/sleeveless/sleeveless2/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2408,15 +1657,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve2_buttoned/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2426,15 +1668,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve2_buttoned/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2452,15 +1687,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve2_vneck/male/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2470,15 +1698,8 @@
         },
         "female": {
           "sourcePath": "spritesheets/torso/clothes/longsleeve/longsleeve2_vneck/female/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "http://opengameart.org/content/lpc-revised-character-basics",
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
@@ -2502,11 +1723,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -2525,11 +1742,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/liberated-pixel-cup-lpc-base-assets-sprites-map-tiles",
             "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites",
@@ -2556,10 +1769,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-pants"
@@ -2568,15 +1778,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/leggings2/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -2599,14 +1802,8 @@
             "Matthew Krohn (makrohn)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         },
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
@@ -2618,14 +1815,8 @@
             "Matthew Krohn (makrohn)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY-SA 3.0",
-            "GPL 3.0"
-          ],
-          "urls": [
-            "https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"
-          ]
+          "licenses": ["OGA-BY 3.0", "CC-BY-SA 3.0", "GPL 3.0"],
+          "urls": ["https://opengameart.org/content/lpc-medieval-fantasy-character-sprites"]
         }
       }
     },
@@ -2643,10 +1834,7 @@
             "Johannes Sj\u00f6lund (wulax)",
             "Stephen Challener (Redshrike)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -2656,15 +1844,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/legs/pants2/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Johannes Sj\u00f6lund (wulax)",
-            "Stephen Challener (Redshrike)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Johannes Sj\u00f6lund (wulax)", "Stephen Challener (Redshrike)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -2687,10 +1868,7 @@
             "Stephen Challener (Redshrike)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -2699,13 +1877,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/socks/ankle/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -2721,16 +1894,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/socks/tabi/male/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -2739,16 +1904,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/socks/tabi/thin/idle.png",
-          "authors": [
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -2770,10 +1927,7 @@
             "Stephen Challener (Redshrike)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -2782,13 +1936,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/shoes/revised/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -2811,12 +1960,7 @@
             "Stephen Challener (Redshrike)",
             "William.Thompsonj"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY 3.0+",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY 3.0+", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "http://opengameart.org/content/sara-wizard",
             "https://opengameart.org/content/lpc-sara",
@@ -2833,12 +1977,7 @@
             "Stephen Challener (Redshrike)",
             "William.Thompsonj"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "CC-BY 3.0+",
-            "GPL 2.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "CC-BY 3.0+", "GPL 2.0", "GPL 3.0"],
           "urls": [
             "http://opengameart.org/content/sara-wizard",
             "https://opengameart.org/content/lpc-sara",
@@ -2861,10 +2000,7 @@
             "Stephen Challener (Redshrike)",
             "Johannes Sj\u00f6lund (wulax)"
           ],
-          "licenses": [
-            "OGA-BY 3.0",
-            "GPL 3.0"
-          ],
+          "licenses": ["OGA-BY 3.0", "GPL 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -2873,15 +2009,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/boots/revised/thin/idle.png",
-          "authors": [
-            "ElizaWy",
-            "JaidynReiman",
-            "Stephen Challener (Redshrike)",
-            "Johannes Sj\u00f6lund (wulax)"
-          ],
-          "licenses": [
-            "OGA-BY 3.0"
-          ],
+          "authors": ["ElizaWy", "JaidynReiman", "Stephen Challener (Redshrike)", "Johannes Sj\u00f6lund (wulax)"],
+          "licenses": ["OGA-BY 3.0"],
           "urls": [
             "https://github.com/ElizaWy/LPC/tree/main/Characters/Clothing",
             "https://opengameart.org/content/lpc-expanded-sit-run-jump-more",
@@ -2897,14 +2026,8 @@
       "variants": {
         "male": {
           "sourcePath": "spritesheets/feet/accessory/plate_toe/male/idle.png",
-          "authors": [
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
@@ -2913,14 +2036,8 @@
         "female": {
           "note": "Upstream folder is named \"thin\", not \"female\" \u2014 see the note on legs/pants above.",
           "sourcePath": "spritesheets/feet/accessory/plate_toe/thin/idle.png",
-          "authors": [
-            "JaidynReiman"
-          ],
-          "licenses": [
-            "OGA-BY 3.0+",
-            "CC-BY 3.0+",
-            "GPL 3.0"
-          ],
+          "authors": ["JaidynReiman"],
+          "licenses": ["OGA-BY 3.0+", "CC-BY 3.0+", "GPL 3.0"],
           "urls": [
             "https://opengameart.org/content/lpc-kimono-relm",
             "https://opengameart.org/content/lpc-expanded-socks-shoes"
