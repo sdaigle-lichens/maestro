@@ -17,15 +17,16 @@ the code, not a written-out account of the code itself.
 
 $ARGUMENTS
 
-(The concept skill to work on. If nothing was passed, run `list` below and ask the user which one.)
+(The concept skill to work on. If nothing was passed, run step 1 below and ask the user which one.)
 
 ## Workflow
 
 ### 1. Find it, and read how mature it is
 
-```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list
-```
+Run the `load-concept-skills` skill.
+
+If it reports **NO LIST**, there is nothing to work on — tell the user to run
+`/create-concept-skills` first.
 
 The `version` reported for each skill (its frontmatter `metadata.version`) tells you what kind of
 pass this should be:

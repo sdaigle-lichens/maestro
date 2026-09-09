@@ -1,7 +1,7 @@
 ---
 name: code-architecture-design
 description: "Architecture design pass, run before implementation: designs a deep module — a lot of behaviour behind a small interface, at a deliberately placed seam. Use when use-code-architecture-design-check says to run it, when a task adds or reshapes a concept, when several architectures are plausible, or when the user asks to design a module, an interface or a seam."
-allowed-tools: Read, Grep, Glob, Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)
+allowed-tools: Read, Grep, Glob
 ---
 
 # Code Architecture Design
@@ -12,13 +12,9 @@ Design **deep modules**: a lot of behaviour behind a small interface, placed at 
 
 ## 1. Load the project's concepts
 
-Here is the concept list of the project:
-
-!`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list`
-
-If that section is empty, reads `[shell command execution disabled by policy]`, or says none were found, this project has no concept-skill list — read the available-skills list first (a project skill may already document the pattern), then reason about concepts from the codebase itself.
-
-Then **load the concept skills the task actually touches** before designing anything. A design that invents a second shape for a concept the project already has is worse than a shallow one; the existing concept is either the answer or the thing you are deliberately changing, and you have to know which. Name, in the brief, every concept the new module sits next to.
+Run the `explore-concept-skills` skill to find and load the concept skills this task touches, before
+designing anything. Carry every concept it names into the Design Brief's **Concepts touched** field —
+name, in the brief, every concept the new module sits next to.
 
 ## 2. Frame the module
 

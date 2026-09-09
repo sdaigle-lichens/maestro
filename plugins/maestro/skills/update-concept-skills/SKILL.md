@@ -42,13 +42,14 @@ expected, and harmless.)
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list
 ```
 
-If `list` finds nothing, stop and tell the user to run `/create-concept-skills` instead. There is
+Run the `load-concept-skills` skill for the list itself.
+
+If it reports **NO LIST**, stop and tell the user to run `/create-concept-skills` instead. There is
 nothing here to update.
 
-If `list` finds skills but `state` reports `{"present": false}`, carry on — the list is real and
+If it reports **LIST** but `state` reports `{"present": false}`, carry on — the list is real and
 just isn't recorded in `.claude/concept-skills.json` yet (skills written by hand, or a list
 predating this file). Step 6 will create it.
 

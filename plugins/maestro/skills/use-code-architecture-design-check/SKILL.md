@@ -1,7 +1,7 @@
 ---
 name: use-code-architecture-design-check
 description: Pre-design gate. Evaluates whether the current task requires running the code-architecture-design skill before implementation.
-allowed-tools: Read, Grep, Glob, Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)
+allowed-tools: Read, Grep, Glob
 user-invocable: false
 ---
 
@@ -11,11 +11,9 @@ Before starting any implementation, run this check to decide whether `code-archi
 
 ## 1. Concept-skill list
 
-Here is the concept list of the project:
+Run the `load-concept-skills` skill.
 
-!`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list`
-
-If the section above is empty, and reads `[shell command execution disabled by policy]`, or says none were found, this project has no concept-skill list — reason about concepts directly from the codebase instead, checking the available skills list first (a project skill may already document the relevant pattern) before opening source files.
+If it reports **NO LIST**, this project has no concept-skill list — reason about concepts directly from the codebase instead, checking the available skills list first (a project skill may already document the relevant pattern) before opening source files.
 
 ## 2. Evaluate
 
