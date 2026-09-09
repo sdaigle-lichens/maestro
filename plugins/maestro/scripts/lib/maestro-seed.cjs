@@ -327,7 +327,10 @@ function defaultV3Config(implAgents, skillMap = {}) {
   ];
   const agentsAvailable = seededAgentNames(impl);
   const skillsAvailable = Array.from(
-    /* @__PURE__ */ new Set(["use-code-architecture-design-check", ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])])
+    /* @__PURE__ */ new Set([
+      "use-code-architecture-design-check",
+      ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])
+    ])
   );
   const skillCount = (name) => skillsFor(name).length;
   return {
@@ -338,7 +341,11 @@ function defaultV3Config(implAgents, skillMap = {}) {
     workflows: [
       buildWorkflow("default", "default", impl, skillCount),
       buildWorkflow("tdd", "tdd", impl, skillCount),
-      linearWorkflow("Refactor", ["skill:use-code-architecture-design-check", "human_review-1", "refactor"], skillCount),
+      linearWorkflow(
+        "Refactor",
+        ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+        skillCount
+      ),
       linearWorkflow("Documentation", ["scribe"], skillCount),
       linearWorkflow("Review", ["reviewer"], skillCount),
       buildTestsWorkflow("Tests", impl, skillCount)
