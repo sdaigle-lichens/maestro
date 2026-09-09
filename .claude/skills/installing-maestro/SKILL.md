@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.10"
-  last-update: 90907a794bc0067dc869dce6aa459382d6ea198e
+  version: "1.13"
+  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
 ---
 
 # Installing Maestro
@@ -73,7 +73,7 @@ is a copy or an append that re-running completes.
 | `apps/maestro/src/core/install.ts`                           | 703   | The manifest, `HOOK_REGISTRATIONS`, `installStatus`, `installRuntime`, `refreshStaleRuntime`. |
 | `apps/maestro/src/core/uninstall.ts`                         | 410   | The mirror — `uninstallPlan`, `purgeTargets`, `uninstallRuntime`.                             |
 | `apps/maestro/src/core/hook-arbitration.ts`                  | 144   | Which copy of a hook runs when both delivery paths are live. Owns `Settings`/`HookEntry`/`HookCommand`, and `samePath` (see the hook-arbitration sub-concept). |
-| `plugins/maestro/scripts/maestro-install.js`                 | 631   | The terminal implementation of the same manifest — including its own `syncProjectHandoffs()`, which `require`s `decideSync` and `handoffRoutes` from the generated libs rather than re-deriving them. |
+| `plugins/maestro/scripts/maestro-install.js`                 | 631   | The terminal implementation of the same manifest — including its own `syncProjectHandoffs()` and, since `059`, `syncProjectReports()`, both of which `require` `decideSync` from the generated libs rather than re-deriving it. |
 | `plugins/maestro/scripts/maestro-uninstall.js`               | 204   | The terminal implementation of the same removal.                                              |
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-enable-task-routing.js`     | —     | `047`'s addition, dual-registered the same way (`UserPromptExpansion` on `to-maestro-tasks`, `PreToolUse` on `Skill`, sharing that matcher's block with `maestro-step0.js`). Injects nothing — its only effect is flipping `maestro.json`'s `use_maestro_tasks` to `true` the first time `/to-maestro-tasks` is invoked. |
@@ -147,6 +147,22 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
 - **`refreshStaleRuntime` never installs fresh.** It fires on project _selection_, so auto-installing
   would put Maestro into every repo the user happens to open. It also uses a raw parse rather than
   `readConfig()`'s blank-on-corrupt fallback, so a corrupt config is never silently rewritten.
+- **A `--purge` used to freeze `.claude/reports/` and `.claude/handoffs/` forever, silently (`059`).**
+  Purge deletes `maestro.json` — and with it every tracking entry — but never those two directories,
+  so their materialized files looked `untracked` to `decideSync` on the next install and stayed
+  `unchanged` on every reinstall after that, forever. Fixed with a sixth `decideSync` verdict,
+  `adopt`, and both terminal sync functions calling `decideSync` at all (report sync didn't, before
+  this). See the uninstall-and-purge sub-concept and `agent-fork-sync`'s shared-decision sub-concept.
+- **The `skillMap`/`skills_available` flags this manifest section doesn't cover only affect a fresh
+  seed, and until `056` both readers behind them saw only the repository root's `.claude/skills/`.**
+  `discoverSkills()` (app) and `discoverProjectSkillIds()` (terminal) now both walk **every**
+  `.claude/skills` in the tree — the same bounded walk `concept-skills-system`'s `skillSearchDirs`
+  uses, via the new `discoverProjectSkillsTree`. On this repo that was the difference between seven
+  `skills_available` entries and eighteen: the twelve concept skills living beside `apps/maestro`
+  were invisible, and a monorepo instance could be seeded with no skills at all and never know it. A
+  name collision between two directories keeps the first found in walk order and is reported rather
+  than silently resolved — `console.warn` in the app, stderr in the terminal script, and
+  `InstallReport.warnings` for the app's caller.
 
 ## Relationships
 

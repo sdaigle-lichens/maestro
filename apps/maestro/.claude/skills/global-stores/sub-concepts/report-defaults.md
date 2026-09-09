@@ -21,5 +21,11 @@ implementations.
 Install/update syncs a project's `.claude/reports/*.md` _from_ here, and `MaestroReportEntry.syncedFrom`
 is how the staleness check tells a materialized copy from a hand-authored override.
 
+**`priorReportSeeds(agentName)` (`059`) exports what was a private constant**, so `report-sync.ts`
+and the terminal path's `maestro-report-defaults.cjs` bundle can both build the `matchesKnownVersion`
+set `decideSync`'s `adopt` verdict needs — see `agent-fork-sync`'s shared-decision sub-concept. It is
+`report-defaults.ts`'s equivalent of `handoff-seeds.ts`'s already-exported `PRIOR_SEEDS`, kept private
+until now only because nothing needed it outside this module.
+
 Files: `src/core/report-defaults.ts`, `src/core/report-resolution.ts`, `src/core/report-sync.ts`,
 `src/core/reports.ts`.

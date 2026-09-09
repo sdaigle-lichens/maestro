@@ -54,6 +54,19 @@ export interface MaestroRuleV3 {
    * "vibe-rules" → install via `vibe-rules load <id> claude-code -t <dir>/.claude/rules/<id>.md`.
    */
   source?: "project" | "vibe-rules";
+  /**
+   * How the assignment reaches the filesystem. Absent means "move" (the long-standing default):
+   * a `source: "project"` rule's file is relocated into the assigned directory's `.claude/rules/`,
+   * a `source: "vibe-rules"` one is installed there.
+   *
+   * "scope-only" assigns the `paths` scope without creating a `.claude/` directory at the target —
+   * for a project a directory-scoped assignment must not physically move a rule into (this repo's
+   * own `plugin-publishing` assignment under `plugins/maestro/**` is the motivating case). A
+   * `source: "project"` rule under this mode is left exactly where it already sits; a
+   * `source: "vibe-rules"` one installs into the project root's `.claude/rules/` instead of the
+   * assigned directory's.
+   */
+  placement?: "move" | "scope-only";
 }
 
 export interface MaestroConfigV3 {

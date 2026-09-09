@@ -122,6 +122,27 @@ function removeIfPresent(p) {
   return true;
 }
 
+// `.md` files under `dir`, recursively, as paths RELATIVE TO `dir` (so a handoff's
+// `<sender>/<receiver>.md` nesting survives) — used only to REPORT what .claude/reports/ and
+// .claude/handoffs/ hold. Neither directory is ever a target above; this never deletes anything.
+function mdFilesUnder(dir, root = dir) {
+  if (!fs.existsSync(dir)) return [];
+  const out = [];
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) out.push(...mdFilesUnder(full, root));
+    else if (entry.name.endsWith(".md")) out.push(path.relative(root, full).split(path.sep).join("/"));
+  }
+  return out.sort();
+}
+
+// Mirrors apps/maestro/src/core/uninstall.ts's findMaterializedFiles(). Purely informational, same
+// shape as the maestroTasks finding below minus hasStatusJson, which has no analogue here.
+function materializedFilesFinding(dir) {
+  const files = mdFilesUnder(dir);
+  return { dir: path.relative(projectDir, dir), fileCount: files.length, files };
+}
+
 try {
   const claudeDir = path.join(projectDir, ".claude");
 
@@ -160,11 +181,22 @@ try {
       // directory any more (`033`); the sweep stays so an older install's 23 orphans
       // still go. NOT .claude/handoffs/ — install materializes the project's tracked
       // copies there now, but an edit to one is the user's own content and neither
-      // uninstall level touches it.
+      // uninstall level touches it. Same argument, same reason, for .claude/reports/ —
+      // see materializedReports/materializedHandoffs below, which report both
+      // directories so a purge says what it left (`059`).
       path.join(claudeDir, "templates", "handoffs"),
       path.join(claudeDir, "maestro.json"),
     ];
     for (const t of targets) if (removeIfPresent(t)) purged.push(path.relative(projectDir, t));
+  }
+
+  // Report-only, always — .claude/reports/ and .claude/handoffs/ are never a purge target at
+  // either level (see the comment on the target list above), so this only says what's there.
+  let materializedReports = null;
+  let materializedHandoffs = null;
+  if (purge) {
+    materializedReports = materializedFilesFinding(path.join(claudeDir, "reports"));
+    materializedHandoffs = materializedFilesFinding(path.join(claudeDir, "handoffs"));
   }
 
   // Report-only by default — .claude/maestro-tasks/ is user-authored content,
@@ -195,6 +227,8 @@ try {
       removedSession,
       purged: purge ? purged : null,
       maestroTasks,
+      materializedReports,
+      materializedHandoffs,
       keptConfig: !purge,
     }) + "\n"
   );

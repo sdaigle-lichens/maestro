@@ -65,6 +65,22 @@ something still writes there — only `uninstall.ts`'s header says why it surviv
 nothing installed it; now install *does* materialise it, and it is still untouched because those
 files are the user's opinion — a hand-edit is tracked as `staleCustomized` rather than overwritten,
 and deleting them on a purge would throw away exactly what `syncedFrom` exists to protect.
+**`.claude/reports/` is the same story and was undocumented until `059`** — `uninstall.ts`'s header
+comment now explains both directories side by side rather than leaving the omission looking like an
+oversight.
+
+**A purge deletes `maestro.json`, which deletes every `syncedFrom` tracking entry — but not the
+materialized files themselves, and that used to freeze them (`059`).** With the config gone, both
+directories' files looked `untracked` to `decideSync` on the next install, and `untracked` answered
+`unchanged` unconditionally: a reinstall never refreshed a purged project's reports or handoffs
+again, silently, because nothing about a purge said so and nothing about a plain reinstall reported
+it either. The fix is a sixth `decideSync` verdict, `adopt` — an untracked file whose content matches
+the current template or a recorded prior version is retracked and rewritten to current rather than
+left alone forever. See `agent-fork-sync`'s shared-decision sub-concept for the verdict itself.
+**A purge now also *reports* what it is about to leave behind**, the same way it already reports
+`maestroTasks`: `UninstallPlan`/`UninstallReport` gained `materializedReports` and
+`materializedHandoffs` (`{ dir, files }`), populated at every uninstall level by a new
+`findMaterializedFiles()` helper — informational only, nothing deletes on the strength of it.
 
 `purgeTargets()` returns the list **most consequential first**, and that ordering is functional
 rather than cosmetic: it is what the confirmation renders. With `maestro.json` last it would sit

@@ -130,6 +130,21 @@ describe("applyRules", () => {
     expect(targetDirFor({ id: "a", scope: "project" })).toBe("");
     expect(targetDirFor({ id: "a" })).toBe("");
   });
+
+  it("a scope-only assignment scopes without moving the file", async () => {
+    const root = path.join(tmp, "p");
+    makeProject(root);
+
+    const summary = await applyRules(root, {
+      rules: [{ id: "sql", paths: ["src/backend/**"], source: "project", placement: "scope-only" }],
+    });
+
+    expect(summary.moved).toEqual([]);
+    expect(summary.unchanged).toEqual([{ id: "sql", dir: "src/backend" }]);
+    // The file never left its original location — no .claude/ was created under src/backend.
+    expect(fs.existsSync(path.join(root, ".claude", "rules", "sql.md"))).toBe(true);
+    expect(fs.existsSync(path.join(root, "src", "backend", ".claude"))).toBe(false);
+  });
 });
 
 describe("discovery", () => {

@@ -109,6 +109,7 @@ describe("syncProjectReports", () => {
     expect(syncProjectReports(projectRoot, dbPath)).toEqual({
       materialized: [],
       refreshed: [],
+      adopted: [],
       staleCustomized: [],
       unchanged: [],
     });

@@ -8,6 +8,12 @@
 //                          if that block is already present, so re-runs don't duplicate).
 //   unassigned/removed  → left untouched. We NEVER delete rule files; that's the user's call.
 //
+//   placement:"scope-only" → the assignment's `paths` still scope the rule, but nothing is
+//                          placed at the target: a project rule is left wherever it already
+//                          is, and a vibe-rules one installs at the project root instead of
+//                          the assigned directory. For a directory a `.claude/` must not
+//                          exist under.
+//
 //   node maestro-apply-rules.js [projectDir]
 //
 // Run by the maestro skill after maestro.json is written (host-side —
@@ -117,17 +123,23 @@ function main() {
 
   for (const rule of maestro.rules) {
     const relDir = targetDirFor(rule);
-    const targetRulesDir = path.join(projectDir, relDir, ".claude", "rules");
+    const scopeOnly = rule.placement === "scope-only";
     const source = rule.source || "project";
 
     if (source === "vibe-rules") {
-      const targetFile = path.join(targetRulesDir, `${rule.id}.md`);
+      // Scope-only never installs under the assigned directory — that's exactly the .claude/
+      // it exists to avoid creating there. It installs at the project root instead, so the
+      // rule still exists on disk and the assignment still scopes it to `paths`.
+      const installDir = scopeOnly
+        ? path.join(projectDir, ".claude", "rules")
+        : path.join(projectDir, relDir, ".claude", "rules");
+      const targetFile = path.join(installDir, `${rule.id}.md`);
       if (alreadyInstalled(targetFile, rule.id)) {
         summary.skipped.push({ id: rule.id, dir: relDir, reason: "already installed" });
         continue;
       }
       try {
-        fs.mkdirSync(targetRulesDir, { recursive: true });
+        fs.mkdirSync(installDir, { recursive: true });
         execFileSync("vibe-rules", ["load", rule.id, "claude-code", "-t", targetFile], { stdio: "pipe" });
         summary.installed.push({ id: rule.id, dir: relDir });
       } catch (e) {
@@ -136,12 +148,19 @@ function main() {
       continue;
     }
 
-    // source === "project": move the existing file into the assigned directory.
+    // source === "project": move the existing file into the assigned directory, unless the
+    // assignment is scope-only — then the file is left exactly where it already is, and only
+    // the `paths` scope in maestro.json changes.
     const current = findProjectRuleFile(rule.id);
     if (!current) {
       summary.missing.push(rule.id);
       continue;
     }
+    if (scopeOnly) {
+      summary.unchanged.push({ id: rule.id, dir: relDir });
+      continue;
+    }
+    const targetRulesDir = path.join(projectDir, relDir, ".claude", "rules");
     const targetFile = path.join(targetRulesDir, path.basename(current));
     if (path.resolve(current) === path.resolve(targetFile)) {
       summary.unchanged.push({ id: rule.id, dir: relDir });

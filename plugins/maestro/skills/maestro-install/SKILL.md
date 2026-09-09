@@ -29,7 +29,7 @@ $ARGUMENTS
 
    The result is a comma-separated `implAgents` list (e.g. `backend`, `frontend`, `mobile`, or `backend,mobile`). This only sets the *starting* graph — the user can rewire it later in the desktop app's canvas or by hand-editing `maestro.json`.
 
-2. **Confirm which Project Tags catalog entries this project belongs to.** These are the same categories the Maestro desktop app's `/templates` page's Project Tags tab edits, and (on `/maestro`, after install) what a project can be tagged with to auto-add a matching bundled agent later. **Skip this step entirely** on a re-install (`${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists) — same reasoning as skipping the skills offer below: the seed only applies on a fresh install, and the existing config's `project_tags` is the user's own.
+2. **Confirm which Project Tags catalog entries this project belongs to — a project can carry several, so this is a multi-select decision throughout, never a pick-one.** These are the same categories the Maestro desktop app's `/templates` page's Project Tags tab edits, and (on `/maestro`, after install) what a project can be tagged with to auto-add a matching bundled agent later. **Skip this step entirely** on a re-install (`${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists) — same reasoning as skipping the skills offer below: the seed only applies on a fresh install, and the existing config's `project_tags` is the user's own.
 
    On a fresh install:
    - **Read the global catalog** via the generated lib, same try/catch-degrades pattern as the skill-tags read below — an older `node` with no `node:sqlite`, or a catalog that's never been read before (which self-seeds to `backend`/`frontend`/`mobile` on first read), never fails the install:
@@ -43,12 +43,28 @@ $ARGUMENTS
      "
      ```
 
-   - **Mark which catalog entries step 1's analysis already supports as evidence** — the entries that appear in the detected `implAgents` (the catalog's seeded `backend`/`frontend`/`mobile` line up with `detect.ts`'s three categories one-for-one; anything else in the catalog has no automatic evidence, same as the Project Tags tab's own "standalone" tags).
-   - **Confirm with the user** via **one `AskUserQuestion`**:
-     - **If the catalog has ≤4 entries**, ask a single **multiSelect** question listing every catalog entry as an option, each description noting `(detected)` for the evidence-supported ones so the user sees why they're suggested — but nothing is pre-ticked; the user picks freely.
-     - **Otherwise** (>4 entries — `AskUserQuestion` options are capped at 4), fall back to the same coarse-consent-plus-freeform-override pattern the skill-map question below uses: options like `Use the detected tags (Recommended)`, `Let me pick from the full catalog`, `Skip — I'll tag it on /maestro afterward`. If the user picks "let me pick", accept a plain-text reply naming the tags (comma-separated), intersected against the catalog.
-     - If the catalog is empty, skip the question silently — there's nothing to offer.
-   - **Assemble the result**: a comma-separated list of the CONFIRMED tags only (e.g. `backend,frontend`) — this is intersected against the live catalog again inside `maestro-install.js`, so an invented tag name in a freeform reply is dropped rather than recorded. Empty if the user skipped.
+   - **Work out two sets from step 1's detected `implAgents` against that catalog** — never the other way around: the catalog is never read to decide what the repo *is*, only to decide what's already offerable. `detect.ts`'s dependency/file signal tables are the only thing that produces evidence, and they stay fixed per-category code regardless of what this step does with their output.
+     - `detectedInCatalog` — detected categories that are already catalog entries (today, exactly `backend`/`frontend`/`mobile`, since the catalog is seeded with those three and lines up with `detect.ts`'s three categories one-for-one). **These are pre-selected**: step 1 already established them, so this step must not make the user re-derive the same answer by hand. They are the tags the install records unless the user actively removes one.
+     - `detectedNotInCatalog` — a detected category with no matching catalog entry at all. Not reachable today on a repo whose only categories are backend/frontend/mobile, but the catalog only ever grows by an explicit add, never by re-seeding an existing machine's store (see `global-stores`) — so this is exactly what happens the day a fourth detection category ships and reaches a machine that seeded its catalog before that day. Carried here so that category isn't silently dropped for every existing user.
+   - **Confirm with the user** via **one `AskUserQuestion`** — the same one handles both the pre-selected set and, when there is one, the offer to add a new category to the catalog; never split into a second question:
+     - **If the catalog has ≤4 entries**, ask a single **multiSelect** question. Open the question text by naming the pre-selected set plainly, e.g. *"This project will be tagged `backend, frontend` from step 1's detection — a project can carry more than one. Multi-select below to also add any other catalog entry that applies, or to remove one of the detected ones."* Then list every catalog entry as an option: each detected one's description reads `(detected — included unless you remove it)`, the rest read `(not detected)`. `AskUserQuestion` has no notion of a pre-ticked option, so the pre-selecting happens in the assemble step below, not in the UI: start from `detectedInCatalog` and only drop an entry the user's own answer excludes.
+       - If `detectedNotInCatalog` is non-empty, fold it into this same question as one more option per category: `Add "<category>" to the catalog and tag this project with it`, its description saying plainly that step 1 detected it but the catalog has never held it before. Selecting it both adds the category to the catalog and tags this project with it (assemble step below) — declining leaves the catalog untouched.
+     - **Otherwise** (>4 entries — `AskUserQuestion` options are capped at 4), fall back to the same coarse-consent-plus-freeform-override pattern the skill-map question below uses, naming the pre-selected set the same way in the lead option: `Use the detected tags (backend, frontend) as-is (Recommended)`, `Customize — add or remove tags`, `Skip — I'll tag it on /maestro afterward`. If `detectedNotInCatalog` is non-empty, say so in the "Customize" option's description (`you can also add "<category>", which step 1 detected but the catalog doesn't have yet`). If the user picks "Customize", accept a **plain-text, comma-separated reply naming every tag that should end up recorded** — say so explicitly in the prompt (e.g. "reply with the full list, comma-separated, e.g. `backend, frontend, data` — more than one is expected"), since a freeform reply is the one place this step has no per-entry UI to pre-fill, so it replaces the detected set rather than adding to it.
+     - If the catalog is empty, skip the question silently — there's nothing to offer. (Reading the catalog above self-seeds it, so this branch is theoretical today.)
+   - **Assemble the result:**
+     - If the user accepted an `Add "<category>"…` offer, add it to the catalog for real **before** building the flag below, so `maestro-install.js`'s own intersection (next) sees it as a live entry rather than dropping it:
+
+       ```bash
+       node -e "
+         try {
+           const { addProjectTag } = require('${CLAUDE_SKILL_DIR}/../../scripts/lib/maestro-project-tags.cjs');
+           addProjectTag('<category>');
+         } catch { /* older node, or no node:sqlite — nothing recorded; the intersection below then drops the tag exactly as a decline would */ }
+       "
+       ```
+
+       **Declining the offer, or a non-interactive install where no question is asked at all, skips this call entirely** — the detected-but-uncataloged category is then dropped by `maestro-install.js`'s existing catalog intersection, same as today, and the config still records only real catalog entries.
+     - `confirmedTags` = `detectedInCatalog`, plus whatever the user added (including a just-added `detectedNotInCatalog` category), minus whatever they removed — assembled as a comma-separated list (e.g. `backend,frontend`). This is intersected against the live catalog **again** inside `maestro-install.js`, so an invented tag name in a freeform reply is dropped rather than recorded, same as it always was. Empty only if the user explicitly skipped.
 
 3. **Offer to attach the repo's local skills to the seeded agents.** This pre-populates the seeded instances so the user doesn't have to hunt for relevant skills. **Skip this step entirely** if `${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists — that's a re-install, and the existing config already owns the user's skill assignments (the seed only applies on a fresh install, and step 4 will not overwrite it).
 
@@ -125,7 +141,7 @@ $ARGUMENTS
 6. **Confirm the install.** Summarise:
    - what happened to the orchestrator skill (`orchestratorSkill.action` — including a `migrated` backup if there is one) and whether the bash-validation hook was added to `settings.json`,
    - whether `maestro.json` was seeded (`seededConfig`) and with which implementation chain, or was left alone because the project already had one,
-   - the recorded project tags (`projectTags`), or that none were recorded — editable afterward from the desktop app's `/maestro` page,
+   - the recorded project tags, **plural** — a project can carry as many of `projectTags` as apply, so report the whole list (e.g. "tagged as `backend, frontend`"), never just one — or that none were recorded, editable afterward from the desktop app's `/maestro` page,
    - the rendered success paths from step 5,
    - that they invoke the orchestrator manually by running `/maestro`,
    - that the workflow graph is edited in the **Maestro desktop app** (`apps/maestro` — open the project, then `/workflows` for the canvas and `/rules` for rule placement), or by hand-editing `maestro.json` and running `/maestro-update`; and that `/maestro-uninstall` removes Maestro.

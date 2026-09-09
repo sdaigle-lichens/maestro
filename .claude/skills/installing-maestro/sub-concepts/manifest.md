@@ -161,6 +161,17 @@ catalog and derives the skill map from the global tag store; the terminal path t
 `--impl-agents`, `--skill-map` and `--project-tags` flags, which its skill fills in from a repo
 analysis. **All three flags only affect a fresh seed.**
 
+**`--project-tags` is no longer freely-picked (`055`).** The `maestro-install` skill's Step 2
+computes which of step 1's detected `implAgents` are already catalog entries and pre-selects
+exactly those — the question only has to be answered to *remove* one, not to re-derive the set from
+scratch — and, when a detected category has no matching catalog entry at all, offers to add it via
+`addProjectTag` (a new export off `project-tags.ts`, alongside the pre-existing `readAllProjectTags`
+read) before assembling the flag. `maestro-install.js` itself still only reads and intersects the
+catalog — unchanged. The app's own `installRuntime()` path has no equivalent prompt: it silently
+intersects `detection.implAgents` against the catalog with no consent step and no way to propose an
+uncataloged category, which is the same silent-drop gap the terminal skill used to have, still open
+on that side.
+
 `runtimeVersion` is stamped **last**, after the files it describes are current on disk.
 
 Files: `apps/maestro/src/core/install.ts` (`STATIC_ASSETS`, `HOOK_SCRIPTS`, `runtimeAssets`,

@@ -621,13 +621,20 @@ export interface InstallStatus {
 export interface ReportSyncSummary {
   materialized: string[];
   refreshed: string[];
+  /**
+   * No tracking entry, but the file's bytes matched a known version of the global default — most
+   * often a project purged (which keeps the file but drops `maestro.json`) and then reinstalled
+   * (`059`). Adopting costs nothing when the match is the current version, and un-freezes the file
+   * when it is an older one: either way the file now tracks the CURRENT version.
+   */
+  adopted: string[];
   /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
   staleCustomized: string[];
   unchanged: string[];
 }
 
 /**
- * The same four buckets, over `.claude/handoffs/<sender>/<receiver>.md` — each entry a
+ * The same buckets, over `.claude/handoffs/<sender>/<receiver>.md` — each entry a
  * `"<sender>/<receiver>"` handoff id rather than an agent name, and each id in exactly one list.
  *
  * A wired route whose pair has no template anywhere (`scribe -> reviewer`) appears in NO bucket:
@@ -636,6 +643,8 @@ export interface ReportSyncSummary {
 export interface HandoffSyncSummary {
   materialized: string[];
   refreshed: string[];
+  /** See `ReportSyncSummary.adopted` — the same verdict, over a handoff protocol file (`059`). */
+  adopted: string[];
   /** Diverged from its last synced content — left alone on disk, surfaced so the user knows why. */
   staleCustomized: string[];
   unchanged: string[];
@@ -711,8 +720,20 @@ export interface AgentSyncSummary {
   entries: AgentSyncEntry[];
 }
 
-/** `sync-decision.ts`'s `SyncVerdict`, restated here so the renderer never imports that module. */
-export type SyncVerdictName = "detached" | "no-template" | "materialize" | "refresh" | "stale-customized" | "unchanged";
+/**
+ * `sync-decision.ts`'s `SyncVerdict`, restated here so the renderer never imports that module.
+ * `"adopt"` (`059`) is included for type parity with `decideSync`'s return type even though a
+ * forked agent's tracking is always `"tracked"` — `AgentSyncEntry.verdict` can never actually hold
+ * it, but a narrower union here would fail to typecheck against what `decideSync` returns.
+ */
+export type SyncVerdictName =
+  | "detached"
+  | "no-template"
+  | "materialize"
+  | "refresh"
+  | "adopt"
+  | "stale-customized"
+  | "unchanged";
 
 /** What the `/agents` review offers per diverged fork, and what the skills prompt for. */
 export type AgentSyncAction = "update" | "keep" | "detach";
@@ -785,6 +806,19 @@ export interface MaestroTasksFinding {
 }
 
 /**
+ * What's materialized under `.claude/reports/` or `.claude/handoffs/` right now — the same shape
+ * as `MaestroTasksFinding` minus `hasStatusJson`, which has no analogue here. Reported so a purge
+ * says what it left (`059`): neither directory is ever a purge target (see `uninstall.ts`'s
+ * header), so someone purging for a clean slate can see these are still there and choose.
+ */
+export interface MaterializedFilesFinding {
+  /** Project-relative path to the directory, e.g. `.claude/reports`. */
+  dir: string;
+  /** `.md` files found under it, sorted. Empty if the directory is absent. */
+  files: string[];
+}
+
+/**
  * What each level of an uninstall would remove from the project, as it stands right now.
  *
  * This exists so the UI can NAME the files before it deletes them. "Are you sure?" is not informed
@@ -810,6 +844,13 @@ export interface UninstallPlan {
   purgeRemovesConfig: boolean;
   /** The file-based task queue, reported separately from `purgeFiles` — see `MaestroTasksFinding`. */
   maestroTasks: MaestroTasksFinding;
+  /**
+   * `.claude/reports/` and `.claude/handoffs/` right now — reported separately from `purgeFiles`
+   * for the same reason `maestroTasks` is: neither is ever a purge target, at either level. See
+   * `MaterializedFilesFinding`.
+   */
+  materializedReports: MaterializedFilesFinding;
+  materializedHandoffs: MaterializedFilesFinding;
   /** Neither level has anything to do: uninstalling would be a no-op. */
   empty: boolean;
   /** `.claude/settings.json` exists but is not valid JSON — uninstall would refuse to touch it. */
@@ -840,6 +881,12 @@ export interface UninstallReport {
    * that had one — the whole point of the two levels.
    */
   configKept: boolean;
+  /**
+   * `.claude/reports/` and `.claude/handoffs/` as they stand after this run — always kept, at
+   * either level, so a purge can say what it left (`059`). See `MaterializedFilesFinding`.
+   */
+  materializedReports: MaterializedFilesFinding;
+  materializedHandoffs: MaterializedFilesFinding;
   /** There was nothing installed to remove. Nothing was written; this is not an error. */
   noop: boolean;
   warnings: string[];

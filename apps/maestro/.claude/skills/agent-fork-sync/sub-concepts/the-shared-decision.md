@@ -4,8 +4,11 @@
 beyond its own types, and no knowledge of reports or agents.
 
 ```ts
-decideSync({ tracking, localHash, hasTemplate, templateAdvanced }): SyncVerdict
+decideSync({ tracking, localHash, hasTemplate, templateAdvanced, matchesKnownVersion }): SyncVerdict
 ```
+
+`matchesKnownVersion` (`059`) is optional and defaults to `false`, so `agent-sync.ts`'s call site —
+whose tracking is always `"tracked"`, never `"untracked"` — is unaffected by its addition.
 
 ## The branches, in order
 
@@ -15,14 +18,26 @@ The order is the contract, not an implementation detail — two of these positio
    everything else. Never compared against the template, never touched, never reported.
 2. `!hasTemplate` → **`no-template`**. Answered before anything is compared.
 3. `localHash === null` → **`materialize`**.
-4. `tracking.kind === "untracked"` → **`unchanged`**. A file sits where the copy would go with
-   nothing pointing at it. Treating it as unmodified-since-a-sync-that-never-happened would
-   overwrite somebody else's file.
+4. `tracking.kind === "untracked"` → **`adopt`** if `matchesKnownVersion` is true, else
+   **`unchanged`**. A file sits where the copy would go with nothing pointing at it. Treating it as
+   unmodified-since-a-sync-that-never-happened would overwrite somebody else's file — unless the
+   file's content matches a version of the template this caller actually shipped, in which case it
+   almost certainly *is* an old copy of that template with no tracking entry (typically: a `--purge`
+   uninstall deleted the config that tracked it, but the file itself was never deleted), and treating
+   it as untouchable forever is the bug, not the fix. `matchesKnownVersion` is the caller's own
+   answer to that question — `decideSync` does not compute it.
 5. `localHash !== tracking.hash` → **`stale-customized`**. **Before** `templateAdvanced` is
    consulted. This is why a caller that wants to report "there is an update you can't take
    automatically" needs `templateAdvanced` carried alongside the verdict rather than inferred from
    it.
 6. `templateAdvanced ? "refresh" : "unchanged"`.
+
+**`adopt`'s write is identical to `materialize`'s or `refresh`'s: the CURRENT template content, not
+the version the file happened to match.** A caller checks `matchesKnownVersion` against *any* known
+version (current plus every recorded prior/superseded body), not only the current one — comparing
+only the current version would leave a project that skipped a release still frozen, which is most
+of the cases this verdict exists for — but adopting still writes current content in the same pass,
+so the freshly-tracked entry never claims a stale version number.
 
 Both ordering guarantees (1 outranks everything; 5 precedes 6) are asserted directly in
 `test/core/sync-decision.test.ts`, because a reordering would still pass every other test in the
@@ -48,7 +63,14 @@ repo.
 | `localHash` | `sha256` of the whole file | `hashAgentBody` — `name:`/`description:` normalised out | `sha256` of the whole file (a handoff template has no frontmatter to normalise out) |
 | `hasTemplate` | a global report default exists | the template still resolves in its recorded tier | a global handoff default exists for the pair |
 | `templateAdvanced` | `global.version > syncedFrom.version` (integer, monotonic) | plugin: `template.version !== tracked.pluginVersion` **and** body hashes differ · user: body hashes differ | `global.version > syncedFrom.version` (integer, monotonic) |
+| `matchesKnownVersion` (`059`) | file hash ∈ {current global content} ∪ `priorReportSeeds(agent)` | not passed — tracking is always `"tracked"` | file hash ∈ {current global content} ∪ `PRIOR_HANDOFF_SEEDS[id]` |
 | On a verdict | writes the file and bumps `syncedFrom` | records it and writes nothing | writes the file and bumps `syncedFrom` |
+
+**`adopt` gets the same write as `materialize`/`refresh` in both callers that pass
+`matchesKnownVersion`**, and pushes into a new `adopted` bucket on the summary rather than
+`materialized` or `refresh` — those buckets mean something more specific (a genuinely new file, or a
+real content change) and conflating them with "we found an orphaned copy and started tracking it
+again" would misreport what happened on a purge → reinstall round trip.
 
 **A verdict can still have a side effect in one caller and none in the others.** `034` gave
 `handoff-sync.ts` alone a write on `no-template`: it clears a `syncedFrom` left pointing at a global

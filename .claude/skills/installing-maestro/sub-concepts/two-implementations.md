@@ -25,6 +25,16 @@ reporting nothing. Changing that branch in one implementation and not the other 
 the terminal disagree about what a deleted global row leaves in the `handoffs` slice, and no test
 catches it, because it is the terminal script's own copy.
 
+**Report sync joined this discipline in `059` — it used to be the odd one out.**
+`maestro-install.js`'s `syncProjectReports()` was a hand-rolled duplicate of four branches that did
+NOT call `decideSync` at all, unlike `syncProjectHandoffs()` right beside it. `059` refactored it to
+`require` `decideSync` from `lib/maestro-agent-sync.cjs` and mirror `syncProjectHandoffs()`'s
+structure, so the two sync functions in this file can no longer drift from each other or from the
+app on the new `adopt` branch (or any future one) the way handoffs and reports used to be able to.
+Both terminal sync functions gained the `adopted` bucket and a `matchesKnownVersion` computation —
+reports via `priorReportSeeds` from `lib/maestro-report-defaults.cjs`, handoffs via
+`PRIOR_HANDOFF_SEEDS` from `lib/maestro-session.cjs`.
+
 ## What only the app does
 
 - **Reports what changed on disk.** `InstallReport` carries `scriptsWritten`, `hooksAdded`,

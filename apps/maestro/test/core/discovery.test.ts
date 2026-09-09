@@ -17,7 +17,13 @@ import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { BUNDLED_AGENTS_REL, discoverAgents, findUpBundledAgents } from "../../src/core/discovery.js";
+import {
+  BUNDLED_AGENTS_REL,
+  discoverAgents,
+  discoverProjectSkillsTree,
+  discoverSkills,
+  findUpBundledAgents,
+} from "../../src/core/discovery.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(here, "../../../..");
@@ -74,5 +80,65 @@ describe("discoverAgents", () => {
     const agents = await discoverAgents(tmp, findUpBundledAgents(appRoot));
     const bundled = agents.filter((a) => a.source === "maestro");
     expect(bundled.length).toBeGreaterThan(0);
+  });
+});
+
+function writeSkill(dir: string, id: string, description = "") {
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, "SKILL.md"), `---\nname: ${id}\ndescription: ${description}\n---\nbody\n`);
+}
+
+describe("discoverProjectSkillsTree", () => {
+  let tmp: string;
+
+  beforeEach(() => {
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-skill-tree-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  });
+
+  it("finds a skill under a nested .claude/skills, not only the root's", async () => {
+    writeSkill(path.join(tmp, "apps", "web", ".claude", "skills", "web-thing"), "web-thing");
+    const { skills, collisions } = await discoverProjectSkillsTree(tmp);
+    expect(skills.map((s) => s.name)).toContain("web-thing");
+    expect(collisions).toEqual([]);
+  });
+
+  it("keeps the root's copy on an id collision, and reports it", async () => {
+    writeSkill(path.join(tmp, ".claude", "skills", "shared"), "shared", "root version");
+    writeSkill(path.join(tmp, "apps", "web", ".claude", "skills", "shared"), "shared", "nested version");
+    const { skills, collisions } = await discoverProjectSkillsTree(tmp);
+    const shared = skills.filter((s) => s.name === "shared");
+    expect(shared).toHaveLength(1);
+    expect(shared[0].description).toBe("root version");
+    expect(collisions).toHaveLength(1);
+    expect(collisions[0].id).toBe("shared");
+    expect(collisions[0].dirs[0]).toBe(path.join(".claude", "skills", "shared"));
+  });
+
+  it("does not walk past the same depth/ignore list as the rest of the tree", async () => {
+    writeSkill(path.join(tmp, "node_modules", "pkg", ".claude", "skills", "ignored"), "ignored");
+    const { skills } = await discoverProjectSkillsTree(tmp);
+    expect(skills.map((s) => s.name)).not.toContain("ignored");
+  });
+});
+
+describe("discoverSkills (project component)", () => {
+  let tmp: string;
+
+  beforeEach(() => {
+    tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-discover-skills-"));
+  });
+
+  afterEach(() => {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  });
+
+  it("sees a skill living beside the code it documents, not only the project root's", async () => {
+    writeSkill(path.join(tmp, "apps", "web", ".claude", "skills", "web-thing"), "web-thing");
+    const skills = await discoverSkills(tmp);
+    expect(skills.some((s) => s.id === "web-thing" && s.source === "project")).toBe(true);
   });
 });

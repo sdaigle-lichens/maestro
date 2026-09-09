@@ -323,6 +323,18 @@ function seedIfEmpty(db: DatabaseSync): void {
   }
 }
 
+/**
+ * Every body ever seeded for `agentName`, oldest first — the superseded history `refreshSupersededSeeds`
+ * above checks against, exported so a caller can tell an untracked project file that merely
+ * matches an OLD default from one that matches nothing at all (`059`). Empty for an agent this
+ * module has never seeded (`refactor`, `reviewer`, or any agent whose default was only ever
+ * written by hand through `/templates`) — those have no recorded history, so only the current
+ * content counts as "known" for them.
+ */
+export function priorReportSeeds(agentName: string): string[] {
+  return PRIOR_SEEDS[agentName] ?? [];
+}
+
 /** The global default report for one agent, or null when it has none. */
 export function readAgentReportDefault(
   agentName: string,

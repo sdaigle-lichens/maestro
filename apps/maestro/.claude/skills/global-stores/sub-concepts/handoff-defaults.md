@@ -49,7 +49,16 @@ written to, so on any machine that has opened the db, editing `SEED_HANDOFFS` do
 body is in the source and no agent ever sees it. `refreshSupersededSeeds` closes that by moving a
 row still carrying a *previous* seed body forward while leaving a hand-edited row alone; both run on
 every `openDb()`. It is empty today (no seed has been revised yet) and exported anyway, so the
-mechanism is testable before the first edit — `report-defaults.ts` keeps its equivalent private.
+mechanism is testable before the first edit — `report-defaults.ts` used to keep its equivalent
+private until `059` needed the same list for a second reason (see below).
+
+**Re-exported as `PRIOR_HANDOFF_SEEDS` from `plugin-entries/maestro-session.ts` and reused by
+`059`'s `adopt` verdict.** `handoff-sync.ts` and the terminal path both build a
+`matchesKnownVersion` set from the current global content plus `PRIOR_HANDOFF_SEEDS[id]`, so an
+untracked file left behind by a `--purge` (which never deletes `.claude/handoffs/`) is recognised as
+the project's own old copy of the template rather than frozen as an unrelated file forever. See
+`agent-fork-sync`'s shared-decision sub-concept for the verdict itself, and `report-defaults.md` for
+`priorReportSeeds`, its new equivalent on the reports side.
 
 **`deleteHandoffDefault` re-seeds when the delete empties the table.** "Delete" means "stop
 overriding the seed", never "leave this route protocol-less".

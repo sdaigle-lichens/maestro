@@ -31,6 +31,13 @@
 //      hand-edit there is the user's own content, the slice records nothing a purge could use to
 //      tell an edited copy from a fresh one, and the same argument that keeps `maestro.json` out of
 //      a plain uninstall keeps every file here out of both.
+//
+//      `.claude/reports/` is the same kind of thing, for the same reason, and is likewise never
+//      touched by either level. It is where install materializes a project's tracked report
+//      overrides (`report-sync.ts`); the `reports` slice that would let a purge tell a fresh copy
+//      from a hand-edited one lives in the config a purge is about to delete, so the directory is
+//      simply never in this file's target list. See the `materializedReports`/`materializedHandoffs`
+//      findings below, which report both directories so a purge says what it left (`059`).
 
 import fs from "node:fs";
 import path from "node:path";
@@ -48,7 +55,7 @@ import {
   writeJsonAtomic,
   type Settings,
 } from "./install.js";
-import type { MaestroTasksFinding, UninstallPlan, UninstallReport } from "./contracts.js";
+import type { MaestroTasksFinding, MaterializedFilesFinding, UninstallPlan, UninstallReport } from "./contracts.js";
 
 export type { UninstallPlan, UninstallReport };
 
@@ -89,6 +96,24 @@ function findMaestroTasks(projectRoot: string): MaestroTasksFinding {
     files = [];
   }
   return { dir: MAESTRO_TASKS_REL, files, hasStatusJson: fs.existsSync(path.join(dir, "status.json")) };
+}
+
+/**
+ * What's materialized under `.claude/reports/` or `.claude/handoffs/` right now, independent of
+ * which uninstall level runs — neither is ever a purge target (see this file's header), so this is
+ * purely informational: it fills `materializedReports`/`materializedHandoffs` so a purge can say
+ * what it left rather than going quiet about the two directories it never touches (`059`).
+ */
+function findMaterializedFiles(projectRoot: string, relDir: string): MaterializedFilesFinding {
+  const abs = projectPath(projectRoot, relDir);
+  if (!fs.existsSync(abs)) return { dir: relDir, files: [] };
+  // `filesUnder` returns paths PROJECT-relative (`.claude/reports/backend.md`); this finding's
+  // `files` are relative to `dir` itself instead, matching `MaestroTasksFinding`'s bare filenames.
+  const prefix = `${relDir}/`;
+  const files = filesUnder(projectRoot, relDir)
+    .filter((f) => f.endsWith(".md"))
+    .map((f) => f.slice(prefix.length));
+  return { dir: relDir, files };
 }
 
 /**
@@ -305,6 +330,8 @@ export function uninstallPlan(projectRoot: string, pluginRoot?: string): Uninsta
     purgeFiles,
     purgeRemovesConfig: fs.existsSync(maestroJsonPath(projectRoot)),
     maestroTasks: findMaestroTasks(projectRoot),
+    materializedReports: findMaterializedFiles(projectRoot, ".claude/reports"),
+    materializedHandoffs: findMaterializedFiles(projectRoot, ".claude/handoffs"),
     empty: hooks.length === 0 && sessionFiles.length === 0 && !legacyAgentSetting && purgeFiles.length === 0,
     settingsUnreadable,
   };
@@ -399,6 +426,8 @@ export async function uninstallRuntime(projectRoot: string, options: UninstallOp
     maestroTasksDeleted,
     dirsPruned,
     configKept: fs.existsSync(maestroJsonPath(projectRoot)),
+    materializedReports: findMaterializedFiles(projectRoot, ".claude/reports"),
+    materializedHandoffs: findMaterializedFiles(projectRoot, ".claude/handoffs"),
     noop:
       hooksRemoved.length === 0 &&
       sessionFilesRemoved.length === 0 &&

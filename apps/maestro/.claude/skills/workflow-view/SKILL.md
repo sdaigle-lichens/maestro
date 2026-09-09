@@ -3,8 +3,8 @@ name: workflow-view
 description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, why a duplicate-agent-type banner is showing and what the instance picker's fork-an-agent affordance does about it (`041`), or why a workflow change isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 8b963451ba488d3466bfc845e44b2c23e274b61c
+  version: "1.3"
+  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
 ---
 
 # Workflow View
@@ -124,7 +124,7 @@ Key points:
 ## Left pane (workflows.tsx)
 
 - **Agents** checkboxes come from `bundledAgents` — read from `plugins/maestro/agents/*.md` frontmatter by `discoverAgents()` in `src/core`, in the main process. Toggling edits `config.agents_available`. `＋ Agent` `window.prompt`s for a manual id (for agents not bundled).
-- **Skills** checkboxes come from `projectSkills` — read from `<projectRoot>/.claude/skills/*/SKILL.md` by `discoverSkills()`, likewise in main. Toggling edits `config.skills_available` (a plain `string[]` of skill ids). `＋ Skill` prompts for a manual id.
+- **Skills** checkboxes come from `projectSkills` — read by `discoverSkills()` in main, which walks EVERY `.claude/skills` in the project tree (`discoverProjectSkillsTree`/`skillSearchDirs` in `src/core`), not just the root's — a monorepo skill living beside the code it describes is just as visible as a root one. Toggling edits `config.skills_available` (a plain `string[]` of skill ids). `＋ Skill` prompts for a manual id.
 - `skills_available` is the menu of skills the canvas can attach to instances — only a skill checked here can be attached.
 - **Save workflows** → `handleSubmit` → `submitMaestroConfig` → `router.invalidate()`. On success the page fires a `toast` (`@repo/ui/toast`) naming what changed on disk and **stays on the canvas** — the window is long-lived and the user saves repeatedly, so there is no terminal success view.
 

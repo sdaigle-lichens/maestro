@@ -35,5 +35,14 @@ old for `node:sqlite`.
 Like `reports`, this slice has **no `mergeSlice` arm** — the sync and
 `saveProjectHandoffOverride` read-modify-write it directly, and `config:save` never touches it.
 
+**Since `059`, an untracked file that matches a known template body is adopted, not left alone
+forever.** `.claude/handoffs/` is the one directory `--purge` never deletes, so a purged-and-reinstalled
+project used to have every materialized file with no `handoffs` entry to its name — `decideSync`
+read that as `untracked` → `unchanged` and never touched it again. If the file's content matches the
+current global default or a recorded prior seed body (`PRIOR_HANDOFF_SEEDS`) for that route,
+`decideSync` now answers `adopt`: the file is rewritten to the current template and a fresh
+`syncedFrom` is recorded. See `agent-fork-sync`'s shared-decision sub-concept for the verdict and
+`global-stores`' handoff-defaults sub-concept for `PRIOR_HANDOFF_SEEDS`.
+
 Files: `src/core/types.ts`, `src/core/handoffs.ts`, `src/core/handoff-resolution.ts`,
 `src/core/handoff-sync.ts`, `src/core/handoff-routes.ts`, `src/core/handoff-seeds.ts`.

@@ -73,3 +73,8 @@ vite.config.ts.timestamp-*
 
 # TanStack Router's generated route tree cache
 .tanstack/
+# Maestro ephemeral session state — recreated as needed, never committed
+**/.claude/maestro_session.json
+**/.claude/maestro_session.log.jsonl
+**/.claude/maestro_session_tasks.json
+**/.claude/channels/

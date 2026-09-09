@@ -275,15 +275,28 @@
   "053-ship-it-the-terminal-install-path-produces-the-same-graph.md": {
     "status": "blocked",
     "blockedBy": [
-      "052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md"
+      "052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md",
+      "058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md"
     ]
   },
   "055-the-install-s-project-tags-question-suggests-what-detection-found.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "056-install-discovery-sees-every-skills-directory-in-the-tree.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "057-let-a-rule-scope-to-a-directory-without-moving-its-file.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md": {
     "status": "ready",
+    "blockedBy": []
+  },
+  "059-a-purge-leaves-materialized-files-legible-not-frozen.md": {
+    "status": "done",
     "blockedBy": []
   }
 }

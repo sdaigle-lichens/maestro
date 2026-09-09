@@ -46,3 +46,4 @@ is part of the change rather than a follow-up.
 ## Blocked by
 
 - `052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md`
+- `058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md`

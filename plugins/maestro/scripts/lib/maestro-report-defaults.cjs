@@ -34,6 +34,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_report_defaults_exports = {};
 __export(maestro_report_defaults_exports, {
   DEFAULT_REPORT_DEFAULTS_DB_PATH: () => DEFAULT_REPORT_DEFAULTS_DB_PATH,
+  priorReportSeeds: () => priorReportSeeds,
   readAgentReportDefault: () => readAgentReportDefault,
   readAllAgentReportDefaults: () => readAllAgentReportDefaults
 });
@@ -165,6 +166,9 @@ function seedIfEmpty(db) {
     throw err;
   }
 }
+function priorReportSeeds(agentName) {
+  return PRIOR_SEEDS[agentName] ?? [];
+}
 function readAgentReportDefault(agentName, dbPath = DEFAULT_REPORT_DEFAULTS_DB_PATH) {
   const db = openDb(dbPath);
   try {
@@ -195,6 +199,7 @@ function readAllAgentReportDefaults(dbPath = DEFAULT_REPORT_DEFAULTS_DB_PATH) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DEFAULT_REPORT_DEFAULTS_DB_PATH,
+  priorReportSeeds,
   readAgentReportDefault,
   readAllAgentReportDefaults
 });

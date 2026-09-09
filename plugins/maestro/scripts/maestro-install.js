@@ -120,30 +120,71 @@ if (flags["skill-map"]) {
   }
 }
 
+// Same walk bound as maestro-apply-rules.js's `findProjectRuleFile` and
+// apps/maestro/src/core/fs-scan.ts's `walkDirs` — the project root plus every subdirectory up to
+// 4 deep, skipping build output. Kept as its own constants here (rather than requiring a lib) the
+// same way maestro-apply-rules.js does, since this script has no generated bundle for it.
+const SKILL_WALK_IGNORE = ["node_modules", ".git", "dist", "build", ".next", ".turbo", ".output"];
+const SKILL_WALK_MAX_DEPTH = 4;
+
 /**
- * Project skill ids exactly as `discoverSkills`/the maestro-install SKILL.md compute them:
- * `.claude/skills/<dir>/SKILL.md`'s frontmatter `name:`, or the directory name.
+ * Project skill ids from EVERY `.claude/skills` in the tree — not only the root's, which in a
+ * monorepo is blind to a skill living beside the code it documents (mirrors `discoverSkills`'s
+ * tree walk and the concept-skill machinery's `skillSearchDirs`, both in `apps/maestro/src/core`).
+ *
+ * A name collision between two directories keeps the root's copy (or, absent a root copy,
+ * whichever directory the walk reaches first) and reports the rest via `collisions` rather than
+ * resolving silently.
  */
-function discoverProjectSkillIds(dir) {
-  const skillsDir = path.join(dir, ".claude", "skills");
-  let entries;
-  try {
-    entries = fs.readdirSync(skillsDir, { withFileTypes: true });
-  } catch {
-    return [];
-  }
-  const ids = [];
-  for (const entry of entries) {
-    if (!entry.isDirectory()) continue;
-    let name = entry.name;
+function discoverProjectSkillIds(root) {
+  const byId = new Map(); // id -> [dirs...], in walk order
+  function readIdsFrom(dir) {
+    const skillsDir = path.join(dir, ".claude", "skills");
+    let entries;
     try {
-      const text = fs.readFileSync(path.join(skillsDir, entry.name, "SKILL.md"), "utf8");
-      const match = text.match(/^---\s*[\s\S]*?\bname:\s*(\S+)[\s\S]*?---/);
-      if (match) name = match[1];
+      entries = fs.readdirSync(skillsDir, { withFileTypes: true });
     } catch {
-      // No SKILL.md, or unreadable — fall back to the directory name.
+      return;
     }
-    ids.push(name);
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      let id = entry.name;
+      try {
+        const text = fs.readFileSync(path.join(skillsDir, entry.name, "SKILL.md"), "utf8");
+        const match = text.match(/^---\s*[\s\S]*?\bname:\s*(\S+)[\s\S]*?---/);
+        if (match) id = match[1];
+      } catch {
+        // No SKILL.md, or unreadable — fall back to the directory name.
+      }
+      const relDir = path.relative(root, path.join(skillsDir, entry.name));
+      if (byId.has(id)) byId.get(id).push(relDir);
+      else byId.set(id, [relDir]);
+    }
+  }
+  function walk(dir, depth) {
+    readIdsFrom(dir);
+    if (depth >= SKILL_WALK_MAX_DEPTH) return;
+    let entries;
+    try {
+      entries = fs.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const e of entries) {
+      if (!e.isDirectory() || SKILL_WALK_IGNORE.includes(e.name)) continue;
+      walk(path.join(dir, e.name), depth + 1);
+    }
+  }
+  walk(root, 0);
+
+  const ids = [];
+  for (const [id, dirs] of byId) {
+    ids.push(id);
+    if (dirs.length > 1) {
+      process.stderr.write(
+        `[maestro-install] skill id "${id}" is defined in more than one .claude/skills directory (${dirs.join(", ")}) — using "${dirs[0]}"\n`
+      );
+    }
   }
   return ids;
 }
@@ -413,24 +454,31 @@ function runtimeAssets() {
   return [...STATIC_ASSETS];
 }
 
-// Report sync — mirrors apps/maestro/src/core/report-sync.ts's syncProjectReports() exactly (see
-// that file's header for the full reasoning). Runs on both /maestro-install and /maestro-update,
-// since /maestro-update just re-runs this script. Wrapped by the caller in try/catch: an older
-// `node` on this session's PATH (< 22.5, no node:sqlite) degrades to "nothing synced" rather than
-// failing the install, same as the skill-tags read above.
+// Report sync — mirrors apps/maestro/src/core/report-sync.ts's syncProjectReports() (see that
+// file's header for the full reasoning). Runs on both /maestro-install and /maestro-update, since
+// /maestro-update just re-runs this script. Wrapped by the caller in try/catch: an older `node` on
+// this session's PATH (< 22.5, no node:sqlite) degrades to "nothing synced" rather than failing the
+// install, same as the skill-tags read above.
+//
+// Since `059` this uses `decideSync` (from lib/maestro-agent-sync.cjs, the same compiled
+// sync-decision.ts the app runs and the handoff sync below already uses) rather than restating its
+// own branches by hand — the report path and the handoff path share one decision function so they
+// cannot drift on the new `adopt` verdict either.
 function sha256(s) {
   return crypto.createHash("sha256").update(s).digest("hex");
 }
 
 function syncProjectReports(configPath, projectDir) {
-  const summary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
+  const summary = { materialized: [], refreshed: [], adopted: [], staleCustomized: [], unchanged: [] };
   if (!fs.existsSync(configPath)) return summary;
   const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
   if (cfg.version !== 3) return summary;
 
-  let readAgentReportDefault;
+  const { decideSync } = require("./lib/maestro-agent-sync.cjs");
+
+  let readAgentReportDefault, priorReportSeeds;
   try {
-    ({ readAgentReportDefault } = require("./lib/maestro-report-defaults.cjs"));
+    ({ readAgentReportDefault, priorReportSeeds } = require("./lib/maestro-report-defaults.cjs"));
   } catch {
     return summary; // no node:sqlite on this node — degrade to nothing synced
   }
@@ -442,40 +490,42 @@ function syncProjectReports(configPath, projectDir) {
 
   for (const agentName of candidateAgents) {
     const entry = reports[agentName];
-    if (entry && !entry.syncedFrom) continue; // hand-authored override — never touched
-
-    const global = readAgentReportDefault(agentName);
-    if (!global) continue;
-
     const reportId = entry ? entry.id : agentName;
+    const global = readAgentReportDefault(agentName);
+
     const filePath = path.join(reportsDir, `${reportId}.md`);
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+    const localHash = onDisk === null ? null : sha256(onDisk);
 
-    if (onDisk === null) {
+    const tracking = entry ? (entry.syncedFrom ? { kind: "tracked", hash: entry.syncedFrom.hash } : { kind: "detached" }) : { kind: "untracked" };
+
+    // Known versions of this agent's report: the CURRENT global content, plus every body this
+    // agent has ever been seeded with. Mirrors report-sync.ts's own known-hash set exactly.
+    const knownHashes = global ? [global.content, ...priorReportSeeds(agentName)].map(sha256) : [];
+
+    const verdict = decideSync({
+      tracking,
+      localHash,
+      hasTemplate: global !== null,
+      templateAdvanced: !!global && !!(entry && entry.syncedFrom) && global.version > entry.syncedFrom.version,
+      matchesKnownVersion: localHash !== null && knownHashes.includes(localHash),
+    });
+
+    if (verdict === "detached" || verdict === "no-template") continue;
+
+    if (verdict === "materialize" || verdict === "refresh" || verdict === "adopt") {
       fs.mkdirSync(reportsDir, { recursive: true });
       fs.writeFileSync(filePath, global.content);
       reports[agentName] = { id: reportId, syncedFrom: { version: global.version, hash: sha256(global.content) } };
-      summary.materialized.push(agentName);
+      summary[verdict === "materialize" ? "materialized" : verdict === "refresh" ? "refreshed" : "adopted"].push(
+        agentName
+      );
       changed = true;
       continue;
     }
 
-    if (!entry) {
-      summary.unchanged.push(agentName);
-      continue;
-    }
-
-    const currentHash = sha256(onDisk);
-    if (currentHash !== entry.syncedFrom.hash) {
+    if (verdict === "stale-customized") {
       summary.staleCustomized.push(agentName);
-      continue;
-    }
-
-    if (global.version > entry.syncedFrom.version) {
-      fs.writeFileSync(filePath, global.content);
-      reports[agentName] = { id: reportId, syncedFrom: { version: global.version, hash: sha256(global.content) } };
-      summary.refreshed.push(agentName);
-      changed = true;
       continue;
     }
 
@@ -489,21 +539,21 @@ function syncProjectReports(configPath, projectDir) {
 }
 
 // Handoff sync — mirrors apps/maestro/src/core/handoff-sync.ts's syncProjectHandoffs() (see that
-// file's header for the full reasoning). Unlike the report mirror above, this one does NOT restate
-// the five branches: `decideSync` comes out of lib/maestro-agent-sync.cjs, which is the same
-// compiled `sync-decision.ts` the app runs, and `handoffRoutes` out of lib/maestro-session.cjs, so
-// the terminal path and the app cannot disagree about either the candidate routes or the verdict.
+// file's header for the full reasoning). Like the report sync above, this does NOT restate
+// `decideSync`'s branches: it comes out of lib/maestro-agent-sync.cjs, which is the same compiled
+// `sync-decision.ts` the app runs, and `handoffRoutes` out of lib/maestro-session.cjs, so the
+// terminal path and the app cannot disagree about either the candidate routes or the verdict.
 //
 // The store read is the one thing wrapped in its own try/catch: `node:sqlite` may not exist on
 // this session's `node`, and with no global tier there is nothing to sync FROM — the seed still
 // reaches agents through the hook, which requires it out of maestro-session.cjs.
 function syncProjectHandoffs(configPath, projectDir) {
-  const summary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
+  const summary = { materialized: [], refreshed: [], adopted: [], staleCustomized: [], unchanged: [] };
   if (!fs.existsSync(configPath)) return summary;
   const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
   if (cfg.version !== 3) return summary;
 
-  const { handoffRoutes, handoffPairs, isValidHandoffId } = require("./lib/maestro-session.cjs");
+  const { handoffRoutes, handoffPairs, isValidHandoffId, PRIOR_HANDOFF_SEEDS } = require("./lib/maestro-session.cjs");
   const { decideSync } = require("./lib/maestro-agent-sync.cjs");
 
   let readHandoffDefault;
@@ -525,6 +575,7 @@ function syncProjectHandoffs(configPath, projectDir) {
     const [sender, receiver] = id.split("/");
     const filePath = path.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`);
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+    const localHash = onDisk === null ? null : sha256(onDisk);
 
     const tracking = entry
       ? entry.syncedFrom
@@ -532,11 +583,16 @@ function syncProjectHandoffs(configPath, projectDir) {
         : { kind: "detached" }
       : { kind: "untracked" };
 
+    // Known versions of this route's protocol: the CURRENT global body, plus every body this
+    // route has ever been seeded with. Mirrors handoff-sync.ts's own known-hash set exactly.
+    const knownHashes = global ? [global.content, ...(PRIOR_HANDOFF_SEEDS[id] || [])].map(sha256) : [];
+
     const verdict = decideSync({
       tracking,
-      localHash: onDisk === null ? null : sha256(onDisk),
+      localHash,
       hasTemplate: global !== null,
       templateAdvanced: !!global && !!(entry && entry.syncedFrom) && global.version > entry.syncedFrom.version,
+      matchesKnownVersion: localHash !== null && knownHashes.includes(localHash),
     });
 
     // `no-template` is the only silent branch that still writes. A global row deleted on the app's
@@ -552,11 +608,11 @@ function syncProjectHandoffs(configPath, projectDir) {
     }
     if (verdict === "detached") continue;
 
-    if (verdict === "materialize" || verdict === "refresh") {
+    if (verdict === "materialize" || verdict === "refresh" || verdict === "adopt") {
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.writeFileSync(filePath, global.content);
       handoffs[id] = { id, syncedFrom: { version: global.version, hash: sha256(global.content) } };
-      summary[verdict === "materialize" ? "materialized" : "refreshed"].push(id);
+      summary[verdict === "materialize" ? "materialized" : verdict === "refresh" ? "refreshed" : "adopted"].push(id);
       changed = true;
       continue;
     }

@@ -212,11 +212,17 @@ function unifiedDiffText(lines, context = 3) {
 }
 
 // src/core/sync-decision.ts
-function decideSync({ tracking, localHash, hasTemplate, templateAdvanced }) {
+function decideSync({
+  tracking,
+  localHash,
+  hasTemplate,
+  templateAdvanced,
+  matchesKnownVersion
+}) {
   if (tracking.kind === "detached") return "detached";
   if (!hasTemplate) return "no-template";
   if (localHash === null) return "materialize";
-  if (tracking.kind === "untracked") return "unchanged";
+  if (tracking.kind === "untracked") return matchesKnownVersion ? "adopt" : "unchanged";
   if (localHash !== tracking.hash) return "stale-customized";
   return templateAdvanced ? "refresh" : "unchanged";
 }

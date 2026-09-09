@@ -3,8 +3,8 @@ name: rule-view
 description: "Explains how the /rules view in the Maestro desktop app is built end-to-end: the left rule selectors (on-disk project rules + installable vibe-rules), the center directory tree (rule-tree.tsx), how assignments map to the MaestroConfigV3 `rules` slice in .claude/maestro.json, and how the rule files are moved/installed on save. Use when the user is working inside apps/maestro and asks how the rules view works, how rules get assigned to the project root or directory paths, how rule files get moved or installed, how vibe-rules integrate, why a rule isn't showing up, or why a rule assignment isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "1.2"
+  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
 ---
 
 # Rule View
@@ -95,7 +95,7 @@ The view edits exactly one field of the shared `MaestroConfigV3` (types from `sr
 ```ts
 MaestroConfigV3 { version: 3, …workflow fields…, rules: MaestroRuleV3[] }   // only `rules` here
 
-MaestroRuleV3 { id, scope?: "project", paths?: string[], source?: "project" | "vibe-rules" }
+MaestroRuleV3 { id, scope?: "project", paths?: string[], source?: "project" | "vibe-rules", placement?: "move" | "scope-only" }
 ```
 
 An `MaestroRuleV3` is **one assignment of a rule to one location** — not a rule definition, and (post this feature) at most one per rule id:
@@ -105,6 +105,13 @@ An `MaestroRuleV3` is **one assignment of a rule to one location** — not a rul
 - **`source`** records where the rule comes from, so the apply step knows what to do:
   - `"project"` — an on-disk `.claude/rules/<file>.md`; the file is **moved** into the assigned directory.
   - `"vibe-rules"` — a rule from the vibe-rules store; **installed** via `vibe-rules load`.
+- **`placement`** decides whether the assignment does anything physical at all. Absent means
+  `"move"` — the behavior above, unchanged. `"scope-only"` scopes the rule to the assignment's
+  `paths`/`scope` without moving or installing anything at the target: a `"project"` rule is left
+  exactly where it is and reported `unchanged`; a `"vibe-rules"` rule installs into the **project
+  root's** `.claude/rules/` instead of the assigned directory's, so `vibe-rules load` still runs but
+  creates no `.claude/` under the scoped directory. Set from `rule-tree.tsx`'s add-picker checkbox
+  or its per-chip toggle — see "Applying placements" below.
 
 The rule **definitions** are separate shapes, loaded but never written into `maestro.json`:
 
@@ -147,10 +154,14 @@ Saving sends only the **rules slice** (`{ rules }`) with `sliceType: "rules"`, o
 
 ## Applying placements (`rules.ts`)
 
-`applyRules` in `src/core` runs inside `saveConfig()`, right after `maestro.json` is written. It reads the `rules` slice and, per assignment:
+`applyRules` in `src/core` runs inside `saveConfig()`, right after `maestro.json` is written. It reads the `rules` slice and, per assignment, first checks `placement`:
 
-- **`source: "project"`** → finds the rule's `.claude/rules/<file>.md` by scanning the tree (matching the frontmatter `name`/basename to the id), then **moves** it into `<assignedDir>/.claude/rules/`. If it's already there (e.g. assigned to the root where it lives), it's a no-op (`unchanged`).
-- **`source: "vibe-rules"`** → runs `vibe-rules load <id> claude-code -t <assignedDir>/.claude/rules/<id>.md` (creating the parent dir first). vibe-rules **appends** a `<id>…</id>` block, so the script first checks for that tag and **skips** if already present — re-runs don't duplicate.
+- **`placement: "scope-only"`** → nothing physical happens at the assigned directory:
+  - `source: "project"` → the file is left exactly where it already is on disk; reported `unchanged`, never touched.
+  - `source: "vibe-rules"` → installs into the **project root's** `.claude/rules/` (not the assigned directory's), so `vibe-rules load` still runs but no `.claude/` is created under the scoped directory.
+- **`placement` absent or `"move"`** (the default, unchanged) — per `source`:
+  - **`source: "project"`** → finds the rule's `.claude/rules/<file>.md` by scanning the tree (matching the frontmatter `name`/basename to the id), then **moves** it into `<assignedDir>/.claude/rules/`. If it's already there (e.g. assigned to the root where it lives), it's a no-op (`unchanged`).
+  - **`source: "vibe-rules"`** → runs `vibe-rules load <id> claude-code -t <assignedDir>/.claude/rules/<id>.md` (creating the parent dir first). vibe-rules **appends** a `<id>…</id>` block, so the script first checks for that tag and **skips** if already present — re-runs don't duplicate.
 - **Removed / unassigned rules** → left untouched. The script **never deletes** rule files; cleanup is the user's choice.
 
 It is idempotent and returns a summary — `{ moved, installed, unchanged, skipped, missing, errors }` — which rides back on the `SaveResult` and becomes the toast text. The editor token is `claude-code` (not `claude`), and `-t` takes a **file** path.
@@ -169,3 +180,12 @@ The plugin's `maestro-apply-rules.js` is the same algorithm as a standalone scri
 - **A rule assigned in maestro.json but missing from disk is stranded.** `selectedRuleIds` is seeded from `config.rules`, but the chips only render ids the loaders return. If the file was deleted (project) or removed from the store (vibe-rules), the chip can't render, yet the assignment persists until something prunes it — and the apply step reports it under `missing`/`errors`.
 - **Name collisions resolve to project.** If the same id exists both on disk and in `vibe-rules list`, `ruleSource` calls it `"project"` and the vibe section hides it. The on-disk file is moved; the vibe-rules version is ignored.
 - **Re-assigning a vibe-rule leaves the old install behind.** Project rules are _moved_ (single file follows the assignment); vibe-rules are _installed_ at the assigned path. The config holds one location per rule, but since the apply step never deletes, moving a vibe-rule to a new directory installs a fresh copy there and leaves the previous `.claude/rules/<id>.md` in place — by design (cleanup is the user's call).
+- **A directory assignment can scope a rule without moving its file — `placement: "scope-only"`.**
+  Absent (or `"move"`) is the original always-move behavior documented above. `"scope-only"` scopes
+  the assignment's `paths`/`scope` while leaving a `"project"` rule's file untouched on disk
+  (`unchanged`) and installing a `"vibe-rules"` one into the project root's `.claude/rules/` rather
+  than the assigned directory's — so it never forces a `.claude/` to exist somewhere a project's own
+  convention forbids it. This repo's own `.claude/maestro.json` now assigns `plugin-publishing` to
+  `plugins/maestro/**` with `placement: "scope-only"`, and the real apply step
+  (`maestro-apply-rules.js`) has been run against it for real — no hand-edited workaround left
+  behind, no `plugins/maestro/.claude/` on disk.

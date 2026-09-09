@@ -39,7 +39,7 @@ import { syncProjectReports } from "./report-sync.js";
 import { syncProjectHandoffs } from "./handoff-sync.js";
 import { duplicateAgentTypes } from "./config-validate.js";
 import { detectImplAgents } from "./detect.js";
-import { discoverSkills } from "./discovery.js";
+import { discoverSkills, discoverProjectSkillsTree, type SkillIdCollision } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
 import { defaultV3Config, seededAgentNames } from "./seed.js";
 import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
@@ -639,9 +639,11 @@ export async function installRuntime(
   // unchanged, as the safety net for a project that somehow reaches `/workflows` with no config
   // and no install) — intentionally similar, not shared, per this module's own "PORTED" convention.
   let configSeeded: InstallReport["configSeeded"] = null;
+  let skillCollisions: SkillIdCollision[] = [];
   if (readConfig(projectRoot) === null) {
     const detection = detectImplAgents(projectRoot);
     const skills = await discoverSkills(projectRoot);
+    skillCollisions = (await discoverProjectSkillsTree(projectRoot)).collisions;
     const types = readAllAgentTypes();
     const projectTagsByAgent = readAllAgentProjectTags();
     const agentAttrs: Record<string, AgentAttrs> = {};
@@ -688,6 +690,9 @@ export async function installRuntime(
     warnings.push(
       `The orchestrator skill predates Maestro's managed regions, so it was replaced. Your previous version is at ${orchestratorSkill.backup} — copy any custom prose back across.`
     );
+  }
+  for (const c of skillCollisions) {
+    warnings.push(`Skill id "${c.id}" is defined in more than one .claude/skills directory (${c.dirs.join(", ")}) — using "${c.dirs[0]}".`);
   }
 
   return {
