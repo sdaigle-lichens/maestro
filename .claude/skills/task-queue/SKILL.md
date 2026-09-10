@@ -44,6 +44,25 @@ precisely so a close from the UI and one from the orchestrator cannot disagree a
 ready. Changing the cascade in one place and not the other is the failure mode this arrangement
 exists to prevent.
 
+## Live updates on the `/maestro-tasks` route
+
+The route no longer relies solely on its loader's one-shot `listTasks()` snapshot. `tailTasks`
+(`apps/maestro/src/core/tasks.ts`) is a main-process poller — poll-based, not `fs.watch`, for the
+same reason the Session Log tail is (see `log-view`'s "the tail polls, it does not `fs.watch`") —
+that re-runs `listTasks` on an interval and pushes only when the serialized result changes, so both
+a status change in `status.json` and a new task file appearing are caught by the same fingerprint
+check. It is wired through a `tasks:subscribe`/`tasks:unsubscribe` push channel
+(`src/main/ipc.ts`, `src/shared/ipc.ts`, `src/preload/index.ts`) modeled directly on
+`log:subscribe`/`log:unsubscribe`, including single-owner-per-`webContents.id` tails and retargeting
+on project switch (`taskTails`/`taskSubscribers`, mirroring `tails`/`logSubscribers`).
+
+Unlike the session log's tail, this one is **not** lifted into a root-level provider — it is
+subscribed from inside `maestro-tasks.tsx` itself, since `/maestro-tasks` is the only screen that
+reads live task data. Subscribe-on-mount / unsubscribe-on-unmount is enough to guarantee no poll
+loop outlives the route. See `log-view` for the pattern this deliberately duplicates rather than
+shares — the two poll different files for different shapes of data, so a common tail would have
+had to be generic over both.
+
 ## The validation hook
 
 `maestro-validate-tasks.js` runs as a **`PostToolUse` hook matching `TaskCreate`**. It checks each
@@ -73,7 +92,10 @@ A warning here is advisory. Work that legitimately falls outside the active work
 | `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`). |
 | `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. |
 | `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |
-| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view. |
+| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |
+| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |
+| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |
+| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |
 
 ## Relationships
 
@@ -83,6 +105,10 @@ A warning here is advisory. Work that legitimately falls outside the active work
   across a TS source and a CJS twin.
 - `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the
   documented exception to.
+- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update
+  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,
+  retargeted on project switch. The two are separate implementations by design (see above), not a
+  shared module.
 
 ## Sub-concepts
 

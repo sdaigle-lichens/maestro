@@ -38,6 +38,7 @@ import {
   hasVibeRules,
   listTasks,
   closeTask,
+  tailTasks,
   listMarketplaces,
   scaffoldCreate,
   nodeGit,
@@ -184,6 +185,16 @@ const tails = new Map<number, () => void>();
  */
 const logSubscribers = new Set<number>();
 
+/**
+ * Active task-queue tails, keyed by webContents id — the same one-tail-per-window shape as
+ * `tails`/`logSubscribers` above, for the same reason: `tasks:subscribe` is single-owner, and a
+ * second subscriber in the same window would steal the poller.
+ */
+const taskTails = new Map<number, () => void>();
+
+/** Windows that asked for a task-queue tail, whether or not one is running yet — see `logSubscribers`. */
+const taskSubscribers = new Set<number>();
+
 function broadcast(channel: string, payload?: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(channel, payload);
@@ -222,6 +233,42 @@ function startTail(webContentsId: number): void {
       init: (entries) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logInit, entries),
       entry: (entry) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logEntry, entry),
       reset: () => !wc.isDestroyed() && wc.send(IPC_EVENTS.logReset),
+    })
+  );
+}
+
+function stopTaskTail(webContentsId: number): void {
+  taskTails.get(webContentsId)?.();
+  taskTails.delete(webContentsId);
+}
+
+/**
+ * Restart every open task-queue tail against the current project. Called on a project switch —
+ * without it a window would keep streaming the previously-opened repo's task queue. Mirrors
+ * `retargetTails` exactly, over `taskSubscribers`/`taskTails` instead of `logSubscribers`/`tails`.
+ */
+function retargetTaskTails(): void {
+  for (const id of [...taskSubscribers]) {
+    stopTaskTail(id);
+    const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === id)?.webContents;
+    if (wc) startTaskTail(wc.id);
+  }
+}
+
+function startTaskTail(webContentsId: number): void {
+  const root = currentRoot();
+  const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === webContentsId)?.webContents;
+  if (!wc) return;
+  if (!root) {
+    wc.send(IPC_EVENTS.tasksInit, []);
+    return;
+  }
+  stopTaskTail(webContentsId);
+  taskTails.set(
+    webContentsId,
+    tailTasks(root, {
+      init: (tasks) => !wc.isDestroyed() && wc.send(IPC_EVENTS.tasksInit, tasks),
+      update: (tasks) => !wc.isDestroyed() && wc.send(IPC_EVENTS.tasksUpdate, tasks),
     })
   );
 }
@@ -326,6 +373,7 @@ async function applyProjectTagsSet(projectRoot: string, tags: string[]): Promise
 function announce(state: ProjectState): ProjectState {
   broadcast(IPC_EVENTS.projectChanged, state);
   retargetTails();
+  retargetTaskTails();
   // Outstanding previews name the OUTGOING project's working directory. A modal left open across
   // a project switch would otherwise still hold a runnable token, and pressing Run would spawn
   // Claude against the repo the window is no longer showing — the same class of bug the workflow
@@ -776,6 +824,23 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
 
+  // Live tail of the task queue — same subscribe/unsubscribe shape as the session log's
+  // `log:subscribe`/`log:unsubscribe` above. No separate snapshot channel: subscribing emits the
+  // full list as its first `tasks:init`.
+  ipcMain.handle(IPC.tasksSubscribe, (e) => {
+    taskSubscribers.add(e.sender.id);
+    startTaskTail(e.sender.id);
+    e.sender.once("destroyed", () => {
+      taskSubscribers.delete(e.sender.id);
+      stopTaskTail(e.sender.id);
+    });
+  });
+
+  ipcMain.handle(IPC.tasksUnsubscribe, (e) => {
+    taskSubscribers.delete(e.sender.id);
+    stopTaskTail(e.sender.id);
+  });
+
   // ── create-* ─────────────────────────────────────────────────────────
   // The deterministic half of the four create forms. `create:scaffold` is the ONLY channel in the
   // app that writes an artifact from a form, and it cannot reach a model — `scaffoldCreate` is a
@@ -1054,6 +1119,8 @@ export function registerIpc(): void {
 export function disposeIpc(): void {
   for (const id of [...tails.keys()]) stopTail(id);
   logSubscribers.clear();
+  for (const id of [...taskTails.keys()]) stopTaskTail(id);
+  taskSubscribers.clear();
   // A cancelled run's child is spawned detached, so it outlives us by design unless it is killed.
   // Without this, quitting the app leaves Claude running against the user's repo with no window
   // left to stop it from.

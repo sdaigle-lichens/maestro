@@ -1295,6 +1295,74 @@ describe("session log tail ownership", () => {
   });
 });
 
+describe("task queue tail ownership (062)", () => {
+  // Mirrors "session log tail ownership" above exactly: `tasksSubscribe` is the same
+  // single-owner shape as `logSubscribe`, over its own `taskTails`/`taskSubscribers` state, so the
+  // same three failure modes apply — a second renderer subscriber stealing the poller, a stale
+  // watcher surviving a project switch, and a poller that keeps running after the route unmounts.
+  it("has exactly one subscriber in the renderer — the /maestro-tasks route itself", () => {
+    const callSites = sourcesUnder("src/renderer")
+      .filter((f) => /maestro\.tasks\.subscribe\(/.test(fs.readFileSync(f, "utf8")))
+      .map((f) => path.relative(appRoot, f));
+    expect(callSites).toEqual(["src/renderer/src/routes/maestro-tasks.tsx"]);
+  });
+
+  // Unlike the session log (subscribed from a root-level provider so it stays live across every
+  // tab), this route deliberately subscribes from its own component effect — the task page says
+  // so in its own comment. If the subscription is ever hoisted into a root-level provider instead,
+  // that has to be a deliberate, visible choice, not an accidental regression back to "always on".
+  it("subscribes from the route's own effect, not a root-level provider", () => {
+    const root = stripComments(read("src/renderer/src/routes/__root.tsx"));
+    expect(root).not.toMatch(/maestro\.tasks\.subscribe\(/);
+    const page = read("src/renderer/src/routes/maestro-tasks.tsx");
+    // A useEffect with an empty dependency array whose cleanup is the subscribe's own return value
+    // — subscribe-on-mount, unsubscribe-on-unmount, exactly once.
+    expect(page).toMatch(/useEffect\(\(\) => \{[\s\S]*?window\.maestro\.tasks\.subscribe\(/);
+    expect(page).toMatch(/return unsubscribe;\s*\}, \[\]\)/);
+  });
+
+  it("retargetTaskTails reads taskSubscribers, not taskTails.keys() or every open window", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const body = ipc.slice(ipc.indexOf("function retargetTaskTails"), ipc.indexOf("function startTaskTail"));
+    expect(body).toMatch(/for \(const id of \[\.\.\.taskSubscribers\]\)/);
+    expect(body).not.toMatch(/taskTails\.keys\(\)/);
+    expect(body).not.toMatch(/for \([^)]*of BrowserWindow\.getAllWindows\(\)\)/);
+  });
+
+  it("taskSubscribers is maintained by the subscribe handler and both teardown paths", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const subscribeHandler = ipc.slice(ipc.indexOf("IPC.tasksSubscribe,"), ipc.indexOf("IPC.tasksUnsubscribe,"));
+    const addIdx = subscribeHandler.indexOf("taskSubscribers.add(");
+    const startIdx = subscribeHandler.indexOf("startTaskTail(");
+    expect(addIdx).toBeGreaterThan(-1);
+    expect(startIdx).toBeGreaterThan(addIdx);
+    expect(subscribeHandler).toMatch(/destroyed["'],\s*\(\)\s*=>\s*\{[\s\S]*?taskSubscribers\.delete\(/);
+    const unsubscribeHandler = ipc.slice(
+      ipc.indexOf("IPC.tasksUnsubscribe,"),
+      ipc.indexOf("IPC.tasksUnsubscribe,") + 200
+    );
+    expect(unsubscribeHandler).toMatch(/taskSubscribers\.delete\(/);
+  });
+
+  // A project switch has to retarget BOTH tails, or a window that opened /maestro-tasks and then
+  // switched projects would keep showing the previous project's queue.
+  it("announce() retargets both the session log tail and the task queue tail", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const announce = ipc.slice(ipc.indexOf("function announce("), ipc.indexOf("export function registerIpc"));
+    expect(announce).toMatch(/retargetTails\(\)/);
+    expect(announce).toMatch(/retargetTaskTails\(\)/);
+  });
+
+  // Quitting the app (or a window closing without a clean unsubscribe) must not leave a task-queue
+  // poller running — the same discipline `disposeIpc` already applies to the session log tail.
+  it("disposeIpc stops every task tail and clears taskSubscribers", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const dispose = ipc.slice(ipc.indexOf("export function disposeIpc"));
+    expect(dispose).toMatch(/for \(const id of \[\.\.\.taskTails\.keys\(\)\]\) stopTaskTail\(id\)/);
+    expect(dispose).toMatch(/taskSubscribers\.clear\(\)/);
+  });
+});
+
 describe("saving refreshes loader data", () => {
   // `seeded` is decided by the loader from whether maestro.json existed at load time, and nothing
   // re-runs a loader on its own after a save: saving doesn't navigate, and the `project:changed`

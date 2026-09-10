@@ -557,6 +557,11 @@ export const IPC = {
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
+  // Live tail of the on-disk task queue (`.claude/maestro-tasks/`), mirroring `log:subscribe`/
+  // `log:unsubscribe` — one poller per subscribing window, retargeted on a project switch, pushing
+  // over the `tasks:init`/`tasks:update` events below rather than being polled by the renderer.
+  tasksSubscribe: "tasks:subscribe",
+  tasksUnsubscribe: "tasks:unsubscribe",
 
   createOptions: "create:options",
   createScaffold: "create:scaffold",
@@ -651,6 +656,13 @@ export const IPC_EVENTS = {
   logInit: "log:init",
   logEntry: "log:entry",
   logReset: "log:reset",
+  // Pushed by the task-queue poller — see `IPC.tasksSubscribe` above. `tasksInit` is the full
+  // snapshot on subscribe; `tasksUpdate` is the full re-derived list, pushed whenever the queue
+  // changed (a status flip, a task file's content, or a new task file appearing). There is no
+  // per-entry event: unlike the append-only session log there is no meaningful "diff" to emit, and
+  // `listTasks` already re-derives the whole list cheaply.
+  tasksInit: "tasks:init",
+  tasksUpdate: "tasks:update",
   projectChanged: "project:changed",
 } as const;
 
@@ -940,6 +952,13 @@ export interface MaestroApi {
   tasks: {
     list(): Promise<MaestroTask[]>;
     close(filename: string): Promise<MaestroTask[]>;
+    /**
+     * Start a live tail of the on-disk task queue and receive pushes. Mirrors `log.subscribe`'s
+     * shape: `onInit` is the full snapshot at subscribe time, `onUpdate` is the full re-derived
+     * list whenever the queue changes on disk (a status change, or a new task file appearing).
+     * Returns an unsubscribe function.
+     */
+    subscribe(handlers: { onInit(tasks: MaestroTask[]): void; onUpdate(tasks: MaestroTask[]): void }): () => void;
   };
   /**
    * The four create-* forms. Two operations, mirroring the bridge's own split for the same reason:

@@ -107,7 +107,16 @@ export { globalDocsData, readGlobalDoc, type DocGroup, type GlobalDocsDirs } fro
 
 export { applyRules, targetDirFor, type ApplyRulesSummary } from "./rules.js";
 
-export { listTasks, closeTask, tasksDirFor, parseBlockedBy, type MaestroTask, type TaskStatus } from "./tasks.js";
+export {
+  listTasks,
+  closeTask,
+  tasksDirFor,
+  parseBlockedBy,
+  tailTasks,
+  type MaestroTask,
+  type TaskStatus,
+  type TaskQueueTailEvents,
+} from "./tasks.js";
 
 export {
   parseLogLines,
