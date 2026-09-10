@@ -27,7 +27,9 @@ rediscovering the same thing from source:
 
 ## When you're done
 
-End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+Run the project's `default` workflow to completion — its success path is implementation → human
+review → **@test** → **@reviewer** → **@scribe**. Do not treat the documentation step as a shortcut
+past the two before it. When you reach **@scribe**, load the `scribe` skill: it is the routing rule
 for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
 is written. This slice changes behaviour that the concept skills already describe, so updating them
 is part of the change rather than a follow-up.

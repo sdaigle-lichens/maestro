@@ -7,7 +7,7 @@ criterion below is met.
 
 Close the other half of the uncataloged-project-tag gap, so the two install paths stop disagreeing about what a repository is.
 
-**The state after the previous slice.** The terminal install skill now pre-selects the categories detection supports, says plainly that a project may carry several, and — when detection produces a category the tag catalog has never heard of — offers to add it, adding it only on the user's say-so. The desktop app's install path got none of that. It still intersects the detected categories against the catalog in one unguarded filter and writes the survivors, so a category the catalog lacks is discarded with no message, no record in the install report, and nothing on screen.
+**The state after the previous slice.** The terminal install skill now names the categories detection supports in its question text, says plainly that a project may carry several, and — when detection produces a category the tag catalog has never heard of — offers to add it, adding it only on the user's say-so. Its multi-select was corrected since: `AskUserQuestion` cannot pre-tick an option, so **what the user checks is exactly what gets recorded**, with no option whose meaning depends on its tick state. The app's consent step is free to pre-check the detected set — its own UI can — but the recorded result must match what the terminal path produces for the same answer. The desktop app's install path got none of that. It still intersects the detected categories against the catalog in one unguarded filter and writes the survivors, so a category the catalog lacks is discarded with no message, no record in the install report, and nothing on screen.
 
 This is latent today and becomes real the moment a new detection category ships: the catalog seeds only when its table is empty, so every machine that has ever read it holds exactly the originally-seeded categories forever. The first user to install into an infrastructure repository through the app will have it detected correctly and recorded as nothing.
 
@@ -33,7 +33,9 @@ rediscovering the same thing from source:
 
 ## When you're done
 
-End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+Run the project's `default` workflow to completion — its success path is implementation → human
+review → **@test** → **@reviewer** → **@scribe**. Do not treat the documentation step as a shortcut
+past the two before it. When you reach **@scribe**, load the `scribe` skill: it is the routing rule
 for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
 is written. Two concept skills already record this gap as open — closing it means updating them
 rather than leaving the note behind.
