@@ -49,6 +49,7 @@ __export(maestro_session_exports, {
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
+  isRootSkillPath: () => isRootSkillPath,
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
   laneFor: () => laneFor,
@@ -60,6 +61,7 @@ __export(maestro_session_exports, {
   readSession: () => readSession,
   readStdin: () => readStdin,
   resolveHandoff: () => resolveHandoff,
+  resolveProjectSkillPath: () => resolveProjectSkillPath,
   resolveSearchList: () => resolveSearchList,
   resolveWorkflowName: () => resolveWorkflowName,
   resumeTarget: () => resumeTarget,
@@ -70,6 +72,7 @@ __export(maestro_session_exports, {
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
   validateConfig: () => validateConfig,
+  walkProjectSkillIds: () => walkProjectSkillIds,
   workflowNodeLabels: () => workflowNodeLabels,
   writeSession: () => writeSession,
   writeStamp: () => writeStamp
@@ -658,6 +661,92 @@ function resumeTarget(lines, cfg, session, agentType) {
   }
   return latest ? latest.agentId : null;
 }
+
+// src/core/skill-resolve.ts
+var import_node_fs5 = __toESM(require("node:fs"), 1);
+var import_node_path5 = __toESM(require("node:path"), 1);
+
+// src/core/fs-scan.ts
+var import_node_fs4 = __toESM(require("node:fs"), 1);
+var import_node_path4 = __toESM(require("node:path"), 1);
+var IGNORE_DIRS = ["node_modules", ".git", "dist", "build", ".next", ".turbo", ".output"];
+var MAX_DEPTH = 4;
+function* walkDirs(root, opts = {}) {
+  const maxDepth = opts.maxDepth ?? MAX_DEPTH;
+  const ignore = opts.ignore ?? IGNORE_DIRS;
+  function* rec(dir, depth) {
+    if (depth > maxDepth) return;
+    let entries;
+    try {
+      entries = import_node_fs4.default.readdirSync(dir, { withFileTypes: true });
+    } catch {
+      return;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      if (ignore.includes(entry.name)) continue;
+      if (opts.skipClaudeDir && entry.name === ".claude") continue;
+      const absolute = import_node_path4.default.join(dir, entry.name);
+      yield { absolute, relative: import_node_path4.default.relative(root, absolute), name: entry.name, depth };
+      yield* rec(absolute, depth + 1);
+    }
+  }
+  yield* rec(root, 0);
+}
+function ruleSearchDirs(root) {
+  return [root, ...Array.from(walkDirs(root, { skipClaudeDir: true }), (d) => d.absolute)];
+}
+function skillsDirIn(dir) {
+  const skillsDir = import_node_path4.default.join(dir, ".claude", "skills");
+  try {
+    return import_node_fs4.default.statSync(skillsDir).isDirectory() ? skillsDir : null;
+  } catch {
+    return null;
+  }
+}
+function skillSearchDirs(root) {
+  return ruleSearchDirs(root).map(skillsDirIn).filter((d) => d !== null);
+}
+
+// src/core/skill-resolve.ts
+var FRONTMATTER_NAME_RE = /^---\s*[\s\S]*?\bname:\s*(\S+)[\s\S]*?---/;
+function walkProjectSkillIds(root) {
+  const byId = /* @__PURE__ */ new Map();
+  for (const skillsDir of skillSearchDirs(root)) {
+    let entries;
+    try {
+      entries = import_node_fs5.default.readdirSync(skillsDir, { withFileTypes: true });
+    } catch {
+      continue;
+    }
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      let id = entry.name;
+      try {
+        const text = import_node_fs5.default.readFileSync(import_node_path5.default.join(skillsDir, entry.name, "SKILL.md"), "utf8");
+        const match = text.match(FRONTMATTER_NAME_RE);
+        if (match) id = match[1];
+      } catch {
+      }
+      const relDir = import_node_path5.default.relative(root, import_node_path5.default.join(skillsDir, entry.name));
+      const dirs = byId.get(id);
+      if (dirs) dirs.push(relDir);
+      else byId.set(id, [relDir]);
+    }
+  }
+  return Array.from(byId, ([id, dirs]) => ({ id, dirs }));
+}
+function resolveProjectSkillPath(root, id) {
+  if (!root || !id) return null;
+  const entry = walkProjectSkillIds(root).find((e) => e.id === id);
+  if (!entry) return null;
+  return import_node_path5.default.join(root, entry.dirs[0], "SKILL.md");
+}
+function isRootSkillPath(root, skillPath) {
+  const skillDir = import_node_path5.default.dirname(skillPath);
+  const rootSkillsDir = import_node_path5.default.join(root, ".claude", "skills");
+  return import_node_path5.default.dirname(skillDir) === rootSkillsDir;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
@@ -676,6 +765,7 @@ function resumeTarget(lines, cfg, session, agentType) {
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
+  isRootSkillPath,
   isSeededHandoff,
   isValidHandoffId,
   laneFor,
@@ -687,6 +777,7 @@ function resumeTarget(lines, cfg, session, agentType) {
   readSession,
   readStdin,
   resolveHandoff,
+  resolveProjectSkillPath,
   resolveSearchList,
   resolveWorkflowName,
   resumeTarget,
@@ -697,6 +788,7 @@ function resumeTarget(lines, cfg, session, agentType) {
   successPathSteps,
   sweep,
   validateConfig,
+  walkProjectSkillIds,
   workflowNodeLabels,
   writeSession,
   writeStamp

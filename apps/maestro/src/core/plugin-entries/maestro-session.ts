@@ -89,3 +89,15 @@ export {
 // should this resume", but "is THIS SubagentStart itself a resume" — so `maestro-inject-agent-context.js`
 // can skip re-injecting static context that's already in the resumed agent's history.
 export { agentRunsFromLog, resumeTarget, hasCompletedRun, type AgentRun } from "../agent-runs.js";
+
+// Skill-id -> SKILL.md path resolution (`061`) — the runtime fallback for a project skill
+// discovered outside the repository root's `.claude/skills`, which the Skill tool never indexes.
+// `fs`/`path` only, so this costs nothing against the "no node:sqlite in maestro-session.cjs"
+// property above; shared by `maestro-resolve-skill-path.cjs`, `maestro-inject-agent-context.js`,
+// and `maestro-install.js`'s own `discoverProjectSkillIds`.
+export {
+  walkProjectSkillIds,
+  resolveProjectSkillPath,
+  isRootSkillPath,
+  type ProjectSkillEntry,
+} from "../skill-resolve.js";

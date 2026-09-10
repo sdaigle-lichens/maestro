@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.14"
-  last-update: 289b06eb9262bd4a6e7f7451c99c74b65fa348ed
+  version: "1.15"
+  last-update: 0e577a39224deb877c089a69f491eaee0fa9b21d
 ---
 
 # Installing Maestro
@@ -78,9 +78,10 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the two checks below and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-enable-task-routing.js`     | —     | `047`'s addition, dual-registered the same way (`UserPromptExpansion` on `to-maestro-tasks`, `PreToolUse` on `Skill`, sharing that matcher's block with `maestro-step0.js`). Injects nothing — its only effect is flipping `maestro.json`'s `use_maestro_tasks` to `true` the first time `/to-maestro-tasks` is invoked. |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging a project by hand; nothing in the orchestrator runs it. |
-| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the first asset invoked by the *harness* rather than by a hook or the model: the orchestrator's Step 1 injects it with `` !`command` ``. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
+| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the first asset invoked by the *harness* rather than by a hook or the model: the orchestrator's Step 1 injects it with `!`-prefixed command injection. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
 | `plugins/maestro/scripts/maestro-step4-gate.cjs`              | —     | `046`'s addition — same harness-invoked, exit-0-unconditional contract as the row above, for Step 4 instead of Step 1: resolves `maestro.json`'s `use_maestro_tasks` and prints a line naming `/to-maestro-tasks` when on, a neutral line when off. |
 | `plugins/maestro/scripts/maestro-agent-forks.cjs`            | 127   | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. The hook calls `computeAgentSync` directly; this CLI is the user-facing half. |
+| `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`     | —     | `061`'s addition — a `STATIC_ASSET`, not a hook. Given a skill id on argv, prints the `SKILL.md` path `walkProjectSkillIds` (in `apps/maestro/src/core/skill-resolve.ts`, bundled into `lib/maestro-session.cjs`) recorded it under, or nothing when the id isn't a project skill at all; exits 0 either way. The orchestrator template's Step 3 shells out to it when a task's `Skills to use` name gets "Unknown skill" from the Skill tool — see the "things that bite" entry below. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
 Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
@@ -101,7 +102,7 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   registration hands that hook back to the plugin rather than turning it off. See the hook
   arbitration sub-concept before changing `HOOK_REGISTRATIONS` or how `hasHook()` matches.
 - **The install writes HOOKS into `settings.json` and nothing else — no `permissions` block, ever.**
-  `032` is the case that tested it. The orchestrator's Step 1 injects a `` !`command` `` whose
+  `032` is the case that tested it. The orchestrator's Step 1 injects a `!`-prefixed command whose
   permission check *must* return `allow` or the whole `/maestro` invocation aborts, so a grant was
   genuinely required. It was put in the **orchestrator template's frontmatter**
   (`allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")`), not
@@ -163,6 +164,19 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   name collision between two directories keeps the first found in walk order and is reported rather
   than silently resolved — `console.warn` in the app, stderr in the terminal script, and
   `InstallReport.warnings` for the app's caller.
+- **A skill id the tree walk finds is not necessarily one the Skill tool can find (`061`).** The
+  Skill tool only indexes the repository ROOT's `.claude/skills` plus installed plugins; a
+  monorepo skill discovered elsewhere in the walk gets "Unknown skill" from it. The walk both
+  `discoverProjectSkillsTree` (app) and `discoverProjectSkillIds` (terminal) already do at install
+  time is now factored into `apps/maestro/src/core/skill-resolve.ts`
+  (`walkProjectSkillIds`/`resolveProjectSkillPath`/`isRootSkillPath`, root-wins on a collision, same
+  order as the discovery functions), so a runtime caller can ask the identical question after the
+  fact: `maestro-inject-agent-context.js` resolves each `loaded_skills`/`referenced_skills` id it
+  injects and appends a "read this file directly" note for any that land outside the root, and the
+  orchestrator template's Step 3 falls back to the project-copied `maestro-resolve-skill-path.cjs`
+  CLI when a task's own `Skills to use` name gets rejected the same way. `skills_available` itself
+  is unchanged — still bare ids — this only changes what a runtime caller does when the Skill tool
+  can't act on one.
 
 ## Relationships
 

@@ -54,4 +54,4 @@ rather than leaving the note behind.
 
 ## Blocked by
 
-None — can start immediately
+- `061-a-skill-outside-the-root-claude-skills-is-reachable-by-path.md`

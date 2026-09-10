@@ -74,66 +74,22 @@ const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
 const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
-
-// Same walk bound as maestro-apply-rules.js's `findProjectRuleFile` and
-// apps/maestro/src/core/fs-scan.ts's `walkDirs` — the project root plus every subdirectory up to
-// 4 deep, skipping build output. Kept as its own constants here (rather than requiring a lib) the
-// same way maestro-apply-rules.js does, since this script has no generated bundle for it.
-const SKILL_WALK_IGNORE = ["node_modules", ".git", "dist", "build", ".next", ".turbo", ".output"];
-const SKILL_WALK_MAX_DEPTH = 4;
+const { walkProjectSkillIds } = require("./lib/maestro-session.cjs");
 
 /**
  * Project skill ids from EVERY `.claude/skills` in the tree — not only the root's, which in a
- * monorepo is blind to a skill living beside the code it documents (mirrors `discoverSkills`'s
- * tree walk and the concept-skill machinery's `skillSearchDirs`, both in `apps/maestro/src/core`).
+ * monorepo is blind to a skill living beside the code it documents. `walkProjectSkillIds`
+ * (`apps/maestro/src/core/skill-resolve.ts`, generated into `lib/maestro-session.cjs`) owns the
+ * walk itself — shared with `maestro-resolve-skill-path.cjs` and `maestro-inject-agent-context.js`
+ * (`061`) so a skill's recorded directory can never disagree between the three of them.
  *
  * A name collision between two directories keeps the root's copy (or, absent a root copy,
- * whichever directory the walk reaches first) and reports the rest via `collisions` rather than
+ * whichever directory the walk reaches first) and reports the rest via stderr rather than
  * resolving silently.
  */
 function discoverProjectSkillIds(root) {
-  const byId = new Map(); // id -> [dirs...], in walk order
-  function readIdsFrom(dir) {
-    const skillsDir = path.join(dir, ".claude", "skills");
-    let entries;
-    try {
-      entries = fs.readdirSync(skillsDir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const entry of entries) {
-      if (!entry.isDirectory()) continue;
-      let id = entry.name;
-      try {
-        const text = fs.readFileSync(path.join(skillsDir, entry.name, "SKILL.md"), "utf8");
-        const match = text.match(/^---\s*[\s\S]*?\bname:\s*(\S+)[\s\S]*?---/);
-        if (match) id = match[1];
-      } catch {
-        // No SKILL.md, or unreadable — fall back to the directory name.
-      }
-      const relDir = path.relative(root, path.join(skillsDir, entry.name));
-      if (byId.has(id)) byId.get(id).push(relDir);
-      else byId.set(id, [relDir]);
-    }
-  }
-  function walk(dir, depth) {
-    readIdsFrom(dir);
-    if (depth >= SKILL_WALK_MAX_DEPTH) return;
-    let entries;
-    try {
-      entries = fs.readdirSync(dir, { withFileTypes: true });
-    } catch {
-      return;
-    }
-    for (const e of entries) {
-      if (!e.isDirectory() || SKILL_WALK_IGNORE.includes(e.name)) continue;
-      walk(path.join(dir, e.name), depth + 1);
-    }
-  }
-  walk(root, 0);
-
   const ids = [];
-  for (const [id, dirs] of byId) {
+  for (const { id, dirs } of walkProjectSkillIds(root)) {
     ids.push(id);
     if (dirs.length > 1) {
       process.stderr.write(
@@ -356,6 +312,9 @@ const STATIC_ASSETS = [
   // Resume-target lookup (039) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for why it
   // is a project copy invoked directly by the orchestrator rather than a hook.
   { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
+  // Skill-id -> SKILL.md path resolver (061) — see apps/maestro/src/core/install.ts's
+  // STATIC_ASSETS for why it's a project copy invoked directly rather than a hook.
+  { src: "scripts/maestro-resolve-skill-path.cjs", dest: ".claude/scripts/maestro-resolve-skill-path.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },

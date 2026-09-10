@@ -293,13 +293,19 @@
   },
   "058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md": {
     "status": "ready",
-    "blockedBy": []
+    "blockedBy": [
+      "061-a-skill-outside-the-root-claude-skills-is-reachable-by-path.md"
+    ]
   },
   "059-a-purge-leaves-materialized-files-legible-not-frozen.md": {
     "status": "done",
     "blockedBy": []
   },
   "060-the-terminal-uninstall-stops-hand-mirroring-the-install-manifest.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "061-a-skill-outside-the-root-claude-skills-is-reachable-by-path.md": {
     "status": "done",
     "blockedBy": []
   }

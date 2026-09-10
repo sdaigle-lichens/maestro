@@ -13,6 +13,14 @@
 // The skills/routing block above is a no-op when maestro.json is absent, not v3, or the agent
 // type is not mapped to any workflow node.
 //
+// `061`: a `loaded_skills`/`referenced_skills` id that resolves to a project skill OUTSIDE the
+// repository root's `.claude/skills` (a monorepo skill living beside the code it documents) is one
+// the Skill tool cannot find — it only indexes the root plus installed plugins. Each block below
+// additionally resolves its own ids via `resolveProjectSkillPath`/`isRootSkillPath` and, for any
+// that land outside the root, names the file to `Read` directly instead. A root or plugin id keeps
+// today's wording verbatim; the extra note is appended only when there is something nested to
+// report.
+//
 // A THIRD, INDEPENDENT branch (`036`) delivers whatever is waiting for this agent's BARE type in
 // `.claude/channels/<bareAgentType>/` — same-run files inlined and retired, everything else only
 // mentioned. See apps/maestro/src/core/handoff-channels.ts. Gated on nothing but the lane having
@@ -61,6 +69,8 @@ const {
   retire,
   sessionLogPath,
   hasCompletedRun,
+  resolveProjectSkillPath,
+  isRootSkillPath,
 } = require("./lib/maestro-session.cjs");
 
 // The resume signal (`040`): a `kind:"handoff"` entry already logged for this `agent_id`, read
@@ -84,6 +94,36 @@ function readLogLines(p) {
     }
   }
   return lines;
+}
+
+// ── nested-skill fallback (`061`) ───────────────────────────────────────────
+//
+// `skills_available` can hold ids discovered outside the repository ROOT's `.claude/skills` (a
+// monorepo skill living beside the code it documents), and the Skill tool only indexes that root
+// directory plus installed plugins — it answers "Unknown skill" for the rest. `loadedIds`/
+// `referencedIds` below name which of a block's ids fall into that case, so the message can tell
+// the agent to read the file directly instead of repeating an instruction the Skill tool can't
+// act on.
+function nestedSkillPaths(projectDir, ids) {
+  const nested = [];
+  for (const id of ids) {
+    const skillPath = resolveProjectSkillPath(projectDir, id);
+    if (skillPath && !isRootSkillPath(projectDir, skillPath)) {
+      nested.push({ id, path: path.relative(projectDir, skillPath) });
+    }
+  }
+  return nested;
+}
+
+function nestedSkillNote(nested) {
+  const lines = nested.map((n) => `- \`${n.id}\` — read \`${n.path}\` directly.`);
+  return (
+    `${nested.length === 1 ? "One of these" : "Some of these"} ${nested.length === 1 ? "lives" : "live"} outside this ` +
+    `project's root \`.claude/skills\`, so the Skill tool will answer "Unknown skill" for it instead of finding it:\n` +
+    `${lines.join("\n")}\n\n` +
+    `Reading the file gets you its content, not the Skill tool's own resource handling — for a concept skill (prose, ` +
+    `no bundled scripts or resources) that is the whole of it, so this is not a lesser substitute here.`
+  );
 }
 
 // ── handoff protocol resolution — three tiers, one shared decision ─────────
@@ -257,22 +297,26 @@ function collectReportContext(cfg, projectDir, agentType) {
       parts.push(`⚠️ Maestro warning: ${result.warning}`);
     }
     if (!isResume && result.loadedSkills.length > 0) {
-      parts.push(
+      let text =
         `Skills to load for the \`${agentType}\` agent instance (maestro.json v3, loaded_skills): ${result.loadedSkills.join(", ")}.\n\n` +
-          `Load each one with the Skill tool before starting your work, then follow your agent file as written.`
-      );
+        `Load each one with the Skill tool before starting your work, then follow your agent file as written.`;
+      const nested = nestedSkillPaths(projectDir, result.loadedSkills);
+      if (nested.length > 0) text += `\n\n${nestedSkillNote(nested)}`;
+      parts.push(text);
     }
 
     if (!isResume && result.referencedSkills.length > 0) {
-      parts.push(
+      let text =
         `Skills available to the \`${agentType}\` agent instance (maestro.json v3, referenced_skills): ${result.referencedSkills.join(", ")}.\n\n` +
-          `Do NOT bulk-load these up front — but they exist because they document logic you would otherwise have to ` +
-          `reverse-engineer from source. So before you open or edit a source file, check what each one covers (its ` +
-          `description is in your skills list): if a referenced skill documents that file or the logic it implements, ` +
-          `load it with the Skill tool FIRST — ` +
-          `read the skill before the source, not after. Load only the ones whose logic the task actually touches and ` +
-          `ignore the rest, but do not rediscover from the code what a skill already explains.`
-      );
+        `Do NOT bulk-load these up front — but they exist because they document logic you would otherwise have to ` +
+        `reverse-engineer from source. So before you open or edit a source file, check what each one covers (its ` +
+        `description is in your skills list): if a referenced skill documents that file or the logic it implements, ` +
+        `load it with the Skill tool FIRST — ` +
+        `read the skill before the source, not after. Load only the ones whose logic the task actually touches and ` +
+        `ignore the rest, but do not rediscover from the code what a skill already explains.`;
+      const nested = nestedSkillPaths(projectDir, result.referencedSkills);
+      if (nested.length > 0) text += `\n\n${nestedSkillNote(nested)}`;
+      parts.push(text);
     }
   }
 

@@ -180,6 +180,13 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // not by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as every other
   // orchestrator-invoked script above.
   { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
+  // Skill-id -> SKILL.md path resolver (`061`) for a project skill discovered outside the
+  // repository root's `.claude/skills` — the Skill tool only indexes the root plus installed
+  // plugins, so a nested id answers "Unknown skill" there. Invoked directly (by the orchestrator's
+  // Step 3, and by `maestro-inject-agent-context.js`'s own require of the same underlying
+  // function) rather than by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as
+  // every other orchestrator-invoked script above.
+  { src: "scripts/maestro-resolve-skill-path.cjs", dest: ".claude/scripts/maestro-resolve-skill-path.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has

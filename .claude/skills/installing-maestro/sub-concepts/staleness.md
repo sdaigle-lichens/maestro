@@ -68,7 +68,7 @@ set the orchestrator invokes **by `$CLAUDE_PROJECT_DIR` path** rather than throu
 `maestro-step1-gates.cjs`, `maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`. It is a
 list rather than the one script `032` added because the failure shape is identical for all three and
 one loop costs nothing. The gates script is the sharpest case: its call is an injected
-`` !`command` `` with no `|| true`, so `node` on an absent file exits 1 and takes the entire
+the `!`-prefixed command-injection syntax with no `|| true`, so `node` on an absent file exits 1 and takes the entire
 `/maestro` invocation with it before the model sees a word. This nag is the only thing standing
 between a half-installed project and that abort — which is also why it must stay an `update` and
 never become an `install`.

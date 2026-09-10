@@ -61,7 +61,7 @@ from ~37 to 17 (19 since `035`, 20 since `046`), and adding a handoff pair no lo
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
 by the **harness** rather than by a hook or by the model — the orchestrator's Step 1 names it in a
-`` !`command` `` line, and Claude Code substitutes its stdout into the skill body before the model
+the `!`-prefixed command-injection syntax line, and Claude Code substitutes its stdout into the skill body before the model
 reads it. Two manifest consequences: `shippedRuntimeId` moved again, so every installed project
 reported stale once and re-copied; and a project **missing** it does not degrade but loses
 `/maestro` outright (`node` on an absent file exits 1, and a non-zero exit aborts the invocation),
