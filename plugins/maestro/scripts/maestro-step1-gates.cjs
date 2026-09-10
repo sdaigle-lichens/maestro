@@ -2,7 +2,7 @@
 // Prints this project's Step 1 gate configuration as ONE directive line, for injection into the
 // orchestrator skill body through Claude Code's !`command` dynamic-context syntax:
 //
-//   !`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"`
+//   !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"`
 //
 // Reads `gates` from <projectDir>/.claude/maestro.json and prints THE WHOLE OF STEP 1 for this
 // project — not a flag the skill body then branches on. All four combinations are valid and none is
