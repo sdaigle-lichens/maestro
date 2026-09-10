@@ -158,3 +158,55 @@ export function closeTask(projectRoot: string, filename: string): MaestroTask[] 
   writeStatusMap(dir, statusMap);
   return tasksFromFiles(dir, files, statusMap);
 }
+
+export interface TaskQueueTailEvents {
+  /** Full task list, re-derived the same way `listTasks` does, on subscribe. */
+  init: (tasks: MaestroTask[]) => void;
+  /**
+   * The full re-derived task list, whenever the on-disk queue changed — a status flip in
+   * status.json, a task file's own content, or a new task file appearing in the directory. There
+   * is no incremental "entry" event the way the session log has one: a task file can be added,
+   * edited or have its status change on any poll, and re-deriving the whole list is what
+   * `listTasks` already does and is cheap for a queue this size.
+   */
+  update: (tasks: MaestroTask[]) => void;
+}
+
+/**
+ * Watch a project's task queue directory (its .md files AND its status.json) and push the
+ * re-derived task list on every change.
+ *
+ * Polls rather than fs.watch, same reasoning as `tailSessionLog`: a task file is created,
+ * rewritten (status.json) and occasionally deleted by several different writers (the orchestrator,
+ * `/to-maestro-tasks`, the in-app Close button, a hand edit), and fs.watch's create/append/delete
+ * lifecycle is unreliable across those. The poll re-runs `listTasks` — the exact read path used
+ * everywhere else — and only pushes when its serialized result changed, so a new task FILE
+ * appearing is caught the same way a status change is: both change what `listTasks` returns.
+ *
+ * Returns an unsubscribe function.
+ */
+export function tailTasks(projectRoot: string, events: Partial<TaskQueueTailEvents>, intervalMs = 1000): () => void {
+  let stopped = false;
+
+  const snapshot = (): MaestroTask[] => listTasks(projectRoot);
+  const fingerprint = (tasks: MaestroTask[]): string => JSON.stringify(tasks);
+
+  const initial = snapshot();
+  let last = fingerprint(initial);
+  events.init?.(initial);
+
+  const timer = setInterval(() => {
+    if (stopped) return;
+    const tasks = snapshot();
+    const next = fingerprint(tasks);
+    if (next !== last) {
+      last = next;
+      events.update?.(tasks);
+    }
+  }, intervalMs);
+
+  return () => {
+    stopped = true;
+    clearInterval(timer);
+  };
+}

@@ -34,6 +34,9 @@ The task queue written by the `/to-maestro-tasks` skill from a terminal session 
 `NNN-*.md` prompt files plus a status tracker. **Run with Claude** previews exactly what will be
 sent, lets you confirm, then streams the run.
 
+This screen updates live: a task closed elsewhere (another window, a hook, a direct edit to the
+status file) or a new task file added to the queue appears here without navigating away and back.
+
 ## The Maestro page (runtime)
 
 Install, update, or remove the project's Maestro runtime (the hook scripts and orchestrator skill

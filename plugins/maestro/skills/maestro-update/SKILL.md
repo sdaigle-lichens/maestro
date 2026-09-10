@@ -38,7 +38,7 @@ Refresh the project's Maestro runtime scripts **and the orchestrator skill body*
    the plugin ships a better reviewer and every project that forked it keeps running the old one.
 
    ```bash
-   node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-agent-forks.cjs" list
+   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-agent-forks.cjs" list
    ```
 
    `list` **writes nothing**. It reports one line per forked agent and names the ones that differ
@@ -46,7 +46,7 @@ Refresh the project's Maestro runtime scripts **and the orchestrator skill body*
    decide — never decide for them:
 
    ```bash
-   node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-agent-forks.cjs" diff <agent>
+   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-agent-forks.cjs" diff <agent>
    ```
 
    That prints the fork's own description beside the template's (the two drift, because a fork

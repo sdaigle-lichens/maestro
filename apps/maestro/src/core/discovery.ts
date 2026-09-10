@@ -12,13 +12,13 @@ import { promisify } from "node:util";
 import {
   parseFrontmatter,
   readAgentsFromDir,
-  readSkillsFromDir,
+  readSkillEntriesFromDir,
   getUserAgents,
   getUserSkills,
   getInstalledPluginAgents,
   getInstalledPluginSkills,
 } from "@repo/claude-fs";
-import { IGNORE_DIRS, walkDirs, rulesFilesIn, ruleSearchDirs } from "./fs-scan.js";
+import { IGNORE_DIRS, walkDirs, rulesFilesIn, ruleSearchDirs, skillSearchDirs } from "./fs-scan.js";
 import { readAllSkillTags } from "./skill-tags.js";
 
 import type { DiscoveredDefinition, ProjectRule, RuleLibraryEntry, TreeNode } from "./contracts.js";
@@ -106,14 +106,69 @@ export async function discoverAgents(projectRoot: string, bundledDir: string | n
   ]).sort((a, b) => a.id.localeCompare(b.id));
 }
 
+/** Two (or more) skill directories in the tree that would resolve to the same id. */
+export interface SkillIdCollision {
+  id: string;
+  /** Project-relative `.claude/skills/<dir>` paths, in the walk order that decided the winner. */
+  dirs: string[];
+}
+
+/**
+ * Every project-scoped skill, from EVERY `.claude/skills` in the tree — not just the root's. In a
+ * monorepo a skill lives beside the code it describes, same as `discoverConceptSkills`, and this
+ * is the sibling that reads the plain `{ name, description }` shape `discoverSkills` wants.
+ *
+ * Walk order is `skillSearchDirs`' — the project root first, then its subdirectories depth-first —
+ * so a name collision resolves to the root's copy, or to whichever subdirectory's walked first,
+ * deterministically. A collision is reported rather than silently dropped: the loser is still
+ * excluded from `skills`, but its directory is named in `collisions` so a caller can surface it
+ * instead of the two directories quietly fighting over one id.
+ */
+export async function discoverProjectSkillsTree(projectRoot: string): Promise<{
+  skills: { name: string; description: string }[];
+  collisions: SkillIdCollision[];
+}> {
+  if (!projectRoot) return { skills: [], collisions: [] };
+  const byId = new Map<string, { name: string; description: string; dirs: string[] }>();
+  for (const skillsDir of skillSearchDirs(projectRoot)) {
+    for (const entry of await readSkillEntriesFromDir(skillsDir)) {
+      const dir = path.relative(projectRoot, entry.dir);
+      const existing = byId.get(entry.id);
+      if (existing) {
+        existing.dirs.push(dir);
+        continue;
+      }
+      byId.set(entry.id, { name: entry.id, description: entry.frontmatter.description ?? "", dirs: [dir] });
+    }
+  }
+  const skills: { name: string; description: string }[] = [];
+  const collisions: SkillIdCollision[] = [];
+  for (const [id, entry] of byId) {
+    skills.push({ name: entry.name, description: entry.description });
+    if (entry.dirs.length > 1) collisions.push({ id, dirs: entry.dirs });
+  }
+  return { skills, collisions };
+}
+
 /**
  * All skills the user can choose from: project-scoped, global (~/.claude), and every installed
  * plugin's skills — each tagged with its `source`, plus whatever project tags / agent types the
  * user has manually set on it (`skill-tags.ts`, global across every project by skill id).
+ *
+ * The project component walks EVERY `.claude/skills` in the tree (`discoverProjectSkillsTree`),
+ * not only the root's — a single-directory read is blind to most of a monorepo, the same gap
+ * `discoverConceptSkills` exists to close for concept skills specifically.
  */
 export async function discoverSkills(projectRoot: string): Promise<DiscoveredDefinition[]> {
+  const { skills: projectTree, collisions } = await discoverProjectSkillsTree(projectRoot);
+  for (const c of collisions) {
+    console.warn(
+      `[maestro] skill id "${c.id}" is defined in more than one .claude/skills directory ` +
+        `(${c.dirs.join(", ")}) — using "${c.dirs[0]}"`
+    );
+  }
   const [project, user, plugins] = await Promise.all([
-    projectRoot ? readSkillsFromDir(path.join(projectRoot, ".claude", "skills")) : Promise.resolve([]),
+    Promise.resolve(projectTree),
     getUserSkills(),
     getInstalledPluginSkills(),
   ]);

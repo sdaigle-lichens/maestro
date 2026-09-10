@@ -38,6 +38,7 @@ import {
   hasVibeRules,
   listTasks,
   closeTask,
+  tailTasks,
   listMarketplaces,
   scaffoldCreate,
   nodeGit,
@@ -184,6 +185,16 @@ const tails = new Map<number, () => void>();
  */
 const logSubscribers = new Set<number>();
 
+/**
+ * Active task-queue tails, keyed by webContents id — the same one-tail-per-window shape as
+ * `tails`/`logSubscribers` above, for the same reason: `tasks:subscribe` is single-owner, and a
+ * second subscriber in the same window would steal the poller.
+ */
+const taskTails = new Map<number, () => void>();
+
+/** Windows that asked for a task-queue tail, whether or not one is running yet — see `logSubscribers`. */
+const taskSubscribers = new Set<number>();
+
 function broadcast(channel: string, payload?: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(channel, payload);
@@ -222,6 +233,42 @@ function startTail(webContentsId: number): void {
       init: (entries) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logInit, entries),
       entry: (entry) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logEntry, entry),
       reset: () => !wc.isDestroyed() && wc.send(IPC_EVENTS.logReset),
+    })
+  );
+}
+
+function stopTaskTail(webContentsId: number): void {
+  taskTails.get(webContentsId)?.();
+  taskTails.delete(webContentsId);
+}
+
+/**
+ * Restart every open task-queue tail against the current project. Called on a project switch —
+ * without it a window would keep streaming the previously-opened repo's task queue. Mirrors
+ * `retargetTails` exactly, over `taskSubscribers`/`taskTails` instead of `logSubscribers`/`tails`.
+ */
+function retargetTaskTails(): void {
+  for (const id of [...taskSubscribers]) {
+    stopTaskTail(id);
+    const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === id)?.webContents;
+    if (wc) startTaskTail(wc.id);
+  }
+}
+
+function startTaskTail(webContentsId: number): void {
+  const root = currentRoot();
+  const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === webContentsId)?.webContents;
+  if (!wc) return;
+  if (!root) {
+    wc.send(IPC_EVENTS.tasksInit, []);
+    return;
+  }
+  stopTaskTail(webContentsId);
+  taskTails.set(
+    webContentsId,
+    tailTasks(root, {
+      init: (tasks) => !wc.isDestroyed() && wc.send(IPC_EVENTS.tasksInit, tasks),
+      update: (tasks) => !wc.isDestroyed() && wc.send(IPC_EVENTS.tasksUpdate, tasks),
     })
   );
 }
@@ -277,9 +324,56 @@ function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]) {
   );
 }
 
+/**
+ * Toggle `projectRoot`'s `project_tags` to exactly `tags`, then union in any bundled agent whose
+ * stored `agent-project-tags.ts` assignment newly matches one of the ADDED tags — never on one
+ * that was already recorded, so this can't silently rip an agent out of a graph the user already
+ * wired up (that stays a manual `/workflows` edit). Shared by `project:tags:set` (the `/maestro`
+ * checkboxes, which pass the user's exact new selection) and `install:accept-uncataloged-project-tag`
+ * (058, which passes the project's current selection plus one accepted category) so the two
+ * writers of this slice cannot drift on what "adding a tag" does to `agents_available`.
+ */
+async function applyProjectTagsSet(projectRoot: string, tags: string[]): Promise<string[]> {
+  const before = new Set(readConfig(projectRoot)?.project_tags ?? []);
+  await saveConfig(projectRoot, { sliceType: "project-tags", slice: { project_tags: tags } });
+
+  const newlyAdded = tags.filter((t) => !before.has(t));
+  if (newlyAdded.length > 0) {
+    // Scoped to THIS project (030): otherwise a project-tier agent belonging to some other
+    // project, sharing both this agent's name and the newly-added tag, could get pulled into a
+    // graph it has nothing to do with.
+    const matchingAgents = agentsForProjectTags(newlyAdded, undefined, projectRoot);
+    const current = readConfig(projectRoot);
+    if (current) {
+      const agentsAvailable = new Set(current.agents_available);
+      let changed = false;
+      for (const agent of matchingAgents) {
+        if (!agentsAvailable.has(agent)) {
+          agentsAvailable.add(agent);
+          changed = true;
+        }
+      }
+      if (changed) {
+        await saveConfig(projectRoot, {
+          sliceType: "workflows",
+          slice: {
+            agents_available: Array.from(agentsAvailable),
+            skills_available: current.skills_available,
+            workflow_instances: current.workflow_instances,
+            workflows: current.workflows,
+          },
+        });
+      }
+    }
+  }
+
+  return tags;
+}
+
 function announce(state: ProjectState): ProjectState {
   broadcast(IPC_EVENTS.projectChanged, state);
   retargetTails();
+  retargetTaskTails();
   // Outstanding previews name the OUTGOING project's working directory. A modal left open across
   // a project switch would otherwise still hold a runnable token, and pressing Run would spawn
   // Claude against the repo the window is no longer showing — the same class of bug the workflow
@@ -526,40 +620,32 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");
-    const before = new Set(readConfig(projectRoot)?.project_tags ?? []);
-    await saveConfig(projectRoot, { sliceType: "project-tags", slice: { project_tags: tags } });
+    return applyProjectTagsSet(projectRoot, tags);
+  });
 
-    const newlyAdded = tags.filter((t) => !before.has(t));
-    if (newlyAdded.length > 0) {
-      // Scoped to THIS project (030): otherwise a project-tier agent belonging to some other
-      // project, sharing both this agent's name and the newly-added tag, could get pulled into a
-      // graph it has nothing to do with.
-      const matchingAgents = agentsForProjectTags(newlyAdded, undefined, projectRoot);
-      const current = readConfig(projectRoot);
-      if (current) {
-        const agentsAvailable = new Set(current.agents_available);
-        let changed = false;
-        for (const agent of matchingAgents) {
-          if (!agentsAvailable.has(agent)) {
-            agentsAvailable.add(agent);
-            changed = true;
-          }
-        }
-        if (changed) {
-          await saveConfig(projectRoot, {
-            sliceType: "workflows",
-            slice: {
-              agents_available: Array.from(agentsAvailable),
-              skills_available: current.skills_available,
-              workflow_instances: current.workflow_instances,
-              workflows: current.workflows,
-            },
-          });
-        }
-      }
-    }
-
-    return tags;
+  // 058: the write half of "accept" for a category `install:run`'s `configSeeded
+  // .uncatalogedProjectTags` reported — detection produced it, but the catalog had never held it,
+  // so the seed dropped it rather than deciding on the user's behalf. This is the caller WITH a
+  // user in front of it (the renderer's consent dialog calls this on "yes, add it"); a decline, or
+  // any non-interactive install, calls nothing and the category stays dropped exactly as before.
+  // Two writes, both required — adding to only the catalog would leave this project still
+  // recording nothing, the same bug with an extra step:
+  //   1. `addProjectTag` — the category joins the machine-wide catalog, global from here on.
+  //   2. `applyProjectTagsSet` — the SAME union-and-save path the `/maestro` checkboxes use, so the
+  //      newly-recorded tag also pulls in any bundled agent already assigned to it, unioned rather
+  //      than replacing whatever this project already recorded.
+  // Never reads the catalog to decide what the repo IS — that direction stays detection-only; this
+  // only decides what a category the user already confirmed gets written to.
+  ipcMain.handle(IPC.installAcceptUncatalogedProjectTag, async (_e, tag: string): Promise<ProjectTagsData> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    const clean = tag.trim().toLowerCase();
+    if (!clean) throw new Error("A project tag can't be empty.");
+    const catalog = addProjectTag(clean);
+    const current = new Set(readConfig(projectRoot)?.project_tags ?? []);
+    current.add(clean);
+    const selected = await applyProjectTagsSet(projectRoot, Array.from(current));
+    return { catalog, selected };
   });
 
   // ── reports (/agents page) ──────────────────────────────────────────
@@ -737,6 +823,23 @@ export function registerIpc(): void {
   // ── tasks ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
+
+  // Live tail of the task queue — same subscribe/unsubscribe shape as the session log's
+  // `log:subscribe`/`log:unsubscribe` above. No separate snapshot channel: subscribing emits the
+  // full list as its first `tasks:init`.
+  ipcMain.handle(IPC.tasksSubscribe, (e) => {
+    taskSubscribers.add(e.sender.id);
+    startTaskTail(e.sender.id);
+    e.sender.once("destroyed", () => {
+      taskSubscribers.delete(e.sender.id);
+      stopTaskTail(e.sender.id);
+    });
+  });
+
+  ipcMain.handle(IPC.tasksUnsubscribe, (e) => {
+    taskSubscribers.delete(e.sender.id);
+    stopTaskTail(e.sender.id);
+  });
 
   // ── create-* ─────────────────────────────────────────────────────────
   // The deterministic half of the four create forms. `create:scaffold` is the ONLY channel in the
@@ -1016,6 +1119,8 @@ export function registerIpc(): void {
 export function disposeIpc(): void {
   for (const id of [...tails.keys()]) stopTail(id);
   logSubscribers.clear();
+  for (const id of [...taskTails.keys()]) stopTaskTail(id);
+  taskSubscribers.clear();
   // A cancelled run's child is spawned detached, so it outlives us by design unless it is killed.
   // Without this, quitting the app leaves Claude running against the user's repo with no window
   // left to stop it from.

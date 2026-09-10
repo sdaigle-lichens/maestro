@@ -49,6 +49,14 @@ export type SyncVerdict =
   | "materialize"
   /** Untouched since the last sync, and the template has moved on. Safe to overwrite. */
   | "refresh"
+  /**
+   * No tracking entry, but the on-disk bytes match a version of the template the caller knows
+   * about (`059`). Evidence the install itself wrote this file and nobody has touched it since —
+   * e.g. a `--purge` deleted the config that tracked it but left the file. Treated like
+   * `materialize`/`refresh`: the caller writes the CURRENT template content and records fresh
+   * tracking, which is what stops the file being reported as this verdict again next time.
+   */
+  | "adopt"
   /** The user edited it. Left alone on disk, surfaced so they know why it is not being updated. */
   | "stale-customized"
   /** Nothing to do. */
@@ -62,21 +70,45 @@ export interface SyncDecisionInput {
   hasTemplate: boolean;
   /** Has the template moved past what `tracking` recorded? Only consulted for a `tracked` copy. */
   templateAdvanced: boolean;
+  /**
+   * Only consulted when `tracking.kind === "untracked"`: does the on-disk content's hash match
+   * SOME version of the template the caller knows about — not only the current one?
+   *
+   * That "any known version, not just current" scope is the whole point and is deliberate: a file
+   * matching the CURRENT template proves it beyond doubt (writing the current content over it
+   * would produce the same bytes), but restricting the check to that case alone would leave
+   * exactly the projects a purge-then-reinstall is meant to fix still frozen — one purged before
+   * the global default's most recent bump holds an OLDER version's bytes verbatim, and "current
+   * only" calls that genuinely unattributable forever. A match against any recorded prior version
+   * is the same evidence, one version late; the caller's write on `adopt` brings the file to the
+   * CURRENT version in the same pass, so it never sits tracking a version that no longer exists.
+   *
+   * Optional and defaults to `false` — a caller with no notion of "known past content" (today,
+   * `agent-sync.ts`'s forked-agent check, whose tracking is never `untracked`) is unaffected: an
+   * untracked file still reads as `unchanged`, exactly as it did before this field existed.
+   */
+  matchesKnownVersion?: boolean;
 }
 
 /**
- * The five branches, in the order report-sync.ts has always applied them — cheapest and most
+ * The six branches, in the order report-sync.ts has always applied them — cheapest and most
  * fundamental first, so that "the user owns this" outranks every other consideration and "there is
  * nothing to sync from" is answered before anything is compared.
  */
-export function decideSync({ tracking, localHash, hasTemplate, templateAdvanced }: SyncDecisionInput): SyncVerdict {
+export function decideSync({
+  tracking,
+  localHash,
+  hasTemplate,
+  templateAdvanced,
+  matchesKnownVersion,
+}: SyncDecisionInput): SyncVerdict {
   if (tracking.kind === "detached") return "detached";
   if (!hasTemplate) return "no-template";
   if (localHash === null) return "materialize";
   // A file already sits where the copy would go, but nothing tracks it. Treating it as
   // unmodified-since a sync that never happened would overwrite an unrelated file, so it is left
-  // alone and reported as unchanged.
-  if (tracking.kind === "untracked") return "unchanged";
+  // alone UNLESS its content is itself the evidence — see `matchesKnownVersion` above.
+  if (tracking.kind === "untracked") return matchesKnownVersion ? "adopt" : "unchanged";
   if (localHash !== tracking.hash) return "stale-customized";
   return templateAdvanced ? "refresh" : "unchanged";
 }

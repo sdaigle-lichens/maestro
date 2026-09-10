@@ -58,6 +58,16 @@ const BACKEND_TO_REVIEWER =
   "}\n" +
   "```";
 
+const INFRA_TO_REVIEWER =
+  "```json\n" +
+  "{\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "what_changed": ["<file:area — summary of the change>"],\n' +
+  '  "verification_output": ["<format/validate/lint/plan-diff command — result summary>"],\n' +
+  '  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n' +
+  "}\n" +
+  "```";
+
 const BACKEND_TO_TEST =
   "```json\n" +
   "{\n" +
@@ -212,7 +222,7 @@ const TEST_TO_REVIEWER =
   "```";
 
 /**
- * The 23 handoff protocols Maestro ships, keyed `"<sender>/<receiver>"` — the JSON shape a sender
+ * The 24 handoff protocols Maestro ships, keyed `"<sender>/<receiver>"` — the JSON shape a sender
  * writes VERBATIM to `.claude/channels/<receiver>/<sender>.1.md` (`036`).
  *
  * Written out one constant per pair, deliberately NOT factored through shared helpers even where
@@ -233,6 +243,7 @@ export const SEED_HANDOFFS: Record<string, string> = {
   "frontend/mobile": FRONTEND_TO_MOBILE,
   "frontend/reviewer": FRONTEND_TO_REVIEWER,
   "frontend/test": FRONTEND_TO_TEST,
+  "infra/reviewer": INFRA_TO_REVIEWER,
   "mobile/frontend": MOBILE_TO_FRONTEND,
   "mobile/reviewer": MOBILE_TO_REVIEWER,
   "mobile/test": MOBILE_TO_TEST,

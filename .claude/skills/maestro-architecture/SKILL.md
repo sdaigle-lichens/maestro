@@ -3,8 +3,8 @@ name: maestro-architecture
 description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract and the three-tier resolution (project file, global sqlite store, bundled seed) behind each route's handoff_details protocol, how a route's payload travels on an agent channel (`.claude/channels/<receiver>/<sender>.1.md`) rather than through the orchestrator's own context, the run_id stamp that guards a delivery's freshness, the orchestrator skill's managed regions and its optional config-driven Step 1 gates and Step 4 task-routing nudge (`046` — both injected dynamic context, the same third delivery channel beside hooks and template prose), the dual-registered hook that auto-enables that nudge on a session's first `/to-maestro-tasks` invocation (`047`), the separate always-on Step 4 prompt asking once about `/maestro-post-mortem` after a rough session (`049` — static template prose, not script-injected, not config-gated), and the four config/state files (maestro.json, maestro_session.json, maestro_session.log.jsonl, maestro_session_tasks.json). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, where a route's handoff_details payload shape comes from and how to add or change one, why a channel payload wasn't delivered or was delivered late, why /maestro ran (or skipped) the confidence and design gates, why a condition-edge loop-back resumed an agent instead of spawning a fresh Task, why a resumed subagent's injected context is five blocks shorter than a first run's (`040`), why a hand-edited config's duplicate agent type is reported as a banner, a `/maestro-update` warning and an install-report line rather than repaired (`041`), or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
 metadata:
   type: concept-skill
-  version: "1.17"
-  last-update: 90907a794bc0067dc869dce6aa459382d6ea198e
+  version: "1.18"
+  last-update: 0e577a39224deb877c089a69f491eaee0fa9b21d
 ---
 
 # Maestro Runtime Architecture
@@ -64,14 +64,14 @@ UserPromptExpansion hook (matcher "maestro") → maestro-step0.js
 Orchestrator (.claude/skills/maestro/SKILL.md):
   (no Step 0 — it is not a step any more; the hook above is the whole of it)
   Step 1  custom checks (OPTIONAL gates). The template holds three lines amounting to "do what
-          the injected line says"; !`node .claude/scripts/maestro-step1-gates.cjs` supplies the
+          the injected line says"; the injected `maestro-step1-gates.cjs` line supplies the
           step itself. A freshly seeded project: "no gates enabled, continue to Step 2".
   Step 2  classify request → node .claude/scripts/maestro-set-session-workflow.cjs "<workflow>"
                               └─ writes { workflow, generated_instances } → maestro_session.json
   Step 3  execute the workflow: the success path from the Maestro:HANDOFFS table,
           TaskCreate per step, Task() each agent step
   Step 4  mark the task done (the mark-task-done node), then an OPTIONAL task-routing nudge:
-          !`node .claude/scripts/maestro-step4-gate.cjs` (`046`) suggests /to-maestro-tasks when
+          the injected `maestro-step4-gate.cjs` line (`046`) suggests /to-maestro-tasks when
           the project's use_maestro_tasks setting is on, same injected-line mechanism as Step 1;
           then a second, always-on static prompt (`049`, plain template prose, no script, no
           gate) asking once whether to run /maestro-post-mortem if the session didn't go cleanly
@@ -179,7 +179,7 @@ There is **no `SessionStart` hook**. It existed only to serve the retired contai
 
 **Injected context is a third delivery channel, and it is the only one that can abort the
 invocation.** A hook pushes context in from outside the skill; the template's prose carries it
-statically inside the body. Step 1 uses neither: the body holds a `` !`command` `` line, and Claude
+statically inside the body. Step 1 uses neither: the body holds a `!`-prefixed command line, and Claude
 Code runs that command and substitutes its **stdout** before the model ever sees the prompt.
 
 **The injected line is the whole of Step 1, not a flag the body branches on**, and that is the
@@ -225,7 +225,7 @@ Keep that sentence in the template however much else moves into the script.
 
 The subagent has no static knowledge of its handoffs — the `SubagentStart` hook injects, per its active-workflow instance:
 
-1. **Skills**, in two kinds. `loaded_skills` are auto-loaded (`Skill` tool) before working — the imperative "load each one first" block. `referenced_skills` are surfaced as _available_: the agent loads one only if the task involves the logic that skill describes (it reads each skill's description to decide), otherwise ignores it. A skill that is `loaded` for any matched instance is dropped from the referenced list (loaded wins).
+1. **Skills**, in two kinds. `loaded_skills` are auto-loaded (`Skill` tool) before working — the imperative "load each one first" block. `referenced_skills` are surfaced as _available_: the agent loads one only if the task involves the logic that skill describes (it reads each skill's description to decide), otherwise ignores it. A skill that is `loaded` for any matched instance is dropped from the referenced list (loaded wins). **An id that resolves outside the repository root's `.claude/skills` gets an appended note (`061`)**: the Skill tool only indexes the root plus installed plugins, so a monorepo skill discovered elsewhere in the tree answers "Unknown skill" there. `maestro-inject-agent-context.js` resolves each injected id with `resolveProjectSkillPath`/`isRootSkillPath` (`apps/maestro/src/core/skill-resolve.ts`) and, for any that land outside the root, tells the agent to `Read` the file directly instead — an id that resolves inside the root keeps the plain wording. See `installing-maestro` for the shared tree walk this reuses.
 2. **Routing lines** — the `HANDOFF:` labels this node may emit: `success` (when a success edge leaves the node, resolved _through_ non-agent nodes like `human review` to the next agent) plus each labeled `condition` edge. Unlabeled condition edges are skipped — they aren't routable.
 3. An instruction to **end its final message with exactly one `HANDOFF: <label>`** (`success`, or the exact condition label).
 4. **The `handoff_details` payload protocol per route** — the JSON shape the sender must **write to its channel file**, `.claude/channels/<receiver>/<sender>.1.md` (**`036`**; before it, the shape of a `handoff_details` field in the final-message JSON, forwarded by the orchestrator — that forwarding is gone). Since `033` the shape itself is resolved across **three tiers**, decided by one pure `resolveHandoff()` (`src/core/handoff-resolution.ts`) that the hook and the app both call: the project file `.claude/handoffs/<sender>/<receiver>.md`, else the machine-wide row in `~/.claude/maestro-handoff-defaults.sqlite`, else the `SEED_HANDOFFS` constant (`src/core/handoff-seeds.ts`) that ships **inside** `lib/maestro-session.cjs`. The seed tier is a real source, not a synonym for the global one: the sqlite bundle is `require`d in a try/catch, so on a `node` older than 22.5 the seed is what still answers. **A middle tier only exists if its bundle is where the running copy of the hook can `require` it** — until `035` neither `lib/maestro-handoff-defaults.cjs` nor `lib/maestro-report-defaults.cjs` was copied into `.claude/scripts/lib/`, so the project's own copy of this hook fell past the global row in silence (to the seed for handoffs; to *nothing* for a report, which has no seed) while the plugin's copy, running beside the whole `lib/`, answered correctly — making the arbitration winner decide what an agent was told. Both are `STATIC_ASSETS` now; a project on a pre-`0.4.4` runtime still behaves the old way until it re-installs. Both ends of a route are **bare** agent names (`maestro:test` → `test`), which is what makes the id `"<sender>/<receiver>"` map straight onto the project file's path. This is the whole communication layer: agent files no longer carry their own handoff shapes. A route with no seed and no override just gets the routing line, no payload. Since `034` the top two tiers each have an editing surface in the desktop app — `/templates`' **Handoffs** tab writes the global row, `/agents`' **Interactions** pane writes the project override for one route (and drops that pair's `syncedFrom`) — so a protocol no longer has to be changed by hand-editing a file or the sqlite store. The seed tier has none: it is a compiled-in constant, edited in source. See `global-stores` and `agents-view` in `apps/maestro/.claude/skills`.
@@ -311,7 +311,7 @@ Note: protocol templates live **only** in the agent template files, never in `ma
   the model invokes with the Skill tool. Two consequences worth knowing: the check is
   `user-invocable: false` and the design skill is **not**, so a user can reach the pass directly
   without the gate; and both inject the project's concept list with
-  `` !`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list` `` at expansion time,
+  a `!`-prefixed `maestro-concept-skills.cjs list` at expansion time,
   which is why each carries that exact command in `allowed-tools`. **`code-architecture-design` is
   not `/design`** — that name resolves to the Claude Design canvas skill (visual mockups), which is
   the collision the rename exists to end.
@@ -346,4 +346,13 @@ Note: protocol templates live **only** in the agent template files, never in `ma
   splitting current-run from stranded off the same stamp this section describes. `/agents`' Interactions
   pane (`agents-view`) labels each route's lane path but edits only the resolved `handoff_details`
   template, never the channel file itself.
+- **A task's own `Skills to use` name can name a skill outside the repository root's
+  `.claude/skills`, and the Skill tool won't find it (`061`).** The orchestrator template's Step 3
+  falls back to `node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resolve-skill-path.cjs" "<name>"`
+  when the Skill tool answers "Unknown skill" — it prints the `SKILL.md` path when the id is a
+  project skill living elsewhere in the tree, or nothing when it isn't a project skill at all (a
+  typo, a plugin skill), and the orchestrator is told to `Read` a printed path directly rather than
+  treat empty output as an error. Same resolver `maestro-inject-agent-context.js` uses for
+  `loaded_skills`/`referenced_skills` — see `installing-maestro`'s manifest sub-concept for the
+  shared `skill-resolve.ts` walk behind both.
 - **Anything `.md` under `agents/` is discovered as an agent.** A frontmatter-less `.md` inside the agents tree gets registered as a phantom agent (e.g. `…:refactor:handoffs:backend`) with **All tools**, which is why handoff protocols were never kept there. Since `033` they are not files in the plugin at all: `plugins/maestro/templates/handoffs/**` is **deleted** and `readHandoffProtocol()` no longer exists. **To add a sender/receiver pair *that Maestro ships*, add a key to `SEED_HANDOFFS` in `apps/maestro/src/core/handoff-seeds.ts`** (a pair only *this machine* needs is a Create on `/templates`' Handoffs tab instead — a global row, no rebuild), then re-run `pnpm --filter maestro build:plugin-libs` — editing the source without rebuilding leaves the hook reading the old bundle. Editing an *existing* seed body additionally needs its previous text in `PRIOR_SEEDS`, or every machine that has already opened the global store keeps serving the old one, silently.

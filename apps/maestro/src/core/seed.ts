@@ -245,34 +245,78 @@ export function buildTestsWorkflow(name: string, impl: string[], skillCount: Ski
 // skills were found/selected.
 export type SkillMap = Record<string, string[]>;
 
-// The full set of agent names a seed for this impl chain will have instances for — the impl
-// agent(s) plus the four CORE_INSTANCES. Exported so a skillMap builder (tags→SkillMap, or the
-// terminal install's best-fit flow) has the same "which agents actually exist in this seed" answer
-// `defaultV3Config` uses, rather than re-deriving `['test','reviewer','refactor','scribe']` itself.
+// The ONE profile decision, read by both `seededAgentNames` and `defaultV3Config` so the agent
+// list and the workflow set can never disagree about which agents a seed for this chain has
+// instances for. A chain that is EXACTLY the infra agent and nothing else gets the simple
+// three-workflow profile (see `buildInfraWorkflow`); any other chain — including infra alongside
+// an application agent — gets the full six-workflow profile, with infra treated as an ordinary
+// implementation step. Kept private: the two entry points widen no signature and the choice is
+// never pushed out to a caller, several of which are separately-shipped copies that would drift.
+function isInfraOnlyChain(impl: string[]): boolean {
+  return impl.length === 1 && impl[0] === "infra";
+}
+
+// The full set of agent names a seed for this impl chain will have instances for. For the
+// infra-only profile that's just the impl agent plus @reviewer/@scribe — no @test, no @refactor,
+// since neither workflow that profile seeds references them. Exported so a skillMap builder
+// (tags→SkillMap, or the terminal install's best-fit flow) has the same "which agents actually
+// exist in this seed" answer `defaultV3Config` uses, rather than re-deriving the agent list itself.
 export function seededAgentNames(implAgents: string[]): string[] {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
+  if (isInfraOnlyChain(impl)) return Array.from(new Set([...impl, "reviewer", "scribe"])).sort();
   return Array.from(new Set([...impl, "test", "reviewer", "refactor", "scribe"])).sort();
 }
 
+// Build the infra-only profile's `default` workflow: main-session → infra → human review →
+// review → documentation, with no testing or refactor node anywhere. Both the reviewer's
+// code-issue route and the human-review correction route loop back to the infra agent — it's the
+// only implementation step there is, so both routes have one place to send a fix.
+function buildInfraWorkflow(impl: string[], skillCount: SkillCount = () => 0): MaestroWorkflowV3 {
+  const infraAgent = impl[0];
+  const column = [infraAgent, "human_review-1", "reviewer", "scribe"];
+  const nodes = columnNodes(column, skillCount);
+
+  const seq = ["main-session", ...column];
+  const edges: MaestroEdgeV3[] = [];
+  for (let i = 0; i < seq.length - 1; i++) edges.push(succ(seq[i], seq[i + 1]));
+
+  const side = sideTracker(nodes);
+  const c = (from: string, to: string, label: string) => cond(from, to, label, side(from, to));
+
+  edges.push(
+    c("reviewer", infraAgent, "FAIL: style, data layer, error handling, security, or persistence"),
+    c("human_review-1", infraAgent, "human requested corrections")
+  );
+
+  return placeConditionLabels({ name: "default", nodes, edges }, skillCount);
+}
+
 // Returned on first install (no maestro.json yet). Seeds the bundled agents as reusable
-// instances and wires them into two ready-to-use workflows ("default" + "tdd") so the
-// canvas isn't empty. `implAgents` is the repo-detected implementation agent chain in the
-// happy path; falls back to ["backend"].
+// instances and wires them into ready-to-use workflows so the canvas isn't empty. `implAgents` is
+// the repo-detected implementation agent chain in the happy path; falls back to ["backend"].
 // `skillMap` attaches the install-time discovered project skills to their best-fit instance.
+//
+// A chain that is exactly the infra agent seeds the simple three-workflow profile (`default` +
+// `Review` + `Documentation`, no test/refactor anywhere); any other chain seeds the full six.
+// Both branches read `isInfraOnlyChain` — the same private decision `seededAgentNames` reads —
+// so the instances built here always match the agent names that function reports.
 export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): MaestroConfigV3 {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
+  const infraOnly = isInfraOnlyChain(impl);
   // Defensive: only attach skills to instances that actually exist in this seed.
   const skillsFor = (agent: string): string[] => Array.from(new Set(skillMap[agent] ?? [])).filter(Boolean);
   // Install-time discovered skills seed as referenced (the default mode); promote in the canvas.
+  const coreInstances = infraOnly ? CORE_INSTANCES.filter((i) => i.name === "reviewer" || i.name === "scribe") : CORE_INSTANCES;
   const instances: MaestroInstanceV3[] = [
     ...impl.map((a) => ({ name: a, agent: a, loaded_skills: [], referenced_skills: skillsFor(a) })),
-    ...CORE_INSTANCES.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) })),
+    ...coreInstances.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) })),
   ];
   const agentsAvailable = seededAgentNames(impl);
   // skills_available = `use-code-architecture-design-check` + every skill assigned to an instance. It is seeded
   // because the Refactor workflow below leads with a `skill:use-code-architecture-design-check` NODE — a Step 3
   // inline skill step, not the Step 1 gate of the same name. The Step 1 gates are opt-in and live
-  // in `gates` below; nothing here makes either of them run.
+  // in `gates` below; nothing here makes either of them run. The infra-only profile has no Refactor
+  // workflow, but the gate skill is still offered — it stays independent of what got seeded.
   const skillsAvailable = Array.from(
     new Set([
       "use-code-architecture-design-check",
@@ -281,23 +325,30 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
   );
   // Vertical spacing in the seeded layout grows with each instance's skill count.
   const skillCount: SkillCount = (name) => skillsFor(name).length;
+  const workflows = infraOnly
+    ? [
+        buildInfraWorkflow(impl, skillCount),
+        linearWorkflow("Documentation", ["scribe"], skillCount),
+        linearWorkflow("Review", ["reviewer"], skillCount),
+      ]
+    : [
+        buildWorkflow("default", "default", impl, skillCount),
+        buildWorkflow("tdd", "tdd", impl, skillCount),
+        linearWorkflow(
+          "Refactor",
+          ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+          skillCount
+        ),
+        linearWorkflow("Documentation", ["scribe"], skillCount),
+        linearWorkflow("Review", ["reviewer"], skillCount),
+        buildTestsWorkflow("Tests", impl, skillCount),
+      ];
   return {
     version: 3,
     agents_available: agentsAvailable,
     skills_available: skillsAvailable,
     workflow_instances: instances,
-    workflows: [
-      buildWorkflow("default", "default", impl, skillCount),
-      buildWorkflow("tdd", "tdd", impl, skillCount),
-      linearWorkflow(
-        "Refactor",
-        ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
-        skillCount
-      ),
-      linearWorkflow("Documentation", ["scribe"], skillCount),
-      linearWorkflow("Review", ["reviewer"], skillCount),
-      buildTestsWorkflow("Tests", impl, skillCount),
-    ],
+    workflows,
     rules: [],
     // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
     // well-understood request should not pay for two skill invocations it never asked for.

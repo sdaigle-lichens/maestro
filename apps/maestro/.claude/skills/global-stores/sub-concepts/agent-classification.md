@@ -17,4 +17,13 @@ same-named project agents no longer collide. See the parent `SKILL.md`'s "Keyed 
 just agent name" section for the read/write discipline; `project-tags.ts`'s catalog is untouched by
 this — it has no per-agent row to key.
 
+**`addProjectTag` has a second caller since `055`.** It used to be reached only from
+`claude-preview.ts` (the app's `/templates` Project Tags tab); the generated bundle
+`plugins/maestro/scripts/lib/maestro-project-tags.cjs` now also exports it, and
+`plugins/maestro/skills/maestro-install/SKILL.md` calls it directly (a `node -e` snippet, same
+pattern as its existing catalog reads) when step 1 detects a category the catalog has never held,
+before building the `--project-tags` flag. `maestro-install.js` itself is unchanged — still
+read-and-intersect only. The direction stays one-way: an install may propose an entry *to* the
+catalog; nothing reads the catalog back to influence what `detect.ts` decides a repo is.
+
 Files: `src/core/agent-types.ts`, `src/core/agent-project-tags.ts`, `src/core/project-tags.ts`.

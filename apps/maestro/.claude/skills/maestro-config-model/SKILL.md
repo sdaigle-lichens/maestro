@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.9"
-  last-update: 90907a794bc0067dc869dce6aa459382d6ea198e
+  version: "1.11"
+  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
 ---
 
 # Maestro config model (v3)

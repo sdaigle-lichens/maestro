@@ -39,7 +39,7 @@ import { syncProjectReports } from "./report-sync.js";
 import { syncProjectHandoffs } from "./handoff-sync.js";
 import { duplicateAgentTypes } from "./config-validate.js";
 import { detectImplAgents } from "./detect.js";
-import { discoverSkills } from "./discovery.js";
+import { discoverSkills, discoverProjectSkillsTree, type SkillIdCollision } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
 import { defaultV3Config, seededAgentNames } from "./seed.js";
 import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
@@ -180,6 +180,13 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // not by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as every other
   // orchestrator-invoked script above.
   { src: "scripts/maestro-resume-target.cjs", dest: ".claude/scripts/maestro-resume-target.cjs" },
+  // Skill-id -> SKILL.md path resolver (`061`) for a project skill discovered outside the
+  // repository root's `.claude/skills` — the Skill tool only indexes the root plus installed
+  // plugins, so a nested id answers "Unknown skill" there. Invoked directly (by the orchestrator's
+  // Step 3, and by `maestro-inject-agent-context.js`'s own require of the same underlying
+  // function) rather than by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as
+  // every other orchestrator-invoked script above.
+  { src: "scripts/maestro-resolve-skill-path.cjs", dest: ".claude/scripts/maestro-resolve-skill-path.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
@@ -639,9 +646,11 @@ export async function installRuntime(
   // unchanged, as the safety net for a project that somehow reaches `/workflows` with no config
   // and no install) — intentionally similar, not shared, per this module's own "PORTED" convention.
   let configSeeded: InstallReport["configSeeded"] = null;
+  let skillCollisions: SkillIdCollision[] = [];
   if (readConfig(projectRoot) === null) {
     const detection = detectImplAgents(projectRoot);
     const skills = await discoverSkills(projectRoot);
+    skillCollisions = (await discoverProjectSkillsTree(projectRoot)).collisions;
     const types = readAllAgentTypes();
     const projectTagsByAgent = readAllAgentProjectTags();
     const agentAttrs: Record<string, AgentAttrs> = {};
@@ -653,11 +662,18 @@ export async function installRuntime(
       skills.map((s) => s.id),
       agentAttrs
     );
+    // Split, never decide: detection is the sole source of evidence for what the repo IS (058) —
+    // the catalog is only ever read here to sort a detected category into "recorded" vs "flag it",
+    // never to influence `detection.implAgents` itself. This function has no user in front of it
+    // and must not choose on their behalf, so an uncataloged category is dropped from the seed
+    // exactly as before and reported on `configSeeded.uncatalogedProjectTags` for whichever caller
+    // has a user to ask — see `contracts.ts`'s `InstallReport.configSeeded` doc.
     const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
     const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
+    const uncatalogedProjectTags = detection.implAgents.filter((t) => !catalog.includes(t));
     const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
     writeConfig(projectRoot, seeded);
-    configSeeded = { implAgents: detection.implAgents, projectTags };
+    configSeeded = { implAgents: detection.implAgents, projectTags, uncatalogedProjectTags };
   }
 
   // Stamp last, after the files it describes are actually current on disk. The seed step above
@@ -688,6 +704,9 @@ export async function installRuntime(
     warnings.push(
       `The orchestrator skill predates Maestro's managed regions, so it was replaced. Your previous version is at ${orchestratorSkill.backup} — copy any custom prose back across.`
     );
+  }
+  for (const c of skillCollisions) {
+    warnings.push(`Skill id "${c.id}" is defined in more than one .claude/skills directory (${c.dirs.join(", ")}) — using "${c.dirs[0]}".`);
   }
 
   return {

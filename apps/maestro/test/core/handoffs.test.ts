@@ -13,7 +13,13 @@ import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
 
 import { handoffRoutes, routesFrom, handoffPairs } from "../../src/core/handoff-routes.js";
-import { SEED_HANDOFFS, isSeededHandoff, isValidHandoffId, splitHandoffId } from "../../src/core/handoff-seeds.js";
+import {
+  SEED_HANDOFFS,
+  PRIOR_SEEDS,
+  isSeededHandoff,
+  isValidHandoffId,
+  splitHandoffId,
+} from "../../src/core/handoff-seeds.js";
 import { resolveHandoff } from "../../src/core/handoff-resolution.js";
 import {
   readHandoffDefault,
@@ -127,10 +133,10 @@ describe("handoffRoutes — the ONE walk, shared by the hook and the sync", () =
 });
 
 describe("the global store", () => {
-  it("seeds all 23 shipped pairs on first read against a fresh db path", () => {
+  it("seeds all 24 shipped pairs on first read against a fresh db path", () => {
     const all = readAllHandoffDefaults(dbPath);
     expect(Object.keys(all).sort()).toEqual(Object.keys(SEED_HANDOFFS).sort());
-    expect(Object.keys(all)).toHaveLength(23);
+    expect(Object.keys(all)).toHaveLength(24);
     for (const [id, row] of Object.entries(all)) {
       expect(row.version).toBe(1);
       expect(row.content).toBe(SEED_HANDOFFS[id]);
@@ -257,6 +263,7 @@ describe("syncProjectHandoffs", () => {
     expect(syncProjectHandoffs(projectRoot, dbPath)).toEqual({
       materialized: [],
       refreshed: [],
+      adopted: [],
       staleCustomized: [],
       unchanged: [],
     });
@@ -344,6 +351,65 @@ describe("syncProjectHandoffs", () => {
     expect(summary.unchanged).toContain("backend/test");
     expect(summary.materialized).not.toContain("backend/test");
     expect(read("backend/test")).toBe("somebody else's\n");
+    expect(readConfig(projectRoot)!.handoffs?.["backend/test"]).toBeUndefined();
+  });
+
+  it("adopts an untracked file whose bytes are the current global default — a purge left it behind (`059`)", () => {
+    writeConfig(projectRoot, defaultish);
+    syncProjectHandoffs(projectRoot, dbPath);
+    // Simulate a purge: the config's tracking is gone, but the materialized file survives.
+    writeConfig(projectRoot, { ...readConfig(projectRoot)!, handoffs: {} });
+
+    const summary = syncProjectHandoffs(projectRoot, dbPath);
+    expect(summary.adopted).toContain("backend/test");
+    expect(summary.materialized).not.toContain("backend/test");
+    expect(read("backend/test")).toBe(SEED_HANDOFFS["backend/test"]);
+    expect(readConfig(projectRoot)!.handoffs!["backend/test"]).toEqual({
+      id: "backend/test",
+      syncedFrom: { version: 1, hash: expect.stringMatching(/^[0-9a-f]{64}$/) },
+    });
+
+    // Tracked again, so the NEXT advance refreshes it rather than skipping it forever.
+    writeHandoffDefault("backend/test", "a newer global body", dbPath);
+    expect(syncProjectHandoffs(projectRoot, dbPath).refreshed).toContain("backend/test");
+    expect(read("backend/test")).toBe("a newer global body");
+  });
+
+  it("adopts an untracked file that matches an OLDER known version, and brings it to current in the same pass", () => {
+    writeConfig(projectRoot, defaultish);
+    // Stand in for a prior release's body — same pattern the store's own "moves a row still
+    // carrying a superseded seed" test uses, restored afterward so this doesn't leak into other
+    // tests sharing the same module-level object.
+    const original = PRIOR_SEEDS["backend/test"];
+    const OLD = "an older shipped body, before the current one";
+    (PRIOR_SEEDS as Record<string, string[]>)["backend/test"] = [OLD];
+    try {
+      fs.mkdirSync(path.dirname(handoffFilePath(projectRoot, "backend/test")), { recursive: true });
+      fs.writeFileSync(handoffFilePath(projectRoot, "backend/test"), OLD);
+
+      const summary = syncProjectHandoffs(projectRoot, dbPath);
+      expect(summary.adopted).toContain("backend/test");
+      // A project that skipped a release stays frozen if adoption only checks the CURRENT
+      // version — this is the case comparing against ANY known version exists to fix: the file is
+      // brought all the way to the current default in the same pass, not just marked tracked at
+      // the old body.
+      expect(read("backend/test")).toBe(SEED_HANDOFFS["backend/test"]);
+      expect(readConfig(projectRoot)!.handoffs!["backend/test"].syncedFrom!.version).toBe(1);
+    } finally {
+      if (original === undefined) delete (PRIOR_SEEDS as Record<string, string[]>)["backend/test"];
+      else (PRIOR_SEEDS as Record<string, string[]>)["backend/test"] = original;
+    }
+  });
+
+  it("a hand-edited file that survives a purge is not adopted, and stays untouched", () => {
+    writeConfig(projectRoot, defaultish);
+    fs.mkdirSync(path.dirname(handoffFilePath(projectRoot, "backend/test")), { recursive: true });
+    fs.writeFileSync(handoffFilePath(projectRoot, "backend/test"), "content nothing recorded ever had\n");
+
+    const summary = syncProjectHandoffs(projectRoot, dbPath);
+    expect(summary.adopted).not.toContain("backend/test");
+    expect(summary.unchanged).toContain("backend/test");
+    expect(read("backend/test")).toBe("content nothing recorded ever had\n");
     expect(readConfig(projectRoot)!.handoffs?.["backend/test"]).toBeUndefined();
   });
 

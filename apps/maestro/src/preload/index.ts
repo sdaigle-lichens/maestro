@@ -8,6 +8,7 @@ import { IPC, IPC_EVENTS } from "../shared/ipc.js";
 import type {
   ClaudeOutputChunk,
   MaestroApi,
+  MaestroTask,
   ProjectState,
   SaveInput,
   SessionEvent,
@@ -124,6 +125,20 @@ const api: MaestroApi = {
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),
     close: (filename) => ipcRenderer.invoke(IPC.tasksClose, filename),
+    subscribe: (handlers) => {
+      const onInit = (_e: unknown, tasks: MaestroTask[]) => handlers.onInit(tasks);
+      const onUpdate = (_e: unknown, tasks: MaestroTask[]) => handlers.onUpdate(tasks);
+
+      ipcRenderer.on(IPC_EVENTS.tasksInit, onInit);
+      ipcRenderer.on(IPC_EVENTS.tasksUpdate, onUpdate);
+      void ipcRenderer.invoke(IPC.tasksSubscribe);
+
+      return () => {
+        ipcRenderer.removeListener(IPC_EVENTS.tasksInit, onInit);
+        ipcRenderer.removeListener(IPC_EVENTS.tasksUpdate, onUpdate);
+        void ipcRenderer.invoke(IPC.tasksUnsubscribe);
+      };
+    },
   },
   create: {
     options: () => ipcRenderer.invoke(IPC.createOptions),
@@ -139,6 +154,7 @@ const api: MaestroApi = {
     autoRefresh: (projectRoot) => ipcRenderer.invoke(IPC.installAutoRefresh, projectRoot),
     uninstallPlan: (projectRoot) => ipcRenderer.invoke(IPC.installUninstallPlan, projectRoot),
     uninstall: (opts, projectRoot) => ipcRenderer.invoke(IPC.installUninstall, opts, projectRoot),
+    acceptUncatalogedProjectTag: (tag) => ipcRenderer.invoke(IPC.installAcceptUncatalogedProjectTag, tag),
   },
   claude: {
     preview: (request) => ipcRenderer.invoke(IPC.claudePreview, request),

@@ -13,6 +13,8 @@ Three distinct things, each with its own silent failure mode.
 
 **The install skill's own detection prose.** The published install skill carries a prose description of the repository-classification step, written for a session doing the analysis by hand. It currently describes only the application categories. It needs the infrastructure branch, including the precedence rule, so that a session-driven install and the app's deterministic detection reach the same chain for the same repository. It also documents the seeded-agent list that the install's skill-mapping step intersects against, which is now chain-dependent.
 
+Read that skill from the working tree, not from the installed plugin copy: its discovery step and its project-tag question were both rewritten after this task was written, and the version baseline it starts from is `0.6.8`.
+
 **The version bump.** The marketplace cache is keyed by the plugin's version string and `autoUpdate` only re-pulls on inequality, so any change under the published plugin directory that ships without a bump reaches nobody, silently. Bump the component that matches what a consumer sees change.
 
 The acceptance test for the whole feature is that both install paths agree: the deterministic desktop path and the terminal path must produce the same starter configuration for the same infrastructure repository, because they are meant to be the same seeding function reached two ways.
@@ -28,7 +30,9 @@ rediscovering the same thing from source:
 
 ## When you're done
 
-End by handing off to the **@scribe** agent with the `scribe` skill loaded. It is the routing rule
+Run the project's `default` workflow to completion — its success path is implementation → human
+review → **@test** → **@reviewer** → **@scribe**. Do not treat the documentation step as a shortcut
+past the two before it. When you reach **@scribe**, load the `scribe` skill: it is the routing rule
 for what belongs in a concept skill versus in `docs/`, and it has to be in context before anything
 is written. This slice changes behaviour that the concept skills already describe, so updating them
 is part of the change rather than a follow-up.
@@ -46,3 +50,4 @@ is part of the change rather than a follow-up.
 ## Blocked by
 
 - `052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md`
+- `058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md`

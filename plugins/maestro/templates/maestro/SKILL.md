@@ -1,7 +1,7 @@
 ---
 name: maestro
 description: "Orchestrates Maestro workflows: classifies the user's request, runs the project's configured Step 1 gates, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
-allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resume-target.cjs" *), Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step4-gate.cjs")
+allowed-tools: Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" *), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs")
 ---
 
 # Maestro Orchestrator
@@ -17,7 +17,7 @@ You are the Maestro orchestrator for this project. Your role is to classify inco
 
 Note: if the following step 1 text is missing, empty, or reads `[shell command execution disabled by policy]`, this project has no Step 1: go straight to Step 2.
 
-!`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs"`
+!`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"`
 
 ### Step 2 — Match to workflow
 
@@ -26,8 +26,8 @@ Note: if the following step 1 text is missing, empty, or reads `[shell command e
 3. Record the workflow that matches the user's request so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent. **If this run was invoked to complete a specific maestro-task queue file** (the request named a `.claude/maestro-tasks/NNN-*.md` file), pass that filename too so it's recorded now — while you still have it in front of you — rather than re-derived at the end:
 
 ```bash
-node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" # record workflow only
-node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" --task "<NNN-filename.md>" # record workflow and task
+node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" # record workflow only
+node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" --task "<NNN-filename.md>" # record workflow and task
 ```
 
 <!-- Maestro:HANDOFFS:START -->
@@ -47,12 +47,14 @@ The success path mixes three kinds of step:
 
 For each agent step, use `Task` to invoke the corresponding subagent. The `SubagentStart` hook will automatically inject that instance's skills (the `loaded_skills` it auto-loads up front, plus any `referenced_skills` it loads only when the task calls for them), its `HANDOFF:` routing options, and — for each route — the channel file to write its payload to and the shape to write there. The same hook also delivers whatever is already waiting for this agent in its own channel lane, inlined into its context before it starts.
 
+If `active_task` is set and its task file names its own `Skills to use` (skills beyond the injected `loaded_skills`/`referenced_skills`), pass that list to the subagent in the dispatch prompt; if the Skill tool answers "Unknown skill" for one of those names, resolve it instead of skipping it — `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resolve-skill-path.cjs" "<name>"` prints that skill's `SKILL.md` path when it's a project skill living outside the root, or nothing when it isn't a project skill at all — and tell the subagent to `Read` a printed path directly, since that gets the skill's content but not the Skill tool's own resource handling.
+
 Each subagent ends its final message with a `HANDOFF:` line. Read it to decide routing:
 - `HANDOFF: success` → continue along the workflow's success path to the next node, dispatching it with a fresh `Task` as usual — the forward path always spawns cold, on purpose, so each step gets its own isolated context.
 - `HANDOFF: <label>` matching one of that agent's condition-edge labels (e.g. `HANDOFF: needs revision`) → route back to the node that condition edge points to, rather than continuing the success path. **Before dispatching, check whether that agent already ran this run:**
 
   ```bash
-  node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resume-target.cjs" "<agent type>"
+  node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" "<agent type>"
   ```
 
   A printed `agent_id` means resume it — `SendMessage` addressed to that `agent_id` (never by name) — so it keeps its own memory of what it built instead of re-deriving it from scratch. **Empty output means dispatch a cold `Task` instead**, exactly as for a forward step; so does a `SendMessage` that comes back refused (the user stopped that agent in `/tasks`, or a same-agent-name check rejects it). Never surface a failed resume to the user — it is a performance regression, not a broken run, so fall back silently and continue.
@@ -66,12 +68,12 @@ This step runs when you reach the **mark-task-done** task created in Step 3 — 
 Run the script with no filename — it reads `active_task` from the session state recorded in Step 2, so you don't re-derive it from the original prompt:
 
 ```bash
-node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-task-status.cjs" done
+node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" done
 ```
 
 (You can still pass an explicit filename — `done 002-add-login.md` — to override.) The script flips that file to `done` and recomputes the queue's `status.json` so any dependents whose blockers are now all done become `ready` — you don't compute the cascade yourself. Then mark the mark-task-done task complete. If `active_task` is empty (the run wasn't invoked from a task file), there is no mark-task-done task and you skip this step.
 
-!`node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step4-gate.cjs"`
+!`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
 
 Before finishing, judge whether this session went cleanly: did it need a major review fix, a mid-task refactor, or did the task fail to land correctly on the first pass without heavy steering from the user? If so, ask the user once whether they'd like to run `/maestro-post-mortem` now. If the session was clean, skip this question entirely — don't ask it on every task.
 <!-- Maestro:STEPS:END -->

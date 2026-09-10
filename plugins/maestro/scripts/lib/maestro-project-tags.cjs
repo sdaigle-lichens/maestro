@@ -34,6 +34,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_project_tags_exports = {};
 __export(maestro_project_tags_exports, {
   DEFAULT_PROJECT_TAGS_DB_PATH: () => DEFAULT_PROJECT_TAGS_DB_PATH,
+  addProjectTag: () => addProjectTag,
   readAllProjectTags: () => readAllProjectTags
 });
 module.exports = __toCommonJS(maestro_project_tags_exports);
@@ -44,7 +45,7 @@ var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
 var DEFAULT_PROJECT_TAGS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-project-tags.sqlite");
-var SEED_PROJECT_TAGS = ["backend", "frontend", "mobile"];
+var SEED_PROJECT_TAGS = ["backend", "frontend", "mobile", "infra"];
 function openDb(dbPath) {
   import_node_fs.default.mkdirSync(import_node_path.default.dirname(dbPath), { recursive: true });
   const db = new import_node_sqlite.DatabaseSync(dbPath);
@@ -69,6 +70,9 @@ function seedIfEmpty(db) {
     throw err;
   }
 }
+function normalizeTag(tag) {
+  return tag.trim().toLowerCase();
+}
 function readAllProjectTags(dbPath = DEFAULT_PROJECT_TAGS_DB_PATH) {
   const db = openDb(dbPath);
   try {
@@ -78,8 +82,21 @@ function readAllProjectTags(dbPath = DEFAULT_PROJECT_TAGS_DB_PATH) {
     db.close();
   }
 }
+function addProjectTag(tag, dbPath = DEFAULT_PROJECT_TAGS_DB_PATH) {
+  const clean = normalizeTag(tag);
+  if (!clean) throw new Error("A project tag can't be empty.");
+  const db = openDb(dbPath);
+  try {
+    db.prepare("INSERT OR IGNORE INTO project_tags (tag) VALUES (?)").run(clean);
+    const rows = db.prepare("SELECT tag FROM project_tags ORDER BY tag").all();
+    return rows.map((r) => r.tag);
+  } finally {
+    db.close();
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DEFAULT_PROJECT_TAGS_DB_PATH,
+  addProjectTag,
   readAllProjectTags
 });

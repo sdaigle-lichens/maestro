@@ -13,6 +13,7 @@ import {
   PowerOff,
   RefreshCw,
   ShieldCheck,
+  Sparkles,
   Tag as TagIcon,
   Trash2,
   X,
@@ -451,6 +452,109 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
 }
 
 /**
+ * `058`'s consent step: `configSeeded.uncatalogedProjectTags` names categories detection found
+ * that the global Project Tags catalog has never held, so the seed dropped them from
+ * `project_tags` rather than deciding on the user's behalf. This is the caller WITH a user in
+ * front of it — accepting a category calls `acceptUncatalogedProjectTag`, which does both writes
+ * (the global catalog, then this project's own `project_tags`) in one round trip.
+ *
+ * Only shown right after a first install that actually seeded something — never re-derived from
+ * the catalog, and never re-offered on a later visit: closing the window or declining leaves
+ * `project_tags` exactly as installRuntime seeded it, and that is the whole design (`058`).
+ * Pre-checks every category (this is a real UI, unlike the terminal `AskUserQuestion` path, which
+ * can't pre-tick) — but what ends up recorded is always read back off the checkboxes at Accept
+ * time, never assumed.
+ */
+function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accepted: string[]) => void }) {
+  const [checked, setChecked] = useState<Set<string>>(new Set(tags));
+  const [busy, setBusy] = useState(false);
+
+  const toggle = (tag: string) => {
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(tag)) next.delete(tag);
+      else next.add(tag);
+      return next;
+    });
+  };
+
+  const accept = async () => {
+    const selected = tags.filter((t) => checked.has(t));
+    if (selected.length === 0) {
+      onDone([]);
+      return;
+    }
+    setBusy(true);
+    try {
+      // Sequential, not Promise.all: each call reads the project's current `project_tags`, unions
+      // the one tag, and writes — concurrent calls racing that read/write would lose an update.
+      for (const tag of selected) {
+        const res = await callMain(() => window.maestro.install.acceptUncatalogedProjectTag(tag));
+        if (!res.ok) {
+          toast(<>Could not add &ldquo;{tag}&rdquo; to the catalog: {res.error}</>, { variant: "error" });
+          setBusy(false);
+          return;
+        }
+      }
+      toast(
+        <>
+          Added {selected.length === 1 ? `"${selected[0]}"` : `${selected.length} categories`} to the catalog and
+          tagged this project.
+        </>
+      );
+      onDone(selected);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+        <Sparkles size={12} /> New categories detected
+      </div>
+      <p className="text-[12px] text-(--ink-2) m-0">
+        Detection found {tags.length === 1 ? "a category" : "categories"} this project&rsquo;s Project Tags catalog has
+        never held, so {tags.length === 1 ? "it wasn&rsquo;t" : "they weren&rsquo;t"} recorded. A project can carry
+        more than one — check which to add to the catalog and tag this project with. Leaving{" "}
+        {tags.length === 1 ? "it" : "them"} unchecked, or closing this without answering, leaves{" "}
+        <span className="font-mono">project_tags</span> exactly as the install left it.
+      </p>
+      <div className="flex flex-col gap-2">
+        {tags.map((tag) => (
+          <label
+            key={tag}
+            className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+              busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
+            }`}
+          >
+            <input
+              type="checkbox"
+              checked={checked.has(tag)}
+              disabled={busy}
+              onChange={() => toggle(tag)}
+              className="mt-0.5 accent-primary cursor-pointer"
+            />
+            <span>
+              Add <span className="font-mono text-(--ink)">&ldquo;{tag}&rdquo;</span> to the catalog and tag this
+              project with it
+            </span>
+          </label>
+        ))}
+      </div>
+      <div className="flex items-center gap-2">
+        <Button variant="primary" loading={busy} disabled={busy || checked.size === 0} onClick={() => void accept()}>
+          {checked.size === 0 ? "Add" : `Add ${checked.size === 1 ? "1 category" : `${checked.size} categories`}`}
+        </Button>
+        <Button variant="ghost" disabled={busy} onClick={() => onDone([])}>
+          Dismiss
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+/**
  * The post-install Step 1 gates section. Structurally `ProjectTagsCard` above — a checkbox card
  * that writes `maestro.json` on every click with no Save button — because it is the same kind of
  * thing, and the two should stay easy to read side by side.
@@ -799,6 +903,14 @@ function InstallPage() {
   const [outcome, setOutcome] = useState<Outcome | null>(null);
   /** Non-null while the purge confirmation is open — and it is the only way to reach a purge. */
   const [purgePlan, setPurgePlan] = useState<UninstallPlan | null>(null);
+  /**
+   * `058`: the categories offered right after a first install that seeded some but didn't record
+   * others, because the catalog had never held them. Set once from `configSeeded.uncatalogedProjectTags`
+   * and cleared on accept/dismiss — never re-derived, never re-shown on a later status check.
+   */
+  const [tagOffer, setTagOffer] = useState<string[] | null>(null);
+  /** Bumped after `UncatalogedTagsCard` writes, so `ProjectTagsCard` remounts and re-fetches. */
+  const [tagsRefreshKey, setTagsRefreshKey] = useState(0);
 
   const refreshStatus = useCallback(async () => {
     if (!viewedRoot) {
@@ -818,12 +930,14 @@ function InstallPage() {
 
   useEffect(() => {
     setOutcome(null);
+    setTagOffer(null);
     void refreshStatus();
   }, [refreshStatus]);
 
   const run = async () => {
     setPhase("installing");
     setOutcome(null);
+    setTagOffer(null);
     // try/finally, not a bare reset after the await: a rejected install must still return the
     // button to its resting state rather than spinning forever.
     try {
@@ -834,6 +948,10 @@ function InstallPage() {
       }
       setStatus(res.value.status);
       setOutcome({ kind: "install", report: res.value });
+      // `058`: only on a first install that actually seeded a config, and only the categories the
+      // catalog never held — `configSeeded` is null on every re-install, so this never re-offers.
+      const uncataloged = res.value.configSeeded?.uncatalogedProjectTags ?? [];
+      if (uncataloged.length > 0) setTagOffer(uncataloged);
       // A warning here rides on a SUCCESSFUL install (res.ok is true) — it's a caveat, not a
       // failure, so it gets the amber "warning" toast rather than the red "error" one the `!res.ok`
       // branch above uses. Styling it as an error is what made a completed install read as though
@@ -850,6 +968,7 @@ function InstallPage() {
   const runUninstall = async (purge: boolean, deleteMaestroTasks = false) => {
     setPhase(purge ? "purging" : "uninstalling");
     setOutcome(null);
+    setTagOffer(null);
     try {
       const res: CallResult<UninstallReport> = await callMain(() =>
         window.maestro.install.uninstall({ purge, deleteMaestroTasks }, viewedRoot ?? undefined)
@@ -935,7 +1054,19 @@ function InstallPage() {
 
           {status?.installed && viewedRoot && <ChannelsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
-          {status?.installed && viewedRoot && <ProjectTagsCard key={viewedRoot} viewedRoot={viewedRoot} />}
+          {tagOffer && tagOffer.length > 0 && (
+            <UncatalogedTagsCard
+              tags={tagOffer}
+              onDone={(accepted) => {
+                setTagOffer(null);
+                if (accepted.length > 0) setTagsRefreshKey((k) => k + 1);
+              }}
+            />
+          )}
+
+          {status?.installed && viewedRoot && (
+            <ProjectTagsCard key={`${viewedRoot}-${tagsRefreshKey}`} viewedRoot={viewedRoot} />
+          )}
 
           {status?.installed && viewedRoot && <GatesCard key={viewedRoot} viewedRoot={viewedRoot} />}
 

@@ -27,11 +27,12 @@ describe("readAllAgentProjectTags", () => {
     fs.rmSync(dir, { recursive: true, force: true });
   });
 
-  it("seeds the seven bundled agents on first read against a fresh db path", () => {
+  it("seeds the eight bundled agents on first read against a fresh db path", () => {
     expect(readAllAgentProjectTags(dbPath)).toEqual({
       backend: "backend",
       frontend: "frontend",
       mobile: "mobile",
+      infra: "infra",
       refactor: "global",
       reviewer: "global",
       scribe: "global",
@@ -187,6 +188,7 @@ describe("project scoping (030)", () => {
       backend: "backend",
       frontend: "frontend",
       mobile: "mobile",
+      infra: "infra",
       refactor: "global",
       reviewer: "global",
       scribe: "global",

@@ -334,6 +334,49 @@ describe("purge", () => {
     expect(fs.readFileSync(path.join(root, ".gitignore"), "utf8")).toContain("maestro_session.log.jsonl");
   });
 
+  it("reports the materialized reports and handoffs it left, in the plan and in the result (`059`)", async () => {
+    const root = await installed();
+
+    const plan = uninstallPlan(root, PLUGIN_ROOT);
+    expect(plan.materializedReports.dir).toBe(".claude/reports");
+    expect(plan.materializedReports.files).toEqual(expect.arrayContaining(["backend.md", "scribe.md", "test.md"]));
+    expect(plan.materializedHandoffs.dir).toBe(".claude/handoffs");
+    expect(plan.materializedHandoffs.files.length).toBeGreaterThan(0);
+
+    const report = await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
+    expect(report.materializedReports.files).toEqual(
+      expect.arrayContaining(["backend.md", "scribe.md", "test.md"])
+    );
+    expect(report.materializedHandoffs.files.length).toBeGreaterThan(0);
+    // Reported, never deleted — purgeFiles never lists a report or a handoff file.
+    for (const f of [...plan.purgeFiles]) {
+      expect(f.startsWith(".claude/reports/")).toBe(false);
+      expect(f.startsWith(".claude/handoffs/")).toBe(false);
+    }
+  });
+
+  it("a purge followed by a reinstall adopts the surviving files, and a later global advance refreshes them", async () => {
+    const root = await installed();
+    await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
+    // The purge kept the materialized files; maestro.json is gone, so their tracking is gone too.
+    expect(fs.existsSync(path.join(root, ".claude", "reports", "backend.md"))).toBe(true);
+    expect(fs.existsSync(maestroJsonPath(root))).toBe(false);
+
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    expect(report.reportsSync.adopted).toContain("backend");
+    expect(report.reportsSync.materialized).not.toContain("backend");
+
+    const cfg = readConfig(root)!;
+    expect(cfg.reports!.backend.syncedFrom!.version).toBe(1);
+
+    // Tracked again — a later advance of the global default refreshes it rather than skipping it.
+    const { writeAgentReportDefault } = await import("../../src/core/report-defaults.js");
+    writeAgentReportDefault("backend", "a newer global body", REPORTS_DB);
+    const second = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    expect(second.reportsSync.refreshed).toContain("backend");
+    expect(fs.readFileSync(path.join(root, ".claude", "reports", "backend.md"), "utf8")).toBe("a newer global body");
+  });
+
   it("does not orphan scripts an older release installed", async () => {
     const root = await installed();
     // A file the current manifest doesn't know about, from a release that shipped it.

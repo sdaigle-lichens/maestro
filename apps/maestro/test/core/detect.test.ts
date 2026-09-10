@@ -235,6 +235,82 @@ describe("evidence", () => {
   });
 });
 
+describe("infrastructure", () => {
+  it("detects an infra-only repo from a directory named for it", () => {
+    const root = repo({ "terraform/main.tf": 'resource "aws_s3_bucket" "x" {}\n' });
+    const result = detectImplAgents(root);
+    expect(result.implAgents).toEqual(["infra"]);
+    expect(result.fallback).toBe(false);
+  });
+
+  it("reaches a Terraform definition one level down in the conventional subdirectory", () => {
+    // The directory itself is never a declared workspace member — this is exactly the file
+    // detection would otherwise never open.
+    const root = repo({ "terraform/main.tf": 'resource "aws_s3_bucket" "x" {}\n' });
+    const text = evidenceText(root);
+    expect(text).toContain("`main.tf`");
+    expect(text).toContain("terraform/");
+  });
+
+  it("detects root-level Terraform files with no infra-named directory at all", () => {
+    const root = repo({ "main.tf": 'resource "aws_s3_bucket" "x" {}\n' });
+    expect(detectImplAgents(root).implAgents).toEqual(["infra"]);
+  });
+
+  const manifests: Array<[string, Record<string, string>]> = [
+    ["Pulumi", { "Pulumi.yaml": "name: infra\nruntime: nodejs\n" }],
+    ["CDK", { "cdk.json": "{}" }],
+    ["Serverless", { "serverless.yml": "service: api\n" }],
+    ["Helm", { "Chart.yaml": "apiVersion: v2\nname: chart\n" }],
+    ["Ansible", { "ansible.cfg": "[defaults]\n" }],
+    ["infrastructure directory name", { "infrastructure/README.md": "# infra\n" }],
+    ["iac directory name", { "iac/README.md": "# infra\n" }],
+    ["infra directory name", { "infra/README.md": "# infra\n" }],
+  ];
+
+  for (const [tool, files] of manifests) {
+    it(`detects ${tool} as infrastructure`, () => {
+      const result = detectImplAgents(repo(files));
+      expect(result.implAgents).toEqual(["infra"]);
+      expect(result.fallback).toBe(false);
+    });
+  }
+
+  it("suppresses every application category outright when both are present", () => {
+    const root = repo({
+      "package.json": pkg({ express: "^4", "react-dom": "^19" }),
+      "terraform/main.tf": 'resource "aws_s3_bucket" "x" {}\n',
+    });
+    const result = detectImplAgents(root);
+    expect(result.implAgents).toEqual(["infra"]);
+    expect(result.fallback).toBe(false);
+  });
+
+  it("names the application signals it set aside instead of dropping them", () => {
+    // A Python repo that detects as infrastructure has to show that the Python was noticed and
+    // overruled, not missed.
+    const root = repo({
+      "pyproject.toml": "[project]\nname = 'infra-tool'\n",
+      "terraform/main.tf": 'resource "aws_s3_bucket" "x" {}\n',
+    });
+    const text = evidenceText(root);
+    expect(text).toContain("`pyproject.toml`");
+    expect(text).toMatch(/backend/);
+    expect(text).toMatch(/set aside/i);
+    expect(text).toContain("`main.tf`");
+  });
+
+  it("keeps naming infra markers first, ahead of what it suppressed", () => {
+    const root = repo({
+      "package.json": pkg({ express: "^4" }),
+      "terraform/main.tf": 'resource "aws_s3_bucket" "x" {}\n',
+    });
+    const { evidence } = detectImplAgents(root);
+    expect(evidence[0]).toContain("→ infra");
+    expect(evidence.some((line) => /set aside/i.test(line))).toBe(true);
+  });
+});
+
 describe("cost", () => {
   it("is bounded by the number of packages, not the number of files", () => {
     // 12 packages inside a tree of ~3,000 files. A detector that walked the repo would read every

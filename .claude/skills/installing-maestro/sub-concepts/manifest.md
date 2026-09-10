@@ -61,7 +61,7 @@ from ~37 to 17 (19 since `035`, 20 since `046`), and adding a handoff pair no lo
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
 by the **harness** rather than by a hook or by the model — the orchestrator's Step 1 names it in a
-`` !`command` `` line, and Claude Code substitutes its stdout into the skill body before the model
+the `!`-prefixed command-injection syntax line, and Claude Code substitutes its stdout into the skill body before the model
 reads it. Two manifest consequences: `shippedRuntimeId` moved again, so every installed project
 reported stale once and re-copied; and a project **missing** it does not degrade but loses
 `/maestro` outright (`node` on an absent file exits 1, and a non-zero exit aborts the invocation),
@@ -160,6 +160,24 @@ config. The app's version additionally intersects detected impl agents with the 
 catalog and derives the skill map from the global tag store; the terminal path takes those as
 `--impl-agents`, `--skill-map` and `--project-tags` flags, which its skill fills in from a repo
 analysis. **All three flags only affect a fresh seed.**
+
+**`--project-tags` is no longer freely-picked (`055`).** The `maestro-install` skill's Step 2
+computes which of step 1's detected `implAgents` are already catalog entries and pre-selects
+exactly those — the question only has to be answered to *remove* one, not to re-derive the set from
+scratch — and, when a detected category has no matching catalog entry at all, offers to add it via
+`addProjectTag` (a new export off `project-tags.ts`, alongside the pre-existing `readAllProjectTags`
+read) before assembling the flag. `maestro-install.js` itself still only reads and intersects the
+catalog — unchanged. **The app's own `installRuntime()` path closes the equivalent gap differently**,
+because it has no interactive skill in front of it to ask mid-install: the seed reports both
+`projectTags` (recorded) and `uncatalogedProjectTags` (detected but not in the catalog) on
+`InstallReport.configSeeded`, instead of silently dropping the uncataloged ones. Consent happens
+*after* the seed, through a dedicated IPC round trip, `install:accept-uncataloged-project-tag`
+(`main/ipc.ts` / `preload/index.ts` / `shared/ipc.ts`), which a renderer `UncatalogedTagsCard`
+(`renderer/routes/maestro.tsx`) offers once an install reports uncataloged categories. Accepting
+does two writes — adds the tag to the machine-wide catalog **and** unions it into the project's
+`project_tags` — through `applyProjectTagsSet`, a helper factored out of the existing
+`project:tags:set` handler so both call sites share one writer. Declining or not answering leaves
+`project_tags` exactly as seeded. Detection still never reads the catalog either way.
 
 `runtimeVersion` is stamped **last**, after the files it describes are current on disk.
 

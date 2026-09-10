@@ -53,6 +53,7 @@ var SEED_AGENT_PROJECT_TAGS = {
   backend: "backend",
   frontend: "frontend",
   mobile: "mobile",
+  infra: "infra",
   refactor: "global",
   reviewer: "global",
   scribe: "global",

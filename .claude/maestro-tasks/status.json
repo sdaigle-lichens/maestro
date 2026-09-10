@@ -257,33 +257,60 @@
     ]
   },
   "050-add-infra-as-an-eighth-bundled-agent.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "051-detect-an-infrastructure-repository-and-say-what-it-suppressed.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "050-add-infra-as-an-eighth-bundled-agent.md"
     ]
   },
   "052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "051-detect-an-infrastructure-repository-and-say-what-it-suppressed.md"
     ]
   },
   "053-ship-it-the-terminal-install-path-produces-the-same-graph.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
-      "052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md"
+      "052-an-infrastructure-chain-seeds-a-simpler-starter-graph.md",
+      "058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md"
     ]
   },
   "055-the-install-s-project-tags-question-suggests-what-detection-found.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "056-install-discovery-sees-every-skills-directory-in-the-tree.md": {
-    "status": "ready",
+    "status": "done",
+    "blockedBy": []
+  },
+  "057-let-a-rule-scope-to-a-directory-without-moving-its-file.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "058-the-desktop-app-s-install-asks-about-an-uncataloged-tag-too.md": {
+    "status": "done",
+    "blockedBy": [
+      "061-a-skill-outside-the-root-claude-skills-is-reachable-by-path.md"
+    ]
+  },
+  "059-a-purge-leaves-materialized-files-legible-not-frozen.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "060-the-terminal-uninstall-stops-hand-mirroring-the-install-manifest.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "061-a-skill-outside-the-root-claude-skills-is-reachable-by-path.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "062-live-refresh-the-maestro-tasks-screen-on-status-change.md": {
+    "status": "done",
     "blockedBy": []
   }
 }

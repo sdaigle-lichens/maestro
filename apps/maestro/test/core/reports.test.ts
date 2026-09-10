@@ -6,7 +6,7 @@ import os from "node:os";
 import path from "node:path";
 
 import { getResolvedReport, saveProjectReportOverride } from "../../src/core/reports.js";
-import { readAgentReportDefault } from "../../src/core/report-defaults.js";
+import { readAgentReportDefault, priorReportSeeds, writeAgentReportDefault } from "../../src/core/report-defaults.js";
 import { isValidReportId } from "../../src/core/report-resolution.js";
 import { syncProjectReports } from "../../src/core/report-sync.js";
 import { defaultish } from "./fixtures/configs.js";
@@ -79,6 +79,74 @@ describe("getResolvedReport / saveProjectReportOverride", () => {
       source: "project",
       content: "the project's own words",
     });
+  });
+});
+
+// `059`: a `--purge` deletes maestro.json — and with it every `reports` tracking entry — but keeps
+// `.claude/reports/`. A reinstall's sync must not leave those files frozen forever.
+describe("syncProjectReports — adopting a file a purge left behind", () => {
+  let dir: string;
+  let dbPath: string;
+  let projectRoot: string;
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-reports-adopt-"));
+    dbPath = path.join(dir, "reports.sqlite");
+    projectRoot = path.join(dir, "project");
+    fs.mkdirSync(projectRoot, { recursive: true });
+  });
+
+  afterEach(() => {
+    fs.rmSync(dir, { recursive: true, force: true });
+  });
+
+  const filePath = (id: string) => path.join(projectRoot, ".claude", "reports", `${id}.md`);
+
+  it("adopts an untracked file whose bytes are the current global default", () => {
+    writeConfig(projectRoot, defaultish);
+    syncProjectReports(projectRoot, dbPath);
+    // Simulate a purge: the config's tracking is gone, but the materialized file survives.
+    writeConfig(projectRoot, { ...readConfig(projectRoot)!, reports: {} });
+
+    const summary = syncProjectReports(projectRoot, dbPath);
+    expect(summary.adopted).toContain("backend");
+    expect(summary.materialized).not.toContain("backend");
+    expect(readConfig(projectRoot)!.reports!.backend.syncedFrom!.version).toBe(1);
+
+    // Tracked again, so the NEXT advance refreshes it rather than skipping it forever.
+    writeAgentReportDefault("backend", "a newer global body", dbPath);
+    expect(syncProjectReports(projectRoot, dbPath).refreshed).toContain("backend");
+    expect(fs.readFileSync(filePath("backend"), "utf8")).toBe("a newer global body");
+  });
+
+  it("adopts an untracked file that matches an OLDER known version, and brings it to current in the same pass", () => {
+    // No config tracking at all — the bytes on disk are a body this agent has genuinely been
+    // seeded with before, per `refreshSupersededSeeds`'s own history.
+    const olderBody = priorReportSeeds("backend")[0];
+    expect(olderBody).toBeTruthy();
+    fs.mkdirSync(path.dirname(filePath("backend")), { recursive: true });
+    fs.writeFileSync(filePath("backend"), olderBody);
+    writeConfig(projectRoot, defaultish);
+
+    const summary = syncProjectReports(projectRoot, dbPath);
+    expect(summary.adopted).toContain("backend");
+    // Comparing against the CURRENT version only would leave this frozen — this is the case
+    // "any known version" exists to fix: the file is brought all the way to current, not just
+    // marked tracked at the old body.
+    const global = readAgentReportDefault("backend", dbPath)!;
+    expect(fs.readFileSync(filePath("backend"), "utf8")).toBe(global.content);
+  });
+
+  it("a hand-edited file that survives a purge is not adopted, and stays untouched", () => {
+    fs.mkdirSync(path.dirname(filePath("backend")), { recursive: true });
+    fs.writeFileSync(filePath("backend"), "content nothing recorded ever had\n");
+    writeConfig(projectRoot, defaultish);
+
+    const summary = syncProjectReports(projectRoot, dbPath);
+    expect(summary.adopted).not.toContain("backend");
+    expect(summary.unchanged).toContain("backend");
+    expect(fs.readFileSync(filePath("backend"), "utf8")).toBe("content nothing recorded ever had\n");
+    expect(readConfig(projectRoot)!.reports?.backend).toBeUndefined();
   });
 });
 

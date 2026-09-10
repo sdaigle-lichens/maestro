@@ -734,7 +734,11 @@ describe("first-install config seeding (project tags)", () => {
     fs.writeFileSync(path.join(root, "package.json"), JSON.stringify({ dependencies: { express: "^4" } }));
 
     const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
-    expect(report.configSeeded).toEqual({ implAgents: ["backend"], projectTags: ["backend"] });
+    expect(report.configSeeded).toEqual({
+      implAgents: ["backend"],
+      projectTags: ["backend"],
+      uncatalogedProjectTags: [],
+    });
 
     const cfg = readConfig(root)!;
     expect(cfg.agents_available).toContain("backend");
@@ -760,7 +764,11 @@ describe("first-install config seeding (project tags)", () => {
     removeProjectTag("mobile", narrowedCatalogDb);
 
     const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, narrowedCatalogDb, HANDOFFS_DB);
-    expect(report.configSeeded).toEqual({ implAgents: ["mobile"], projectTags: [] });
+    expect(report.configSeeded).toEqual({
+      implAgents: ["mobile"],
+      projectTags: [],
+      uncatalogedProjectTags: ["mobile"],
+    });
     expect(readConfig(root)!.project_tags).toEqual([]);
   });
 });

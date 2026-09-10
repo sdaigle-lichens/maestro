@@ -40,6 +40,7 @@ function TreeRow({
 }: TreeRowProps) {
   const [pickerOpen, setPickerOpen] = useState(false);
   const [pickerValue, setPickerValue] = useState("");
+  const [pickerScopeOnly, setPickerScopeOnly] = useState(false);
 
   // Assignments for this exact path
   const isRoot = dirPath === "";
@@ -54,13 +55,19 @@ function TreeRow({
 
   const handleAdd = () => {
     if (!pickerValue) return;
+    const placement = pickerScopeOnly ? "scope-only" : undefined;
     if (isRoot) {
-      onAssign({ id: pickerValue, scope: "project" });
+      onAssign({ id: pickerValue, scope: "project", placement });
     } else {
-      onAssign({ id: pickerValue, paths: [`${dirPath}/**`] });
+      onAssign({ id: pickerValue, paths: [`${dirPath}/**`], placement });
     }
     setPickerValue("");
+    setPickerScopeOnly(false);
     setPickerOpen(false);
+  };
+
+  const toggleScopeOnly = (a: MaestroRuleV3) => {
+    onAssign({ ...a, placement: a.placement === "scope-only" ? undefined : "scope-only" });
   };
 
   return (
@@ -78,11 +85,20 @@ function TreeRow({
       <div className="flex flex-wrap gap-1 flex-1 min-w-0">
         {pathAssignments.map((a) => {
           const isVibe = (a.source ?? ruleSource[a.id]) === "vibe-rules";
+          const isScopeOnly = a.placement === "scope-only";
+          const moveTitle = isVibe
+            ? "Installed via vibe-rules on save"
+            : "Project rule file moved here on save";
+          const scopeOnlyTitle = isVibe
+            ? "Scoped here without installing — installs at the project root instead on save"
+            : "Scoped here without moving the file — it stays where it already is on save";
           return (
             <span
               key={a.id}
-              title={isVibe ? "Installed via vibe-rules on save" : "Project rule file moved here on save"}
+              title={isScopeOnly ? scopeOnlyTitle : moveTitle}
               className={`flex items-center gap-1 px-2 py-0.5 rounded-full border text-[11px] font-mono ${
+                isScopeOnly ? "border-dashed" : ""
+              } ${
                 isVibe
                   ? "bg-amber-100 border-amber-300 text-amber-700"
                   : "bg-(--primary-dim) border-primary/30 text-primary"
@@ -90,6 +106,15 @@ function TreeRow({
             >
               {isVibe && <span className="text-[8px] uppercase tracking-wide opacity-70">vibe</span>}
               {a.id}
+              {isScopeOnly && <span className="text-[8px] uppercase tracking-wide opacity-70">scoped</span>}
+              <button
+                type="button"
+                onClick={() => toggleScopeOnly(a)}
+                className="opacity-60 hover:opacity-100 cursor-pointer focus:outline-none"
+                title={isScopeOnly ? "Switch to moving the file here on save" : "Switch to scoping without moving the file"}
+              >
+                {isScopeOnly ? "📌" : "⇄"}
+              </button>
               <button
                 type="button"
                 onClick={() => onUnassign(a.id)}
@@ -124,6 +149,17 @@ function TreeRow({
                   </option>
                 ))}
               </select>
+              <label
+                className="flex items-center gap-1 text-[11px] text-(--ink-2) cursor-pointer select-none"
+                title="Assign the paths scope without moving or installing the file at this directory"
+              >
+                <input
+                  type="checkbox"
+                  checked={pickerScopeOnly}
+                  onChange={(e) => setPickerScopeOnly(e.target.checked)}
+                />
+                scope only
+              </label>
               <button
                 type="button"
                 onClick={handleAdd}
@@ -134,7 +170,10 @@ function TreeRow({
               </button>
               <button
                 type="button"
-                onClick={() => setPickerOpen(false)}
+                onClick={() => {
+                  setPickerScopeOnly(false);
+                  setPickerOpen(false);
+                }}
                 className="px-1.5 py-0.5 text-[11px] bg-(--bg-elev) border border-(--line) rounded cursor-pointer text-(--ink-2)"
               >
                 ×

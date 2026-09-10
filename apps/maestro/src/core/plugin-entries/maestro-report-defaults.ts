@@ -11,5 +11,6 @@
 export {
   readAgentReportDefault,
   readAllAgentReportDefaults,
+  priorReportSeeds,
   DEFAULT_REPORT_DEFAULTS_DB_PATH,
 } from "../report-defaults.js";

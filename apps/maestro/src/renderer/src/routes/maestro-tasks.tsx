@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { ListChecks, Copy, Check, CircleCheck, CircleDot, CircleDashed, CheckCheck, Terminal } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -60,6 +60,28 @@ function MaestroTasksPage() {
    */
   const [preview, setPreview] = useState<{ preview: ClaudePreview; title: string } | null>(null);
   const [previewing, setPreviewing] = useState(false);
+
+  /**
+   * Live updates over the on-disk task queue, mirroring how `SessionLogProvider` consumes
+   * `window.maestro.log.subscribe`. Unlike the session log this is subscribed here rather than
+   * from a root-level provider — `/maestro-tasks` is the only screen that needs it, so a single
+   * subscribe-on-mount / unsubscribe-on-unmount pair is enough to satisfy "no polling loop keeps
+   * running when unmounted" without paying for an app-wide subscription no other route reads.
+   *
+   * `loaderData.tasks` seeds the first paint; `onInit` (fired right after subscribing, main is
+   * per-project so a project switch's retarget pushes a fresh `onInit` for the new project) and
+   * `onUpdate` (fired on every detected change) become the source of truth from then on — same
+   * relationship the session log has between its loader-less empty state and the provider's init
+   * push. Because main retargets the poller on project switch and re-emits `init`, there is
+   * nothing project-specific to reset here: the next `onInit` simply replaces `tasks` outright.
+   */
+  useEffect(() => {
+    const unsubscribe = window.maestro.tasks.subscribe({
+      onInit: (next) => setTasks(next),
+      onUpdate: (next) => setTasks(next),
+    });
+    return unsubscribe;
+  }, []);
 
   const openCount = useMemo(() => tasks.filter(isOpen).length, [tasks]);
   const closedCount = tasks.length - openCount;

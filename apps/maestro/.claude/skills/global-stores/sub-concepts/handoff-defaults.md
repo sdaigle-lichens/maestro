@@ -7,14 +7,15 @@ deliberately not the same shape.
 
 **Since `036` a body is what the sender writes to a channel file, not a JSON field it returns.**
 The stored content itself is unaffected — still the protocol text resolved by `resolveHandoff()` —
-but the 23 `SEED_HANDOFFS` bodies were rewritten to drop the `{"handoff_details": {...}}` wrapper in
-favour of the flat shape written to `.claude/channels/<receiver>/<sender>.1.md`. Every rewritten
-body's previous text is in `PRIOR_SEEDS`, per the rule below.
+but the (then-)23 `SEED_HANDOFFS` bodies were rewritten to drop the `{"handoff_details": {...}}`
+wrapper in favour of the flat shape written to `.claude/channels/<receiver>/<sender>.1.md`. Every
+rewritten body's previous text is in `PRIOR_SEEDS`, per the rule below.
 
 **One table, not two.** `report-defaults.ts` routes agent → `report_id` → content so a future UI
 could point two agents at one shared body; its own header admits nothing creates that sharing.
-Handoffs have 23 keys to reports' 5, so the hop would buy an id-sharing nobody asked for at the
-cost of one more join. `handoffs(handoff_id PRIMARY KEY, content, version)` — and `handoff_id` is
+Handoffs have 24 keys (`050` added `infra/reviewer`, the eighth bundled agent's only wired route)
+to reports' 6, so the hop would buy an id-sharing nobody asked for at the cost of one more join.
+`handoffs(handoff_id PRIMARY KEY, content, version)` — and `handoff_id` is
 `"<sender>/<receiver>"`, **bare** agent names on both sides, which maps straight onto the project
 file's `.claude/handoffs/<sender>/<receiver>.md` path.
 
@@ -49,7 +50,16 @@ written to, so on any machine that has opened the db, editing `SEED_HANDOFFS` do
 body is in the source and no agent ever sees it. `refreshSupersededSeeds` closes that by moving a
 row still carrying a *previous* seed body forward while leaving a hand-edited row alone; both run on
 every `openDb()`. It is empty today (no seed has been revised yet) and exported anyway, so the
-mechanism is testable before the first edit — `report-defaults.ts` keeps its equivalent private.
+mechanism is testable before the first edit — `report-defaults.ts` used to keep its equivalent
+private until `059` needed the same list for a second reason (see below).
+
+**Re-exported as `PRIOR_HANDOFF_SEEDS` from `plugin-entries/maestro-session.ts` and reused by
+`059`'s `adopt` verdict.** `handoff-sync.ts` and the terminal path both build a
+`matchesKnownVersion` set from the current global content plus `PRIOR_HANDOFF_SEEDS[id]`, so an
+untracked file left behind by a `--purge` (which never deletes `.claude/handoffs/`) is recognised as
+the project's own old copy of the template rather than frozen as an unrelated file forever. See
+`agent-fork-sync`'s shared-decision sub-concept for the verdict itself, and `report-defaults.md` for
+`priorReportSeeds`, its new equivalent on the reports side.
 
 **`deleteHandoffDefault` re-seeds when the delete empties the table.** "Delete" means "stop
 overriding the seed", never "leave this route protocol-less".

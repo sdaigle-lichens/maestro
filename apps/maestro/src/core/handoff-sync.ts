@@ -17,8 +17,9 @@
 //     `.claude/handoffs/`, so it is validated against `isValidHandoffId` BEFORE any `path.join`.
 //
 // Everything else is identical, deliberately: the hash is over the whole file (a handoff template
-// has no frontmatter to normalise out), "the global advanced" is an integer `>`, and the five
-// branches are `decideSync`'s — this is its THIRD caller and it introduces no sixth branch.
+// has no frontmatter to normalise out), "the global advanced" is an integer `>`, and the branches
+// are `decideSync`'s — this is its THIRD caller, and shares `059`'s `adopt` branch (an untracked
+// file whose bytes match a known version of the global default) rather than growing its own.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -26,7 +27,7 @@ import { createHash } from "node:crypto";
 import { readConfig, writeConfig } from "./config.js";
 import { readHandoffDefault, DEFAULT_HANDOFF_DEFAULTS_DB_PATH } from "./handoff-defaults.js";
 import { handoffRoutes, handoffPairs } from "./handoff-routes.js";
-import { isValidHandoffId } from "./handoff-seeds.js";
+import { isValidHandoffId, PRIOR_SEEDS } from "./handoff-seeds.js";
 import { decideSync, type SyncTracking } from "./sync-decision.js";
 import type { MaestroHandoffsSlice } from "./types.js";
 import type { HandoffSyncSummary } from "./contracts.js";
@@ -49,7 +50,13 @@ export function syncProjectHandoffs(
   projectRoot: string,
   dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH
 ): HandoffSyncSummary {
-  const summary: HandoffSyncSummary = { materialized: [], refreshed: [], staleCustomized: [], unchanged: [] };
+  const summary: HandoffSyncSummary = {
+    materialized: [],
+    refreshed: [],
+    adopted: [],
+    staleCustomized: [],
+    unchanged: [],
+  };
   const cfg = readConfig(projectRoot);
   if (!cfg) return summary;
 
@@ -67,23 +74,32 @@ export function syncProjectHandoffs(
 
     const filePath = handoffFilePath(projectRoot, id);
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
+    const localHash = onDisk === null ? null : sha256(onDisk);
 
     // A `handoffs` entry with no `syncedFrom` is a hand-authored override, which
     // `saveProjectHandoffOverride` marks by dropping the field. No entry at all is a different
     // thing: `.claude/handoffs/` predates this slice as an undocumented escape hatch, so a file
-    // sitting there with nothing pointing at it is somebody's own and must survive untouched.
+    // sitting there with nothing pointing at it is somebody's own and must survive untouched —
+    // unless its bytes are themselves the evidence (`matchesKnownVersion` below).
     const tracking: SyncTracking = entry
       ? entry.syncedFrom
         ? { kind: "tracked", hash: entry.syncedFrom.hash }
         : { kind: "detached" }
       : { kind: "untracked" };
 
+    // Known versions of this route's protocol: the CURRENT global body, plus every body this
+    // route has ever been seeded with (`refreshSupersededSeeds`'s own history in
+    // `handoff-defaults.ts`). A pair only ever hand-written through `/templates` has no prior
+    // seeds, so only the current body counts.
+    const knownHashes = global ? [global.content, ...(PRIOR_SEEDS[id] ?? [])].map(sha256) : [];
+
     const verdict = decideSync({
       tracking,
-      localHash: onDisk === null ? null : sha256(onDisk),
+      localHash,
       hasTemplate: global !== null,
       // The global store's version is an integer that only ever goes up, so "advanced" is `>`.
       templateAdvanced: !!global && !!entry?.syncedFrom && global.version > entry.syncedFrom.version,
+      matchesKnownVersion: localHash !== null && knownHashes.includes(localHash),
     });
 
     // Neither of these is a state the user needs told about: one is content they own outright, the
@@ -105,11 +121,13 @@ export function syncProjectHandoffs(
     }
     if (verdict === "detached") continue;
 
-    if (verdict === "materialize" || verdict === "refresh") {
+    if (verdict === "materialize" || verdict === "refresh" || verdict === "adopt") {
+      // `adopt` may already match byte-for-byte — the write is then a no-op on disk, done anyway
+      // so tracking always ends up recorded without a second "did it already match" check.
       fs.mkdirSync(path.dirname(filePath), { recursive: true });
       fs.writeFileSync(filePath, global!.content);
       handoffs[id] = { id, syncedFrom: { version: global!.version, hash: sha256(global!.content) } };
-      summary[verdict === "materialize" ? "materialized" : "refreshed"].push(id);
+      summary[verdict === "materialize" ? "materialized" : verdict === "refresh" ? "refreshed" : "adopted"].push(id);
       changed = true;
       continue;
     }

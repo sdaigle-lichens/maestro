@@ -11,12 +11,12 @@
 // content directly by agent name — is what lets a future global-editing UI point two agents at
 // one shared report id without a schema change; nothing in this slice creates that sharing itself
 // (the migration below seeds one row per agent, deliberately not collapsing the near-identical
-// backend/frontend/mobile shapes into one id — see the migration task's header for why).
+// backend/frontend/mobile/infra shapes into one id — see the migration task's header for why).
 //
 // SEEDED ON FIRST READ, not by a one-off script: `reports` starts empty on a fresh machine, and
-// every read function seeds it (backend/frontend/mobile/scribe/test, version 1) the first time
-// the table is empty. This is what makes a fresh install of the plugin — with no maintainer
-// having run a migration script — still see the same five defaults the bundled agent files used
+// every read function seeds it (backend/frontend/mobile/infra/scribe/test, version 1) the first
+// time the table is empty. This is what makes a fresh install of the plugin — with no maintainer
+// having run a migration script — still see the same six defaults the bundled agent files used
 // to carry inline, before their `## Mandatory Output Format` sections were stripped out.
 //
 // The `/templates` page's Reports tab is the UI that writes here — `writeAgentReportDefault`
@@ -116,8 +116,11 @@ const TEST_REPORT =
   conceptGapsChannelNote("test");
 
 /**
- * The exact bodies stripped from `plugins/maestro/agents/{backend,frontend,mobile,scribe,test}.md`
- * — one row per agent, `report_id` equal to the agent's own name. `refactor`/`reviewer` are
+ * The exact bodies stripped from
+ * `plugins/maestro/agents/{backend,frontend,mobile,infra,scribe,test}.md` — one row per agent,
+ * `report_id` equal to the agent's own name. `infra` never had a report body inline to begin with
+ * (`050` wrote it stripped, the same as the other three implementation agents by this point) and
+ * is seeded here directly rather than "moved" from a prior body. `refactor`/`reviewer` are
  * deliberately absent: they never had a `## Mandatory Output Format` section (their own
  * `## Mandatory Output` sections are a different heading and untouched by this migration), so they
  * get no seed row and resolve to `"none"`, exactly as before.
@@ -126,6 +129,7 @@ const SEED_REPORTS: Record<string, string> = {
   backend: backendLikeReport("backend"),
   frontend: backendLikeReport("frontend"),
   mobile: backendLikeReport("mobile"),
+  infra: backendLikeReport("infra"),
   scribe: SCRIBE_REPORT,
   test: TEST_REPORT,
 };
@@ -321,6 +325,18 @@ function seedIfEmpty(db: DatabaseSync): void {
     db.exec("ROLLBACK");
     throw err;
   }
+}
+
+/**
+ * Every body ever seeded for `agentName`, oldest first — the superseded history `refreshSupersededSeeds`
+ * above checks against, exported so a caller can tell an untracked project file that merely
+ * matches an OLD default from one that matches nothing at all (`059`). Empty for an agent this
+ * module has never seeded (`refactor`, `reviewer`, or any agent whose default was only ever
+ * written by hand through `/templates`) — those have no recorded history, so only the current
+ * content counts as "known" for them.
+ */
+export function priorReportSeeds(agentName: string): string[] {
+  return PRIOR_SEEDS[agentName] ?? [];
 }
 
 /** The global default report for one agent, or null when it has none. */

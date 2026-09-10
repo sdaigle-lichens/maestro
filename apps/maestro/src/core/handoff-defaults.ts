@@ -6,7 +6,7 @@
 //
 // ONE TABLE, not two. `report-defaults.ts` routes agent -> report_id -> content so a future UI
 // could point two agents at one shared body; its own header admits nothing creates that sharing.
-// Handoffs have 23 keys to reports' 5, and eight of the seed bodies are byte-identical today
+// Handoffs have 24 keys to reports' 6, and eight of the seed bodies are byte-identical today
 // purely as a seed artifact (see `handoff-seeds.ts`) — so the hop would buy an id-sharing nobody
 // asked for at the cost of one more join to keep correct. `handoff_id` IS the key, and it is
 // `"<sender>/<receiver>"`, which maps straight onto the project file's path. The store self-seeds,

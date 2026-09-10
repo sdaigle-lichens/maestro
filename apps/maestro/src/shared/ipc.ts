@@ -557,6 +557,11 @@ export const IPC = {
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
+  // Live tail of the on-disk task queue (`.claude/maestro-tasks/`), mirroring `log:subscribe`/
+  // `log:unsubscribe` — one poller per subscribing window, retargeted on a project switch, pushing
+  // over the `tasks:init`/`tasks:update` events below rather than being polled by the renderer.
+  tasksSubscribe: "tasks:subscribe",
+  tasksUnsubscribe: "tasks:unsubscribe",
 
   createOptions: "create:options",
   createScaffold: "create:scaffold",
@@ -568,6 +573,11 @@ export const IPC = {
   installAutoRefresh: "install:auto-refresh",
   installUninstallPlan: "install:uninstall-plan",
   installUninstall: "install:uninstall",
+  // 058: accept one category `install:run`'s `configSeeded.uncatalogedProjectTags` reported —
+  // adds it to the global Project Tags catalog AND records it on the OPEN project, in one round
+  // trip. See `applyProjectTagsSet` in `main/ipc.ts` for the shared write path with
+  // `project:tags:set`. Declining calls nothing; the category stays dropped from `project_tags`.
+  installAcceptUncatalogedProjectTag: "install:accept-uncataloged-project-tag",
 
   // Two channels, deliberately not one. `claude:preview` builds the prompt and cannot spawn;
   // `claude:run` spawns and cannot build. See MaestroApi.claude below.
@@ -646,6 +656,13 @@ export const IPC_EVENTS = {
   logInit: "log:init",
   logEntry: "log:entry",
   logReset: "log:reset",
+  // Pushed by the task-queue poller — see `IPC.tasksSubscribe` above. `tasksInit` is the full
+  // snapshot on subscribe; `tasksUpdate` is the full re-derived list, pushed whenever the queue
+  // changed (a status flip, a task file's content, or a new task file appearing). There is no
+  // per-entry event: unlike the append-only session log there is no meaningful "diff" to emit, and
+  // `listTasks` already re-derives the whole list cheaply.
+  tasksInit: "tasks:init",
+  tasksUpdate: "tasks:update",
   projectChanged: "project:changed",
 } as const;
 
@@ -935,6 +952,13 @@ export interface MaestroApi {
   tasks: {
     list(): Promise<MaestroTask[]>;
     close(filename: string): Promise<MaestroTask[]>;
+    /**
+     * Start a live tail of the on-disk task queue and receive pushes. Mirrors `log.subscribe`'s
+     * shape: `onInit` is the full snapshot at subscribe time, `onUpdate` is the full re-derived
+     * list whenever the queue changes on disk (a status change, or a new task file appearing).
+     * Returns an unsubscribe function.
+     */
+    subscribe(handlers: { onInit(tasks: MaestroTask[]): void; onUpdate(tasks: MaestroTask[]): void }): () => void;
   };
   /**
    * The four create-* forms. Two operations, mirroring the bridge's own split for the same reason:
@@ -995,6 +1019,15 @@ export interface MaestroApi {
      * `uninstall({ purge, deleteMaestroTasks })` call sites keep type-checking untouched.
      */
     uninstall(opts?: { purge?: boolean; deleteMaestroTasks?: boolean }, projectRoot?: string): Promise<UninstallReport>;
+    /**
+     * 058: accept ONE category from `run()`'s `configSeeded.uncatalogedProjectTags` — detection
+     * produced it, but the global catalog had never held it, so the seed dropped it rather than
+     * deciding on the user's behalf. Adds it to the catalog AND records it on the OPEN project's
+     * `project_tags`, in one round trip — accepting means both writes, not one. Rejects when no
+     * project is open. Declining the offer calls nothing; the category stays dropped exactly as a
+     * non-interactive install leaves it.
+     */
+    acceptUncatalogedProjectTag(tag: string): Promise<ProjectTagsData>;
   };
   /**
    * The `claude -p` bridge. Two operations, and the split is the security design.

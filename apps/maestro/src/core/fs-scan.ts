@@ -94,8 +94,9 @@ export function skillsDirIn(dir: string): string | null {
 /**
  * Every `.claude/skills` directory in the tree — the same shape as `ruleSearchDirs`, and for the
  * same reason. In a monorepo a skill lives next to the code it describes (`apps/x/.claude/skills`),
- * so anything that reads only `<root>/.claude/skills` — `discoverSkills` does — is blind to most
- * of them. Callers that want the whole picture walk this instead.
+ * so a reader that only checked `<root>/.claude/skills` would be blind to most of them. Both
+ * `discoverConceptSkills` and `discoverSkills`/`discoverProjectSkillsTree` walk this rather than a
+ * single directory.
  */
 export function skillSearchDirs(root: string): string[] {
   return ruleSearchDirs(root)

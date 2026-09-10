@@ -74,7 +74,7 @@ a concept that was already done.
 
 ## `list` is a runtime contract, not just a maintenance command
 
-Two **published** plugin skills inject its stdout with Claude Code's `` !`command` `` syntax while
+Two **published** plugin skills inject its stdout with Claude Code's `!`-prefixed command-injection syntax while
 the harness expands them, each granting exactly
 `Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)` in `allowed-tools`:
 `use-code-architecture-design-check` (to judge whether a task adds or reshapes a concept) and
