@@ -167,10 +167,17 @@ exactly those — the question only has to be answered to *remove* one, not to r
 scratch — and, when a detected category has no matching catalog entry at all, offers to add it via
 `addProjectTag` (a new export off `project-tags.ts`, alongside the pre-existing `readAllProjectTags`
 read) before assembling the flag. `maestro-install.js` itself still only reads and intersects the
-catalog — unchanged. The app's own `installRuntime()` path has no equivalent prompt: it silently
-intersects `detection.implAgents` against the catalog with no consent step and no way to propose an
-uncataloged category, which is the same silent-drop gap the terminal skill used to have, still open
-on that side.
+catalog — unchanged. **The app's own `installRuntime()` path closes the equivalent gap differently**,
+because it has no interactive skill in front of it to ask mid-install: the seed reports both
+`projectTags` (recorded) and `uncatalogedProjectTags` (detected but not in the catalog) on
+`InstallReport.configSeeded`, instead of silently dropping the uncataloged ones. Consent happens
+*after* the seed, through a dedicated IPC round trip, `install:accept-uncataloged-project-tag`
+(`main/ipc.ts` / `preload/index.ts` / `shared/ipc.ts`), which a renderer `UncatalogedTagsCard`
+(`renderer/routes/maestro.tsx`) offers once an install reports uncataloged categories. Accepting
+does two writes — adds the tag to the machine-wide catalog **and** unions it into the project's
+`project_tags` — through `applyProjectTagsSet`, a helper factored out of the existing
+`project:tags:set` handler so both call sites share one writer. Declining or not answering leaves
+`project_tags` exactly as seeded. Detection still never reads the catalog either way.
 
 `runtimeVersion` is stamped **last**, after the files it describes are current on disk.
 

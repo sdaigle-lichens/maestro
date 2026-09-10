@@ -314,16 +314,37 @@ function buildTestsWorkflow(name, impl, skillCount = () => 0) {
   }
   return placeConditionLabels({ name, nodes, edges }, skillCount);
 }
+function isInfraOnlyChain(impl) {
+  return impl.length === 1 && impl[0] === "infra";
+}
 function seededAgentNames(implAgents) {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
+  if (isInfraOnlyChain(impl)) return Array.from(/* @__PURE__ */ new Set([...impl, "reviewer", "scribe"])).sort();
   return Array.from(/* @__PURE__ */ new Set([...impl, "test", "reviewer", "refactor", "scribe"])).sort();
+}
+function buildInfraWorkflow(impl, skillCount = () => 0) {
+  const infraAgent = impl[0];
+  const column = [infraAgent, "human_review-1", "reviewer", "scribe"];
+  const nodes = columnNodes(column, skillCount);
+  const seq = ["main-session", ...column];
+  const edges = [];
+  for (let i = 0; i < seq.length - 1; i++) edges.push(succ(seq[i], seq[i + 1]));
+  const side = sideTracker(nodes);
+  const c = (from, to, label) => cond(from, to, label, side(from, to));
+  edges.push(
+    c("reviewer", infraAgent, "FAIL: style, data layer, error handling, security, or persistence"),
+    c("human_review-1", infraAgent, "human requested corrections")
+  );
+  return placeConditionLabels({ name: "default", nodes, edges }, skillCount);
 }
 function defaultV3Config(implAgents, skillMap = {}) {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
+  const infraOnly = isInfraOnlyChain(impl);
   const skillsFor = (agent) => Array.from(new Set(skillMap[agent] ?? [])).filter(Boolean);
+  const coreInstances = infraOnly ? CORE_INSTANCES.filter((i) => i.name === "reviewer" || i.name === "scribe") : CORE_INSTANCES;
   const instances = [
     ...impl.map((a) => ({ name: a, agent: a, loaded_skills: [], referenced_skills: skillsFor(a) })),
-    ...CORE_INSTANCES.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) }))
+    ...coreInstances.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) }))
   ];
   const agentsAvailable = seededAgentNames(impl);
   const skillsAvailable = Array.from(
@@ -333,23 +354,28 @@ function defaultV3Config(implAgents, skillMap = {}) {
     ])
   );
   const skillCount = (name) => skillsFor(name).length;
+  const workflows = infraOnly ? [
+    buildInfraWorkflow(impl, skillCount),
+    linearWorkflow("Documentation", ["scribe"], skillCount),
+    linearWorkflow("Review", ["reviewer"], skillCount)
+  ] : [
+    buildWorkflow("default", "default", impl, skillCount),
+    buildWorkflow("tdd", "tdd", impl, skillCount),
+    linearWorkflow(
+      "Refactor",
+      ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+      skillCount
+    ),
+    linearWorkflow("Documentation", ["scribe"], skillCount),
+    linearWorkflow("Review", ["reviewer"], skillCount),
+    buildTestsWorkflow("Tests", impl, skillCount)
+  ];
   return {
     version: 3,
     agents_available: agentsAvailable,
     skills_available: skillsAvailable,
     workflow_instances: instances,
-    workflows: [
-      buildWorkflow("default", "default", impl, skillCount),
-      buildWorkflow("tdd", "tdd", impl, skillCount),
-      linearWorkflow(
-        "Refactor",
-        ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
-        skillCount
-      ),
-      linearWorkflow("Documentation", ["scribe"], skillCount),
-      linearWorkflow("Review", ["reviewer"], skillCount),
-      buildTestsWorkflow("Tests", impl, skillCount)
-    ],
+    workflows,
     rules: [],
     // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
     // well-understood request should not pay for two skill invocations it never asked for.

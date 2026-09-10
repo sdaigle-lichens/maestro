@@ -30,6 +30,15 @@ export type { RepoDetection };
 type ImplAgent = "backend" | "frontend" | "mobile";
 
 /**
+ * Every category detection recognises, application agents plus `infra` — the bundled agent for
+ * declarative infrastructure repos (Terraform, Pulumi, CDK, Serverless, Helm, Ansible). `infra`
+ * carries no `DEPENDENCY_SIGNALS` and never joins `AGENT_ORDER`: it is not an application category
+ * competing for a place in the chain, it is the one category exclusive of every other — see the
+ * precedence rule in `detectImplAgents`.
+ */
+type Agent = ImplAgent | "infra";
+
+/**
  * The order agents take in the seeded happy path when a repo matches more than one: server work
  * lands first, then the UI that calls it. Matches what `/maestro-install` produced by hand
  * ("backend,frontend"), so a re-install of a project detected the old way doesn't reorder its chain.
@@ -99,7 +108,7 @@ const DEPENDENCY_SIGNALS: Record<ImplAgent, readonly string[]> = {
  * no `package.json`, and keying only on npm dependencies would fall through to the default and
  * ignore a repo that is unambiguous about what it is.
  */
-const FILE_SIGNALS: ReadonlyArray<{ match: RegExp; agent: ImplAgent }> = [
+const FILE_SIGNALS: ReadonlyArray<{ match: RegExp; agent: Agent }> = [
   // Non-JS language manifests → the code they build is server/CLI work, which is @backend's half.
   { match: /^(pyproject\.toml|requirements\.txt|Pipfile|setup\.py|manage\.py)$/, agent: "backend" },
   { match: /^go\.mod$/, agent: "backend" },
@@ -115,10 +124,28 @@ const FILE_SIGNALS: ReadonlyArray<{ match: RegExp; agent: ImplAgent }> = [
   // Native app scaffolding.
   { match: /^(metro|app)\.config\.[cm]?[jt]s$/, agent: "mobile" },
   { match: /^Podfile$/, agent: "mobile" },
+  // Infrastructure-as-code. A directory named for it is as strong a signal as a manifest — this
+  // matches directory entries too, since FILE_SIGNALS runs against raw directory-entry names
+  // without distinguishing files from directories. The manifests below are each specific to one
+  // tool in this space, so none of them is a guess the way a bare filename sometimes is.
+  { match: /^(terraform|infrastructure|iac|infra)$/, agent: "infra" },
+  { match: /\.tf$/, agent: "infra" },
+  { match: /\.tfvars$/, agent: "infra" },
+  { match: /^Pulumi\.ya?ml$/, agent: "infra" }, // Pulumi
+  { match: /^cdk\.json$/, agent: "infra" }, // AWS CDK
+  { match: /^serverless\.(ya?ml|json|[cm]?[jt]s)$/, agent: "infra" }, // Serverless Framework
+  { match: /^Chart\.ya?ml$/, agent: "infra" }, // Helm
+  { match: /^ansible\.cfg$/, agent: "infra" }, // Ansible
 ];
 
-/** Directory globs searched for packages even when nothing declares a workspace. */
-const CONVENTIONAL_GLOBS = ["apps/*", "packages/*", "services/*"];
+/**
+ * Directory globs searched for packages even when nothing declares a workspace. The bare
+ * (non-glob) infra names are here for the same reason `apps/*`/`packages/*` are: an infra repo
+ * keeps its definitions in a directory like this one instead of declaring it a workspace member,
+ * so without this it is never opened — its directory NAME still gets noticed from the root's own
+ * listing (`FILE_SIGNALS` above), but a `main.tf` living inside it would stay invisible.
+ */
+const CONVENTIONAL_GLOBS = ["apps/*", "packages/*", "services/*", "terraform", "infrastructure", "iac", "infra"];
 
 /**
  * How many directories are inspected, at most. A monorepo with hundreds of packages is detected
@@ -133,7 +160,7 @@ const MAX_MARKERS_PER_LINE = 4;
 
 /** One thing that matched: a dependency name or a filename, and where it was found. */
 interface Hit {
-  agent: ImplAgent;
+  agent: Agent;
   marker: string;
   /** Project-relative directory the marker was found in; "" is the repo root. */
   dir: string;
@@ -291,34 +318,68 @@ function inDirPhrase(dir: string): string {
   return dir === "" ? "the repo root" : `${dir}/`;
 }
 
-/** "`react-dom`, `next` in package.json → frontend", one line per file that matched. */
-function toEvidence(hits: Hit[]): string[] {
-  const groups = new Map<string, { agent: ImplAgent; dir: string; file: string; markers: string[] }>();
+interface HitGroup {
+  agent: Agent;
+  dir: string;
+  file: string;
+  markers: string[];
+}
+
+/** One group per (dir, file, agent), markers deduplicated — the unit an evidence line reports on. */
+function groupHits(hits: Hit[]): HitGroup[] {
+  const groups = new Map<string, HitGroup>();
   for (const hit of hits) {
-    const key = `${hit.dir} ${hit.file} ${hit.agent}`;
+    const key = `${hit.dir} ${hit.file} ${hit.agent}`;
     const group = groups.get(key) ?? { agent: hit.agent, dir: hit.dir, file: hit.file, markers: [] };
     if (!group.markers.includes(hit.marker)) group.markers.push(hit.marker);
     groups.set(key, group);
   }
+  return [...groups.values()];
+}
 
-  const lines: string[] = [];
-  for (const group of groups.values()) {
-    const shown = group.markers.slice(0, MAX_MARKERS_PER_LINE).map((m) => `\`${m}\``);
-    const extra = group.markers.length - shown.length;
-    const markers = shown.join(", ") + (extra > 0 ? ` and ${extra} more` : "");
-    lines.push(
-      group.file === "package.json"
-        ? `${markers} in ${path.posix.join(group.dir, "package.json")} → ${group.agent}`
-        : `${markers} in ${inDirPhrase(group.dir)} → ${group.agent}`
-    );
-  }
+/** "`react-dom`, `next` and 2 more" — the markers named on one evidence line, capped for legibility. */
+function markerList(markers: string[]): string {
+  const shown = markers.slice(0, MAX_MARKERS_PER_LINE).map((m) => `\`${m}\``);
+  const extra = markers.length - shown.length;
+  return shown.join(", ") + (extra > 0 ? ` and ${extra} more` : "");
+}
 
+/** Where a group's markers were found, phrased for a sentence. */
+function groupLocation(group: HitGroup): string {
+  return group.file === "package.json" ? path.posix.join(group.dir, "package.json") : inDirPhrase(group.dir);
+}
+
+/** Evidence is for reading, not for auditing: cap the lines and say how many more there were. */
+function capLines(lines: string[], noun: string): string[] {
   if (lines.length <= MAX_EVIDENCE_LINES) return lines;
   const kept = lines.slice(0, MAX_EVIDENCE_LINES);
-  kept.push(
-    `…and ${lines.length - MAX_EVIDENCE_LINES} more matching file${lines.length - MAX_EVIDENCE_LINES === 1 ? "" : "s"}`
-  );
+  const extra = lines.length - MAX_EVIDENCE_LINES;
+  kept.push(`…and ${extra} more ${noun}${extra === 1 ? "" : "s"}`);
   return kept;
+}
+
+/** "`react-dom`, `next` in package.json → frontend", one line per file that matched. */
+function toEvidence(hits: Hit[]): string[] {
+  const lines = groupHits(hits).map(
+    (group) => `${markerList(group.markers)} in ${groupLocation(group)} → ${group.agent}`
+  );
+  return capLines(lines, "matching file");
+}
+
+/**
+ * When infrastructure signals are present they suppress every application category outright (see
+ * `detectImplAgents`), so this is the one place a suppressed category's hits are named rather than
+ * dropped from the evidence silently. This is what lets a user looking at a Python repo that
+ * detected as infrastructure see that its Python was noticed and overruled, not missed — the
+ * canvas's correction chips are one click from fixing an overrule the user disagrees with.
+ */
+function suppressedEvidence(appHits: Hit[]): string[] {
+  if (appHits.length === 0) return [];
+  const lines = groupHits(appHits).map(
+    (group) =>
+      `${markerList(group.markers)} in ${groupLocation(group)} would suggest ${group.agent} — set aside: infrastructure takes precedence.`
+  );
+  return capLines(lines, "suppressed application signal");
 }
 
 /**
@@ -327,6 +388,14 @@ function toEvidence(hits: Hit[]): string[] {
  * Never returns an empty chain: an unrecognised repo falls back to `["backend"]` with `fallback:
  * true` and evidence saying so, because a workflow whose implementation step is missing is worse
  * than one whose implementation step is a guess the user can change.
+ *
+ * Infrastructure is the one exception to "the chain is every category that matched": when any
+ * infra signal is present it suppresses every application category outright rather than sharing
+ * the chain with one. A repository whose infrastructure is declarative is almost never also
+ * providing the application it provisions — the Python or JavaScript alongside it is nearly
+ * always the tool's own scripting rather than the product — so a chain that leads with an
+ * application agent would be wrong about what the repository is for. See `suppressedEvidence` for
+ * how the set-aside categories are still surfaced rather than silently dropped.
  */
 export function detectImplAgents(root: string): RepoDetection {
   const rootManifest = readJson(path.join(root, "package.json"));
@@ -341,6 +410,16 @@ export function detectImplAgents(root: string): RepoDetection {
       if (manifest) hits.push(...manifestHits(dir, manifest));
     }
     hits.push(...fileHits(root, dir, names));
+  }
+
+  const infraHits = hits.filter((h) => h.agent === "infra");
+  if (infraHits.length > 0) {
+    const appHits = hits.filter((h) => h.agent !== "infra");
+    return {
+      implAgents: ["infra"],
+      evidence: [...toEvidence(infraHits), ...suppressedEvidence(appHits)],
+      fallback: false,
+    };
   }
 
   const found = AGENT_ORDER.filter((agent) => hits.some((h) => h.agent === agent));

@@ -50,7 +50,7 @@ describe("readAgentReportDefault", () => {
     readAgentReportDefault("backend", dbPath);
     const all2 = readAllAgentReportDefaults(dbPath);
     expect(all2).toEqual(all1);
-    expect(Object.keys(all1).sort()).toEqual(["backend", "frontend", "mobile", "scribe", "test"]);
+    expect(Object.keys(all1).sort()).toEqual(["backend", "frontend", "infra", "mobile", "scribe", "test"]);
   });
 
   it("creates the db's parent directory when it doesn't exist yet", () => {

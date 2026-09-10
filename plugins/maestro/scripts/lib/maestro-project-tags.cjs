@@ -45,7 +45,7 @@ var import_node_os = __toESM(require("node:os"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
 var import_node_sqlite = require("node:sqlite");
 var DEFAULT_PROJECT_TAGS_DB_PATH = import_node_path.default.join(import_node_os.default.homedir(), ".claude", "maestro-project-tags.sqlite");
-var SEED_PROJECT_TAGS = ["backend", "frontend", "mobile"];
+var SEED_PROJECT_TAGS = ["backend", "frontend", "mobile", "infra"];
 function openDb(dbPath) {
   import_node_fs.default.mkdirSync(import_node_path.default.dirname(dbPath), { recursive: true });
   const db = new import_node_sqlite.DatabaseSync(dbPath);

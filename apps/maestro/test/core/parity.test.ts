@@ -246,7 +246,7 @@ describe("handoff bundles (033)", () => {
     ]) {
       expect(Object.keys(session), `maestro-session.cjs no longer exports ${name}`).toContain(name);
     }
-    expect(Object.keys(session.SEED_HANDOFFS)).toHaveLength(23);
+    expect(Object.keys(session.SEED_HANDOFFS)).toHaveLength(24);
     expect(session.SEED_HANDOFFS).toEqual(SEED_HANDOFFS);
   });
 

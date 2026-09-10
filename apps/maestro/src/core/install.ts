@@ -662,11 +662,18 @@ export async function installRuntime(
       skills.map((s) => s.id),
       agentAttrs
     );
+    // Split, never decide: detection is the sole source of evidence for what the repo IS (058) —
+    // the catalog is only ever read here to sort a detected category into "recorded" vs "flag it",
+    // never to influence `detection.implAgents` itself. This function has no user in front of it
+    // and must not choose on their behalf, so an uncataloged category is dropped from the seed
+    // exactly as before and reported on `configSeeded.uncatalogedProjectTags` for whichever caller
+    // has a user to ask — see `contracts.ts`'s `InstallReport.configSeeded` doc.
     const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
     const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
+    const uncatalogedProjectTags = detection.implAgents.filter((t) => !catalog.includes(t));
     const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
     writeConfig(projectRoot, seeded);
-    configSeeded = { implAgents: detection.implAgents, projectTags };
+    configSeeded = { implAgents: detection.implAgents, projectTags, uncatalogedProjectTags };
   }
 
   // Stamp last, after the files it describes are actually current on disk. The seed step above

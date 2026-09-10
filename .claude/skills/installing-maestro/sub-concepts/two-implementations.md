@@ -57,6 +57,36 @@ reports via `priorReportSeeds` from `lib/maestro-report-defaults.cjs`, handoffs 
 - **Runs as two steps by contract**: scaffold, then `maestro-render-orchestrator.cjs`. The skill
   owns that sequencing; the script deliberately does not render.
 
+## A third implementation: the skill's own prose (`053`)
+
+The two rows above are both **code** — a differential test can compare their output byte for byte.
+`maestro-install/SKILL.md`'s step 1 is a third rendering of `detect.ts`'s `detectImplAgents()`, and
+it is **prose**, read and applied by a live session with no test able to run it. It has to reach the
+same verdict as the other two for the same repository, and nothing enforces that but a human (or an
+agent) rereading both sides after a `detect.ts` change.
+
+`052` added an infrastructure category to `detect.ts`: an infra signal (`terraform`, `*.tf`,
+`Pulumi.yaml`, `cdk.json`, …) makes the whole chain collapse to `infra` alone, suppressing every
+application category the same repo would otherwise show — evidence naming what was set aside, not
+dropped. `053` is what caught that step 1's prose still described only the application categories,
+with no precedence rule at all — a session doing the classification by hand would have kept
+`backend,frontend` for a repo `detect.ts` now calls `infra`. The fix reads the same as the code:
+infrastructure is checked **first** and is **exclusive**, and the prose now says explicitly to note
+which application signals were set aside, mirroring `detect.ts`'s own evidence shape.
+
+The seeded-agent list step 1 describes (step 3's "drop any skill already tagged" note, and step 4's
+summary) is chain-dependent for the same reason: `seededAgentNames()` seeds `test`/`refactor`
+alongside the impl agent(s) for every chain except `infra`-only, which gets only `reviewer`/`scribe`
+beside `infra`. The skill's prose has to restate that split rather than assume a fixed list, or a
+skill-tag routed at `test` on an infra-only repo reads as covered when nothing seeded owns it.
+
+**The trap this leaves:** a future `detect.ts` category or a change to `seededAgentNames()` has no
+test that fails when the skill's own step 1 (or step 3/4) goes on describing the old rule — the
+differential test above only runs `maestro-install.js`, never the prose a session reads. Treat a
+`detect.ts` or `seed.ts` change as incomplete until `maestro-install/SKILL.md` has been reread
+against it, the same discipline `plugin-libs-parity` asks for the generated bundles, applied to text
+instead of code.
+
 ## Locating the plugin's files
 
 Only the app has this problem, and it has three answers because it runs from three places:

@@ -160,6 +160,7 @@ var SEED_AGENT_TYPES = {
   backend: "developer",
   frontend: "developer",
   mobile: "developer",
+  infra: "developer",
   refactor: "planner",
   reviewer: "reviewer",
   scribe: "annotator",

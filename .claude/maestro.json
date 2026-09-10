@@ -780,7 +780,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.6.10",
+  "runtimeVersion": "0.7.0",
   "reports": {
     "backend": {
       "id": "backend",
@@ -910,5 +910,6 @@
         "hash": "f0a8b372a8237bde28a7bd89397bfbf156475f1b5bfb836ca027dfc5740ae146"
       }
     }
-  }
+  },
+  "use_maestro_tasks": true
 }

@@ -69,6 +69,7 @@ var SEED_REPORTS = {
   backend: backendLikeReport("backend"),
   frontend: backendLikeReport("frontend"),
   mobile: backendLikeReport("mobile"),
+  infra: backendLikeReport("infra"),
   scribe: SCRIBE_REPORT,
   test: TEST_REPORT
 };

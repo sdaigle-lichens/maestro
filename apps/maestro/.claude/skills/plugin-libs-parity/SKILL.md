@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the eleven plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.7"
-  last-update: 4a94620c64a136a5b12d3df435b0b033a32f17a9
+  version: "1.8"
+  last-update: d4f36f8898f9df1038cd8963788304387785c6f5
 ---
 
 # Core ↔ plugin parity
@@ -41,6 +41,18 @@ that touched `contracts.ts` without re-running `build:plugin-libs`. The rule is 
 just easy to miss because the diff that triggers it never touches `plugin-entries/` at all: **a
 commit that touches `contracts.ts` needs `build:plugin-libs`, whether or not it touches
 `plugin-entries/*.ts` directly.**
+
+**`053` is the same failure again, this time sitting across a task boundary rather than inside one
+commit.** `052` added the `infra`-only seed profile — `isInfraOnlyChain`/`buildInfraWorkflow` and a
+chain-dependent `seededAgentNames()` in `seed.ts`, plus the `infra` category in `detect.ts` and the
+agent/tag/report-default stores six other `plugin-entries/*.ts` modules pull from — and landed all
+of it without re-running the build. Every test stayed green, because the committed
+`lib/maestro-seed.cjs` and six sibling bundles kept exporting the pre-`052` behaviour and nothing
+exercises them against the live source. The only symptom was that the terminal install path
+(`maestro-install.js`, which `require`s these bundles) went on seeding the old six-workflow graph
+for an infrastructure repo while the app's `defaultV3Config` already seeded the new three-workflow
+one — exactly the silent divergence this section warns about, just discovered a task later instead
+of in the same diff. `053` is the fix: rebuild, read the diff, ship it.
 
 ## The export surface is a superset, not an identity
 

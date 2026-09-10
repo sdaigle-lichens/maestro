@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "1.15"
-  last-update: 0e577a39224deb877c089a69f491eaee0fa9b21d
+  version: "1.16"
+  last-update: d4f36f8898f9df1038cd8963788304387785c6f5
 ---
 
 # Installing Maestro
@@ -31,6 +31,11 @@ convention: `test/core/parity.test.ts`'s `STATIC_ASSETS manifest parity` describ
 file added to one and forgotten in the other fails as a named test rather than as a puzzling
 differential diff. Same shape as `task-queue`'s two implementations, and unlike
 `plugin-libs-parity`, **nothing here is generated**: both copies are hand-maintained.
+
+**A third rendering has no test at all (`053`).** `maestro-install/SKILL.md`'s step 1 restates
+`detect.ts`'s classification rules in prose, for a session doing the analysis by hand instead of
+running the deterministic function — it has to reach the same chain for the same repo, and only a
+reread after a `detect.ts` change keeps it that way. See the two-implementations sub-concept.
 
 ## Why the install is project-local
 

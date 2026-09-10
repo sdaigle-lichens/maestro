@@ -133,10 +133,10 @@ describe("handoffRoutes — the ONE walk, shared by the hook and the sync", () =
 });
 
 describe("the global store", () => {
-  it("seeds all 23 shipped pairs on first read against a fresh db path", () => {
+  it("seeds all 24 shipped pairs on first read against a fresh db path", () => {
     const all = readAllHandoffDefaults(dbPath);
     expect(Object.keys(all).sort()).toEqual(Object.keys(SEED_HANDOFFS).sort());
-    expect(Object.keys(all)).toHaveLength(23);
+    expect(Object.keys(all)).toHaveLength(24);
     for (const [id, row] of Object.entries(all)) {
       expect(row.version).toBe(1);
       expect(row.content).toBe(SEED_HANDOFFS[id]);

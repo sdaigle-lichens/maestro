@@ -20,14 +20,17 @@ $ARGUMENTS
 
 ## Workflow
 
-1. **Analyze the repository to pick the implementation agent(s).** Inspect the project to decide which bundled agent(s) build the application code in the seeded workflows' happy path. Read `package.json` (plus framework configs and directory layout — `src/components`, `src/routes`, `server/`, `api/`, `requirements.txt`, `go.mod`, `Cargo.toml`, etc.) and classify:
-   - **Backend** (APIs, services, DB access, no UI framework) → `backend`
-   - **Frontend** (React/Vue/Svelte/Angular/Next/etc., web UI-focused) → `frontend`
-   - **Mobile** (Expo / React Native — `expo` or `react-native` in `package.json` dependencies, an `app.json`/`app.config.{js,ts}` with an `expo` key, or an `App.tsx`/`app/` tree with no web bundler) → `mobile`
-   - **Fullstack** (a UI framework — web or mobile — *and* server/API code) → `backend,frontend` or `backend,mobile` — the happy path's implementation step becomes `@backend → @frontend` (or `@backend → @mobile`)
-   - **Other non-web** (CLI, library, data pipeline, …) → there is no obvious bundled implementation agent. **Ask the user** which agent(s) they use to implement code. If none is suitable, suggest they run `/create-subagent` to make one, then re-run `/maestro-install`.
+1. **Analyze the repository to pick the implementation agent(s).** Inspect the project to decide which bundled agent(s) build the application code in the seeded workflows' happy path — matching `detect.ts`'s `detectImplAgents()` exactly, so a session-driven install and the app's deterministic detection reach the same chain for the same repository. Read `package.json` (plus framework configs and directory layout — `src/components`, `src/routes`, `server/`, `api/`, `requirements.txt`, `go.mod`, `Cargo.toml`, etc.) and classify:
 
-   The result is a comma-separated `implAgents` list (e.g. `backend`, `frontend`, `mobile`, or `backend,mobile`). This only sets the *starting* graph — the user can rewire it later in the desktop app's canvas or by hand-editing `maestro.json`.
+   - **Infrastructure first, and it is exclusive of everything below.** Before considering any application category, check for declarative infrastructure: a directory named `terraform`, `infrastructure`, `iac` or `infra`; any `*.tf` or `*.tfvars` file; `Pulumi.yaml`/`Pulumi.yml` (Pulumi); `cdk.json` (AWS CDK); `serverless.yml`/`.yaml`/`.json`/`.js`/`.cjs`/`.mjs`/`.ts` (Serverless Framework); `Chart.yaml`/`.yml` (Helm); `ansible.cfg` (Ansible) — anywhere in the repo root or its packages/workspace members, not only the root. **If any of these is present, the chain is `infra` alone, full stop** — no application category joins it, no matter how strong its own signal is (a `package.json` with `express` or `react-dom` sitting beside a `main.tf` is almost always the tool's own scripting, not the product, so it does not get counted). Note in your evidence which application signals you set aside for this reason, the same way the app's evidence does, so the user can see what was overruled rather than missed.
+   - Only when no infrastructure signal is found, classify by application category:
+     - **Backend** (APIs, services, DB access, no UI framework) → `backend`
+     - **Frontend** (React/Vue/Svelte/Angular/Next/etc., web UI-focused) → `frontend`
+     - **Mobile** (Expo / React Native — `expo` or `react-native` in `package.json` dependencies, an `app.json`/`app.config.{js,ts}` with an `expo` key, or an `App.tsx`/`app/` tree with no web bundler) → `mobile`
+     - **Fullstack** (a UI framework — web or mobile — *and* server/API code) → `backend,frontend` or `backend,mobile` — the happy path's implementation step becomes `@backend → @frontend` (or `@backend → @mobile`)
+     - **Other non-web** (CLI, library, data pipeline, …) → there is no obvious bundled implementation agent. **Ask the user** which agent(s) they use to implement code. If none is suitable, suggest they run `/create-subagent` to make one, then re-run `/maestro-install`.
+
+   The result is a comma-separated `implAgents` list (e.g. `backend`, `frontend`, `mobile`, `backend,mobile`, or `infra`). This only sets the *starting* graph — the user can rewire it later in the desktop app's canvas or by hand-editing `maestro.json`.
 
 2. **Confirm the project tags.** A project can carry several, so this is a multi-select decision throughout, never a pick-one. These are the categories the desktop app's `/templates` → Project Tags tab edits, and what auto-adds a matching bundled agent later.
 
@@ -98,7 +101,7 @@ $ARGUMENTS
      "
      ```
 
-     Never fails the install — `{}` just means every skill falls through to best-fit. A skill counts as covered only if one of its tags matches a *seeded* agent (the detected `implAgents` plus `test`/`reviewer`/`refactor`/`scribe`); a `mobile` tag on a backend-only repo routes nowhere.
+     Never fails the install — `{}` just means every skill falls through to best-fit. A skill counts as covered only if one of its tags matches a *seeded* agent — and which agents are seeded is chain-dependent, per `seededAgentNames()`: the detected `implAgents` plus `test`/`reviewer`/`refactor`/`scribe` for an application chain, but the detected `implAgents` plus only `reviewer`/`scribe` for the `infra`-only chain (no `test`, no `refactor` — see step 4's note). A `mobile` tag on a backend-only repo routes nowhere, and neither does a `test`/`refactor` tag on an infra-only repo.
 
    - **Best-fit map the remaining skills** to the single seeded agent each most helps, choosing among seeded agents only. **Drop** anything not clearly relevant — don't force a match. A `react`/`styling` skill → `frontend`; `react-testing-library` → `test`; `changelog` → `scribe`.
 
@@ -130,7 +133,7 @@ $ARGUMENTS
    - copies the runtime and hook scripts into `.claude/scripts/` (including `maestro-step1-gates.cjs`, without which `/maestro` cannot run at all, and `lib/*.cjs`). `maestro-concept-skills.cjs` is deliberately **not** among them — the concept-skill flows call it from `${CLAUDE_PLUGIN_ROOT}/scripts/`, so a project copy would only go stale;
    - merges the `bash-validation.sh` PreToolUse Bash hook into `.claude/settings.json`, preserving other keys, so `.env` reads are blocked;
    - adds a `# Maestro` section to the repo-root `.gitignore` (`git rev-parse --show-toplevel`) with `**/.claude/maestro_session*` globs, which match at any depth — so there is no per-project `.gitignore` to write;
-   - seeds `.claude/maestro.json` **only when absent** — six workflows (`default`, `tdd`, `Refactor`, `Documentation`, `Review`, `Tests`) wired around the `--impl-agents` chain, with the skill map attached as `referenced_skills` and the catalog-intersected tags stamped onto `project_tags`. An existing config is never re-seeded;
+   - seeds `.claude/maestro.json` **only when absent**, and the shape of the seed is chain-dependent: an application chain (anything other than `infra` alone) gets the full six-workflow profile (`default`, `tdd`, `Refactor`, `Documentation`, `Review`, `Tests`) wired around the `--impl-agents` chain; a chain that is **exactly** `infra` gets a simpler three-workflow profile (`default`, `Documentation`, `Review`) with no `test`/`refactor` step at all — the infra agent runs its own format/validate/lint/plan-diff in place of a separate test pass, so there is nothing for `@test`/`@refactor` to do. Either way the skill map is attached as `referenced_skills` and the catalog-intersected tags stamped onto `project_tags`. An existing config is never re-seeded;
    - stamps `runtimeVersion` with the plugin's current version — the ONE field it writes into an already-existing config.
 
    It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `setBashHook`, `wroteRepoGitignore`, `seededConfig`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 5.

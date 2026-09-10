@@ -5,9 +5,9 @@
 // (skill_id, tag) pair table.
 //
 // SEEDED ON FIRST READ, not by a one-off script — same discipline as report-defaults.ts. A fresh
-// machine sees the seven built-in agents pre-classified: backend/frontend/mobile → developer (the
-// three implementation stacks), refactor → planner, reviewer → reviewer, scribe → annotator, test →
-// tester.
+// machine sees the eight built-in agents pre-classified: backend/frontend/mobile/infra → developer
+// (the four implementation stacks), refactor → planner, reviewer → reviewer, scribe → annotator,
+// test → tester.
 //
 // The `/templates` page's Agent Types tab is the UI that writes here.
 //
@@ -38,11 +38,12 @@ export type { AgentType };
 /** `~/.claude/maestro-agent-types.sqlite` — one store, every project on this machine. */
 export const DEFAULT_AGENT_TYPES_DB_PATH = path.join(os.homedir(), ".claude", "maestro-agent-types.sqlite");
 
-/** The seven built-in agents' starting classification — see the module header for the mapping. */
+/** The eight built-in agents' starting classification — see the module header for the mapping. */
 const SEED_AGENT_TYPES: Record<string, AgentType> = {
   backend: "developer",
   frontend: "developer",
   mobile: "developer",
+  infra: "developer",
   refactor: "planner",
   reviewer: "reviewer",
   scribe: "annotator",

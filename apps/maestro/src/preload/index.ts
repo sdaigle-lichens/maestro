@@ -139,6 +139,7 @@ const api: MaestroApi = {
     autoRefresh: (projectRoot) => ipcRenderer.invoke(IPC.installAutoRefresh, projectRoot),
     uninstallPlan: (projectRoot) => ipcRenderer.invoke(IPC.installUninstallPlan, projectRoot),
     uninstall: (opts, projectRoot) => ipcRenderer.invoke(IPC.installUninstall, opts, projectRoot),
+    acceptUncatalogedProjectTag: (tag) => ipcRenderer.invoke(IPC.installAcceptUncatalogedProjectTag, tag),
   },
   claude: {
     preview: (request) => ipcRenderer.invoke(IPC.claudePreview, request),

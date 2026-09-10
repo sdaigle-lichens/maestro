@@ -128,6 +128,10 @@ describe("seeded condition-edge labels", () => {
     expectAllClear(defaultV3Config(["backend", "frontend"]));
   });
 
+  it("clear every node in the infra-only profile's default workflow", () => {
+    expectAllClear(defaultV3Config(["infra"]));
+  });
+
   it("clear every node when instances carry enough skills to make the cards tall", () => {
     const skills = (name: string): number => (SKILL_HEAVY[name as keyof typeof SKILL_HEAVY] ?? []).length;
     expectAllClear(defaultV3Config(["backend"], SKILL_HEAVY), skills);

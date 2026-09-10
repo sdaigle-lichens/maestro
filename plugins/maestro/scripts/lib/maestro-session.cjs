@@ -463,6 +463,7 @@ function validateConfig(cfg) {
 var BACKEND_TO_FRONTEND = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the UI consumes>"],\n  "integration_notes": ["<how the frontend should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the UI must handle, or \'none\'>"]\n}\n```';
 var BACKEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n  "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n}\n```';
 var BACKEND_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
+var INFRA_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "verification_output": ["<format/validate/lint/plan-diff command \u2014 result summary>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
 var BACKEND_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
 var FRONTEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "component_or_screen": "<the web feature being ported>",\n  "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n  "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n}\n```';
 var FRONTEND_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
@@ -500,6 +501,7 @@ var SEED_HANDOFFS = {
   "frontend/mobile": FRONTEND_TO_MOBILE,
   "frontend/reviewer": FRONTEND_TO_REVIEWER,
   "frontend/test": FRONTEND_TO_TEST,
+  "infra/reviewer": INFRA_TO_REVIEWER,
   "mobile/frontend": MOBILE_TO_FRONTEND,
   "mobile/reviewer": MOBILE_TO_REVIEWER,
   "mobile/test": MOBILE_TO_TEST,

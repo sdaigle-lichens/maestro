@@ -6,8 +6,8 @@
 // developer/planner/reviewer/annotator/tester classification on the same /templates page).
 //
 // SEEDED ON FIRST READ, not by a one-off script — same discipline as agent-types.ts. A fresh
-// machine sees the seven built-in agents pre-classified: backend/frontend/mobile → their own name
-// (the three implementation stacks match the seeded Project Tags catalog one-for-one), and
+// machine sees the eight built-in agents pre-classified: backend/frontend/mobile/infra → their own
+// name (the four implementation stacks match the seeded Project Tags catalog one-for-one), and
 // refactor/reviewer/scribe/test → "global", since those four apply to every project regardless of
 // category.
 //
@@ -36,11 +36,12 @@ export const DEFAULT_AGENT_PROJECT_TAGS_DB_PATH = path.join(
   "maestro-agent-project-tags.sqlite"
 );
 
-/** The seven built-in agents' starting project tag — see the module header for the mapping. */
+/** The eight built-in agents' starting project tag — see the module header for the mapping. */
 const SEED_AGENT_PROJECT_TAGS: Record<string, string> = {
   backend: "backend",
   frontend: "frontend",
   mobile: "mobile",
+  infra: "infra",
   refactor: "global",
   reviewer: "global",
   scribe: "global",

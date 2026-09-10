@@ -771,8 +771,16 @@ export interface InstallReport {
    * Set on a first install (no `maestro.json` yet), when this run seeded one — the detected
    * implementation-agent chain and the project tags matched against the live catalog. `null` on
    * every re-install: an existing config is the user's own and is never re-seeded.
+   *
+   * `uncatalogedProjectTags` is the OTHER half of that intersection — a category detection
+   * produced that the global Project Tags catalog has never held, and which this run therefore
+   * dropped from `projectTags` rather than recording. The seeding step that computes this has no
+   * user in front of it and must not decide on their behalf (058) — reporting the gap, distinctly
+   * from what was recorded, is as far as this layer goes. A caller with a UI (main/IPC + renderer)
+   * is the one that turns this into a question, and `acceptUncatalogedProjectTag` below is the
+   * write path for "yes, add it". Always `[]` when `configSeeded` is `null`.
    */
-  configSeeded: { implAgents: string[]; projectTags: string[] } | null;
+  configSeeded: { implAgents: string[]; projectTags: string[]; uncatalogedProjectTags: string[] } | null;
   /** True when the run found nothing to do — the idempotent second run. */
   unchanged: boolean;
   warnings: string[];

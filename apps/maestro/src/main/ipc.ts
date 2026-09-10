@@ -277,6 +277,52 @@ function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]) {
   );
 }
 
+/**
+ * Toggle `projectRoot`'s `project_tags` to exactly `tags`, then union in any bundled agent whose
+ * stored `agent-project-tags.ts` assignment newly matches one of the ADDED tags — never on one
+ * that was already recorded, so this can't silently rip an agent out of a graph the user already
+ * wired up (that stays a manual `/workflows` edit). Shared by `project:tags:set` (the `/maestro`
+ * checkboxes, which pass the user's exact new selection) and `install:accept-uncataloged-project-tag`
+ * (058, which passes the project's current selection plus one accepted category) so the two
+ * writers of this slice cannot drift on what "adding a tag" does to `agents_available`.
+ */
+async function applyProjectTagsSet(projectRoot: string, tags: string[]): Promise<string[]> {
+  const before = new Set(readConfig(projectRoot)?.project_tags ?? []);
+  await saveConfig(projectRoot, { sliceType: "project-tags", slice: { project_tags: tags } });
+
+  const newlyAdded = tags.filter((t) => !before.has(t));
+  if (newlyAdded.length > 0) {
+    // Scoped to THIS project (030): otherwise a project-tier agent belonging to some other
+    // project, sharing both this agent's name and the newly-added tag, could get pulled into a
+    // graph it has nothing to do with.
+    const matchingAgents = agentsForProjectTags(newlyAdded, undefined, projectRoot);
+    const current = readConfig(projectRoot);
+    if (current) {
+      const agentsAvailable = new Set(current.agents_available);
+      let changed = false;
+      for (const agent of matchingAgents) {
+        if (!agentsAvailable.has(agent)) {
+          agentsAvailable.add(agent);
+          changed = true;
+        }
+      }
+      if (changed) {
+        await saveConfig(projectRoot, {
+          sliceType: "workflows",
+          slice: {
+            agents_available: Array.from(agentsAvailable),
+            skills_available: current.skills_available,
+            workflow_instances: current.workflow_instances,
+            workflows: current.workflows,
+          },
+        });
+      }
+    }
+  }
+
+  return tags;
+}
+
 function announce(state: ProjectState): ProjectState {
   broadcast(IPC_EVENTS.projectChanged, state);
   retargetTails();
@@ -526,40 +572,32 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");
-    const before = new Set(readConfig(projectRoot)?.project_tags ?? []);
-    await saveConfig(projectRoot, { sliceType: "project-tags", slice: { project_tags: tags } });
+    return applyProjectTagsSet(projectRoot, tags);
+  });
 
-    const newlyAdded = tags.filter((t) => !before.has(t));
-    if (newlyAdded.length > 0) {
-      // Scoped to THIS project (030): otherwise a project-tier agent belonging to some other
-      // project, sharing both this agent's name and the newly-added tag, could get pulled into a
-      // graph it has nothing to do with.
-      const matchingAgents = agentsForProjectTags(newlyAdded, undefined, projectRoot);
-      const current = readConfig(projectRoot);
-      if (current) {
-        const agentsAvailable = new Set(current.agents_available);
-        let changed = false;
-        for (const agent of matchingAgents) {
-          if (!agentsAvailable.has(agent)) {
-            agentsAvailable.add(agent);
-            changed = true;
-          }
-        }
-        if (changed) {
-          await saveConfig(projectRoot, {
-            sliceType: "workflows",
-            slice: {
-              agents_available: Array.from(agentsAvailable),
-              skills_available: current.skills_available,
-              workflow_instances: current.workflow_instances,
-              workflows: current.workflows,
-            },
-          });
-        }
-      }
-    }
-
-    return tags;
+  // 058: the write half of "accept" for a category `install:run`'s `configSeeded
+  // .uncatalogedProjectTags` reported — detection produced it, but the catalog had never held it,
+  // so the seed dropped it rather than deciding on the user's behalf. This is the caller WITH a
+  // user in front of it (the renderer's consent dialog calls this on "yes, add it"); a decline, or
+  // any non-interactive install, calls nothing and the category stays dropped exactly as before.
+  // Two writes, both required — adding to only the catalog would leave this project still
+  // recording nothing, the same bug with an extra step:
+  //   1. `addProjectTag` — the category joins the machine-wide catalog, global from here on.
+  //   2. `applyProjectTagsSet` — the SAME union-and-save path the `/maestro` checkboxes use, so the
+  //      newly-recorded tag also pulls in any bundled agent already assigned to it, unioned rather
+  //      than replacing whatever this project already recorded.
+  // Never reads the catalog to decide what the repo IS — that direction stays detection-only; this
+  // only decides what a category the user already confirmed gets written to.
+  ipcMain.handle(IPC.installAcceptUncatalogedProjectTag, async (_e, tag: string): Promise<ProjectTagsData> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    const clean = tag.trim().toLowerCase();
+    if (!clean) throw new Error("A project tag can't be empty.");
+    const catalog = addProjectTag(clean);
+    const current = new Set(readConfig(projectRoot)?.project_tags ?? []);
+    current.add(clean);
+    const selected = await applyProjectTagsSet(projectRoot, Array.from(current));
+    return { catalog, selected };
   });
 
   // ── reports (/agents page) ──────────────────────────────────────────
