@@ -3,8 +3,8 @@ name: create-skills-architecture
 description: "Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 4f8eed3
+  version: "1.3"
+  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
 ---
 
 # Create-Skills Architecture
@@ -256,7 +256,7 @@ Three rules hold it together:
 | Change the description algorithm | `text.ts` in `src/core` — affects skill & subagent, preview and file, at once                                                                                             |
 | Change keyboard shortcuts        | the route's `SHORTCUT_SECTIONS` and `create-shell.tsx`                                                                                                                    |
 | Add a new shared UI primitive    | new file in `packages/ui/src/`, then an export in `packages/ui/package.json`                                                                                              |
-| Add a new create-\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link on the page that owns the thing (`components/tabs/create-link.tsx`), not into a top-bar menu — and add it to the reachability map in `test/isolation.test.ts`, which pins **which file** holds each entry point |
+| Add a new create-\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link on the page that owns the thing (`components/tabs/create-link.tsx`), not into a top-bar menu — and add it to the reachability map in `test/isolation.test.ts`, which pins **which file** holds each entry point. Step-by-step: `apps/maestro/docs/extending-the-app.md`. |
 
 **Where the four entry points live.** `test/isolation.test.ts`'s reachability map is the list of
 record, because a Create link nobody can reach is a green suite and a dead feature:

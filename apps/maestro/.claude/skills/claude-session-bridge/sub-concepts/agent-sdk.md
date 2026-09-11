@@ -80,4 +80,33 @@ Two turn shapes, and the difference is checkable rather than trusted: `humanTurn
 `origin: { kind: "human" }`, `contextTurn` sets `shouldQuery: false` and **no origin**. Stamping app
 context as human would make the invariant `session:say` exists to guarantee stop meaning anything.
 
+## Verifying the packaging in a real launch
+
+The three failures above are packaging failures — a bundled SDK, an unresolvable CLI, a PATH a
+terminal would never hand you — so no vitest run and no CDP probe of the renderer can see them.
+`MAESTRO_AGENT_SDK_SMOKE=<path>` runs one query from main at startup and writes a JSON receipt to
+that path instead of running the app normally. Three launches matter, because each reproduces a
+different PATH:
+
+```bash
+# dev
+MAESTRO_AGENT_SDK_SMOKE=/tmp/dev-smoke.json pnpm --filter maestro dev
+
+# the packaged bundle, with the PATH a GUI launch actually gets (no ~/.local/bin, no shell rc)
+env -i HOME="$HOME" DISPLAY=:0 WAYLAND_DISPLAY=wayland-0 XDG_RUNTIME_DIR=/run/user/$(id -u) \
+  DBUS_SESSION_BUS_ADDRESS="unix:path=/run/user/$(id -u)/bus" PATH=/usr/local/bin:/usr/bin:/bin \
+  MAESTRO_AGENT_SDK_SMOKE=/tmp/packaged-smoke.json \
+  node_modules/.pnpm/electron@*/node_modules/electron/dist/electron apps/maestro \
+  --user-data-dir=/tmp/maestro-smoke
+
+# and from a real desktop entry, which is the launch the PATH bug only reproduces from
+gio launch /path/to/maestro-smoke.desktop     # Exec=env MAESTRO_AGENT_SDK_SMOKE=… <electron> <appdir>
+```
+
+Read the receipt, not the exit code: `ok`, `billing: "subscription"` (an `api-key` value here means a
+credential got through when it should not have), `bin` (should be the resolved `~/.local/bin/claude`,
+never a guess), `env.dropped`/`env.hasPath`, and `sdkVersion` — `null` means the package could not be
+resolved at runtime, which is the asar failure above. Unset, the variable runs nothing and the app
+spawns nothing on a normal launch.
+
 File: `src/core/agent-sdk.ts`. Tests: `test/core/agent-sdk.test.ts`, `test/isolation.test.ts`.

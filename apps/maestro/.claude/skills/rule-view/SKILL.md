@@ -3,8 +3,8 @@ name: rule-view
 description: "Explains how the /rules view in the Maestro desktop app is built end-to-end: the left rule selectors (on-disk project rules + installable vibe-rules), the center directory tree (rule-tree.tsx), how assignments map to the MaestroConfigV3 `rules` slice in .claude/maestro.json, and how the rule files are moved/installed on save. Use when the user is working inside apps/maestro and asks how the rules view works, how rules get assigned to the project root or directory paths, how rule files get moved or installed, how vibe-rules integrate, why a rule isn't showing up, or why a rule assignment isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
+  version: "1.3"
+  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
 ---
 
 # Rule View
@@ -180,6 +180,16 @@ The plugin's `maestro-apply-rules.js` is the same algorithm as a standalone scri
 - **A rule assigned in maestro.json but missing from disk is stranded.** `selectedRuleIds` is seeded from `config.rules`, but the chips only render ids the loaders return. If the file was deleted (project) or removed from the store (vibe-rules), the chip can't render, yet the assignment persists until something prunes it — and the apply step reports it under `missing`/`errors`.
 - **Name collisions resolve to project.** If the same id exists both on disk and in `vibe-rules list`, `ruleSource` calls it `"project"` and the vibe section hides it. The on-disk file is moved; the vibe-rules version is ignored.
 - **Re-assigning a vibe-rule leaves the old install behind.** Project rules are _moved_ (single file follows the assignment); vibe-rules are _installed_ at the assigned path. The config holds one location per rule, but since the apply step never deletes, moving a vibe-rule to a new directory installs a fresh copy there and leaves the previous `.claude/rules/<id>.md` in place — by design (cleanup is the user's call).
+- **Two functions answer "get the rules", and they are not the same set — the other one surfaces on
+  `/tools`, not here.** `discoverRuleLibrary` reads `<project>/rules/*.md` — what the project
+  *publishes*, shown on `/tools`' Rules tab (local-only, no global tier). `discoverProjectRules`,
+  the one this route uses, reads every `.claude/rules/` in the tree — what is *assigned* to a
+  directory, shown here, and what a save **moves**. A project can have either without the other, so
+  they were deliberately not unified: the names and the return types (`RuleLibraryEntry` with
+  `title`/`paths` vs `ProjectRule` with `id`/`dir`) are what keep a reader from assuming one view
+  manages the other's files. If a rule shows up on `/tools` but not in this route's pickers (or vice
+  versa), this is why — check which function the surface in question actually calls before assuming
+  a bug.
 - **A directory assignment can scope a rule without moving its file — `placement: "scope-only"`.**
   Absent (or `"move"`) is the original always-move behavior documented above. `"scope-only"` scopes
   the assignment's `paths`/`scope` while leaving a `"project"` rule's file untouched on disk

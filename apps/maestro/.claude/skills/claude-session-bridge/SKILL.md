@@ -3,8 +3,8 @@ name: claude-session-bridge
 description: "Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process."
 metadata:
   type: concept-skill
-  version: "2.0"
-  last-update: ff24b375eadb31a3b2628a3070bc8631a08063fa
+  version: "2.1"
+  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
 ---
 
 # Claude session bridge
@@ -109,7 +109,32 @@ required to keep its own — the model reads that sentence and acts on it.
   the hook-written files under `<project>/.claude/` — see `maestro-architecture` and `log-view`.
 - **Tokens are shared with the usage-stats reader.** `ccusage.ts` and `claude-run.ts` use one store,
   and `claimInvocation` takes an `InvocationPurpose` for that reason. Claiming without it would let
-  a stats preview spawn `npx` while every message on screen said Claude.
+  a stats preview spawn `npx` while every message on screen said Claude. `ccusage.ts`'s own shape:
+  a local copy under `node_modules/.bin` (or the same expanded directory list `claude-cli.ts`
+  resolves against) wins over a remote fetch; a remote fetch is pinned to `PINNED_CCUSAGE_VERSION`
+  rather than `@latest`, so the app's behaviour never changes without the app changing; `stats:preview`
+  resolves and returns the exact argv plus `network: true/false` and spawns nothing, so "the user was
+  told a package would be fetched and executed" is a property of the wiring, not of the prompt copy;
+  and a machine with neither `ccusage` nor `npx` degrades in the preview itself — a message naming the
+  tool and where it was looked for, with the Run button simply never pressed, not an ENOENT after a
+  spawn.
+- **The plugin's `hooks.json` does NOT fire in a pane session — measured, not inferred.** A pane turn
+  that read a file inside a fixture project _with_ a `maestro.json` wrote no
+  `maestro_session.log.jsonl`. So the `/session-log` pollution that loading project `settingSources`
+  would cause does not arrive with `plugins: [...]`, and the pane's tool calls stay out of a view
+  built for orchestrator runs. This is a property of `settingSources: []` plus `plugins` being a
+  local plugin descriptor, not a hook registration — nothing here re-registers the plugin's hooks.
+- **`SessionProvider` sits in `__root.tsx`, above the route `Outlet` and a sibling of the route
+  column — not inside `TopNav`, and not owned by any one route.** The reason is structural: `TopNav`
+  remounts on every navigation (each route mounts its own copy), so a transcript or a live session id
+  held there would be discarded the instant the user clicked to another page — and losing the session
+  id mid-turn leaves Claude running with no Stop button left to press. Placing the provider at the
+  root, inside `ProjectProvider` (so a project switch ends the session) and beside the `Outlet` rather
+  than under it, is what lets the pane survive navigation and shift the layout instead of disappearing
+  with the page that opened it. `utils/session-context.tsx` is the only module in the renderer
+  allowed to touch `window.maestro.session` — single-owner, exactly like `SessionLogProvider` and the
+  log tail, and for the same reason: main keeps one session per `webContents.id`, so a second
+  subscriber would steal it.
 
 ## The invariants are asserted
 

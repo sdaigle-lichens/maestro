@@ -65,5 +65,13 @@ after `SIGKILL_AFTER_MS`. The child is spawned `detached` for exactly this, whic
 `terminateChildGroup` is exported so the pane's teardown is the same teardown, not a second one
 written from the same description.
 
+**`claude` is resolved explicitly, never off `process.env.PATH` alone.** A GUI-launched Electron app
+gets a PATH that does not include `~/.local/bin`, which is where the CLI installs — so the app
+reported "not installed" on machines where `which claude` answers instantly. This does not
+reproduce from a terminal, and no unit test in this app can see it; it was verified by launching
+from a real desktop entry. `claude-cli.ts` decides with `fs` instead. `git` is resolved the same way
+and for the same reason, through the `resolveOnPath(names, opts)` that `resolveClaudeCli` is now a
+one-line call to.
+
 Files: `src/core/claude-preview.ts`, `src/core/claude-tokens.ts`, `src/core/claude-run.ts`,
 `src/core/claude-cli.ts`. Tests: `test/core/claude.test.ts`, `test/core/create-preview.test.ts`.
