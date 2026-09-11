@@ -1,59 +1,54 @@
-// The ephemeral session file helpers, and `036`'s run_id mint — the stamp channel files are
-// compared against.
+// appendSessionLog's optional third argument: the hook's own raw payload, from which it derives
+// ctx_pct/ctx_model (via session-usage.ts's deriveUsage) before writing. Covers the seam every
+// hook script now calls through — not deriveUsage's own edge cases, which session-usage.test.ts
+// already owns.
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { readSession, writeSession, ensureSessionRunId } from "../../src/core/session-runtime.js";
+import { appendSessionLog, sessionLogPath } from "../../src/core/session-runtime.js";
 
-let dir: string;
-let sessionPath: string;
+let tmp: string;
 
 beforeEach(() => {
-  dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-session-runtime-"));
-  sessionPath = path.join(dir, "maestro_session.json");
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-runtime-"));
 });
 
 afterEach(() => {
-  fs.rmSync(dir, { recursive: true, force: true });
+  fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-describe("readSession", () => {
-  it("defaults to a null run_id alongside workflow/generated_instances when the file is absent", () => {
-    expect(readSession(sessionPath)).toEqual({ workflow: null, generated_instances: [], run_id: null });
-  });
-});
+function readEntries(claudeDir: string): unknown[] {
+  const raw = fs.readFileSync(sessionLogPath(claudeDir), "utf8");
+  return raw
+    .split("\n")
+    .filter(Boolean)
+    .map((l) => JSON.parse(l));
+}
 
-describe("ensureSessionRunId", () => {
-  it("mints a run_id on a session with none, and persists it", () => {
-    writeSession(sessionPath, { workflow: "default", generated_instances: ["a"] });
-    const id = ensureSessionRunId(sessionPath);
-    expect(id).toBeTruthy();
-    expect(readSession(sessionPath).run_id).toBe(id);
-    // Every other field survives the write.
-    expect(readSession(sessionPath)).toMatchObject({ workflow: "default", generated_instances: ["a"] });
-  });
+const assistantLine = (model: string, usage: Record<string, number>) =>
+  JSON.stringify({ type: "assistant", message: { model, usage } });
 
-  it("returns the SAME run_id on a second call, and writes nothing new", () => {
-    const first = ensureSessionRunId(sessionPath);
-    const mtimeBefore = fs.statSync(sessionPath).mtimeMs;
-    const second = ensureSessionRunId(sessionPath);
-    expect(second).toBe(first);
-    expect(fs.statSync(sessionPath).mtimeMs).toBe(mtimeBefore);
+describe("appendSessionLog", () => {
+  it("writes the entry unchanged when no payload is given", () => {
+    appendSessionLog(tmp, { ts: "t", origin: "main_session", log: "x" });
+    expect(readEntries(tmp)).toEqual([{ ts: "t", origin: "main_session", log: "x" }]);
   });
 
-  it("mints a fresh id for a session file that does not exist yet", () => {
-    const id = ensureSessionRunId(sessionPath);
-    expect(id).toBeTruthy();
-    expect(fs.existsSync(sessionPath)).toBe(true);
+  it("writes the entry unchanged when the payload's transcript_path can't be read", () => {
+    appendSessionLog(tmp, { ts: "t", origin: "main_session", log: "x" }, { transcript_path: path.join(tmp, "missing.jsonl") });
+    expect(readEntries(tmp)).toEqual([{ ts: "t", origin: "main_session", log: "x" }]);
   });
 
-  it("mints a DIFFERENT id after the session file is deleted (the SessionEnd case)", () => {
-    const first = ensureSessionRunId(sessionPath);
-    fs.rmSync(sessionPath);
-    const second = ensureSessionRunId(sessionPath);
-    expect(second).not.toBe(first);
+  it("stamps ctx_pct/ctx_model when the payload's transcript_path resolves a usage line", () => {
+    const transcript = path.join(tmp, "transcript.jsonl");
+    fs.writeFileSync(
+      transcript,
+      assistantLine("claude-sonnet-5", { input_tokens: 100, cache_read_input_tokens: 19900, cache_creation_input_tokens: 0 }) + "\n"
+    );
+    appendSessionLog(tmp, { ts: "t", origin: "main_session", log: "x" }, { transcript_path: transcript });
+    expect(readEntries(tmp)).toEqual([{ ts: "t", origin: "main_session", log: "x", ctx_pct: 10, ctx_model: "claude-sonnet-5" }]);
   });
 });

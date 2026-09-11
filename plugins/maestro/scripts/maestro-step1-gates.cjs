@@ -35,6 +35,27 @@
 
 const fs = require("fs");
 const path = require("path");
+const { appendSessionLog } = require("./lib/maestro-session.cjs");
+
+// Best-effort `kind:"phase"` marker so /session-log and /maestro-post-mortem can see where Step 1
+// falls in the log — no `ctx_pct` here, since this script runs via `!`command`` substitution with
+// no stdin payload and so no transcript_path to derive one from (see session-usage.ts). Never
+// throws and never touches stdout/stderr: the one-line stdout contract below is load-bearing.
+function logPhase(projectDir) {
+  try {
+    const claudeDir = path.join(projectDir, ".claude");
+    if (!fs.existsSync(path.join(claudeDir, "maestro.json"))) return;
+    appendSessionLog(claudeDir, {
+      ts: new Date().toISOString(),
+      origin: "main_session",
+      kind: "phase",
+      phase: "step1_gates",
+      log: "phase: step1_gates",
+    });
+  } catch {
+    // Best-effort — never fail Step 1 on a logging error.
+  }
+}
 
 // The WHOLE of Step 1, one sentence-set per resolved state — not a terse flag the template then
 // branches on. Same collapse maestro-check-runtime.cjs makes with its INSTRUCTIONS map, and for the
@@ -87,13 +108,15 @@ function gateLine(projectDir) {
   return LINES.none;
 }
 
+const projectDir = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
 let line = LINES.none;
 try {
-  line = gateLine(process.env.CLAUDE_PROJECT_DIR ?? process.cwd());
+  line = gateLine(projectDir);
 } catch {
   // Belt and braces: gateLine already swallows the expected failures, and anything it doesn't
   // must still not take the orchestrator down with it.
   line = LINES.none;
 }
+logPhase(projectDir);
 process.stdout.write(line + "\n");
 process.exit(0);

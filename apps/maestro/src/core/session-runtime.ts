@@ -9,6 +9,7 @@ import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
 import type { MaestroSession } from "./types.js";
+import { deriveUsage } from "./session-usage.js";
 
 /** Hook scripts receive their payload on stdin. Unused by the desktop app; kept for the bundle. */
 export function readStdin(): Promise<string> {
@@ -64,6 +65,14 @@ export function sessionLogPath(claudeDir: string): string {
   return path.join(claudeDir, SESSION_LOG_FILE);
 }
 
-export function appendSessionLog(claudeDir: string, entry: unknown): void {
-  fs.appendFileSync(sessionLogPath(claudeDir), JSON.stringify(entry) + "\n");
+/**
+ * `payload` is the hook's own raw stdin payload (or, for the two `!`command`` gate scripts, simply
+ * omitted — they run with no stdin at all). When it carries a `transcript_path`, `deriveUsage` (see
+ * session-usage.ts) stamps `ctx_pct`/`ctx_model` onto the entry before it's written; anything short
+ * of a clean read (no payload, no path, unreadable file, no usage line) leaves the entry as given.
+ */
+export function appendSessionLog(claudeDir: string, entry: unknown, payload?: { transcript_path?: string }): void {
+  const usage = payload ? deriveUsage(payload) : undefined;
+  const stamped = usage && entry && typeof entry === "object" ? { ...entry, ...usage } : entry;
+  fs.appendFileSync(sessionLogPath(claudeDir), JSON.stringify(stamped) + "\n");
 }

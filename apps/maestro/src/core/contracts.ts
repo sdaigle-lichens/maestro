@@ -480,8 +480,8 @@ export interface SessionLogEntry {
   ts: string;
   origin: string;
   log: string;
-  /** Set on dispatch/handoff/channel_delivery entries written by the hooks. */
-  kind?: "dispatch" | "handoff" | "transition" | "channel_delivery";
+  /** Set on dispatch/handoff/channel_delivery/phase entries written by the hooks. */
+  kind?: "dispatch" | "handoff" | "transition" | "channel_delivery" | "phase";
   /** dispatch: the subagent's agent_type */
   agent?: string;
   /** shared key linking a dispatch↔handoff pair, and (037) a channel_delivery to its receiver's dispatch */
@@ -502,6 +502,12 @@ export interface SessionLogEntry {
   receiver?: string;
   /** channel_delivery only: the payload, inlined verbatim */
   content?: string;
+  /** phase only: which pre-coding orchestration step this marks, e.g. "step1_gates". */
+  phase?: string;
+  /** Best-effort context-window fill percentage at write time. Absent means unknown, never 0. */
+  ctx_pct?: number;
+  /** Model id `ctx_pct` was computed against. Only meaningful alongside `ctx_pct`. */
+  ctx_model?: string;
 }
 
 /**
