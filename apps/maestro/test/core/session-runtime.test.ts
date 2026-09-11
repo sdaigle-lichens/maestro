@@ -38,7 +38,11 @@ describe("appendSessionLog", () => {
   });
 
   it("writes the entry unchanged when the payload's transcript_path can't be read", () => {
-    appendSessionLog(tmp, { ts: "t", origin: "main_session", log: "x" }, { transcript_path: path.join(tmp, "missing.jsonl") });
+    appendSessionLog(
+      tmp,
+      { ts: "t", origin: "main_session", log: "x" },
+      { transcript_path: path.join(tmp, "missing.jsonl") }
+    );
     expect(readEntries(tmp)).toEqual([{ ts: "t", origin: "main_session", log: "x" }]);
   });
 
@@ -46,9 +50,15 @@ describe("appendSessionLog", () => {
     const transcript = path.join(tmp, "transcript.jsonl");
     fs.writeFileSync(
       transcript,
-      assistantLine("claude-sonnet-5", { input_tokens: 100, cache_read_input_tokens: 19900, cache_creation_input_tokens: 0 }) + "\n"
+      assistantLine("claude-sonnet-5", {
+        input_tokens: 100,
+        cache_read_input_tokens: 19900,
+        cache_creation_input_tokens: 0,
+      }) + "\n"
     );
     appendSessionLog(tmp, { ts: "t", origin: "main_session", log: "x" }, { transcript_path: transcript });
-    expect(readEntries(tmp)).toEqual([{ ts: "t", origin: "main_session", log: "x", ctx_pct: 10, ctx_model: "claude-sonnet-5" }]);
+    expect(readEntries(tmp)).toEqual([
+      { ts: "t", origin: "main_session", log: "x", ctx_pct: 10, ctx_model: "claude-sonnet-5" },
+    ]);
   });
 });

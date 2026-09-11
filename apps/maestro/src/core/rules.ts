@@ -100,7 +100,9 @@ export async function applyRules(
       // Scope-only never installs under the assigned directory — that's exactly the .claude/
       // it exists to avoid creating there. It installs at the project root instead, so the
       // rule still exists on disk and the assignment still scopes it to `paths`.
-      const installDir = scopeOnly ? path.join(projectRoot, ".claude", "rules") : path.join(projectRoot, relDir, ".claude", "rules");
+      const installDir = scopeOnly
+        ? path.join(projectRoot, ".claude", "rules")
+        : path.join(projectRoot, relDir, ".claude", "rules");
       const targetFile = path.join(installDir, `${rule.id}.md`);
       if (alreadyInstalled(targetFile, rule.id)) {
         summary.skipped.push({ id: rule.id, dir: relDir, reason: "already installed" });

@@ -706,7 +706,9 @@ export async function installRuntime(
     );
   }
   for (const c of skillCollisions) {
-    warnings.push(`Skill id "${c.id}" is defined in more than one .claude/skills directory (${c.dirs.join(", ")}) — using "${c.dirs[0]}".`);
+    warnings.push(
+      `Skill id "${c.id}" is defined in more than one .claude/skills directory (${c.dirs.join(", ")}) — using "${c.dirs[0]}".`
+    );
   }
 
   return {

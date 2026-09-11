@@ -86,9 +86,7 @@ function TreeRow({
         {pathAssignments.map((a) => {
           const isVibe = (a.source ?? ruleSource[a.id]) === "vibe-rules";
           const isScopeOnly = a.placement === "scope-only";
-          const moveTitle = isVibe
-            ? "Installed via vibe-rules on save"
-            : "Project rule file moved here on save";
+          const moveTitle = isVibe ? "Installed via vibe-rules on save" : "Project rule file moved here on save";
           const scopeOnlyTitle = isVibe
             ? "Scoped here without installing — installs at the project root instead on save"
             : "Scoped here without moving the file — it stays where it already is on save";
@@ -111,7 +109,9 @@ function TreeRow({
                 type="button"
                 onClick={() => toggleScopeOnly(a)}
                 className="opacity-60 hover:opacity-100 cursor-pointer focus:outline-none"
-                title={isScopeOnly ? "Switch to moving the file here on save" : "Switch to scoping without moving the file"}
+                title={
+                  isScopeOnly ? "Switch to moving the file here on save" : "Switch to scoping without moving the file"
+                }
               >
                 {isScopeOnly ? "📌" : "⇄"}
               </button>

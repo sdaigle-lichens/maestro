@@ -32,7 +32,11 @@ function writeTranscript(lines: string[]): string {
 describe("deriveUsage", () => {
   it("computes a percentage against the model's context window", () => {
     const file = writeTranscript([
-      assistantLine("claude-sonnet-5", { input_tokens: 100, cache_read_input_tokens: 19900, cache_creation_input_tokens: 0 }),
+      assistantLine("claude-sonnet-5", {
+        input_tokens: 100,
+        cache_read_input_tokens: 19900,
+        cache_creation_input_tokens: 0,
+      }),
     ]);
     expect(deriveUsage({ transcript_path: file })).toEqual({ ctx_pct: 10, ctx_model: "claude-sonnet-5" });
   });
@@ -53,7 +57,11 @@ describe("deriveUsage", () => {
 
   it("skips a corrupt trailing line and uses the last valid one", () => {
     const file = writeTranscript([
-      assistantLine("claude-sonnet-5", { input_tokens: 0, cache_read_input_tokens: 40000, cache_creation_input_tokens: 0 }),
+      assistantLine("claude-sonnet-5", {
+        input_tokens: 0,
+        cache_read_input_tokens: 40000,
+        cache_creation_input_tokens: 0,
+      }),
       "{ this is not json",
     ]);
     expect(deriveUsage({ transcript_path: file })).toEqual({ ctx_pct: 20, ctx_model: "claude-sonnet-5" });
@@ -66,7 +74,11 @@ describe("deriveUsage", () => {
 
   it("falls back to DEFAULT_CONTEXT_WINDOW for an unrecognized model id", () => {
     const file = writeTranscript([
-      assistantLine("claude-future-model", { input_tokens: 0, cache_read_input_tokens: DEFAULT_CONTEXT_WINDOW / 2, cache_creation_input_tokens: 0 }),
+      assistantLine("claude-future-model", {
+        input_tokens: 0,
+        cache_read_input_tokens: DEFAULT_CONTEXT_WINDOW / 2,
+        cache_creation_input_tokens: 0,
+      }),
     ]);
     expect(deriveUsage({ transcript_path: file })).toEqual({ ctx_pct: 50, ctx_model: "claude-future-model" });
   });
@@ -75,7 +87,11 @@ describe("deriveUsage", () => {
     const noise = JSON.stringify({ type: "user", message: { content: "x".repeat(2000) } });
     const padding = Array.from({ length: 60 }, () => noise); // ~120KB, past the 64KB first window
     const file = writeTranscript([
-      assistantLine("claude-sonnet-5", { input_tokens: 0, cache_read_input_tokens: 60000, cache_creation_input_tokens: 0 }),
+      assistantLine("claude-sonnet-5", {
+        input_tokens: 0,
+        cache_read_input_tokens: 60000,
+        cache_creation_input_tokens: 0,
+      }),
       ...padding,
     ]);
     expect(deriveUsage({ transcript_path: file })).toEqual({ ctx_pct: 30, ctx_model: "claude-sonnet-5" });

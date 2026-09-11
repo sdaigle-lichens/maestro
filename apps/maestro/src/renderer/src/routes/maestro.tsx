@@ -491,15 +491,20 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
       for (const tag of selected) {
         const res = await callMain(() => window.maestro.install.acceptUncatalogedProjectTag(tag));
         if (!res.ok) {
-          toast(<>Could not add &ldquo;{tag}&rdquo; to the catalog: {res.error}</>, { variant: "error" });
+          toast(
+            <>
+              Could not add &ldquo;{tag}&rdquo; to the catalog: {res.error}
+            </>,
+            { variant: "error" }
+          );
           setBusy(false);
           return;
         }
       }
       toast(
         <>
-          Added {selected.length === 1 ? `"${selected[0]}"` : `${selected.length} categories`} to the catalog and
-          tagged this project.
+          Added {selected.length === 1 ? `"${selected[0]}"` : `${selected.length} categories`} to the catalog and tagged
+          this project.
         </>
       );
       onDone(selected);
@@ -515,8 +520,8 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
       </div>
       <p className="text-[12px] text-(--ink-2) m-0">
         Detection found {tags.length === 1 ? "a category" : "categories"} this project&rsquo;s Project Tags catalog has
-        never held, so {tags.length === 1 ? "it wasn&rsquo;t" : "they weren&rsquo;t"} recorded. A project can carry
-        more than one — check which to add to the catalog and tag this project with. Leaving{" "}
+        never held, so {tags.length === 1 ? "it wasn&rsquo;t" : "they weren&rsquo;t"} recorded. A project can carry more
+        than one — check which to add to the catalog and tag this project with. Leaving{" "}
         {tags.length === 1 ? "it" : "them"} unchecked, or closing this without answering, leaves{" "}
         <span className="font-mono">project_tags</span> exactly as the install left it.
       </p>

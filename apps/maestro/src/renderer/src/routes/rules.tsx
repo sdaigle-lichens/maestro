@@ -207,8 +207,8 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
           {selectedRuleIds.length > 0 && (
             <p className="text-[12px] text-subtle">
               Use the directory tree on the right to assign selected rules to paths. Each rule lives in one place —
-              assigning it elsewhere moves it, unless you check &ldquo;scope only&rdquo;, which scopes the rule to
-              that path without moving or installing its file there.
+              assigning it elsewhere moves it, unless you check &ldquo;scope only&rdquo;, which scopes the rule to that
+              path without moving or installing its file there.
             </p>
           )}
 

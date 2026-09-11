@@ -344,9 +344,7 @@ describe("purge", () => {
     expect(plan.materializedHandoffs.files.length).toBeGreaterThan(0);
 
     const report = await uninstallRuntime(root, { purge: true, pluginRoot: PLUGIN_ROOT });
-    expect(report.materializedReports.files).toEqual(
-      expect.arrayContaining(["backend.md", "scribe.md", "test.md"])
-    );
+    expect(report.materializedReports.files).toEqual(expect.arrayContaining(["backend.md", "scribe.md", "test.md"]));
     expect(report.materializedHandoffs.files.length).toBeGreaterThan(0);
     // Reported, never deleted — purgeFiles never lists a report or a handoff file.
     for (const f of [...plan.purgeFiles]) {

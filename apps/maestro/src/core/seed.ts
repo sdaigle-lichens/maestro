@@ -306,7 +306,9 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
   // Defensive: only attach skills to instances that actually exist in this seed.
   const skillsFor = (agent: string): string[] => Array.from(new Set(skillMap[agent] ?? [])).filter(Boolean);
   // Install-time discovered skills seed as referenced (the default mode); promote in the canvas.
-  const coreInstances = infraOnly ? CORE_INSTANCES.filter((i) => i.name === "reviewer" || i.name === "scribe") : CORE_INSTANCES;
+  const coreInstances = infraOnly
+    ? CORE_INSTANCES.filter((i) => i.name === "reviewer" || i.name === "scribe")
+    : CORE_INSTANCES;
   const instances: MaestroInstanceV3[] = [
     ...impl.map((a) => ({ name: a, agent: a, loaded_skills: [], referenced_skills: skillsFor(a) })),
     ...coreInstances.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) })),

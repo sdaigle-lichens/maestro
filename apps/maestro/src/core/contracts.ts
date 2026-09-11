@@ -733,13 +733,7 @@ export interface AgentSyncSummary {
  * it, but a narrower union here would fail to typecheck against what `decideSync` returns.
  */
 export type SyncVerdictName =
-  | "detached"
-  | "no-template"
-  | "materialize"
-  | "refresh"
-  | "adopt"
-  | "stale-customized"
-  | "unchanged";
+  "detached" | "no-template" | "materialize" | "refresh" | "adopt" | "stale-customized" | "unchanged";
 
 /** What the `/agents` review offers per diverged fork, and what the skills prompt for. */
 export type AgentSyncAction = "update" | "keep" | "detach";
