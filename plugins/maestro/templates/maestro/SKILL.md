@@ -22,7 +22,7 @@ Note: if the following step 1 text is missing, empty, or reads `[shell command e
 ### Step 2 — Match to workflow
 
 1. Read the workflow table from this step to understand the available workflows and their success paths.
-2. Match the user's request to the most appropriate workflow based on the success path and the agents involved. If no workflow clearly matches, offer to build one: invoke the `create-workflow` skill (via the `Skill` tool) to design and add a workflow for this kind of request, rather than only asking the user to clarify. Only fall back to asking them to clarify if they'd rather not create one now.
+2. Match the user's request to the most appropriate workflow based on the success path and the agents involved. Read only what you need to make that call — the request itself and, at most, enough of the repo to tell which success path fits. This is a routing decision, not a design one; do not start working out *how* the request should be implemented here. If no workflow clearly matches, offer to build one: invoke the `create-workflow` skill (via the `Skill` tool) to design and add a workflow for this kind of request, rather than only asking the user to clarify. Only fall back to asking them to clarify if they'd rather not create one now.
 3. Record the workflow that matches the user's request so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent. **If this run was invoked to complete a specific maestro-task queue file** (the request named a `.claude/maestro-tasks/NNN-*.md` file), pass that filename too so it's recorded now — while you still have it in front of you — rather than re-derived at the end:
 
 ```bash
@@ -35,6 +35,8 @@ node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs"
 <!-- Maestro:HANDOFFS:END -->
 
 ### Step 3 — Execute the workflow
+
+Dispatch agent steps, don't investigate them; run skill steps yourself — see Principles.
 
 Create tasks for each step in the success path using `TaskCreate`. Wire dependencies with `TaskUpdate addBlockedBy`. Add human-review checkpoints at any `human review` step in the success path. Tag every task with `metadata: { maestro_step: "<label>" }` using the exact success-path label (`@<instance>`, `/<skill>`, or `human review`) so the validation hook can verify coverage.
 
@@ -81,6 +83,7 @@ Before finishing, judge whether this session went cleanly: did it need a major r
 <!-- Maestro:PRINCIPLES:START -->
 ## Principles
 
+- **You are a router, not an implementer — except while running a skill step.** Through Steps 1–3 your only job is to find the right workflow and wire its task graph: classify the request, clear the gates, match it to a success path. You learn what this project is from the results subagents return to you along that path, not by investigating it yourself. Reading to **route** is expected — a `.claude/maestro-tasks/` file, a channel payload, enough of the repo to classify in Step 2. Reading to **design** is not: never survey this project's code or architecture to work out *how* something should be built, and never dispatch a generic `Explore`/`general-purpose` agent to do it for you. The agent that owns an `@<instance>` step is the one meant to do that thinking, and `SubagentStart` has already given it the skills documenting the invariants involved. **The exception is a `/<skill>` step.** There the work genuinely is yours — you run it inline, in your own context, and you follow that skill's instructions as written, including any research it tells you to do. Ground it the way a dispatched agent would be grounded: if the skill doesn't already say so, invoke `explore-concept-skills` (via the `Skill` tool — it isn't user-invocable) before reasoning about this project's design, and proceed normally if it reports **NONE**. When the skill step finishes, you are a router again.
 - **One workflow at a time.** Set the active workflow via `maestro-set-session-workflow.cjs` before invoking any subagents.
 - **Trust the success path.** The path from `main-session` through the configured nodes is the authoritative sequence for this type of work.
 - **Human reviews are hard stops.** Never bypass a `human review` step. Stop and surface the work to the user. When the user asks for changes, route them to the responsible agent via the human-review node's condition edges (see Step 3) instead of editing code in your own context.
