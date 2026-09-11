@@ -395,16 +395,20 @@ function collectReportContext(cfg, projectDir, agentType) {
         for (const e of delivered) {
           retire(projectDir, bareAgent, e);
           try {
-            appendSessionLog(claudeDir, {
-              ts: new Date().toISOString(),
-              origin: "main_session",
-              kind: "channel_delivery",
-              sender: e.sender,
-              receiver: bareAgent,
-              agent_id: payload.agent_id || "",
-              content: e.body.trim(),
-              log: `channel: ${e.sender} → ${bareAgent}`,
-            });
+            appendSessionLog(
+              claudeDir,
+              {
+                ts: new Date().toISOString(),
+                origin: "main_session",
+                kind: "channel_delivery",
+                sender: e.sender,
+                receiver: bareAgent,
+                agent_id: payload.agent_id || "",
+                content: e.body.trim(),
+                log: `channel: ${e.sender} → ${bareAgent}`,
+              },
+              payload
+            );
           } catch {
             // Best-effort — never fail the hook on a logging error.
           }

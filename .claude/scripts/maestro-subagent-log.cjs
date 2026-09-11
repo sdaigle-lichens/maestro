@@ -93,40 +93,56 @@ function parseHandoff(msg) {
   try {
     if (event === "SubagentStart") {
       const offered = offeredSkills(claudeDir, agentType);
-      appendSessionLog(claudeDir, {
-        ts: new Date().toISOString(),
-        origin: "main_session",
-        kind: "dispatch",
-        agent: agentType,
-        agent_id: agentId,
-        input: lastMsg,
-        ...(offered ? { offered_skills: offered } : {}),
-        log: `→ ${agentType}`,
-      });
+      appendSessionLog(
+        claudeDir,
+        {
+          ts: new Date().toISOString(),
+          origin: "main_session",
+          kind: "dispatch",
+          agent: agentType,
+          agent_id: agentId,
+          input: lastMsg,
+          ...(offered ? { offered_skills: offered } : {}),
+          log: `→ ${agentType}`,
+        },
+        p
+      );
     } else if (event === "SubagentStop") {
       if (!agentType) {
         // No agent_type → this SubagentStop isn't a real workflow agent handing
         // off (e.g. the /ai-tools listen-loop pausing for the user). Log it as a
         // transition boundary rather than letting it fall back to "unknown".
-        appendSessionLog(claudeDir, {
-          ts: new Date().toISOString(),
-          origin: "transition",
-          kind: "transition",
-          output: lastMsg,
-          log: "transition",
-        });
+        appendSessionLog(
+          claudeDir,
+          {
+            ts: new Date().toISOString(),
+            origin: "transition",
+            kind: "transition",
+            output: lastMsg,
+            log: "transition",
+          },
+          p
+        );
       } else {
         const { status, label } = parseHandoff(lastMsg);
-        appendSessionLog(claudeDir, {
-          ts: new Date().toISOString(),
-          origin: agentType,
-          kind: "handoff",
-          agent_id: agentId,
-          status,
-          label,
-          output: lastMsg,
-          log: label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
-        });
+        // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
+        // thread and every sibling subagent share (only `p.agent_transcript_path` is private to
+        // this agent, and deriveUsage doesn't read it — see session-usage.ts's header). Treat this
+        // handoff's ctx_pct as an estimate under parallel subagents, same caveat as every other kind.
+        appendSessionLog(
+          claudeDir,
+          {
+            ts: new Date().toISOString(),
+            origin: agentType,
+            kind: "handoff",
+            agent_id: agentId,
+            status,
+            label,
+            output: lastMsg,
+            log: label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
+          },
+          p
+        );
 
         // `036`: stamp every unstamped channel file THIS agent just wrote, under whichever
         // receiver's lane it landed in, with the run's own id. Only the sender's own SubagentStop

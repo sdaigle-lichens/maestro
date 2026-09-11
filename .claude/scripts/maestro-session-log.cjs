@@ -56,11 +56,15 @@ function summarize(toolName, ti) {
   if (!fs.existsSync(path.join(claudeDir, "maestro.json"))) process.exit(0); // only log Maestro-configured projects
 
   try {
-    appendSessionLog(claudeDir, {
-      ts: new Date().toISOString(),
-      origin: p.agent_type || "main_session",
-      log: summarize(p.tool_name || "", p.tool_input),
-    });
+    appendSessionLog(
+      claudeDir,
+      {
+        ts: new Date().toISOString(),
+        origin: p.agent_type || "main_session",
+        log: summarize(p.tool_name || "", p.tool_input),
+      },
+      p
+    );
   } catch {
     // Best-effort — never fail the tool call on a logging error.
   }

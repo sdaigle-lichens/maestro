@@ -25,6 +25,25 @@
 
 const fs = require("fs");
 const path = require("path");
+const { appendSessionLog } = require("./lib/maestro-session.cjs");
+
+// Best-effort `kind:"phase"` marker, same shape and same no-ctx_pct caveat as
+// maestro-step1-gates.cjs's own logPhase — see its comment.
+function logPhase(projectDir) {
+  try {
+    const claudeDir = path.join(projectDir, ".claude");
+    if (!fs.existsSync(path.join(claudeDir, "maestro.json"))) return;
+    appendSessionLog(claudeDir, {
+      ts: new Date().toISOString(),
+      origin: "main_session",
+      kind: "phase",
+      phase: "step4_task_routing",
+      log: "phase: step4_task_routing",
+    });
+  } catch {
+    // Best-effort — never fail Step 4 on a logging error.
+  }
+}
 
 const LINES = {
   on: "Step 4 — this project routes follow-up work through the task queue. Consider running /to-maestro-tasks now to queue up any follow-up work this session surfaced.",
@@ -46,13 +65,15 @@ function gateLine(projectDir) {
   return config.use_maestro_tasks === true ? LINES.on : LINES.off;
 }
 
+const projectDir = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
 let line = LINES.off;
 try {
-  line = gateLine(process.env.CLAUDE_PROJECT_DIR ?? process.cwd());
+  line = gateLine(projectDir);
 } catch {
   // Belt and braces: gateLine already swallows the expected failures, and anything it doesn't
   // must still not take the orchestrator down with it.
   line = LINES.off;
 }
+logPhase(projectDir);
 process.stdout.write(line + "\n");
 process.exit(0);
