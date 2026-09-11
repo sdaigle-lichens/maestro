@@ -314,6 +314,10 @@
     "blockedBy": []
   },
   "063-create-workflow-and-update-workflow-skills-over-a-workflow-spec-module.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "064-per-session-maestro-log-files-with-tabbed-session-log.md": {
     "status": "ready",
     "blockedBy": []
   }
