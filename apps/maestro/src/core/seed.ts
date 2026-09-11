@@ -50,7 +50,7 @@ const cond = (from: string, to: string, label: string, side: "left" | "right" = 
  * source node instead, so a source with several same-column conditions splits its curves across
  * both sides rather than stacking them all on one.
  */
-function sideTracker(nodes: MaestroNodeV3[]): (from: string, to: string) => "left" | "right" {
+export function sideTracker(nodes: MaestroNodeV3[]): (from: string, to: string) => "left" | "right" {
   const xById = new Map(nodes.map((n) => [n.id, n.position?.x ?? 0]));
   const sameColumnCount = new Map<string, number>();
   return (from, to) => {
@@ -67,8 +67,8 @@ function sideTracker(nodes: MaestroNodeV3[]): (from: string, to: string) => "lef
 // Vertical rhythm for the seeded layout. A skill-less node gets BASE_STEP of room; each
 // attached skill chip wraps onto ~its own row in the canvas, so we add PER_SKILL_STEP per
 // skill to keep a tall (many-skill) node from overlapping the one below it.
-const BASE_STEP = 140;
-const PER_SKILL_STEP = 30;
+export const BASE_STEP = 140;
+export const PER_SKILL_STEP = 30;
 
 // Number of skills attached to a seeded instance — used only to size vertical spacing.
 type SkillCount = (instanceName: string) => number;

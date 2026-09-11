@@ -29,7 +29,7 @@ export type {
   MaestroSession,
 } from "./types.js";
 
-import type { MaestroConfigV3 } from "./types.js";
+import type { MaestroConfigV3, MaestroWorkflowV3 } from "./types.js";
 
 /**
  * The sentinel value on either of a skill's two tag dimensions (see `DiscoveredDefinition` below)
@@ -583,6 +583,50 @@ export interface ConfigIssue {
   kind: string;
   workflow: string;
   detail: string;
+}
+
+/**
+ * A compact, declarative description of a workflow — what `workflow-spec.ts`'s `applyWorkflowSpec`
+ * consumes and `workflowToSpec` produces, so a workflow can be authored or changed without
+ * hand-writing `MaestroNodeV3`/`MaestroEdgeV3` graph JSON.
+ *
+ * `steps` is the success chain, in order, EXCLUDING the implicit `main-session` entry node — each
+ * entry is a step token in the same vocabulary `seed.ts`'s `linearWorkflow` already uses:
+ * `"human_review-1"` (the one representable human-review node), `"skill:<id>"` (a skill node the
+ * orchestrator runs inline), or anything else (the `workflow_instances` name of an agent node —
+ * created fresh, agent == name, when it doesn't exist yet and the agent it names is available).
+ *
+ * `conditions` are the workflow's condition edges. A `from`/`to` naming a step already in `steps`
+ * wires onto that success-path node; a `from`/`to` naming anything else introduces that node OFF
+ * the success path, in a side column — this is how the seeded `refactor` agent exists today, and
+ * the spec format keeps that expressible rather than requiring every condition endpoint to already
+ * be a success-path step.
+ */
+export interface WorkflowSpec {
+  name: string;
+  steps: string[];
+  conditions?: { from: string; to: string; label: string }[];
+}
+
+/**
+ * What `applyWorkflowSpec` did — bucketed outcome fields, following `ApplyRulesSummary`'s
+ * convention rather than a flat status.
+ *
+ * `errors.length > 0` means nothing was applied: `config` and `workflow` echo the INPUT config and
+ * (when it already existed) the workflow untouched — the caller (the CLI) is expected to check
+ * `errors` before writing anything, never to write on a best-effort partial result. `issues` is the
+ * separate, non-blocking report from `config-validate.ts`'s `duplicateAgentTypes` run over the
+ * RESULTING config — reported alongside a successful apply, never used to refuse or repair it
+ * (mirroring `maestro-render-orchestrator.cjs`'s "report before writing, never in place of
+ * writing").
+ */
+export interface ApplyWorkflowSpecResult {
+  config: MaestroConfigV3;
+  workflow: MaestroWorkflowV3;
+  /** Names of `workflow_instances` entries newly created to satisfy a step that named no existing instance. */
+  createdInstances: string[];
+  issues: ConfigIssue[];
+  errors: string[];
 }
 
 /** What installing the orchestrator skill did to an existing file. All four are load-bearing. */

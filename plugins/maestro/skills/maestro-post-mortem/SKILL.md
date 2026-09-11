@@ -37,6 +37,7 @@ This is read-and-reason first; it never changes anything until the user opts in.
    - retune where a skill lives: move it between an instance's `loaded_skills` (auto-load up front) and `referenced_skills` (load on demand) in `.claude/maestro.json` (then `/maestro-update`) when it was loaded too eagerly (context tax on unrelated tasks) or not eagerly enough (agent dove into source first)
    - adjust the orchestrator's prose in `.claude/skills/maestro/SKILL.md`
    - fix a workflow edge or a condition label that misrouted a handoff
+   - wrong or missing workflow — no workflow matched the request, or the matched one has the wrong steps/routing for this kind of work: run `/create-workflow` to add one, or `/update-workflow` to change an existing one
    - or a plain process fix (e.g. "read the file once and reuse it", "run the typecheck only after the edit batch")
 
    Leave snags the user doesn't pick at the proposal stage.

@@ -6,12 +6,12 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups — 20 files:
+Everything lands under `<project>/.claude/`. Three groups — 25 files:
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-step4-gate` (`046`) |
-| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`) |
+| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-step4-gate` (`046`), `maestro-resume-target` (`039`), `maestro-resolve-skill-path` (`061`), `maestro-workflow-spec` (`063` — the `create-workflow`/`update-workflow` skills' CLI) |
+| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
 Plus `bash-validation.sh`, the one asset copied **executable** (`0o755`) because its hook runs it as
@@ -72,6 +72,13 @@ sub-concept.
 exit-0-unconditional, one-line-of-stdout contract, resolving `use_maestro_tasks` instead of `gates`
 and injected by Step 4 instead of Step 1. `maestro-check-runtime.cjs`'s `SKILL_INVOKED_SCRIPTS`
 gained it too, for the same fatal-if-missing reason.
+
+**`063` added a script + lib pair rather than a lone script: `maestro-workflow-spec.cjs` and
+`lib/maestro-workflow-spec.cjs`.** Backs the `create-workflow`/`update-workflow` skills, which invoke
+the CLI directly (not a hook, not harness-injected) to add or change a workflow in
+`.claude/maestro.json` from a compact spec instead of hand-written graph JSON — same
+read/mutate/write/re-render shape as `maestro-render-orchestrator.cjs` above. The lib is generated
+from `apps/maestro/src/core/workflow-spec.ts` like the other `lib/*.cjs` entries in the row above.
 
 **`047` added a second dual-registered hook, `maestro-enable-task-routing`, same shape as
 `maestro-step0`.** It is the writer `046` left unbuilt: fires on `UserPromptExpansion` (matcher

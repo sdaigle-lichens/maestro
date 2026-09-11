@@ -1,10 +1,10 @@
 ---
 name: plugin-libs-parity
-description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the eleven plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
+description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the twelve plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.8"
-  last-update: d4f36f8898f9df1038cd8963788304387785c6f5
+  version: "1.9"
+  last-update: 66ee3890372ebb28b4ee565656a8a0849bb53a15
 ---
 
 # Core ↔ plugin parity
@@ -63,22 +63,33 @@ the original name list is still all there, not that the lists match exactly. `ma
 grew `projectOwnsHook` this way, which is how the hook-arbitration guard reaches the plugin's hook
 scripts at all.
 
-## The eleven generated entries
+## The twelve generated entries
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed`, `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
-`maestro-handoff-defaults` (`033`).
+`maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`).
 
-**Five of the eleven are also COPIED into projects, which widens what a rename breaks (`035`).** A
+**Six of the twelve are also COPIED into projects, which widens what a rename breaks (`035`).** A
 bundle runs from the marketplace cache *and*, if it is in `install.ts`'s `STATIC_ASSETS`, from
 `<project>/.claude/scripts/lib/` — where the copy is a snapshot that only a re-install refreshes.
-The copied set is `maestro-session`, `maestro-skill-regions`, `maestro-agent-sync`, and — since
-`035` — `maestro-report-defaults` and `maestro-handoff-defaults` (plus the hand-maintained
-`maestro-tasks.cjs`). So removing or renaming an export from one of those breaks two populations
-with different clocks: the cache re-pulls on a `plugin.json` version bump, the project copies do
-not move until someone re-installs. See `installing-maestro`'s manifest sub-concept for the rule
-the copied list answers to, and why a lib missing from it fails silently.
+The copied set is `maestro-session`, `maestro-skill-regions`, `maestro-agent-sync`,
+`maestro-report-defaults` and `maestro-handoff-defaults` (since `035`), and — since `063` —
+`maestro-workflow-spec`, which backs the `maestro-workflow-spec.cjs` CLI the `create-workflow`/
+`update-workflow` skills invoke directly (plus the hand-maintained `maestro-tasks.cjs`). So removing
+or renaming an export from one of those breaks two populations with different clocks: the cache
+re-pulls on a `plugin.json` version bump, the project copies do not move until someone re-installs.
+See `installing-maestro`'s manifest sub-concept for the rule the copied list answers to, and why a
+lib missing from it fails silently.
+
+**`maestro-workflow-spec` carries no `node:sqlite`-free requirement of its own.** Unlike
+`maestro-agent-sync` and `maestro-session` below, nothing requires it unconditionally from inside a
+hook running under an arbitrary `node` — it is `require`d only by the standalone
+`maestro-workflow-spec.cjs` CLI, which has no try/catch degrade path at all: a missing or throwing
+`require` fails the CLI outright regardless of which module caused it. It happens to pull in no
+`node:sqlite` (`workflow-spec.ts` only reaches `config.ts`, `success-path.ts` and `seed.ts`'s layout
+helpers), but that is incidental, not an invariant this file enforces the way it does for the two
+below.
 
 **`maestro-agent-sync` must not pull in `node:sqlite`.** It backs
 **two** callers, both running under whatever bare `node` is on the session's PATH:

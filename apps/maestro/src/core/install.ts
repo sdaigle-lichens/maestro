@@ -187,6 +187,11 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // function) rather than by a hook — a project copy for the same $CLAUDE_PROJECT_DIR reason as
   // every other orchestrator-invoked script above.
   { src: "scripts/maestro-resolve-skill-path.cjs", dest: ".claude/scripts/maestro-resolve-skill-path.cjs" },
+  // The `create-workflow`/`update-workflow` skills' CLI: reads .claude/maestro.json, applies a
+  // WorkflowSpec, writes it back, and re-renders the orchestrator — the same read/mutate/write/
+  // re-render shape as maestro-render-orchestrator.cjs above, hence the same project-copy
+  // treatment. Invoked directly by those skills, not by a hook.
+  { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
@@ -201,6 +206,9 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
+  // Backs maestro-workflow-spec.cjs above (`applyWorkflowSpec`/`workflowToSpec`), generated from
+  // apps/maestro/src/core/workflow-spec.ts.
+  { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (`035`). Reports have no
   // seed tier at all, so without this file a project-local hook resolves NO output format for an
   // agent whose report is only global — the failure that motivated the slice. Handoffs do have a
