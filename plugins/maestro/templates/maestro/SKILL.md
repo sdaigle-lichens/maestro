@@ -22,7 +22,7 @@ Note: if the following step 1 text is missing, empty, or reads `[shell command e
 ### Step 2 — Match to workflow
 
 1. Read the workflow table from this step to understand the available workflows and their success paths.
-2. Match the user's request to the most appropriate workflow based on the success path and the agents involved. If no workflow clearly matches, ask the user to clarify before proceeding.
+2. Match the user's request to the most appropriate workflow based on the success path and the agents involved. If no workflow clearly matches, offer to build one: invoke the `create-workflow` skill (via the `Skill` tool) to design and add a workflow for this kind of request, rather than only asking the user to clarify. Only fall back to asking them to clarify if they'd rather not create one now.
 3. Record the workflow that matches the user's request so the `SubagentStart` hook can inject the correct skills and handoff rules into each subagent. **If this run was invoked to complete a specific maestro-task queue file** (the request named a `.claude/maestro-tasks/NNN-*.md` file), pass that filename too so it's recorded now — while you still have it in front of you — rather than re-derived at the end:
 
 ```bash

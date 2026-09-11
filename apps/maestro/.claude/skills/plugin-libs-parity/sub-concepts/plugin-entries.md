@@ -1,7 +1,7 @@
 # Plugin entries
 
 `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export that names exactly what the
-plugin's scripts need from `src/core`. Ten exist; each maps 1:1 to a `.cjs` in
+plugin's scripts need from `src/core`. Twelve exist; each maps 1:1 to a `.cjs` in
 `plugins/maestro/scripts/lib/`, and the list is hard-coded in `build-plugin-libs.mjs`.
 
 The constraint an entry inherits: everything it pulls in must run under bare `node` with no

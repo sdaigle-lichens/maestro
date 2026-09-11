@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.11"
-  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
+  version: "1.12"
+  last-update: 66ee3890372ebb28b4ee565656a8a0849bb53a15
 ---
 
 # Maestro config model (v3)
@@ -55,11 +55,16 @@ never written through `config:save`. Their writers are the install-time syncs (`
 already has a writer. `033` followed that precedent rather than reopening it.
 
 **A slice can have more than one writer, and then read-before-write is the rule.** The `workflows`
-slice now has two: `/workflows`, and `/agents` (which edits the selected instance's `loaded_skills` /
-`referenced_skills`). Because the merge replaces the *whole* block, a writer that saves a copy it
-loaded minutes ago reverts everything the other one did in between — so `/agents` re-reads via
-`data:workflows` immediately before calling `config:save`, and mutates only the one instance in that
-fresh config. Any third writer of an existing slice owes the same.
+slice now has three. Two go through the app's `mergeSlice`: `/workflows`, and `/agents` (which edits
+the selected instance's `loaded_skills` / `referenced_skills`). Because the merge replaces the
+*whole* block, a writer that saves a copy it loaded minutes ago reverts everything the other one did
+in between — so `/agents` re-reads via `data:workflows` immediately before calling `config:save`, and
+mutates only the one instance in that fresh config. The third never goes through IPC or `mergeSlice`
+at all: `plugins/maestro/scripts/maestro-workflow-spec.cjs` (the `create-workflow`/`update-workflow`
+skills' CLI, backed by `workflow-spec.ts`'s `applyWorkflowSpec`) runs from outside the app process
+entirely, doing its own `readConfig` → mutate the named workflow → `writeConfig` cycle — the same
+read-before-write discipline as the app's two writers, just enforced by hand instead of by a merge
+function. Any further writer of an existing slice owes the same.
 
 ## Duplicate agent types are validated, not merely prevented
 

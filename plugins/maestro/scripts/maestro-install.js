@@ -315,10 +315,16 @@ const STATIC_ASSETS = [
   // Skill-id -> SKILL.md path resolver (061) — see apps/maestro/src/core/install.ts's
   // STATIC_ASSETS for why it's a project copy invoked directly rather than a hook.
   { src: "scripts/maestro-resolve-skill-path.cjs", dest: ".claude/scripts/maestro-resolve-skill-path.cjs" },
+  // The `create-workflow`/`update-workflow` skills' CLI — see apps/maestro/src/core/install.ts's
+  // STATIC_ASSETS for the full rationale; same read/mutate/write/re-render shape as
+  // maestro-render-orchestrator.cjs above.
+  { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
+  // Backs maestro-workflow-spec.cjs above, generated from apps/maestro/src/core/workflow-spec.ts.
+  { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
   // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
   // silently, and why the handoff store is copied even though its seed would have covered it.
