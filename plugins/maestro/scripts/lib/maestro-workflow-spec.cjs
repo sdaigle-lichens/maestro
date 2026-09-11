@@ -274,7 +274,12 @@ function applyWorkflowSpec(cfg, spec, mode) {
     const already = nodeById.get(parsed.id);
     if (already) return already;
     if (parsed.type === "human_review" || parsed.type === "skill") {
-      const node2 = parsed.type === "human_review" ? { id: parsed.id, type: "human_review", position: existingPositions.get(parsed.id) ?? { x, y } } : { id: parsed.id, type: "skill", skill: parsed.skill, position: existingPositions.get(parsed.id) ?? { x, y } };
+      const node2 = parsed.type === "human_review" ? { id: parsed.id, type: "human_review", position: existingPositions.get(parsed.id) ?? { x, y } } : {
+        id: parsed.id,
+        type: "skill",
+        skill: parsed.skill,
+        position: existingPositions.get(parsed.id) ?? { x, y }
+      };
       nodeById.set(node2.id, node2);
       nodes.push(node2);
       return node2;
@@ -282,7 +287,9 @@ function applyWorkflowSpec(cfg, spec, mode) {
     const inst = resolveAgentInstance(parsed.instance);
     if (!inst) {
       const available = cfg.agents_available.length > 0 ? cfg.agents_available.join(", ") : "(none)";
-      errors.push(`Step "${token}" names no existing workflow instance and no such agent is available. Available agents: ${available}.`);
+      errors.push(
+        `Step "${token}" names no existing workflow instance and no such agent is available. Available agents: ${available}.`
+      );
       return null;
     }
     const bare = bareAgentName(inst.agent);
@@ -333,7 +340,8 @@ function applyWorkflowSpec(cfg, spec, mode) {
   const existingConditionSide = /* @__PURE__ */ new Map();
   if (existingWorkflow) {
     for (const e of existingWorkflow.edges) {
-      if (e.kind === "condition" && e.sourceHandle) existingConditionSide.set(`${e.from}|${e.to}|${e.label ?? ""}`, e.sourceHandle);
+      if (e.kind === "condition" && e.sourceHandle)
+        existingConditionSide.set(`${e.from}|${e.to}|${e.label ?? ""}`, e.sourceHandle);
     }
   }
   const side = sideTracker(nodes);
