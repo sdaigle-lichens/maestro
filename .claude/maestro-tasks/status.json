@@ -317,8 +317,20 @@
     "status": "done",
     "blockedBy": []
   },
-  "064-per-session-maestro-log-files-with-tabbed-session-log.md": {
+  "064-per-session-maestro-session-state.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "065-app-level-multi-session-log-view.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "064-per-session-maestro-session-state.md"
+    ]
+  },
+  "066-claim-a-task-so-two-sessions-cannot-take-the-same-one.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "064-per-session-maestro-session-state.md"
+    ]
   }
 }
