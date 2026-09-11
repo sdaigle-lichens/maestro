@@ -312,5 +312,9 @@
   "062-live-refresh-the-maestro-tasks-screen-on-status-change.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "063-create-workflow-and-update-workflow-skills-over-a-workflow-spec-module.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
