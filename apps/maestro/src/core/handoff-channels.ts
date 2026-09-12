@@ -22,6 +22,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readSession } from "./session-runtime.js";
+import { listSessionIds, sessionPathsFor } from "./session-paths.js";
 import type { PendingLane } from "./contracts.js";
 
 /** How long a lane file may sit unconsumed before `sweep` removes it. */
@@ -221,22 +222,38 @@ export function sweep(projectDir: string, opts: { now?: number; ageCapMs?: numbe
 }
 
 /**
+ * Every `run_id` a live session directory currently holds (`064`). A lane file is "in flight" if it
+ * belongs to ANY session running against this project, not just one — before `064` there could only
+ * ever be one, so this read was a single file. An empty set means no session is active, which is
+ * the honest answer for a window that opens between sessions.
+ */
+function liveRunIds(projectDir: string): Set<string> {
+  const claudeDir = path.join(projectDir, ".claude");
+  const ids = new Set<string>();
+  for (const sessionId of listSessionIds(claudeDir)) {
+    const state = sessionPathsFor(claudeDir, sessionId)?.state;
+    const runId = readSession(state ?? null).run_id;
+    if (runId) ids.add(runId);
+  }
+  return ids;
+}
+
+/**
  * Every receiver lane holding at least one undelivered file, right now — the `/maestro` Channels
  * block's one round trip (`037`). READ-ONLY: unlike `writeStamp`/`retire`/`sweep`, this never
  * touches disk. It does not even mint a `run_id` — that is `ensureSessionRunId`'s job, reserved for
- * a live hook mid-run; the app reads whatever `maestro_session.json` already holds (`null` when no
- * session is active), which is the honest answer for a window that opens between sessions.
+ * a live hook mid-run; the app reads whatever the live sessions' `session.json` files already hold.
  *
- * `current`/`stranded` split on that read, not on age: a `null` live `run_id` means every entry
+ * `current`/`stranded` split on that read, not on age: no live `run_id` at all means every entry
  * reads as `stranded`, which is correct — with no session running, nothing is "in flight".
  */
 export function pendingLanes(projectDir: string, now: number = Date.now()): PendingLane[] {
-  const liveRunId = readSession(path.join(projectDir, ".claude", "maestro_session.json")).run_id;
+  const runIds = liveRunIds(projectDir);
   const lanes: PendingLane[] = [];
   for (const receiver of listDirs(channelsRoot(projectDir))) {
     const entries = readLane(projectDir, receiver, now);
     if (entries.length === 0) continue;
-    const current = liveRunId ? entries.filter((e) => e.runId === liveRunId).length : 0;
+    const current = entries.filter((e) => e.runId != null && runIds.has(e.runId)).length;
     lanes.push({
       receiver,
       count: entries.length,

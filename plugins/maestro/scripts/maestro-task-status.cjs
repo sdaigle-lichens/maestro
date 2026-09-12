@@ -13,9 +13,10 @@
 //       Mark one task done (e.g. "002-add-login.md"), then recompute the
 //       cascade so dependents whose blockers are now all done flip to ready.
 //       Run by the /maestro orchestrator after a task-file run fully succeeds.
-//       With no filename, falls back to `active_task` in maestro_session.json
-//       (set by maestro-set-session-workflow.cjs --task) so the orchestrator
-//       marks exactly the task it started without re-deriving the filename.
+//       With no filename, falls back to `active_task` in THIS SESSION'S own
+//       session.json (`064`, set by maestro-set-session-workflow.cjs --task) so
+//       the orchestrator marks exactly the task it started without re-deriving
+//       the filename — and never the task a CONCURRENT session started.
 //
 // All cascade/status logic lives in lib/maestro-tasks.cjs so the app and the
 // orchestrator share one implementation. Self-contained: maestro-install.js
@@ -24,6 +25,7 @@
 const fs = require("fs");
 const path = require("path");
 const { sync, markDone } = require("./lib/maestro-tasks.cjs");
+const { resolveSessionPaths } = require("./lib/maestro-session.cjs");
 
 const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
 const [command, arg] = process.argv.slice(2);
@@ -33,9 +35,11 @@ const [command, arg] = process.argv.slice(2);
 // exactly the task it started — no re-deriving the filename from the prompt.
 function activeTaskFromSession() {
   try {
-    const session = JSON.parse(
-      fs.readFileSync(path.join(projectDir, ".claude", "maestro_session.json"), "utf8")
-    );
+    // `064`: this session's own state, resolved from the environment (this CLI has no stdin). No
+    // session id ⇒ null ⇒ the same "needs a filename" answer an absent `active_task` already gave.
+    const sess = resolveSessionPaths(path.join(projectDir, ".claude"));
+    if (!sess) return null;
+    const session = JSON.parse(fs.readFileSync(sess.state, "utf8"));
     return session && typeof session.active_task === "string" ? session.active_task : null;
   } catch {
     return null;
@@ -68,7 +72,7 @@ try {
     if (!target) {
       process.stderr.write(
         'maestro-task-status: "done" needs a task filename (e.g. done 002-add-login.md), ' +
-          "and no active_task is recorded in maestro_session.json\n"
+          "and no active_task is recorded for this session\n"
       );
       process.exit(1);
     }

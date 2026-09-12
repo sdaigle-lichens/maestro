@@ -20,6 +20,7 @@ import {
   CHANNEL_AGE_CAP_MS,
 } from "../../src/core/handoff-channels.js";
 import { writeSession } from "../../src/core/session-runtime.js";
+import { ensureSessionPaths } from "../../src/core/session-paths.js";
 
 let projectDir: string;
 
@@ -183,10 +184,15 @@ describe("sweep", () => {
 });
 
 describe("pendingLanes (037)", () => {
-  function setRunId(runId: string | null): void {
-    const dir = path.join(projectDir, ".claude");
-    fs.mkdirSync(dir, { recursive: true });
-    writeSession(path.join(dir, "maestro_session.json"), { workflow: null, generated_instances: [], run_id: runId });
+  /**
+   * `064`: a live `run_id` now lives in ONE SESSION'S `maestro_sessions/<id>/session.json`, and
+   * `pendingLanes` unions every session directory's. Writing the pre-`064` flat file would leave
+   * the live set empty and silently read every entry as stranded.
+   */
+  function setRunId(runId: string | null, sessionId = "sess-live"): void {
+    const paths = ensureSessionPaths(path.join(projectDir, ".claude"), { session_id: sessionId });
+    expect(paths, `invalid session id ${sessionId}`).not.toBeNull();
+    writeSession(paths!.state, { workflow: null, generated_instances: [], run_id: runId });
   }
 
   it("is empty for a project with no channels directory at all", () => {
@@ -212,10 +218,25 @@ describe("pendingLanes (037)", () => {
     expect(lane.oldestAgeMs).toBeGreaterThan(4900);
   });
 
-  it("with no live session (no maestro_session.json), every entry reads as stranded", () => {
+  it("with no live session (no session directory at all), every entry reads as stranded", () => {
     write("scribe", "backend", "GAP\n");
     const [lane] = pendingLanes(projectDir);
     expect(lane.current).toBe(0);
+    expect(lane.stranded).toBe(1);
+  });
+
+  // `064`. Two sessions running against one project each hold their own `run_id`; a lane file is
+  // "in flight" if it belongs to EITHER, and a file from neither is still stranded.
+  it("counts an entry as current when it matches ANY live session's run_id", () => {
+    setRunId("run-a", "sess-a");
+    setRunId("run-b", "sess-b");
+    write("test", "backend", formatStampedContent("FROM A\n", "run-a"));
+    write("test", "frontend", formatStampedContent("FROM B\n", "run-b"));
+    write("test", "scribe", formatStampedContent("FROM NEITHER\n", "run-dead"));
+
+    const [lane] = pendingLanes(projectDir);
+    expect(lane.count).toBe(3);
+    expect(lane.current).toBe(2);
     expect(lane.stranded).toBe(1);
   });
 

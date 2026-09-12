@@ -139,6 +139,120 @@ describe("tailSessionLog", () => {
     }
   });
 
+  // `064`. `sessionLogFileFor()` is re-resolved on EVERY poll, so "the newest session" can change
+  // underneath a live tail. `lineCount` is a position in a FILE, not in a path — the tail has to
+  // know which file it counted, or a flip splices two sessions into one rendered log.
+  //
+  // Which log is "newest" is decided by mtime, so every file here has its mtime set explicitly:
+  // two writes in the same millisecond tie, and a tie would make the test's outcome an accident.
+  describe("re-resolving to a different session's log (064)", () => {
+    const T1 = new Date("2026-01-01T00:00:00Z");
+    const T2 = new Date("2026-01-02T00:00:00Z");
+
+    function writeSessionLog(id: string, origins: string[], mtime: Date): string {
+      const dir = path.join(tmp, ".claude", "maestro_sessions", id);
+      fs.mkdirSync(dir, { recursive: true });
+      const file = path.join(dir, "log.jsonl");
+      fs.writeFileSync(file, origins.map(entry).join("\n") + (origins.length ? "\n" : ""));
+      fs.utimesSync(file, mtime, mtime);
+      return file;
+    }
+
+    it("re-inits instead of splicing a LONGER sibling's tail onto the previous session's entries", () => {
+      // THE REGRESSION. Session A is being tailed with 3 entries; session B becomes the newest
+      // with 5. Without tracking which file lineCount counts, `entries.slice(3)` of B's file was
+      // emitted as an APPEND to A's — the view then showed A's 3 entries followed by B's last 2,
+      // rendered as one continuous log of a session that never existed.
+      writeSessionLog("sess-a", ["a1", "a2", "a3"], T1);
+      const r = record();
+      const stop = tailSessionLog(tmp, r.handlers, TICK);
+      try {
+        expect(r.events).toEqual(["init:3"]);
+
+        writeSessionLog("sess-b", ["b1", "b2", "b3", "b4", "b5"], T2);
+        vi.advanceTimersByTime(TICK);
+
+        expect(r.events).toEqual(["init:3", "reset", "init:5"]);
+        // Not one `entry` event: nothing was appended to what the consumer already had.
+        expect(r.entries).toEqual([]);
+      } finally {
+        stop();
+      }
+    });
+
+    it("re-inits on a flip to a SHORTER sibling too — both branches share one resync path", () => {
+      writeSessionLog("sess-a", ["a1", "a2", "a3", "a4", "a5"], T1);
+      const r = record();
+      const stop = tailSessionLog(tmp, r.handlers, TICK);
+      try {
+        expect(r.events).toEqual(["init:5"]);
+
+        writeSessionLog("sess-b", ["b1", "b2"], T2);
+        vi.advanceTimersByTime(TICK);
+
+        expect(r.events).toEqual(["init:5", "reset", "init:2"]);
+        expect(r.entries).toEqual([]);
+      } finally {
+        stop();
+      }
+    });
+
+    it("picks up the first session to appear after the tail started, with no spurious reset", () => {
+      // A tail that subscribed before any session existed has emitted nothing a consumer would
+      // need to be told to drop, so the file switch must NOT announce a reset.
+      const r = record();
+      const stop = tailSessionLog(tmp, r.handlers, TICK);
+      try {
+        expect(r.events).toEqual(["init:0"]);
+
+        writeSessionLog("sess-a", ["a1", "a2"], T1);
+        vi.advanceTimersByTime(TICK);
+
+        expect(r.events).toEqual(["init:0", "init:2"]);
+      } finally {
+        stop();
+      }
+    });
+
+    it("keeps tailing the same session across appends while a stale sibling sits beside it", () => {
+      // The flip must be keyed on which file is newest, not merely on another directory existing:
+      // an older sibling must not steal the tail, and an append must still arrive as one entry.
+      writeSessionLog("sess-old", ["o1", "o2"], T1);
+      const live = writeSessionLog("sess-live", ["l1"], T2);
+      const r = record();
+      const stop = tailSessionLog(tmp, r.handlers, TICK);
+      try {
+        expect(r.events).toEqual(["init:1"]);
+
+        fs.appendFileSync(live, entry("l2") + "\n"); // a real append bumps mtime to now — still newest
+        vi.advanceTimersByTime(TICK);
+
+        expect(r.events).toEqual(["init:1", "entry"]);
+        expect(r.entries).toEqual(["l2"]);
+      } finally {
+        stop();
+      }
+    });
+
+    it("falls over to a live sibling when the tailed session's directory goes at SessionEnd", () => {
+      writeSessionLog("sess-b", ["b1", "b2"], T1);
+      writeSessionLog("sess-a", ["a1", "a2", "a3"], T2); // newest — the one being tailed
+      const r = record();
+      const stop = tailSessionLog(tmp, r.handlers, TICK);
+      try {
+        expect(r.events).toEqual(["init:3"]);
+
+        fs.rmSync(path.join(tmp, ".claude", "maestro_sessions", "sess-a"), { recursive: true, force: true });
+        vi.advanceTimersByTime(TICK);
+
+        // Not reset-and-stay-empty: the sibling is still live and becomes the tail's subject.
+        expect(r.events).toEqual(["init:3", "reset", "init:2"]);
+      } finally {
+        stop();
+      }
+    });
+  });
+
   it("stops polling once unsubscribed", () => {
     fs.writeFileSync(logFile, entry("a") + "\n");
     const r = record();

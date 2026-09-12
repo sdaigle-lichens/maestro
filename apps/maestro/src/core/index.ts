@@ -77,6 +77,27 @@ export {
   SESSION_LOG_FILE,
 } from "./session-runtime.js";
 
+// Per-session state directories (`064`) — which session am I, and where does its state live.
+export {
+  SESSIONS_DIR_NAME,
+  SESSION_LOG_NAME,
+  SESSION_STATE_NAME,
+  SESSION_TASKS_NAME,
+  SESSION_ID_ENV,
+  LEGACY_SESSION_FILES,
+  isValidSessionId,
+  resolveSessionId,
+  sessionsRoot,
+  sessionPathsFor,
+  resolveSessionPaths,
+  ensureSessionsRoot,
+  ensureSessionPaths,
+  listSessionIds,
+  removeSessionState,
+  type SessionPaths,
+  type SessionIdSource,
+} from "./session-paths.js";
+
 export { IGNORE_DIRS, MAX_DEPTH, walkDirs, rulesFilesIn, ruleSearchDirs } from "./fs-scan.js";
 
 export {

@@ -99,8 +99,9 @@ already-installed project reports stale once and re-copies; see the staleness su
 **`maestro-session-cleanup.cjs`, not the plugin's `.sh` of the same name.** The two now do the same
 thing — the `.sh`'s container teardown was removed with M5. The project copy is node because the
 `.sh` shells out to `python3` to parse the hook payload, which a project cannot assume is installed.
-It is also the one hook script with **no arbitration guard**: both copies just `rm -f` the same three
-ephemeral files, so a double fire is unobservable (see the hook-arbitration sub-concept).
+It is also the one hook script with **no arbitration guard**: since `064` both copies call the same
+`resolveSessionId` + `removeSessionState` out of `lib/maestro-session.cjs` (the `.sh` shells into
+`node -e` to do it), so a double fire is unobservable (see the hook-arbitration sub-concept).
 
 > `install.ts`'s asset-manifest comment (around line 155) still claims the `.sh` "also tears down
 > the per-project web-app container". That is stale — flagged, not edited here.
@@ -153,7 +154,18 @@ leaves with it under `--purge`. See the uninstall sub-concept for what that remo
 ## The other two writes
 
 **`.gitignore` at the repo root** (found via `git rev-parse --show-toplevel`) gets a `# Maestro`
-section with three `**/.claude/maestro_session*` entries plus, since `036`, `**/.claude/channels/`.
+section with three `**/.claude/maestro_session*` entries, `**/.claude/channels/` since `036`, and
+`**/.claude/maestro_sessions/` since `064`.
+
+> **`GITIGNORE_ENTRIES` is not the mechanism that git-ignores `maestro_sessions/`, and must not be
+> read as one.** This list is only ever *appended at install time*, so the new entry reaches a
+> project only when someone re-installs — every project installed before `064` would leak the
+> directory into git in the meantime. What actually covers them is `ensureSessionsRoot()` in
+> `session-paths.ts` writing a `.gitignore` containing `*` into `maestro_sessions/` **as it creates
+> the directory**: it ignores the directory's contents and itself, needs no re-install, and works on
+> a project that has never heard of this release. The manifest entry is belt-and-braces for new
+> installs, in the other direction. Any future ephemeral *directory* should follow this shape rather
+> than relying on the manifest alone.
 The leading recursive wildcard matches `.claude/` at **any** depth including the root, so a
 monorepo needs no per-package `.gitignore`. Entries are appended only when missing, under a header
 added only when missing. The header itself changed wording in `036`, from "removed at SessionEnd"

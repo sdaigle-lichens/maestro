@@ -219,13 +219,15 @@ export interface MaestroHandoffEntry {
 export type MaestroHandoffsSlice = Record<string, MaestroHandoffEntry>;
 
 /**
- * Ephemeral per-session state written to .claude/maestro_session.json.
+ * Ephemeral per-session state written to .claude/maestro_sessions/<session_id>/session.json
+ * (`064`; before that, one .claude/maestro_session.json shared by every session in the project).
  *
  * `run_id` (`036`) is minted the first time this file is written in a session — see
  * `ensureSessionRunId` in `session-runtime.ts` — and stamped onto every channel file a subagent
- * writes. `SessionEnd` deletes this file, so the next run necessarily mints a different one; that
- * is the whole mechanism that keeps a channel delivery from being inlined into an unrelated,
- * later run as if it were fresh.
+ * writes. `SessionEnd` deletes the session's whole directory, so the next run necessarily mints a
+ * different one; that is the whole mechanism that keeps a channel delivery from being inlined into
+ * an unrelated, later run as if it were fresh. Since `064` the id is also per SESSION rather than
+ * per project, so two concurrent sessions no longer share one and cross-stamp each other's lanes.
  */
 export interface MaestroSession {
   workflow: string | null;

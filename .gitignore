@@ -78,3 +78,4 @@ vite.config.ts.timestamp-*
 **/.claude/maestro_session.log.jsonl
 **/.claude/maestro_session_tasks.json
 **/.claude/channels/
+**/.claude/maestro_sessions/

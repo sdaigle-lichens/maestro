@@ -6,9 +6,10 @@
 //   - A success-path step was skipped (e.g. human review never got a task).
 //
 // Created tasks are tracked across the session in the ephemeral file
-// <cwd>/.claude/maestro_session_tasks.json — deleted at SessionEnd alongside
-// the other session files. Sequential writes are safe: TaskCreate calls come
-// from the main orchestrator session (no parallel-subagent race).
+// <cwd>/.claude/maestro_sessions/<session_id>/tasks.json (`064`) — deleted at SessionEnd alongside
+// the rest of that session's directory. Sequential writes are safe: TaskCreate calls come
+// from the main orchestrator session (no parallel-subagent race), and since `064` a SECOND
+// concurrent session's coverage is a different file rather than the same one read as this one's.
 //
 // No-op when maestro.json is absent (Maestro not configured for this project).
 
@@ -21,6 +22,7 @@ const {
   successPathSteps,
   workflowNodeLabels,
   projectOwnsHook,
+  ensureSessionPaths,
 } = require("./lib/maestro-session.cjs");
 
 // ---------------------------------------------------------------------------
@@ -48,22 +50,17 @@ function heuristicMatch(subject, description, expectedLabels) {
 }
 
 // ---------------------------------------------------------------------------
-// Ephemeral task tracker — maestro_session_tasks.json
+// Ephemeral task tracker — maestro_sessions/<session_id>/tasks.json (`064`)
 // ---------------------------------------------------------------------------
 
-function tasksPath(claudeDir) {
-  return path.join(claudeDir, "maestro_session_tasks.json");
+function readTasks(tasksFile) {
+  return readJson(tasksFile) || { steps: [] };
 }
 
-function readTasks(claudeDir) {
-  return readJson(tasksPath(claudeDir)) || { steps: [] };
-}
-
-function writeTasks(claudeDir, data) {
-  const p = tasksPath(claudeDir);
-  const tmp = p + ".tmp";
+function writeTasks(tasksFile, data) {
+  const tmp = tasksFile + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(data, null, 2));
-  fs.renameSync(tmp, p);
+  fs.renameSync(tmp, tasksFile);
 }
 
 // ---------------------------------------------------------------------------
@@ -93,11 +90,18 @@ function writeTasks(claudeDir, data) {
   const cfgPath = path.join(claudeDir, "maestro.json");
   if (!fs.existsSync(cfgPath)) process.exit(0); // not a Maestro project
 
+  // `064`: validate against THIS session's active workflow and THIS session's coverage ledger.
+  // With no resolvable session id there is neither, and guessing from another session's would warn
+  // about steps this session never planned — so skip validation entirely and exit 0, which is
+  // already what this hook does for every other unresolvable input.
+  const sess = ensureSessionPaths(claudeDir, p);
+  if (!sess) process.exit(0);
+
   try {
     const cfg = readJson(cfgPath);
     if (!cfg || cfg.version !== 3) process.exit(0);
 
-    const session = readSession(path.join(claudeDir, "maestro_session.json"));
+    const session = readSession(sess.state);
     if (!session.workflow) process.exit(0); // no active workflow yet
 
     const wf = (cfg.workflows || []).find((w) => w.name === session.workflow);
@@ -123,11 +127,11 @@ function writeTasks(claudeDir, data) {
     if (resolvedLabel === "mark-task-done") process.exit(0);
 
     // --- Track created steps ---
-    const tracker = readTasks(claudeDir);
+    const tracker = readTasks(sess.tasks);
     if (resolvedLabel) {
       tracker.steps.push(resolvedLabel);
     }
-    writeTasks(claudeDir, tracker);
+    writeTasks(sess.tasks, tracker);
 
     // --- Compute warnings ---
     const warnings = [];

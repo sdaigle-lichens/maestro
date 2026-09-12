@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, and the two implementations (tasks.ts and maestro-tasks.cjs) that must agree. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, or when a close from the UI and one from the orchestrator disagree."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: e90c2a974a94dc6c1709097f36b4563af9bdd468
+  version: "1.2"
+  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
 ---
 
 # Task queue
@@ -73,9 +73,13 @@ always** — when:
 - a success-path step was skipped (e.g. human review never got a task).
 
 Created tasks are tracked across the session in the ephemeral
-`<cwd>/.claude/maestro_session_tasks.json`, deleted at `SessionEnd` with the other session files.
-Sequential writes are safe because `TaskCreate` calls come from the main orchestrator session, with
-no parallel-subagent race.
+`<cwd>/.claude/maestro_sessions/<session_id>/tasks.json` (`064`; it was the flat
+`maestro_session_tasks.json` until then), removed with the rest of that session's directory at its
+own `SessionEnd`. **The ledger is per session, so a concurrent session's coverage is no longer read
+as this one's** — which used to make one session's `TaskCreate` suppress the other's warning. When
+no session id resolves, the hook skips validation entirely and exits 0 rather than falling back to a
+shared file; see `maestro-architecture`'s "Which session am I". Sequential writes are safe because
+`TaskCreate` calls come from the main orchestrator session, with no parallel-subagent race.
 
 A warning here is advisory. Work that legitimately falls outside the active workflow — running
 `/create-concept-skills`, for instance — will trip it, and that is expected.

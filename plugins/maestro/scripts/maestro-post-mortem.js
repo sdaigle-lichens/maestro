@@ -1,13 +1,20 @@
 #!/usr/bin/env node
-// /maestro-post-mortem helper — condenses <project>/.claude/maestro_session.log.jsonl
-// into a compact digest the skill reasons over (instead of dumping the raw,
-// message-heavy log into the model's context).
+// /maestro-post-mortem helper — condenses ONE session's
+// <project>/.claude/maestro_sessions/<session_id>/log.jsonl into a compact digest the skill
+// reasons over (instead of dumping the raw, message-heavy log into the model's context).
 //
-// Read-only: parses the append-only session log + maestro_session.json, prints a
+// Read-only: parses the append-only session log + that session's session.json, prints a
 // markdown digest (default) or a structured object (--json) to stdout, and
 // never edits or deletes anything.
 //
-//   node maestro-post-mortem.js <projectRoot> [--json]
+//   node maestro-post-mortem.js <projectRoot> [--session <id>] [--json]
+//
+// `064`: WHICH session it digests defaults to the INVOKING one (resolved from the
+// CLAUDE_CODE_SESSION_ID environment variable — this CLI runs with no stdin), which is what makes
+// "run it mid-session" mean the session you are actually in even when a second one is live in the
+// same project. `--session <id>` names another explicitly. When neither resolves it LISTS the
+// available sessions and says to pass one, rather than digesting an arbitrary directory — a
+// post-mortem of somebody else's run is worse than no post-mortem.
 //
 // The digest is deterministic and cheap: a session summary, the dispatch↔handoff
 // timeline correlated by agent_id, and heuristic FLAGS (repeated reads, edit
@@ -17,7 +24,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { readJson, sessionLogPath } = require("./lib/maestro-session.cjs");
+const { readJson, resolveSessionPaths, sessionPathsFor, listSessionIds } = require("./lib/maestro-session.cjs");
 
 // --- tuning knobs (candidate thresholds, intentionally loose) -----------------
 const REPEAT_READ_MIN = 3; // same file Read this many times → flag
@@ -233,13 +240,60 @@ function renderMarkdown(a) {
   return L.join("\n");
 }
 
-function main() {
-  const args = process.argv.slice(2).filter((x) => x !== "--json");
-  const asJson = process.argv.includes("--json");
-  const root = args[0] || process.env.CLAUDE_PROJECT_DIR || ".";
-  const claudeDir = path.join(root, ".claude");
-  const logFile = sessionLogPath(claudeDir);
+// `--session <id>` / `--session=<id>`, and the positional project root, in one pass over argv.
+function parseArgs(argv) {
+  let root = null;
+  let sessionId = null;
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--json") continue;
+    if (a === "--session") sessionId = argv[++i] ?? null;
+    else if (a.startsWith("--session=")) sessionId = a.slice("--session=".length);
+    else if (!a.startsWith("--") && root === null) root = a;
+  }
+  return { root, sessionId };
+}
 
+/** Nothing to digest: list what IS there and say how to pick one, rather than guessing. */
+function reportNoSession(claudeDir, sessionId, asJson) {
+  const available = listSessionIds(claudeDir);
+  const sessionsDir = path.join(claudeDir, "maestro_sessions");
+  const msg = available.length
+    ? "Could not tell which Maestro session to digest" +
+      (sessionId ? ` ("${sessionId}" is not a valid session id)` : "") +
+      ".\nAvailable sessions under " +
+      sessionsDir +
+      ":\n" +
+      available.map((id) => `  - ${id}`).join("\n") +
+      "\nRe-run with --session <id>."
+    : "No Maestro session state found under " +
+      sessionsDir +
+      ".\nThe post-mortem reads the live session log, which is ephemeral and deleted at SessionEnd.\nRun /maestro-post-mortem during an active Maestro session that has done some work.";
+  if (asJson) {
+    process.stdout.write(JSON.stringify({ error: "no-session", sessions: available, message: msg }, null, 2) + "\n");
+  } else {
+    process.stdout.write(msg + "\n");
+  }
+}
+
+function main() {
+  const argv = process.argv.slice(2);
+  const asJson = argv.includes("--json");
+  const { root: rootArg, sessionId } = parseArgs(argv);
+  const root = rootArg || process.env.CLAUDE_PROJECT_DIR || ".";
+  const claudeDir = path.join(root, ".claude");
+
+  // An explicit `--session` is taken as given but still VALIDATED, never sanitised: an id outside
+  // `^[A-Za-z0-9_-]{1,128}$` resolves to null and gets the listing below rather than being coerced
+  // into a path. Otherwise, the invoking session. Either way this reads exactly ONE session's
+  // directory — never a merge of several, which would attribute another run's work to this one.
+  const sess = sessionId ? sessionPathsFor(claudeDir, sessionId) : resolveSessionPaths(claudeDir);
+  if (!sess) {
+    reportNoSession(claudeDir, sessionId, asJson);
+    process.exit(0);
+  }
+
+  const logFile = sess.log;
   const entries = parseLog(logFile);
   if (entries === null || entries.length === 0) {
     const msg =
@@ -254,7 +308,7 @@ function main() {
     process.exit(0);
   }
 
-  const session = readJson(path.join(claudeDir, "maestro_session.json"));
+  const session = readJson(sess.state);
   const a = analyze(entries, session);
   if (asJson) {
     process.stdout.write(JSON.stringify(a, null, 2) + "\n");

@@ -451,6 +451,12 @@ const GITIGNORE_ENTRIES = [
   "**/.claude/maestro_session.log.jsonl",
   "**/.claude/maestro_session_tasks.json",
   "**/.claude/channels/",
+  // `064`: the per-session replacement for the three flat names above. This list is only ever
+  // appended AT INSTALL TIME, so it alone would leak the directory into git on every project
+  // installed before `064` until someone re-installed — which is why `ensureSessionsRoot` also
+  // writes a `.gitignore` containing `*` into the directory as it creates it. This entry is for
+  // new installs; that one is the mechanism.
+  "**/.claude/maestro_sessions/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */

@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.12"
-  last-update: 66ee3890372ebb28b4ee565656a8a0849bb53a15
+  version: "1.13"
+  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
 ---
 
 # Maestro config model (v3)
@@ -88,8 +88,14 @@ collision).
 - `runtimeVersion` is **the one machine-owned field**. `installRuntime()` and `maestro-install.js`
   stamp it on every install/update, and it is the only thing either writes here unasked
   (see `install.ts`'s header).
-- **Session state is not here.** `maestro_session.json`, `maestro_session.log.jsonl` and
-  `maestro_session_tasks.json` are ephemeral and separately owned.
+- **Session state is not here, and since `064` it is not per-project either.** It lives in
+  `<root>/.claude/maestro_sessions/<session_id>/{session.json,log.jsonl,tasks.json}` — one directory
+  per Claude Code session, ephemeral and separately owned. `session.json` holds
+  `{ workflow, generated_instances, run_id }`, so **`run_id` is per session, not per project**;
+  anything correlating a run must read it from the calling session's own directory rather than from
+  a fixed path. The three flat `maestro_session*.json` names are the pre-`064` layout and survive
+  only as `LEGACY_SESSION_FILES`. Path resolution belongs to `src/core/session-paths.ts`; see
+  `maestro-architecture` (repo root `.claude/skills/`) for "Which session am I".
 - **Concept-skill state is not here either.** As of `ff24b37` it lives in its own
   `<root>/.claude/concept-skills.json` (`MaestroConceptSkillsState`), because concept skills are a
   plain `.claude/skills` convention and a repo can keep a reconciled list without Maestro installed.

@@ -113,6 +113,30 @@ describe("default uninstall", () => {
     expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-session-log.cjs"))).toBe(true);
   });
 
+  // `064`. The live session state is a DIRECTORY of directories, not three flat names, and an
+  // uninstall that only removed the flat names would leave every session's log, active workflow
+  // and task ledger on disk with nothing left running to clean them up.
+  it("removes the whole maestro_sessions/ directory, every session in it", async () => {
+    const root = await installed("sessions");
+    const sessions = path.join(root, ".claude", "maestro_sessions");
+    for (const id of ["sess-a", "sess-b"]) {
+      fs.mkdirSync(path.join(sessions, id), { recursive: true });
+      fs.writeFileSync(path.join(sessions, id, "log.jsonl"), '{"origin":"main_session","log":"x"}\n');
+      fs.writeFileSync(path.join(sessions, id, "session.json"), '{"run_id":"r"}');
+      fs.writeFileSync(path.join(sessions, id, "tasks.json"), '{"steps":[]}');
+    }
+    fs.writeFileSync(path.join(sessions, ".gitignore"), "*\n");
+
+    const report = await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
+
+    expect(report.sessionFilesRemoved).toContain(".claude/maestro_sessions");
+    expect(fs.existsSync(sessions)).toBe(false);
+    // ...alongside the three pre-`064` flat files a project that ran an older runtime still has.
+    expect(report.sessionFilesRemoved).toContain(".claude/maestro_session.log.jsonl");
+    // And the config still survives — a default uninstall stops the hooks, it does not purge.
+    expect(fs.existsSync(maestroJsonPath(root))).toBe(true);
+  });
+
   it("leaves nothing in settings.json that could still fire a Maestro hook", async () => {
     const root = await installed();
     // A hook of the user's, so the assertions below run against a file with content in it rather

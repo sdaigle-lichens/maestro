@@ -19,7 +19,8 @@
 //      SubagentStop/PreToolUse/PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json
 //      one-for-one.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
-//      .claude/maestro_session*.{json,jsonl} AND .claude/channels/ (`036`) across the repo /
+//      .claude/maestro_session*.{json,jsonl}, .claude/maestro_sessions/ (`064`) AND
+//      .claude/channels/ (`036`) across the repo /
 //      monorepo (the `**/` glob covers root-level .claude/ too, so no per-package .gitignore is
 //      needed)
 //   5. seeds <project>/.claude/maestro.json from defaultV3Config — ONLY when absent. An existing
@@ -179,6 +180,10 @@ function ensureRepoRootGitignore(repoRoot) {
     "**/.claude/maestro_session.log.jsonl",
     "**/.claude/maestro_session_tasks.json",
     "**/.claude/channels/",
+    // `064`: the per-session replacement for the three flat names above. Appended at install time
+    // only, so `ensureSessionsRoot` ALSO writes a `.gitignore` containing "*" into the directory as
+    // it creates it — that is what covers a project installed before `064` and never re-installed.
+    "**/.claude/maestro_sessions/",
   ]);
 }
 

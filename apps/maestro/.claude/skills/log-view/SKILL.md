@@ -1,15 +1,16 @@
 ---
 name: log-view
-description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender, how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`), and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the maestro_session.log.jsonl it reads. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`)."
+description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender, how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`), and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the log it reads — which since `064` is the PER-SESSION .claude/maestro_sessions/<session_id>/log.jsonl, resolved by sessionLogFileFor() on every poll (newest session by mtime when no id is named), so the tailed path can change identity mid-tail and the tail must resync rather than splice. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why the view flipped to another session or showed two sessions' entries as one, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`)."
 metadata:
   type: concept-skill
-  version: "2.3"
-  last-update: e90c2a974a94dc6c1709097f36b4563af9bdd468
+  version: "2.4"
+  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
 ---
 
 # Log View
 
-The `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. It reads `<projectRoot>/.claude/maestro_session.log.jsonl` and presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three.
+The `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. It reads `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`; the flat
+`maestro_session.log.jsonl` before that — see "Which log file" below) and presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three.
 
 This is the **read side** of the Maestro runtime: it displays what the hook scripts write. See the `maestro-architecture` skill for the **write side** (how the log is produced and the full HANDOFF routing contract). See the `workflow-view` skill for the sibling `/workflows` authoring view.
 
@@ -55,9 +56,10 @@ App-wide (src/renderer/src/routes/__root.tsx)
   <SessionLogProvider>  (src/renderer/src/utils/session-log-context.tsx)
     └── window.maestro.log.subscribe({ onInit, onEntry, onReset })
           MAIN process (src/main/ipc.ts) owns the tail: it polls
-          maestro_session.log.jsonl and pushes over the `log:init` /
-          `log:entry` / `log:reset` channels
-          → init (full snapshot) / entry (new line) / reset (file deleted)
+          maestro_sessions/<session_id>/log.jsonl and pushes over the
+          `log:init` / `log:entry` / `log:reset` channels
+          → init (full snapshot) / entry (new line) / reset (file deleted
+            OR the resolved path changed — see "Which log file")
           events update: entries[], connected
                                      │
        ┌─────────────────────────────┘
@@ -96,10 +98,10 @@ Active Maestro session
   SubagentStart     → maestro-subagent-log.js       → dispatch entry      (kind:"dispatch", agent, agent_id, input)
   SubagentStart     → maestro-inject-agent-context.js → channel_delivery entry (kind:"channel_delivery", sender, receiver, agent_id, content) — (`036`/`037`)
   SubagentStop      → maestro-subagent-log.js       → handoff entry       (kind:"handoff", agent_id, status, label, output)
-  SessionEnd        → maestro-session-cleanup.sh    → DELETE maestro_session.log.jsonl
+  SessionEnd        → maestro-session-cleanup.sh    → DELETE this session's directory only
 ```
 
-All four hooks append to the same file. All are no-ops when `maestro.json` is absent. The file is deleted at SessionEnd, so the empty state is normal.
+All four hooks append to the same file — **the same file being "this Claude Code session's `log.jsonl`" since `064`**, resolved by `resolveSessionId` from the hook payload's own `session_id`. A subagent's hook payload carries the MAIN session's id, so a whole workflow run (orchestrator plus every subagent it spawns) lands in one file, which is what makes `buildInstances`' `agent_id` correlation work at all. All are no-ops when `maestro.json` is absent, and a **silent** no-op when no session id resolves. The directory is deleted at that session's own SessionEnd, so the empty state is normal.
 
 **`channel_delivery` is written by the INJECTOR, not the logger script.** `maestro-inject-agent-context.js` is the same `SubagentStart` hook that inlines a channel payload as `additionalContext` (see `maestro-architecture`'s HANDOFF routing contract) — it appends this log entry itself, at the same moment, so the log has a durable record of what was inlined without a second hook reading the same channel file. `origin` is hardcoded `"main_session"` on this entry, same as a `dispatch` entry — it is not written into the receiving agent's own segment, which is exactly why `buildInstances` correlates it by `agent_id` across the whole array rather than by which segment it landed in (see below).
 
@@ -128,7 +130,40 @@ Renderer paths are relative to `apps/maestro/`.
 | The read-only `pendingLanes()` — `/maestro`'s undrained-backlog view, NOT this route's data (`037`)                            | `handoff-channels.ts` in `apps/maestro/src/core/`                             |
 | Shared append helper (`appendSessionLog`, `readStdin`)                                                                         | `plugins/maestro/scripts/lib/maestro-session.cjs`                            |
 | Hook registration (all three hooks registered here)                                                                            | `plugins/maestro/hooks/hooks.json`                                           |
-| Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_session.log.jsonl`                                     |
+| Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`)               |
+| Path resolution + session-id validation (`sessionLogFileFor`, `sessionPathsFor`, `listSessionIds`)                             | `session-log.ts` / `session-paths.ts` in `apps/maestro/src/core/`                     |
+
+## Which log file (`064`)
+
+Before `064` "the project's log" was one fixed path and this section did not need to exist. Now
+there is one directory per Claude Code session, and the reader has to choose.
+
+`sessionLogFileFor(projectRoot, sessionId?)` in `src/core/session-log.ts` answers it:
+
+| Called with | Resolves to |
+| --- | --- |
+| a `sessionId` | that session's `maestro_sessions/<id>/log.jsonl` — the precise answer |
+| nothing | `newestSessionLog()`: the session log with the newest **mtime** |
+| nothing, and no session directories exist | the pre-`064` flat `maestro_session.log.jsonl` |
+
+The tail calls it with no id, so it follows the most recently written session — the honest
+single-session bridge, deliberately re-resolved on **every poll** so a session that starts after the
+tail did gets picked up instead of the view sitting on a dead log. Showing every live session at
+once is `065`'s job; this keeps the one-log view working rather than blanking it in the meantime.
+
+**`lineCount` is a position in a FILE, not in a path — and that is a real defect this shape caused,
+not a hypothetical.** The tail's poll loop diffs a line count against the previous read. When the
+resolved path flips to a *longer* sibling session's log, `entries.slice(lineCount)` of the new file
+was emitted as an append to the previous session's entries: one session's head spliced onto
+another's tail in the rendered view, with nothing about it looking wrong. `tailSessionLog` therefore
+tracks `currentFile` alongside `lineCount` and treats a **path change exactly like a truncation** —
+`reset` + `init`, `lineCount` back to 0 — so a flip re-syncs rather than splices. Any future reader
+that caches a position must cache the path it is a position in.
+
+> **Known and deferred to `065`:** because `newestSessionLog` re-resolves by mtime every poll, two
+> genuinely concurrent live sessions make the tail flip back and forth, emitting a full reset+init
+> each time. Correct — no splicing — but visibly thrashy. `065` owns multi-session display; do not
+> paper over it by caching the resolution, which would re-break the case above.
 
 ## The data model
 
@@ -334,7 +369,7 @@ This is the relationship between the page and the custom hooks/scripts.
 
 ### SessionEnd cleanup
 
-`maestro-session-cleanup.sh` (SessionEnd hook) deletes both `maestro_session.log.jsonl` and `maestro_session.json`. The page's empty state is therefore the expected condition when no Maestro session is active — it is not an error.
+`maestro-session-cleanup.sh` (SessionEnd hook) deletes **only the ending session's own** `.claude/maestro_sessions/<session_id>/` directory — its `log.jsonl`, `session.json` and `tasks.json` together — plus the three pre-`064` flat files if an older runtime left them. A sibling session's directory is never touched, so one session ending no longer blanks a concurrent one's view mid-run. The page's empty state is still the expected condition when no Maestro session is active — it is not an error.
 
 ### Why SUCCESS/FAILURE requires `maestro-subagent-log.js`
 
@@ -344,10 +379,11 @@ The plain tool-call log from `maestro-session-log.js` has **no outcome data** �
 
 - **The log is ephemeral.** Deleted at SessionEnd by `maestro-session-cleanup.sh`, whose only job that is. The desktop window outlives any session, so an empty page is the normal between-sessions state, not an error. The file only exists during and immediately after an active Maestro session.
 - **Status comes exclusively from the SubagentStop handoff entry.** If `maestro-subagent-log.js` is not registered, all steps will have `status: null` and default to green checkmarks. If a real workflow agent (has an `agent_type`) exits without a parseable `HANDOFF:` line (crash, force-stop, broken Maestro contract), the status will be `"unknown"` (shown as yellow warning icon). A `SubagentStop` with **no `agent_type`** is instead logged as `kind:"transition"` (a neutral grey card) — a boundary that isn't a workflow handoff, not a failed agent, so it deliberately does **not** show a yellow warning.
-- **The log path comes from the open project, not `process.cwd()`.** Main resolves it from the project store's current root; `currentRoot()` in `main/ipc.ts` is the single place that answers "which project". The app's own cwd is irrelevant and always wrong here.
+- **The log path comes from the open project, not `process.cwd()` — and since `064` the project is no longer enough to name it.** Main resolves the *root* from the project store; `currentRoot()` in `main/ipc.ts` is the single place that answers "which project". The *file* under it is then `sessionLogFileFor()`'s call, and it can differ between two polls of the same project. The app's own cwd is irrelevant and always wrong here.
+- **A path change is a reset, not an append (`064`).** `lineCount` indexes the file it was read from, so a tail that tracks only the count and not `currentFile` emits a longer sibling session's tail as if it continued the previous session's entries — two sessions spliced into one rendered log, silently. `tailSessionLog` resyncs (`reset` + `init`) on a path change for exactly the same reason it does on a truncation. See "Which log file".
 - **The tail polls, it does not `fs.watch`.** Main uses `setInterval` + a read + a line-count diff. Watch APIs are unreliable across editors that write via rename and across network/virtualised filesystems, and the hooks append constantly enough that a poll is cheap. The tail lives in main, so exactly one poll loop runs no matter how many routes are mounted.
 - **This same shape — main-process poller, `subscribe`/`unsubscribe` push channel, single-owner-per-window tail, retargeted on project switch — was deliberately duplicated (not shared) for the `/maestro-tasks` route's live refresh.** `tailTasks` in `apps/maestro/src/core/tasks.ts` and the `tasks:subscribe`/`tasks:unsubscribe` channel are their own implementation, poll-based for the same `fs.watch`-is-unreliable reason. Unlike this route's app-wide `SessionLogProvider`, the tasks tail is subscribed route-locally from `maestro-tasks.tsx` — only that screen reads live task data. See `task-queue` (repo root `.claude/skills/`) for the task side.
-- **`reset` event on SessionEnd.** When the JSONL file disappears (deleted by `maestro-session-cleanup.sh`), the server emits `reset: {}` and `lineCount` drops to 0. The provider clears `entries`, the page shows the empty state. A new session's `init` event re-fills it. This is the normal SessionEnd → new session cycle without a page reload.
+- **`reset` event on SessionEnd.** When the JSONL file disappears (its session's directory deleted by `maestro-session-cleanup.sh`), the server emits `reset: {}` and `lineCount` drops to 0. The provider clears `entries`, the page shows the empty state. A new session's `init` event re-fills it. This is the normal SessionEnd → new session cycle without a page reload.
 - **`window.maestro.log.subscribe` is single-owner.** Main keeps one tail per `webContents.id` and stops the old one before starting a new one — so a second subscriber _steals_ the tail, and the first unsubscribe then stops it for both. The owner is `SessionLogProvider`; every other consumer reads from it with `useSessionLog()`. A test pins the call site to that one file.
 - **The tail is retargeted on a project switch**, in `main/ipc.ts`. Without that, the window keeps streaming the previously-opened repo's session log while showing the new project everywhere else.
 - **`tails` and `logSubscribers` answer two different questions, and `retargetTails` needs the second one.** `tails` (`Map<webContentsId, stop>`) is "which windows have a running watcher"; `logSubscribers` (`Set<number>`, `038`) is "which windows asked for one". They're the same set only while a project is open — a window that subscribes with no project open gets an empty `logInit` and `startTail` returns before ever touching `tails`, so `retargetTails` iterating `tails.keys()` would never revisit it once a project opened, leaving `/session-log` dead for that window's whole life. `logSubscribe` adds to `logSubscribers` *before* calling `startTail`; both `logUnsubscribe` and the window's `destroyed` listener remove from it. `retargetTails` reads `logSubscribers`, never `tails.keys()` and never `BrowserWindow.getAllWindows()` (the latter would start a tail for a window that never subscribed at all).

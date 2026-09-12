@@ -28,7 +28,8 @@ const path = require("path");
 const { appendSessionLog } = require("./lib/maestro-session.cjs");
 
 // Best-effort `kind:"phase"` marker, same shape and same no-ctx_pct caveat as
-// maestro-step1-gates.cjs's own logPhase — see its comment.
+// maestro-step1-gates.cjs's own logPhase — see its comment, including `064`'s env-resolved session
+// and the silent skip when no id resolves.
 function logPhase(projectDir) {
   try {
     const claudeDir = path.join(projectDir, ".claude");

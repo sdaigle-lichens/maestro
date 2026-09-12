@@ -1,10 +1,14 @@
 // Resolving which agent_id a loop-back should RESUME, from the session log alone (`039`).
 //
 // The index this needs already exists: `maestro-subagent-log.js` appends a `kind:"handoff"` entry
-// to maestro_session.log.jsonl on every SubagentStop that carries an `agent_type` — `{ origin:
+// to the CALLING SESSION'S log.jsonl on every SubagentStop that carries an `agent_type` — `{ origin:
 // <agent type>, agent_id, ... }`. That log is append-only and deleted at SessionEnd, so it is
 // already a per-run agent-type → agent-id index with exactly the right lifetime. This module adds
 // no state of its own; it only reads what is already there.
+//
+// `064` is what makes the "a wrong resume is corrupt and silent" warning below hold in practice:
+// the caller hands in ITS OWN session's lines. Before that, one project-wide log meant a loop-back
+// in session A could resolve, and `SendMessage`, session B's `agent_id` for the same agent type.
 //
 // Pure — no `fs`. The caller reads and parses the log's lines and hands them in.
 

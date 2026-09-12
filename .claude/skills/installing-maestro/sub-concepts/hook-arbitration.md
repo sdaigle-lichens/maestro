@@ -59,9 +59,12 @@ it is true. `projectOwnsHook` reaches them through the `maestro-session.cjs` bun
 (`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm --filter maestro
 build:plugin-libs` — see `plugin-libs-parity`.
 
-**`maestro-session-cleanup.sh` has no guard, on purpose.** Its project twin is `.cjs` and both just
-`rm -f` the same three ephemeral files, so a double fire is unobservable. A third implementation of
-the arbitration written in bash, to suppress a no-op, is worse than the no-op.
+**`maestro-session-cleanup.sh` has no guard, on purpose.** Its project twin is `.cjs`, and since
+`064` both call the same `resolveSessionId` + `removeSessionState` out of `lib/maestro-session.cjs`
+— the `.sh` shells into `node -e` to do it, precisely so the two cannot disagree about what
+`SessionEnd` deletes. Removing an already-removed session directory is idempotent, so a double fire
+is unobservable. A third implementation of the arbitration written in bash, to suppress a no-op, is
+worse than the no-op.
 
 ## Symlinks, and why the comparison is `realpath`
 

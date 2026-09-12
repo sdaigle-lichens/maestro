@@ -67,7 +67,7 @@ const {
   resolveHandoff,
   readLane,
   retire,
-  sessionLogPath,
+  ensureSessionPaths,
   hasCompletedRun,
   resolveProjectSkillPath,
   isRootSkillPath,
@@ -78,6 +78,7 @@ const {
 // tiny reader. A missing or unreadable log comes back `[]`, which `hasCompletedRun` answers
 // `false` for, so the safe fall-through is a first run's full injection.
 function readLogLines(p) {
+  if (!p) return []; // `064`: no session directory resolved — treat it as an empty log.
   let text;
   try {
     text = fs.readFileSync(p, "utf8");
@@ -202,6 +203,9 @@ function collect(cfg, sessionPath, agentType) {
   try {
     const generated = session.generated_instances || [];
     for (const name of matchedInstances) if (!generated.includes(name)) generated.push(name);
+    // `064`: `sessionPath` is null when no session id resolved. Nothing to write back then — the
+    // injection itself still happens in full, which is this hook's existing safe direction.
+    if (!sessionPath) throw new Error("no session");
     writeSession(sessionPath, {
       ...session,
       workflow: activeWorkflowName || resolveWorkflowName(cfg),
@@ -282,14 +286,23 @@ function collectReportContext(cfg, projectDir, agentType) {
   // looser no-op condition (see collectReportContext's header comment).
   const cfg = readJson(path.join(projectDir, ".claude", "maestro.json"));
 
+  // `064`: this session's own directory — payload `session_id` first (a subagent's payload carries
+  // the MAIN session's id), else CLAUDE_CODE_SESSION_ID, else null. Null degrades to FULL
+  // injection, never to silence: this hook is the one caller whose safe direction is to say too
+  // much rather than too little, the same stance `hasCompletedRun` already takes on an unreadable
+  // log. Everything downstream takes `sess && sess.<file>` and tolerates the null.
+  const claudeDir = path.join(projectDir, ".claude");
+  const sess = ensureSessionPaths(claudeDir, payload);
+
   const parts = [];
 
-  const result = cfg && cfg.version === 3 ? collect(cfg, path.join(projectDir, ".claude", "maestro_session.json"), agentType) : null;
+  const result = cfg && cfg.version === 3 ? collect(cfg, sess ? sess.state : null, agentType) : null;
 
   // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
-  // `dispatch`, never maestro_session.json) is the right, race-proof signal.
+  // `dispatch`, never session.json) is the right, race-proof signal. No session directory ⇒ no
+  // lines ⇒ not a resume ⇒ full injection.
   const isResume = payload.agent_id
-    ? hasCompletedRun(readLogLines(sessionLogPath(path.join(projectDir, ".claude"))), payload.agent_id)
+    ? hasCompletedRun(readLogLines(sess ? sess.log : null), payload.agent_id)
     : false;
 
   if (result) {
@@ -380,10 +393,13 @@ function collectReportContext(cfg, projectDir, agentType) {
     const bareAgent = bareAgentName(agentType);
     const entries = readLane(projectDir, bareAgent);
     if (entries.length > 0) {
-      const sessionPath = path.join(projectDir, ".claude", "maestro_session.json");
-      const runId = ensureSessionRunId(sessionPath);
-      const delivered = entries.filter((e) => e.runId === runId);
-      const waiting = entries.filter((e) => e.runId !== runId);
+      // `064`: no session directory ⇒ no `run_id` to mint or compare against, so nothing matches
+      // and every entry falls into `waiting` — MENTIONED rather than inlined. That is the same
+      // answer a foreign-run file already gets, and the conservative one: an un-attributable
+      // payload is exactly what must not be inlined verbatim.
+      const runId = sess ? ensureSessionRunId(sess.state) : null;
+      const delivered = runId ? entries.filter((e) => e.runId === runId) : [];
+      const waiting = runId ? entries.filter((e) => e.runId !== runId) : entries;
 
       if (delivered.length > 0) {
         const blocks = delivered.map((e) => `From \`${e.sender}\` (\`${e.fileName}\`):\n\n${e.body.trim()}`);
@@ -391,7 +407,6 @@ function collectReportContext(cfg, projectDir, agentType) {
           `Delivered to your channel (\`.claude/channels/${bareAgent}/\`) — inlined verbatim, nothing to re-derive:\n\n` +
             blocks.join("\n\n---\n\n")
         );
-        const claudeDir = path.join(projectDir, ".claude");
         for (const e of delivered) {
           retire(projectDir, bareAgent, e);
           try {

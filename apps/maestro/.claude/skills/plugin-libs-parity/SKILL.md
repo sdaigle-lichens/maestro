@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the twelve plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.9"
-  last-update: 66ee3890372ebb28b4ee565656a8a0849bb53a15
+  version: "1.10"
+  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
 ---
 
 # Core ↔ plugin parity
@@ -63,6 +63,18 @@ the original name list is still all there, not that the lists match exactly. `ma
 grew `projectOwnsHook` this way, which is how the hook-arbitration guard reaches the plugin's hook
 scripts at all.
 
+**A name kept but given a different ARITY is the break the superset rule does not catch, and `064`
+produced one.** `sessionLogPath` went from `(claudeDir)` to `(claudeDir, sessionId)`: the export is
+still there, the name list still passes, and an old caller passing one argument now gets `null`
+(`sessionPathsFor` rejects `undefined` as a session id) rather than a `TypeError` — a silent wrong
+answer instead of a crash. Rarer than the rename the rule warns about and strictly worse to debug.
+When you must change a signature in a bundle, grep the `.js`/`.cjs` hook scripts for the name across
+`plugins/maestro/scripts/` rather than trusting the export assertion.
+
+Related, same task: `SESSION_LOG_FILE` is now an alias for `SESSION_LOG_NAME` with **no live
+callers** — retained solely because this rule forbids removing it. An export you find with no
+callers is probably load-bearing for exactly that reason; check before deleting it.
+
 ## The twelve generated entries
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed`, `maestro-skill-tags`,
@@ -108,7 +120,14 @@ fails if it stops being 0; the script just starts throwing on machines with an o
 (`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/
 `parseStampedContent`, `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId` — re-exported here rather than
 given a 12th bundle, since `handoff-channels.ts` is `fs`/`path` only and every hook already
-`require`s this one. The sqlite tier is a **separate** bundle,
+`require`s this one. **Since `064` it carries a third such surface**, all of `session-paths.ts`
+(`resolveSessionId`, `isValidSessionId`, `sessionPathsFor`, `resolveSessionPaths`,
+`ensureSessionPaths`, `ensureSessionsRoot`, `listSessionIds`, `removeSessionState`,
+`LEGACY_SESSION_FILES`, `SESSIONS_DIR_NAME`) — also `fs`/`path` only, so the invariant below still
+measures `0`. Worth stating explicitly because this is now the third surface folded into one bundle
+on the same "it's fs-only and every hook needs it" argument: the argument is sound, but it is also
+how a bundle acquires a sqlite import by accident. Re-run the grep after any addition.
+The sqlite tier is a **separate** bundle,
 `maestro-handoff-defaults`, which `maestro-inject-agent-context.js` `require`s inside a try/catch —
 so on a `node` older than 22.5 the sqlite `require` fails and the seed still answers. That only
 holds while `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0`. The

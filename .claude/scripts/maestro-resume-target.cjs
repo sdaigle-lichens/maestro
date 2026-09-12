@@ -8,7 +8,7 @@
 // none. Empty output is always safe: it means dispatch a cold `Task` instead.
 //
 // The index behind this is not new state: maestro-subagent-log.js already appends a
-// kind:"handoff" entry to maestro_session.log.jsonl on every SubagentStop that carries a real
+// kind:"handoff" entry to THIS SESSION'S log.jsonl on every SubagentStop that carries a real
 // agent_type, keyed by that type and stamped with the agent_id that ran. This CLI is a read over
 // that log, in the family of maestro-set-session-workflow.cjs and maestro-task-status.cjs — a
 // small tool the orchestrator can reach from its allowed-tools frontmatter rather than being asked
@@ -26,9 +26,10 @@
 
 const fs = require("fs");
 const path = require("path");
-const { readJson, readSession, sessionLogPath, resumeTarget } = require("./lib/maestro-session.cjs");
+const { readJson, readSession, resolveSessionPaths, resumeTarget } = require("./lib/maestro-session.cjs");
 
 function readLogLines(p) {
+  if (!p) return []; // `064`: no session directory resolved — treat it as an empty log.
   let text;
   try {
     text = fs.readFileSync(p, "utf8");
@@ -54,9 +55,15 @@ try {
 
   if (agentType) {
     const cfg = readJson(path.join(claudeDir, "maestro.json"));
-    if (cfg && cfg.version === 3) {
-      const session = readSession(path.join(claudeDir, "maestro_session.json"));
-      const lines = readLogLines(sessionLogPath(claudeDir));
+    // `064`: THIS session's directory and no other. Resolved from CLAUDE_CODE_SESSION_ID — this CLI
+    // runs with no stdin — and never widened to a scan of `maestro_sessions/`: a sibling session's
+    // log can hold a completed run of the SAME agent type, and returning its `agent_id` would
+    // `SendMessage` into a foreign session's agent. Printing nothing (a cold `Task`) is merely
+    // slower; a wrong resume is corrupt and silent, which is the whole point of agent-runs.ts.
+    const sess = resolveSessionPaths(claudeDir);
+    if (cfg && cfg.version === 3 && sess) {
+      const session = readSession(sess.state);
+      const lines = readLogLines(sess.log);
       const id = resumeTarget(lines, cfg, session, agentType);
       if (id) process.stdout.write(id + "\n");
     }

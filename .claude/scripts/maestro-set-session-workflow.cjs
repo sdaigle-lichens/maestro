@@ -1,5 +1,6 @@
 #!/usr/bin/env node
-// Sets the active workflow name in <cwd>/.claude/maestro_session.json.
+// Sets the active workflow name in THIS session's state file,
+// <cwd>/.claude/maestro_sessions/<session_id>/session.json (`064`).
 // Called by the Maestro orchestrator at the start of each workflow execution:
 //   node maestro-set-session-workflow.cjs "<workflow name>" [--task <NNN-file.md>]
 //
@@ -13,11 +14,21 @@
 // Creates the session file if absent; preserves every other existing key
 // (generated_instances, etc.).
 //
+// `064`: which session this writes for is resolved from the CLAUDE_CODE_SESSION_ID environment
+// variable — this CLI runs with no stdin — so a second concurrent session in the same project can
+// no longer overwrite the first's active workflow, which used to make the first session's next
+// SubagentStart inject the SECOND workflow's skills. With no id resolvable it reports that plainly
+// and exits 0: the orchestrator must not be stopped over it, and writing to a project-wide file is
+// precisely the bug being removed.
+//
 // Self-contained on purpose: maestro-install.js copies this file into the
-// project's .claude/scripts/ so the orchestrator agent can run it via $CLAUDE_PROJECT_DIR.
+// project's .claude/scripts/ so the orchestrator agent can run it via $CLAUDE_PROJECT_DIR. The one
+// thing it does NOT re-implement is session resolution — that comes from lib/maestro-session.cjs,
+// which the same installer copies alongside it, so every caller resolves a session identically.
 
 const fs = require("fs");
 const path = require("path");
+const { ensureSessionPaths } = require("./lib/maestro-session.cjs");
 
 // Parse args: the first non-flag positional is the workflow name; `--task <f>`
 // (or `--task=<f>`) carries the optional task filename.
@@ -40,8 +51,8 @@ function parseArgs(argv) {
 const { workflowName, task } = parseArgs(process.argv.slice(2));
 const activeTask = task ? path.basename(task) : null; // tolerate a path; key on the bare filename
 const projectDir = process.env.CLAUDE_PROJECT_DIR ?? process.cwd();
-const sessionPath = path.join(projectDir, ".claude", "maestro_session.json");
-const maestroJsonPath = path.join(projectDir, ".claude", "maestro.json");
+const claudeDir = path.join(projectDir, ".claude");
+const maestroJsonPath = path.join(claudeDir, "maestro.json");
 
 function resolveWorkflowName(name) {
   if (name) return name;
@@ -57,6 +68,19 @@ function resolveWorkflowName(name) {
 
 try {
   const resolvedName = resolveWorkflowName(workflowName);
+
+  // Reported plainly rather than thrown: exit 0 so the orchestrator carries on, and say why the
+  // workflow was not recorded, so a subagent later missing its injected skills has a stated cause
+  // rather than looking like the hook failing.
+  const sess = ensureSessionPaths(claudeDir);
+  if (!sess) {
+    process.stdout.write(
+      `Maestro session: resolved workflow "${resolvedName}", but no Claude Code session id is ` +
+        "available, so it was not recorded — subagents will fall back to the default workflow's skills.\n"
+    );
+    process.exit(0);
+  }
+  const sessionPath = sess.state;
 
   let session = {};
   try {
@@ -75,9 +99,6 @@ try {
   // Only touch active_task when a task was passed, so re-running this mid-session
   // to switch workflows doesn't silently forget the task being completed.
   if (activeTask) updated.active_task = activeTask;
-
-  const claudeDir = path.join(projectDir, ".claude");
-  if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
 
   const tmp = sessionPath + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(updated, null, 2));

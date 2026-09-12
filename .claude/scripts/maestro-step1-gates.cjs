@@ -41,6 +41,12 @@ const { appendSessionLog } = require("./lib/maestro-session.cjs");
 // falls in the log — no `ctx_pct` here, since this script runs via `!`command`` substitution with
 // no stdin payload and so no transcript_path to derive one from (see session-usage.ts). Never
 // throws and never touches stdout/stderr: the one-line stdout contract below is load-bearing.
+//
+// `064`: WHICH session's log it lands in is resolved by `appendSessionLog` itself, from the
+// CLAUDE_CODE_SESSION_ID environment variable — there is no payload to carry a `session_id`, which
+// is exactly why the env fallback exists. With no id resolvable the append is a silent no-op and
+// the marker is simply skipped: the previously accepted limitation, now the fallback rather than
+// the normal path. The call site is unchanged, and so is every clause of the contract above.
 function logPhase(projectDir) {
   try {
     const claudeDir = path.join(projectDir, ".claude");

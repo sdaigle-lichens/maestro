@@ -34,16 +34,24 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_session_exports = {};
 __export(maestro_session_exports, {
   CHANNEL_AGE_CAP_MS: () => CHANNEL_AGE_CAP_MS,
+  LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
+  SESSIONS_DIR_NAME: () => SESSIONS_DIR_NAME,
+  SESSION_ID_ENV: () => SESSION_ID_ENV,
   SESSION_LOG_FILE: () => SESSION_LOG_FILE,
+  SESSION_LOG_NAME: () => SESSION_LOG_NAME,
+  SESSION_STATE_NAME: () => SESSION_STATE_NAME,
+  SESSION_TASKS_NAME: () => SESSION_TASKS_NAME,
   agentRunsFromLog: () => agentRunsFromLog,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
   channelDir: () => channelDir,
   collectAgentSkills: () => collectAgentSkills,
   duplicateAgentTypes: () => duplicateAgentTypes,
+  ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
+  ensureSessionsRoot: () => ensureSessionsRoot,
   formatStampedContent: () => formatStampedContent,
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
@@ -52,7 +60,9 @@ __export(maestro_session_exports, {
   isRootSkillPath: () => isRootSkillPath,
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
+  isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
+  listSessionIds: () => listSessionIds,
   nodeLabel: () => nodeLabel,
   parseStampedContent: () => parseStampedContent,
   projectOwnsHook: () => projectOwnsHook,
@@ -60,14 +70,19 @@ __export(maestro_session_exports, {
   readLane: () => readLane,
   readSession: () => readSession,
   readStdin: () => readStdin,
+  removeSessionState: () => removeSessionState,
   resolveHandoff: () => resolveHandoff,
   resolveProjectSkillPath: () => resolveProjectSkillPath,
   resolveSearchList: () => resolveSearchList,
+  resolveSessionId: () => resolveSessionId,
+  resolveSessionPaths: () => resolveSessionPaths,
   resolveWorkflowName: () => resolveWorkflowName,
   resumeTarget: () => resumeTarget,
   retire: () => retire,
   routesFrom: () => routesFrom,
   sessionLogPath: () => sessionLogPath,
+  sessionPathsFor: () => sessionPathsFor,
+  sessionsRoot: () => sessionsRoot,
   splitHandoffId: () => splitHandoffId,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
@@ -211,8 +226,7 @@ function projectOwnsHook(scriptPath, cwd, event) {
 }
 
 // src/core/session-runtime.ts
-var import_node_fs3 = __toESM(require("node:fs"), 1);
-var import_node_path2 = __toESM(require("node:path"), 1);
+var import_node_fs4 = __toESM(require("node:fs"), 1);
 var import_node_crypto = __toESM(require("node:crypto"), 1);
 
 // src/core/session-usage.ts
@@ -270,6 +284,85 @@ function deriveUsage(payload) {
   return { ctx_pct: Math.round(used / window * 1e3) / 10, ctx_model: model };
 }
 
+// src/core/session-paths.ts
+var import_node_fs3 = __toESM(require("node:fs"), 1);
+var import_node_path2 = __toESM(require("node:path"), 1);
+var SESSIONS_DIR_NAME = "maestro_sessions";
+var SESSION_LOG_NAME = "log.jsonl";
+var SESSION_STATE_NAME = "session.json";
+var SESSION_TASKS_NAME = "tasks.json";
+var SESSION_ID_ENV = "CLAUDE_CODE_SESSION_ID";
+var LEGACY_SESSION_FILES = [
+  "maestro_session.json",
+  "maestro_session.log.jsonl",
+  "maestro_session_tasks.json"
+];
+var SESSION_ID_RE = /^[A-Za-z0-9_-]{1,128}$/;
+function isValidSessionId(id) {
+  return typeof id === "string" && SESSION_ID_RE.test(id);
+}
+function resolveSessionId(payload, env = process.env) {
+  if (payload && typeof payload === "object" && payload.session_id !== void 0 && payload.session_id !== null) {
+    return isValidSessionId(payload.session_id) ? payload.session_id : null;
+  }
+  const fromEnv = env?.[SESSION_ID_ENV];
+  return isValidSessionId(fromEnv) ? fromEnv : null;
+}
+function sessionsRoot(claudeDir) {
+  return import_node_path2.default.join(claudeDir, SESSIONS_DIR_NAME);
+}
+function sessionPathsFor(claudeDir, id) {
+  if (!claudeDir || !isValidSessionId(id)) return null;
+  const dir = import_node_path2.default.join(sessionsRoot(claudeDir), id);
+  return {
+    id,
+    dir,
+    log: import_node_path2.default.join(dir, SESSION_LOG_NAME),
+    state: import_node_path2.default.join(dir, SESSION_STATE_NAME),
+    tasks: import_node_path2.default.join(dir, SESSION_TASKS_NAME)
+  };
+}
+function resolveSessionPaths(claudeDir, payload, env) {
+  return sessionPathsFor(claudeDir, resolveSessionId(payload, env));
+}
+function ensureSessionsRoot(claudeDir) {
+  const root = sessionsRoot(claudeDir);
+  import_node_fs3.default.mkdirSync(root, { recursive: true });
+  const ignore = import_node_path2.default.join(root, ".gitignore");
+  if (!import_node_fs3.default.existsSync(ignore)) import_node_fs3.default.writeFileSync(ignore, "*\n");
+  return root;
+}
+function ensureSessionPaths(claudeDir, payload, env) {
+  const paths = resolveSessionPaths(claudeDir, payload, env);
+  if (!paths) return null;
+  ensureSessionsRoot(claudeDir);
+  import_node_fs3.default.mkdirSync(paths.dir, { recursive: true });
+  return paths;
+}
+function listSessionIds(claudeDir) {
+  let names;
+  try {
+    names = import_node_fs3.default.readdirSync(sessionsRoot(claudeDir), { withFileTypes: true });
+  } catch {
+    return [];
+  }
+  return names.filter((d) => d.isDirectory() && isValidSessionId(d.name)).map((d) => d.name).sort();
+}
+function removeSessionState(claudeDir, sessionId) {
+  const paths = sessionPathsFor(claudeDir, sessionId);
+  if (!paths) return [];
+  const removed = [];
+  for (const target of [paths.dir, ...LEGACY_SESSION_FILES.map((f) => import_node_path2.default.join(claudeDir, f))]) {
+    try {
+      if (!import_node_fs3.default.existsSync(target)) continue;
+      import_node_fs3.default.rmSync(target, { recursive: true, force: true });
+      removed.push(target);
+    } catch {
+    }
+  }
+  return removed;
+}
+
 // src/core/session-runtime.ts
 function readStdin() {
   return new Promise((resolve) => {
@@ -281,18 +374,18 @@ function readStdin() {
 }
 function readJson(p) {
   try {
-    return JSON.parse(import_node_fs3.default.readFileSync(p, "utf8"));
+    return JSON.parse(import_node_fs4.default.readFileSync(p, "utf8"));
   } catch {
     return null;
   }
 }
 function readSession(p) {
-  return readJson(p) ?? { workflow: null, generated_instances: [], run_id: null };
+  return (p ? readJson(p) : null) ?? { workflow: null, generated_instances: [], run_id: null };
 }
 function writeSession(p, session) {
   const tmp = p + ".tmp";
-  import_node_fs3.default.writeFileSync(tmp, JSON.stringify(session, null, 2));
-  import_node_fs3.default.renameSync(tmp, p);
+  import_node_fs4.default.writeFileSync(tmp, JSON.stringify(session, null, 2));
+  import_node_fs4.default.renameSync(tmp, p);
 }
 function ensureSessionRunId(p) {
   const session = readSession(p);
@@ -301,18 +394,20 @@ function ensureSessionRunId(p) {
   writeSession(p, { ...session, run_id });
   return run_id;
 }
-var SESSION_LOG_FILE = "maestro_session.log.jsonl";
-function sessionLogPath(claudeDir) {
-  return import_node_path2.default.join(claudeDir, SESSION_LOG_FILE);
+var SESSION_LOG_FILE = SESSION_LOG_NAME;
+function sessionLogPath(claudeDir, sessionId) {
+  return sessionPathsFor(claudeDir, sessionId)?.log ?? null;
 }
 function appendSessionLog(claudeDir, entry, payload) {
+  const paths = ensureSessionPaths(claudeDir, payload);
+  if (!paths) return;
   const usage = payload ? deriveUsage(payload) : void 0;
   const stamped = usage && entry && typeof entry === "object" ? { ...entry, ...usage } : entry;
-  import_node_fs3.default.appendFileSync(sessionLogPath(claudeDir), JSON.stringify(stamped) + "\n");
+  import_node_fs4.default.appendFileSync(paths.log, JSON.stringify(stamped) + "\n");
 }
 
 // src/core/handoff-channels.ts
-var import_node_fs4 = __toESM(require("node:fs"), 1);
+var import_node_fs5 = __toESM(require("node:fs"), 1);
 var import_node_path3 = __toESM(require("node:path"), 1);
 var CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1e3;
 var CHANNELS_DIR_NAME = "channels";
@@ -344,14 +439,14 @@ function senderOf(fileName) {
 }
 function listDirs(dir) {
   try {
-    return import_node_fs4.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== CONSUMED_DIR_NAME).map((d) => d.name);
+    return import_node_fs5.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory() && d.name !== CONSUMED_DIR_NAME).map((d) => d.name);
   } catch {
     return [];
   }
 }
 function listFiles(dir) {
   try {
-    return import_node_fs4.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isFile()).map((d) => d.name);
+    return import_node_fs5.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isFile()).map((d) => d.name);
   } catch {
     return [];
   }
@@ -365,12 +460,12 @@ function writeStamp(projectDir, sender, runId) {
       const filePath = import_node_path3.default.join(dir, fileName);
       let content;
       try {
-        content = import_node_fs4.default.readFileSync(filePath, "utf8");
+        content = import_node_fs5.default.readFileSync(filePath, "utf8");
       } catch {
         continue;
       }
       if (STAMP_RE.test(content)) continue;
-      import_node_fs4.default.writeFileSync(filePath, formatStampedContent(content, runId));
+      import_node_fs5.default.writeFileSync(filePath, formatStampedContent(content, runId));
       stamped.push(filePath);
     }
   }
@@ -384,8 +479,8 @@ function readLane(projectDir, receiver, now = Date.now()) {
     let stat;
     let content;
     try {
-      stat = import_node_fs4.default.statSync(filePath);
-      content = import_node_fs4.default.readFileSync(filePath, "utf8");
+      stat = import_node_fs5.default.statSync(filePath);
+      content = import_node_fs5.default.readFileSync(filePath, "utf8");
     } catch {
       continue;
     }
@@ -396,8 +491,8 @@ function readLane(projectDir, receiver, now = Date.now()) {
 }
 function retire(projectDir, receiver, entry) {
   const dest = consumedDir(projectDir, receiver);
-  import_node_fs4.default.mkdirSync(dest, { recursive: true });
-  import_node_fs4.default.renameSync(entry.path, import_node_path3.default.join(dest, entry.fileName));
+  import_node_fs5.default.mkdirSync(dest, { recursive: true });
+  import_node_fs5.default.renameSync(entry.path, import_node_path3.default.join(dest, entry.fileName));
 }
 function sweep(projectDir, opts = {}) {
   const now = opts.now ?? Date.now();
@@ -410,7 +505,7 @@ function sweep(projectDir, opts = {}) {
     for (const fileName of listFiles(dir)) {
       const filePath = import_node_path3.default.join(dir, fileName);
       try {
-        import_node_fs4.default.rmSync(filePath, { force: true });
+        import_node_fs5.default.rmSync(filePath, { force: true });
         removed.push(filePath);
       } catch {
       }
@@ -422,13 +517,13 @@ function sweep(projectDir, opts = {}) {
       const filePath = import_node_path3.default.join(dir, fileName);
       let stat;
       try {
-        stat = import_node_fs4.default.statSync(filePath);
+        stat = import_node_fs5.default.statSync(filePath);
       } catch {
         continue;
       }
       if (now - stat.mtimeMs <= ageCapMs) continue;
       try {
-        import_node_fs4.default.rmSync(filePath, { force: true });
+        import_node_fs5.default.rmSync(filePath, { force: true });
         removed.push(filePath);
       } catch {
       }
@@ -724,11 +819,11 @@ function resumeTarget(lines, cfg, session, agentType) {
 }
 
 // src/core/skill-resolve.ts
-var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_fs7 = __toESM(require("node:fs"), 1);
 var import_node_path5 = __toESM(require("node:path"), 1);
 
 // src/core/fs-scan.ts
-var import_node_fs5 = __toESM(require("node:fs"), 1);
+var import_node_fs6 = __toESM(require("node:fs"), 1);
 var import_node_path4 = __toESM(require("node:path"), 1);
 var IGNORE_DIRS = ["node_modules", ".git", "dist", "build", ".next", ".turbo", ".output"];
 var MAX_DEPTH = 4;
@@ -739,7 +834,7 @@ function* walkDirs(root, opts = {}) {
     if (depth > maxDepth) return;
     let entries;
     try {
-      entries = import_node_fs5.default.readdirSync(dir, { withFileTypes: true });
+      entries = import_node_fs6.default.readdirSync(dir, { withFileTypes: true });
     } catch {
       return;
     }
@@ -760,7 +855,7 @@ function ruleSearchDirs(root) {
 function skillsDirIn(dir) {
   const skillsDir = import_node_path4.default.join(dir, ".claude", "skills");
   try {
-    return import_node_fs5.default.statSync(skillsDir).isDirectory() ? skillsDir : null;
+    return import_node_fs6.default.statSync(skillsDir).isDirectory() ? skillsDir : null;
   } catch {
     return null;
   }
@@ -776,7 +871,7 @@ function walkProjectSkillIds(root) {
   for (const skillsDir of skillSearchDirs(root)) {
     let entries;
     try {
-      entries = import_node_fs6.default.readdirSync(skillsDir, { withFileTypes: true });
+      entries = import_node_fs7.default.readdirSync(skillsDir, { withFileTypes: true });
     } catch {
       continue;
     }
@@ -784,7 +879,7 @@ function walkProjectSkillIds(root) {
       if (!entry.isDirectory()) continue;
       let id = entry.name;
       try {
-        const text = import_node_fs6.default.readFileSync(import_node_path5.default.join(skillsDir, entry.name, "SKILL.md"), "utf8");
+        const text = import_node_fs7.default.readFileSync(import_node_path5.default.join(skillsDir, entry.name, "SKILL.md"), "utf8");
         const match = text.match(FRONTMATTER_NAME_RE);
         if (match) id = match[1];
       } catch {
@@ -811,16 +906,24 @@ function isRootSkillPath(root, skillPath) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
+  LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS,
   SEED_HANDOFFS,
+  SESSIONS_DIR_NAME,
+  SESSION_ID_ENV,
   SESSION_LOG_FILE,
+  SESSION_LOG_NAME,
+  SESSION_STATE_NAME,
+  SESSION_TASKS_NAME,
   agentRunsFromLog,
   appendSessionLog,
   bareAgentName,
   channelDir,
   collectAgentSkills,
   duplicateAgentTypes,
+  ensureSessionPaths,
   ensureSessionRunId,
+  ensureSessionsRoot,
   formatStampedContent,
   handoffId,
   handoffPairs,
@@ -829,7 +932,9 @@ function isRootSkillPath(root, skillPath) {
   isRootSkillPath,
   isSeededHandoff,
   isValidHandoffId,
+  isValidSessionId,
   laneFor,
+  listSessionIds,
   nodeLabel,
   parseStampedContent,
   projectOwnsHook,
@@ -837,14 +942,19 @@ function isRootSkillPath(root, skillPath) {
   readLane,
   readSession,
   readStdin,
+  removeSessionState,
   resolveHandoff,
   resolveProjectSkillPath,
   resolveSearchList,
+  resolveSessionId,
+  resolveSessionPaths,
   resolveWorkflowName,
   resumeTarget,
   retire,
   routesFrom,
   sessionLogPath,
+  sessionPathsFor,
+  sessionsRoot,
   splitHandoffId,
   successPathSteps,
   sweep,

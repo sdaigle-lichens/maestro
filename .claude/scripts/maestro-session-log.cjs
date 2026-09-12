@@ -1,11 +1,16 @@
 #!/usr/bin/env node
-// PreToolUse hook — appends one line per tool call to
-// <cwd>/.claude/maestro_session.log.jsonl. Runs on every tool call from any agent.
+// PreToolUse hook — appends one line per tool call to the CALLING SESSION'S log,
+// <cwd>/.claude/maestro_sessions/<session_id>/log.jsonl. Runs on every tool call from any agent.
 // No-op when maestro.json is absent (Maestro not configured for this project).
 //
-// The log is append-only (one JSON object per line) rather than a JSON array in
-// maestro_session.json: every PreToolUse fires this hook, and parallel subagents
-// would otherwise race on a read-modify-write and lose entries.
+// The log is append-only (one JSON object per line) rather than a JSON array in session.json:
+// every PreToolUse fires this hook, and parallel subagents would otherwise race on a
+// read-modify-write and lose entries.
+//
+// `064`: the call site below is UNCHANGED — `appendSessionLog(claudeDir, entry, p)` already took
+// the payload (for `ctx_pct`), and the same payload carries the `session_id` that decides which
+// directory the line lands in. A payload with no resolvable session id makes the append a silent
+// no-op, which is exactly this hook's existing best-effort discipline.
 
 const fs = require("fs");
 const path = require("path");

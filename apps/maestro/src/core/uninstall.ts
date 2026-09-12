@@ -44,6 +44,7 @@ import path from "node:path";
 import { maestroJsonPath } from "./config.js";
 import { orchestratorSkillPath } from "./render.js";
 import { tasksDirFor } from "./tasks.js";
+import { SESSIONS_DIR_NAME } from "./session-paths.js";
 import {
   HOOK_REGISTRATIONS,
   installStatus,
@@ -117,13 +118,24 @@ function findMaterializedFiles(projectRoot: string, relDir: string): Materialize
 }
 
 /**
- * The per-session files the runtime writes into `.claude/`.
+ * The per-session state the runtime writes into `.claude/`.
  *
- * Same list as `maestro-session-cleanup.cjs`'s EPHEMERAL — these are recreated by the next session
- * and are gitignored by the install, so deleting them loses nothing. `maestro_session_tasks.json`
- * is a ledger of step labels, NOT the user's tasks (those live in Claude Code's task system).
+ * `maestro_sessions/` (`064`) is the live one — a directory per Claude Code session holding that
+ * session's `log.jsonl`, `session.json` and `tasks.json`. The three flat names after it are the
+ * pre-`064` layout, still removed because a project that ran an older runtime has them sitting
+ * there with nothing else to clear them. All of it is recreated by the next session and gitignored
+ * by the install, so deleting it loses nothing; `tasks.json` is a ledger of step labels, NOT the
+ * user's tasks (those live in Claude Code's task system and in `.claude/maestro-tasks/`).
+ *
+ * Removed at EVERY level, purge or not — unlike `maestro-session-cleanup`, which scopes its
+ * deletion to the one ending session, an uninstall is the whole project's runtime going away.
  */
-const SESSION_FILES = ["maestro_session.json", "maestro_session.log.jsonl", "maestro_session_tasks.json"];
+const SESSION_FILES = [
+  SESSIONS_DIR_NAME,
+  "maestro_session.json",
+  "maestro_session.log.jsonl",
+  "maestro_session_tasks.json",
+];
 
 // ── which hook commands are ours ───────────────────────────────────────────
 
@@ -381,7 +393,8 @@ export async function uninstallRuntime(projectRoot: string, options: UninstallOp
     const rel = `.claude/${file}`;
     const abs = projectPath(projectRoot, rel);
     if (!fs.existsSync(abs)) continue;
-    fs.rmSync(abs, { force: true });
+    // `recursive` for `maestro_sessions/`, which is a directory; harmless for the three flat files.
+    fs.rmSync(abs, { recursive: true, force: true });
     sessionFilesRemoved.push(rel);
   }
 

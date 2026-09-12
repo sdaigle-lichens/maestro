@@ -40,6 +40,39 @@ const LEGACY_INSTALL = path.join(here, "fixtures", "legacy", "maestro-install.cj
 
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
 
+// ── `064`: which session the spawned scripts write into ────────────────────
+//
+// THE TRAP. Every `env:` in this file is spread from `process.env`, and `CLAUDE_CODE_SESSION_ID`
+// is set in the environment of a real Claude Code session. A spawned hook that merely inherited
+// it would resolve the DEVELOPER'S OWN session id and write into
+// `<tmp project>/.claude/maestro_sessions/<the dev's session>/` — so every assertion below would
+// look for its file somewhere else inside a session than outside one, and a green run would prove
+// nothing about either. `hookEnv` therefore always SETS or DELETES the variable explicitly:
+// nothing in this file is allowed to read the ambient one.
+const HOOK_SESSION = "install-test-session";
+
+/**
+ * The environment a copied script runs under. `sessionId: null` deletes the variable outright —
+ * the "no id resolves" arm, which must degrade rather than write anywhere.
+ *
+ * HOME is pointed at this test's own tmp dir: maestro-inject-agent-context.cjs reads
+ * ~/.claude/maestro-report-defaults.sqlite (report-defaults.ts) unconditionally on every
+ * invocation, and without the override that is the DEVELOPER's real one — same reasoning as
+ * real-project.test.ts's HOME override for its skill-tags read.
+ */
+function hookEnv(root: string, sessionId: string | null, home: string): NodeJS.ProcessEnv {
+  const env: NodeJS.ProcessEnv = { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: home };
+  if (sessionId === null) delete env.CLAUDE_CODE_SESSION_ID;
+  else env.CLAUDE_CODE_SESSION_ID = sessionId;
+  return env;
+}
+
+/** `<root>/.claude/maestro_sessions/<id>` and the three files in it. */
+const sessionDir = (root: string, id: string = HOOK_SESSION) => path.join(root, ".claude", "maestro_sessions", id);
+const logPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "log.jsonl");
+const statePathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "session.json");
+const tasksPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "tasks.json");
+
 let tmp: string;
 // Every installRuntime()/refreshStaleRuntime() call below passes this, so the report-sync step
 // never touches the REAL ~/.claude/maestro-report-defaults.sqlite on whoever runs the suite —
@@ -933,15 +966,11 @@ describe("the installed hooks actually run", () => {
   // Not a substitute for running a real session (that is verification step 5 of the plan), but it
   // is the half a test can own: the scripts the commands point at do their job when fed the
   // payload Claude Code would send, from the project copy, with no plugin and no node_modules.
-  function runHook(root: string, script: string, payload: unknown): string {
+  function runHook(root: string, script: string, payload: unknown, opts: { sessionId?: string | null } = {}): string {
     return execFileSync("node", [path.join(root, ".claude", "scripts", script)], {
       input: JSON.stringify(payload),
       encoding: "utf8",
-      // HOME pointed at this test's own tmp dir: maestro-inject-agent-context.cjs now reads
-      // ~/.claude/maestro-report-defaults.sqlite (report-defaults.ts) unconditionally on every
-      // invocation, and without this override that's the DEVELOPER's real one — same reasoning as
-      // real-project.test.ts's HOME override for its skill-tags read.
-      env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: tmp },
+      env: hookEnv(root, opts.sessionId === undefined ? HOOK_SESSION : opts.sessionId, tmp),
     });
   }
 
@@ -955,7 +984,7 @@ describe("the installed hooks actually run", () => {
       tool_name: "Read",
       tool_input: { file_path: "src/app.ts" },
     });
-    const log = fs.readFileSync(path.join(root, ".claude", "maestro_session.log.jsonl"), "utf8");
+    const log = fs.readFileSync(logPathFor(root), "utf8");
     expect(JSON.parse(log.trim())).toMatchObject({ origin: "main_session", log: "Read(src/app.ts)" });
 
     const injected = runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" });
@@ -963,8 +992,10 @@ describe("the installed hooks actually run", () => {
     expect(injected).toContain("HANDOFF:");
 
     runHook(root, "maestro-session-cleanup.cjs", { cwd: root });
-    expect(fs.existsSync(path.join(root, ".claude", "maestro_session.log.jsonl"))).toBe(false);
-    expect(fs.existsSync(path.join(root, ".claude", "maestro_session.json"))).toBe(false);
+    // `064`: SessionEnd takes the whole session directory, not three named files.
+    expect(fs.existsSync(sessionDir(root))).toBe(false);
+    expect(fs.existsSync(logPathFor(root))).toBe(false);
+    expect(fs.existsSync(statePathFor(root))).toBe(false);
     // The user's config survives a session end — only the ephemeral files go.
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
   });
@@ -1102,8 +1133,8 @@ describe("the installed hooks actually run", () => {
   // `036`. The COPIED scripts, fed synthetic SubagentStop/SubagentStart payloads exactly as
   // maestro-inject-agent-context's own describe block above does for handoff protocols.
   describe("agent channels (036)", () => {
-    function runId(root: string): string {
-      return JSON.parse(fs.readFileSync(path.join(root, ".claude", "maestro_session.json"), "utf8")).run_id;
+    function runId(root: string, id: string = HOOK_SESSION): string {
+      return JSON.parse(fs.readFileSync(statePathFor(root, id), "utf8")).run_id;
     }
 
     it("stamps a channel file at SubagentStop, and a different sender's write is untouched", async () => {
@@ -1162,7 +1193,7 @@ describe("the installed hooks actually run", () => {
       ).toContain('{"behaviors_to_test":["x"]}');
 
       const log = fs
-        .readFileSync(path.join(root, ".claude", "maestro_session.log.jsonl"), "utf8")
+        .readFileSync(logPathFor(root), "utf8")
         .trim()
         .split("\n")
         .map((l) => JSON.parse(l));
@@ -1222,7 +1253,7 @@ describe("the installed hooks actually run", () => {
       expect(first).toBeTruthy();
 
       runHook(root, "maestro-session-cleanup.cjs", { cwd: root });
-      expect(fs.existsSync(path.join(root, ".claude", "maestro_session.json"))).toBe(false);
+      expect(fs.existsSync(statePathFor(root))).toBe(false);
 
       runHook(root, "maestro-subagent-log.cjs", {
         cwd: root,
@@ -1368,8 +1399,10 @@ describe("the installed hooks actually run", () => {
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
       // An active workflow name that matches nothing in maestro.json — the union-and-warn branch.
+      // Written into THIS session's directory (`064`), which is the only one the hook reads.
+      fs.mkdirSync(sessionDir(root), { recursive: true });
       fs.writeFileSync(
-        path.join(root, ".claude", "maestro_session.json"),
+        statePathFor(root),
         JSON.stringify({ workflow: "not-a-real-workflow", generated_instances: [] })
       );
 
@@ -1420,7 +1453,7 @@ describe("the installed hooks actually run", () => {
       const root = makeProject("resume-cold");
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
-      expect(fs.existsSync(path.join(root, ".claude", "maestro_session.log.jsonl"))).toBe(false);
+      expect(fs.existsSync(logPathFor(root))).toBe(false);
 
       const first = inject(root, "backend", "a1");
       expect(first).not.toContain("Resumed run —");
@@ -1432,15 +1465,20 @@ describe("the installed hooks actually run", () => {
   // does while the project is running its own. Both used to fire — every tool call logged twice —
   // and this runs the plugin's real script, from the real plugins/maestro/scripts/, to show it
   // does not any more.
-  function runPluginHook(root: string, script: string, payload: unknown): string {
+  function runPluginHook(
+    root: string,
+    script: string,
+    payload: unknown,
+    opts: { sessionId?: string | null } = {}
+  ): string {
     return execFileSync("node", [path.join(PLUGIN_ROOT, "scripts", script)], {
       input: JSON.stringify(payload),
       encoding: "utf8",
-      env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: tmp },
+      env: hookEnv(root, opts.sessionId === undefined ? HOOK_SESSION : opts.sessionId, tmp),
     });
   }
 
-  const logPath = (root: string) => path.join(root, ".claude", "maestro_session.log.jsonl");
+  const logPath = (root: string) => logPathFor(root);
   const readPayload = (root: string) => ({
     cwd: root,
     hook_event_name: "PreToolUse",
@@ -1605,7 +1643,7 @@ describe("the installed hooks actually run", () => {
     expect(() =>
       runHook(root, "maestro-session-log.cjs", { cwd: root, tool_name: "Read", tool_input: {} })
     ).not.toThrow();
-    expect(fs.existsSync(path.join(root, ".claude", "maestro_session.log.jsonl"))).toBe(true);
+    expect(fs.existsSync(logPathFor(root))).toBe(true);
   });
 });
 
@@ -1626,11 +1664,18 @@ describe("maestro-step1-gates.cjs (032)", () => {
     return runGates(root).stdout;
   }
 
-  /** Runs the COPY in the project, not the plugin's original — that is what a session executes. */
-  function runGates(root: string): { code: number; stdout: string; stderr: string } {
+  /**
+   * Runs the COPY in the project, not the plugin's original — that is what a session executes.
+   *
+   * `sessionId` is pinned (`064`): the script now writes a `kind:"phase"` marker, routed by
+   * `CLAUDE_CODE_SESSION_ID` because it runs with no stdin at all. Inheriting the ambient variable
+   * would put that write in the developer's own session directory. `null` deletes it — the arm
+   * where no id resolves and the marker is simply skipped.
+   */
+  function runGates(root: string, sessionId: string | null = HOOK_SESSION) {
     const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs")], {
       encoding: "utf8",
-      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+      env: hookEnv(root, sessionId, tmp),
     });
     return { code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr };
   }
@@ -1786,11 +1831,11 @@ describe("maestro-step1-gates.cjs (032)", () => {
 // Same shape as maestro-step1-gates.cjs's suite above, for the Step 4 gate (`046`) that reads
 // `use_maestro_tasks` and tells the orchestrator whether to consider /to-maestro-tasks.
 describe("maestro-step4-gate.cjs (046)", () => {
-  /** Runs the COPY in the project, not the plugin's original — that is what a session executes. */
-  function runGate(root: string): { code: number; stdout: string; stderr: string } {
+  /** Runs the COPY in the project, not the plugin's original — see runGates on the pinned id. */
+  function runGate(root: string, sessionId: string | null = HOOK_SESSION) {
     const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-step4-gate.cjs")], {
       encoding: "utf8",
-      env: { ...process.env, CLAUDE_PROJECT_DIR: root },
+      env: hookEnv(root, sessionId, tmp),
     });
     return { code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr };
   }

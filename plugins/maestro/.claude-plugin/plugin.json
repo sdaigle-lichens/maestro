@@ -1,6 +1,6 @@
 {
   "name": "maestro",
-  "version": "0.8.1",
+  "version": "0.8.2",
   "description": "Maestro multi-agent orchestrator: install, update and run a project's workflow graph, plus the skills the Maestro desktop app hands off to (create-skill, create-plugin, create-subagent, create-marketplace, manage-marketplace, update-skill-tags) and the scribe's concept-skill flows (create-concept-skills, update-concept-skills, update-single-concept-skill).",
   "author": {
     "name": "Samuel Daigle",

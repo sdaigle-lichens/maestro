@@ -1,6 +1,6 @@
 #!/usr/bin/env node
-// SubagentStart / SubagentStop hook — appends communication entries to the same
-// maestro_session.log.jsonl as maestro-session-log.js (PreToolUse).
+// SubagentStart / SubagentStop hook — appends communication entries to the same per-session
+// log.jsonl as maestro-session-log.js (PreToolUse): <cwd>/.claude/maestro_sessions/<id>/log.jsonl.
 //
 // SubagentStart  → dispatch entry:  who was called, with the full spawning message.
 // SubagentStop   → handoff entry:   the agent's outcome, parsed from its HANDOFF: line,
@@ -27,6 +27,7 @@ const {
   projectOwnsHook,
   ensureSessionRunId,
   writeStamp,
+  ensureSessionPaths,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -34,11 +35,11 @@ const {
 // this against the agent's reported skillsTriage to surface silent omissions.
 // Uses the same resolveSearchList + collectAgentSkills as maestro-inject-agent-context.js,
 // so the logged set can't drift from the injected one. Returns null on any miss.
-function offeredSkills(claudeDir, agentType) {
+function offeredSkills(claudeDir, agentType, sessionStatePath) {
   if (!agentType) return null;
   const cfg = readJson(path.join(claudeDir, "maestro.json"));
   if (!cfg || cfg.version !== 3) return null;
-  const session = readSession(path.join(claudeDir, "maestro_session.json"));
+  const session = readSession(sessionStatePath);
   const { searchList } = resolveSearchList(cfg, session);
   const { loaded, referenced, matchedInstances } = collectAgentSkills(
     searchList,
@@ -85,6 +86,13 @@ function parseHandoff(msg) {
   const claudeDir = path.join(cwd, ".claude");
   if (!fs.existsSync(path.join(claudeDir, "maestro.json"))) process.exit(0);
 
+  // `064`: which session's directory does this dispatch/handoff belong in? The payload's own
+  // `session_id` (a subagent's payload carries the MAIN session's id, so one workflow run is one
+  // directory), else CLAUDE_CODE_SESSION_ID, else nothing — and nothing means a silent no-op,
+  // because a `run_id` minted into a shared file is exactly the cross-session bleed `064` removes.
+  const sess = ensureSessionPaths(claudeDir, p);
+  if (!sess) process.exit(0);
+
   const event = p.hook_event_name || "";
   const agentType = p.agent_type || "";
   const agentId = p.agent_id || "";
@@ -92,7 +100,7 @@ function parseHandoff(msg) {
 
   try {
     if (event === "SubagentStart") {
-      const offered = offeredSkills(claudeDir, agentType);
+      const offered = offeredSkills(claudeDir, agentType, sess.state);
       appendSessionLog(
         claudeDir,
         {
@@ -152,8 +160,7 @@ function parseHandoff(msg) {
         // wrote but the process died before this hook ran stays unstamped, and is treated exactly
         // like a foreign-run file by the receiving agent's SubagentStart.
         try {
-          const sessionPath = path.join(claudeDir, "maestro_session.json");
-          const runId = ensureSessionRunId(sessionPath);
+          const runId = ensureSessionRunId(sess.state);
           writeStamp(cwd, bareAgentName(agentType), runId);
         } catch {
           // Best-effort — never fail the agent on a stamping error.

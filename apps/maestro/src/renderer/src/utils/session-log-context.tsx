@@ -12,7 +12,7 @@ const SessionLogContext = createContext<SessionLogContextValue>({
 });
 
 /**
- * One app-wide subscription to the open project's maestro_session.log.jsonl.
+ * One app-wide subscription to the open project's session log.
  *
  * The web app opened an EventSource against an SSE route that polled the file server-side. Here
  * the main process owns the tail and pushes over IPC — same three events (init / entry / reset),

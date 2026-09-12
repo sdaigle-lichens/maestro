@@ -31,6 +31,31 @@ export {
   SESSION_LOG_FILE,
 } from "../session-runtime.js";
 
+// Per-session state directories (`064`). Every hook script and every orchestrator-invoked CLI
+// resolves "which session am I" through this one module — payload `session_id` → the
+// `CLAUDE_CODE_SESSION_ID` env var → `null` — and builds its paths from the result, so the three
+// ephemeral files can never again be shared between two concurrent sessions. `fs`/`path` only, so
+// it costs nothing against the "no node:sqlite in maestro-session.cjs" property below.
+export {
+  SESSIONS_DIR_NAME,
+  SESSION_LOG_NAME,
+  SESSION_STATE_NAME,
+  SESSION_TASKS_NAME,
+  SESSION_ID_ENV,
+  LEGACY_SESSION_FILES,
+  isValidSessionId,
+  resolveSessionId,
+  sessionsRoot,
+  sessionPathsFor,
+  resolveSessionPaths,
+  ensureSessionsRoot,
+  ensureSessionPaths,
+  listSessionIds,
+  removeSessionState,
+  type SessionPaths,
+  type SessionIdSource,
+} from "../session-paths.js";
+
 // Agent channels (`036`) — lanes, stamps, retire, sweep. `fs`/`path` only, so this costs nothing
 // against the "no node:sqlite in maestro-session.cjs" property below.
 export {
