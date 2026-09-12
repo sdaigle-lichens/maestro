@@ -143,9 +143,11 @@ export {
   parseLogLines,
   readSessionLog,
   tailSessionLog,
+  tailSessionLogs,
   sessionLogFileFor,
   type SessionLogEntry,
   type SessionLogTailEvents,
+  type MultiSessionLogTailEvents,
 } from "./session-log.js";
 
 export { saveConfig, type SaveResult } from "./save.js";

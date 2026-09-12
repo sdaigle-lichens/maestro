@@ -12,7 +12,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { tailSessionLog, sessionLogFileFor, parseLogLines } from "../../src/core/session-log.js";
+import { tailSessionLog, tailSessionLogs, sessionLogFileFor, parseLogLines } from "../../src/core/session-log.js";
 
 const TICK = 1000;
 
@@ -260,6 +260,172 @@ describe("tailSessionLog", () => {
     fs.appendFileSync(logFile, entry("b") + "\n");
     vi.advanceTimersByTime(TICK * 5);
     expect(r.events).toEqual(["init:1"]);
+  });
+});
+
+// `065`. `tailSessionLogs` is the multi-session, multi-project sibling of `tailSessionLog` above:
+// one poll loop, keyed `Map<projectRoot, Map<sessionId, lineCount>>`, driven by a caller-supplied
+// `getProjectRoots()` allow-list re-derived on every tick. Unlike `tailSessionLog`, a session's
+// identity IS its map key for its whole life (`064` gave every session a permanent file), so there
+// is no path-flip/splice hazard to guard here — the four scenarios below are the ones the `065`
+// acceptance checklist calls out explicitly, plus two more (`allow-list removal`, `truncation`)
+// that are part of the same function's contract and would otherwise ship untested.
+describe("tailSessionLogs (065)", () => {
+  let tmpA: string;
+  let tmpB: string;
+
+  beforeEach(() => {
+    vi.useFakeTimers();
+    tmpA = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-multitail-a-"));
+    tmpB = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-multitail-b-"));
+    fs.mkdirSync(path.join(tmpA, ".claude"), { recursive: true });
+    fs.mkdirSync(path.join(tmpB, ".claude"), { recursive: true });
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
+    fs.rmSync(tmpA, { recursive: true, force: true });
+    fs.rmSync(tmpB, { recursive: true, force: true });
+  });
+
+  function sessionLogPath(root: string, id: string): string {
+    return path.join(root, ".claude", "maestro_sessions", id, "log.jsonl");
+  }
+
+  function writeSession(root: string, id: string, origins: string[]): void {
+    const file = sessionLogPath(root, id);
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, origins.map(entry).join("\n") + (origins.length ? "\n" : ""));
+  }
+
+  /** Collect every callback the multi-session tail fires, tagged with (root, sessionId). */
+  function recordMulti() {
+    const events: string[] = [];
+    return {
+      events,
+      handlers: {
+        init: (root: string, id: string, entries: { origin: string }[]) => {
+          events.push(`init:${root}:${id}:${entries.length}`);
+        },
+        entry: (root: string, id: string, e: { origin: string }) => {
+          events.push(`entry:${root}:${id}:${e.origin}`);
+        },
+        end: (root: string, id: string) => {
+          events.push(`end:${root}:${id}`);
+        },
+      },
+    };
+  }
+
+  it("a second session's directory appearing adds a tab and emits nothing for the first", () => {
+    writeSession(tmpA, "sess-1", ["a1"]);
+    const r = recordMulti();
+    const stop = tailSessionLogs(() => [tmpA], r.handlers, TICK);
+    try {
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`]);
+
+      writeSession(tmpA, "sess-2", ["b1"]);
+      vi.advanceTimersByTime(TICK);
+
+      // The new session gets its own init; sess-1 (unchanged on disk) gets nothing at all.
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`, `init:${tmpA}:sess-2:1`]);
+    } finally {
+      stop();
+    }
+  });
+
+  it("one session's directory disappearing emits end for it alone", () => {
+    writeSession(tmpA, "sess-1", ["a1"]);
+    writeSession(tmpA, "sess-2", ["b1"]);
+    const r = recordMulti();
+    const stop = tailSessionLogs(() => [tmpA], r.handlers, TICK);
+    try {
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`, `init:${tmpA}:sess-2:1`]);
+
+      fs.rmSync(path.join(tmpA, ".claude", "maestro_sessions", "sess-1"), { recursive: true, force: true });
+      vi.advanceTimersByTime(TICK);
+
+      // sess-2's directory is untouched, so it must not also end.
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`, `init:${tmpA}:sess-2:1`, `end:${tmpA}:sess-1`]);
+    } finally {
+      stop();
+    }
+  });
+
+  it("interleaved appends across two sessions in two different projects each reach their own tab", () => {
+    writeSession(tmpA, "sess-1", ["a1"]);
+    writeSession(tmpB, "sess-2", ["b1"]);
+    const r = recordMulti();
+    const stop = tailSessionLogs(() => [tmpA, tmpB], r.handlers, TICK);
+    try {
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`, `init:${tmpB}:sess-2:1`]);
+
+      fs.appendFileSync(sessionLogPath(tmpA, "sess-1"), entry("a2") + "\n");
+      fs.appendFileSync(sessionLogPath(tmpB, "sess-2"), entry("b2") + "\n");
+      vi.advanceTimersByTime(TICK);
+
+      expect(r.events).toEqual([
+        `init:${tmpA}:sess-1:1`,
+        `init:${tmpB}:sess-2:1`,
+        `entry:${tmpA}:sess-1:a2`,
+        `entry:${tmpB}:sess-2:b2`,
+      ]);
+    } finally {
+      stop();
+    }
+  });
+
+  it("a project absent from disk contributes no tabs and does not throw", () => {
+    writeSession(tmpA, "sess-1", ["a1"]);
+    const missingRoot = path.join(os.tmpdir(), "maestro-nonexistent-project-" + Math.random().toString(36).slice(2));
+    const r = recordMulti();
+    let stop: () => void = () => {};
+    expect(() => {
+      stop = tailSessionLogs(() => [tmpA, missingRoot], r.handlers, TICK);
+    }).not.toThrow();
+    try {
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`]);
+
+      expect(() => vi.advanceTimersByTime(TICK * 3)).not.toThrow();
+      // The absent project never contributes a tab of its own.
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`]);
+    } finally {
+      stop();
+    }
+  });
+
+  it("a project removed from the allow-list ends every session it was covering", () => {
+    writeSession(tmpA, "sess-1", ["a1"]);
+    writeSession(tmpB, "sess-2", ["b1"]);
+    let roots = [tmpA, tmpB];
+    const r = recordMulti();
+    const stop = tailSessionLogs(() => roots, r.handlers, TICK);
+    try {
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`, `init:${tmpB}:sess-2:1`]);
+
+      roots = [tmpA]; // tmpB closed and not recent, or explicitly forgotten
+      vi.advanceTimersByTime(TICK);
+
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:1`, `init:${tmpB}:sess-2:1`, `end:${tmpB}:sess-2`]);
+    } finally {
+      stop();
+    }
+  });
+
+  it("resyncs with an end+init, not a negative tail, when a session's log is truncated underneath it", () => {
+    writeSession(tmpA, "sess-1", ["a1", "a2", "a3"]);
+    const r = recordMulti();
+    const stop = tailSessionLogs(() => [tmpA], r.handlers, TICK);
+    try {
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:3`]);
+
+      fs.writeFileSync(sessionLogPath(tmpA, "sess-1"), entry("z1") + "\n");
+      vi.advanceTimersByTime(TICK);
+
+      expect(r.events).toEqual([`init:${tmpA}:sess-1:3`, `end:${tmpA}:sess-1`, `init:${tmpA}:sess-1:1`]);
+    } finally {
+      stop();
+    }
   });
 });
 

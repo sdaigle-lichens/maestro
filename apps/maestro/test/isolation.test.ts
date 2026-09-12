@@ -1295,6 +1295,58 @@ describe("session log tail ownership", () => {
   });
 });
 
+describe("session log discovery allow-list discipline (065)", () => {
+  // `tailSessionLogs` (src/core/session-log.ts) reads only the roots its `getProjectRoots` callback
+  // names — it has no allow-list logic of its own, so the guarantee that a renderer cannot make the
+  // main process read an arbitrary path lives entirely in `ipc.ts`'s `allowedProjectRoots` (the
+  // current project + recent projects, never anything else) and `resolveProjectRoot` (degrades any
+  // unrecognised renderer-supplied root to the open project). Neither is exported, so — like the
+  // rest of this file's main-process guarantees — this is a source-level guard, not a runtime import.
+  it("startTail feeds tailSessionLogs the allow-list function itself, not an unchecked root", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const body = ipc.slice(ipc.indexOf("function startTail"), ipc.indexOf("function stopTaskTail"));
+    expect(body).toMatch(/tailSessionLogs\(\s*allowedProjectRoots\s*,/);
+  });
+
+  it("allowedProjectRoots is exactly current + recent, never a renderer-supplied value", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const body = ipc.slice(ipc.indexOf("function allowedProjectRoots"), ipc.indexOf("function resolveProjectRoot"));
+    expect(body).toMatch(/state\.current\s*\?\s*\[state\.current\.root,\s*\.\.\.state\.recent\.map/);
+    // Built purely from project-store state — no parameter it could be steered by.
+    expect(ipc).toMatch(/function allowedProjectRoots\(\)\s*:\s*string\[\]\s*\{/);
+  });
+
+  it("resolveProjectRoot degrades an unrecognised projectRoot to the open project, silently for the caller", () => {
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const body = ipc.slice(
+      ipc.indexOf("function resolveProjectRoot"),
+      ipc.indexOf("function resolveProjectRoot") + 700
+    );
+    // Only ever trusts a supplied root when it's already in the allow-list...
+    expect(body).toMatch(/if\s*\(allowedProjectRoots\(\)\.includes\(projectRoot\)\)\s*return projectRoot;/);
+    // ...and every other branch (absent, or present-but-unrecognised) falls back to the open project.
+    expect(body).toMatch(/return currentRoot\(\);/g);
+    const returns = body.match(/return currentRoot\(\);/g) ?? [];
+    expect(returns.length).toBeGreaterThanOrEqual(2);
+  });
+
+  it("toolsData — the one handler taking a renderer-named viewing root — resolves it through resolveProjectRoot, not a raw pass-through", () => {
+    // Of every ipcMain.handle in this file, `toolsData` is the only one that accepts a
+    // renderer-supplied root at all (`viewingRoot`, a "view a different known project" parameter —
+    // see its own doc comment above `resolveProjectRoot`). Every other handler that reads a variable
+    // named `projectRoot` gets it from `currentRoot()`, which is never renderer-controlled, so
+    // asserting they *also* call `resolveProjectRoot` would be a false requirement. This test instead
+    // pins the one real spot an arbitrary path could otherwise slip through unchecked.
+    const ipc = stripComments(read("src/main/ipc.ts"));
+    const start = ipc.indexOf("ipcMain.handle(IPC.toolsData");
+    expect(start).toBeGreaterThan(-1);
+    const body = ipc.slice(start, ipc.indexOf("ipcMain.handle(", start + "ipcMain.handle(IPC.toolsData".length));
+    expect(body).toMatch(/,\s*viewingRoot\?\s*:\s*string\s*\)/); // takes the renderer-named root as a parameter...
+    expect(body).toMatch(/resolveProjectRoot\(viewingRoot\)/); // ...and never reads it any other way.
+    expect(body).not.toMatch(/readConfig\(viewingRoot\)|discoverAgents\(viewingRoot|discoverSkills\(viewingRoot/);
+  });
+});
+
 describe("task queue tail ownership (062)", () => {
   // Mirrors "session log tail ownership" above exactly: `tasksSubscribe` is the same
   // single-owner shape as `logSubscribe`, over its own `taskTails`/`taskSubscribers` state, so the

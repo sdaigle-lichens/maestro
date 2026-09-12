@@ -322,7 +322,7 @@
     "blockedBy": []
   },
   "065-app-level-multi-session-log-view.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "066-claim-a-task-so-two-sessions-cannot-take-the-same-one.md": {

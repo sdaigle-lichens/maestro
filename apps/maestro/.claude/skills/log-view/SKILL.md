@@ -1,6 +1,6 @@
 ---
 name: log-view
-description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: the thin left step list, the center framed log pane, the right Input/Process/Output detail panel, how log entries map to Instance segments, how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender, how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`), and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the log it reads — which since `064` is the PER-SESSION .claude/maestro_sessions/<session_id>/log.jsonl, resolved by sessionLogFileFor() on every poll (newest session by mtime when no id is named), so the tailed path can change identity mid-tail and the tail must resync rather than splice. Use when the user is working inside apps/maestro and asks how the session-log view works, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log is empty, why the view flipped to another session or showed two sessions' entries as one, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`)."
+description: "Explains how the /session-log view in the Maestro desktop app is built end-to-end: a tab bar (065) grouping one tab per LIVE SESSION by project — current project plus every recent one, not just the open one — above the thin left step list, the center framed log pane, and the right Input/Process/Output detail panel; how log entries map to Instance segments within whichever tab is selected; how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender; how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`); how an ended session keeps a greyed, capped, evictable tab instead of vanishing; how a project being forgotten forces a full tab-bar reset rather than a per-session end; and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the log each tab reads — which since `064` is the PER-SESSION .claude/maestro_sessions/<session_id>/log.jsonl, one fixed file per session for its whole life, discovered across the current-plus-recent project allow-list by tailSessionLogs() (065) rather than resolved by mtime. Use when the user is working inside apps/maestro and asks how the session-log view or its tabs work, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log or a tab is empty, why a tab disappeared or greyed out, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`)."
 metadata:
   type: concept-skill
   version: "2.4"
@@ -9,8 +9,7 @@ metadata:
 
 # Log View
 
-The `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. It reads `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`; the flat
-`maestro_session.log.jsonl` before that — see "Which log file" below) and presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three.
+The `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. Since `065` it shows **one tab per live session, across every project the app knows about** (the current project plus the recent-projects list) — not just the open one. Each tab reads its own `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`) and, once selected, presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three; switching tabs swaps which session's entries those three panes render, without touching the other tabs' state.
 
 This is the **read side** of the Maestro runtime: it displays what the hook scripts write. See the `maestro-architecture` skill for the **write side** (how the log is produced and the full HANDOFF routing contract). See the `workflow-view` skill for the sibling `/workflows` authoring view.
 
@@ -19,6 +18,8 @@ This is the **read side** of the Maestro runtime: it displays what the hook scri
 ```
 ┌──────────────────────────────── TopNav (top-nav.tsx) ────────────────────────────────┐
 │ Workflows | Rules | Session Log                                                  ☀    │
+├────────────────────────────────── SessionLogTabs (065) ──────────────────────────────┤
+│ project-a: [10:02] [10:14 (ended) ✕]     project-b (recent): [09:58]                 │
 ├────────────┬─────────────────────────────────────┬──────────────────────────────────┤
 │ Left       │ Center — SessionLogView              │ Right — SessionLogDetail          │
 │ Cards      │ (session-log-view.tsx)               │ (session-log-detail.tsx)          │
@@ -47,45 +48,58 @@ This is the **read side** of the Maestro runtime: it displays what the hook scri
    180px                     1fr                                320px
 ```
 
-**No workflow selector and no YAML preview toggle** — TopNav is rendered bare (no `workflowSelector` or `onPreviewToggle` props). When the log file is absent the whole three-pane layout is replaced by an **empty state**: a centred `ScrollText` icon + "No session log found" message + a `● live / ○ connecting…` indicator (the log is ephemeral, so this is the normal between-sessions condition).
+**No workflow selector and no YAML preview toggle** — TopNav is rendered bare (no `workflowSelector` or `onPreviewToggle` props). The **tab bar** (`session-log-tabs.tsx`, `065`) sits above the three panes: one group per project (current project first when it has any tracked session, then recent projects in `project:get` order — project name shown once per group, not repeated per tab), one button per session labelled by its start time. An **ended** session's tab stays, dimmed (`opacity-60`) with an "(ended)" label and a close (✕) button, instead of disappearing. When there are no tracked sessions in any known project, the whole three-pane layout is replaced by an **empty state**: a centred `ScrollText` icon + "No live sessions in any known project" message ("A tab appears here while a Maestro session is running, in this project or a recent one.") + a `● live / ○ connecting…` indicator.
 
 ## Data flow
 
 ```
 App-wide (src/renderer/src/routes/__root.tsx)
   <SessionLogProvider>  (src/renderer/src/utils/session-log-context.tsx)
-    └── window.maestro.log.subscribe({ onInit, onEntry, onReset })
-          MAIN process (src/main/ipc.ts) owns the tail: it polls
-          maestro_sessions/<session_id>/log.jsonl and pushes over the
-          `log:init` / `log:entry` / `log:reset` channels
-          → init (full snapshot) / entry (new line) / reset (file deleted
-            OR the resolved path changed — see "Which log file")
-          events update: entries[], connected
+    └── window.maestro.log.subscribe({ onInit, onEntry, onEnd, onReset })
+          MAIN process (src/main/ipc.ts) owns ONE poll loop per window:
+          tailSessionLogs(allowedProjectRoots, …) walks every session dir
+          under every project in the current+recent allow-list and pushes,
+          per (projectRoot, sessionId):
+          `log:init` / `log:entry` / `log:end` — `log:reset` is untagged,
+          sent once up front by every startTail() call (fresh subscribe OR
+          a forced retarget) and means "drop everything, an init burst is
+          about to repopulate it" — see "Things that bite"
+          state: Map<sessionKey, SessionRecord> (keyed by `${projectRoot} ${sessionId}`)
+                                     │
+          reduceSessionLog(prev, event) — the ONE pure fold, unit-tested alone:
+            "reset" → new Map()
+            "init"  → new SessionRecord{status:"live", firstSeenAt:now(), endedAt:null}
+            "entry" → append to the matching record (no-op if unknown — defensive)
+            "end"   → status:"ended", endedAt:now(), then evict oldest-endedAt
+                      beyond MAX_RETAINED_ENDED (3) — retention is capped GLOBALLY,
+                      not per project
                                      │
        ┌─────────────────────────────┘
        ▼
 SessionLogPage (src/renderer/src/routes/session-log.tsx)
-  const { entries, connected } = useSessionLog()
-  instances = useMemo(() => buildInstances(entries))  → Instance[]
-  activeId state (which step is selected)
-  activeInstance = instances.find(id === activeId)
-  sectionRefs: Record<id, HTMLDivElement|null>  (one per instance section in the center pane)
+  const { sessions, connected, dismiss } = useSessionLog()   // sessions: SessionRecord[]
+  selectedKey state, kept stable by:
+    useEffect(() => pickSelection(sessions, selectedKey))    // the OTHER pure function
+      // keeps selectedKey unchanged if it still names a tracked session;
+      // otherwise picks the most recently active LIVE session (falls back to
+      // most recently active of any status); null when there are no sessions.
+      // A tab appearing or ending therefore never moves the selection.
+  selected = sessions.find(sessionKey(s) === selectedKey)
+  instances = useMemo(() => selected ? buildInstances(selected.entries) : [])  → Instance[]
+  activeId state (which step is selected, scoped to the selected tab)
+  cwd = selected?.projectRoot ?? currentProject?.root  // the TAB's own project, not the open one
        │
-       ├──▶ SessionLogCards (left)
-       │      renders Instance[] as a compact step list with status icons
-       │      onSelect(id): setActiveId(id) + sectionRefs[id].scrollIntoView()
+       ├──▶ SessionLogTabs (065, above the 3 panes)
+       │      groups `sessions` by projectRoot, one tab per session,
+       │      onSelect(projectRoot, sessionId) → setSelectedKey(sessionKey(...))
+       │      onClose(projectRoot, sessionId) → dismiss(...) (ended tabs only)
        │
-       ├──▶ SessionLogView (center)
-       │      renders per-instance sections in rounded bordered frames
-       │      onClick on a frame: onSelect(id) → selects step across all panes
-       │      selected frame gets border-2 colored by status (green/red/yellow)
-       │      header shows "● live" / "○ reconnecting…" from connected
+       ├──▶ SessionLogCards (left) / SessionLogView (center) / SessionLogDetail (right)
+       │      unchanged from before 065 — all three still just render `instances`
+       │      and `activeInstance`; they have no idea a tab bar exists above them
        │
-       └──▶ SessionLogDetail (right)
-              shows Input / Process / Output for the activeInstance
-              Input = instance.input (spawning message from dispatch entry)
-              Process = humanized log lines (same as center pane)
-              Output = instance.output (final message from handoff entry)
+       └── isEmpty = sessions.length === 0 → the "no live sessions in any known
+           project" empty state (see Layout)
 
 TopNav (every Maestro page): "● Session Log" dot driven by useSessionLog().connected
 ```
@@ -111,14 +125,15 @@ Renderer paths are relative to `apps/maestro/`.
 
 | Concern                                                                                                                        | File                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |
-| Route, state, 3-pane grid, scroll-sync, empty state                                                                            | `src/renderer/src/routes/session-log.tsx`                                             |
+| Route, state, tab selection, 3-pane grid, scroll-sync, empty state                                                              | `src/renderer/src/routes/session-log.tsx`                                             |
+| **Tab bar** — one group per project, one tab per session, ended-tab dimming/label/close button (`065`)                        | `src/renderer/src/components/session-log-tabs.tsx`                                    |
 | Left step list with status icons (CircleCheck/CircleX/AlertTriangle)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |
 | Center framed log pane, click-to-select, live indicator, per-section anchors                                                   | `src/renderer/src/components/session-log-view.tsx`                                    |
 | Right detail panel: Input/Process/Output sections                                                                              | `src/renderer/src/components/session-log-detail.tsx`                                  |
-| **The tail itself** — polls the JSONL, pushes `log:init`/`log:entry`/`log:reset`; `tails` (running watchers) and `logSubscribers` (who asked, `038`) are separate sets | `src/main/ipc.ts`                                                                     |
-| The typed channel contract                                                                                                     | `src/shared/ipc.ts` (`log:subscribe`, `log:unsubscribe`, and the three push channels) |
-| App-wide subscriber: `SessionLogProvider`, `useSessionLog()`                                                                   | `src/renderer/src/utils/session-log-context.tsx`                                      |
-| `parseLogLines` + `readSessionLog`                                                                                             | `session-log.ts` in `apps/maestro/src/core/`                                          |
+| **The tail itself** — one poll loop per window, `tailSessionLogs(allowedProjectRoots, …)` walks every session across the current+recent allow-list and pushes `log:init`/`log:entry`/`log:end` per (projectRoot, sessionId); `tails` (running watchers) and `logSubscribers` (who asked, `038`) are separate sets | `src/main/ipc.ts` (`startTail`, `retargetTails`, `allowedProjectRoots`)               |
+| The typed channel contract — `log:init`/`log:entry`/`log:end` now carry `{projectRoot, sessionId, …}`; `log:reset` stays untagged and means "drop everything" | `src/shared/ipc.ts` (`SessionLogInitEvent`/`SessionLogEntryEvent`/`SessionLogEndEvent`, `log:subscribe`, `log:unsubscribe`) |
+| App-wide subscriber: `SessionLogProvider`, `useSessionLog()`, the keyed `Map<sessionKey, SessionRecord>`, the pure `reduceSessionLog`/`pickSelection` | `src/renderer/src/utils/session-log-context.tsx`                                      |
+| `parseLogLines` + `readSessionLog` + legacy single-session `tailSessionLog`/`sessionLogFileFor` (kept for `test/core/session-log.test.ts`'s differential coverage; no longer what `/session-log`'s live tail uses) + the current `tailSessionLogs` (`065`) | `session-log.ts` in `apps/maestro/src/core/`                                          |
 | The `SessionLogEntry` shape crossing the wire                                                                                  | `contracts.ts` in `apps/maestro/src/core/`, re-exported by `src/shared/ipc.ts`        |
 | Pure transforms `buildInstances` + `humanizeLog` + `parseSkillsTriage` + `unaccountedSkills` + `Instance`/`SkillsTriage` types | `src/renderer/src/utils/session-log.ts`                                               |
 | Top bar — nav links incl. `ScrollText` + global `●` live dot                                                                   | `src/renderer/src/components/top-nav.tsx`                                             |
@@ -133,37 +148,37 @@ Renderer paths are relative to `apps/maestro/`.
 | Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`)               |
 | Path resolution + session-id validation (`sessionLogFileFor`, `sessionPathsFor`, `listSessionIds`)                             | `session-log.ts` / `session-paths.ts` in `apps/maestro/src/core/`                     |
 
-## Which log file (`064`)
+## Which log file (`064`, resolution model since `065`)
 
-Before `064` "the project's log" was one fixed path and this section did not need to exist. Now
-there is one directory per Claude Code session, and the reader has to choose.
+Before `064` "the project's log" was one fixed path. `064` gave every Claude Code session its own
+permanent `maestro_sessions/<session_id>/log.jsonl` (via `sessionPathsFor`). `065` changed which
+function the *live* `/session-log` route uses to walk them.
 
-`sessionLogFileFor(projectRoot, sessionId?)` in `src/core/session-log.ts` answers it:
+**The live route no longer resolves "the" file — it walks all of them.** `tailSessionLogs`
+(`src/core/session-log.ts`) is what `startTail` (`src/main/ipc.ts`) actually calls. It tracks a
+`Map<projectRoot, Map<sessionId, lineCount>>`, keyed by each session's own permanent
+`(projectRoot, sessionId)` identity — not by a resolved path that can point at a different session
+between polls. Every session has exactly one file for its whole life, so there is no "the tail
+followed the wrong session" failure mode to guard against: a `lineCount` keyed by `sessionId` can
+never be diffed against the wrong file.
 
-| Called with | Resolves to |
-| --- | --- |
-| a `sessionId` | that session's `maestro_sessions/<id>/log.jsonl` — the precise answer |
-| nothing | `newestSessionLog()`: the session log with the newest **mtime** |
-| nothing, and no session directories exist | the pre-`064` flat `maestro_session.log.jsonl` |
+`sessionLogFileFor(projectRoot, sessionId?)` **still exists** in `src/core/session-log.ts`, together
+with the single-session `tailSessionLog` built on it (mtime-based `newestSessionLog()` fallback when
+called with no id). Both are exercised by `test/core/session-log.test.ts` for differential coverage,
+and both are still exported from `src/core/index.ts` — but neither is in the call path of the live
+`/session-log` route any more. Don't "fix" the live route by routing it back through
+`sessionLogFileFor`; that reintroduces exactly the single-session assumption `065` removed.
 
-The tail calls it with no id, so it follows the most recently written session — the honest
-single-session bridge, deliberately re-resolved on **every poll** so a session that starts after the
-tail did gets picked up instead of the view sitting on a dead log. Showing every live session at
-once is `065`'s job; this keeps the one-log view working rather than blanking it in the meantime.
-
-**`lineCount` is a position in a FILE, not in a path — and that is a real defect this shape caused,
-not a hypothetical.** The tail's poll loop diffs a line count against the previous read. When the
-resolved path flips to a *longer* sibling session's log, `entries.slice(lineCount)` of the new file
-was emitted as an append to the previous session's entries: one session's head spliced onto
-another's tail in the rendered view, with nothing about it looking wrong. `tailSessionLog` therefore
-tracks `currentFile` alongside `lineCount` and treats a **path change exactly like a truncation** —
-`reset` + `init`, `lineCount` back to 0 — so a flip re-syncs rather than splices. Any future reader
-that caches a position must cache the path it is a position in.
-
-> **Known and deferred to `065`:** because `newestSessionLog` re-resolves by mtime every poll, two
-> genuinely concurrent live sessions make the tail flip back and forth, emitting a full reset+init
-> each time. Correct — no splicing — but visibly thrashy. `065` owns multi-session display; do not
-> paper over it by caching the resolution, which would re-break the case above.
+**`lineCount` is a position in a file, not in a path — this is why the legacy single-session tail
+needed a guard that `tailSessionLogs` does not.** `tailSessionLog`'s poll loop diffs a line count
+against the previous read; when the mtime-resolved path flipped to a *longer* sibling session's log,
+`entries.slice(lineCount)` of the new file was emitted as an append to the previous session's
+entries — one session's head spliced onto another's tail, with nothing about it looking wrong.
+`tailSessionLog` guards this by tracking `currentFile` alongside `lineCount` and treating a path
+change exactly like a truncation (`reset` + `init`, `lineCount` back to 0). `tailSessionLogs` has no
+equivalent guard because it has no equivalent failure: each `(projectRoot, sessionId)` key's file
+identity never changes underneath it, so a flip can't happen. Any future reader that caches a
+position by path rather than by permanent session identity reintroduces this bug.
 
 ## The data model
 
@@ -379,13 +394,17 @@ The plain tool-call log from `maestro-session-log.js` has **no outcome data** �
 
 - **The log is ephemeral.** Deleted at SessionEnd by `maestro-session-cleanup.sh`, whose only job that is. The desktop window outlives any session, so an empty page is the normal between-sessions state, not an error. The file only exists during and immediately after an active Maestro session.
 - **Status comes exclusively from the SubagentStop handoff entry.** If `maestro-subagent-log.js` is not registered, all steps will have `status: null` and default to green checkmarks. If a real workflow agent (has an `agent_type`) exits without a parseable `HANDOFF:` line (crash, force-stop, broken Maestro contract), the status will be `"unknown"` (shown as yellow warning icon). A `SubagentStop` with **no `agent_type`** is instead logged as `kind:"transition"` (a neutral grey card) — a boundary that isn't a workflow handoff, not a failed agent, so it deliberately does **not** show a yellow warning.
-- **The log path comes from the open project, not `process.cwd()` — and since `064` the project is no longer enough to name it.** Main resolves the *root* from the project store; `currentRoot()` in `main/ipc.ts` is the single place that answers "which project". The *file* under it is then `sessionLogFileFor()`'s call, and it can differ between two polls of the same project. The app's own cwd is irrelevant and always wrong here.
-- **A path change is a reset, not an append (`064`).** `lineCount` indexes the file it was read from, so a tail that tracks only the count and not `currentFile` emits a longer sibling session's tail as if it continued the previous session's entries — two sessions spliced into one rendered log, silently. `tailSessionLog` resyncs (`reset` + `init`) on a path change for exactly the same reason it does on a truncation. See "Which log file".
+- **The log path comes from the current-plus-recent project list, not `process.cwd()` — and since `065` it is not scoped to a single open project at all.** `allowedProjectRoots()` in `main/ipc.ts` (`state.current` plus `state.recent`) is what both `resolveProjectRoot` and the tail's own discovery call read; a session in ANY of those roots gets a tab, not only the currently-open one. The app's own cwd is irrelevant and always wrong here.
+- **A path change was a reset, not an append, for the LEGACY single-session tail (`064`) — `tailSessionLogs` doesn't have this problem at all.** `tailSessionLog`'s `lineCount` indexed the file it was read from, so tracking only the count and not `currentFile` would emit a longer sibling session's tail as if it continued the previous session's entries — two sessions spliced into one rendered log, silently; it resyncs (`reset` + `init`) on a path change for exactly the same reason it does on a truncation. `tailSessionLogs` (what the live route actually uses since `065`) keys its line counts by permanent `(projectRoot, sessionId)` identity instead of a re-resolved path, so no session can ever flip underneath its own count — see "Which log file".
 - **The tail polls, it does not `fs.watch`.** Main uses `setInterval` + a read + a line-count diff. Watch APIs are unreliable across editors that write via rename and across network/virtualised filesystems, and the hooks append constantly enough that a poll is cheap. The tail lives in main, so exactly one poll loop runs no matter how many routes are mounted.
 - **This same shape — main-process poller, `subscribe`/`unsubscribe` push channel, single-owner-per-window tail, retargeted on project switch — was deliberately duplicated (not shared) for the `/maestro-tasks` route's live refresh.** `tailTasks` in `apps/maestro/src/core/tasks.ts` and the `tasks:subscribe`/`tasks:unsubscribe` channel are their own implementation, poll-based for the same `fs.watch`-is-unreliable reason. Unlike this route's app-wide `SessionLogProvider`, the tasks tail is subscribed route-locally from `maestro-tasks.tsx` — only that screen reads live task data. See `task-queue` (repo root `.claude/skills/`) for the task side.
 - **`reset` event on SessionEnd.** When the JSONL file disappears (its session's directory deleted by `maestro-session-cleanup.sh`), the server emits `reset: {}` and `lineCount` drops to 0. The provider clears `entries`, the page shows the empty state. A new session's `init` event re-fills it. This is the normal SessionEnd → new session cycle without a page reload.
 - **`window.maestro.log.subscribe` is single-owner.** Main keeps one tail per `webContents.id` and stops the old one before starting a new one — so a second subscriber _steals_ the tail, and the first unsubscribe then stops it for both. The owner is `SessionLogProvider`; every other consumer reads from it with `useSessionLog()`. A test pins the call site to that one file.
-- **The tail is retargeted on a project switch**, in `main/ipc.ts`. Without that, the window keeps streaming the previously-opened repo's session log while showing the new project everywhere else.
+- **The tail is retargeted on a project switch**, in `main/ipc.ts`. Without that, discovery would eventually catch up on its own next poll, but the retarget avoids up to one interval of staleness.
+- **A project being forgotten never fires a per-session `onEnd` — it forces a full `logReset` + fresh `onInit` burst, and a `log.subscribe` consumer must not try to tell the two apart.** `announce()` (called from the `project:pick`/`project:open`/`project:forget` handlers) runs `broadcast(projectChanged)` → `retargetTails()` → `retargetTaskTails()` → `clearInvocations()` → `endAllSessions()`, in that order. `retargetTails()` calls `startTail()` again for every subscribed window, and `startTail()` unconditionally sends `IPC_EVENTS.logReset` *before* rebuilding its `tailSessionLogs` watcher — so every tab this window was showing (including one whose project just got forgotten) disappears via the wholesale reset, and the `init` burst that follows repopulates only what's still in `allowedProjectRoots()`. Treat `onEnd` as always meaning "this one session ended, keep the tab and grey it out" and `onReset` as always meaning "wholesale rebuild, drop everything, an init burst is about to repopulate it" — a consumer never needs to cross-reference the current/recent project list to distinguish "session ended" from "project forgotten" itself.
+- **Ended sessions are retained, not dropped — but only up to `MAX_RETAINED_ENDED = 3`, globally.** `reduceSessionLog` (`session-log-context.tsx`) marks a session `status: "ended"` with `endedAt: now()` on its `end` event rather than deleting it, so `SessionLogTabs` can render it dimmed with an "(ended)" label and a close button. Past 3 ended records *across all projects*, the oldest by `endedAt` is evicted on every `end` — not per project. A `logReset` (project forgotten, project switch) drops every record, ended or not, since it rebuilds the whole map from scratch.
+- **`reduceSessionLog` and `pickSelection` are the two pure functions worth knowing, and both are unit-testable without Electron.** `reduceSessionLog(sessions, event, now?)` is the whole state machine — `reset` clears the map, `init` creates a `status: "live"` record, `entry` appends (a no-op if the session isn't tracked), `end` marks it ended and enforces the retention cap above. `pickSelection(sessions, currentKey)` keeps the currently-selected tab selected if it still exists, otherwise falls back to the most recently active LIVE session, then the most recently active of any status, then `null` — this is what keeps the selected tab stable across unrelated `entry`/`init` events instead of jumping around on every push.
+- **`firstSeenAt` is a proxy for session-creation time, not the real thing.** Nothing in the IPC contract exposes the session directory's own creation time (see `SessionLogInitEvent`), so `SessionRecord.firstSeenAt` is stamped from `Date.now()` on the renderer when its `init` event arrives. Usually indistinguishable in practice — `tailSessionLogs` polls at most a second behind the file appearing — but it is a receipt time, not a filesystem mtime, and drifts further under a slow/blocked renderer.
 - **`tails` and `logSubscribers` answer two different questions, and `retargetTails` needs the second one.** `tails` (`Map<webContentsId, stop>`) is "which windows have a running watcher"; `logSubscribers` (`Set<number>`, `038`) is "which windows asked for one". They're the same set only while a project is open — a window that subscribes with no project open gets an empty `logInit` and `startTail` returns before ever touching `tails`, so `retargetTails` iterating `tails.keys()` would never revisit it once a project opened, leaving `/session-log` dead for that window's whole life. `logSubscribe` adds to `logSubscribers` *before* calling `startTail`; both `logUnsubscribe` and the window's `destroyed` listener remove from it. `retargetTails` reads `logSubscribers`, never `tails.keys()` and never `BrowserWindow.getAllWindows()` (the latter would start a tail for a window that never subscribed at all).
 - **Live stream is app-wide.** `SessionLogProvider` mounts in `__root.tsx`, so the subscription is maintained on every page. Entries accumulate in context even while the user is on `/workflows` or `/rules`; `/session-log` sees the full current state when you navigate to it.
 - **There is no loader; the first paint is empty.** The provider starts with `entries: []` until main's `init` push arrives, so navigating to the route shows a brief empty state — acceptable for a debugging tool, and the alternative is a loader that races the subscription.

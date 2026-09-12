@@ -12,7 +12,9 @@ import type {
   ProjectState,
   SaveInput,
   SessionEvent,
-  SessionLogEntry,
+  SessionLogEndEvent,
+  SessionLogEntryEvent,
+  SessionLogInitEvent,
 } from "../shared/ipc.js";
 
 const api: MaestroApi = {
@@ -240,18 +242,21 @@ const api: MaestroApi = {
   },
   log: {
     subscribe: (handlers) => {
-      const onInit = (_e: unknown, entries: SessionLogEntry[]) => handlers.onInit(entries);
-      const onEntry = (_e: unknown, entry: SessionLogEntry) => handlers.onEntry(entry);
+      const onInit = (_e: unknown, payload: SessionLogInitEvent) => handlers.onInit(payload);
+      const onEntry = (_e: unknown, payload: SessionLogEntryEvent) => handlers.onEntry(payload);
+      const onEnd = (_e: unknown, payload: SessionLogEndEvent) => handlers.onEnd(payload);
       const onReset = () => handlers.onReset();
 
       ipcRenderer.on(IPC_EVENTS.logInit, onInit);
       ipcRenderer.on(IPC_EVENTS.logEntry, onEntry);
+      ipcRenderer.on(IPC_EVENTS.logEnd, onEnd);
       ipcRenderer.on(IPC_EVENTS.logReset, onReset);
       void ipcRenderer.invoke(IPC.logSubscribe);
 
       return () => {
         ipcRenderer.removeListener(IPC_EVENTS.logInit, onInit);
         ipcRenderer.removeListener(IPC_EVENTS.logEntry, onEntry);
+        ipcRenderer.removeListener(IPC_EVENTS.logEnd, onEnd);
         ipcRenderer.removeListener(IPC_EVENTS.logReset, onReset);
         void ipcRenderer.invoke(IPC.logUnsubscribe);
       };

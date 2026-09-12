@@ -168,3 +168,112 @@ export function tailSessionLog(
     clearInterval(timer);
   };
 }
+
+export interface MultiSessionLogTailEvents {
+  /** A session's log file appeared (first seen with content, or created empty). */
+  init: (projectRoot: string, sessionId: string, entries: SessionLogEntry[]) => void;
+  /** One newly appended entry for an already-`init`ed session. */
+  entry: (projectRoot: string, sessionId: string, entry: SessionLogEntry) => void;
+  /** The session's directory (or its project) went away, or the log shrank and is resyncing. */
+  end: (projectRoot: string, sessionId: string) => void;
+}
+
+/**
+ * Watch EVERY live session across EVERY project `getProjectRoots()` names, on one poll loop (`065`).
+ *
+ * `064` gave each session a permanent, unambiguous file — `sessionPathsFor(claudeDir, id).log` never
+ * refers to a different session over its lifetime, unlike the pre-`064` "newest by mtime" path that
+ * `tailSessionLog` above still has to guard against flipping underneath it. That is what makes the
+ * per-session bookkeeping here a plain `Map<projectRoot, Map<sessionId, lineCount>>`: no path-identity
+ * tracking, no resync-on-flip — a session's identity IS its map key, for its whole life.
+ *
+ * `getProjectRoots` is called fresh every tick rather than once at subscribe time, so a project
+ * opened or forgotten after the tail started is picked up (or dropped) within one interval. The
+ * caller is responsible for that list being an allow-list (current project + recent projects) —
+ * this function reads only what it is given, never anything else on disk.
+ *
+ * Returns an unsubscribe function.
+ */
+export function tailSessionLogs(
+  getProjectRoots: () => string[],
+  events: Partial<MultiSessionLogTailEvents>,
+  intervalMs = 1000
+): () => void {
+  /** projectRoot -> sessionId -> lines already emitted for that session. */
+  const tracked = new Map<string, Map<string, number>>();
+  let stopped = false;
+
+  const poll = (): void => {
+    if (stopped) return;
+    const roots = [...new Set(getProjectRoots())];
+    const rootSet = new Set(roots);
+
+    // A project no longer in the allow-list (closed and not recent, or forgotten): every session
+    // it was covering is gone from our vantage point, so it ends the same as a deleted directory.
+    for (const root of [...tracked.keys()]) {
+      if (rootSet.has(root)) continue;
+      const sessions = tracked.get(root);
+      if (sessions) for (const sessionId of sessions.keys()) events.end?.(root, sessionId);
+      tracked.delete(root);
+    }
+
+    for (const root of roots) {
+      const claudeDir = path.join(root, ".claude");
+      // Absent project directory: listSessionIds already swallows the ENOENT and returns [] — one
+      // failed readdir, no throw, no special-casing needed here.
+      const liveIds = new Set(listSessionIds(claudeDir));
+      let sessions = tracked.get(root);
+
+      if (sessions) {
+        for (const sessionId of [...sessions.keys()]) {
+          if (liveIds.has(sessionId)) continue;
+          sessions.delete(sessionId);
+          events.end?.(root, sessionId);
+        }
+      }
+
+      for (const sessionId of liveIds) {
+        const paths = sessionPathsFor(claudeDir, sessionId);
+        if (!paths) continue;
+        let raw: string;
+        try {
+          raw = fs.readFileSync(paths.log, "utf8");
+        } catch {
+          // Directory exists but the log file has not been written yet — not live until it is.
+          continue;
+        }
+        const entries = parseLogLines(raw);
+        if (!sessions) {
+          sessions = new Map();
+          tracked.set(root, sessions);
+        }
+        const lineCount = sessions.get(sessionId);
+        if (lineCount === undefined) {
+          sessions.set(sessionId, entries.length);
+          events.init?.(root, sessionId, entries);
+          continue;
+        }
+        if (entries.length < lineCount) {
+          // Truncated/replaced underneath us — resync wholesale rather than emit a negative tail.
+          events.end?.(root, sessionId);
+          sessions.set(sessionId, entries.length);
+          events.init?.(root, sessionId, entries);
+          continue;
+        }
+        if (entries.length > lineCount) {
+          for (const entry of entries.slice(lineCount)) events.entry?.(root, sessionId, entry);
+          sessions.set(sessionId, entries.length);
+        }
+      }
+
+      if (sessions && sessions.size === 0) tracked.delete(root);
+    }
+  };
+
+  poll();
+  const timer = setInterval(poll, intervalMs);
+  return () => {
+    stopped = true;
+    clearInterval(timer);
+  };
+}
