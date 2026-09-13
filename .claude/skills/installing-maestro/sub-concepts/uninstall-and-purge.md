@@ -30,6 +30,16 @@ Two mechanical consequences: the removal must pass `recursive` (`fs.rmSync(abs, 
 force: true })` — harmless for the three flat files, required for the directory), and
 `uninstallPlan`'s reported session files now include a directory among the filenames.
 
+**`066`'s `claims/` directory needs the same unconditional, every-level removal as `SESSION_FILES`
+above, but can't just be a fourth entry in that array.** `SESSION_FILES`' paths are all flat
+`.claude/<file>` names (or, since `064`, the `maestro_sessions` directory itself, still directly
+under `.claude/`); `claims/` nests under `.claude/maestro-tasks/` instead, which that array's shape
+doesn't express. Both `uninstall.ts` and `maestro-uninstall.js` remove it with their own inline
+check instead, independent of the `maestroTasks`/`--delete-maestro-tasks` opt-in below —  `claims/`
+is never user content the way the task `.md` files and `status.json` are, so it goes on a default
+(non-purge) uninstall the same as `SESSION_FILES`. See the manifest sub-concept for the matching
+gitignore-side nuance.
+
 **On a machine with the plugin, plain uninstall stops the project's hooks and hands them back to the
 plugin's copies, which keep firing.** That is the fallback, not a fault: the plugin's copy of a hook
 stands down only while the project registers its own, so removing those registrations is exactly what

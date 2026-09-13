@@ -30,6 +30,14 @@ node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs"
 node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" --task "<NNN-filename.md>" # record workflow and task
 ```
 
+4. **If `active_task` was just recorded**, claim it before doing anything else, so a concurrent session asking for "the next ready task" at the same moment can't take the same one:
+
+```bash
+node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" claim "<NNN-filename.md>"
+```
+
+   This always exits 0 — a lost claim is not an error, it means someone else already has it. If the output says the task is already claimed by an active session, do not start it: check `.claude/maestro-tasks/status.json` for another file that is `ready`, claim that one the same way, and re-run Step 2 (from this point) for it. If every `ready` task is already claimed, tell the user plainly rather than working a claimed task or picking a `blocked` one. Once your own claim succeeds, continue to Step 3 — and release it (`maestro-task-status.cjs release`) if you abandon this task before Step 4's `done` would otherwise release it for you (e.g. the user cancels the run).
+
 <!-- Maestro:HANDOFFS:START -->
 # No workflows configured yet. Run /maestro-install to set up.
 <!-- Maestro:HANDOFFS:END -->

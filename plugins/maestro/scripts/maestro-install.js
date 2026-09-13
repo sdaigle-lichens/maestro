@@ -184,6 +184,11 @@ function ensureRepoRootGitignore(repoRoot) {
     // only, so `ensureSessionsRoot` ALSO writes a `.gitignore` containing "*" into the directory as
     // it creates it — that is what covers a project installed before `064` and never re-installed.
     "**/.claude/maestro_sessions/",
+    // `066`: task claims — nested under maestro-tasks/ (user-authored, committed content) rather
+    // than directly under .claude/, so it needs its own line rather than reusing that directory's
+    // rules. `ensureClaimsDir()`'s own `*` .gitignore, written into the directory as it's created,
+    // is the mechanism for a project installed before this line existed.
+    "**/.claude/maestro-tasks/claims/",
   ]);
 }
 

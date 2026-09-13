@@ -43,7 +43,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { maestroJsonPath } from "./config.js";
 import { orchestratorSkillPath } from "./render.js";
-import { tasksDirFor } from "./tasks.js";
+import { tasksDirFor, CLAIMS_DIR_NAME } from "./tasks.js";
 import { SESSIONS_DIR_NAME } from "./session-paths.js";
 import {
   HOOK_REGISTRATIONS,
@@ -396,6 +396,18 @@ export async function uninstallRuntime(projectRoot: string, options: UninstallOp
     // `recursive` for `maestro_sessions/`, which is a directory; harmless for the three flat files.
     fs.rmSync(abs, { recursive: true, force: true });
     sessionFilesRemoved.push(rel);
+  }
+
+  // `066`: task claims — same ephemeral, unconditional-removal treatment as SESSION_FILES above,
+  // but nested under .claude/maestro-tasks/ (user-authored, committed content) rather than
+  // directly under .claude/, so it can't just be another SESSION_FILES entry (that array's paths
+  // are all `.claude/<file>`). Independent of `maestroTasksDeleted` below: claims/ is never user
+  // content the way the task .md files and status.json are, so it goes even on a default uninstall.
+  const claimsRel = `${MAESTRO_TASKS_REL}/${CLAIMS_DIR_NAME}`;
+  const claimsAbs = projectPath(projectRoot, claimsRel);
+  if (fs.existsSync(claimsAbs)) {
+    fs.rmSync(claimsAbs, { recursive: true, force: true });
+    sessionFilesRemoved.push(claimsRel);
   }
 
   const purged: string[] = [];

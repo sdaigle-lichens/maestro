@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ListChecks, Copy, Check, CircleCheck, CircleDot, CircleDashed, CheckCheck, Terminal } from "lucide-react";
+import { ListChecks, Copy, Check, CircleCheck, CircleDot, CircleDashed, CheckCheck, Terminal, Lock } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CopyableText from "@repo/ui/copyable-text";
@@ -42,6 +42,48 @@ function StatusBadge({ status }: { status: TaskStatus }) {
   return (
     <span className={`inline-flex items-center gap-1 text-[10px] font-medium ${cls}`} title={label}>
       <Icon size={12} /> {label}
+    </span>
+  );
+}
+
+/** Relative time since an ISO timestamp, e.g. "5m ago". Mirrors `session-resume.tsx`'s `ago`. */
+function ago(iso: string): string {
+  const ms = new Date(iso).getTime();
+  if (!ms) return "unknown";
+  const secs = Math.max(0, Math.round((Date.now() - ms) / 1000));
+  if (secs < 60) return "just now";
+  const mins = Math.round(secs / 60);
+  if (mins < 60) return `${mins}m ago`;
+  const hours = Math.round(mins / 60);
+  if (hours < 24) return `${hours}h ago`;
+  const days = Math.round(hours / 24);
+  return `${days}d ago`;
+}
+
+/**
+ * A claim is an overlay on `ready`/`blocked`/`done`, never a status of its own (066) — so this is a
+ * second badge beside `StatusBadge`, not a branch inside it. `live` and dead render distinctly: a
+ * dead claim is real transient state (the one read before `readClaims` reaps it), not an error, so
+ * it stays visible rather than disappearing — just dimmed and named as expiring.
+ */
+function ClaimBadge({ claim }: { claim: NonNullable<MaestroTask["claim"]> }) {
+  const who = `${claim.sessionId.slice(0, 8)} · ${ago(claim.claimedAt)}`;
+  if (claim.live) {
+    return (
+      <span
+        className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-500"
+        title={`Claimed by session ${claim.sessionId}, ${ago(claim.claimedAt)}`}
+      >
+        <Lock size={12} /> Claimed by {who}
+      </span>
+    );
+  }
+  return (
+    <span
+      className="inline-flex items-center gap-1 text-[10px] font-medium text-(--ink-3) opacity-60"
+      title={`Claim by session ${claim.sessionId} is expiring, claimed ${ago(claim.claimedAt)} — about to be released`}
+    >
+      <Lock size={12} /> Claim expiring · {who}
     </span>
   );
 }
@@ -193,6 +235,11 @@ function MaestroTasksPage() {
                     <StatusBadge status={task.status} />
                   </div>
                   <div className="text-[13px] text-(--ink) leading-snug mt-0.5">{task.title}</div>
+                  {task.claim && (
+                    <div className="mt-1.5">
+                      <ClaimBadge claim={task.claim} />
+                    </div>
+                  )}
                   {task.blockedBy.length > 0 && task.status !== "done" && (
                     <div className="mt-1.5 flex flex-wrap gap-1">
                       {task.blockedBy.map((b) => (
@@ -221,6 +268,7 @@ function MaestroTasksPage() {
                     <div className="flex items-center gap-2">
                       <div className="font-mono text-[11px] text-(--ink-3) truncate">{active.relativePath}</div>
                       <StatusBadge status={active.status} />
+                      {active.claim && <ClaimBadge claim={active.claim} />}
                     </div>
                     <h2 className="text-[16px] font-semibold text-(--ink) mt-0.5 truncate">{active.title}</h2>
                   </div>

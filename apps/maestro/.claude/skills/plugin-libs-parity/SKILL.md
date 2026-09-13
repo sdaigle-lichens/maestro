@@ -54,6 +54,21 @@ for an infrastructure repo while the app's `defaultV3Config` already seeded the 
 one — exactly the silent divergence this section warns about, just discovered a task later instead
 of in the same diff. `053` is the fix: rebuild, read the diff, ship it.
 
+**`066` is worse than either: the stale bundle didn't keep old behaviour, it silently disabled the
+feature the commit shipped.** `CLAIM_IDLE_CAP_MS` was added to `handoff-channels.ts` and re-exported
+from the `maestro-session` plugin-entry (see above), but the initial diff committed both
+`plugins/maestro/scripts/lib/maestro-session.cjs` and `.claude/scripts/lib/maestro-session.cjs`
+without rebuilding, so neither carried the new export. `maestro-task-status.cjs` destructures
+`CLAIM_IDLE_CAP_MS` straight out of that bundle, got `undefined`, and `isSessionLive`'s `now - mtime
+<= undefined` is `false` for every claim, live or not — the shipped CLI could create a claim but
+could never see one as live. The full suite still reported green everywhere except
+`test/core/task-claims-cli.test.ts`, whose 3 failures were the only signal; they were caught only
+because @reviewer independently ran the suite against the committed diff rather than trusting the
+implementer's own green run. Fixed by rebuilding and mirroring the `.claude/scripts/lib/` copy by
+hand. Same root cause as `045`/`053` — a transitively-bundled change shipped without
+`build:plugin-libs` — but where those two left old code running, this one shipped new code that
+silently never worked.
+
 ## The export surface is a superset, not an identity
 
 Each bundle's export list must stay a **superset** of what the hook scripts `require()` — adding an
@@ -120,7 +135,9 @@ fails if it stops being 0; the script just starts throwing on machines with an o
 (`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/
 `parseStampedContent`, `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId` — re-exported here rather than
 given a 12th bundle, since `handoff-channels.ts` is `fs`/`path` only and every hook already
-`require`s this one. **Since `064` it carries a third such surface**, all of `session-paths.ts`
+`require`s this one — `066` added `CLAIM_IDLE_CAP_MS` to that same re-exported list, the claims
+subsystem's mtime cap, for the same "it's fs-only and every hook needs it" reason. **Since `064` it
+carries a third such surface**, all of `session-paths.ts`
 (`resolveSessionId`, `isValidSessionId`, `sessionPathsFor`, `resolveSessionPaths`,
 `ensureSessionPaths`, `ensureSessionsRoot`, `listSessionIds`, `removeSessionState`,
 `LEGACY_SESSION_FILES`, `SESSIONS_DIR_NAME`) — also `fs`/`path` only, so the invariant below still

@@ -474,6 +474,13 @@ export interface MaestroTask {
   blockedBy: string[];
   status: TaskStatus;
   content: string;
+  /**
+   * Derived, never persisted (`066`): the live claim a session holds on this task, or `null`. A
+   * claimed task's `status` is still `ready` — the claim is an overlay, not a fourth status. `live`
+   * is `false` for exactly one read, the one that discovers the claim's session has gone idle or
+   * away; the claim file is gone by the next read.
+   */
+  claim: { sessionId: string; claimedAt: string; live: boolean } | null;
 }
 
 export interface SessionLogEntry {

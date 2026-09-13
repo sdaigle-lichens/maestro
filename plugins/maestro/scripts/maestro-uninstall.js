@@ -241,6 +241,13 @@ try {
     removeIfPresent(path.join(claudeDir, "maestro_session_tasks.json")),
   ].some(Boolean);
 
+  // `066`: task claims — same "ephemeral, removed at every level, purge or not" treatment as
+  // maestro_sessions/ above, but nested under maestro-tasks/ (user-authored, committed content)
+  // rather than directly under .claude/, so it needs its own line rather than another entry in that
+  // array. Independent of the maestroTasks purge option below: claims/ is never user content the
+  // way the task .md files and status.json are, so it goes even on a default (non-purge) uninstall.
+  const removedClaims = removeIfPresent(path.join(claudeDir, "maestro-tasks", "claims"));
+
   const purged = [];
   if (purge) {
     for (const t of purgeTargets(claudeDir)) if (removeIfPresent(t)) purged.push(path.relative(projectDir, t));
@@ -292,7 +299,7 @@ try {
       ok: true,
       removedAgentSetting,
       removedHooks,
-      removedSession,
+      removedSession: removedSession || removedClaims,
       purged: purge ? purged : null,
       maestroTasks,
       materializedReports,

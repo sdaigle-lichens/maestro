@@ -68,6 +68,7 @@ export {
   formatStampedContent,
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
+  CLAIM_IDLE_CAP_MS,
   type ChannelEntry,
   type SweepResult,
 } from "../handoff-channels.js";

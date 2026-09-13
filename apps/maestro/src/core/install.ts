@@ -457,6 +457,11 @@ const GITIGNORE_ENTRIES = [
   // writes a `.gitignore` containing `*` into the directory as it creates it. This entry is for
   // new installs; that one is the mechanism.
   "**/.claude/maestro_sessions/",
+  // `066`: task claims — the same "entry for new installs, ensureClaimsDir()'s own `*` .gitignore
+  // is the mechanism for everyone else" split as maestro_sessions/ above. Nested under
+  // maestro-tasks/ (user-authored, committed content) rather than directly under .claude/, so it
+  // needs its own line here rather than reusing that directory's ignore rules.
+  "**/.claude/maestro-tasks/claims/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */

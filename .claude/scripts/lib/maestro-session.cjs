@@ -34,6 +34,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_session_exports = {};
 __export(maestro_session_exports, {
   CHANNEL_AGE_CAP_MS: () => CHANNEL_AGE_CAP_MS,
+  CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
@@ -410,6 +411,7 @@ function appendSessionLog(claudeDir, entry, payload) {
 var import_node_fs5 = __toESM(require("node:fs"), 1);
 var import_node_path3 = __toESM(require("node:path"), 1);
 var CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1e3;
+var CLAIM_IDLE_CAP_MS = 15 * 60 * 1e3;
 var CHANNELS_DIR_NAME = "channels";
 var CONSUMED_DIR_NAME = ".consumed";
 function channelsRoot(projectDir) {
@@ -906,6 +908,7 @@ function isRootSkillPath(root, skillPath) {
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
+  CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS,
   SEED_HANDOFFS,

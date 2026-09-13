@@ -28,6 +28,15 @@ import type { PendingLane } from "./contracts.js";
 /** How long a lane file may sit unconsumed before `sweep` removes it. */
 export const CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1000;
 
+/**
+ * How long a task claim (`066`) may sit with no fresh write to its session's `log.jsonl` before it
+ * is treated as dead — a crashed session's claim reclaimable with no user action, the same way a
+ * clean `SessionEnd` deletion (the whole directory gone) reads as dead immediately. Named once and
+ * placed beside `CHANNEL_AGE_CAP_MS` on purpose: both cap an ephemeral file's `mtime` against
+ * "still alive", and both need to reach `maestro-session.cjs` without pulling in `node:sqlite`.
+ */
+export const CLAIM_IDLE_CAP_MS = 15 * 60 * 1000;
+
 const CHANNELS_DIR_NAME = "channels";
 const CONSUMED_DIR_NAME = ".consumed";
 

@@ -1,6 +1,6 @@
 ---
 name: task-queue
-description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, and the two implementations (tasks.ts and maestro-tasks.cjs) that must agree. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, or when a close from the UI and one from the orchestrator disagree."
+description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task."
 metadata:
   type: concept-skill
   version: "1.2"
@@ -44,6 +44,52 @@ precisely so a close from the UI and one from the orchestrator cannot disagree a
 ready. Changing the cascade in one place and not the other is the failure mode this arrangement
 exists to prevent.
 
+**A second pair, added by `066`, does the same for claims.** `apps/maestro/src/core/claims.ts`
+(`claimTask`/`releaseTask`/`readClaims`/`isSessionLive`) and the claim/release logic hand-written
+directly inside `plugins/maestro/scripts/maestro-task-status.cjs` — not in `lib/`, and not
+generated; there is no `plugin-entries/claims.ts` — must independently stay in sync the same way.
+Parity between the two is checked in `test/core/claims.test.ts` and
+`test/core/task-claims-cli.test.ts`, not by `parity.test.ts`'s snapshot-diff pattern, since there is
+no legacy CJS claims module being replaced.
+
+## Claims (`066`)
+
+Claims are how two concurrent sessions asking for "the next ready task" get two **different** tasks,
+without touching `status.json` or the `done`/`ready`/`blocked` enum — a claim is an overlay on
+`ready`, never a fourth status.
+
+```
+<project>/.claude/maestro-tasks/claims/
+  .gitignore              "*", written by ensureClaimsDir() on first create
+  <task-file>.md.json     { session_id, claimed_at, project_root }
+```
+
+- **Created with an exclusive `fs` create (`flag: "wx"`).** The create either succeeds (this session
+  won the race) or fails with `EEXIST` (someone else has it — take the next ready task instead).
+  `EEXIST` is never an error condition here.
+- **Liveness is derived, never trusted from the file's own content.** A claim is live iff its
+  session's `maestro_sessions/<id>/` directory still exists AND that session's `log.jsonl` was
+  modified within `CLAIM_IDLE_CAP_MS` (15 minutes, named beside `CHANNEL_AGE_CAP_MS` in
+  `handoff-channels.ts`) — `064`'s per-session log already doubles as a heartbeat, so no new one was
+  needed. A clean `SessionEnd` deletes the whole session directory, so that claim reads as dead
+  immediately; a crashed session's directory lingers, so its claim ages out only once the log has
+  been idle past the cap.
+- **Dead claims are reclaimable, not an error state.** `readClaims` reaps them on read: a claim
+  found dead is still returned once more (`live: false`, so a caller mid-read can show it dying),
+  then its file is best-effort deleted, so the next read — and the next `claimTask` attempt — sees a
+  clean slate with no user action.
+- **`listTasks` overlays a claim at read time**, adding `claim: { sessionId, claimedAt, live } |
+  null` to `MaestroTask`. The status enum and the `blockedBy` cascade are untouched — a claimed task
+  is still `ready`, with a claim on it. `closeTask`/`done` releases the task's claim as part of
+  closing.
+- `maestro-task-status.cjs` gains `claim <filename>` (exclusive create, reports whether it won) and
+  `release [filename]` (removes only the calling session's own claim, refusing a foreign one;
+  falls back to `active_task` the same way `done` does).
+- `claims/` is ephemeral, project-local, git-ignored the same way `064` ignores `maestro_sessions/`
+  — see `installing-maestro`'s manifest sub-concept for the gitignore-manifest/`ensureXDir()` split
+  this reuses, and its uninstall-and-purge sub-concept for why removing it isn't just another
+  `SESSION_FILES` entry.
+
 ## Live updates on the `/maestro-tasks` route
 
 The route no longer relies solely on its loader's one-shot `listTasks()` snapshot. `tailTasks`
@@ -51,7 +97,9 @@ The route no longer relies solely on its loader's one-shot `listTasks()` snapsho
 same reason the Session Log tail is (see `log-view`'s "the tail polls, it does not `fs.watch`") —
 that re-runs `listTasks` on an interval and pushes only when the serialized result changes, so both
 a status change in `status.json` and a new task file appearing are caught by the same fingerprint
-check. It is wired through a `tasks:subscribe`/`tasks:unsubscribe` push channel
+check. Since `066`, a claim being created, released, or reaped as dead changes `listTasks`'
+serialized result the same way, so the claims directory reaches the route through this same poll
+with no separate wiring. It is wired through a `tasks:subscribe`/`tasks:unsubscribe` push channel
 (`src/main/ipc.ts`, `src/shared/ipc.ts`, `src/preload/index.ts`) modeled directly on
 `log:subscribe`/`log:unsubscribe`, including single-owner-per-`webContents.id` tails and retargeting
 on project switch (`taskTails`/`taskSubscribers`, mirroring `tails`/`logSubscribers`).
@@ -92,8 +140,10 @@ A warning here is advisory. Work that legitimately falls outside the active work
 | `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |
 | `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`. |
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
+| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |
+| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |
 | `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |
-| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`). |
+| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`). |
 | `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. |
 | `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |
 | `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |

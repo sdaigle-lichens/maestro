@@ -9,6 +9,7 @@
 import { describe, it, expect } from "vitest";
 import { createRequire } from "node:module";
 import fs from "node:fs";
+import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -24,6 +25,7 @@ import {
 import { replaceRegion, extractRegion, syncManagedRegions } from "../../src/core/skill-regions.js";
 import { allConfigs } from "./fixtures/configs.js";
 import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
+import { buildPluginLibs, PLUGIN_LIB_ENTRIES } from "../../scripts/build-plugin-libs.mjs";
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -354,5 +356,79 @@ describe("STATIC_ASSETS manifest parity (source-level)", () => {
     const plugin = manifestSrcs(path.join(REPO, "plugins/maestro/scripts/maestro-install.js"));
     expect(app.length).toBeGreaterThan(5); // the scan found a real list, not an empty match
     expect(plugin).toEqual(app);
+  });
+});
+
+// `066`: the third dated stale-bundle incident (see plugin-libs-parity) shipped a bundle that
+// silently disabled a feature instead of just running old code, and the only reason it was caught
+// was @reviewer independently rebuilding rather than trusting a green self-report. Unlike every
+// other block in this file, this one deliberately DOES compare against a fresh build — the point
+// is not "does the port match a snapshot" but "is the committed bundle what the build would
+// produce right now". `buildPluginLibs` is pointed at a scratch directory rather than its default
+// output so this never mutates the committed files itself.
+describe("generated bundle freshness (066)", () => {
+  const LIB = path.resolve(here, "../../../../plugins/maestro/scripts/lib");
+
+  it("every committed plugins/maestro/scripts/lib/*.cjs bundle matches a fresh build:plugin-libs run", async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), "plugin-libs-freshness-"));
+    try {
+      const written = await buildPluginLibs(tmpDir);
+      expect(written).toHaveLength(PLUGIN_LIB_ENTRIES.length);
+      for (const freshFile of written) {
+        const name = path.basename(freshFile);
+        const fresh = fs.readFileSync(freshFile, "utf8");
+        const committed = fs.readFileSync(path.join(LIB, name), "utf8");
+        expect(committed, `${name} is stale — run pnpm --filter maestro build:plugin-libs and commit the diff`).toBe(
+          fresh
+        );
+      }
+    } finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true });
+    }
+  });
+});
+
+// The second half of `066`'s incident: even a fresh plugins/maestro/scripts/lib bundle is not
+// enough, because a project's own .claude/scripts/lib/ copy (this repo included — its own .claude/
+// is a project install of itself) is a snapshot that only `maestro-install.js`'s STATIC_ASSETS
+// copy step refreshes, and nothing rebuilds it automatically. The pair list is read from
+// install.ts itself rather than hardcoded, so a lib added to or dropped from STATIC_ASSETS moves
+// this test's coverage without a separate edit here.
+describe("plugin-lib project mirror parity (066)", () => {
+  const REPO = path.resolve(here, "../../../..");
+
+  /** `{ src, dest }` pairs from install.ts's STATIC_ASSETS whose src is a generated lib. */
+  function copiedLibAssets(): Array<{ src: string; dest: string }> {
+    const text = fs.readFileSync(path.join(REPO, "apps/maestro/src/core/install.ts"), "utf8");
+    const decl = /STATIC_ASSETS[^=\n]*=\s*\[/.exec(text);
+    expect(decl, "no STATIC_ASSETS declaration in install.ts").not.toBeNull();
+    const open = decl!.index + decl![0].length - 1;
+    let depth = 0;
+    let end = open;
+    for (let i = open; i < text.length; i++) {
+      if (text[i] === "[") depth++;
+      else if (text[i] === "]" && --depth === 0) {
+        end = i;
+        break;
+      }
+    }
+    const body = text.slice(open, end);
+    const pairs: Array<{ src: string; dest: string }> = [];
+    for (const m of body.matchAll(/\{\s*src:\s*["'`]([^"'`]+)["'`]\s*,\s*dest:\s*["'`]([^"'`]+)["'`]/g)) {
+      if (m[1].startsWith("scripts/lib/")) pairs.push({ src: m[1], dest: m[2] });
+    }
+    return pairs;
+  }
+
+  it("this repo's own .claude/scripts/lib/*.cjs mirror is byte-identical to plugins/maestro/scripts/lib/*.cjs", () => {
+    const pairs = copiedLibAssets();
+    expect(pairs.length).toBeGreaterThan(3); // the scan found a real list, not an empty match
+    for (const { src, dest } of pairs) {
+      const pluginFile = path.join(REPO, "plugins/maestro", src);
+      const mirrorFile = path.join(REPO, dest);
+      expect(fs.readFileSync(mirrorFile, "utf8"), `${dest} is stale against ${src}`).toBe(
+        fs.readFileSync(pluginFile, "utf8")
+      );
+    }
   });
 });

@@ -166,6 +166,15 @@ section with three `**/.claude/maestro_session*` entries, `**/.claude/channels/`
 > a project that has never heard of this release. The manifest entry is belt-and-braces for new
 > installs, in the other direction. Any future ephemeral *directory* should follow this shape rather
 > than relying on the manifest alone.
+
+**`066`'s task claims are exactly that next instance.** `**/.claude/maestro-tasks/claims/` joins
+`GITIGNORE_ENTRIES` the same way, and `ensureClaimsDir()` (in `claims.ts`, mirrored in
+`maestro-task-status.cjs`) writes the directory's own `*` `.gitignore` on first create, the same
+mechanism as `ensureSessionsRoot()`. The one difference: it nests under `.claude/maestro-tasks/` —
+user-authored, committed content — rather than sitting flush under `.claude/`, which is why
+`uninstall.ts`'s removal of it can't just be another `SESSION_FILES` entry; see the
+uninstall-and-purge sub-concept.
+
 The leading recursive wildcard matches `.claude/` at **any** depth including the root, so a
 monorepo needs no per-package `.gitignore`. Entries are appended only when missing, under a header
 added only when missing. The header itself changed wording in `036`, from "removed at SessionEnd"
