@@ -9,3 +9,9 @@ Reuse criterias of a good skill from create skill ?
 ```
 "autoCompactWindow": 125000
 ```
+
+---
+
+Check on next maestro task: are channel files deleted at the end ?
+
+---
