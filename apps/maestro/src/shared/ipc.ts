@@ -655,6 +655,7 @@ export const IPC_EVENTS = {
   sessionEvent: "session:event",
   logInit: "log:init",
   logEntry: "log:entry",
+  logEnd: "log:end",
   logReset: "log:reset",
   // Pushed by the task-queue poller — see `IPC.tasksSubscribe` above. `tasksInit` is the full
   // snapshot on subscribe; `tasksUpdate` is the full re-derived list, pushed whenever the queue
@@ -665,6 +666,24 @@ export const IPC_EVENTS = {
   tasksUpdate: "tasks:update",
   projectChanged: "project:changed",
 } as const;
+
+// `065`. One tab per live session across every project the app knows about, so every push off
+// `log.subscribe` (other than `onReset`, which is deliberately untagged — see there) says which
+// project and which session it belongs to.
+export interface SessionLogInitEvent {
+  projectRoot: string;
+  sessionId: string;
+  entries: SessionLogEntry[];
+}
+export interface SessionLogEntryEvent {
+  projectRoot: string;
+  sessionId: string;
+  entry: SessionLogEntry;
+}
+export interface SessionLogEndEvent {
+  projectRoot: string;
+  sessionId: string;
+}
 
 /** The surface exposed on `window.maestro` by the preload script. */
 export interface MaestroApi {
@@ -1234,10 +1253,18 @@ export interface MaestroApi {
      * the tail from the first, and whichever unsubscribes first kills it for both. The one owner
      * is `SessionLogProvider`, mounted once in `__root.tsx`; read from it via `useSessionLog()`
      * rather than subscribing again. A test asserts there is exactly one call site.
+     *
+     * `065` widens this from one log per project to one stream per LIVE SESSION across every
+     * project the app knows about (current + recent). `onInit`/`onEntry`/`onEnd` are now tagged
+     * with which `(projectRoot, sessionId)` they belong to, so a subscriber can fan them out per
+     * tab; `onReset` is unchanged and still means "drop everything" — main sends it once, at
+     * subscribe time and whenever the whole target changes wholesale (e.g. a forced retarget),
+     * never per-session (that is what `onEnd` is for).
      */
     subscribe(handlers: {
-      onInit(entries: SessionLogEntry[]): void;
-      onEntry(entry: SessionLogEntry): void;
+      onInit(payload: SessionLogInitEvent): void;
+      onEntry(payload: SessionLogEntryEvent): void;
+      onEnd(payload: SessionLogEndEvent): void;
       onReset(): void;
     }): () => void;
   };

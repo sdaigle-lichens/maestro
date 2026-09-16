@@ -1,11 +1,11 @@
 ---
 name: maestro-post-mortem
-description: "Runs a retrospective on the current Maestro session — reads the ephemeral session log (maestro_session.log.jsonl) and couples it with this session's own context to flag what could have gone better (false typecheck/test errors, redundant file reads/edits, wrong decisions or assumptions, bad handoffs), then offers to propose and apply fixes. Use when the user wants a post-mortem, retro, or session review, asks what went wrong / what could have gone better, or wants to tighten their Maestro setup after a run."
+description: "Runs a retrospective on the current Maestro session — reads the ephemeral session log (.claude/maestro_sessions/<session_id>/log.jsonl) and couples it with this session's own context to flag what could have gone better (false typecheck/test errors, redundant file reads/edits, wrong decisions or assumptions, bad handoffs), then offers to propose and apply fixes. Use when the user wants a post-mortem, retro, or session review, asks what went wrong / what could have gone better, or wants to tighten their Maestro setup after a run."
 ---
 
 # Maestro Post-Mortem
 
-Look back over the current Maestro session and find what could have gone better. The Maestro hooks record an objective timeline of every tool call, subagent dispatch, and handoff to `.claude/maestro_session.log.jsonl`; you also carry the **conversation context** of this session. Coupling the two lets you spot wasted work and bad calls — and turn them into concrete fixes.
+Look back over the current Maestro session and find what could have gone better. The Maestro hooks record an objective timeline of every tool call, subagent dispatch, and handoff to this session's own `.claude/maestro_sessions/<session_id>/log.jsonl`; you also carry the **conversation context** of this session. Coupling the two lets you spot wasted work and bad calls — and turn them into concrete fixes.
 
 This is read-and-reason first; it never changes anything until the user opts in.
 
@@ -17,7 +17,7 @@ This is read-and-reason first; it never changes anything until the user opts in.
    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-post-mortem.js" "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
-   If it reports **no session log found**, tell the user the post-mortem must run **during an active Maestro session** — the log is ephemeral and is wiped at `SessionEnd` — then stop. (The digest also accepts `--json` if you'd rather parse it.)
+   It digests **the session you are in** by default. If it reports **no session log found**, tell the user the post-mortem must run **during an active Maestro session** — the log is ephemeral and is wiped at `SessionEnd` — then stop. If instead it **lists the available sessions**, it could not tell which session it was invoked from; show the user the list and re-run with `--session <id>` once they pick one. (The digest also accepts `--json` if you'd rather parse it.)
 
 2. **Couple the digest with this session's context.** The digest is the objective record (what ran, how often, which handoffs returned what). Your conversation context supplies the things the log can't: _why_ you did something, which errors were real vs. spurious, where you went down a dead end, and which assumptions turned out wrong. Read the digest's flags as **leads, not verdicts** — confirm or dismiss each against what actually happened.
 
@@ -44,6 +44,7 @@ This is read-and-reason first; it never changes anything until the user opts in.
 
 ## Notes
 
-- The session log is **ephemeral and gitignored** — deleted at `SessionEnd`. Run this mid-session, while the evidence still exists.
+- The session log is **ephemeral and gitignored** — the whole `.claude/maestro_sessions/<session_id>/` directory is deleted at `SessionEnd`. Run this mid-session, while the evidence still exists.
+- **Each Claude Code session has its own log**, so a second session running against the same project has its own separate digest. Pass `--session <id>` to digest one other than the one you are in; with no argument you always get your own.
 - The helper is **read-only**: it touches only the current project's `.claude/` and never deletes or rewrites anything.
 - Heuristic flags use loose thresholds to surface candidates; expect some that you'll dismiss after checking context. Missing a flag doesn't mean nothing went wrong — your own recollection is the other half of the analysis.

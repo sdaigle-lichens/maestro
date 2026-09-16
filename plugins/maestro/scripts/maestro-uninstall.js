@@ -7,8 +7,9 @@
 //
 // Default: removes every Maestro hook registered against .claude/scripts/ from
 //   <project>/.claude/settings.json (only the keys Maestro added; all other keys
-//   are preserved), deletes the ephemeral session files (maestro_session.json,
-//   maestro_session.log.jsonl, maestro_session_tasks.json), and cleans up any
+//   are preserved), deletes the ephemeral session state (the whole .claude/maestro_sessions/
+//   directory, plus the pre-`064` flat maestro_session.json / maestro_session.log.jsonl /
+//   maestro_session_tasks.json if an older runtime left them), and cleans up any
 //   legacy `agent: "maestro"` key left by older installs.
 // --purge: additionally removes the installed orchestrator skill (and any
 //   SKILL.md.bak the installer's managed-region migration left behind), the
@@ -227,11 +228,25 @@ try {
   const claudeDir = path.join(projectDir, ".claude");
 
   const { removedAgentSetting, removedHooks } = cleanSettings(path.join(claudeDir, "settings.json"));
+  // `064`: `maestro_sessions/` is the live per-session state (one directory per Claude Code
+  // session, holding its own log.jsonl / session.json / tasks.json); the three flat names after it
+  // are the pre-`064` layout, still removed because a project that ran an older runtime has them
+  // sitting there with nothing else to clear them. Unlike maestro-session-cleanup, which scopes its
+  // deletion to the ONE ending session, an uninstall is the whole project's runtime going away —
+  // so the directory goes wholesale, at every level, purge or not.
   const removedSession = [
+    removeIfPresent(path.join(claudeDir, "maestro_sessions")),
     removeIfPresent(path.join(claudeDir, "maestro_session.json")),
     removeIfPresent(path.join(claudeDir, "maestro_session.log.jsonl")),
     removeIfPresent(path.join(claudeDir, "maestro_session_tasks.json")),
   ].some(Boolean);
+
+  // `066`: task claims — same "ephemeral, removed at every level, purge or not" treatment as
+  // maestro_sessions/ above, but nested under maestro-tasks/ (user-authored, committed content)
+  // rather than directly under .claude/, so it needs its own line rather than another entry in that
+  // array. Independent of the maestroTasks purge option below: claims/ is never user content the
+  // way the task .md files and status.json are, so it goes even on a default (non-purge) uninstall.
+  const removedClaims = removeIfPresent(path.join(claudeDir, "maestro-tasks", "claims"));
 
   const purged = [];
   if (purge) {
@@ -284,7 +299,7 @@ try {
       ok: true,
       removedAgentSetting,
       removedHooks,
-      removedSession,
+      removedSession: removedSession || removedClaims,
       purged: purge ? purged : null,
       maestroTasks,
       materializedReports,

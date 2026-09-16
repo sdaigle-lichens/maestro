@@ -5,7 +5,7 @@ files the app owns, uninstall deletes files the _user_ may have hours of work in
 
 ## The two levels are the contract
 
-**Default** — removes the registered hooks and the ephemeral session files, and **keeps
+**Default** — removes the registered hooks and the ephemeral session state, and **keeps
 `maestro.json`**. Someone who wants the hooks to stop firing has not asked to throw away their
 workflow graph and rule assignments. It also clears a legacy `agent: "maestro"` key older installs
 left behind.
@@ -16,6 +16,29 @@ remove `.claude/handoffs/` — since `033` that directory holds the user's own t
 overrides, which are workflow content in the same sense `maestro.json` is.
 
 Collapsing the two, or making purge the default, turns "stop the hooks" into silent data loss.
+
+**`uninstall.ts`'s `SESSION_FILES` and `maestro-session-cleanup`'s removal deliberately DIVERGED at
+`064` — do not "restore" the parity.** They used to name the same three flat files. Now
+`SESSION_FILES` leads with `SESSIONS_DIR_NAME` (`maestro_sessions`) and takes the **whole directory**
+— every session's state, at every uninstall level, purge or not — because an uninstall is the whole
+project's runtime going away. `removeSessionState`, which both `SessionEnd` hooks call, takes only
+**the ending session's own** subdirectory and never a sibling's; that scoping is the entire point of
+`064`. Both lists still carry the three pre-`064` flat names, for a project that ran an older
+runtime and has nothing else to clear them.
+
+Two mechanical consequences: the removal must pass `recursive` (`fs.rmSync(abs, { recursive: true,
+force: true })` — harmless for the three flat files, required for the directory), and
+`uninstallPlan`'s reported session files now include a directory among the filenames.
+
+**`066`'s `claims/` directory needs the same unconditional, every-level removal as `SESSION_FILES`
+above, but can't just be a fourth entry in that array.** `SESSION_FILES`' paths are all flat
+`.claude/<file>` names (or, since `064`, the `maestro_sessions` directory itself, still directly
+under `.claude/`); `claims/` nests under `.claude/maestro-tasks/` instead, which that array's shape
+doesn't express. Both `uninstall.ts` and `maestro-uninstall.js` remove it with their own inline
+check instead, independent of the `maestroTasks`/`--delete-maestro-tasks` opt-in below —  `claims/`
+is never user content the way the task `.md` files and `status.json` are, so it goes on a default
+(non-purge) uninstall the same as `SESSION_FILES`. See the manifest sub-concept for the matching
+gitignore-side nuance.
 
 **On a machine with the plugin, plain uninstall stops the project's hooks and hands them back to the
 plugin's copies, which keep firing.** That is the fallback, not a fault: the plugin's copy of a hook

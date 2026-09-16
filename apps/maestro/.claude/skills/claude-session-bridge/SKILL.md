@@ -3,8 +3,8 @@ name: claude-session-bridge
 description: "Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process."
 metadata:
   type: concept-skill
-  version: "2.1"
-  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
+  version: "2.2"
+  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
 ---
 
 # Claude session bridge
@@ -119,8 +119,9 @@ required to keep its own — the model reads that sentence and acts on it.
   tool and where it was looked for, with the Run button simply never pressed, not an ENOENT after a
   spawn.
 - **The plugin's `hooks.json` does NOT fire in a pane session — measured, not inferred.** A pane turn
-  that read a file inside a fixture project _with_ a `maestro.json` wrote no
-  `maestro_session.log.jsonl`. So the `/session-log` pollution that loading project `settingSources`
+  that read a file inside a fixture project _with_ a `maestro.json` wrote no session log at all
+  (`maestro_session.log.jsonl` when measured; since `064` it would be
+  `maestro_sessions/<session_id>/log.jsonl`). So the `/session-log` pollution that loading project `settingSources`
   would cause does not arrive with `plugins: [...]`, and the pane's tool calls stay out of a view
   built for orchestrator runs. This is a property of `settingSources: []` plus `plugins` being a
   local plugin descriptor, not a hook registration — nothing here re-registers the plugin's hooks.

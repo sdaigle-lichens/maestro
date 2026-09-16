@@ -10,6 +10,10 @@ import path from "node:path";
 import type { MaestroTask, TaskStatus } from "./contracts.js";
 export type { MaestroTask, TaskStatus };
 
+import { readClaims, deleteClaimIfAny, type TaskClaim } from "./claims.js";
+export { CLAIMS_DIR_NAME, claimsDirFor, claimTask, releaseTask } from "./claims.js";
+export type { TaskClaim, ClaimResult, ReleaseResult } from "./claims.js";
+
 const TASKS_SUBDIR = path.join(".claude", "maestro-tasks");
 const STATUS_FILE = "status.json";
 
@@ -105,7 +109,12 @@ function buildStatusMap(dir: string, files: string[], doneSet: Set<string>): Sta
   return out;
 }
 
-function tasksFromFiles(dir: string, files: string[], statusMap: StatusMap): MaestroTask[] {
+function tasksFromFiles(
+  dir: string,
+  files: string[],
+  statusMap: StatusMap,
+  claims: Map<string, TaskClaim> = new Map()
+): MaestroTask[] {
   const fileSet = new Set(files);
   const doneSet = new Set(files.filter((f) => statusMap[f]?.status === "done"));
 
@@ -128,6 +137,7 @@ function tasksFromFiles(dir: string, files: string[], statusMap: StatusMap): Mae
       blockedBy,
       status,
       content,
+      claim: claims.get(filename) ?? null,
     };
   });
 }
@@ -136,13 +146,16 @@ export function listTasks(projectRoot: string): MaestroTask[] {
   if (!projectRoot) return [];
   const dir = tasksDirFor(projectRoot);
   const files = listTaskFiles(dir);
-  return tasksFromFiles(dir, files, readStatusMap(dir));
+  const claims = readClaims(projectRoot, dir);
+  return tasksFromFiles(dir, files, readStatusMap(dir), claims);
 }
 
 /**
  * Mark one task file done, then recompute the ready/blocked cascade for every task (a dependent
  * whose only blocker just closed flips to ready) and persist to status.json — the same operation
- * `maestro-task-status.cjs done` performs.
+ * `maestro-task-status.cjs done` performs. Also releases the task's claim, if any (`066`): a done
+ * task has nothing left for a claim to protect, and leaving one behind would just be extra state
+ * for the next `readClaims` to reap for no reason.
  */
 export function closeTask(projectRoot: string, filename: string): MaestroTask[] {
   if (!projectRoot) return [];
@@ -150,13 +163,14 @@ export function closeTask(projectRoot: string, filename: string): MaestroTask[] 
   const files = listTaskFiles(dir);
   const existingStatus = readStatusMap(dir);
   const base = path.basename(filename);
-  if (!files.includes(base)) return tasksFromFiles(dir, files, existingStatus);
+  if (!files.includes(base)) return tasksFromFiles(dir, files, existingStatus, readClaims(projectRoot, dir));
 
   const doneSet = new Set(files.filter((f) => existingStatus[f]?.status === "done"));
   doneSet.add(base);
   const statusMap = buildStatusMap(dir, files, doneSet);
   writeStatusMap(dir, statusMap);
-  return tasksFromFiles(dir, files, statusMap);
+  deleteClaimIfAny(dir, base);
+  return tasksFromFiles(dir, files, statusMap, readClaims(projectRoot, dir));
 }
 
 export interface TaskQueueTailEvents {

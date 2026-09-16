@@ -12,7 +12,15 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { tailTasks, tasksDirFor, listTasks, closeTask, type MaestroTask } from "../../src/core/tasks.js";
+import {
+  tailTasks,
+  tasksDirFor,
+  listTasks,
+  closeTask,
+  claimTask,
+  claimsDirFor,
+  type MaestroTask,
+} from "../../src/core/tasks.js";
 
 const TICK = 1000;
 
@@ -201,5 +209,65 @@ describe("listTasks / closeTask (previously untested)", () => {
     writeTask("002-b.md", "B", ["001-a.md"]);
     const after = closeTask(tmp, "001-a.md");
     expect(after.map((t) => `${t.filename}:${t.status}`)).toEqual(["001-a.md:done", "002-b.md:ready"]);
+  });
+});
+
+// `066`: claims are strictly derived/overlay state — attached to a MaestroTask at read time, never
+// folded into buildStatusMap's ready/blocked/done computation. These pin that the cascade this
+// file already covers above is byte-for-byte identical whether or not a claim exists on the task,
+// using the SAME writeTask/listTasks/closeTask helpers rather than duplicating their setup.
+describe("the status cascade is unaffected by a claim (066)", () => {
+  it("a claimed task still reads as ready, with the same cascade as its unclaimed sibling", () => {
+    writeTask("001-a.md", "A");
+    writeTask("002-b.md", "B", ["001-a.md"]);
+
+    const unclaimed = listTasks(tmp).map((t) => `${t.filename}:${t.status}`);
+    expect(unclaimed).toEqual(["001-a.md:ready", "002-b.md:blocked"]);
+
+    // A live session (directory + fresh log), so the claim below reads live and survives more than
+    // one listTasks() read rather than being reaped on the very read that observes it.
+    const sessionDir = path.join(tmp, ".claude", "maestro_sessions", "sess-claimer-1");
+    fs.mkdirSync(sessionDir, { recursive: true });
+    fs.writeFileSync(path.join(sessionDir, "log.jsonl"), '{"kind":"tool_call"}\n');
+
+    const result = claimTask(tmp, tasksDirFor(tmp), "001-a.md", "sess-claimer-1");
+    expect(result).toEqual({ outcome: "claimed" });
+
+    const claimed = listTasks(tmp);
+    // Status/blockedBy cascade: identical to the unclaimed read above.
+    expect(claimed.map((t) => `${t.filename}:${t.status}`)).toEqual(unclaimed);
+    expect(claimed.find((t) => t.filename === "002-b.md")?.blockedBy).toEqual(["001-a.md"]);
+    // The overlay itself: the claimed task now carries a live claim, its blocked sibling does not.
+    const a = claimed.find((t) => t.filename === "001-a.md");
+    expect(a?.status).toBe("ready");
+    expect(a?.claim).toEqual({ sessionId: "sess-claimer-1", claimedAt: expect.any(String), live: true });
+    expect(claimed.find((t) => t.filename === "002-b.md")?.claim).toBeNull();
+
+    // And it is still there, still live, still not affecting the cascade, on a second read.
+    const again = listTasks(tmp);
+    expect(again.map((t) => `${t.filename}:${t.status}`)).toEqual(unclaimed);
+    expect(again.find((t) => t.filename === "001-a.md")?.claim).toMatchObject({ live: true });
+  });
+
+  it("closeTask's cascade is identical with or without a claim present, and releases the claim it closes", () => {
+    // Baseline, no claim involved at all — exactly the assertion the preceding test already makes.
+    writeTask("001-a.md", "A");
+    writeTask("002-b.md", "B", ["001-a.md"]);
+    const baseline = closeTask(tmp, "001-a.md").map((t) => `${t.filename}:${t.status}`);
+    fs.rmSync(dir, { recursive: true, force: true });
+    fs.mkdirSync(dir, { recursive: true });
+
+    // Same scenario, but 001-a.md is claimed before it closes.
+    writeTask("001-a.md", "A");
+    writeTask("002-b.md", "B", ["001-a.md"]);
+    claimTask(tmp, tasksDirFor(tmp), "001-a.md", "sess-claimer-1");
+
+    const after = closeTask(tmp, "001-a.md");
+    expect(after.map((t) => `${t.filename}:${t.status}`)).toEqual(baseline);
+    expect(after.map((t) => `${t.filename}:${t.status}`)).toEqual(["001-a.md:done", "002-b.md:ready"]);
+
+    // A done task has nothing left for a claim to protect — closeTask released it.
+    expect(after.find((t) => t.filename === "001-a.md")?.claim).toBeNull();
+    expect(fs.existsSync(path.join(claimsDirFor(tasksDirFor(tmp)), "001-a.md.json"))).toBe(false);
   });
 });

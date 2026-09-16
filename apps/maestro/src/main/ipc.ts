@@ -42,7 +42,7 @@ import {
   listMarketplaces,
   scaffoldCreate,
   nodeGit,
-  tailSessionLog,
+  tailSessionLogs,
   pendingLanes,
   installStatus,
   installRuntime,
@@ -218,21 +218,32 @@ function retargetTails(): void {
   }
 }
 
+/**
+ * `065`. One poll loop per window, covering EVERY live session across EVERY project in
+ * `allowedProjectRoots()` — not just the currently open one. Discovery is re-derived from that
+ * same allow-list on every tick inside `tailSessionLogs`, so a project opened or forgotten after
+ * this call, or a sibling session starting in one already covered, is picked up (or dropped)
+ * without needing another retarget — `retargetTails` below still exists and is still called on a
+ * project switch (announce()), but only to avoid up to one poll interval of staleness, not because
+ * discovery would otherwise miss it.
+ *
+ * `logReset` is sent once up front: every `startTail` call — a fresh subscribe or a forced
+ * retarget — is a wholesale change of what this window is watching, and the per-session `init`s
+ * that follow are what repopulate it.
+ */
 function startTail(webContentsId: number): void {
-  const root = currentRoot();
   const wc = BrowserWindow.getAllWindows().find((w) => w.webContents.id === webContentsId)?.webContents;
   if (!wc) return;
-  if (!root) {
-    wc.send(IPC_EVENTS.logInit, []);
-    return;
-  }
   stopTail(webContentsId);
+  wc.send(IPC_EVENTS.logReset);
   tails.set(
     webContentsId,
-    tailSessionLog(root, {
-      init: (entries) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logInit, entries),
-      entry: (entry) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logEntry, entry),
-      reset: () => !wc.isDestroyed() && wc.send(IPC_EVENTS.logReset),
+    tailSessionLogs(allowedProjectRoots, {
+      init: (projectRoot, sessionId, entries) =>
+        !wc.isDestroyed() && wc.send(IPC_EVENTS.logInit, { projectRoot, sessionId, entries }),
+      entry: (projectRoot, sessionId, entry) =>
+        !wc.isDestroyed() && wc.send(IPC_EVENTS.logEntry, { projectRoot, sessionId, entry }),
+      end: (projectRoot, sessionId) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logEnd, { projectRoot, sessionId }),
     })
   );
 }
@@ -274,6 +285,18 @@ function startTaskTail(webContentsId: number): void {
 }
 
 /**
+ * The project roots any disk-touching code in this file is allowed to read: the currently open
+ * project plus every recent one (`project-store.ts` caps that list at `MAX_RECENT`). One source of
+ * truth shared by `resolveProjectRoot` (a renderer-named VIEWING root) and `startTail`'s discovery
+ * (`065`) — a root a renderer could not name as a viewing parameter can never sneak in as a root
+ * the multi-session tail reads from either.
+ */
+function allowedProjectRoots(): string[] {
+  const state = getState();
+  return state.current ? [state.current.root, ...state.recent.map((r) => r.root)] : state.recent.map((r) => r.root);
+}
+
+/**
  * Resolve the project root a "viewing" channel should read, when the renderer names one.
  *
  * `projectRoot` is a renderer-side VIEWING parameter, never a switch — see the plan's §6. It is
@@ -284,11 +307,7 @@ function startTaskTail(webContentsId: number): void {
  */
 function resolveProjectRoot(projectRoot?: string): string {
   if (!projectRoot) return currentRoot();
-  const state = getState();
-  const allowed = state.current
-    ? [state.current.root, ...state.recent.map((r) => r.root)]
-    : state.recent.map((r) => r.root);
-  if (allowed.includes(projectRoot)) return projectRoot;
+  if (allowedProjectRoots().includes(projectRoot)) return projectRoot;
   console.warn(`[ipc] ignoring unrecognised projectRoot "${projectRoot}"; falling back to the open project`);
   return currentRoot();
 }
