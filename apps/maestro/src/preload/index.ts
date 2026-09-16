@@ -127,6 +127,7 @@ const api: MaestroApi = {
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),
     close: (filename) => ipcRenderer.invoke(IPC.tasksClose, filename),
+    delete: (filename) => ipcRenderer.invoke(IPC.tasksDelete, filename),
     subscribe: (handlers) => {
       const onInit = (_e: unknown, tasks: MaestroTask[]) => handlers.onInit(tasks);
       const onUpdate = (_e: unknown, tasks: MaestroTask[]) => handlers.onUpdate(tasks);

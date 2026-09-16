@@ -14,3 +14,11 @@ export function getMaestroTasks(): Promise<MaestroTask[]> {
 export function closeMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]> {
   return window.maestro.tasks.close(data.filename);
 }
+
+/**
+ * Permanently delete a task file. Returns the full recomputed list, same reasoning as
+ * `closeMaestroTask`.
+ */
+export function deleteMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]> {
+  return window.maestro.tasks.delete(data.filename);
+}

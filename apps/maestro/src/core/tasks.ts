@@ -46,6 +46,20 @@ export function parseBlockedBy(content: string): string[] {
   return Array.from(new Set(refs.map((r) => r.replace(/`/g, ""))));
 }
 
+/**
+ * Pull the "## Post-Mortem" section (heading included) the orchestrator or `/maestro-post-mortem`
+ * appended to a task file, if any — the same section-slicing convention as `parseBlockedBy`, kept
+ * separate because the two sections mean different things and can both be present.
+ */
+export function extractPostMortemSection(content: string): string | null {
+  const start = content.search(/^##\s+Post-Mortem\s*$/m);
+  if (start === -1) return null;
+  const rest = content.slice(start);
+  const nextHeading = rest.slice(1).search(/^##\s/m);
+  const body = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
+  return body.trim();
+}
+
 function readStatusMap(dir: string): StatusMap {
   try {
     const data: unknown = JSON.parse(fs.readFileSync(path.join(dir, STATUS_FILE), "utf8"));
@@ -171,6 +185,42 @@ export function closeTask(projectRoot: string, filename: string): MaestroTask[] 
   writeStatusMap(dir, statusMap);
   deleteClaimIfAny(dir, base);
   return tasksFromFiles(dir, files, statusMap, readClaims(projectRoot, dir));
+}
+
+const POSTMORTEMS_LOG = "postmortems.log";
+
+/**
+ * Permanently delete a task file — the in-app "Delete task" action, distinct from `closeTask`
+ * (which marks it done and keeps the file). If the file carries a `## Post-Mortem` section, its
+ * content is preserved by appending it to `.claude/postmortems.log` (committed, one entry per
+ * deleted ticket) before the file is removed, so `/maestro-post-mortem` has something to check
+ * future problems against even after the ticket itself is gone.
+ */
+export function deleteTask(projectRoot: string, filename: string): MaestroTask[] {
+  if (!projectRoot) return [];
+  const dir = tasksDirFor(projectRoot);
+  const files = listTaskFiles(dir);
+  const base = path.basename(filename);
+  const existingStatus = readStatusMap(dir);
+  if (!files.includes(base)) return tasksFromFiles(dir, files, existingStatus, readClaims(projectRoot, dir));
+
+  const content = readFileSafe(dir, base);
+  const section = extractPostMortemSection(content);
+  if (section) {
+    const title = parseTitle(content, base);
+    const body = section.replace(/^##\s+Post-Mortem\s*\n?/, "").trim();
+    const entry = `## ${title} (${base})\n\n${body}\n\n---\n\n`;
+    fs.appendFileSync(path.join(projectRoot, ".claude", POSTMORTEMS_LOG), entry);
+  }
+
+  fs.rmSync(path.join(dir, base), { force: true });
+  deleteClaimIfAny(dir, base);
+
+  const remainingFiles = files.filter((f) => f !== base);
+  const doneSet = new Set(remainingFiles.filter((f) => existingStatus[f]?.status === "done"));
+  const statusMap = buildStatusMap(dir, remainingFiles, doneSet);
+  writeStatusMap(dir, statusMap);
+  return tasksFromFiles(dir, remainingFiles, statusMap, readClaims(projectRoot, dir));
 }
 
 export interface TaskQueueTailEvents {

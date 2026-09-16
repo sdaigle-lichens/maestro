@@ -38,6 +38,7 @@ import {
   hasVibeRules,
   listTasks,
   closeTask,
+  deleteTask,
   tailTasks,
   listMarketplaces,
   scaffoldCreate,
@@ -842,6 +843,7 @@ export function registerIpc(): void {
   // ── tasks ────────────────────────────────────────────────────────────
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
+  ipcMain.handle(IPC.tasksDelete, (_e, filename: string) => deleteTask(currentRoot(), filename));
 
   // Live tail of the task queue — same subscribe/unsubscribe shape as the session log's
   // `log:subscribe`/`log:unsubscribe` above. No separate snapshot channel: subscribing emits the

@@ -90,6 +90,28 @@ without touching `status.json` or the `done`/`ready`/`blocked` enum — a claim 
   this reuses, and its uninstall-and-purge sub-concept for why removing it isn't just another
   `SESSION_FILES` entry.
 
+## Delete and `postmortems.log`
+
+`deleteTask` (`apps/maestro/src/core/tasks.ts`) is the app-only counterpart to `closeTask`: the
+`/maestro-tasks` route's "Delete task" button permanently removes a task file instead of marking it
+done. It is **not** mirrored into `maestro-tasks.cjs` — nothing on the orchestrator side ever deletes
+a task file, so there is no second implementation to keep in sync, unlike the cascade and claims
+pairs above.
+
+Before removing the file, `deleteTask` looks for a `## Post-Mortem` section (`extractPostMortemSection`)
+— written by the orchestrator's Step 4 template when a task didn't go cleanly, and possibly annotated
+further by `/maestro-post-mortem` with what fix was applied to each bullet — and appends it to
+`<project>/.claude/postmortems.log`, one entry per deleted ticket. Unlike `maestro_sessions/` or
+`claims/`, this file is **committed**, since deleting the ticket is exactly what would otherwise erase
+its history.
+
+`/maestro-post-mortem` never reads either source itself: `maestro-post-mortem-context.js`, registered
+on the same two entrances as `maestro-step0.js` (`UserPromptExpansion` on the command name, `PreToolUse`
+on the `Skill` tool, filtered to this one skill), resolves the session's `active_task`, reads its
+`## Post-Mortem` section if any, reads a tail of `postmortems.log` if any, and injects both as context
+before the skill's own prompt runs — so the skill's Step 1 is "read what's already in context," not
+three manual lookups it has to remember to run every time. See `maestro-architecture`'s hook reference.
+
 ## Live updates on the `/maestro-tasks` route
 
 The route no longer relies solely on its loader's one-shot `listTasks()` snapshot. `tailTasks`
@@ -138,12 +160,14 @@ A warning here is advisory. Work that legitimately falls outside the active work
 | --- | --- |
 | `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |
 | `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |
-| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`. |
+| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`. |
+| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
 | `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |
 | `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |
 | `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |
 | `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`). |
+| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |
 | `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. |
 | `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |
 | `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |

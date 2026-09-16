@@ -221,6 +221,9 @@ const HOOK_REGISTRATIONS = [
   // `047`: the same two entrances, watching for /to-maestro-tasks instead of /maestro.
   nodeHook("UserPromptExpansion", "to-maestro-tasks", "maestro-enable-task-routing.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-enable-task-routing.cjs"),
+  // Same two entrances again, watching for /maestro-post-mortem.
+  nodeHook("UserPromptExpansion", "maestro-post-mortem", "maestro-post-mortem-context.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-post-mortem-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -298,6 +301,8 @@ const HOOK_SCRIPTS = [
   "maestro-step0",
   // Auto-enables Step 4 task routing the first time /to-maestro-tasks is invoked (047).
   "maestro-enable-task-routing",
+  // Injects the active task's Post-Mortem section + postmortems.log tail before /maestro-post-mortem runs.
+  "maestro-post-mortem-context",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the

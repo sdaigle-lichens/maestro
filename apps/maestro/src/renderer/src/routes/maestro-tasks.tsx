@@ -10,6 +10,7 @@ import {
   CheckCheck,
   Terminal,
   Lock,
+  Trash2,
 } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -18,7 +19,13 @@ import { toast } from "@repo/ui/toast";
 import ClaudeRunDialog from "../components/claude-run-dialog";
 import TopNav from "../components/top-nav";
 import { callMain } from "../utils/call-main";
-import { getMaestroTasks, closeMaestroTask, type MaestroTask, type TaskStatus } from "../utils/maestro-tasks";
+import {
+  getMaestroTasks,
+  closeMaestroTask,
+  deleteMaestroTask,
+  type MaestroTask,
+  type TaskStatus,
+} from "../utils/maestro-tasks";
 import type { ClaudePreview } from "../../../shared/ipc";
 
 export const Route = createFileRoute("/maestro-tasks")({
@@ -104,6 +111,7 @@ function MaestroTasksPage() {
   const [filter, setFilter] = useState<Filter>("open");
   const [activeFile, setActiveFile] = useState<string | null>(null);
   const [closing, setClosing] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   /**
    * The previewed invocation the confirmation dialog is showing, or null.
    *
@@ -163,6 +171,42 @@ function MaestroTasksPage() {
       toast(`Closed ${task.title}`);
     } finally {
       setClosing(false);
+    }
+  };
+
+  /**
+   * Permanently remove a task file — irreversible, so it's gated on a confirm. `deleteTask`
+   * extracts any `## Post-Mortem` section into `.claude/postmortems.log` before removing the file,
+   * so the toast says whether one was recorded.
+   */
+  const handleDelete = async (task: MaestroTask) => {
+    const hasPostMortem = /^##\s+Post-Mortem\s*$/m.test(task.content);
+    if (
+      !window.confirm(
+        `Delete ${task.title}? This cannot be undone.${
+          hasPostMortem ? " Its Post-Mortem section will be saved to .claude/postmortems.log first." : ""
+        }`
+      )
+    ) {
+      return;
+    }
+    setDeleting(true);
+    try {
+      const res = await callMain(() => deleteMaestroTask({ data: { filename: task.filename } }));
+      if (!res.ok) {
+        toast(
+          <>
+            Could not delete {task.title}: {res.error}
+          </>,
+          { variant: "error" }
+        );
+        return;
+      }
+      setTasks(res.value);
+      setActiveFile(null);
+      toast(hasPostMortem ? `Deleted ${task.title} — post-mortem saved` : `Deleted ${task.title}`);
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -309,6 +353,14 @@ function MaestroTasksPage() {
                         <CheckCheck size={13} /> Close task
                       </button>
                     )}
+                    <button
+                      type="button"
+                      onClick={() => void handleDelete(active)}
+                      disabled={deleting}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-(--line) px-3 py-1.5 text-[12px] font-medium text-(--ink-3) transition-colors hover:border-red-500 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                      <Trash2 size={13} /> Delete task
+                    </button>
                     <CopyableText
                       text={promptFor(active)}
                       copiedText="Prompt copied!"

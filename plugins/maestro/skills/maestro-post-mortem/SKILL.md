@@ -11,7 +11,9 @@ This is read-and-reason first; it never changes anything until the user opts in.
 
 ## Workflow
 
-1. **Generate the digest.** The log embeds full subagent input/output, so don't read it raw — run the helper, which condenses it:
+1. **Check for prior art.** If a Post-Mortem section and/or a `postmortems.log` excerpt were injected as context above, use them in step 4: for any snag that matches one, say so explicitly and note what (if anything) was already tried — don't re-propose an untried-looking fix that was, in fact, already tried and didn't hold. If nothing was injected, there's no prior art — proceed as usual.
+
+2. **Generate the digest.** The log embeds full subagent input/output, so don't read it raw — run the helper, which condenses it:
 
    ```bash
    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-post-mortem.js" "${CLAUDE_PROJECT_DIR:-.}"
@@ -19,17 +21,17 @@ This is read-and-reason first; it never changes anything until the user opts in.
 
    It digests **the session you are in** by default. If it reports **no session log found**, tell the user the post-mortem must run **during an active Maestro session** — the log is ephemeral and is wiped at `SessionEnd` — then stop. If instead it **lists the available sessions**, it could not tell which session it was invoked from; show the user the list and re-run with `--session <id>` once they pick one. (The digest also accepts `--json` if you'd rather parse it.)
 
-2. **Couple the digest with this session's context.** The digest is the objective record (what ran, how often, which handoffs returned what). Your conversation context supplies the things the log can't: _why_ you did something, which errors were real vs. spurious, where you went down a dead end, and which assumptions turned out wrong. Read the digest's flags as **leads, not verdicts** — confirm or dismiss each against what actually happened.
+3. **Couple the digest with this session's context.** The digest is the objective record (what ran, how often, which handoffs returned what). Your conversation context supplies the things the log can't: _why_ you did something, which errors were real vs. spurious, where you went down a dead end, and which assumptions turned out wrong. Read the digest's flags as **leads, not verdicts** — confirm or dismiss each against what actually happened.
 
-3. **Produce the post-mortem.** Write a tight, impact-ranked list of snags. Useful categories:
+4. **Produce the post-mortem.** Write a tight, impact-ranked list of snags. Useful categories:
    - **Redundant work** — files read or edited more than they needed to be (use the digest's repeated-read / edit-churn flags, but only keep the ones that were genuinely avoidable).
    - **False or flaky checks** — typecheck/test/lint runs (listed in the digest) that errored on non-issues, or errored then passed unchanged. Cross-check against what you saw.
    - **Questionable decisions / assumptions** — choices that cost time or headed the wrong way; assumptions that later proved false.
    - **Handoff issues** — `no-return` or `unknown` handoffs, condition reroutes, or dispatch inputs that were under- or mis-scoped so a subagent worked off the wrong brief.
 
-   For each snag give: **what happened**, **evidence** (a digest line or a moment from context), and **why it was suboptimal**. Skip categories with nothing real in them.
+   For each snag give: **what happened**, **evidence** (a digest line or a moment from context), and **why it was suboptimal**. Fold in whatever step 1 turned up: a snag matching an already-`## Post-Mortem`-flagged problem on the active task, or a prior entry in `postmortems.log`, should say so instead of being presented as freshly discovered.
 
-4. **Offer to explore fixes.** Ask the user which snags they want to address — don't fix unprompted. For each one they pick, propose a concrete remediation mapped to the right Maestro lever, then **apply it once they confirm**:
+5. **Offer to explore fixes.** Ask the user which snags they want to address — don't fix unprompted. For each one they pick, propose a concrete remediation mapped to the right Maestro lever, then **apply it once they confirm**. If the snag corresponds to a bullet in the active task's `## Post-Mortem` section (from step 1), also update that bullet's `Fix:` line in place to describe what you applied — that's what lets a later run (or `postmortems.log`, once the ticket is deleted) show whether an attempted fix actually held.
    - tighten a subagent's prompt, or its handoff payload template at `.claude/handoffs/<sender>/<receiver>.md`
      (the project's own copy — editing it detaches it from the global default, which is what you want here)
    - add or adjust a skill/rule mapping — edit it on the Maestro desktop app's canvas (`apps/maestro`, which renders and applies on save), or hand-edit `.claude/maestro.json` and run `/maestro-update`
@@ -48,3 +50,4 @@ This is read-and-reason first; it never changes anything until the user opts in.
 - **Each Claude Code session has its own log**, so a second session running against the same project has its own separate digest. Pass `--session <id>` to digest one other than the one you are in; with no argument you always get your own.
 - The helper is **read-only**: it touches only the current project's `.claude/` and never deletes or rewrites anything.
 - Heuristic flags use loose thresholds to surface candidates; expect some that you'll dismiss after checking context. Missing a flag doesn't mean nothing went wrong — your own recollection is the other half of the analysis.
+- `.claude/postmortems.log` is written by the app's "Delete task" action, not by this skill: when a `.claude/maestro-tasks/NNN-*.md` file with a `## Post-Mortem` section is deleted, that section is appended there before the file is removed. It's committed, unlike the ephemeral session log, so it's the one place a problem on a since-deleted ticket is still visible.
