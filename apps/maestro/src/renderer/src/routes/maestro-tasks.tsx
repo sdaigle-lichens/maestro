@@ -1,6 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
-import { ListChecks, Copy, Check, CircleCheck, CircleDot, CircleDashed, CheckCheck, Terminal, Lock } from "lucide-react";
+import {
+  ListChecks,
+  Copy,
+  Check,
+  CircleCheck,
+  CircleDot,
+  CircleDashed,
+  CheckCheck,
+  Terminal,
+  Lock,
+} from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CopyableText from "@repo/ui/copyable-text";

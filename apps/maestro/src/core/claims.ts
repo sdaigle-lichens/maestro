@@ -118,11 +118,7 @@ function listClaimFiles(dir: string): string[] {
  * show it dying) and its file is best-effort deleted from disk in the same pass, so the NEXT read
  * (and the next `claimTask` attempt) sees a clean slate with no user action required.
  */
-export function readClaims(
-  projectRoot: string,
-  tasksDir: string,
-  now: number = Date.now()
-): Map<string, TaskClaim> {
+export function readClaims(projectRoot: string, tasksDir: string, now: number = Date.now()): Map<string, TaskClaim> {
   const claudeDir = path.join(projectRoot, ".claude");
   const dir = claimsDirFor(tasksDir);
   const out = new Map<string, TaskClaim>();
@@ -144,9 +140,7 @@ export function readClaims(
   return out;
 }
 
-export type ClaimResult =
-  | { outcome: "claimed" }
-  | { outcome: "already-claimed"; claim: TaskClaim };
+export type ClaimResult = { outcome: "claimed" } | { outcome: "already-claimed"; claim: TaskClaim };
 
 /**
  * Claim `filename` for `sessionId`. Reaps a dead claim on this same file first (so a stale claim
