@@ -282,14 +282,14 @@ describe("extractPostMortemSection", () => {
   it("returns the section, heading included, stopping before the next heading", () => {
     const content =
       "# A\n\n## Blocked by\n\nNone\n\n## Post-Mortem\n\n- **Problem:** flaky test\n  **Fix:** none\n\n## Not part of it\n\nother stuff\n";
-    expect(extractPostMortemSection(content)).toBe(
-      "## Post-Mortem\n\n- **Problem:** flaky test\n  **Fix:** none"
-    );
+    expect(extractPostMortemSection(content)).toBe("## Post-Mortem\n\n- **Problem:** flaky test\n  **Fix:** none");
   });
 
   it("returns the section when it is the file's last section", () => {
     const content = "# A\n\n## Post-Mortem\n\n- **Problem:** wrong assumption\n  **Fix:** none\n";
-    expect(extractPostMortemSection(content)).toBe("## Post-Mortem\n\n- **Problem:** wrong assumption\n  **Fix:** none");
+    expect(extractPostMortemSection(content)).toBe(
+      "## Post-Mortem\n\n- **Problem:** wrong assumption\n  **Fix:** none"
+    );
   });
 });
 
