@@ -1,10 +1,6 @@
 # Backlog
 
-The `/update-single-concept-skill` should run the `cleanup-skill` skill after its done. This skill would make sure that the content is short enough, move to referenced files what is becoming a sub-concept (or something of it's own if it's not a concept skill).
-
-Reuse criterias of a good skill from create skill ?
-
----
+Add a claude-light skill
 
 ```
 "autoCompactWindow": 125000
