@@ -146,6 +146,10 @@ const HOOK_SCRIPTS = [
   // entrances as maestro-step0 above, registered on the SAME two events — it injects nothing, only
   // flips `use_maestro_tasks` in maestro.json.
   "maestro-enable-task-routing",
+  // Same two entrances again, watching for /maestro-post-mortem: injects the active task's
+  // `## Post-Mortem` section and a tail of `.claude/postmortems.log` as context before that skill
+  // runs, so its own prose doesn't re-derive them by hand every time.
+  "maestro-post-mortem-context",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -308,6 +312,9 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   // `047`: the same two entrances, watching for /to-maestro-tasks instead of /maestro.
   nodeHook("UserPromptExpansion", "to-maestro-tasks", "maestro-enable-task-routing.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-enable-task-routing.cjs"),
+  // Same two entrances again, watching for /maestro-post-mortem.
+  nodeHook("UserPromptExpansion", "maestro-post-mortem", "maestro-post-mortem-context.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-post-mortem-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),

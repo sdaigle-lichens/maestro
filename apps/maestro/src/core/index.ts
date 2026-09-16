@@ -131,6 +131,8 @@ export { applyRules, targetDirFor, type ApplyRulesSummary } from "./rules.js";
 export {
   listTasks,
   closeTask,
+  deleteTask,
+  extractPostMortemSection,
   tasksDirFor,
   parseBlockedBy,
   tailTasks,

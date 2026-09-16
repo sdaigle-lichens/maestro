@@ -93,7 +93,14 @@ and tells them nothing.
 
 Reference each note from the `SKILL.md` so the agent knows it exists.
 
-### 6. Stamp it
+### 6. Clean it up
+
+Run the `cleanup-skill` skill, pointing it at this concept skill's directory and telling it this is
+a **concept skill**. It cuts bloat and repetition from what steps 3–5 just wrote, and moves anything
+that grew into its own sub-concept out to `sub-concepts/`. Do this before stamping, so the version
+you record reflects the file a session will actually load.
+
+### 7. Stamp it
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-id> --bump major

@@ -557,6 +557,9 @@ export const IPC = {
 
   tasksList: "tasks:list",
   tasksClose: "tasks:close",
+  // Permanently removes a task file (distinct from `tasksClose`, which marks it done and keeps
+  // the file) — extracts its `## Post-Mortem` section into `.claude/postmortems.log` first, if any.
+  tasksDelete: "tasks:delete",
   // Live tail of the on-disk task queue (`.claude/maestro-tasks/`), mirroring `log:subscribe`/
   // `log:unsubscribe` — one poller per subscribing window, retargeted on a project switch, pushing
   // over the `tasks:init`/`tasks:update` events below rather than being polled by the renderer.
@@ -971,6 +974,12 @@ export interface MaestroApi {
   tasks: {
     list(): Promise<MaestroTask[]>;
     close(filename: string): Promise<MaestroTask[]>;
+    /**
+     * Permanently delete a task file. If it carries a `## Post-Mortem` section, that section is
+     * appended to `.claude/postmortems.log` before the file is removed. Returns the full
+     * recomputed list, same reasoning as `close`.
+     */
+    delete(filename: string): Promise<MaestroTask[]>;
     /**
      * Start a live tail of the on-disk task queue and receive pushes. Mirrors `log.subscribe`'s
      * shape: `onInit` is the full snapshot at subscribe time, `onUpdate` is the full re-derived

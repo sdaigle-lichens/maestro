@@ -17,6 +17,8 @@ import {
   tasksDirFor,
   listTasks,
   closeTask,
+  deleteTask,
+  extractPostMortemSection,
   claimTask,
   claimsDirFor,
   type MaestroTask,
@@ -269,5 +271,74 @@ describe("the status cascade is unaffected by a claim (066)", () => {
     // A done task has nothing left for a claim to protect — closeTask released it.
     expect(after.find((t) => t.filename === "001-a.md")?.claim).toBeNull();
     expect(fs.existsSync(path.join(claimsDirFor(tasksDirFor(tmp)), "001-a.md.json"))).toBe(false);
+  });
+});
+
+describe("extractPostMortemSection", () => {
+  it("returns null when the file has no Post-Mortem section", () => {
+    expect(extractPostMortemSection("# A\n\n## Blocked by\n\nNone\n")).toBeNull();
+  });
+
+  it("returns the section, heading included, stopping before the next heading", () => {
+    const content =
+      "# A\n\n## Blocked by\n\nNone\n\n## Post-Mortem\n\n- **Problem:** flaky test\n  **Fix:** none\n\n## Not part of it\n\nother stuff\n";
+    expect(extractPostMortemSection(content)).toBe("## Post-Mortem\n\n- **Problem:** flaky test\n  **Fix:** none");
+  });
+
+  it("returns the section when it is the file's last section", () => {
+    const content = "# A\n\n## Post-Mortem\n\n- **Problem:** wrong assumption\n  **Fix:** none\n";
+    expect(extractPostMortemSection(content)).toBe(
+      "## Post-Mortem\n\n- **Problem:** wrong assumption\n  **Fix:** none"
+    );
+  });
+});
+
+describe("deleteTask", () => {
+  it("removes the task file and drops it from status.json and listTasks", () => {
+    writeTask("001-a.md", "A");
+    writeTask("002-b.md", "B", ["001-a.md"]);
+    const after = deleteTask(tmp, "001-a.md");
+    expect(after.map((t) => t.filename)).toEqual(["002-b.md"]);
+    expect(fs.existsSync(path.join(dir, "001-a.md"))).toBe(false);
+  });
+
+  it("cascades a deleted blocker to ready, same as a done one", () => {
+    writeTask("001-a.md", "A");
+    writeTask("002-b.md", "B", ["001-a.md"]);
+    const after = deleteTask(tmp, "001-a.md");
+    expect(after.map((t) => `${t.filename}:${t.status}`)).toEqual(["002-b.md:ready"]);
+  });
+
+  it("releases the deleted task's claim", () => {
+    writeTask("001-a.md", "A");
+    claimTask(tmp, tasksDirFor(tmp), "001-a.md", "sess-claimer-1");
+    deleteTask(tmp, "001-a.md");
+    expect(fs.existsSync(path.join(claimsDirFor(tasksDirFor(tmp)), "001-a.md.json"))).toBe(false);
+  });
+
+  it("extracts a Post-Mortem section into .claude/postmortems.log before removing the file", () => {
+    fs.writeFileSync(
+      path.join(dir, "001-a.md"),
+      "# A\n\n## Blocked by\n\nNone\n\n## Post-Mortem\n\n- **Problem:** flaky test\n  **Fix:** none\n"
+    );
+    deleteTask(tmp, "001-a.md");
+
+    const logPath = path.join(tmp, ".claude", "postmortems.log");
+    expect(fs.existsSync(logPath)).toBe(true);
+    const logContent = fs.readFileSync(logPath, "utf8");
+    expect(logContent).toContain("## A (001-a.md)");
+    expect(logContent).toContain("**Problem:** flaky test");
+  });
+
+  it("writes nothing to postmortems.log when the task has no Post-Mortem section", () => {
+    writeTask("001-a.md", "A");
+    deleteTask(tmp, "001-a.md");
+    expect(fs.existsSync(path.join(tmp, ".claude", "postmortems.log"))).toBe(false);
+  });
+
+  it("is a no-op returning the current list when the file does not exist", () => {
+    writeTask("001-a.md", "A");
+    const after = deleteTask(tmp, "999-missing.md");
+    expect(after.map((t) => t.filename)).toEqual(["001-a.md"]);
   });
 });
