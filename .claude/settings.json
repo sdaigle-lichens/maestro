@@ -19,6 +19,15 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-enable-task-routing.cjs\""
           }
         ]
+      },
+      {
+        "matcher": "maestro-post-mortem",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-post-mortem-context.cjs\""
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -32,6 +41,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-enable-task-routing.cjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-post-mortem-context.cjs\""
           }
         ]
       },

@@ -92,7 +92,16 @@ node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" done
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
 
-Before finishing, judge whether this session went cleanly: did it need a major review fix, a mid-task refactor, or did the task fail to land correctly on the first pass without heavy steering from the user? If so, ask the user once whether they'd like to run `/maestro-post-mortem` now. If the session was clean, skip this question entirely — don't ask it on every task.
+Before finishing, judge whether this session went cleanly: did it need a major review fix, a mid-task refactor, or did the task fail to land correctly on the first pass without heavy steering from the user? If it did not, and `active_task` is set, edit that task file yourself now (via `Edit`) to append a `## Post-Mortem` section recording each problem, e.g.:
+
+```markdown
+## Post-Mortem
+
+- **Problem:** <what went wrong>
+  **Fix:** none
+```
+
+If the file already has a `## Post-Mortem` section — from an earlier loop-back through this same task — add new bullets to it instead of writing a second section. Do this whether or not the user goes on to run `/maestro-post-mortem`: it is the raw record of what happened, and `/maestro-post-mortem` (if run) fills in the `Fix:` line for whichever problems it ends up addressing. Then ask the user once whether they'd like to run `/maestro-post-mortem` now. If the session was clean, skip both — don't write a section or ask the question on every task.
 <!-- Maestro:STEPS:END -->
 
 <!-- Maestro:PRINCIPLES:START -->
