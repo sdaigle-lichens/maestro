@@ -147,9 +147,20 @@ installer wrote it, because `maestro-uninstall.js` removes it by exact string ma
 block, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
 and did not. It needed a permission grant for the command Step 1 injects (an injected command whose
 check answers anything but `allow` aborts the invocation), and put it in the orchestrator
-**template's frontmatter** as `allowed-tools` instead. That keeps the installer out of a block users
-hand-edit, and keeps uninstall's removal list to hook entries: the grant lives in the skill file and
-leaves with it under `--purge`. See the uninstall sub-concept for what that removal list is.
+**template's frontmatter** instead:
+
+```
+allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")
+```
+
+`allowed-tools` is a **grant, not a restriction** (`disallowed-tools` is the restriction field), so
+it does not narrow the orchestrator's own access to `Task`/`TaskCreate`/`Skill`/`Read`. Two things
+follow, and both are why it was chosen: the installer stays out of a block users hand-edit and reason
+about, and **uninstall gains no new removal logic** — the grant lives in the skill file and leaves
+with it under `--purge`. See the uninstall sub-concept for what that removal list is.
+
+Keep it that way: a permissions entry is a claim on the user's project-wide configuration that a hook
+registration is not.
 
 ## The other two writes
 

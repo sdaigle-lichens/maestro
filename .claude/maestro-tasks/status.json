@@ -328,5 +328,9 @@
   "066-claim-a-task-so-two-sessions-cannot-take-the-same-one.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "067-clean-up-all-claude-skills-skill-md-files.md": {
+    "status": "done",
+    "blockedBy": []
   }
 }

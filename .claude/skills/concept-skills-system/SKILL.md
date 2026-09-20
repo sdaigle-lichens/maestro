@@ -43,31 +43,20 @@ two homes:
 | `.claude/skills/` at the repo root | Everything else — including concepts whose code sits under `plugins/maestro/` (the runtime, the install/update paths, the task queue, this machinery). Loads repo-wide. |
 
 **The split is by audience, not by which directory the code sits in.** `plugins/<name>/` ships to
-that plugin's end users, so nothing developer-facing may live there — no `.claude/` directory, no
-developer-facing skill, no architecture notes (see `.claude/rules/plugin-publishing.md`). A concept
-describing `plugins/maestro/` therefore has no app to belong to and lands at the root:
-`maestro-architecture` documents the plugin's runtime *for developers*, so it is a root skill, while
-`plugins/maestro/skills/maestro-install/` is a skill the plugin *publishes* and lives in the plugin.
+that plugin's end users, so nothing developer-facing may live there (see
+`.claude/rules/plugin-publishing.md`). A concept describing `plugins/maestro/` therefore has no app
+to belong to and lands at the root: `maestro-architecture` documents the plugin's runtime *for
+developers* and is a root skill, while `plugins/maestro/skills/maestro-install/` is a skill the
+plugin *publishes*.
 
-## The four skills, and what each is allowed to cost
+## The four skills
 
-| Skill | Job | Depth |
-| --- | --- | --- |
-| `create-concept-skills` | Derive the whole list empirically, agree it with the user, write skeletons | Breadth only — delegates reading to cheap subagents and must not become a know-it-all session |
-| `update-concept-skills` | Reconcile the list against what changed since `last-update` | Diff-driven; accepts a code-change report to skip re-exploration |
-| `update-single-concept-skill` | Take one skill from skeleton to worth loading, incl. `agents/` notes | Deep on one concept, still not exhaustive |
-| `scribe` | The placement rule: concept skill vs `docs/` vs a `docs/` file a skill references | — |
-
-Version conventions follow that split: `update-concept-skills` bumps a touched skill **minor**,
-`update-single-concept-skill` bumps one **major** (a deep research pass is what separates a
-researched skill from a skeleton), and a skill created in either run gets **initial**.
-
-**The repo-level record moves by `0.1` and effectively only by `0.1`.** A reconciliation bumps it
-minor whether or not concepts were added or deleted — adding one is the ordinary outcome of a pass,
-not a different kind of event, and treating it as a major made the number jump a whole version for a
-routine run. `--bump major` on `state-set` stays in the CLI for a wholesale re-derivation of the
-list; nothing in the four flows reaches for it today, and `create-concept-skills` seeds a new list
-with `initial` instead.
+`create-concept-skills` (derive the whole list, breadth only, skeletons),
+`update-concept-skills` (reconcile against `last-update`, bumps minor),
+`update-single-concept-skill` (one skill from skeleton to worth loading, incl. `agents/` notes,
+bumps major) and `scribe` (the concept-skill vs `docs/` placement rule). A skill created in either
+run gets `initial`, and the repo-level record moves only by `0.1`. See
+[The four skills](sub-concepts/the-four-skills.md) for each one's budget and the bump rationale.
 
 ## The CLI owns the versions
 
@@ -85,22 +74,21 @@ Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd).
 cannot quietly drift — and a version stuck at `1.0` makes `/update-single-concept-skill` re-research
 a concept that was already done.
 
-A stamp rewrites only the two `metadata:` lines: `test/core/concept-skills.test.ts` asserts the body
-comes back **byte-identical**, including a `description` with a colon in it. A frontmatter rewriter
-that reserialises what it parsed eventually loses something, so the test is byte equality of
-everything it did not mean to touch, not a structural comparison.
+A stamp rewrites only the two `metadata:` lines: `test/core/concept-skills.test.ts` asserts the rest
+of the file comes back **byte-identical**, including a `description` with a colon in it. A
+frontmatter rewriter that reserialises what it parsed eventually loses something, so the test is
+byte equality rather than a structural comparison.
 
 ## `list` is a runtime contract, not just a maintenance command
 
-Two **published** plugin skills inject its stdout with Claude Code's `!`-prefixed command-injection syntax while
-the harness expands them, each granting exactly
+Two **published** plugin skills inject its stdout with Claude Code's `!`-prefixed command-injection
+syntax, each granting exactly
 `Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)` in `allowed-tools`:
 `use-code-architecture-design-check` (to judge whether a task adds or reshapes a concept) and
-`code-architecture-design` (to load the concepts a new module sits next to). So `list`'s human
-output format is depended on by end users' sessions, not only by the four flows — changing its shape
-is a published-surface change, and both skills must keep the same fallback wording for the empty /
-`[shell command execution disabled by policy]` case. `--json` is the stable form for programmatic
-callers; leave it to them.
+`code-architecture-design` (to load the concepts a new module sits next to). So changing `list`'s
+human output shape is a published-surface change, and both skills must keep the same fallback
+wording for the empty / `[shell command execution disabled by policy]` case. `--json` is the stable
+form for programmatic callers; leave it to them.
 
 ## Traps
 

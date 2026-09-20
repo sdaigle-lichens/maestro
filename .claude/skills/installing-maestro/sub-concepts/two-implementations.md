@@ -13,8 +13,12 @@ two behaviours easiest to lose in a port: preserving a rendered HANDOFFS table o
 migrating a pre-managed-regions skill while keeping the old body beside it.
 
 Both file headers say the manifests mirror each other one-for-one and that a divergence is a bug in
-one of them. There is no test comparing the two _lists_ directly — only their output — so a new
-asset added to one and not the other shows up as a differential failure, not a lint error.
+one of them. **Since `032` that is no longer only a convention:** `test/core/parity.test.ts`'s
+`STATIC_ASSETS manifest parity` describe parses the `STATIC_ASSETS` literal out of **both source
+files** and asserts the two `src` sets are equal. Before it, an asset added to one and forgotten in
+the other showed up as a puzzling differential diff; now it fails as a named test. Same shape as
+`task-queue`'s two implementations, and unlike `plugin-libs-parity`, **nothing here is generated** —
+both copies are hand-maintained.
 
 **The handoff sync is a second thing that must match, and it is hand-mirrored prose, not a shared
 module.** `maestro-install.js` `require`s `decideSync` and `handoffRoutes` from the generated libs,
