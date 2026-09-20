@@ -15,29 +15,6 @@ See `apps/maestro/CLAUDE.md` for the app's own architecture, `.claude/skills/mae
 for how the runtime behaves in a session, and `plugins/maestro/skills/maestro-{install,update,uninstall}/`
 for the published install flows themselves.
 
-## `plugins/` is published, not developer documentation
-
-Everything under `plugins/<name>/` ships to that plugin's **end users**. Nothing that exists to help
-someone develop *this repo* belongs there — no `.claude/` directory, no developer-facing skills, no
-architecture notes.
-
-**Every change under `plugins/<name>/` must bump that plugin's `plugin.json` `version`** — the
-marketplace cache is keyed by it, so an unbumped change silently reaches nobody. Bump the component
-that matches what a *consumer* sees change, not the size of the diff: **minor** only when the
-published surface grows (a new skill, agent, command, or hook event), **patch** for everything
-else, including behaviour changes and commits labelled `feat:`. Nothing reads the magnitude —
-autoUpdate only compares the string for inequality — so there's never a reason to inflate one. See
-`.claude/skills/updating-maestro/` for the table and worked examples.
-
-Documentation written for agents working on this codebase — **concept skills** in particular — goes
-in the `.claude/skills/` **nearest the code it describes**, choosing only between:
-
-- `apps/<app>/.claude/skills/` — for a concept that lives inside that app.
-- `.claude/skills/` at the repo root — for anything else, including concepts whose code lives under
-  `plugins/maestro/` (the runtime, the install/update paths, the task queue, the concept-skill
-  machinery). These have no app to belong to, and root skills load repo-wide.
-
-The distinction is by **audience**, not by which directory the code sits in.
-`.claude/skills/maestro-architecture/` documents `plugins/maestro/` for developers, so it lives at
-the root; `plugins/maestro/skills/maestro-install/` is a skill the plugin publishes, so it lives in
-the plugin.
+`plugins/` is published to end users and has its own invariants — see
+`.claude/rules/plugin-publishing.md` (auto-loaded), and `.claude/skills/concept-skills-system/` for
+which `.claude/skills/` a piece of developer documentation belongs in.

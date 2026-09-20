@@ -1,10 +1,10 @@
 ---
 name: electron-shell-invariants
-description: "Explains the invariants of running the Maestro desktop app as an Electron shell over node-side logic, that don't belong to any one view or to the Claude bridge: the renderer's CSP forbidding inline script, the asar/externalizeDepsPlugin packaging trio, the settingSources: [] four-occurrence lockstep rule in agent-sdk.ts, the project-switch invalidation + key={projectRoot} keying pattern shared by every stateful view and tail, the renderer's code-splitting shape and its measurements, and the process-boundary contract test/isolation.test.ts enforces (nodeIntegration/contextIsolation/no src/core barrel outside main). Use when working on apps/maestro's Electron/Vite config, adding state that must survive a project switch, debugging a theme flash or a route that renders blank only in the packaged build, or wondering why an edit silently didn't reach across the renderer/main boundary."
+description: "Explains the invariants of running the Maestro desktop app as an Electron shell over node-side logic, that don't belong to any one view or to the Claude bridge: the router's hash history (and its corollary that no route may use the URL fragment), the renderer's CSP forbidding inline script, the asar/externalizeDepsPlugin packaging trio, the settingSources: [] four-occurrence lockstep rule in agent-sdk.ts, the project-switch invalidation + key={projectRoot} keying pattern shared by every stateful view and tail, the renderer's code-splitting shape and its measurements, and the process-boundary contract test/isolation.test.ts enforces (nodeIntegration/contextIsolation/no src/core barrel outside main). Use when working on apps/maestro's Electron/Vite config, adding state that must survive a project switch, debugging a theme flash or a route that renders blank only in the packaged build, or wondering why an edit silently didn't reach across the renderer/main boundary."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
+  version: "1.1"
+  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
 ---
 
 # Electron shell invariants
@@ -16,6 +16,19 @@ The Maestro desktop app is an Electron shell over the node-side Maestro logic in
 invariants of the **shell itself** — the renderer's security policy, how the bundler decides what
 ships where, and the one keying pattern every stateful view independently reinvents — that don't
 belong to any of those.
+
+## Hash history, not browser history
+
+`src/renderer/src/main.tsx` builds the router with `createHashHistory()`. A packaged build loads the
+renderer over `file://`, where pushState paths don't resolve to anything on reload — the same
+`file://` premise as the asset resolution below.
+
+**Corollary: a route cannot also use the URL fragment.** The whole route already lives in
+`location.hash`, so a second `#` in it is not something the router or `querySelector` can be trusted
+to split. Anything that wants to address a position *inside* a page carries it as a search param and
+resolves it by element id instead, and any in-page `#anchor` in rendered content has to be
+intercepted or it rewrites the route. The docs readers are the worked example — see
+[`docs-view`](../docs-view/SKILL.md).
 
 ## The renderer's CSP forbids inline script
 
@@ -113,7 +126,7 @@ which needs none of that — so startup parse drops by roughly 75%. Re-measured 
 the chunks the packaged app actually requests (CDP `Network.requestWillBeSent`; `file://` module
 loads produce no `PerformanceResourceTiming` entries, so the obvious way to measure this returns an
 empty array and reads as "nothing loaded"): the landing route pulls 14 chunks / 1,107 kB; `/tools`
-adds 117 kB; `/docs/$slug` adds 558 kB, of which 555 kB is the react-markdown chunk **shared** with
+adds 117 kB; the docs reader (then `/docs/$slug`, now `/project-docs/$slug`) adds 558 kB, of which 555 kB is the react-markdown chunk **shared** with
 `/maestro-tasks` rather than duplicated into it.
 
 What makes this safe over the packaged `file://` load is that assets resolve relatively
@@ -174,5 +187,7 @@ the same file; that one owns the permission-specific half.
 - [`log-view`](../log-view/SKILL.md), [`task-queue`](../task-queue/SKILL.md) (repo root
   `.claude/skills`) — the tail-retargeting instance of the same pattern, for a poll-based live view
   instead of a loader.
+- [`docs-view`](../docs-view/SKILL.md) — the two markdown readers, and what the hash-history
+  corollary above costs a route that wants to address a heading.
 - [`test-maestro`](../test-maestro/SKILL.md) — how to verify a packaged-build-only claim (code
   splitting, CSP, asset resolution) in a real window rather than under `dev`.

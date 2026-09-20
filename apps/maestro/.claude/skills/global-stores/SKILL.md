@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.11"
-  last-update: d50a9830adcb15f7d6a8e8493264149a3ca96d43
+  version: "1.12"
+  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
 ---
 
 # Global stores
@@ -147,6 +147,15 @@ still builds, and only a bare-`node` run notices.
 No native module, and therefore no `electron-rebuild` step. `skill-tags.ts`'s header carries the
 full argument — the other five cite it rather than restating it. A new store should use the same
 mechanism for the same reason.
+
+**The version floor is not the app's, it's whatever `node` is on the session's PATH.** Electron 40
+bundles Node 24, where `node:sqlite` loads fine (with the standard experimental-feature warning). The
+test suite or `maestro-install.js` running under an older *system* `node` needs at least **22.5** for
+the module to exist at all — which is why `maestro-install.js` wraps its
+`require("./lib/maestro-skill-tags.cjs")` in try/catch: an old `node` degrades to the pre-tags, fully
+Claude-driven best-fit flow instead of failing the install. That degradation only works because the
+bundler keeps `node:sqlite` as a real `require()` rather than inlining a shim — see
+[`plugin-libs-parity`](../plugin-libs-parity/SKILL.md).
 
 ## The trap: `SKILL_TAGS` is gone
 

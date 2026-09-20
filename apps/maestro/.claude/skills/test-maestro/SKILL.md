@@ -45,6 +45,10 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
    sudo chmod 4755 node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox
    ```
 
+   Both `node_modules/electron` and `apps/maestro/node_modules/electron` symlink into the pnpm
+   store, so the commands above deliberately fix the **store copy**, not the links. (`gits/farel`
+   documents the same fix for an npm layout.)
+
    Do **not** work around it with `--no-sandbox`: renderer isolation from the OS is the premise
    `test/isolation.test.ts` spends four assertions defending. Check the bit with
    `ls -l node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox` — you want

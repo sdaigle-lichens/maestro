@@ -3,8 +3,8 @@ name: claude-session-bridge
 description: "Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process."
 metadata:
   type: concept-skill
-  version: "2.2"
-  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
+  version: "2.3"
+  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
 ---
 
 # Claude session bridge
@@ -125,6 +125,13 @@ required to keep its own — the model reads that sentence and acts on it.
   would cause does not arrive with `plugins: [...]`, and the pane's tool calls stay out of a view
   built for orchestrator runs. This is a property of `settingSources: []` plus `plugins` being a
   local plugin descriptor, not a hook registration — nothing here re-registers the plugin's hooks.
+- **Clear the transcript BEFORE a resume round trip, never after.** Main pushes the resumed session's
+  notice **during** the `session:resume` call, so `setEntries([])` after the `await` deletes the one
+  thing saying what was picked up, what it cost, and that it forked — and the pane looks as though it
+  started a session silently. Nothing errors, no test catches it, and it's only visible in a real
+  window. `session-context.tsx` clears at line ~496, before the `callMain`, with a comment saying so.
+  The same ordering applies to **any** channel where main streams an event while the handler is still
+  resolving.
 - **`SessionProvider` sits in `__root.tsx`, above the route `Outlet` and a sibling of the route
   column — not inside `TopNav`, and not owned by any one route.** The reason is structural: `TopNav`
   remounts on every navigation (each route mounts its own copy), so a transcript or a live session id

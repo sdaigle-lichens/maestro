@@ -1,10 +1,10 @@
 ---
 name: concept-skills-system
-description: "Explains the concept-skill machinery the maestro plugin ships: what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the maestro-concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, or deciding whether something belongs in a concept skill or in docs/."
+description: "Explains the concept-skill machinery the maestro plugin ships: what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the maestro-concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, deciding whether something belongs in a concept skill or in docs/, or deciding which .claude/skills directory a new concept skill belongs in (an app's, or the repo root's — the rule is by audience, and nothing developer-facing may live under plugins/)."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: 4d2513dac4c6fdef96d89502abfba7859879d641
+  version: "1.4"
+  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
 ---
 
 # Concept-skill system
@@ -31,10 +31,23 @@ convention, so a repo can keep a reconciled list of them without Maestro install
   agents/<agent>.md          # per-agent notes; written only by /update-single-concept-skill
 ```
 
-In a monorepo a concept skill goes in the `.claude` **nearest its code** — which is why this repo's
-app concepts live under `apps/maestro`. The exception is code the repo *publishes*: `plugins/` ships
-to the plugin's end users, so nothing developer-facing may live there, and the concepts describing
-the runtime sit in the root `.claude` instead. See the placement rule in the repo's `CLAUDE.md`.
+## Where a concept skill goes
+
+Documentation written for agents working on a codebase — concept skills in particular — goes in the
+`.claude/skills/` **nearest the code it describes**. In this repo that is a choice between exactly
+two homes:
+
+| Home | For |
+| --- | --- |
+| `apps/<app>/.claude/skills/` | A concept that lives inside that app. Loads only for work under that app. |
+| `.claude/skills/` at the repo root | Everything else — including concepts whose code sits under `plugins/maestro/` (the runtime, the install/update paths, the task queue, this machinery). Loads repo-wide. |
+
+**The split is by audience, not by which directory the code sits in.** `plugins/<name>/` ships to
+that plugin's end users, so nothing developer-facing may live there — no `.claude/` directory, no
+developer-facing skill, no architecture notes (see `.claude/rules/plugin-publishing.md`). A concept
+describing `plugins/maestro/` therefore has no app to belong to and lands at the root:
+`maestro-architecture` documents the plugin's runtime *for developers*, so it is a root skill, while
+`plugins/maestro/skills/maestro-install/` is a skill the plugin *publishes* and lives in the plugin.
 
 ## The four skills, and what each is allowed to cost
 
@@ -71,6 +84,11 @@ Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd).
 **Never hand-edit `metadata.version` or `metadata.last-update`.** The script owns them so a version
 cannot quietly drift — and a version stuck at `1.0` makes `/update-single-concept-skill` re-research
 a concept that was already done.
+
+A stamp rewrites only the two `metadata:` lines: `test/core/concept-skills.test.ts` asserts the body
+comes back **byte-identical**, including a `description` with a colon in it. A frontmatter rewriter
+that reserialises what it parsed eventually loses something, so the test is byte equality of
+everything it did not mean to touch, not a structural comparison.
 
 ## `list` is a runtime contract, not just a maintenance command
 

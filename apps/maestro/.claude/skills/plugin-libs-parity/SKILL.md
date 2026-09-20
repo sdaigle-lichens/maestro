@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the twelve plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.10"
-  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
+  version: "1.11"
+  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
 ---
 
 # Core ↔ plugin parity
@@ -180,7 +180,7 @@ cannot disagree about which tasks are ready. Editing `tasks.ts` alone is not eno
 | `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.       |
 | `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                             |
 
-The parity tests compare against **snapshots** under `test/fixtures/legacy/`, deliberately not
+The parity tests compare against **snapshots** under `test/core/fixtures/legacy/`, deliberately not
 against the live `plugins/maestro/scripts/lib/` files — the build overwrites those, so comparing
 against them would go tautological the moment the build runs.
 
