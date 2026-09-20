@@ -10,12 +10,10 @@ The per-agent half of the two-dimensional match that `skill-tags.ts` performs.
   against.
 
 Keying on the agent's frontmatter _name_ rather than a fixed roster is what lets any agent on the
-user's machine participate in a workflow. Since `030`, the first two tables key on `(project_root,
-agent_name)` rather than name alone — `project_root = ''` for a `user`/`maestro`/plugin-tier agent
-(the same agent everywhere), a project's own root for a `project`-tier one, so two projects'
-same-named project agents no longer collide. See the parent `SKILL.md`'s "Keyed by project, not
-just agent name" section for the read/write discipline; `project-tags.ts`'s catalog is untouched by
-this — it has no per-agent row to key.
+user's machine participate in a workflow. Since `030` the first two tables key on `(project_root,
+agent_name)` — see the parent `SKILL.md`'s "Keyed by project, not just agent name" for the key and
+the read/write discipline. `project-tags.ts`'s catalog is untouched by this: it has no per-agent row
+to key.
 
 **`addProjectTag` has a second caller since `055`.** It used to be reached only from
 `claude-preview.ts` (the app's `/templates` Project Tags tab); the generated bundle

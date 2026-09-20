@@ -25,6 +25,19 @@ previewed run may write, or hand the pane a directory of its choosing.
   for. A refused claim is consumed either way, and its message says _which_ refusal it was —
   "forged" and "expired" call for different next moves from the user.
 
+### The store is shared with the usage-stats reader
+
+`ccusage.ts` and `claude-run.ts` use **one** token store, which is why `claimInvocation` takes an
+`InvocationPurpose`. Claiming without it would let a stats preview spawn `npx` while every message on
+screen said Claude. `ccusage.ts`'s own shape: a local copy under `node_modules/.bin` (or the same
+expanded directory list `claude-cli.ts` resolves against) wins over a remote fetch; a remote fetch is
+pinned to `PINNED_CCUSAGE_VERSION` rather than `@latest`, so the app's behaviour never changes
+without the app changing; `stats:preview` resolves and returns the exact argv plus
+`network: true/false` and spawns nothing, so "the user was told a package would be fetched and
+executed" is a property of the wiring, not of the prompt copy; and a machine with neither `ccusage`
+nor `npx` degrades **in the preview itself** — a message naming the tool and where it was looked for,
+with the Run button simply never pressed, not an ENOENT after a spawn.
+
 ## Building the prompt
 
 `build()` in `claude-preview.ts` switches over six request kinds: the four create-\* flows,

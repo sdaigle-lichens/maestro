@@ -78,9 +78,10 @@ is usually looking at the wrong one:
 3. **A person**, answering a prompt the host parked. Allowing a write grants that one call and
    nothing more; allowing a read may also grant a directory for the session's lifetime.
 4. **The CLI's own permission system** — a deny rule or the permission mode, refusing before
-   `canUseTool` is ever called. It surfaces only as a `permission_denied` stream event, and
-   `autoRefusal` turns it into a transcript entry. This is the route a user's own configuration
-   takes, and the one they can least diagnose.
+   `canUseTool` is ever called. It surfaces only as a `permission_denied` stream event, which
+   `autoRefusal` turns into a transcript entry
+   ([asking-a-person](sub-concepts/asking-a-person.md)). This is the route a user's own
+   configuration takes, and the one they can least diagnose.
 
 `decidePaneCall`'s ordering is the design: always-ask tools (`WebFetch`/`WebSearch`) first, then
 the read boundary **over read-only tools only**, then `decideWrite`. Letting the boundary answer
@@ -89,60 +90,28 @@ required to keep its own — the model reads that sentence and acts on it.
 
 ## Things that bite
 
+Each is named here and reasoned out in the sub-concept linked beside it.
+
 - **`write-scope.ts` returns `allow` for `Read` without looking at the path**, and adding a check
-  there _looks like the fix and is not_: reads never reach `canUseTool`, so the check would never
-  run. The read bound is `session-scope.ts`, applied by the hook.
-- **The two fall-throughs are opposite, deliberately.** `decideWrite` denies what it does not
-  recognise (it is the whole decision for a call). `decideBoundary` allows it (it is a path check
-  running in front of a permission model that still applies). Making them agree breaks one of them.
-- **Never resolve a `canUseTool` promise to `undefined` or `null`.** The SDK reads that as "the
-  host answered out of band" and writes no `control_response` at all — the tool call hangs forever
-  with nothing on screen. Every arm of `ParkedAnswer` is a real result and the fall-through is a
-  deny.
-- **Every exit must drain the registry.** Nothing times out anywhere below `permission-registry.ts`;
-  an unresolved ask is a permanently wedged session holding a detached child. `denyAll` is called
-  from window close, project switch and quit.
+  there _looks like the fix and is not_: reads never reach `canUseTool`. The read bound is
+  `session-scope.ts`, applied by the hook — [scopes](sub-concepts/scopes.md).
+- **The two fall-throughs are opposite, deliberately** — `decideWrite` denies what it does not
+  recognise, `decideBoundary` allows it. Making them agree breaks one of them —
+  [scopes](sub-concepts/scopes.md).
+- **Never resolve a `canUseTool` promise to `undefined` or `null`**, and **every exit must drain the
+  registry**: both leave a permanently wedged session holding a detached child, with nothing on
+  screen — [asking-a-person](sub-concepts/asking-a-person.md).
 - **A permission prompt and a structured question arrive on the same wire.** `agent-sdk.ts` branches
-  on the tool name _first_ so `session-permission.ts` never sees an `AskUserQuestion`. Routing one
-  there renders "Claude wants to use a tool — Allow / Deny" for what is actually a choice of options.
+  on the tool name _first_ so `session-permission.ts` never sees an `AskUserQuestion` —
+  [asking-a-person](sub-concepts/asking-a-person.md).
+- **Tokens are shared with the usage-stats reader**, which is why a claim is purpose-pinned —
+  [run-pipeline](sub-concepts/run-pipeline.md).
+- **The plugin's `hooks.json` does NOT fire in a pane session** — measured, and the reason the pane's
+  calls stay out of `/session-log` — [agent-sdk](sub-concepts/agent-sdk.md).
+- **The pane's transcript must be cleared BEFORE a resume round trip**, and `SessionProvider` must
+  stay at the renderer root — [pane-in-the-renderer](sub-concepts/pane-in-the-renderer.md).
 - **`session-runtime.ts` and `session-log.ts` are not this concept**, despite the prefix. They are
   the hook-written files under `<project>/.claude/` — see `maestro-architecture` and `log-view`.
-- **Tokens are shared with the usage-stats reader.** `ccusage.ts` and `claude-run.ts` use one store,
-  and `claimInvocation` takes an `InvocationPurpose` for that reason. Claiming without it would let
-  a stats preview spawn `npx` while every message on screen said Claude. `ccusage.ts`'s own shape:
-  a local copy under `node_modules/.bin` (or the same expanded directory list `claude-cli.ts`
-  resolves against) wins over a remote fetch; a remote fetch is pinned to `PINNED_CCUSAGE_VERSION`
-  rather than `@latest`, so the app's behaviour never changes without the app changing; `stats:preview`
-  resolves and returns the exact argv plus `network: true/false` and spawns nothing, so "the user was
-  told a package would be fetched and executed" is a property of the wiring, not of the prompt copy;
-  and a machine with neither `ccusage` nor `npx` degrades in the preview itself — a message naming the
-  tool and where it was looked for, with the Run button simply never pressed, not an ENOENT after a
-  spawn.
-- **The plugin's `hooks.json` does NOT fire in a pane session — measured, not inferred.** A pane turn
-  that read a file inside a fixture project _with_ a `maestro.json` wrote no session log at all
-  (`maestro_session.log.jsonl` when measured; since `064` it would be
-  `maestro_sessions/<session_id>/log.jsonl`). So the `/session-log` pollution that loading project `settingSources`
-  would cause does not arrive with `plugins: [...]`, and the pane's tool calls stay out of a view
-  built for orchestrator runs. This is a property of `settingSources: []` plus `plugins` being a
-  local plugin descriptor, not a hook registration — nothing here re-registers the plugin's hooks.
-- **Clear the transcript BEFORE a resume round trip, never after.** Main pushes the resumed session's
-  notice **during** the `session:resume` call, so `setEntries([])` after the `await` deletes the one
-  thing saying what was picked up, what it cost, and that it forked — and the pane looks as though it
-  started a session silently. Nothing errors, no test catches it, and it's only visible in a real
-  window. `session-context.tsx` clears at line ~496, before the `callMain`, with a comment saying so.
-  The same ordering applies to **any** channel where main streams an event while the handler is still
-  resolving.
-- **`SessionProvider` sits in `__root.tsx`, above the route `Outlet` and a sibling of the route
-  column — not inside `TopNav`, and not owned by any one route.** The reason is structural: `TopNav`
-  remounts on every navigation (each route mounts its own copy), so a transcript or a live session id
-  held there would be discarded the instant the user clicked to another page — and losing the session
-  id mid-turn leaves Claude running with no Stop button left to press. Placing the provider at the
-  root, inside `ProjectProvider` (so a project switch ends the session) and beside the `Outlet` rather
-  than under it, is what lets the pane survive navigation and shift the layout instead of disappearing
-  with the page that opened it. `utils/session-context.tsx` is the only module in the renderer
-  allowed to touch `window.maestro.session` — single-owner, exactly like `SessionLogProvider` and the
-  log tail, and for the same reason: main keeps one session per `webContents.id`, so a second
-  subscriber would steal it.
 
 ## The invariants are asserted
 
@@ -189,3 +158,5 @@ committed and does not exist**; do not go looking for it.
   grants, and structured questions.
 - [Resume and handoff](sub-concepts/resume-and-handoff.md) — picking up a terminal conversation, and
   seeding one from a form.
+- [The pane in the renderer](sub-concepts/pane-in-the-renderer.md) — where the provider lives, and
+  the event-ordering trap around a resume.

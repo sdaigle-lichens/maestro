@@ -36,23 +36,9 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
    `file://` path that ships**. Bugs in asset resolution, CSP, and code-splitting appear only in
    the packaged load. Always launch `electron .` against `out/`, never `pnpm dev`.
 
-2. **The Electron sandbox needs its setuid bit** (once per install that re-extracts Electron).
-   pnpm does not preserve it, and the app aborts with *"The SUID sandbox helper binary was found,
-   but is not configured correctly."* This needs root, so hand it to the user to run:
-
-   ```bash
-   sudo chown root:root node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox
-   sudo chmod 4755 node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox
-   ```
-
-   Both `node_modules/electron` and `apps/maestro/node_modules/electron` symlink into the pnpm
-   store, so the commands above deliberately fix the **store copy**, not the links. (`gits/farel`
-   documents the same fix for an npm layout.)
-
-   Do **not** work around it with `--no-sandbox`: renderer isolation from the OS is the premise
-   `test/isolation.test.ts` spends four assertions defending. Check the bit with
-   `ls -l node_modules/.pnpm/electron@*/node_modules/electron/dist/chrome-sandbox` — you want
-   `-rwsr-xr-x` and `root root`.
+2. **The Electron sandbox needs its setuid bit.** Never work around a sandbox failure with
+   `--no-sandbox`. For the once-per-install fix, and why the flag is off limits, see
+   `references/electron-sandbox-setup.md`.
 
 ## Quick start
 
@@ -81,11 +67,9 @@ Keep that shape: one recorded line per claim, a summary, and a **non-zero exit w
 fails** — a probe that prints a wall of state and leaves you to eyeball it will quietly stop being
 run.
 
-There was a `probe-template.mjs` here. It was removed rather than repaired: it came over in the
-import at `98b9582` still pointing `REPO` at the old repository's absolute path, and it clicked a
-`button[title="Edit label"]` that has never existed in this repo's source. It could not have run
-here on any commit, and a worked example that has never worked is worse than none — it reads as
-tested ground.
+There is deliberately no `probe-template.mjs`: the one imported at `98b9582` still pointed `REPO` at
+the old repository and clicked a selector this repo has never had, so it was removed rather than
+repaired — an example that has never run reads as tested ground.
 
 ## The harness
 
@@ -241,43 +225,11 @@ nodes and edges for the first, an empty project directory for the second. For ru
 
 ## The other harness: `test/core/` tests that drive the installed hooks
 
-Most of `apps/maestro/test/core/` is ordinary vitest against `src/core`, but a few files
-(`per-session-state.test.ts`, `install.test.ts`, `uninstall.test.ts`) `spawnSync` the **real scripts
-the installer copies into a temp project** — `<root>/.claude/scripts/<hook>.cjs`, fed the JSON
-payload Claude Code would send on stdin — so nothing about the runtime is mocked. No window, no CDP;
-the rules above about fixture roots don't apply because these projects are made and destroyed under
-`os.tmpdir()`. Three conventions keep them honest, and all three are about **not touching the
-developer's real machine**:
-
-- **Pin `HOME` at the test's own tmp dir** in every spawned hook's env. A hook reads `~/.claude`
-  sqlite stores; an unpinned `HOME` reads (and can write) the developer's real ones.
-- **Pass `REPORTS_DB` / `PROJECT_TAGS_DB` / `HANDOFFS_DB` to every `installRuntime()` call**, for
-  the same reason on the install side.
-- **Pin or delete `CLAUDE_CODE_SESSION_ID` — never inherit it.** This is the sharp one, and it only
-  exists since `064`.
-
-**The `CLAUDE_CODE_SESSION_ID` rule, because nothing about a green run reveals a violation.** That
-variable is set in the environment of a real Claude Code session, and a hook spawned with
-`{ ...process.env }` inherits it. A test that neither sets nor deletes it picks up **the developer's
-own session id**: inside a session the hooks write into `<tmp project>/.claude/maestro_sessions/<the
-dev's session>/`, and outside one they write nothing at all, because no id resolves. Either way the
-assertions look somewhere the test did not choose, and the same test passes for different reasons —
-or passes vacuously — depending on where it was run from. So the env helper always either sets the
-variable to a pinned id or deletes it outright:
-
-```ts
-function hookEnv(root: string, sessionId: string | null): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: tmp };
-  if (sessionId === null) delete env.CLAUDE_CODE_SESSION_ID; // the "no id resolves" arm
-  else env.CLAUDE_CODE_SESSION_ID = sessionId;
-  return env;
-}
-```
-
-`null` is not "leave it alone" — it is the explicit no-id arm, which is a case worth testing
-(every caller must degrade and still exit 0). Deleting is how you get it. The general rule behind
-all three: **an ambient environment variable that changes where a spawned process writes must be
-set or deleted by the test, never inherited.**
+A few files under `apps/maestro/test/core/` (`per-session-state.test.ts`, `install.test.ts`,
+`uninstall.test.ts`) `spawnSync` the real hook scripts the installer copies into a temp project —
+no window, no CDP. For writing or changing one of those, and especially for the rule that `HOME`
+and `CLAUDE_CODE_SESSION_ID` must be pinned or deleted per spawn and never inherited (`064`), see
+`references/hook-script-tests.md`.
 
 ## Reporting
 
@@ -288,37 +240,5 @@ with `frames: 0` or an unchanged node position means the assertions never ran ag
 ## Finishing a maestro task
 
 When the work being probed is a slice from `.claude/maestro-tasks/`, the run is not done when the
-window is green. **Hand off to the `scribe` agent** (`plugins/maestro/agents/scribe.md`)
-before reporting back.
-
-Why it is a step rather than a nicety: those task pages are written *before* the slice is built, and
-a slice that diverges silently leaves the next one planned against an app that no longer exists.
-`025` was written expecting to filter the session store for terminal-started conversations; the
-option that does that was measured to return zero rows for the app's own sessions, so the rule
-shipped inverted. A later task reading the unamended page would have planned around a filter that is
-not there. The scribe's job is to close that gap while you still remember the measurement.
-
-Tell it, in one handoff message:
-
-- **What was built** — files added, changed, renamed; new channels, modules, exported names.
-- **What diverged from the task page, and why** — one entry per divergence, each with the
-  measurement or constraint that forced it. This is the part the page cannot reconstruct later.
-- **To amend the task page itself** — tick the acceptance criteria with the evidence beside each,
-  and record the divergences on the page, so it describes what exists rather than what was planned.
-- **To check the *following* task pages for staleness** — anything downstream that assumed the
-  planned shape needs correcting now, so the task structure has no gaps.
-- **To update `TODO.md`** with the next task to pick up, and **`.claude/maestro-tasks/status.json`**
-  with the finished task's state.
-
-Three things learned running this:
-
-- **The scribe cannot run commands** (`disallowedTools: [Bash, Task]`) and its own workflow forbids
-  re-discovering changes by scanning code. Your handoff is the only source it has — if a file or a
-  divergence is not in the message, it will not be in the docs. Do not send it to "go look".
-- **It can fail after writing.** A 529 mid-run reported the whole agent as failed while every edit
-  was already on disk. Check `git status` and read the diffs before re-running anything, or you will
-  duplicate its work on top of itself.
-- **Verify its claims like any other report.** Grep for the exported names and files it says it
-  documented; a doc that names something that does not exist is worse than no doc.
-
-Then relay what it changed to the user — its report goes to you, not to them.
+window is green — hand off to the `scribe` agent before reporting back. For what that message must
+contain and how the scribe fails, see `references/maestro-task-handoff.md`.

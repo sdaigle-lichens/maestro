@@ -42,9 +42,9 @@ from seven different homes, and that is the single fact everything else here fol
 The left pane is two labelled sections, **Project** and **Global** (`agent-list.tsx`'s
 `SectionLabel`) — `source === "project"` vs. everything else — shown only when non-empty. Since
 `discoverAgents` already runs `dedupeById` over project → user → bundled → plugins (first wins),
-every agent appears in exactly one section, and forking one (below) moves its row from Global to
-Project on the next refresh — that movement is the confirmation the fork worked, no toast needed.
-The card carries a matching uppercase tier tag next to the agent name.
+every agent appears in exactly one section, and forking one moves its row from Global to Project on
+the next refresh — that movement is the confirmation the fork worked, no toast needed. The card
+carries a matching uppercase tier tag next to the agent name.
 
 Both side panes collapse to their header row. The right pane is resizable by dragging its left edge.
 
@@ -81,26 +81,10 @@ field**: a partial failure toasts what failed and **stays in edit mode**, rather
 editor as if the whole save had landed. There is no transaction across eight destinations — the
 honest alternative is to say which parts got through.
 
-**Content is the eighth path, and the mirror image of the description write (`045`).**
-`setAgentContent` (`agent-descriptions.ts`) resolves the file through the same `findAgentFile`
-walk and the same `EDITABLE_AGENT_SOURCES` gate `setAgentDescription` uses, then calls
-`replaceBodyInFrontmatter(contents, body)` — `match[0] + body`, the exact inverse of
-`replaceDescriptionInFrontmatter`: that one rewrites inside the frontmatter block and leaves the
-body untouched, this one keeps the frontmatter block byte-for-byte and replaces everything after
-it. Unlike the description, the body is **never normalized** — a textarea's raw multi-line value is
-written verbatim, since a body is free text and not a single frontmatter value. `handleSave()`
-checks it right after the description block (`d.content !== base.content`), pushes a failure as
-`content: <error>` into the same `failures` array, and calls `setContent(d.content)` on success so
-the Content tab reflects the new body with no re-fetch. `AgentContentResult` carries `{ file,
-source }` and, deliberately, no `content` echo — the caller already holds the value it just wrote.
-
-**The handoff path is the only one that is a list.** `handleSave()` loops `d.handoffs`, skips every
-body equal to `base.handoffs[id]`, and pushes a failure as `handoff <id>: <error>` into the same
-`failures` array the other six use — so a partial failure names the route and still returns before
-`setDraft(null)`. Each write is its own file, which is why it is not batched into one channel call.
-On any successful write the route list is **re-read** (`handoff:routes` again) rather than patched
-locally: dropping `syncedFrom` moves the resolved *source* too, so the pane's tier label has to move
-from "Global default" to "Project override" and only main knows that.
+The two least obvious paths are documented with the pane that owns them: the **content** write
+(`setAgentContent`/`replaceBodyInFrontmatter`, the mirror image of the description write) and the
+**handoff** write (the only path that is a list, and the only one that re-reads after writing) are
+both in [`interactions-pane`](sub-concepts/interactions-pane.md).
 
 **Avatar/type/project-tag are global or project-scoped depending on the selected agent's tier
 (`030`).** `handleSave()` computes `const projectScoped = agent?.source === "project"` from the
@@ -188,207 +172,22 @@ as a side effect of visiting `/agents`.
 
 ## The avatar block
 
-`agent-avatar-block.tsx` is a **tabs-and-arrows** editor: seven category buttons (sex, eyes, hair,
-torso, legs, feet, hat) pick the active category, the two arrows cycle that category's options, and
-a dice button randomises all seven. "Sex" merges what used to be separate body/head categories —
-picking male/female drives both the body and head silhouette layers at once (see `SEX_LAYER_URLS`
-in `manifest.ts`), since the upstream pack always ships them as a matched pair. Optional categories
-include `null` ("none") in the cycle; the four required ones (sex, eyes, torso, legs) do not — torso
-and legs have no unclothed option.
-
-`eyes` and `hair` each carry one extra control beside the tabs/arrows, a shared `ColorControl`
-(`agent-avatar-block.tsx`; `avatar-picker.tsx` has its own copy sized for its swatch-row layout):
-`eyes` shows it when the selected shape is "Brows" or "Thin Brows" (`EYE_RECOLOR_SHAPES` in
-`contracts.ts`), writing `AvatarLayers.eyesColor`; `hair` shows it for *every* hairstyle
-(`HAIR_RECOLOR_SHAPES` — unlike eyes, there's no shape to exclude, since none of the 20 hairstyles
-is a fixed-color feature the way `cyclops`'s iris is), writing `AvatarLayers.hairColor`. Both are a
-freeform hex, recolored onto the sprite live in `avatar-canvas.tsx` via the same `recolorImage()`
-call (`utils/recolor.ts`: convert to HSL, replace hue+saturation, keep lightness so the shading
-survives) — every hair sprite in the upstream pack turned out to already use the identical
-flat-ink-over-shading pattern the eyebrows do, so one algorithm covers both categories with no
-per-shape tuning. This replaced an earlier fixed list of 20 pre-baked palette-swapped eyebrow PNGs,
-one per named color — `eyesColor`/`hairColor` sit outside the `Record<AvatarCategory, string |
-null>` shape (neither is a *choice among options* the way every other field is), so `AvatarLayers`
-is `Record<AvatarCategory, string | null> & { eyesColor?: string | null; hairColor?: string |
-null }`. "Cyclops"/"Cyclops (alt)" ignore the color entirely — they're a single eye shape, not an
-eyebrow, and the control is hidden while either is selected.
-
-**`ColorControl`'s swatch previews `color ?? native`, never a placeholder unrelated to the shape.**
-`nativeEyesColor(id)`/`nativeHairColor(id)` (`utils/avatar.ts`) look up a per-shape hex sampled
-offline from the shipped PNG — the weighted average RGB of every opaque pixel — so the swatch and
-the hidden `<input type="color">`'s own value both start at what that specific shape actually looks
-like unrecolored, rather than one fixed dark brown shared by every shape regardless of its real
-color. `NATIVE_EYES_COLORS`/`NATIVE_HAIR_COLORS` are parity-tested against `EYE_RECOLOR_SHAPES`/
-`HAIR_RECOLOR_SHAPES` in `avatar-parity.test.ts`, same discipline as the shape lists themselves — an
-id with no sampled entry falls back to `#4a2e1a`, which parity rules out ever being reached.
-
-**Reset lives inside the swatch, not as a separate sibling control.** A small `×` badge renders
-absolutely positioned in the swatch's own corner, shown only once `color !== null`, so the layout
-doesn't shift as a color is set/cleared the way a conditionally-rendered sibling button did before.
-"Select color" is an always-visible text button beside the swatch that opens the native picker via a
-`useRef` + `.click()` on the hidden input, rather than the swatch itself being the click target
-(a `<label>` wrapping the hidden input can't stay the trigger once a nested Reset button needs to
-intercept its own clicks without also re-opening the picker underneath it).
-
-This **supersedes `avatar-picker.tsx`'s swatch-rows layout on this page only** — that component is
-still what `/create-subagent` renders, so it was not deleted. The two were prototyped side by side:
-swatch rows grow with the number of options and made the card 914px tall instead of 637px, tall
-enough to push the details below the fold.
-
-`AvatarCanvas` takes a `fill` prop here rather than a pixel `size`, because the frame is a responsive
-`aspect-square` box whose width the layout decides (max 232px in view, 168px in edit — the arrows
-need the room).
+The card's cosmetic avatar editor — tabs-and-arrows over seven categories, the eyes/hair
+`ColorControl` and its live recolor, and why it supersedes `avatar-picker.tsx` here only — is
+[`avatar-block`](sub-concepts/avatar-block.md).
 
 ## The Interactions pane (`034`)
 
-**The pane is now two tabs** (`044`): **Interactions** (default, everything below in this section,
-byte-for-byte unchanged) and **Content** — read-only in `044`, and since `045` the edit session's
-**eighth write path** for a project-tier agent. Tab state (`useState<"interactions" | "content">`)
-is **local to `interactions-pane.tsx`**, not lifted to the route: it has no bearing on the edit
-session or Save/Cancel, unlike everything else the pane holds. `data-testid="interactions-tabs"`
-plus one `data-testid="interactions-tab-<name>"` button per tab; the interactions list keeps
-`data-testid="interactions-list"` but is now gated on `tab === "interactions"` too, and the new pane
-is `data-testid="agent-content"`.
-
-The body comes from `getAgentBody(projectRoot, bundledDir, agentName)` (`agent-descriptions.ts`),
-which resolves the file through the **same** `findAgentFile` tier walk (project → user → maestro →
-plugins) the description editor already uses — so the Content tab can never show a different
-agent's file than the rest of the page — then returns `extractAgentBody(contents)`, a plain slice
-past the `FRONTMATTER` match (the same technique `replaceDescriptionInFrontmatter` uses to leave a
-body untouched, so it's byte-identical by construction). The channel (`agent:content`) returns a
-plain `string`, with no tier/source label — unlike the report and handoff entries below, nothing
-here needs to say which tier answered, since there is exactly one file per agent, not one per tier.
-Refetched per selection in the **same** `Promise.all` as `reports.get`/`handoffs.routes` (below),
-so switching agents while the Content tab is active refreshes it too.
-
-**Editability is gated on the SAME `contentEditable = descriptionEditable` boolean the description
-field already uses (`045`)** — kept as its own named variable in `agents.tsx` rather than inlining
-`descriptionEditable` a second time, purely so the write-path block and the pane props read
-self-documenting. In view mode on a project-tier agent, the Content tab renders its own pencil
-(`title="Edit this agent's content"`, `PENCIL_BUTTON`) that starts the shared edit session without
-switching tabs first. In edit mode it swaps the read-only `<pre>` for
-`<textarea data-testid="agent-content-editor">`, filling the available height (`flex-1 min-h-0`,
-native scroll) — deliberately **not** the Interactions tab's auto-grow-to-content behaviour, since a
-markdown body can run very long and this pane has no cap/fade the way those entries do. On a
-non-project-tier agent the tab stays read-only in edit mode, with `contentNote` rendered below the
-block — a **hand-written parallel** of the card's own footer note (same reasoning as the footer note
-below: the renderer can't reach `describeUneditableSource`, which lives in `agent-descriptions.ts`,
-a non-renderer-safe module, so the two strings can drift and are not a shared import). The existing
-"Copy into the project" fork button is the escape hatch — forking copies the full file, body
-included, so a freshly forked agent's Content tab is editable with no further changes needed.
-
-The right pane's **Interactions** tab is a **list of header + body pairs**: the agent's resolved
-report first, headed "Main Session", then **one entry per outgoing handoff route** the project's
-workflow graph wires. `agents.tsx` holds them as `routes: ResolvedHandoffRoute[]` and the draft
-mirrors the bodies in `AgentDraft.handoffs`, keyed by `"<sender>/<receiver>"`.
-
-- **A route header reads `→ receiver`**, plus ` · <label>` when the edge is a condition edge. Each
-  entry has its own auto-growing textarea (the pane scrolls, the boxes don't) and its own pencil,
-  and every pencil starts the **card's one** edit session.
-- **Since `037`, each entry with a receiver also names the file its template writes to** — a small
-  `→ .claude/channels/<receiver>/<sender>.1.md` line below the tier note, computed inline in
-  `interactions-pane.tsx` from `route.sender`/`route.receiver` (both already on
-  `ResolvedHandoffRoute`). This is a label only: `036` moved the payload itself off the orchestrator's
-  context and onto that file, and this pane's editor still edits the resolved `handoff_details`
-  *template*, not the file — nothing here reads or writes the channel file. Null for the Main Session
-  report entry and for a route whose edge reaches no agent (`receiver: null`).
-- **Every entry names the tier its body came from.** `HANDOFF_TIER` maps the four
-  `ResolvedHandoff["source"]` values: `project` → "Project override", `global` → "Global default",
-  `seed` → "Shipped by Maestro", `none` → "No protocol configured". The fourth is the point of the
-  list — a wired route with no template at any tier is a real gap, and this is where it is visible
-  instead of silent (`scribe → reviewer` is the live example; Maestro ships nothing for it).
-- **A route whose edge reaches no agent** (`receiver: null`, so `handoffId: null`, `source: "none"`)
-  keeps its place in the list and renders **read-only** — there is no pair to key a template on.
-- **The pane has no Save of its own.** It shares the card's edit session, so the card's Save commits
-  the report and every changed handoff alongside description/type/tag/skills/avatar, and Cancel
-  discards all of it together.
-
-Test hooks: `data-testid="interactions-list"` with `data-routes="<n>"`, and
-`data-testid="interaction-<sender>/<receiver>"` per entry.
-
-The three tiers behind each body, the global store, and the `/templates` Handoffs tab that edits
-that global tier are [`global-stores`](../global-stores/SKILL.md)' subject, not this file's.
+The right pane's two tabs (`044`) — the Interactions list (the resolved report plus one editor per
+outgoing handoff route, each labelled since `037` with its `.claude/channels/<receiver>/<sender>.1.md`
+lane path) and the Content tab (`044` read-only, `045` editable for a project-tier agent) — plus the
+content and handoff write paths they own, are [`interactions-pane`](sub-concepts/interactions-pane.md).
 
 ## Forking a global agent
 
-Only the description locks on a Global-tier card (see "Things that bite" below) — every other field
-still saves normally. The escape hatch is an icon-only Copy button in the view-mode footer
-(`data-testid="agent-fork-button"`, title "Copy into the project"), calling `forkAgent`
-(`src/core/agent-fork.ts`) over the `agent:fork` channel with the agent's own name — this card
-always shadows, never renames; there is no free-text field here.
-
-**This page is no longer the only caller of `forkAgent` (`041`).** `/workflows`' `InstancePicker`
-offers a *renamed*-fork path from its all-placed dead end, with its own free-text field — a
-workflow can't place two instances on one bare agent (`placedAgentTypes`), so forking under a new
-name is the supported way to get a second, genuinely distinct instance. Same channel, same
-provenance record, same `renameAgentInFrontmatter`/`copyAgentAttributeRows` machinery described
-below; the differences are the caller, the fact that a name can be typed at all, and what happens
-on success (there it selects the fork into the picker's own field and adds it to
-`config.agents_available`, not this page's edit session). The `isProjectTier` gate below travels
-with it: the picker is handed a `forkableAgents` list built the same way (a discovered agent whose
-`source` is not `"project"`), because `forkAgent` throws on a project agent — so neither surface can
-offer a fork that cannot happen. See `workflow-view`'s picker/fork note.
-
-- A **same-name fork** — the only kind this card's Copy button performs — copies the template file
-  byte-for-byte, including its `description:` line — shadowing is the mechanism: a project
-  `.claude/agents/<name>.md` wins `dedupeById`'s resolution, so the list shows one row, now sourced
-  from the project.
-- A **renamed fork**, reachable only from `/workflows`' `InstancePicker`, rewrites only the
-  frontmatter `name:` line and calls `copyAgentAttributeRows(fromName, toName, projectRoot)` to copy
-  the avatar/type/project-tag rows to the new name — see `global-stores`. The read side stays
-  global/name-only (the template is always a global-tier agent); the write side scopes to the fork's
-  own project (`030`), since the copy always lands on a project-tier agent. A same-name fork needs no
-  copy: the shadowing row *is* the template's own global row.
-
-Every fork — same-name or renamed — writes a provenance record to
-`<projectRoot>/.claude/agent-forks.json` (`AgentForkRecord`: `sourceTier: "user" | "plugin"`,
-`sourcePlugin`, `pluginVersion`, `templateBodyHash`, `templateBody`, `forkedAt`), **never** into the
-agent's own frontmatter beyond the rename — `agent-fork.ts`'s header explains why (Maestro's own
-bookkeeping doesn't belong in a file format it doesn't own, same argument as the seven-write-paths
-description exception below). `hashAgentBody` strips **both** the `name:` and the `description:` frontmatter lines (and their
-continuations) before hashing, so neither editing the description after forking nor renaming the
-fork at creation marks it as diverged. The `name:` half is `031`'s correction: `forkAgent` rewrites
-exactly that line on a renamed fork, so a description-only normalisation left every renamed fork
-hashing differently from its own template **from birth** — permanently stale-but-customized, with
-the refresh branch never firing for it.
-
-`/create-subagent`'s "Start from a template" field (`target: "project"` only) is a **different,
-lighter-weight thing** — it seeds a fresh manual-mode form's `name`/`description` from a picked
-agent, not a byte-for-byte copy of its body. See `create-skills-architecture`.
-
-## Reviewing a fork against its template (`031`)
-
-A fork is a snapshot, and the template moves on. `src/core/agent-sync.ts` notices; **this page is
-where the user answers.**
-
-**The mechanism is not documented here.** The shared decision function, the two staleness triggers,
-the hashing normalisation, the provenance record and what `update`/`keep`/`detach` actually write
-all live in [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — a concept, not a view, because
-`report-sync.ts` is its other caller and a reader arriving from there has no reason to open this
-file. Read that first; what follows is only what is true of this page.
-
-| Surface | What it shows |
-| --- | --- |
-| `/maestro`'s `ForkedAgentsCard` (`maestro.tsx`, `data-testid="maestro-diverged-forks"`) | The headline count from `useInstall().agentSync`, linking to `/agents`. Renders nothing when `diverged` is empty. |
-| This page's banner (`data-testid="agent-fork-diverged"`) | One chip per diverged fork at the top of `<main>`; clicking one selects it. |
-| `agent-fork-review.tsx` (`data-testid="agent-fork-review"`, `data-verdict`) | The per-agent review: both descriptions side by side, the body diff (`data-testid="agent-fork-diff"`, from `src/core/diff.ts`), and **Update / Keep as fork / Detach**. |
-
-- **The review renders BELOW the card, not inside `AgentCard`.** `CARD_MIN_HEIGHT` (below) is a
-  measured constant keeping the card the same height in view and edit mode; a conditional diff block
-  inside it would make that height vary by agent and by template state. The review is also hidden
-  while editing. Because no edit-mode card content changed, `CARD_MIN_HEIGHT` did **not** need
-  re-measuring for `031`.
-- **Update is offered even for a stale-customized fork, behind a two-click confirmation**
-  ("Take the new body…" → "Discard my edits and take it"). "Never overwritten" is a promise about
-  the **automatic** path — `computeAgentSync` writes nothing, ever — and refusing a user who has
-  read the diff and pressed twice would leave no route to take the update at all.
-- **Both descriptions are on screen beside the diff on purpose.** A fork syncs its body while its
-  description stays the user's, so the two drift — the description ending up promising something the
-  new body no longer does. Not a blocker, and only noticeable if both are visible.
-- **`refresh()` fans out a seventh read** (`window.maestro.agents.sync()`), so a fork, an update or
-  a detach is reflected without a round trip of its own. The count the banner shows is
-  `summary.diverged`, which is deliberately narrower than `refreshed + staleCustomized` — see
-  [`agent-fork-sync`](../agent-fork-sync/SKILL.md).
+The Copy button, same-name vs. renamed forks, the `agent-forks.json` provenance record, and the
+fork-review block that renders below the card (`031`) are
+[`forking-a-global-agent`](sub-concepts/forking-a-global-agent.md).
 
 ## Things that bite
 
@@ -427,9 +226,6 @@ file. Read that first; what follows is only what is true of this page.
 - **List descriptions are truncated in JS (`clampText`), deliberately not `-webkit-line-clamp`.** The
   clamp loses its ellipsis as a flex child and how many lines fit depends on the Chromium build; the
   untruncated text still goes in `title`.
-- **`defaultAvatarLayers()` is what most rows show**, since most agents have never been customised.
-  It returns the first option of every category except `hat` — it previously returned only the
-  required three, which composites a naked sprite.
 - **Two page-local surfaces are mixed from tokens, not hard-coded.** The design names `#2b2722` (side
   panes, avatar frame) and `#2f2b26` (the read-only report block) and the token set has neither, so
   `PANE_SURFACES` sets `--pane` and `--sunken` with `color-mix()` on the page root. They resolve to
@@ -437,10 +233,6 @@ file. Read that first; what follows is only what is true of this page.
   `color-mix()` result serialises as `color(srgb r g b)` with 0..1 channels, **not** as `rgb()`.
 - **The right pane's drag writes width straight to the DOM and only tells React on mouseup.** A
   `setState` per `mousemove` re-renders the card, the list and every canvas on it, once per pixel.
-- **The Interactions pane is a LIST, and the handoff entries in it are keyed by PAIR, not by edge**
-  (`034`). `backend → test` on the `default` workflow and on `tdd` are one file and one row, so both
-  edges share one editor and editing either changes both — which is exactly why the editor lives
-  here and not on a `/workflows` edge, where it would imply it edited that edge's payload alone.
 - **`components/tabs/discovered-definitions.tsx` is still shared with `/skills`.** This page grew its
   own list (a skill has no avatar and no per-row pencil); do not widen the shared table to serve both.
 

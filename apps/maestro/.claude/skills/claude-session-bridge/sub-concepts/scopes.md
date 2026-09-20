@@ -1,8 +1,7 @@
 # Scope modules
 
 Three modules, three different questions, and they do not overlap. All three are pure — path
-arithmetic over strings, no `fs`, no spawn, no SDK — which is what lets `claude-preview.ts` import
-them while remaining unable to spawn, and what lets them be exhaustively unit-tested.
+arithmetic over strings, no `fs`, no spawn, no SDK — and exhaustively unit-tested.
 
 | Module             | Answers                                                      | Applied by                                                                        |
 | ------------------ | ------------------------------------------------------------ | --------------------------------------------------------------------------------- |

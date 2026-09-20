@@ -10,8 +10,7 @@ questions: *where is the handle*, *where does the curve put the label*, and *how
 Each has a non-obvious answer, and the first two have an answer that is **wrong in a way that looks
 right**.
 
-This skill is the arithmetic and the traps. For driving a window to check the result, use
-`test-maestro-desktop`.
+For driving a window to check the result, use `test-maestro-desktop`.
 
 ## The rule: import the maths, don't retype it
 
@@ -171,22 +170,11 @@ needed moving, and round it (multiples of 10 read as chosen values rather than m
 seeded offset must stay a *starting* position — the drag handler writes over it, so anything that
 recomputes offsets on load will fight the user. Compute at seed time, persist, then leave it alone.
 
-## Traps, short list
-
-- `labelX/labelY` is t=0.5, **not** the curve's midpoint, and **not** the midpoint of source and
-  target.
-- The target control point measures distance **target → source**, not source → target.
-- The two `calculateControlOffset` branches agree closely near d ≈ 156, so a wrong formula passes
-  casual inspection ~half the time. Use the grid.
-- `measured` is undefined on first render; a geometry assertion on frame 1 is vacuous.
-- Node **x** is exact and node **height** is not. Build placement on the exact one.
-- A non-zero `label_offset` changes the drawn curve, not just the label, if your edge component
-  reroutes through the label.
-- Reading a rect after `scrollIntoView` inside the flow pane gives coordinates that hit-testing
-  does not honour — see `test-maestro-desktop`.
-
 ## Verifying
 
-Arithmetic agreeing with itself is not evidence. The grid script settles "does my model match the
-library"; a rendered window settles "does the result look right". Both, in that order — a unit test
-that shares the box model under test will happily confirm a wrong one.
+Arithmetic agreeing with itself is not evidence: a unit test that shares the box model under test
+will happily confirm a wrong one. The grid script settles "does my model match the library"; a
+rendered window settles "does the result look right". Both, in that order.
+
+One trap that belongs to neither: reading a rect after `scrollIntoView` inside the flow pane gives
+coordinates that hit-testing does not honour — see `test-maestro-desktop`.

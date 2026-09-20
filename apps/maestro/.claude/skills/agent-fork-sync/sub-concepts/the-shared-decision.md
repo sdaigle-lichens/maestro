@@ -78,16 +78,16 @@ row somebody deleted on `/templates`, keeps the file, and reports nothing. `deci
 nothing for it — the branch is in the caller's own verdict switch, which is where "what this verdict
 means for me" belongs.
 
-`handoff-sync.ts` is the evidence that adding a caller costs nothing but two answers: it reuses
-`report-sync.ts`'s hash rule and its version rule verbatim and differs only in *what the candidate
-set is* — the routes the workflows wire, rather than a list of agents, because the pair analogue of
-`agents_available` would be a cross product. It added **no sixth branch**.
-
 ## Adding a fourth caller
 
 Answer the two questions for your thing — *what is the hash over*, and *what does "the template
 moved" mean here* — and pass them in. Do **not** add a branch. If you find yourself wanting one, the
 new case almost certainly maps onto an existing verdict and the disagreement is about naming.
+
+`handoff-sync.ts` is the evidence that this costs nothing but two answers: it reuses
+`report-sync.ts`'s hash rule and version rule verbatim and differs only in *what the candidate set
+is* — the routes the workflows wire, rather than a list of agents, because the pair analogue of
+`agents_available` would be a cross product. It added **no sixth branch**.
 
 The one thing to decide separately is what a verdict *means for the user*: `report-sync` turns
 `materialize`/`refresh` into writes, `agent-sync` turns them into a report and a button. That

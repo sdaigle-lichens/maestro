@@ -15,7 +15,8 @@ live in one module with tests rather than inline in the session:
   and the tool call never returns.
 - **A redelivery after the answer still needs the answer.** The prompt is off screen by then, so a
   fresh park would wait forever. Settled answers are remembered, bounded by `SETTLED_CAP`.
-- **Every exit resolves everything outstanding, as a deny.** Window close, project switch, quit.
+- **Every exit resolves everything outstanding, as a deny.** `denyAll` is called from window close,
+  project switch and quit.
   **There is no backstop below this** — permission prompts do not time out, and an unresolved ask is
   a permanently wedged session holding a detached child process.
 - **Nothing resolves to `undefined`.** The SDK reads a missing answer as "the host replied out of

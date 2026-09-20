@@ -9,13 +9,12 @@ metadata:
 
 # Electron shell invariants
 
-The Maestro desktop app is an Electron shell over the node-side Maestro logic in `src/core/`
-(`apps/maestro/CLAUDE.md`'s own opening line). Most of what that means is covered where it's used —
-`claude-session-bridge` for the Agent SDK's own packaging traps, `workflow-view`/`rule-view`/
-`log-view`/`task-queue` for how each view survives a project switch. This skill is what's left:
-invariants of the **shell itself** — the renderer's security policy, how the bundler decides what
-ships where, and the one keying pattern every stateful view independently reinvents — that don't
-belong to any of those.
+The Maestro desktop app is an Electron shell over the node-side Maestro logic in `src/core/`. Most of
+what that means is covered where it's used — `claude-session-bridge` for the Agent SDK's own
+packaging traps, `workflow-view`/`rule-view`/`log-view`/`task-queue` for how each view survives a
+project switch. This skill is what's left: invariants of the **shell itself** — its security policy,
+how the bundler decides what ships where, and the one keying pattern every stateful view
+independently reinvents.
 
 ## Hash history, not browser history
 
@@ -58,18 +57,17 @@ is why the policy has to be satisfied there and not in a route component.
   `dependencies` are externalized by hand.** The plugin computes its list from `package.json`
   `dependencies` and then assigns `config.build` from inside the `config` hook — a vite/electron-vite
   breakage documented in `electron.vite.config.ts`'s own comment for its `include` option, and it
-  costs the whole plugin. This was invisible for as long as the app had **no `dependencies` block at
-  all** (every entry was a devDependency), because an empty external list and an ignored one look
-  identical. Measured when the first real dependency arrived: `@anthropic-ai/claude-agent-sdk` in
-  `dependencies`, and only the plugin to externalize it, put **1.34 MB of SDK into
+  costs the whole plugin. It was invisible while the app had **no `dependencies` block at all**
+  (every entry a devDependency), because an empty external list and an ignored one look identical.
+  Measured when the first real dependency arrived: `@anthropic-ai/claude-agent-sdk` in
+  `dependencies`, with only the plugin to externalize it, put **1.34 MB of SDK into
   `out/main/chunks/`**. `EXTERNAL` in `electron.vite.config.ts` now derives from the manifest and
   goes into `rollupOptions.external` directly, where it actually takes effect — including a regex for
   subpath imports, which a bare package name does not cover. The plugin call stays because it is
   harmless and correct in intent; it is simply not what is doing the work.
 - **The Agent SDK's own three packaging failures (must-be-externalized, asar unpacking, the CLI path
-  handed over rather than resolved) are `claude-session-bridge`'s subject, not this skill's** — see
-  its `agent-sdk.md` sub-concept. This skill only owns the general externalize/bundle mechanics above;
-  that one owns what breaks specifically for `@anthropic-ai/claude-agent-sdk`.
+  handed over rather than resolved) belong to `claude-session-bridge`** — see its `agent-sdk.md`
+  sub-concept. This skill owns only the general externalize/bundle mechanics above.
 
 ## `settingSources: []` appears FOUR times in `agent-sdk.ts`, and they must stay in lockstep
 
@@ -112,10 +110,9 @@ is safe *only* because of the keying pattern above: `seedWorkflowStore` bails on
 an in-flight edit. `test/isolation.test.ts` pins both call sites; no render test would catch the
 regression on its own.
 
-This one pattern — invalidate the loader, then key or guard derived state by `projectRoot` so the
-re-run can't clobber an edit — is what `log-view`'s tail retargeting, `task-queue`'s tail retargeting,
-and the Claude bridge's dropped preview tokens on a project switch are each a specific instance of.
-Read this skill for the general shape; read those for what each one is protecting.
+`log-view`'s and `task-queue`'s tail retargeting and the Claude bridge's dropped preview tokens on a
+project switch are each an instance of this same shape — invalidate the loader, then key or guard
+derived state by `projectRoot` so the re-run can't clobber an edit.
 
 ## Code-splitting
 
@@ -145,11 +142,9 @@ One test file guards the shell's own security boundary: `nodeIntegration: false`
 These are configuration and convention properties that would all regress silently without an
 assertion; there is no runtime error waiting to catch a renderer that quietly gained a node import.
 
-This same file also pins the Claude bridge's own permission-model invariants (no edit
-pre-acceptance, the four `settingSources: []` occurrences, the session-pane's single-owner and
-token-only-write guarantees, and so on) — those are `claude-session-bridge`'s subject, documented in
-its own "invariants are asserted" section. This skill owns the general shell/process-boundary half of
-the same file; that one owns the permission-specific half.
+The same file also pins the Claude bridge's permission-model invariants (no edit pre-acceptance, the
+four `settingSources: []` occurrences, the session pane's single-owner and token-only-write
+guarantees) — that half belongs to `claude-session-bridge`'s own "invariants are asserted" section.
 
 ## Main-process discipline: `getState()` and `callMain()`
 
@@ -184,8 +179,8 @@ the same file; that one owns the permission-specific half.
   `test/isolation.test.ts`.
 - [`workflow-view`](../workflow-view/SKILL.md), [`rule-view`](../rule-view/SKILL.md) — the two
   concrete instances of the invalidate-then-key pattern, one per editor.
-- [`log-view`](../log-view/SKILL.md), [`task-queue`](../task-queue/SKILL.md) (repo root
-  `.claude/skills`) — the tail-retargeting instance of the same pattern, for a poll-based live view
+- [`log-view`](../log-view/SKILL.md), `task-queue` (at the repo root `.claude/skills`) — the
+  tail-retargeting instance of the same pattern, for a poll-based live view
   instead of a loader.
 - [`docs-view`](../docs-view/SKILL.md) — the two markdown readers, and what the hash-history
   corollary above costs a route that wants to address a heading.

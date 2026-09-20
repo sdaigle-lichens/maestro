@@ -65,6 +65,15 @@ window, silently, with nothing logged. The fix is passing `pluginDir`, which mai
 composition root. Absent it, the session loads no plugin and the run degrades to a thinner
 instruction rather than a wrong one.
 
+**The plugin's `hooks.json` does NOT fire in a pane session — measured, not inferred.** A pane turn
+that read a file inside a fixture project _with_ a `maestro.json` wrote no session log at all
+(`maestro_session.log.jsonl` when measured; since `064` it would be
+`maestro_sessions/<session_id>/log.jsonl`). So the `/session-log` pollution that loading project
+`settingSources` would cause does not arrive with `plugins: [...]`, and the pane's tool calls stay
+out of a view built for orchestrator runs. This is a property of `settingSources: []` plus `plugins`
+being a local plugin descriptor, not a hook registration — nothing here re-registers the plugin's
+hooks.
+
 `AskUserQuestion` likewise has **two** mechanical preconditions: the tool in the list, _and_
 `toolConfig.askUserQuestion.previewFormat` at the query. Without the second, Claude emits no
 `preview` on any option and every list arrives bare. If a question never arrives, check both first.

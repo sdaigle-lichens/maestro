@@ -25,11 +25,11 @@ entry point the IPC layer calls.
 | `workflows`                             | The graphs themselves — `MaestroWorkflowV3`, made of `MaestroNodeV3` and `MaestroEdgeV3`.                             |
 | `rules`                                 | `MaestroRuleV3[]` — rule files and the scopes they are assigned to.                                                   |
 | `reports?`                              | Per-agent report overrides. Absent means "no project-level opinion", and resolution falls through to the global tier. |
-| `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names. Flat, not nested — `decideSync` tracks one thing per key and the thing here is a pair. Same absence rule as `reports?`. |
+| `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names, flat rather than nested. Same absence rule as `reports?`. |
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                      |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                           |
 | `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_code_architecture_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
-| `use_maestro_tasks?`                    | A SIBLING of `gates`, not nested in it (`046`). The orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off** — resolved by `resolveUseMaestroTasks`, same strict-boolean discipline as `resolveGates`. |
+| `use_maestro_tasks?`                    | A SIBLING of `gates`, not nested in it (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**. |
 
 ## Slice merges are the load-bearing rule
 
@@ -60,28 +60,14 @@ the selected instance's `loaded_skills` / `referenced_skills`). Because the merg
 *whole* block, a writer that saves a copy it loaded minutes ago reverts everything the other one did
 in between — so `/agents` re-reads via `data:workflows` immediately before calling `config:save`, and
 mutates only the one instance in that fresh config. The third never goes through IPC or `mergeSlice`
-at all: `plugins/maestro/scripts/maestro-workflow-spec.cjs` (the `create-workflow`/`update-workflow`
-skills' CLI, backed by `workflow-spec.ts`'s `applyWorkflowSpec`) runs from outside the app process
-entirely, doing its own `readConfig` → mutate the named workflow → `writeConfig` cycle — the same
-read-before-write discipline as the app's two writers, just enforced by hand instead of by a merge
-function. Any further writer of an existing slice owes the same.
+at all: `plugins/maestro/scripts/maestro-workflow-spec.cjs` runs outside the app process, doing its
+own `readConfig` → mutate the named workflow → `writeConfig` cycle — the same discipline enforced by
+hand instead of by a merge function ([workflows-slice](sub-concepts/workflows-slice.md)). Any
+further writer of an existing slice owes the same.
 
-## Duplicate agent types are validated, not merely prevented
-
-Two placed instances in one workflow pointing at the same bare agent (`maestro:backend` vs
-`backend`) break route dedup, skill injection and channel lanes at runtime — the canvas already
-refuses to create this (`placedAgentTypes`), but a hand-edited `maestro.json` can still produce it
-(`041`). `src/core/config-validate.ts`'s `duplicateAgentTypes(cfg)` (`validateConfig` is the
-aggregate seam for future checks) reports it per workflow; it never repairs anything.
-**It cannot be imported by the renderer** — it lives outside `contracts.ts`/`text.ts`, the only two
-renderer-safe modules in `src/core` — so despite being pure, it is computed in the MAIN process
-(`src/main/ipc.ts`'s `workflowsData` handler) and threaded through as `configIssues: ConfigIssue[]`
-on `WorkflowsData`/`MaestroConfigResult`, never imported directly into `workflows.tsx`. The same
-validator also runs from `/maestro-update` (reports, still renders — never blocks) and from
-`install.ts` (reports beside the sync summaries, on `InstallReport.configIssues`) — three call
-sites sharing one validator, never auto-fixing. See `workflow-view`'s picker/fork notes and
-`agents-view`/`agent-fork-sync` for the other half (a fork is the supported way to dissolve the
-collision).
+A hand-edited config can still hold shapes the canvas refuses to create — chiefly two placed
+instances in one workflow pointing at the same bare agent. `config-validate.ts` reports those and
+never repairs them; see [config-validation](sub-concepts/config-validation.md).
 
 ## What is machine-owned, and what lives elsewhere
 
@@ -107,7 +93,7 @@ collision).
 | -------------------------- | --------------------------------------------------------------------------------------------------- |
 | `src/core/types.ts`        | The schema — every `MaestroConfigV3` type and slice.                                                |
 | `src/core/config.ts`       | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`, `resolveGates`/`DEFAULT_GATES`. |
-| `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — pure, reports collisions across placed instances, never repairs. Computed in main, never renderer-imported. |
+| `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — reports collisions across placed instances, never repairs. |
 | `src/core/save.ts`         | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                               |
 | `src/core/render.ts`       | Renders the orchestrator's handoff table from the config.                                           |
 | `src/core/success-path.ts` | Derives the agent→skill success path a workflow describes.                                          |
@@ -131,5 +117,6 @@ collision).
 - [Gates slice](sub-concepts/gates-slice.md) — the orchestrator's optional Step 1 gates, and how an
   absent or malformed value resolves.
 - [Task-routing slice](sub-concepts/task-routing-slice.md) — the `use_maestro_tasks` sibling of
-  `gates`, its two writers (`maestro-enable-task-routing.js` and `TaskRoutingCard`, `047`/`048`),
-  and Step 4's `maestro-step4-gate.cjs` reader.
+  `gates`, its two writers and Step 4's reader.
+- [Config validation](sub-concepts/config-validation.md) — what a hand-edited config can break, and
+  the validator that reports it without repairing.

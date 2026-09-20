@@ -58,45 +58,37 @@ definition (see below), a different kind of thing from these three's per-instanc
 
 Do not collapse these into one rationale; the modules' own headers distinguish them:
 
-- **Skill tags and avatars** are global because _the thing is the same thing everywhere_. A skill
-  from a marketplace is the same skill wherever it is used, so tagging it once should tag it
-  everywhere; an agent named the same thing should look the same everywhere.
+- **Skill tags and avatars** are global because _the thing is the same thing everywhere_: a skill is
+  the same skill wherever it is used, an agent of the same name should look the same everywhere.
 - **Report defaults and handoff defaults** are global for a different reason: they are the
   **fallback tier** a project falls back to when it has no opinion of its own, and the thing
   install/update syncs a project's `.claude/reports/*.md` and `.claude/handoffs/**.md` _from_.
 
 **These two are the only stores a HOOK reads, and since `035` it reads them from the project's own
 copy too.** Their generated bundles (`lib/maestro-report-defaults.cjs`,
-`lib/maestro-handoff-defaults.cjs`) are now in `install.ts`'s `STATIC_ASSETS`, so
+`lib/maestro-handoff-defaults.cjs`) are in `install.ts`'s `STATIC_ASSETS`, so
 `maestro-inject-agent-context` resolves both tiers whether it runs from the marketplace cache or
-from `<project>/.claude/scripts/`. Before that only the plugin's copy could — the project copy's
-`require` resolved nothing, its try/catch swallowed the failure, and the tier silently did not
-exist: no output format at all for an agent whose report is only global (reports have **no** seed
-tier), and the shipped seed instead of the user's global row for a handoff. Consequence for this
-skill: a store these two hooks read must keep a bundle that is safe under a bare, possibly old
-`node`, and adding a `require` of a *third* store to the hook means adding its bundle to
+from `<project>/.claude/scripts/`. Before `035` the project copy's `require` resolved nothing, its
+try/catch swallowed the failure, and the tier silently did not exist: no output format at all for an
+agent whose report is only global (reports have **no** seed tier), and the shipped seed instead of
+the user's global row for a handoff. So a store these hooks read must keep a bundle safe under a
+bare, possibly old `node`, and `require`ing a *third* store from the hook means adding its bundle to
 `STATIC_ASSETS` in **both** install implementations. See `installing-maestro`'s manifest
 sub-concept.
 
 ## `handoff-defaults.ts` is not a copy of `report-defaults.ts` (`033`)
 
-Same argument for being global, deliberately different shape: **one table**, not
-`report-defaults.ts`'s agent → `report_id` → content indirection; the id **is a path**
-(`"<sender>/<receiver>"`, bare names) and is validated before any `path.join`; and the **seed lives
-outside the store** in `handoff-seeds.ts`, which imports nothing, so the floor still answers on a
-`node` too old for `node:sqlite`. See [Handoff defaults](sub-concepts/handoff-defaults.md).
-
-Since `034` this store has **two editing surfaces** — `/templates`' Handoffs tab writes the global
-rows, `/agents`' Interactions pane writes the project override that outranks them — and the tab is
-the reason `template:handoffs:delete` refuses a seeded id. Both are in the sub-concept.
+Same argument for being global, deliberately different shape: one table instead of two, a
+path-shaped id, a sqlite-free seed module, and two editing surfaces since `034`. All of it is in
+[Handoff defaults](sub-concepts/handoff-defaults.md).
 
 ## The exception: a description is not a store
 
-`/agents` also edits an agent's **description**, and that one deliberately does *not* get a store.
+`/agents` also edits an agent's **description**, and that one deliberately does *not* get a store:
 `src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the
-`agent:describe` channel. The reason is the test to apply before adding a seventh store: type, project
-tag and avatar are **Maestro's own metadata** and mean nothing to a Claude session, so a machine-wide
-copy is the truth. A description is the line **Claude Code itself reads** to decide when to dispatch
+`agent:describe` channel. That is the test to apply before adding a seventh store — type, project
+tag and avatar are **Maestro's own metadata**, meaningless to a Claude session, so a machine-wide
+copy is the truth; a description is the line **Claude Code itself reads** to decide when to dispatch
 the agent, so a copy beside the app would make the page show one sentence while every run used
 another.
 
@@ -131,8 +123,8 @@ the global row would leak into every other project. A same-name fork needs no co
 shadowing row *is* the template's own global row. See `agents-view`.
 
 **This writer is why `agent-fork.ts` was split in two (`031`).** It touches three sqlite stores, so
-`agent-fork.ts` transitively imports `node:sqlite` — and `031`'s fork-staleness check has to reach
-the plugin's hook scripts through a generated bundle that runs under a bare `node` which may predate
+`agent-fork.ts` transitively imports `node:sqlite` — and `031`'s fork-staleness check reaches the
+plugin's hook scripts through a generated bundle that runs under a bare `node` which may predate
 that module (the same constraint `maestro-skill-tags.cjs` lives with). So the sidecar and the
 frontmatter arithmetic moved to **`agent-fork-record.ts`** (`agentForksPath`, `readAgentForks`,
 `writeAgentForkRecord`, `removeAgentFork`, `bodyForHashing`, `hashAgentBody`, `mergeForkBody`,
@@ -157,29 +149,40 @@ Claude-driven best-fit flow instead of failing the install. That degradation onl
 bundler keeps `node:sqlite` as a real `require()` rather than inlining a shim — see
 [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md).
 
-## The trap: `SKILL_TAGS` is gone
+## Skill tags, and the trap: `SKILL_TAGS` is gone
+
+`skill-tags.ts` stores a user's manual annotation once per skill id in
+`~/.claude/maestro-skill-tags.sqlite`, shared across every project. It has **two** dimensions:
+
+- **`projectTags`** — which `project-tags.ts` catalog entries the skill applies to, plus `GLOBAL_TAG`
+  for "regardless of project tag".
+- **`agentTypes`** — which of `agent-types.ts`'s closed vocabulary the skill applies to, plus
+  `GLOBAL_TAG` for "regardless of agent type".
+
+Both are edited together in one Skills-tab row and always read together — `skillMapFromTags` is
+where they combine to decide which skills a given seeded agent instance receives. Routing is by
+_what kind of agent and what kind of project_, never by agent name. Edited from the `/skills` route;
+see also `plugins/maestro/skills/update-skill-tags`.
 
 The old single-dimension `SKILL_TAGS` was literally the seven built-in agent _names_, matched 1:1
 against an agent's name. It conflated "which kind of project" with "which kind of agent" into one
-flat list and could only route a skill to an agent whose name it already knew. It has been replaced
-by **two** dimensions — `projectTags` (from `project-tags.ts`'s catalog) and `agentTypes` (from
-`agent-types.ts`'s closed vocabulary), each admitting `GLOBAL_TAG` for "regardless of". These match
-against a seeded agent _instance's_ own stored attributes, which is what decouples Maestro from a
-fixed agent roster. Any code or doc still routing by agent name is working from the retired model.
+flat list and could only route a skill to an agent whose name it already knew. The two dimensions
+match instead against a seeded agent _instance's_ own stored attributes, which is what decouples
+Maestro from a fixed agent roster. Any code or doc still routing by agent name is working from the
+retired model.
 
 ## Relationships
 
-- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — why the sidecar and the frontmatter
-  helpers had to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these
-  stores, so it drags `node:sqlite` into any bundle that imports it.
+- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — why the sidecar and the frontmatter helpers had
+  to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these stores, so it drags
+  `node:sqlite` into any bundle that imports it. Also `syncProjectHandoffs`, `decideSync`'s third
+  caller, which syncs `.claude/handoffs/` from this store the way `report-sync.ts` syncs
+  `.claude/reports/`.
 - [`maestro-config-model`](../maestro-config-model/SKILL.md) — the per-project counterpart; the
   `reports` and `handoffs` slices are what override the `report-defaults` and `handoff-defaults`
   tiers.
 - `maestro-architecture` (at the repo root `.claude/skills`) — the `SubagentStart` hook resolves a
   report *and* a per-route handoff protocol across these tiers at dispatch time.
-- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — `syncProjectHandoffs` is `decideSync`'s third
-  caller, and syncs `.claude/handoffs/` from this store the way `report-sync.ts` syncs
-  `.claude/reports/`.
 - [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — five of these six have a generated CJS
   twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules` (every one
   but `avatar-store.ts`).
@@ -188,9 +191,8 @@ fixed agent roster. Any code or doc still routing by agent name is working from 
 
 ## Sub-concepts
 
-- [Skill tags](sub-concepts/skill-tags.md) — the two-dimensional skill→agent routing.
-- [Agent types and project tags](sub-concepts/agent-classification.md) — the per-agent half of that
-  match.
+- [Agent types and project tags](sub-concepts/agent-classification.md) — the per-agent half of the
+  two-dimensional match above.
 - [Report defaults](sub-concepts/report-defaults.md) — the global fallback tier and its two tables.
 - [Handoff defaults](sub-concepts/handoff-defaults.md) — the one-table twin, its path-shaped id, and
   the sqlite-free seed module that keeps the floor alive on an old `node`.

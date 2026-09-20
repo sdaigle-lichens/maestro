@@ -53,10 +53,8 @@ diverged fork. See `installing-maestro`'s hook-arbitration sub-concept.
 
 ## Constraints that hold this together
 
-- **The bundle must not require `node:sqlite`.** A session's `node` may predate it. This is why the
-  sidecar and frontmatter helpers live in `agent-fork-record.ts` rather than `agent-fork.ts`, whose
-  `copyAgentAttributeRows` writes three sqlite stores. `grep -c "node:sqlite"` on the generated
-  bundle must stay `0`.
+- **The bundle must not require `node:sqlite`.** A session's `node` may predate it — see the parent
+  skill's trap on the `agent-fork.ts` / `agent-fork-record.ts` split for why, and for the `grep`.
 - **The bundle is generated and committed** — never hand-edit it, and re-run
   `pnpm --filter maestro build:plugin-libs` after touching anything in its import graph. See
   `plugin-libs-parity`; the build fails quietly, and the symptom is the terminal quietly running last

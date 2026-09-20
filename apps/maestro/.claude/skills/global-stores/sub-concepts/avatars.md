@@ -4,12 +4,10 @@ A purely cosmetic pixel-art appearance for an agent, composited from category la
 `~/.claude/maestro-avatars.sqlite` — global by default, the same discipline as `skill-tags.ts`
 applied to a different key.
 
-Global for the "same thing everywhere" reason: a `user`/`maestro`/plugin-tier agent named the same
-thing is the same agent wherever it is used, so its look should follow the name rather than being
-re-picked per project. A `project`-tier agent is the exception (`030`): the table's primary key is
-`(project_root, agent_name)`, `project_root = ''` meaning global, so two projects' same-named
-project agents no longer share one avatar row — see the parent `SKILL.md`'s "Keyed by project, not
-just agent name" section for the read/write discipline.
+Global for the "same thing everywhere" reason: a `user`/`maestro`/plugin-tier agent's look should
+follow its name rather than being re-picked per project. A `project`-tier agent is the exception —
+see the parent `SKILL.md`'s "Keyed by project, not just agent name" (`030`) for the key and the
+read/write discipline.
 
 Nothing here affects routing or behaviour; it is appearance only.
 

@@ -11,9 +11,9 @@ metadata:
 
 Some logic is needed by **both** the desktop app and the standalone scripts the plugin ships — and
 those scripts run under bare `node` with no `node_modules`, sometimes after being copied into a
-project's `.claude/scripts/`. They cannot import from this workspace. Rather than maintain two
-implementations that silently drift, `apps/maestro/src/core` is the source and
-`plugins/maestro/scripts/lib/*.cjs` are **generated, committed** bundles.
+project's `.claude/scripts/`. They cannot import from this workspace, and there is no build step
+where they run, which is why `plugins/maestro/scripts/lib/*.cjs` are **generated and committed**
+bundles rather than built at install time. `apps/maestro/src/core` is the source.
 
 ```
 src/core/*.ts  →  src/core/plugin-entries/<name>.ts  →  esbuild  →  plugins/maestro/scripts/lib/<name>.cjs
@@ -33,41 +33,31 @@ tests. The root `CLAUDE.md` states the same rule.
 
 **`contracts.ts` counts as "a module one of them pulls in", even though no `plugin-entries/*.ts`
 imports it directly (`045`).** Several entries import a `src/core` module that in turn imports a
-type or a value export (`EDITABLE_AGENT_SOURCES` and friends) from `contracts.ts`, so a change
-there is transitively bundled. This drift sat unnoticed in the repo for a while: `045` found
-`maestro-agent-sync.cjs`, `maestro-agent-types.cjs` and `maestro-skill-tags.cjs` already stale
-against `contracts.ts` before that task's own edits — most likely left behind by an earlier commit
-that touched `contracts.ts` without re-running `build:plugin-libs`. The rule is the same as above,
-just easy to miss because the diff that triggers it never touches `plugin-entries/` at all: **a
-commit that touches `contracts.ts` needs `build:plugin-libs`, whether or not it touches
-`plugin-entries/*.ts` directly.**
+type or a value export (`EDITABLE_AGENT_SOURCES` and friends) from it. So **a commit that touches
+`contracts.ts` needs `build:plugin-libs`**, whether or not it touches `plugin-entries/*.ts` — easy
+to miss precisely because the diff that triggers it never touches `plugin-entries/` at all.
 
-**`053` is the same failure again, this time sitting across a task boundary rather than inside one
-commit.** `052` added the `infra`-only seed profile — `isInfraOnlyChain`/`buildInfraWorkflow` and a
-chain-dependent `seededAgentNames()` in `seed.ts`, plus the `infra` category in `detect.ts` and the
-agent/tag/report-default stores six other `plugin-entries/*.ts` modules pull from — and landed all
-of it without re-running the build. Every test stayed green, because the committed
-`lib/maestro-seed.cjs` and six sibling bundles kept exporting the pre-`052` behaviour and nothing
-exercises them against the live source. The only symptom was that the terminal install path
-(`maestro-install.js`, which `require`s these bundles) went on seeding the old six-workflow graph
-for an infrastructure repo while the app's `defaultV3Config` already seeded the new three-workflow
-one — exactly the silent divergence this section warns about, just discovered a task later instead
-of in the same diff. `053` is the fix: rebuild, read the diff, ship it.
+Three recorded instances of this one failure, each worse than the last:
 
-**`066` is worse than either: the stale bundle didn't keep old behaviour, it silently disabled the
-feature the commit shipped.** `CLAIM_IDLE_CAP_MS` was added to `handoff-channels.ts` and re-exported
-from the `maestro-session` plugin-entry (see above), but the initial diff committed both
-`plugins/maestro/scripts/lib/maestro-session.cjs` and `.claude/scripts/lib/maestro-session.cjs`
-without rebuilding, so neither carried the new export. `maestro-task-status.cjs` destructures
-`CLAIM_IDLE_CAP_MS` straight out of that bundle, got `undefined`, and `isSessionLive`'s `now - mtime
-<= undefined` is `false` for every claim, live or not — the shipped CLI could create a claim but
-could never see one as live. The full suite still reported green everywhere except
-`test/core/task-claims-cli.test.ts`, whose 3 failures were the only signal; they were caught only
-because @reviewer independently ran the suite against the committed diff rather than trusting the
-implementer's own green run. Fixed by rebuilding and mirroring the `.claude/scripts/lib/` copy by
-hand. Same root cause as `045`/`053` — a transitively-bundled change shipped without
-`build:plugin-libs` — but where those two left old code running, this one shipped new code that
-silently never worked.
+- **`045`** — `maestro-agent-sync`, `maestro-agent-types` and `maestro-skill-tags` were already stale
+  against `contracts.ts` before that task's own edits, most likely from an earlier commit that
+  touched `contracts.ts` without re-running the build. No symptom at all; it sat unnoticed.
+- **`053`** — `052` landed the `infra`-only seed profile (`isInfraOnlyChain`/`buildInfraWorkflow`, a
+  chain-dependent `seededAgentNames()` in `seed.ts`, the `infra` category in `detect.ts`, plus the
+  stores six other entries pull from) without rebuilding. `lib/maestro-seed.cjs` and six siblings
+  kept exporting pre-`052` behaviour, so the terminal install path (`maestro-install.js`, which
+  `require`s them) seeded the old six-workflow graph for an infrastructure repo while the app's
+  `defaultV3Config` seeded the new three-workflow one. Every test green; found a task later.
+- **`066`** — `CLAIM_IDLE_CAP_MS` was added to `handoff-channels.ts` and re-exported from
+  `maestro-session`, but both `plugins/maestro/scripts/lib/maestro-session.cjs` and
+  `.claude/scripts/lib/maestro-session.cjs` were committed without a rebuild. This one didn't keep
+  old behaviour, it silently disabled the feature the commit shipped: `maestro-task-status.cjs`
+  destructures `CLAIM_IDLE_CAP_MS` out of that bundle, got `undefined`, and `isSessionLive`'s
+  `now - mtime <= undefined` is `false` for every claim — the shipped CLI could create a claim but
+  never see one as live. Only `test/core/task-claims-cli.test.ts`'s 3 failures signalled it, caught
+  only because @reviewer ran the suite against the committed diff rather than the implementer's own
+  green run. Fixed by rebuilding **and** mirroring the `.claude/scripts/lib/` copy by hand.
+
 
 ## The export surface is a superset, not an identity
 
@@ -82,9 +72,8 @@ scripts at all.
 produced one.** `sessionLogPath` went from `(claudeDir)` to `(claudeDir, sessionId)`: the export is
 still there, the name list still passes, and an old caller passing one argument now gets `null`
 (`sessionPathsFor` rejects `undefined` as a session id) rather than a `TypeError` — a silent wrong
-answer instead of a crash. Rarer than the rename the rule warns about and strictly worse to debug.
-When you must change a signature in a bundle, grep the `.js`/`.cjs` hook scripts for the name across
-`plugins/maestro/scripts/` rather than trusting the export assertion.
+answer instead of a crash. When you must change a signature in a bundle, grep the `.js`/`.cjs` hook
+scripts for the name across `plugins/maestro/scripts/` rather than trusting the export assertion.
 
 Related, same task: `SESSION_LOG_FILE` is now an alias for `SESSION_LOG_NAME` with **no live
 callers** — retained solely because this rule forbids removing it. An export you find with no
@@ -96,6 +85,16 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`).
+
+Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
+plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.
+The list is hard-coded in the `entries` array in `build-plugin-libs.mjs`, so adding an entry means
+editing that array as well as creating the file. The constraint an entry inherits: everything it
+pulls in must run under bare `node` with no `node_modules` and no Electron. Node built-ins stay
+external (`node:fs`, `node:path`, `node:os`, `node:sqlite`, and their bare aliases); anything else
+it imports is inlined into the bundle. Reaching into a module that touches Electron, the Agent SDK
+or a third-party dependency is how an entry stops being buildable — or worse, builds and fails at
+hook time in a project with no dependencies installed.
 
 **Six of the twelve are also COPIED into projects, which widens what a rename breaks (`035`).** A
 bundle runs from the marketplace cache *and*, if it is in `install.ts`'s `STATIC_ASSETS`, from
@@ -109,47 +108,43 @@ re-pulls on a `plugin.json` version bump, the project copies do not move until s
 See `installing-maestro`'s manifest sub-concept for the rule the copied list answers to, and why a
 lib missing from it fails silently.
 
-**`maestro-workflow-spec` carries no `node:sqlite`-free requirement of its own.** Unlike
-`maestro-agent-sync` and `maestro-session` below, nothing requires it unconditionally from inside a
-hook running under an arbitrary `node` — it is `require`d only by the standalone
-`maestro-workflow-spec.cjs` CLI, which has no try/catch degrade path at all: a missing or throwing
-`require` fails the CLI outright regardless of which module caused it. It happens to pull in no
-`node:sqlite` (`workflow-spec.ts` only reaches `config.ts`, `success-path.ts` and `seed.ts`'s layout
-helpers), but that is incidental, not an invariant this file enforces the way it does for the two
-below.
-
-**`maestro-agent-sync` must not pull in `node:sqlite`.** It backs
-**two** callers, both running under whatever bare `node` is on the session's PATH:
-`plugins/maestro/scripts/maestro-agent-forks.cjs` (the user-facing CLI, driven by `/maestro-update`)
-and `plugins/maestro/scripts/maestro-step0.js`, the readiness hook, which `require`s
-`computeAgentSync` out of the bundle directly rather than spawning the CLI. Its source (`agent-sync.ts`) therefore imports
-`agent-fork-record.ts` and never `agent-fork.ts` — the latter reaches three sqlite stores through
-`copyAgentAttributeRows`, which is exactly why `031` split the file (see `global-stores`). The
-check is `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-agent-sync.cjs` → `0`. Nothing
-fails if it stops being 0; the script just starts throwing on machines with an older `node`.
+**`maestro-agent-sync` must not pull in `node:sqlite`.** It backs **two** callers, both running
+under whatever bare `node` is on the session's PATH: `plugins/maestro/scripts/maestro-agent-forks.cjs`
+(the user-facing CLI, driven by `/maestro-update`) and `plugins/maestro/scripts/maestro-step0.js`,
+the readiness hook, which `require`s `computeAgentSync` out of the bundle directly rather than
+spawning the CLI. Its source (`agent-sync.ts`) therefore imports `agent-fork-record.ts` and never
+`agent-fork.ts` — the latter reaches three sqlite stores through `copyAgentAttributeRows`, which is
+exactly why `031` split the file (see `global-stores`). The check is
+`grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-agent-sync.cjs` → `0`. Nothing fails if
+it stops being 0; the script just starts throwing on machines with an older `node`.
 
 **`maestro-session` must not pull in `node:sqlite` either (`033`).** It is the bundle every hook
-`require`s **unconditionally**, and since `033` it carries the handoff seed tier (`SEED_HANDOFFS`,
-`isSeededHandoff`, `isValidHandoffId`) plus the pure route walk (`handoffRoutes`, `routesFrom`,
-`handoffPairs`) and `resolveHandoff`. Since `036` it also carries the agent-channel surface
-(`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/
-`parseStampedContent`, `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId` — re-exported here rather than
-given a 12th bundle, since `handoff-channels.ts` is `fs`/`path` only and every hook already
-`require`s this one — `066` added `CLAIM_IDLE_CAP_MS` to that same re-exported list, the claims
-subsystem's mtime cap, for the same "it's fs-only and every hook needs it" reason. **Since `064` it
-carries a third such surface**, all of `session-paths.ts`
-(`resolveSessionId`, `isValidSessionId`, `sessionPathsFor`, `resolveSessionPaths`,
-`ensureSessionPaths`, `ensureSessionsRoot`, `listSessionIds`, `removeSessionState`,
-`LEGACY_SESSION_FILES`, `SESSIONS_DIR_NAME`) — also `fs`/`path` only, so the invariant below still
-measures `0`. Worth stating explicitly because this is now the third surface folded into one bundle
-on the same "it's fs-only and every hook needs it" argument: the argument is sound, but it is also
-how a bundle acquires a sqlite import by accident. Re-run the grep after any addition.
-The sqlite tier is a **separate** bundle,
-`maestro-handoff-defaults`, which `maestro-inject-agent-context.js` `require`s inside a try/catch —
-so on a `node` older than 22.5 the sqlite `require` fails and the seed still answers. That only
-holds while `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` is `0`. The
-trap: `handoff-seeds.ts` imports **nothing**, and adding one store import to it moves 23 protocol
-bodies behind a `node` version check without failing a single test.
+`require`s **unconditionally**, and it has now absorbed three surfaces on the same "it's `fs`/`path`
+only and every hook already requires this bundle" argument:
+
+- `033` — the handoff seed tier (`SEED_HANDOFFS`, `isSeededHandoff`, `isValidHandoffId`), the pure
+  route walk (`handoffRoutes`, `routesFrom`, `handoffPairs`) and `resolveHandoff`.
+- `036` — the agent-channel surface from `handoff-channels.ts` (`channelDir`, `laneFor`,
+  `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/`parseStampedContent`,
+  `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId`, re-exported here rather than given a 13th bundle;
+  `066` added `CLAIM_IDLE_CAP_MS`, the claims subsystem's mtime cap, to the same list.
+- `064` — all of `session-paths.ts` (`resolveSessionId`, `isValidSessionId`, `sessionPathsFor`,
+  `resolveSessionPaths`, `ensureSessionPaths`, `ensureSessionsRoot`, `listSessionIds`,
+  `removeSessionState`, `LEGACY_SESSION_FILES`, `SESSIONS_DIR_NAME`).
+
+The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
+Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any
+addition. The sqlite tier is a **separate** bundle, `maestro-handoff-defaults`, which
+`maestro-inject-agent-context.js` `require`s inside a try/catch — so on a `node` older than 22.5 the
+sqlite `require` fails and the seed still answers. The trap: `handoff-seeds.ts` imports **nothing**,
+and adding one store import to it moves 23 protocol bodies behind a `node` version check without
+failing a single test.
+
+**`maestro-workflow-spec` carries no `node:sqlite`-free requirement of its own.** It is `require`d
+only by the standalone `maestro-workflow-spec.cjs` CLI, which has no try/catch degrade path at all —
+a missing or throwing `require` fails it outright regardless of cause. It happens to pull in no
+`node:sqlite` (`workflow-spec.ts` only reaches `config.ts`, `success-path.ts` and `seed.ts`'s layout
+helpers), but that is incidental, not an invariant.
 
 **`maestro-tasks.cjs` is not generated.** It has no entry in `plugin-entries/` and is hand-maintained
 alongside `src/core/tasks.ts`, kept in sync so a task close from the UI and one from the orchestrator
@@ -175,14 +170,10 @@ cannot disagree about which tasks are ready. Editing `tasks.ts` alone is not eno
 | File                                           | Role                                                    |
 | ---------------------------------------------- | ------------------------------------------------------- |
 | `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments. |
-| `apps/maestro/src/core/plugin-entries/*.ts`    | The eleven entry points — thin re-exports of `src/core`. |
+| `apps/maestro/src/core/plugin-entries/*.ts`    | The twelve entry points — thin re-exports of `src/core`. |
 | `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.          |
 | `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.       |
 | `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                             |
-
-The parity tests compare against **snapshots** under `test/core/fixtures/legacy/`, deliberately not
-against the live `plugins/maestro/scripts/lib/` files — the build overwrites those, so comparing
-against them would go tautological the moment the build runs.
 
 ## Relationships
 
@@ -203,5 +194,5 @@ against them would go tautological the moment the build runs.
 
 ## Sub-concepts
 
-- [Plugin entries](sub-concepts/plugin-entries.md) — what an entry point may and may not pull in.
-- [Parity tests](sub-concepts/parity-tests.md) — the snapshot baseline and why it is not the live file.
+- [Parity tests](sub-concepts/parity-tests.md) — the snapshot baseline, why it is not the live file,
+  and the user-visible strings it freezes byte for byte.

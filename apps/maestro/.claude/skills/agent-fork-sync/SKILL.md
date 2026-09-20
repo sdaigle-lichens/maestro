@@ -24,15 +24,13 @@ of those states the right answer is the same. That answer is written down **once
               ┌──────────────────────────────────────────────┐
               │  sync-decision.ts  ·  decideSync()           │   pure. no fs. knows nothing
               │  detached / no-template / materialize /      │   about reports, handoffs
-              │  refresh / stale-customized / unchanged      │   or agents.
+              │  adopt / stale-customized / refresh /        │   or agents.
+              │  unchanged                                   │
               └──┬───────────────────┬─────────────────────┬─┘
                  │                   │                     │
         ┌────────┴────────┐ ┌────────┴────────┐ ┌──────────┴───────────────────┐
         │ report-sync.ts  │ │ handoff-sync.ts │ │ agent-sync.ts                │
         │ per AGENT       │ │ per ROUTE PAIR  │ │ per FORKED AGENT             │
-        │ hash: whole file│ │ hash: whole file│ │ hash: hashAgentBody (body)   │
-        │ moved: version >│ │ moved: version >│ │ moved: version+body  (plugin)│
-        │        (integer)│ │        (integer)│ │        hash    !==  (user)   │
         │ WRITES on inst. │ │ WRITES on inst. │ │ WRITES NOTHING (read-only)   │
         └─────────────────┘ └─────────────────┘ └───┬──────────────────────┬───┘
                                                     │                      │
@@ -41,79 +39,69 @@ of those states the right answer is the same. That answer is written down **once
                                                                    (maestro-update)
 ```
 
-**Why one function and not two implementations that agree today.** `resolveReport` makes the same
-argument for the hook and the app: the failure mode is not a wrong answer, it is *two* answers, each
-correct for the surface that produced it, diverging silently over a year. `031` lifted these five
-branches out of `report-sync.ts` rather than paraphrasing them, and the branch order was preserved
-exactly — the report sync's tests passed unmodified, which is the evidence that nothing moved.
+**Why one function and not two implementations that agree today.** The failure mode is not a wrong
+answer, it is *two* answers, each correct for the surface that produced it, diverging silently over a
+year — the same argument `resolveReport` makes for the hook and the app. `031` lifted these branches
+out of `report-sync.ts` rather than paraphrasing them, preserving the order exactly: the report
+sync's tests passed unmodified, which is the evidence that nothing moved.
 
 ## The five branches
 
-Read them in `sync-decision.ts`; the order is load-bearing and stated here because getting it
-subtly wrong is invisible.
+`decideSync` answers with one of `detached` / `no-template` / `materialize` / `adopt` /
+`stale-customized` / `refresh` / `unchanged`, and **the branch order is the contract**: `detached` is
+checked first, so "the user owns this" outranks everything, and `stale-customized` is decided
+**before** `templateAdvanced` is consulted, so the user's edit outranks whether an update exists.
+Both orderings are asserted directly in `test/core/sync-decision.test.ts`, because a reordering would
+still pass every other test in the repo.
 
-| Verdict | When | Note |
-| --- | --- | --- |
-| `detached` | The tracking record says the user owns this outright | Checked **first**, so it outranks every other consideration. Never compared, never touched, never reported. |
-| `no-template` | Nothing to sync *from* | Answered before anything is compared. |
-| `materialize` | No project copy on disk | |
-| `unchanged` (untracked) | A file sits where the copy would go with nothing tracking it | Left alone — overwriting an unrelated file would be a surprise. |
-| `stale-customized` | The local hash ≠ what was recorded | **Decided before `templateAdvanced` is consulted.** The user's edit outranks whether an update exists. |
-| `refresh` / `unchanged` | Untouched, and the template did / did not move | |
+The two things that genuinely differ between callers arrive **already answered**, as `localHash` and
+`templateAdvanced`. Adding a caller means answering those two questions for it — not adding a branch
+here. `033` proved the cost: `handoff-sync.ts` became the **third** caller and reused both of
+`report-sync.ts`'s answers verbatim, so it added no branch and no test to `sync-decision.test.ts`.
+Only its candidate set is new.
 
-The two things that genuinely differ between callers arrive **already answered**, as
-`localHash` and `templateAdvanced`. Adding a caller means answering those two questions for it —
-not adding a branch here. `033` proved the cost: `handoff-sync.ts` became the **third** caller and
-reused both of `report-sync.ts`'s answers verbatim, so it added no branch and no test to
-`sync-decision.test.ts`. Only its candidate set is new (see the shared-decision table).
-
-See [the shared decision](sub-concepts/the-shared-decision.md) for the full table and what each
-caller passes.
+See [the shared decision](sub-concepts/the-shared-decision.md) for the branches in order, the three
+`SyncTracking` states, what each caller passes, and the rule for adding a fourth.
 
 ## The two triggers, and why they are not the same question
 
-This is the part that looks like an inconsistency and is not:
+This is the part that looks like an inconsistency and is not.
 
-- **Plugin tier → the `version` STRING must differ AND the body hash must differ.** Both halves,
-  and each rules out the opposite mistake:
-  - The **version** half is what makes the check *necessary*. A plugin's files come from a
-    per-VERSION marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version`
-    changes (see `updating-maestro` (at the repo root `.claude/skills`)), so a plugin agent's
-    content *cannot* reach a machine without a bump. An edit shipped without one has reached
-    nobody: *no update available* is the correct answer, not a missed one, and reporting otherwise
-    would promise a refresh no delivery path can deliver.
-  - The **body** half is what makes it *sufficient*. A bump says the PLUGIN moved, not that this
-    agent did — and this repo bumps `plugin.json` for every change under `plugins/`, almost none of
-    which touch `agents/`. On the version alone, every release lit the `/maestro` banner for every
-    fork on the machine and sent the user to a review card that then told them *the body is
-    identical to the template's*.
+**Plugin tier → the `version` STRING must differ AND the body hash must differ.** Both halves, each
+ruling out the opposite mistake, and both directions pinned by a test:
 
-  Both directions are pinned by a test.
-- **`user` tier → compare template content hashes alone.** `~/.claude/agents/*.md` are hand-edited
-  files with no version anywhere. Nothing but the bytes can notice.
+- The **version** half makes the check *necessary*. A plugin's files come from a per-VERSION
+  marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version` changes (see
+  `updating-maestro`, at the repo root `.claude/skills`), so a plugin agent's content *cannot* reach
+  a machine without a bump. An edit shipped without one has reached nobody: *no update available* is
+  the correct answer, and reporting otherwise would promise a refresh no delivery path can deliver.
+- The **body** half makes it *sufficient*. A bump says the PLUGIN moved, not that this agent did —
+  and this repo bumps `plugin.json` for every change under `plugins/`, almost none of which touch
+  `agents/`. On the version alone, every release lit the `/maestro` banner for every fork on the
+  machine and sent the user to a review card that then told them the body was identical to the
+  template's.
+
+**`user` tier → compare template content hashes alone.** `~/.claude/agents/*.md` are hand-edited
+files with no version anywhere; nothing but the bytes can notice.
 
 `report-sync.ts` is a third answer to the same question: the global store's integer `version`, with
-`>` rather than `!==`, because that number only ever goes up. `handoff-sync.ts` uses that same
-answer against `maestro-handoff-defaults.sqlite`, so there are three definitions of "the template
-moved", not four.
+`>` rather than `!==`, because that number only ever goes up. `handoff-sync.ts` uses that same answer
+against `maestro-handoff-defaults.sqlite`, so there are three definitions of "the template moved",
+not four.
 
 ## The description does not track — and neither does the name
 
-`hashAgentBody` (in `agent-fork-record.ts`) hashes the file with its `name:` and `description:`
-frontmatter lines — and any continuation lines under them — normalised out. Both are **expected** to
-diverge, and that is the whole reason forking is worth doing:
+**A fork's `description:` never counts as a change, and neither does its `name:`.** `hashAgentBody`
+(in `agent-fork-record.ts`) hashes the file with both frontmatter lines — and any continuation lines
+under them — normalised out, because both are *expected* to diverge: the description is the one field
+`/agents` lets you edit after forking (`029`), and the name is rewritten by `forkAgent` itself on a
+renamed fork. Hashing either puts a fork permanently in `stale-customized`, so the refresh branch
+never fires for it — `029` shipped exactly that bug for renamed forks and `031` fixed it.
+`mergeForkBody` is the exact inverse: the two fields that hash out are the two that carry over on an
+update, giving the tested property `hashAgentBody(mergeForkBody(t, f)) === hashAgentBody(t)`.
 
-- the `description:` is the one field `/agents` lets you edit after forking a global agent (`029`);
-- the `name:` is rewritten by `forkAgent` itself on a **renamed** fork.
-
-Hashing either puts a fork permanently in `stale-customized` and the refresh branch then never fires
-for it. `029` normalised out only the description and shipped exactly that bug for renamed forks;
-`031` fixed it, and both halves are pinned by tests. If you touch this function, that is the failure
-to write a test against.
-
-`mergeForkBody` is its exact inverse: **the two fields that hash out are the two fields that carry
-over** on an update, verbatim rather than re-quoted. `hashAgentBody(mergeForkBody(t, f)) ===
-hashAgentBody(t)` is a tested property, and it is why an update leaves a fork genuinely in step.
+See [the fork record](sub-concepts/the-fork-record.md) for the normalisation, the tests that pin both
+halves, and `mergeForkBody`'s verbatim carry-over.
 
 ## Computing writes nothing. Applying writes one agent.
 
@@ -123,22 +111,20 @@ and from `/maestro-update`. It stats and reads and writes nothing at all — no 
 asserts it on mtimes *and* bytes across two consecutive calls.
 
 `applyAgentSync(projectRoot, agentName, action)` is the only writer, one agent per explicit answer:
-
-- **`update`** — `mergeForkBody`, then a rename back to the fork's own name, then re-stamp
-  `pluginVersion` / `templateBodyHash` / `templateBody` and clear `acknowledgedFrom`.
-- **`keep`** — writes only `acknowledgedFrom`, which is what makes "ask me again next version" true
-  instead of re-raising the same diff on every launch.
-- **`detach`** — deletes the provenance record and touches no file. The agent becomes `decideSync`'s
-  `detached` verdict, arrived at by the user.
+**`update`** runs `mergeForkBody`, renames back to the fork's own name, re-stamps `pluginVersion` /
+`templateBodyHash` / `templateBody` and clears `acknowledgedFrom`; **`keep`** writes only
+`acknowledgedFrom`; **`detach`** deletes the provenance record and touches no file, leaving the agent
+on `decideSync`'s `detached` verdict. What the last two write, and why `keep` is a real choice rather
+than a no-op, is in [the fork record](sub-concepts/the-fork-record.md).
 
 ## Forking has two entry points now, one mechanism (`041`)
 
-`forkAgent` itself is unchanged, and neither is anything in this skill's decision function — a
-renamed fork writes the same provenance record and hashes the same way regardless of who called it.
-What's new is a **second UI call site**: `/workflows`' `InstancePicker`, from the all-placed dead
-end (a workflow can't place two instances on one bare agent), alongside `/agents`' "Fork into this
-project". Both go through the identical `forkAgent(...)` → `agent-forks.json` path this skill
-describes; see `agents-view` and `workflow-view` for what each caller does with the result.
+`forkAgent` and this skill's decision function are unchanged; what's new is a **second UI call
+site**, `/workflows`' `InstancePicker`, reached from the all-placed dead end (a workflow can't place
+two instances on one bare agent), alongside `/agents`' "Fork into this project". Both go through the
+identical `forkAgent(...)` → `agent-forks.json` path — a renamed fork writes the same provenance
+record and hashes the same way regardless of caller. See `agents-view` and `workflow-view` for what
+each does with the result.
 
 ## Traps
 
