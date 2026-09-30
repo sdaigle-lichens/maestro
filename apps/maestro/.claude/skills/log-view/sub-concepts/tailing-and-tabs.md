@@ -99,7 +99,7 @@ bug.
   instead of jumping around on every push.
 - **Ended sessions are retained, not dropped — but only up to `MAX_RETAINED_ENDED = 3`, globally.**
   `reduceSessionLog` marks a session `status: "ended"` with `endedAt: now()` on its `end` event rather
-  than deleting it, so `SessionLogTabs` can render it dimmed with an "(ended)" label and a close button.
+  than deleting it, so `SessionLogTabs` can render it dimmed with an "(ended)" label and a delete ✕ (the ✕ is not ended-only: it also shows for any session in `sessions:deletable`, since a crashed session never emits `end`; it deletes the directory via `sessions:delete`, and success arrives as the normal `reset`/`init` burst).
   Past 3 ended records *across all projects*, the oldest by `endedAt` is evicted on every `end` — not per
   project. A `logReset` (project forgotten, project switch) drops every record, ended or not, since it
   rebuilds the whole map from scratch.
@@ -109,6 +109,7 @@ bug.
   Usually indistinguishable in practice — `tailSessionLogs` polls at most a second behind the file
   appearing — but it is a receipt time, not a filesystem mtime, and drifts further under a slow/blocked
   renderer.
+- **`pickSessionTitle` / `sessionTitle` / `orderSessions`** (same file) are pure too: title = backend title (task name > `claude --resume`) else derived from the first dispatch; `orderSessions` dedupes by `sessionKey` and sorts by project rank then start time.
 - **Live stream is app-wide.** `SessionLogProvider` mounts in `__root.tsx`, so the subscription is
   maintained on every page. Entries accumulate in context even while the user is on `/workflows` or
   `/rules`; `/session-log` sees the full current state when you navigate to it.

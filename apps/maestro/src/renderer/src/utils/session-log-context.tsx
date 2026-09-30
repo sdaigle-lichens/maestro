@@ -212,3 +212,51 @@ export function SessionLogProvider({ children }: { children: React.ReactNode }) 
 export function useSessionLog(): SessionLogContextValue {
   return useContext(SessionLogContext);
 }
+
+/** Character cap for a tab title; the tab tooltip carries the full text. */
+export const TITLE_MAX = 60;
+
+/**
+ * Title priority for a tab: the backend's title (maestro task name, else the `claude --resume`
+ * title) when it is a non-blank string, otherwise the renderer-derived `sessionTitle` fallback.
+ * `backendTitle` may be null, undefined (not fetched yet / query failed) or blank.
+ */
+export function pickSessionTitle(s: SessionRecord, backendTitle: string | null | undefined, max = TITLE_MAX): string {
+  const text = backendTitle?.replace(/\s+/g, " ").trim();
+  if (text) return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+  return sessionTitle(s, max);
+}
+
+/**
+ * Short human title for a tab: the first line of the first dispatch's spawning message (what the
+ * session was asked to do), else the first dispatched agent's name, else the first entry's origin,
+ * else "Session <id8>". Capped so a long prompt can't stretch the tab; the full text is the tooltip.
+ */
+export function sessionTitle(s: SessionRecord, max = TITLE_MAX): string {
+  const dispatch = s.entries.find((e) => e.kind === "dispatch");
+  const line = dispatch?.input
+    ?.split("\n")
+    .map((l) => l.trim())
+    .find((l) => l.length > 0);
+  const raw = line ?? dispatch?.agent ?? s.entries[0]?.origin ?? "";
+  const text = raw.replace(/\s+/g, " ").trim();
+  if (!text) return `Session ${s.sessionId.slice(0, 8)}`;
+  return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+}
+
+/**
+ * One entry per `sessionKey`, ordered by project (in `roots` order: current first, then recents)
+ * and then start time. Roots are de-duplicated first: the current project is normally also in the
+ * recents, and iterating it twice rendered every one of its sessions twice under the same key,
+ * so selecting one tab selected its twin. Sessions of a root not in `roots` sort last.
+ */
+export function orderSessions(sessions: SessionRecord[], roots: string[]): SessionRecord[] {
+  const rank = new Map<string, number>();
+  for (const r of roots) if (!rank.has(r)) rank.set(r, rank.size);
+  const unique = new Map<string, SessionRecord>();
+  for (const s of sessions) unique.set(sessionKey(s), s);
+  return [...unique.values()].sort(
+    (a, b) =>
+      (rank.get(a.projectRoot) ?? Infinity) - (rank.get(b.projectRoot) ?? Infinity) || startedAt(a) - startedAt(b)
+  );
+}

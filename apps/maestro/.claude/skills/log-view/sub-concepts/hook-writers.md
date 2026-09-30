@@ -116,8 +116,9 @@ Claude session to pick up.
 `maestro-session-cleanup.sh` (SessionEnd hook) deletes **only the ending session's own**
 `.claude/maestro_sessions/<session_id>/` directory — its `log.jsonl`, `session.json` and `tasks.json`
 together — plus the three pre-`064` flat files if an older runtime left them. A sibling session's
-directory is never touched, so one session ending no longer blanks a concurrent one's view mid-run. The
-page's empty state is still the expected condition when no Maestro session is active — it is not an
+directory is never touched, so one session ending no longer blanks a concurrent one's view mid-run.
+
+The hook does not run when a session dies hard; those leftovers are removed by the desktop app's startup sweep or a tab's ✕ (see `SKILL.md`, "Deleting stale session directories"). The page's empty state is still the expected condition when no Maestro session is active — it is not an
 error.
 
 ## Why SUCCESS/FAILURE requires `maestro-subagent-log.js`

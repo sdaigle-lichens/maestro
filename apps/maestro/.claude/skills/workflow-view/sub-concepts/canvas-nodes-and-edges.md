@@ -34,9 +34,9 @@ React Flow never remounts nodes.
 - `successEdge` — the solid straight path (`#94a3b8`), `bottom → top`. Following it on success is the
   happy path; reaching the terminal node = task complete.
 - `conditionEdge` — orange dashed + animated, drawn from a `left`/`right` handle → `top`, with a
-  label. Used to branch back to an earlier step or off to a secondary path. The label box always
-  renders an inline `✎` edit button — showing the label text, or a dashed `no label` placeholder when
-  empty — so a missing label can still be filled in.
+  label. Used to branch back to an earlier step or off to a secondary path. Clicking its label or path
+  selects it and opens the condition side panel where the label is edited (see
+  `canvas-interactions.md`).
 
 ## Layout and viewport
 
@@ -45,10 +45,18 @@ React Flow never remounts nodes.
 positions exist in `maestro.json` they're honored, and any drag persists back into each node's
 `position`.
 
+**`alignMainSession`** — `main-session` is synthetic and never persisted, so with saved positions it
+would sit at (0,0) while dagre would have put it above the first step. When positions are honored,
+`alignMainSession` re-derives that relation: the same `x` as the first step (target of main-session's
+success edge), 140px (one rank) above it. Trap: a change to dagre's rank spacing must change this
+constant too. No `mounted` SSR flag exists on the canvas; first paint and layout were verified
+without one.
+
 **`FitViewEffect`** — a small module-level component rendered inside `ReactFlowProvider` that calls
-`useReactFlow().fitView()` imperatively (50 ms debounce) whenever `workflow.name` changes. This
+`useReactFlow().fitView()` imperatively (50 ms delay) whenever `workflow.name` changes. This
 handles viewport re-centering when switching workflows, since `fitView` as a ReactFlow prop only
-fires on mount.
+fires on mount. The pending timer is held in a ref and cleared on a newer switch and on unmount, so a
+fit never runs against a workflow that has already been replaced; a bare `setTimeout` here would.
 
 ## State sync pattern
 
