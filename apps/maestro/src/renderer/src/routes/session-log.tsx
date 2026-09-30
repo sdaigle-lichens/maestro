@@ -1,13 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollText } from "lucide-react";
+import { toast } from "@repo/ui/toast";
 import { usePanelResize, PanelResizeHandle } from "@repo/ui/resizable-panel";
 import TopNav from "../components/top-nav";
 import SessionLogCards from "../components/session-log-cards";
 import SessionLogView from "../components/session-log-view";
 import SessionLogDetail from "../components/session-log-detail";
+import CleanSessionsButton from "../components/clean-sessions-button";
 import SessionLogTabs from "../components/session-log-tabs";
 import { useSessionLog, sessionKey, pickSelection } from "../utils/session-log-context";
+import { callMain } from "../utils/call-main";
 import { buildInstances } from "../utils/session-log";
 import type { ProjectState } from "../../../shared/ipc";
 
@@ -29,6 +32,78 @@ function SessionLogPage() {
   // a forgotten project's sessions are dropped via the tail's own wholesale `onReset`, not by
   // reacting to this event.
   useEffect(() => window.maestro.project.onChanged(setProjectState), []);
+
+  /**
+   * Sessions whose directory `sessions.delete` would accept (idle past the running window). A
+   * crashed session never emits `onEnd`, so its tab stays "live" here; this list is what lets it
+   * show the x anyway. Re-queried on mount, every 30s, and after each delete.
+   */
+  const [deletable, setDeletable] = useState<Set<string>>(new Set());
+  const refreshDeletable = useCallback(async () => {
+    const res = await callMain(() => window.maestro.sessions.deletable());
+    // A failed query just keeps the previous list; the ended-status x still works.
+    if (res.ok) setDeletable(new Set(res.value.map(sessionKey)));
+  }, []);
+  useEffect(() => {
+    void refreshDeletable();
+    const timer = setInterval(() => void refreshDeletable(), 30_000);
+    return () => clearInterval(timer);
+  }, [refreshDeletable]);
+
+  /**
+   * Backend titles (maestro task name, else `claude --resume` title), keyed like `sessionKey`.
+   * Re-queried when the session set changes and every 30s, since AI titles appear mid-session. A
+   * failed or partial answer leaves tabs on their derived fallback title.
+   */
+  const [titles, setTitles] = useState<Record<string, string | null>>({});
+  const refsKey = useMemo(() => sessions.map(sessionKey).sort().join("\n"), [sessions]);
+  const refsRef = useRef<{ projectRoot: string; sessionId: string }[]>([]);
+  refsRef.current = sessions.map((s) => ({ projectRoot: s.projectRoot, sessionId: s.sessionId }));
+  const refreshTitles = useCallback(async () => {
+    if (refsRef.current.length === 0) return;
+    const res = await callMain(() => window.maestro.sessions.titles(refsRef.current));
+    if (res.ok) setTitles(res.value);
+  }, []);
+  useEffect(() => {
+    void refreshTitles();
+  }, [refsKey, refreshTitles]);
+  useEffect(() => {
+    const timer = setInterval(() => void refreshTitles(), 30_000);
+    return () => clearInterval(timer);
+  }, [refreshTitles]);
+
+  const handleDelete = async (projectRoot: string, sessionId: string): Promise<void> => {
+    // The backend accepts anything idle >15 min, which includes a session parked on a long human
+    // review. An ended tab is certainly over; anything else gets a confirm first.
+    const record = sessions.find((s) => sessionKey(s) === sessionKey({ projectRoot, sessionId }));
+    if (
+      record?.status !== "ended" &&
+      !window.confirm(
+        "Delete this session's directory? It has been idle for a while but may still be waiting for input (for example a human review). Deleting it cannot be undone."
+      )
+    ) {
+      return;
+    }
+    const res = await callMain(() => window.maestro.sessions.delete(projectRoot, sessionId));
+    if (!res.ok) {
+      toast(<>Could not delete session: {res.error}</>, { variant: "error" });
+    } else if (!res.value.removed) {
+      const reason = res.value.reason;
+      if (reason === "not-found") {
+        dismiss(projectRoot, sessionId); // already gone from disk - just drop the tab
+      } else {
+        const why = {
+          running: "it is still running",
+          "own-session": "it is this app's own session",
+          invalid: "its id is invalid",
+          failed: "the directory could not be removed",
+        }[reason];
+        toast(`Session not deleted: ${why}`, { variant: "error" });
+      }
+    }
+    // On success main resets the tails and the tab drops via the normal reset/init burst.
+    void refreshDeletable();
+  };
 
   const gridRef = useRef<HTMLDivElement>(null);
   const left = usePanelResize({
@@ -81,6 +156,10 @@ function SessionLogPage() {
     <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
       <TopNav />
 
+      <div className="shrink-0 flex items-center justify-end px-3 py-1.5 border-b border-(--line)">
+        <CleanSessionsButton />
+      </div>
+
       {isEmpty ? (
         /* Empty state */
         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
@@ -106,7 +185,9 @@ function SessionLogPage() {
             projectState={projectState}
             selectedKey={selectedKey}
             onSelect={handleSelectTab}
-            onClose={dismiss}
+            deletable={deletable}
+            titles={titles}
+            onDelete={(root, id) => void handleDelete(root, id)}
           />
 
           {/* Three-pane layout — left & right panes are drag-resizable */}

@@ -6,6 +6,11 @@
 
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import {
+  sweepStaleSessions,
+  deleteSession,
+  resolveSessionTitles,
+  sessionTitleKey,
+  listDeletableSessions,
   readConfig,
   resolveGates,
   DEFAULT_GATES,
@@ -44,6 +49,7 @@ import {
   scaffoldCreate,
   nodeGit,
   tailSessionLogs,
+  dedupeProjectRoots,
   pendingLanes,
   installStatus,
   installRuntime,
@@ -249,6 +255,18 @@ function startTail(webContentsId: number): void {
   );
 }
 
+/**
+ * `068`. Sweep abandoned session directories across the allow-list. When anything was removed the
+ * session-log tails are retargeted: `tailSessionLogs` alone would report a vanished directory as a
+ * per-session `end` (a greyed tab), but a swept session should have no tab at all, and `startTail`'s
+ * `logReset` + fresh `init` burst rebuilds the tab bar from what is still on disk.
+ */
+function sweepAndRefresh(): number {
+  const { count } = sweepStaleSessions(allowedProjectRoots());
+  if (count > 0) retargetTails();
+  return count;
+}
+
 function stopTaskTail(webContentsId: number): void {
   taskTails.get(webContentsId)?.();
   taskTails.delete(webContentsId);
@@ -294,7 +312,8 @@ function startTaskTail(webContentsId: number): void {
  */
 function allowedProjectRoots(): string[] {
   const state = getState();
-  return state.current ? [state.current.root, ...state.recent.map((r) => r.root)] : state.recent.map((r) => r.root);
+  const roots = state.current ? [state.current.root, ...state.recent.map((r) => r.root)] : state.recent.map((r) => r.root);
+  return dedupeProjectRoots(roots);
 }
 
 /**
@@ -410,6 +429,13 @@ function announce(state: ProjectState): ProjectState {
 }
 
 export function registerIpc(): void {
+  // App-start sweep (`068`). Before any window subscribes, so no tail needs refreshing.
+  try {
+    sweepAndRefresh();
+  } catch (e) {
+    console.warn("[ipc] stale-session sweep failed", e);
+  }
+
   // ── project ──────────────────────────────────────────────────────────
   ipcMain.handle(IPC.projectGet, (): ProjectState => getState());
 
@@ -844,6 +870,29 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.tasksList, () => listTasks(currentRoot()));
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
   ipcMain.handle(IPC.tasksDelete, (_e, filename: string) => deleteTask(currentRoot(), filename));
+  ipcMain.handle(IPC.sessionsDelete, (_e, projectRoot: string, sessionId: string) => {
+    const res = deleteSession(allowedProjectRoots(), projectRoot, sessionId);
+    if (res.removed) retargetTails();
+    return res;
+  });
+  ipcMain.handle(IPC.sessionsDeletable, () => listDeletableSessions(allowedProjectRoots()));
+  ipcMain.handle(IPC.sessionsTitles, (_e, list: Array<{ projectRoot: string; sessionId: string }>) => {
+    const allowed = new Set(allowedProjectRoots());
+    const asked: Array<{ projectRoot: string; sessionId: string }> = [];
+    const known: Array<{ projectRoot: string; sessionId: string }> = [];
+    if (Array.isArray(list)) {
+      for (const r of list) {
+        if (!r || typeof r.projectRoot !== "string" || typeof r.sessionId !== "string") continue;
+        asked.push(r);
+        if (allowed.has(r.projectRoot)) known.push(r);
+      }
+    }
+    // Every asked-for key is present: refs outside the allow-list resolve to null.
+    const out: Record<string, string | null> = {};
+    for (const r of asked) out[sessionTitleKey(r.projectRoot, r.sessionId)] = null;
+    return Object.assign(out, resolveSessionTitles(known));
+  });
+  ipcMain.handle(IPC.sessionsClean, () => sweepAndRefresh());
 
   // Live tail of the task queue — same subscribe/unsubscribe shape as the session log's
   // `log:subscribe`/`log:unsubscribe` above. No separate snapshot channel: subscribing emits the

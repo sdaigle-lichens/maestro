@@ -19,3 +19,14 @@ Session directories under .claude/maestro_sessions/<id>/ are only removed by the
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Problem:** Task text put the clean-up button on the Maestro Tasks screen; the user wanted it on the Session Log page, so it was built, then removed and moved.
+  **Fix:** none
+- **Problem:** Tab bar listed the open project twice (current + recent roots), so sessions showed as duplicate tabs that selected together. The task's tab work shipped with the bug.
+  **Fix:** none
+- **Problem:** The task's scope missed that ended tabs need a delete (x) endpoint, and that a crashed session's tab stays "live" forever; required extra backend + frontend rounds, plus tab redesign, contrast, visible x and `claude --resume` titles.
+  **Fix:** none
+- **Problem:** Preload changes only apply after a full app restart; the stale preload showed as a missing title and "reading 'delete'" error.
+  **Fix:** none

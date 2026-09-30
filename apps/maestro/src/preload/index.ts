@@ -124,6 +124,12 @@ const api: MaestroApi = {
     content: (agentName) => ipcRenderer.invoke(IPC.agentContent, agentName),
     saveContent: (agentName, content) => ipcRenderer.invoke(IPC.agentContentSave, agentName, content),
   },
+  sessions: {
+    clean: () => ipcRenderer.invoke(IPC.sessionsClean),
+    delete: (projectRoot, sessionId) => ipcRenderer.invoke(IPC.sessionsDelete, projectRoot, sessionId),
+    deletable: () => ipcRenderer.invoke(IPC.sessionsDeletable),
+    titles: (list) => ipcRenderer.invoke(IPC.sessionsTitles, list),
+  },
   tasks: {
     list: () => ipcRenderer.invoke(IPC.tasksList),
     close: (filename) => ipcRenderer.invoke(IPC.tasksClose, filename),

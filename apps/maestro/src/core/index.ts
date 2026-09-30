@@ -98,6 +98,26 @@ export {
   type SessionIdSource,
 } from "./session-paths.js";
 
+export {
+  sweepStaleSessions,
+  SESSION_SWEEP_IDLE_CAP_MS,
+  SESSION_DELETE_IDLE_CAP_MS,
+  deleteSession,
+  listDeletableSessions,
+  type DeleteSessionResult,
+  type SessionRef,
+  type SessionSweepOptions,
+  type SessionSweepResult,
+} from "./session-sweep.js";
+
+export {
+  resolveSessionTitle,
+  resolveSessionTitles,
+  sessionTitleKey,
+  readTranscriptTitle,
+  type SessionTitleRef,
+} from "./session-title.js";
+
 export { IGNORE_DIRS, MAX_DEPTH, walkDirs, rulesFilesIn, ruleSearchDirs } from "./fs-scan.js";
 
 export {
@@ -146,6 +166,7 @@ export {
   readSessionLog,
   tailSessionLog,
   tailSessionLogs,
+  dedupeProjectRoots,
   sessionLogFileFor,
   type SessionLogEntry,
   type SessionLogTailEvents,

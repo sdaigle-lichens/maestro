@@ -560,6 +560,15 @@ export const IPC = {
   // Permanently removes a task file (distinct from `tasksClose`, which marks it done and keeps
   // the file) — extracts its `## Post-Mortem` section into `.claude/postmortems.log` first, if any.
   tasksDelete: "tasks:delete",
+  // Manual run of the stale-session sweep (`068`) over the current + recent projects. Resolves to
+  // the number of session directories removed.
+  sessionsClean: "sessions:clean",
+  // Explicit delete of one non-running session directory (the x on a Session Log tab), and the
+  // list of on-disk sessions that delete would currently accept.
+  sessionsDelete: "sessions:delete",
+  sessionsDeletable: "sessions:deletable",
+  // Batch title lookup for Session Log tabs: task H1, else the `claude --resume` title.
+  sessionsTitles: "sessions:titles",
   // Live tail of the on-disk task queue (`.claude/maestro-tasks/`), mirroring `log:subscribe`/
   // `log:unsubscribe` — one poller per subscribing window, retargeted on a project switch, pushing
   // over the `tasks:init`/`tasks:update` events below rather than being polled by the renderer.
@@ -1276,6 +1285,44 @@ export interface MaestroApi {
       onEnd(payload: SessionLogEndEvent): void;
       onReset(): void;
     }): () => void;
+  };
+  sessions: {
+    /**
+     * Run the stale-session sweep (`068`) now - the same one that runs at app start - across the
+     * open project and every recent one. Resolves to how many session directories were removed
+     * (0 is a normal answer). A directory is only removed when its session shows no activity for
+     * 24h; anything ambiguous is kept. The session-log tabs of removed sessions are dropped.
+     */
+    clean(): Promise<number>;
+    /**
+     * Delete one session's directory. Refuses (removed:false) when the session is running (activity
+     * within 15 min, or ambiguous), is this app's own session, or the ids are invalid. reason
+     * "not-found" means it is already gone - just drop the tab. On removal the log tails are reset,
+     * so the tab disappears via the normal onReset/onInit burst.
+     */
+    delete(
+      projectRoot: string,
+      sessionId: string
+    ): Promise<
+      { removed: true } | { removed: false; reason: "invalid" | "not-found" | "running" | "own-session" | "failed" }
+    >;
+    /**
+     * Sessions currently on disk that `delete` would accept (idle >15 min). A tab whose
+     * {projectRoot, sessionId} is in this list is not running and should show the x, even though
+     * the renderer's own status is still "live" (a crashed session never emits onEnd). Re-query
+     * periodically (e.g. every 30s) and after each delete.
+     */
+    deletable(): Promise<Array<{ projectRoot: string; sessionId: string }>>;
+    /**
+     * Summary titles for tabs, batched. Returns a record keyed `${projectRoot}::${sessionId}`; the
+     * value is (1) the H1 of the session's active maestro task (filename if it has no H1), else
+     * (2) the title `claude --resume` shows (user rename beats AI title), else null - apply your own
+     * fallback. Every asked-for key is present. Refs outside the known project roots resolve to null.
+     * Cheap enough to re-query on each onInit and every ~30s; titles change while a session runs.
+     */
+    titles(
+      list: Array<{ projectRoot: string; sessionId: string }>
+    ): Promise<Record<string, string | null>>;
   };
   shell: {
     reveal(target: string): Promise<void>;

@@ -298,3 +298,89 @@ describe("sessionKey / startedAt / lastActivityAt", () => {
     expect(lastActivityAt(record)).toBe(42);
   });
 });
+
+import { orderSessions } from "../../src/renderer/src/utils/session-log-context.js";
+
+describe("orderSessions", () => {
+  const rec = (projectRoot: string, sessionId: string): SessionRecord => ({
+    projectRoot,
+    sessionId,
+    entries: [],
+    status: "live",
+    firstSeenAt: 1,
+    endedAt: null,
+  });
+
+  it("renders each session once even when a root is listed twice (current also in recents)", () => {
+    const out = orderSessions([rec("/p", "a"), rec("/p", "b"), rec("/q", "c")], ["/p", "/q", "/p"]);
+    expect(out.map((s) => s.sessionId)).toEqual(["a", "b", "c"]);
+  });
+
+  it("collapses duplicate records with the same key", () => {
+    expect(orderSessions([rec("/p", "a"), rec("/p", "a")], ["/p"])).toHaveLength(1);
+  });
+});
+
+import { pickSessionTitle } from "../../src/renderer/src/utils/session-log-context.js";
+
+describe("pickSessionTitle", () => {
+  const s: SessionRecord = {
+    projectRoot: "/p",
+    sessionId: "abcdef123456",
+    entries: [{ ts: "2026-01-01T00:00:00Z", origin: "main", log: "x", kind: "dispatch", agent: "backend", input: "Build the thing\nmore" }],
+    status: "live",
+    firstSeenAt: 1,
+    endedAt: null,
+  };
+
+  it("prefers the backend title over the derived one", () => {
+    expect(pickSessionTitle(s, "Sweep stale sessions")).toBe("Sweep stale sessions");
+  });
+
+  it("falls back to the derived title for null, undefined and blank", () => {
+    for (const t of [null, undefined, "   "]) expect(pickSessionTitle(s, t)).toBe("Build the thing");
+  });
+
+  it("caps a long backend title with an ellipsis", () => {
+    const out = pickSessionTitle(s, "x".repeat(200), 20);
+    expect(out).toHaveLength(20);
+    expect(out.endsWith("…")).toBe(true);
+  });
+});
+
+import { sessionTitle } from "../../src/renderer/src/utils/session-log-context.js";
+
+describe("sessionTitle", () => {
+  const mk = (entries: SessionRecord["entries"], sessionId = "abcdef123456"): SessionRecord => ({
+    projectRoot: "/p",
+    sessionId,
+    entries,
+    status: "live",
+    firstSeenAt: 1,
+    endedAt: null,
+  });
+  const e = (over: Partial<SessionRecord["entries"][number]>): SessionRecord["entries"][number] => ({
+    ts: "2026-01-01T00:00:00Z",
+    origin: "main",
+    log: "x",
+    kind: "tool",
+    ...over,
+  });
+
+  it("uses the first non-blank line of the first dispatch input", () => {
+    expect(sessionTitle(mk([e({ kind: "dispatch", agent: "backend", input: "\n  \n Build it \nmore" })]))).toBe("Build it");
+  });
+
+  it("falls back to the dispatched agent, then the first origin, then Session <id8>", () => {
+    expect(sessionTitle(mk([e({ kind: "dispatch", agent: "backend" })]))).toBe("backend");
+    expect(sessionTitle(mk([e({ origin: "reviewer" })]))).toBe("reviewer");
+    expect(sessionTitle(mk([]))).toBe("Session abcdef12");
+  });
+
+  it("truncates to max with an ellipsis and leaves a short title alone", () => {
+    const out = sessionTitle(mk([e({ kind: "dispatch", input: "y".repeat(100) })]), 40);
+    expect(out).toHaveLength(40);
+    expect(out.endsWith("…")).toBe(true);
+    expect(sessionTitle(mk([e({ kind: "dispatch", input: "y".repeat(40) })]), 40)).toHaveLength(40);
+  });
+});

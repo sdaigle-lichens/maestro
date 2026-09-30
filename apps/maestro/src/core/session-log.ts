@@ -179,6 +179,30 @@ export interface MultiSessionLogTailEvents {
 }
 
 /**
+ * Unique project roots, keeping the first spelling of each. Two entries are the same project when
+ * they resolve to the same real path (trailing slash, symlink, current project also listed among
+ * the recents). Without this the same session directory is discovered under two roots and shows
+ * up as two tabs. A root that cannot be resolved (missing directory) falls back to its normalised
+ * path, so it still dedupes against an identical spelling.
+ */
+export function dedupeProjectRoots(roots: string[]): string[] {
+  const seen = new Set<string>();
+  const out: string[] = [];
+  for (const root of roots) {
+    let canonical: string;
+    try {
+      canonical = fs.realpathSync(root);
+    } catch {
+      canonical = path.resolve(root);
+    }
+    if (seen.has(canonical)) continue;
+    seen.add(canonical);
+    out.push(root);
+  }
+  return out;
+}
+
+/**
  * Watch EVERY live session across EVERY project `getProjectRoots()` names, on one poll loop (`065`).
  *
  * `064` gave each session a permanent, unambiguous file — `sessionPathsFor(claudeDir, id).log` never
@@ -205,7 +229,7 @@ export function tailSessionLogs(
 
   const poll = (): void => {
     if (stopped) return;
-    const roots = [...new Set(getProjectRoots())];
+    const roots = dedupeProjectRoots(getProjectRoots());
     const rootSet = new Set(roots);
 
     // A project no longer in the allow-list (closed and not recent, or forgotten): every session
