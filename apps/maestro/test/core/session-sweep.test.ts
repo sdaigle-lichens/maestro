@@ -8,7 +8,12 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import { sweepStaleSessions, deleteSession, listDeletableSessions, SESSION_SWEEP_IDLE_CAP_MS } from "../../src/core/session-sweep.js";
+import {
+  sweepStaleSessions,
+  deleteSession,
+  listDeletableSessions,
+  SESSION_SWEEP_IDLE_CAP_MS,
+} from "../../src/core/session-sweep.js";
 import { listSessionIds } from "../../src/core/session-paths.js";
 
 const DAY = SESSION_SWEEP_IDLE_CAP_MS;

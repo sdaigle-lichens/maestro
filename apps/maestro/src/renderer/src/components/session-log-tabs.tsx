@@ -1,5 +1,11 @@
 import { X } from "lucide-react";
-import { orderSessions, pickSessionTitle, sessionKey, startedAt, type SessionRecord } from "../utils/session-log-context";
+import {
+  orderSessions,
+  pickSessionTitle,
+  sessionKey,
+  startedAt,
+  type SessionRecord,
+} from "../utils/session-log-context";
 import type { ProjectState } from "../../../shared/ipc";
 
 interface SessionLogTabsProps {
@@ -84,7 +90,9 @@ export default function SessionLogTabs({
                     {when.date} {when.time}
                   </span>
                 )}
-                {ended && <span className="shrink-0 normal-case font-normal tracking-normal text-(--ink-3)">(ended)</span>}
+                {ended && (
+                  <span className="shrink-0 normal-case font-normal tracking-normal text-(--ink-3)">(ended)</span>
+                )}
               </span>
               <span
                 className={`max-w-full truncate text-[12px] ${isActive ? "text-(--ink) font-semibold" : "text-(--ink-2)"}`}

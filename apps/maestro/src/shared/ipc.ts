@@ -1320,9 +1320,7 @@ export interface MaestroApi {
      * fallback. Every asked-for key is present. Refs outside the known project roots resolve to null.
      * Cheap enough to re-query on each onInit and every ~30s; titles change while a session runs.
      */
-    titles(
-      list: Array<{ projectRoot: string; sessionId: string }>
-    ): Promise<Record<string, string | null>>;
+    titles(list: Array<{ projectRoot: string; sessionId: string }>): Promise<Record<string, string | null>>;
   };
   shell: {
     reveal(target: string): Promise<void>;

@@ -163,6 +163,7 @@ export function resolveSessionTitles(
   env: Record<string, string | undefined> = process.env
 ): Record<string, string | null> {
   const out: Record<string, string | null> = {};
-  for (const r of refs) out[sessionTitleKey(r.projectRoot, r.sessionId)] = resolveSessionTitle(r.projectRoot, r.sessionId, env);
+  for (const r of refs)
+    out[sessionTitleKey(r.projectRoot, r.sessionId)] = resolveSessionTitle(r.projectRoot, r.sessionId, env);
   return out;
 }

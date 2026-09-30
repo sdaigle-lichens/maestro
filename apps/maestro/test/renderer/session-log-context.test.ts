@@ -327,7 +327,16 @@ describe("pickSessionTitle", () => {
   const s: SessionRecord = {
     projectRoot: "/p",
     sessionId: "abcdef123456",
-    entries: [{ ts: "2026-01-01T00:00:00Z", origin: "main", log: "x", kind: "dispatch", agent: "backend", input: "Build the thing\nmore" }],
+    entries: [
+      {
+        ts: "2026-01-01T00:00:00Z",
+        origin: "main",
+        log: "x",
+        kind: "dispatch",
+        agent: "backend",
+        input: "Build the thing\nmore",
+      },
+    ],
     status: "live",
     firstSeenAt: 1,
     endedAt: null,
@@ -368,7 +377,9 @@ describe("sessionTitle", () => {
   });
 
   it("uses the first non-blank line of the first dispatch input", () => {
-    expect(sessionTitle(mk([e({ kind: "dispatch", agent: "backend", input: "\n  \n Build it \nmore" })]))).toBe("Build it");
+    expect(sessionTitle(mk([e({ kind: "dispatch", agent: "backend", input: "\n  \n Build it \nmore" })]))).toBe(
+      "Build it"
+    );
   });
 
   it("falls back to the dispatched agent, then the first origin, then Session <id8>", () => {

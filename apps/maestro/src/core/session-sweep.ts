@@ -42,7 +42,13 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { CLAIM_IDLE_CAP_MS } from "./handoff-channels.js";
-import { isValidSessionId, listSessionIds, sessionPathsFor, SESSION_ID_ENV, type SessionIdEnv } from "./session-paths.js";
+import {
+  isValidSessionId,
+  listSessionIds,
+  sessionPathsFor,
+  SESSION_ID_ENV,
+  type SessionIdEnv,
+} from "./session-paths.js";
 
 /** A session directory untouched for this long is treated as abandoned. See the header. */
 export const SESSION_SWEEP_IDLE_CAP_MS = 24 * 60 * 60 * 1000;
@@ -138,8 +144,7 @@ export function sweepStaleSessions(projectRoots: string[], options: SessionSweep
 export const SESSION_DELETE_IDLE_CAP_MS = CLAIM_IDLE_CAP_MS;
 
 export type DeleteSessionResult =
-  | { removed: true }
-  | { removed: false; reason: "invalid" | "not-found" | "running" | "own-session" | "failed" };
+  { removed: true } | { removed: false; reason: "invalid" | "not-found" | "running" | "own-session" | "failed" };
 
 export interface SessionRef {
   projectRoot: string;

@@ -312,7 +312,9 @@ function startTaskTail(webContentsId: number): void {
  */
 function allowedProjectRoots(): string[] {
   const state = getState();
-  const roots = state.current ? [state.current.root, ...state.recent.map((r) => r.root)] : state.recent.map((r) => r.root);
+  const roots = state.current
+    ? [state.current.root, ...state.recent.map((r) => r.root)]
+    : state.recent.map((r) => r.root);
   return dedupeProjectRoots(roots);
 }
 
