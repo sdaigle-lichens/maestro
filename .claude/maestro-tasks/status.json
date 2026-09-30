@@ -344,5 +344,9 @@
   "070-make-the-session-sweep-ipc-wiring-unit-testable.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "071-always-write-maestro-tasks-to-the-repository-root-claude.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
