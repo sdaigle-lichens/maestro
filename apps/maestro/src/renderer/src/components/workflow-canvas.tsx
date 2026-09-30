@@ -60,6 +60,8 @@ interface WorkflowCanvasProps {
 
 // Vertical gap between a node and the step added below it.
 const INSERT_ROW_HEIGHT = 160;
+// Pointer travel (screen px) before a press on a condition label counts as a drag, not a click.
+const DRAG_THRESHOLD_PX = 4;
 
 // ── Dagre layout ────────────────────────────────────────────────────
 
@@ -82,6 +84,18 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
     const pos = g.node(n.id);
     return { ...n, position: { x: pos.x - 90, y: pos.y - dagreNodeHeight(n) / 2 } };
   });
+}
+
+// `main-session` is synthetic and never persisted, so with saved positions it would sit at (0,0)
+// while dagre had put it above the first step. Re-derive the same relation: same x as the first
+// step, one rank (140px) above it.
+function alignMainSession(nodes: Node[], edges: Edge[]): Node[] {
+  const entry = edges.find((e) => e.source === "main-session" && e.type === "successEdge");
+  const target = entry && nodes.find((n) => n.id === entry.target);
+  if (!target) return nodes;
+  return nodes.map((n) =>
+    n.id === "main-session" ? { ...n, position: { x: target.position.x, y: target.position.y - 140 } } : n
+  );
 }
 
 // ── Helpers: MaestroWorkflowV3 <-> React Flow ──────────────────────────
@@ -635,6 +649,8 @@ function ConditionEdge({
   const [displayOffset, setDisplayOffset] = useState<{ x: number; y: number }>(storedOffset ?? { x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const dragStartRef = useRef<{ mx: number; my: number; ox: number; oy: number } | null>(null);
+  // Set once the pointer travels past DRAG_THRESHOLD_PX; read by the trailing click to swallow it.
+  const movedRef = useRef(false);
 
   // Sync display when stored offset changes (e.g. on save/load)
   useEffect(() => {
@@ -647,12 +663,30 @@ function ConditionEdge({
     e.stopPropagation();
     e.currentTarget.setPointerCapture(e.pointerId);
     dragStartRef.current = { mx: e.clientX, my: e.clientY, ox: localOffsetRef.current.x, oy: localOffsetRef.current.y };
+    movedRef.current = false;
     setIsDragging(true);
+  }, []);
+
+  // EdgeLabelRenderer is a portal, and React bubbles events through the React tree, not the DOM:
+  // this label's click reaches the edge's onEdgeClick even though pointerdown was stopped. A drag
+  // ends in a click on the same element, so without this a drag would select the edge and open
+  // the panel. Only a click that was not a drag may propagate.
+  const handleClick = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (movedRef.current) {
+      e.stopPropagation();
+      movedRef.current = false;
+    }
   }, []);
 
   const handlePointerMove = useCallback(
     (e: React.PointerEvent<HTMLDivElement>) => {
       if (!dragStartRef.current) return;
+      if (
+        !movedRef.current &&
+        Math.hypot(e.clientX - dragStartRef.current.mx, e.clientY - dragStartRef.current.my) < DRAG_THRESHOLD_PX
+      )
+        return;
+      movedRef.current = true;
       const { zoom } = getViewport();
       const dx = (e.clientX - dragStartRef.current.mx) / zoom;
       const dy = (e.clientY - dragStartRef.current.my) / zoom;
@@ -663,20 +697,13 @@ function ConditionEdge({
     [getViewport]
   );
 
-  const handlePointerUp = useCallback(
-    (e: React.PointerEvent<HTMLDivElement>) => {
-      if (!dragStartRef.current) return;
-      const { zoom } = getViewport();
-      const dx = (e.clientX - dragStartRef.current.mx) / zoom;
-      const dy = (e.clientY - dragStartRef.current.my) / zoom;
-      const next = { x: dragStartRef.current.ox + dx, y: dragStartRef.current.oy + dy };
-      localOffsetRef.current = next;
-      dragStartRef.current = null;
-      setIsDragging(false);
-      onLabelMove?.(id, next);
-    },
-    [id, getViewport, onLabelMove]
-  );
+  const handlePointerUp = useCallback(() => {
+    if (!dragStartRef.current) return;
+    dragStartRef.current = null;
+    setIsDragging(false);
+    if (!movedRef.current) return;
+    onLabelMove?.(id, localOffsetRef.current);
+  }, [id, onLabelMove]);
 
   const hasLabel = typeof label === "string" && label.length > 0;
   const finalX = labelX + displayOffset.x;
@@ -720,6 +747,7 @@ function ConditionEdge({
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
+          onClick={handleClick}
         >
           {typeof conditionIndex === "number" && (
             <span className="w-4 h-4 rounded-full bg-orange-500 text-white text-[9px] font-semibold flex items-center justify-center shrink-0">
@@ -775,12 +803,17 @@ function useColorMode(): "light" | "dark" {
 function FitViewEffect({ workflowName }: { workflowName: string | undefined }) {
   const { fitView } = useReactFlow();
   const prevRef = useRef<string | undefined>(undefined);
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
     if (workflowName !== prevRef.current) {
       prevRef.current = workflowName;
-      setTimeout(() => fitView({ padding: 0.4 }), 50);
+      // The delay lets the canvas swap in the incoming workflow's nodes first; a newer switch or
+      // unmount cancels a pending fit so it never runs against a workflow that has been replaced.
+      clearTimeout(timerRef.current);
+      timerRef.current = setTimeout(() => fitView({ padding: 0.4 }), 50);
     }
   }, [workflowName, fitView]);
+  useEffect(() => () => clearTimeout(timerRef.current), []);
   return null;
 }
 
@@ -857,6 +890,7 @@ export default function WorkflowCanvas({
     const edges = workflowToRfEdges(workflow);
     const hasPositions = workflow.nodes.length > 0 && workflow.nodes.every((n) => n.position != null);
     if (!hasPositions) nodes = applyDagreLayout(nodes, edges);
+    else nodes = alignMainSession(nodes, edges);
     setRfNodes(nodes);
     setRfEdges(edges);
   }, [workflow, instances, workflowKey]);

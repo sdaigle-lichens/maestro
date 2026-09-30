@@ -23,15 +23,24 @@ Every interaction below computes the next nodes/edges and calls `pushChange` →
   The modal takes a label and a target — an existing node, or (via the same `InstancePicker`) a
   reused/new instance to seed a node. Confirm creates a `condition` edge from the source's `right`
   handle → target `top`.
-- **Edit condition label** — every condition edge renders an inline `✎` beside its label (threaded in
-  via `enrichedEdges`, which injects `onEditLabel` into each `conditionEdge`'s `data`). Clicking
-  opens the edit-label modal (`openEditLabel` → `confirmEditLabel`, state
-  `editLabelEdgeId`/`editLabelValue`); Enter saves, Esc cancels. Saving keeps `e.label` and
+- **Edit condition label** — a right-hand **condition side panel**, not a modal. Clicking a condition
+  edge's label or path runs `handleEdgeClick` → `selectedEdgeId` (a second click deselects; clicking an
+  agent node or empty canvas closes it, and selecting one panel closes the other). The selected edge is
+  put "in evidence" (other conditions dim). The panel's Label textarea edits **live** through
+  `updateEdgeLabel(edgeId, label)` — no confirm step, no Enter/Esc; the same function drives the label
+  textareas in the agent-instance panel's Conditions list. It keeps `e.label` and
   `data.maestroEdge.label` in sync — `rfEdgesToMaestroEdges` reads `e.label` first but falls back to
-  `maestro.label`, so **both must be set**, and an emptied label clears both (reverting to the `no
-  label` placeholder).
-- **Attach skills per instance / Edit instance** — agent node `⋮` → Edit instance opens a modal with
-  a subagent `<select>` and an `InstanceSkillPicker` (drawn from `availableSkills`): check a skill to
+  `maestro.label`, so **both must be set**. The panel also has delete-condition and close buttons.
+  Deleting edges clears `selectedEdgeId` if it pointed at a removed one. There is no `openEditLabel` /
+  `confirmEditLabel` / `editLabelEdgeId` and no `onEditLabel` in edge `data` any more.
+  **Dragging the label must not select.** The label is dragged by hand (pointer capture in
+  `ConditionEdge`) and lives in `EdgeLabelRenderer`, a portal — React bubbles events through the React
+  tree, so the click that ends a drag still reaches the edge's `onEdgeClick` even though pointerdown
+  was stopped. `ConditionEdge` therefore tracks `movedRef` (set after `DRAG_THRESHOLD_PX` of travel) and
+  its `onClick` calls `stopPropagation()` when a drag just happened; `onLabelMove` also fires only for
+  a real move. Any new draggable inside `EdgeLabelRenderer` needs the same guard.
+- **Attach skills per instance / Edit instance** — clicking an agent node opens a right-hand instance
+  panel (second click closes; it replaced the kebab's old "Edit instance" modal) with a subagent `<select>` and an `InstanceSkillPicker` (drawn from `availableSkills`): check a skill to
   attach it (referenced by default), then flip its per-row Loaded/Ref toggle. Saving rewrites that
   `workflow_instances` entry's `loaded_skills` / `referenced_skills` via `onInstancesChange`, so all
   placements update. This is also how you change an instance's agent; the node id stays the instance

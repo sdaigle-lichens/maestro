@@ -187,7 +187,7 @@ button. Contrast regressions here are invisible to everything except reading pix
 |---|---|
 | Canvas node | `.react-flow__node[data-id="<id>"]` — `style.transform` is its flow-space position |
 | Viewport | `.react-flow__viewport` — `style.transform` is the pan/zoom |
-| Edge label + editor | `.react-flow__edgelabel-renderer span`, then `button[title="Edit label"]` beside it |
+| Edge label + editor | `.react-flow__edgelabel-renderer span`, then click it to open the condition side panel (there is no edit button or modal any more) |
 | Workflow switcher | `button[title="Switch workflow"]`, then a `div[class*="cursor-pointer"]` row |
 | Save (workflows / rules) | `button` whose text matches `/Save workflows/` or `/Save rules/` |
 | Label modal Save | `button` with text `Save` inside `.absolute.inset-0` |

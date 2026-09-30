@@ -332,5 +332,13 @@
   "067-clean-up-all-claude-skills-skill-md-files.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "068-sweep-stale-session-directories-and-add-a-manual-cleanup.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "069-make-alignmainsession-unit-testable.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
