@@ -25,7 +25,6 @@
     "rule-view",
     "agents-view",
     "log-view",
-    "react-flow-canvas-geometry",
     "test-maestro-desktop",
     "scribe"
   ],
@@ -57,7 +56,7 @@
         "rule-view",
         "agents-view",
         "log-view",
-        "react-flow-canvas-geometry"
+        "react:react-flow-canvas-geometry"
       ]
     },
     {
