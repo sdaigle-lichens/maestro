@@ -87,9 +87,7 @@ describe("checkChannelWrite", () => {
   });
 
   it("refuses a write with no resolvable path", () => {
-    expect(checkChannelWrite({ cwd: root, agentType: "reviewer", toolName: "Write", toolInput: {} }).allow).toBe(
-      false
-    );
+    expect(checkChannelWrite({ cwd: root, agentType: "reviewer", toolName: "Write", toolInput: {} }).allow).toBe(false);
   });
 
   it("leaves every other agent alone", () => {
@@ -108,7 +106,11 @@ describe("maestro-channel-write-guard.js (real script)", () => {
     });
 
   it("denies an out-of-lane write with a PreToolUse deny decision", () => {
-    const r = run({ agent_type: "reviewer", tool_name: "Edit", tool_input: { file_path: path.join(root, "src/a.ts") } });
+    const r = run({
+      agent_type: "reviewer",
+      tool_name: "Edit",
+      tool_input: { file_path: path.join(root, "src/a.ts") },
+    });
     expect(r.status).toBe(0);
     const out = JSON.parse(r.stdout);
     expect(out.hookSpecificOutput.permissionDecision).toBe("deny");
@@ -124,8 +126,7 @@ describe("maestro-channel-write-guard.js (real script)", () => {
       }).stdout
     ).toBe("");
     expect(
-      run({ agent_type: "backend", tool_name: "Write", tool_input: { file_path: path.join(root, "src/a.ts") } })
-        .stdout
+      run({ agent_type: "backend", tool_name: "Write", tool_input: { file_path: path.join(root, "src/a.ts") } }).stdout
     ).toBe("");
   });
 });

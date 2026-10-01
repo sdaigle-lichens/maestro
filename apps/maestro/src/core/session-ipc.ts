@@ -51,11 +51,7 @@ export function titlesForRefs(
 }
 
 /** Sweep abandoned sessions; `retarget` runs once, and only when something was removed. */
-export function sweepAndRetarget(
-  allowedRoots: string[],
-  retarget: () => void,
-  options?: SessionSweepOptions
-): number {
+export function sweepAndRetarget(allowedRoots: string[], retarget: () => void, options?: SessionSweepOptions): number {
   const { count } = sweepStaleSessions(allowedRoots, options);
   if (count > 0) retarget();
   return count;
