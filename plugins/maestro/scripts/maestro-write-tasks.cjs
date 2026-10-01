@@ -39,7 +39,23 @@ const fs = require("fs");
 const path = require("path");
 const { tasksDir, listTaskFiles, sync } = require("./lib/maestro-tasks.cjs");
 
-const projectDir = process.env.CLAUDE_PROJECT_DIR || process.cwd();
+// The queue always lives at the repository root's .claude, never a sub .claude
+// folder. Starting from CLAUDE_PROJECT_DIR (or cwd), pick the nearest ancestor
+// holding .claude/maestro.json, else the git root, else the starting directory.
+function findProjectRoot(start) {
+  const resolved = path.resolve(start);
+  for (let dir = resolved; ; dir = path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, ".claude", "maestro.json"))) return dir;
+    if (path.dirname(dir) === dir) break;
+  }
+  for (let dir = resolved; ; dir = path.dirname(dir)) {
+    if (fs.existsSync(path.join(dir, ".git"))) return dir;
+    if (path.dirname(dir) === dir) break;
+  }
+  return resolved;
+}
+
+const projectDir = findProjectRoot(process.env.CLAUDE_PROJECT_DIR || process.cwd());
 const jsonPath = process.argv[2];
 
 function fail(message) {

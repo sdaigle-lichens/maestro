@@ -5,7 +5,7 @@ description: "Turn a plan or idea into a queue of ready-to-run Maestro task prom
 
 # To Maestro Tasks
 
-Convert a plan, spec, or rough idea into **ready-to-run prompt files** under `<cwd>/.claude/maestro-tasks/`. Each file is a self-contained, workflow-agnostic prompt that the `/maestro` skill can classify and execute end-to-end.
+Convert a plan, spec, or rough idea into **ready-to-run prompt files** under the **repository-root** `.claude/maestro-tasks/` (never `<cwd>/.claude/` or a sub-folder `.claude`; the writer resolves the root as the nearest ancestor with `.claude/maestro.json`, then the git root). Each file is a self-contained, workflow-agnostic prompt that the `/maestro` skill can classify and execute end-to-end.
 
 ## Process
 

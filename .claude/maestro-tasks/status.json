@@ -346,6 +346,14 @@
     "blockedBy": []
   },
   "071-always-write-maestro-tasks-to-the-repository-root-claude.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "072-show-outside-changes-to-maestro-json-in-the-desktop-app.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "073-show-context-window-usage-in-the-session-log.md": {
     "status": "ready",
     "blockedBy": []
   }
