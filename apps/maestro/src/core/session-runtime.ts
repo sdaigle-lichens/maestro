@@ -54,8 +54,8 @@ export function writeSession(p: string, session: MaestroSession): void {
  * The run stamp channel files are marked with (`036`). Read-or-mint: a session that already has a
  * `run_id` keeps it (every caller in one run must agree), a session that doesn't gets one written
  * back immediately, so the very first `SubagentStart`/`SubagentStop` of a run can stamp against it.
- * `SessionEnd` deletes the session's whole directory, so the next run's first call here always
- * mints a fresh id — that is the whole freshness guarantee for channel delivery.
+ * A FINAL `SessionEnd` deletes the session's whole directory, so the next run's first call here
+ * mints a fresh id (a resumable end keeps it, and so keeps the id — `077`) — that is the whole freshness guarantee for channel delivery.
  */
 export function ensureSessionRunId(p: string): string {
   const session = readSession(p);

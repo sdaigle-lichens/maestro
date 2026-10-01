@@ -37,6 +37,7 @@ __export(maestro_session_exports, {
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
+  RESUMABLE_END_REASONS: () => RESUMABLE_END_REASONS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
   SESSIONS_DIR_NAME: () => SESSIONS_DIR_NAME,
   SESSION_ID_ENV: () => SESSION_ID_ENV,
@@ -50,6 +51,7 @@ __export(maestro_session_exports, {
   channelDir: () => channelDir,
   collectAgentSkills: () => collectAgentSkills,
   duplicateAgentTypes: () => duplicateAgentTypes,
+  endSessionState: () => endSessionState,
   ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
   ensureSessionsRoot: () => ensureSessionsRoot,
@@ -58,6 +60,7 @@ __export(maestro_session_exports, {
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
+  isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
@@ -232,8 +235,8 @@ var import_node_crypto = __toESM(require("node:crypto"), 1);
 
 // src/core/session-usage.ts
 var import_node_fs2 = __toESM(require("node:fs"), 1);
-var TAIL_CHUNK_BYTES = 64 * 1024;
-var MAX_TAIL_BYTES = 4 * 1024 * 1024;
+
+// src/core/text.ts
 var CONTEXT_WINDOW_TOKENS = {
   "claude-opus-5": 2e5,
   "claude-sonnet-5": 2e5,
@@ -241,6 +244,13 @@ var CONTEXT_WINDOW_TOKENS = {
   "claude-haiku-4-5-20251001": 2e5
 };
 var DEFAULT_CONTEXT_WINDOW = 2e5;
+function contextWindowFor(model) {
+  return CONTEXT_WINDOW_TOKENS[model] ?? DEFAULT_CONTEXT_WINDOW;
+}
+
+// src/core/session-usage.ts
+var TAIL_CHUNK_BYTES = 64 * 1024;
+var MAX_TAIL_BYTES = 4 * 1024 * 1024;
 function lastAssistantUsageLine(filePath) {
   const size = import_node_fs2.default.statSync(filePath).size;
   if (size === 0) return void 0;
@@ -281,7 +291,7 @@ function deriveUsage(payload) {
   if (!usage || !model) return void 0;
   const { input_tokens = 0, cache_read_input_tokens = 0, cache_creation_input_tokens = 0 } = usage;
   const used = input_tokens + cache_read_input_tokens + cache_creation_input_tokens;
-  const window = CONTEXT_WINDOW_TOKENS[model] ?? DEFAULT_CONTEXT_WINDOW;
+  const window = contextWindowFor(model);
   return { ctx_pct: Math.round(used / window * 1e3) / 10, ctx_model: model };
 }
 
@@ -362,6 +372,14 @@ function removeSessionState(claudeDir, sessionId) {
     }
   }
   return removed;
+}
+var RESUMABLE_END_REASONS = ["prompt_input_exit", "other", "resume"];
+function isResumableEnd(reason) {
+  return typeof reason === "string" && RESUMABLE_END_REASONS.includes(reason);
+}
+function endSessionState(claudeDir, sessionId, reason) {
+  if (isResumableEnd(reason)) return [];
+  return removeSessionState(claudeDir, sessionId);
 }
 
 // src/core/session-runtime.ts
@@ -911,6 +929,7 @@ function isRootSkillPath(root, skillPath) {
   CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS,
+  RESUMABLE_END_REASONS,
   SEED_HANDOFFS,
   SESSIONS_DIR_NAME,
   SESSION_ID_ENV,
@@ -924,6 +943,7 @@ function isRootSkillPath(root, skillPath) {
   channelDir,
   collectAgentSkills,
   duplicateAgentTypes,
+  endSessionState,
   ensureSessionPaths,
   ensureSessionRunId,
   ensureSessionsRoot,
@@ -932,6 +952,7 @@ function isRootSkillPath(root, skillPath) {
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
+  isResumableEnd,
   isRootSkillPath,
   isSeededHandoff,
   isValidHandoffId,

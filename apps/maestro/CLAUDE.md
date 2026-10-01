@@ -19,7 +19,8 @@ src/shared/    ipc.ts — the typed channel contract, imported by all three.
 ```
 
 `src/main/ipc.ts` is a list of thin adapters over `src/core/`; the logic is tested under
-`test/core/` with no Electron runtime, keeping a 200-test suite running in about a second.
+`test/core/` with no Electron runtime, keeping a 200-test suite running in about a second. Handler decisions are injected-callback
+functions in core (e.g. `session-ipc.ts`); `ipc.ts` only supplies state and side effects.
 
 ## Commands
 

@@ -110,7 +110,8 @@ Two of these are documented in depth elsewhere rather than restated here:
 ## Data in
 
 The route holds no loader-driven state beyond the first paint. `refresh()` fans out seven reads in
-parallel, and re-runs on every project change and after every save:
+parallel, and re-runs on every project change, after every save, and on every router invalidation (including an
+outside edit to `maestro.json` — the effect depends on `loaderResult`):
 
 ```
 getToolsData()                            → data.agents (id, description, source), data.skills

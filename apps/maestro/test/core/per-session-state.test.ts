@@ -23,6 +23,7 @@ import { fileURLToPath } from "node:url";
 
 import { installRuntime, findUpPluginRoot } from "../../src/core/install.js";
 import { writeConfig } from "../../src/core/config.js";
+import { isSessionLive } from "../../src/core/claims.js";
 import { defaultish } from "./fixtures/configs.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -317,6 +318,91 @@ describe("two concurrent sessions against one project (064)", () => {
     expect(res.status).toBe(0);
     expect(readLog(root, SESSION_A).map((e) => e.log)).toEqual(["Read(a1.ts)"]);
   });
+});
+
+// ── SessionEnd reason (077) ────────────────────────────────────────────────
+
+// Which `reason` values keep the directory is documented in
+// .claude/skills/maestro-architecture/sub-concepts/session-end-reasons.md, observed against a real
+// `claude`. Both cleanup twins must make the same call, so every case runs through each.
+describe("SessionEnd keeps a resumable session's state and removes a final one's (077)", () => {
+  const twins: [string, (root: string, payload: Record<string, unknown>, id: string | null) => number][] = [
+    ["node .cjs", (root, payload, id) => hook(root, "maestro-session-cleanup.cjs", payload, id).code],
+    [
+      "bash .sh",
+      (root, payload, id) =>
+        spawnSync("bash", [path.join(PLUGIN_ROOT, "scripts", "maestro-session-cleanup.sh")], {
+          input: JSON.stringify(payload),
+          encoding: "utf8",
+          env: hookEnv(root, id),
+        }).status ?? -1,
+    ],
+  ];
+
+  /** A session with a workflow, an active task, a log, and a claim on a task file. */
+  async function liveSession(root: string, id: string) {
+    hook(root, "maestro-session-log.cjs", toolCall(root, `${id}.ts`), id);
+    const state = { workflow: "default", active_task: "077-x.md", generated_instances: [], run_id: `run-${id}` };
+    fs.writeFileSync(stateFile(root, id), JSON.stringify(state));
+    const claims = path.join(root, ".claude", "maestro-tasks", "claims");
+    fs.mkdirSync(claims, { recursive: true });
+    fs.writeFileSync(
+      path.join(claims, `077-${id}.md.json`),
+      JSON.stringify({ session_id: id, claimed_at: new Date().toISOString(), project_root: root })
+    );
+    return state;
+  }
+
+  for (const [name, run] of twins) {
+    describe(name, () => {
+      for (const reason of ["prompt_input_exit", "other", "resume"]) {
+        it(`keeps session.json, log.jsonl and a live claim on reason "${reason}"`, async () => {
+          const root = await installed();
+          const state = await liveSession(root, SESSION_A);
+
+          expect(run(root, { cwd: root, session_id: SESSION_A, reason }, SESSION_B)).toBe(0);
+
+          expect(JSON.parse(fs.readFileSync(stateFile(root, SESSION_A), "utf8"))).toEqual(state);
+          expect(readLog(root, SESSION_A).map((e) => e.log)).toEqual([`Read(${SESSION_A}.ts)`]);
+          expect(isSessionLive(path.join(root, ".claude"), SESSION_A)).toBe(true);
+        });
+      }
+
+      for (const reason of ["clear", "logout", "bypass_permissions_disabled", "brand_new_reason", "", 7, null]) {
+        it(`removes only the ending session on final/unrecognised reason ${JSON.stringify(reason)}`, async () => {
+          const root = await installed();
+          await liveSession(root, SESSION_A);
+          await liveSession(root, SESSION_B);
+
+          expect(run(root, { cwd: root, session_id: SESSION_A, reason }, SESSION_B)).toBe(0);
+
+          expect(fs.existsSync(sessionDir(root, SESSION_A))).toBe(false);
+          expect(readLog(root, SESSION_B)).toHaveLength(1);
+          expect(fs.existsSync(stateFile(root, SESSION_B))).toBe(true);
+          expect(isSessionLive(path.join(root, ".claude"), SESSION_A)).toBe(false);
+        });
+      }
+
+      it("removes the directory when the payload has no reason at all", async () => {
+        const root = await installed();
+        await liveSession(root, SESSION_A);
+
+        expect(run(root, { cwd: root, session_id: SESSION_A }, null)).toBe(0);
+
+        expect(fs.existsSync(sessionDir(root, SESSION_A))).toBe(false);
+      });
+
+      it("a resumed session carries on appending to the same log", async () => {
+        const root = await installed();
+        await liveSession(root, SESSION_A);
+        run(root, { cwd: root, session_id: SESSION_A, reason: "prompt_input_exit" }, SESSION_A);
+
+        hook(root, "maestro-session-log.cjs", toolCall(root, "after.ts"), SESSION_A);
+
+        expect(readLog(root, SESSION_A).map((e) => e.log)).toEqual([`Read(${SESSION_A}.ts)`, "Read(after.ts)"]);
+      });
+    });
+  }
 });
 
 // ── resume ─────────────────────────────────────────────────────────────────

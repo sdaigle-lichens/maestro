@@ -6,10 +6,10 @@
 
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import {
-  sweepStaleSessions,
-  deleteSession,
-  resolveSessionTitles,
-  sessionTitleKey,
+  sweepAndRetarget,
+  deleteAndRetarget,
+  titlesForRefs,
+  composeAllowedRoots,
   listDeletableSessions,
   readConfig,
   resolveGates,
@@ -45,11 +45,11 @@ import {
   closeTask,
   deleteTask,
   tailTasks,
+  watchConfigFile,
   listMarketplaces,
   scaffoldCreate,
   nodeGit,
   tailSessionLogs,
-  dedupeProjectRoots,
   pendingLanes,
   installStatus,
   installRuntime,
@@ -202,6 +202,20 @@ const taskTails = new Map<number, () => void>();
 /** Windows that asked for a task-queue tail, whether or not one is running yet — see `logSubscribers`. */
 const taskSubscribers = new Set<number>();
 
+/**
+ * The single watcher on the open project's maestro.json. Owned here, not per window: it broadcasts
+ * `configChanged` to every window, so there is no subscribe/unsubscribe to leak or steal.
+ */
+let stopConfigWatch: (() => void) | null = null;
+
+/** (Re)point the config watcher at the current project; no project open means no watcher. */
+function restartConfigWatch(): void {
+  stopConfigWatch?.();
+  stopConfigWatch = null;
+  const root = currentRoot();
+  if (root) stopConfigWatch = watchConfigFile(root, () => broadcast(IPC_EVENTS.configChanged));
+}
+
 function broadcast(channel: string, payload?: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
     win.webContents.send(channel, payload);
@@ -262,9 +276,7 @@ function startTail(webContentsId: number): void {
  * `logReset` + fresh `init` burst rebuilds the tab bar from what is still on disk.
  */
 function sweepAndRefresh(): number {
-  const { count } = sweepStaleSessions(allowedProjectRoots());
-  if (count > 0) retargetTails();
-  return count;
+  return sweepAndRetarget(allowedProjectRoots(), retargetTails);
 }
 
 function stopTaskTail(webContentsId: number): void {
@@ -311,11 +323,7 @@ function startTaskTail(webContentsId: number): void {
  * the multi-session tail reads from either.
  */
 function allowedProjectRoots(): string[] {
-  const state = getState();
-  const roots = state.current
-    ? [state.current.root, ...state.recent.map((r) => r.root)]
-    : state.recent.map((r) => r.root);
-  return dedupeProjectRoots(roots);
+  return composeAllowedRoots(getState());
 }
 
 /**
@@ -415,6 +423,7 @@ function announce(state: ProjectState): ProjectState {
   broadcast(IPC_EVENTS.projectChanged, state);
   retargetTails();
   retargetTaskTails();
+  restartConfigWatch();
   // Outstanding previews name the OUTGOING project's working directory. A modal left open across
   // a project switch would otherwise still hold a runnable token, and pressing Run would spawn
   // Claude against the repo the window is no longer showing — the same class of bug the workflow
@@ -437,6 +446,10 @@ export function registerIpc(): void {
   } catch (e) {
     console.warn("[ipc] stale-session sweep failed", e);
   }
+
+  // The project restored from the previous run is already open; the watcher follows later opens
+  // through announce().
+  restartConfigWatch();
 
   // ── project ──────────────────────────────────────────────────────────
   ipcMain.handle(IPC.projectGet, (): ProjectState => getState());
@@ -873,26 +886,11 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
   ipcMain.handle(IPC.tasksDelete, (_e, filename: string) => deleteTask(currentRoot(), filename));
   ipcMain.handle(IPC.sessionsDelete, (_e, projectRoot: string, sessionId: string) => {
-    const res = deleteSession(allowedProjectRoots(), projectRoot, sessionId);
-    if (res.removed) retargetTails();
-    return res;
+    return deleteAndRetarget(allowedProjectRoots(), projectRoot, sessionId, retargetTails);
   });
   ipcMain.handle(IPC.sessionsDeletable, () => listDeletableSessions(allowedProjectRoots()));
   ipcMain.handle(IPC.sessionsTitles, (_e, list: Array<{ projectRoot: string; sessionId: string }>) => {
-    const allowed = new Set(allowedProjectRoots());
-    const asked: Array<{ projectRoot: string; sessionId: string }> = [];
-    const known: Array<{ projectRoot: string; sessionId: string }> = [];
-    if (Array.isArray(list)) {
-      for (const r of list) {
-        if (!r || typeof r.projectRoot !== "string" || typeof r.sessionId !== "string") continue;
-        asked.push(r);
-        if (allowed.has(r.projectRoot)) known.push(r);
-      }
-    }
-    // Every asked-for key is present: refs outside the allow-list resolve to null.
-    const out: Record<string, string | null> = {};
-    for (const r of asked) out[sessionTitleKey(r.projectRoot, r.sessionId)] = null;
-    return Object.assign(out, resolveSessionTitles(known));
+    return titlesForRefs(allowedProjectRoots(), list);
   });
   ipcMain.handle(IPC.sessionsClean, () => sweepAndRefresh());
 
@@ -1193,6 +1191,8 @@ export function disposeIpc(): void {
   logSubscribers.clear();
   for (const id of [...taskTails.keys()]) stopTaskTail(id);
   taskSubscribers.clear();
+  stopConfigWatch?.();
+  stopConfigWatch = null;
   // A cancelled run's child is spawned detached, so it outlives us by design unless it is killed.
   // Without this, quitting the app leaves Claude running against the user's repo with no window
   // left to stop it from.

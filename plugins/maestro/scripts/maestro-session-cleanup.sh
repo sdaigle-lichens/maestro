@@ -4,7 +4,7 @@
 #      the three pre-`064` flat files (maestro_session.json, maestro_session.log.jsonl,
 #      maestro_session_tasks.json) if an older runtime left them. A sibling session's directory is
 #      never touched, and with no session id resolvable nothing is removed at all. The decision is
-#      `removeSessionState` in lib/maestro-session.cjs — the SAME function the project-local .cjs
+#      `endSessionState` in lib/maestro-session.cjs (`077`: a resumable SessionEnd `reason` removes nothing) — the SAME function the project-local .cjs
 #      twin calls, so the two cannot disagree about what SessionEnd deletes. The source of truth
 #      (.claude/maestro.json) and the orchestrator skill are intentionally preserved.
 #   2. SWEEP `.claude/channels/` (`036`) — a channel file is no longer flushed at SessionEnd, since
@@ -32,15 +32,19 @@ cwd=$(echo "$STDIN_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); 
 # .cjs twin, which is why the id is passed through rather than defaulted here.
 session_id=$(echo "$STDIN_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('session_id') or '')" 2>/dev/null || echo "")
 
+# `077`: the payload's SessionEnd `reason`, empty when absent. Passed through verbatim — whether it
+# is resumable is `endSessionState`'s call (the same one the .cjs twin makes), never decided here.
+reason=$(echo "$STDIN_DATA" | python3 -c "import sys,json; d=json.load(sys.stdin); r=d.get('reason'); print(r if isinstance(r,str) else '')" 2>/dev/null || echo "")
+
 if [[ -n "$cwd" ]]; then
   script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
   node -e '
     const lib = require(process.argv[1]);
     const path = require("path");
-    const [, , cwd, sessionId] = process.argv;
-    lib.removeSessionState(path.join(cwd, ".claude"), lib.resolveSessionId(sessionId ? { session_id: sessionId } : null));
+    const [, , cwd, sessionId, reason] = process.argv;
+    lib.endSessionState(path.join(cwd, ".claude"), lib.resolveSessionId(sessionId ? { session_id: sessionId } : null), reason || null);
     lib.sweep(cwd);
-  ' "$script_dir/lib/maestro-session.cjs" "$cwd" "$session_id" 2>/dev/null || true
+  ' "$script_dir/lib/maestro-session.cjs" "$cwd" "$session_id" "$reason" 2>/dev/null || true
 fi
 
 exit 0

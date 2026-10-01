@@ -48,8 +48,13 @@ positions exist in `maestro.json` they're honored, and any drag persists back in
 **`alignMainSession`** — `main-session` is synthetic and never persisted, so with saved positions it
 would sit at (0,0) while dagre would have put it above the first step. When positions are honored,
 `alignMainSession` re-derives that relation: the same `x` as the first step (target of main-session's
-success edge), 140px (one rank) above it. Trap: a change to dagre's rank spacing must change this
-constant too. No `mounted` SSR flag exists on the canvas; first paint and layout were verified
+success edge), one rank above it. It lives in `src/core/canvas-layout.ts` (pure, no imports,
+renderer-safe, unit-tested in `test/core/canvas-layout.test.ts`) with `hasSavedPositions` and the
+shared constants `DAGRE_RANK_SEP`, `DAGRE_NODE_BASE_HEIGHT` and `MAIN_SESSION_RANK_OFFSET` (their
+sum). `workflow-canvas.tsx` feeds the first two to dagre, so a rank-spacing change moves the offset
+too. Returns `nodes` unchanged when there is no success entry edge. Because `canvas-layout.ts` is
+renderer-safe it must stay import-free and is listed in `RENDERER_SAFE` (`test/isolation.test.ts`)
+and `tsconfig.web.json`. No `mounted` SSR flag exists on the canvas; first paint and layout were verified
 without one.
 
 **`FitViewEffect`** — a small module-level component rendered inside `ReactFlowProvider` that calls

@@ -338,15 +338,43 @@
     "blockedBy": []
   },
   "069-make-alignmainsession-unit-testable.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "070-make-the-session-sweep-ipc-wiring-unit-testable.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "071-always-write-maestro-tasks-to-the-repository-root-claude.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "072-show-outside-changes-to-maestro-json-in-the-desktop-app.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "073-show-context-window-usage-in-the-session-log.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "074-isolate-concurrent-sessions-in-a-git-worktree.md": {
     "status": "ready",
+    "blockedBy": []
+  },
+  "075-show-worktree-sessions-as-tabs-in-the-session-log.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "074-isolate-concurrent-sessions-in-a-git-worktree.md"
+    ]
+  },
+  "076-merge-a-finished-worktree-task-back-to-the-base-branch.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "074-isolate-concurrent-sessions-in-a-git-worktree.md"
+    ]
+  },
+  "077-keep-session-state-when-a-session-is-stopped-and-resumed.md": {
+    "status": "done",
     "blockedBy": []
   }
 }

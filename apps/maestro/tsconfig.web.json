@@ -8,6 +8,7 @@
     // that directory imports fs and child_process; naming the two modules that do not is how this
     // project stays unable to compile a renderer that reached for the barrel. Kept in step with
     // RENDERER_SAFE in test/isolation.test.ts, which fails on the import rather than the type.
+    "src/core/canvas-layout.ts",
     "src/core/contracts.ts",
     "src/core/text.ts",
     // Only because `contracts.ts` re-exports the config model from it, and a composite project

@@ -3,7 +3,7 @@ name: workflow-view
 description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, why a duplicate-agent-type banner is showing and what the instance picker's fork-an-agent affordance does about it (`041`), or why a workflow change isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.6"
+  version: "1.7"
   last-update: 036cb4685fb6be413fa708d28e8d786508e239fd
 ---
 
@@ -65,6 +65,26 @@ submitMaestroConfig({ sliceType: "workflows", slice })
         │
         ▼ router.invalidate()   (a save is neither a navigation nor a project switch)
 ```
+
+**Outside changes to `maestro.json`** (a hand edit, `/maestro-update`) take a second path in:
+
+```
+main: watchConfigFile(projectRoot)  (src/core/config-watch.ts, ~1s poll of the raw text)
+  → broadcasts `config:changed` to every window     (preload: config.onChanged(cb))
+  → ConfigWatchProvider (utils/config-watch-context.tsx, mounted in __root.tsx) → router.invalidate()
+  → /workflows loader re-runs → the seed effect calls seedWorkflowStore(config, projectRoot)
+  → same project: reconcileWorkflowSlice(state, diskSlice)   (store/workflow-store.ts)
+```
+
+The store keeps `baseline` (the workflow slice as last known to be on disk), `externalChange` and the
+flagged `externalSlice`. Only the workflow slice is compared, so a `rules` or `runtimeVersion` change
+alone never touches the canvas. Reconcile, in order: disk == baseline → no-op; disk == canvas (our own
+save echoing back) → adopt as baseline, clear the flag; canvas clean → take the disk slice; canvas dirty
+→ keep the edits and set `externalChange`. A successful Save calls `markSaved(slice, projectRoot)` so its
+own echo is recognised. `external-change-banner.tsx` (keyed by `projectRoot`, dismissible) then offers
+**Reload from disk** (`reloadFromDisk`, discards edits) or **Keep mine** (`keepMine`, adopts the flagged
+slice as baseline; Save then overwrites only the workflow slice). `/agents` refetches because its
+`refresh()` effect depends on the loader result; `/rules` adopts new rules only while its editor is clean.
 
 Steps 2 and 3 are pure node, no model: there is no result file, no `aiToolsAction`, and no session between the canvas and the disk.
 
@@ -157,4 +177,12 @@ On load, `workflows.tsx` renders a dismissible `config-issue-banner.tsx` (own co
 - **Save only touches the workflow slice.** Don't widen `submitMaestroConfig`'s workflow branch to write `rules` — that's the `/rules` route's slice, and a stray write will clobber it.
 - **This route is no longer the only writer of the workflow slice.** `/agents` also saves it, to change one instance's `loaded_skills` / `referenced_skills` — it re-reads via `data:workflows` immediately before calling `config:save`, precisely because the merge replaces the whole block. If you change the shape of `workflow_instances`, `routes/agents.tsx` (`saveSkills`) has to move with it. Its chips default a newly ticked skill to **referenced**, matching `instance-skill-picker.tsx`, and it refuses to save skills at all while the config is `seeded` — writing would materialize a starter `maestro.json` as a side effect of visiting `/agents`.
 - **An instance can only hold skills that are checked in the left pane.** The `InstanceSkillPicker` lists `availableSkills` (= `skills_available` ids). Unchecking a skill in the left pane after attaching it leaves a dangling id on the instance.
+- **Reconcile only runs while `/workflows` is mounted.** The seed effect is the only caller, so on any other
+  route the store goes stale; the next visit reconciles against fresh loader data, which is why the banner
+  can appear on arrival rather than at the moment of the edit.
+- **The watcher also fires for this window's own saves.** Never raise `externalChange` from the event
+  itself — only from `reconcileWorkflowSlice`, which recognises the echo (disk == canvas). Any new workflow
+  write path must call `markSaved`, or its own save looks like an outside edit once the canvas diverges.
+- **Slice comparison is structural (`deepEqual`, key-order and `undefined` insensitive).** Disk-parsed and
+  canvas-built objects differ in key order; a `JSON.stringify` compare would raise false banners.
 - The React Flow traps (module-level type maps, edge-type registration, handle placement, mid-drag pushes, the base CSS import) live with the mechanism they belong to, in `sub-concepts/canvas-nodes-and-edges.md`.

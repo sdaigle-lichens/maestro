@@ -8,6 +8,7 @@ import TopNav from "../components/top-nav";
 import WorkflowCanvas from "../components/workflow-canvas";
 import SeededBanner from "../components/seeded-banner";
 import ConfigIssueBanner from "../components/config-issue-banner";
+import ExternalChangeBanner from "../components/external-change-banner";
 import DetectedChain from "../components/detected-chain";
 import { groupBySource, sourceLabel, CollapsibleGroup } from "../components/source-group";
 import { callMain } from "../utils/call-main";
@@ -21,6 +22,10 @@ import {
 import {
   workflowStore,
   seedWorkflowStore,
+  markSaved,
+  reloadFromDisk,
+  keepMine,
+  workflowSlice,
   replaceConfig as storeReplaceConfig,
   setActiveWorkflowIdx,
   setAgentsAvailable as storeSetAgentsAvailable,
@@ -58,6 +63,7 @@ function WorkflowsPage() {
 
   const config = useStore(workflowStore, (s) => s.config);
   const activeWorkflowIdx = useStore(workflowStore, (s) => s.activeWorkflowIdx);
+  const externalSlice = useStore(workflowStore, (s) => (s.externalChange ? s.externalSlice : null));
 
   const [phase, setPhase] = useState<Phase>("idle");
   const [reseeding, setReseeding] = useState(false);
@@ -147,6 +153,10 @@ function WorkflowsPage() {
         return;
       }
 
+      // What we wrote is now what is on disk: record it as the baseline so the watcher's echo of
+      // our own save is recognised and never raises the external-change banner.
+      markSaved(workflowSlice(config), loaderData.projectRoot);
+
       // The write succeeded, so `seeded` — computed by the loader from whether maestro.json
       // existed when the route loaded — is now stale, and the banner would keep telling the user
       // their workflows are "not saved" after they just saved them. Loader data is only refreshed
@@ -233,6 +243,13 @@ function WorkflowsPage() {
       )}
 
       <ConfigIssueBanner key={loaderData.projectRoot} issues={loaderData.configIssues} />
+
+      <ExternalChangeBanner
+        key={loaderData.projectRoot}
+        externalSlice={externalSlice}
+        onReload={reloadFromDisk}
+        onKeepMine={keepMine}
+      />
 
       <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: "280px 1fr" }}>
         {/* Left pane. Split into a scrollable body and a footer that never scrolls out of view —

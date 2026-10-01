@@ -21,6 +21,15 @@ array), and the script assigns numbers/slugs, renders each file, and calls `sync
 folding what used to be two separate steps (write the files, then run `maestro-task-status.cjs sync`)
 into one script call.
 
+**Where the writer puts the queue (`071`).** `maestro-write-tasks.cjs` resolves its root with
+`findProjectRoot`, starting from `CLAUDE_PROJECT_DIR` (else cwd): the **nearest ancestor containing
+`.claude/maestro.json`**, else the nearest ancestor containing `.git`, else the start dir. So a run
+from a sub-folder never creates a sub `.claude/maestro-tasks/`. Trap: a nested folder that has its own
+`.claude/maestro.json` wins over the repo root, by design (monorepo apps). The 071 task itself was
+once queued at `apps/maestro/.claude/skills/.claude/maestro-tasks/` — the failure this prevents.
+Test: `apps/maestro/test/core/write-tasks-root.test.ts`. Only the writer resolves this way; the
+orchestrator's `maestro-task-status.cjs` and the app use their own project dir.
+
 Because the queue lives in the project's `.claude/`, it is shared state between the desktop app's
 `/maestro-tasks` route and the orchestrator — see the parent skill on keeping the two
 implementations in agreement.

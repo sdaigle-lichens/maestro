@@ -111,6 +111,14 @@ export {
 } from "./session-sweep.js";
 
 export {
+  composeAllowedRoots,
+  titlesForRefs,
+  sweepAndRetarget,
+  deleteAndRetarget,
+  type ProjectRootsState,
+} from "./session-ipc.js";
+
+export {
   resolveSessionTitle,
   resolveSessionTitles,
   sessionTitleKey,
@@ -160,6 +168,8 @@ export {
   type TaskStatus,
   type TaskQueueTailEvents,
 } from "./tasks.js";
+
+export { watchConfigFile } from "./config-watch.js";
 
 export {
   parseLogLines,

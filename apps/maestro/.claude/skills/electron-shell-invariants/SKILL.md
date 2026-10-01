@@ -100,6 +100,13 @@ while the window was on B, and Save wrote A's config into B's `maestro.json`.
 requiring every future field to remember its own guard. `test/workflow-store.test.ts` pins the store
 half; the failure is otherwise silent.
 
+**An outside edit to `maestro.json` is the third invalidation source.** Main polls the file
+(`src/core/config-watch.ts`) and broadcasts `configChanged`; `ConfigWatchProvider` (mounted beside
+`ProjectProvider` in `__root.tsx`) calls `router.invalidate()`. The same keying rule applies: the
+invalidation is harmless to `/workflows` (`reconcileWorkflowSlice` decides replace vs banner) and
+`/rules` adopts new loader rules only while its editor is clean. `/agents` fetches in an effect, so it
+depends on the loader result to refetch. See `workflow-view` for the reconcile flow.
+
 **A save does not refresh loader data on its own — invalidate after one, and only because of the
 keying above.** A save is neither a navigation nor a project switch, so the loader's computed values
 (most visibly `seeded`) stay pinned at load time — a successful `/rules` save that *moves rule files*
@@ -169,6 +176,7 @@ guarantees) — that half belongs to `claude-session-bridge`'s own "invariants a
 | `apps/maestro/src/main/project-store.ts` | `getState()`, `currentRoot()`, the read-once pruning rule. |
 | `apps/maestro/src/renderer/src/utils/call-main.ts` | `callMain()` — the one place a fallible IPC call is supposed to go through. |
 | `apps/maestro/src/renderer/src/utils/session-log-context.tsx`, `.../session-context.tsx` | Single-owner subscribers each retargeted on project switch — a `log-view`/`claude-session-bridge` concern, cited here as an instance of the keying pattern. |
+| `apps/maestro/src/core/config-watch.ts`, `.../renderer/src/utils/config-watch-context.tsx` | Main-owned `maestro.json` poller and the provider that invalidates the router on `configChanged`. |
 | `apps/maestro/test/isolation.test.ts` | The process-boundary assertions this skill describes, plus the Claude-bridge-specific ones `claude-session-bridge` owns. |
 | `apps/maestro/test/workflow-store.test.ts` | Pins the `projectRoot`-keyed store half of the keying pattern. |
 

@@ -60,6 +60,11 @@ const api: MaestroApi = {
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),
+    onChanged: (cb) => {
+      const listener = () => cb();
+      ipcRenderer.on(IPC_EVENTS.configChanged, listener);
+      return () => ipcRenderer.removeListener(IPC_EVENTS.configChanged, listener);
+    },
   },
   reports: {
     get: (agentName) => ipcRenderer.invoke(IPC.reportGet, agentName),

@@ -116,11 +116,11 @@ describe("src/core boundary", () => {
   // from it drags it into the renderer's BUNDLE. Quietly — types still resolve and tsc still
   // passes whenever @types/node is in scope — so nothing but an assertion catches it.
   //
-  // Exactly two modules are renderer-safe, and both are self-contained by construction:
-  // `contracts.ts` is interfaces only, `text.ts` has no imports at all. Adding a third means
-  // proving it imports nothing that reaches the filesystem, so the list is deliberately short and
+  // Exactly three modules are renderer-safe, and all are self-contained by construction:
+  // `contracts.ts` is interfaces only, `text.ts` and `canvas-layout.ts` have no imports at all.
+  // Adding a fourth means proving it imports nothing that reaches the filesystem, so the list is deliberately short and
   // deliberately here rather than derived.
-  const RENDERER_SAFE = ["contracts", "text"];
+  const RENDERER_SAFE = ["canvas-layout", "contracts", "text"];
 
   const outsideMain = [...sourcesUnder("src/shared"), ...sourcesUnder("src/preload"), ...sourcesUnder("src/renderer")];
   const coreDir = path.join(appRoot, "src", "core");
@@ -1311,7 +1311,10 @@ describe("session log discovery allow-list discipline (065)", () => {
   it("allowedProjectRoots is exactly current + recent, never a renderer-supplied value", () => {
     const ipc = stripComments(read("src/main/ipc.ts"));
     const body = ipc.slice(ipc.indexOf("function allowedProjectRoots"), ipc.indexOf("function resolveProjectRoot"));
-    expect(body).toMatch(/state\.current\s*\?\s*\[state\.current\.root,\s*\.\.\.state\.recent\.map/);
+    expect(body).toMatch(/composeAllowedRoots\(getState\(\)\)/);
+    expect(stripComments(read("src/core/session-ipc.ts"))).toMatch(
+      /state\.current\s*\?\s*\[state\.current\.root,\s*\.\.\.state\.recent\.map/
+    );
     // Built purely from project-store state — no parameter it could be steered by.
     expect(ipc).toMatch(/function allowedProjectRoots\(\)\s*:\s*string\[\]\s*\{/);
   });

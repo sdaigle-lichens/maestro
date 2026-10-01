@@ -52,6 +52,9 @@ export {
   ensureSessionPaths,
   listSessionIds,
   removeSessionState,
+  endSessionState,
+  isResumableEnd,
+  RESUMABLE_END_REASONS,
   type SessionPaths,
   type SessionIdSource,
 } from "../session-paths.js";

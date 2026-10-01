@@ -13,7 +13,7 @@
 //
 // Liveness is derived, never trusted from the claim file's own content: a claim is live iff its
 // session's directory under `maestro_sessions/` still exists AND that session's `log.jsonl` was
-// modified within `CLAIM_IDLE_CAP_MS`. A clean `SessionEnd` deletes the whole directory, so that
+// modified within `CLAIM_IDLE_CAP_MS`. A final `SessionEnd` (not a resumable one, `077`) deletes the whole directory, so that
 // claim reads as dead immediately; a crashed session's directory lingers, so its claim ages out
 // once nothing has touched the log for the cap. Dead claims are reclaimable, not errors — reading
 // the queue drops them (best-effort, deleting the stale file so the next read doesn't redo the

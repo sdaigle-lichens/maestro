@@ -96,7 +96,8 @@ PreToolUse hook (matcher ".*") → maestro-session-log.js → appends one line t
         │
         ▼
 SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
-                  → deletes ONLY THE ENDING SESSION'S directory, sweeps .claude/channels/,
+                  → on a FINAL end deletes ONLY THE ENDING SESSION'S directory (a resumable
+                    `reason` keeps it, `077`), sweeps .claude/channels/,
                     keeps maestro.json and the orchestrator skill.
 ```
 
@@ -106,6 +107,7 @@ SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
 | --- | --- |
 | `sub-concepts/hooks.md` | Every hook: event, matcher, script, exact effect. Why there is no `SessionStart`. The two copies of every script and which one wins. The Step 0 traps. |
 | `sub-concepts/session-state.md` | `maestro.json` and the per-session directory (`064`): the file table, `log.jsonl`'s entry kinds, and how a caller resolves which session it is. |
+| `sub-concepts/session-end-reasons.md` | Which SessionEnd `reason` values keep the session directory (resumable) and which remove it, how they were observed, and the one rule both cleanup twins share (`077`). |
 | `sub-concepts/handoff-contract.md` | The four blocks `SubagentStart` injects, the three-tier `handoff_details` resolution, and what the orchestrator does with a `HANDOFF:` line. |
 | `sub-concepts/channels.md` | `.claude/channels/` (`036`): how a route's payload travels, the `run_id` stamp, retirement and the 14-day sweep. |
 | `sub-concepts/step-gates.md` | Injected context as a third delivery channel: the Step 1 gates (`032`), the Step 4 task-routing nudge (`046`/`047`), and the post-mortem prompt that is NOT part of it (`049`). |
