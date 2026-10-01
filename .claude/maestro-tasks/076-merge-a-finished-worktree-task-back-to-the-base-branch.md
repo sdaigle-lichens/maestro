@@ -19,3 +19,15 @@ Today a task finished in a worktree leaves its branch and worktree in place and 
 ## Blocked by
 
 - `074-isolate-concurrent-sessions-in-a-git-worktree.md`
+
+## Decision record
+
+- Mechanism: `maestro-task-status.cjs merge <filename|NNN>`, a local `git merge --no-ff` into the main
+  checkout's current branch, then worktree + branch removal. Explicit only: the orchestrator offers
+  it after `done` and runs it only when the user asks.
+- Pull-request path: not built. Needs a remote, forge CLI and credentials the plugin cannot assume,
+  and a push is irreversible; the `task-NNN` branch is a normal local branch the user can push
+  themselves. Recorded in `.claude/skills/task-queue/sub-concepts/task-claims.md`.
+- Verified against a real throwaway repo with real worktrees: not-done refused, dirty worktree
+  refused, clean merge removes worktree + branch + session pointer, conflict aborts and leaves
+  worktree and branch intact listing `f.txt`, unknown task refused.

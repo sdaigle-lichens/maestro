@@ -109,7 +109,9 @@ unreadable or dangling pointer falls back to the given `claudeDir`.
   session holds a claim (see `task-queue` claims).
 - **Cleanup touches two dirs.** `removeSessionState`, `sweepStaleSessions` and `deleteSession` use
   `sessionDirsFor`, removing both the worktree's and the main checkout's session dir. The worktree
-  and branch themselves are **never** removed automatically.
+  and branch themselves are **never** removed automatically; only an explicit
+  `maestro-task-status.cjs merge` (`076`, run when the user asks after template Step 4's offer)
+  merges and removes them, and deletes the session's `worktree.json` pointer.
 - **SubagentStart** (`maestro-inject-agent-context`) prepends a `Git worktree:` block when
   `session.json` has `worktree`: work only in that path, shared state at the main checkout's
   absolute paths, never merge/push/remove.

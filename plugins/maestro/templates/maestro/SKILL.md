@@ -38,7 +38,7 @@ node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" claim "<
 
    If the claim is lost, pick another `ready` task from `.claude/maestro-tasks/status.json`, claim it the same way and re-run Step 2 from this point; if every `ready` task is claimed, tell the user plainly rather than working a claimed or `blocked` one. Release the claim (`maestro-task-status.cjs release`) if you abandon the task before Step 4's `done` would.
 
-   Once your claim succeeds, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, state its absolute path in every `Task()` dispatch prompt in Step 3 ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay at the main checkout. Never merge, push or remove a worktree yourself.
+   Once your claim succeeds, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, state its absolute path in every `Task()` dispatch prompt in Step 3 ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay at the main checkout. Never merge, push or remove a worktree on your own initiative.
 
 <!-- Maestro:HANDOFFS:START -->
 # No workflows configured yet. Run /maestro-install to set up.
@@ -83,7 +83,7 @@ Run the script with no filename — it reads `active_task` from the session stat
 node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" done
 ```
 
-(You can still pass an explicit filename — `done 002-add-login.md` — to override.) The script flips that file to `done` and recomputes the queue's `status.json` so any dependents whose blockers are now all done become `ready` — you don't compute the cascade yourself. Then mark the mark-task-done task complete. **If this task ran in a worktree (Step 2), finish by telling the user the branch name and worktree path so they can merge it** (e.g. "Done on branch `task-NNN` in `/path/repo-task-NNN` — merge it when ready; nothing was merged, pushed or removed"). The queue is already marked done in the main checkout. If `active_task` is empty (the run wasn't invoked from a task file), there is no mark-task-done task and you skip this step.
+(You can still pass an explicit filename — `done 002-add-login.md` — to override.) The script flips that file to `done` and recomputes `status.json` so newly unblocked dependents become `ready`. Then mark the mark-task-done task complete. **If this task ran in a worktree (Step 2), tell the user its branch and worktree path** (e.g. "Done on branch `task-NNN` in `/path/repo-task-NNN` — nothing was merged, pushed or removed. Say so if you want it merged"). **Only if they then explicitly ask**, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" merge "<NNN-filename.md>"` from the main checkout and relay its output verbatim. It merges and cleans up, or refuses, or lists conflicts with everything left intact. Never resolve a conflict, push or open a pull request unasked. If `active_task` is empty, there is no mark-task-done task and you skip this step.
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
 
