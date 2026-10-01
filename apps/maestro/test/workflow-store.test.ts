@@ -14,6 +14,12 @@ import {
   replaceConfig,
   setActiveWorkflowIdx,
   addWorkflow,
+  reconcileWorkflowSlice,
+  reloadFromDisk,
+  keepMine,
+  markSaved,
+  workflowSlice,
+  type WorkflowEditState,
 } from "../src/renderer/src/store/workflow-store.js";
 import type { MaestroConfigV3, MaestroWorkflowV3 } from "../src/renderer/src/utils/maestro.js";
 
@@ -34,7 +40,14 @@ const config = (...names: string[]): MaestroConfigV3 => ({
 const names = () => workflowStore.state.config?.workflows.map((w) => w.name) ?? null;
 
 beforeEach(() => {
-  workflowStore.setState(() => ({ config: null, projectRoot: null, activeWorkflowIdx: 0 }));
+  workflowStore.setState(() => ({
+    config: null,
+    projectRoot: null,
+    activeWorkflowIdx: 0,
+    baseline: null,
+    externalChange: false,
+    externalSlice: null,
+  }));
 });
 
 describe("seedWorkflowStore", () => {
@@ -115,5 +128,106 @@ describe("replaceConfig", () => {
     replaceConfig(config("only"), PROJECT_A);
 
     expect(workflowStore.state.activeWorkflowIdx).toBe(0);
+  });
+});
+
+// An outside edit (hand edit, /maestro-update) must reach a clean canvas, must NOT clobber a dirty
+// one, and must not mistake our own save echoing back for an outside edit.
+describe("reconcileWorkflowSlice", () => {
+  const slice = (...n: string[]) => workflowSlice(config(...n));
+  const stateOf = (canvas: string[], baseline: string[]): WorkflowEditState => ({
+    config: config(...canvas),
+    projectRoot: PROJECT_A,
+    activeWorkflowIdx: 0,
+    baseline: slice(...baseline),
+    externalChange: false,
+    externalSlice: null,
+  });
+
+  it("is a no-op when disk equals the baseline", () => {
+    const s = stateOf(["a", "edit"], ["a"]);
+    expect(reconcileWorkflowSlice(s, slice("a"))).toBe(s);
+  });
+
+  it("replaces config and baseline when the canvas is clean", () => {
+    const s = stateOf(["a"], ["a"]);
+    const next = reconcileWorkflowSlice(s, slice("a", "outside"));
+    expect(next.config?.workflows.map((w) => w.name)).toEqual(["a", "outside"]);
+    expect(next.baseline).toEqual(slice("a", "outside"));
+    expect(next.externalChange).toBe(false);
+  });
+
+  it("keeps a dirty canvas and sets externalChange", () => {
+    const s = stateOf(["a", "mine"], ["a"]);
+    const next = reconcileWorkflowSlice(s, slice("a", "outside"));
+    expect(next.config?.workflows.map((w) => w.name)).toEqual(["a", "mine"]);
+    expect(next.baseline).toEqual(slice("a"));
+    expect(next.externalChange).toBe(true);
+  });
+
+  it("recognises our own save echoing back: baseline set, flag cleared", () => {
+    const s = { ...stateOf(["a", "mine"], ["a"]), externalChange: true };
+    const next = reconcileWorkflowSlice(s, slice("a", "mine"));
+    expect(next.baseline).toEqual(slice("a", "mine"));
+    expect(next.externalChange).toBe(false);
+    expect(next.config).toBe(s.config);
+  });
+
+  it("ignores rules and runtimeVersion changes (slice only)", () => {
+    seedWorkflowStore(config("a"), PROJECT_A);
+    const before = workflowStore.state;
+    const outside = { ...config("a"), rules: [{ id: "x" }], runtimeVersion: "9.9.9" } as unknown as MaestroConfigV3;
+    seedWorkflowStore(outside, PROJECT_A);
+    expect(workflowStore.state).toBe(before);
+  });
+
+  it("seedWorkflowStore reconciles a same-project outside edit into a clean canvas", () => {
+    seedWorkflowStore(config("a"), PROJECT_A);
+    seedWorkflowStore(config("a", "outside"), PROJECT_A);
+    expect(names()).toEqual(["a", "outside"]);
+  });
+
+  it("seedWorkflowStore flags an outside edit over unsaved edits", () => {
+    seedWorkflowStore(config("a"), PROJECT_A);
+    addWorkflow(wf("mine"));
+    seedWorkflowStore(config("a", "outside"), PROJECT_A);
+    expect(names()).toEqual(["a", "mine"]);
+    expect(workflowStore.state.externalChange).toBe(true);
+  });
+
+  it("a project switch resets canvas, baseline and the flag", () => {
+    seedWorkflowStore(config("a"), PROJECT_A);
+    addWorkflow(wf("mine"));
+    seedWorkflowStore(config("a", "outside"), PROJECT_A);
+    seedWorkflowStore(config("beta"), PROJECT_B);
+    expect(names()).toEqual(["beta"]);
+    expect(workflowStore.state.externalChange).toBe(false);
+    expect(workflowStore.state.baseline).toEqual(slice("beta"));
+  });
+
+  it("reloadFromDisk discards edits; keepMine keeps them and stops re-flagging the same disk state", () => {
+    seedWorkflowStore(config("a"), PROJECT_A);
+    addWorkflow(wf("mine"));
+    seedWorkflowStore(config("a", "outside"), PROJECT_A);
+    keepMine();
+    expect(workflowStore.state.externalChange).toBe(false);
+    seedWorkflowStore(config("a", "outside"), PROJECT_A);
+    expect(workflowStore.state.externalChange).toBe(false);
+    expect(names()).toEqual(["a", "mine"]);
+
+    seedWorkflowStore(config("a", "outside2"), PROJECT_A);
+    expect(workflowStore.state.externalChange).toBe(true);
+    reloadFromDisk();
+    expect(names()).toEqual(["a", "outside2"]);
+    expect(workflowStore.state.externalChange).toBe(false);
+  });
+
+  it("markSaved sets the baseline so the save's echo is not an external change", () => {
+    seedWorkflowStore(config("a"), PROJECT_A);
+    addWorkflow(wf("mine"));
+    markSaved(workflowSlice(workflowStore.state.config!), PROJECT_A);
+    seedWorkflowStore(config("a", "mine"), PROJECT_A);
+    expect(workflowStore.state.externalChange).toBe(false);
+    expect(names()).toEqual(["a", "mine"]);
   });
 });

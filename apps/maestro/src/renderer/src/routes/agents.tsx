@@ -192,9 +192,12 @@ function AgentsPage() {
     setForkSync(sync.ok ? sync.value : null);
   }, []);
 
+  // `loaderResult` is a fresh object on every router invalidation, which is what ConfigWatchProvider
+  // triggers when maestro.json changes outside the app — so depending on it refetches
+  // `data:workflows` (and the rest) without a second subscription to the watcher.
   useEffect(() => {
     void refresh();
-  }, [refresh, projectRoot]);
+  }, [refresh, projectRoot, loaderResult]);
 
   // The report and this agent's handoff routes are the per-agent, project-scoped things, so they
   // are what is refetched per selection. Avatars arrive with the rest of the global attributes, in
@@ -223,7 +226,7 @@ function AgentsPage() {
     return () => {
       cancelled = true;
     };
-  }, [selected, projectRoot]);
+  }, [selected, projectRoot, loaderResult]);
 
   const data = result.ok ? result.value : null;
   const config = workflows?.config ?? null;

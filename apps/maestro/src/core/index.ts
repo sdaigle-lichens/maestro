@@ -169,6 +169,8 @@ export {
   type TaskQueueTailEvents,
 } from "./tasks.js";
 
+export { watchConfigFile } from "./config-watch.js";
+
 export {
   parseLogLines,
   readSessionLog,

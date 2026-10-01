@@ -1,5 +1,5 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Button from "@repo/ui/button";
 import { Sparkles } from "lucide-react";
 import { toast } from "@repo/ui/toast";
@@ -54,6 +54,21 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
 
   // IDs of rules the user has "selected" (toggled on) — the pool the tree can assign.
   const [selectedRuleIds, setSelectedRuleIds] = useState<string[]>(loaderData.config.rules.map((r) => r.id));
+
+  // An outside edit to maestro.json re-runs the loader (ConfigWatchProvider) but `useState`
+  // initialisers only run on mount, so adopt the new rules here — only when the editor is clean,
+  // i.e. its rules still equal what the loader gave last time. Unsaved assignments are never lost.
+  const loadedRules = JSON.stringify(loaderData.config.rules);
+  const prevLoadedRules = useRef(loadedRules);
+  useEffect(() => {
+    if (prevLoadedRules.current === loadedRules) return;
+    const clean = JSON.stringify(config.rules) === prevLoadedRules.current;
+    prevLoadedRules.current = loadedRules;
+    if (!clean) return;
+    setConfig(loaderData.config);
+    setSelectedRuleIds(loaderData.config.rules.map((r) => r.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadedRules]);
 
   const projectRuleIds = useMemo(() => availableRules.map((r) => r.id), [availableRules]);
 

@@ -677,6 +677,9 @@ export const IPC_EVENTS = {
   tasksInit: "tasks:init",
   tasksUpdate: "tasks:update",
   projectChanged: "project:changed",
+  // Pushed to EVERY window when the open project's .claude/maestro.json text changed on disk —
+  // our own save included. Carries no payload: the renderer re-reads via `data:workflows`.
+  configChanged: "config:changed",
 } as const;
 
 // `065`. One tab per live session across every project the app knows about, so every push off
@@ -792,6 +795,8 @@ export interface MaestroApi {
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;
+    /** Fires in every window when the open project's maestro.json changed on disk (own saves too). */
+    onChanged(cb: () => void): () => void;
   };
   /**
    * The /agents page. `get` resolves what's in effect for one agent — project override, else

@@ -45,6 +45,7 @@ import {
   closeTask,
   deleteTask,
   tailTasks,
+  watchConfigFile,
   listMarketplaces,
   scaffoldCreate,
   nodeGit,
@@ -200,6 +201,20 @@ const taskTails = new Map<number, () => void>();
 
 /** Windows that asked for a task-queue tail, whether or not one is running yet — see `logSubscribers`. */
 const taskSubscribers = new Set<number>();
+
+/**
+ * The single watcher on the open project's maestro.json. Owned here, not per window: it broadcasts
+ * `configChanged` to every window, so there is no subscribe/unsubscribe to leak or steal.
+ */
+let stopConfigWatch: (() => void) | null = null;
+
+/** (Re)point the config watcher at the current project; no project open means no watcher. */
+function restartConfigWatch(): void {
+  stopConfigWatch?.();
+  stopConfigWatch = null;
+  const root = currentRoot();
+  if (root) stopConfigWatch = watchConfigFile(root, () => broadcast(IPC_EVENTS.configChanged));
+}
 
 function broadcast(channel: string, payload?: unknown): void {
   for (const win of BrowserWindow.getAllWindows()) {
@@ -408,6 +423,7 @@ function announce(state: ProjectState): ProjectState {
   broadcast(IPC_EVENTS.projectChanged, state);
   retargetTails();
   retargetTaskTails();
+  restartConfigWatch();
   // Outstanding previews name the OUTGOING project's working directory. A modal left open across
   // a project switch would otherwise still hold a runnable token, and pressing Run would spawn
   // Claude against the repo the window is no longer showing — the same class of bug the workflow
@@ -430,6 +446,10 @@ export function registerIpc(): void {
   } catch (e) {
     console.warn("[ipc] stale-session sweep failed", e);
   }
+
+  // The project restored from the previous run is already open; the watcher follows later opens
+  // through announce().
+  restartConfigWatch();
 
   // ── project ──────────────────────────────────────────────────────────
   ipcMain.handle(IPC.projectGet, (): ProjectState => getState());
@@ -1171,6 +1191,8 @@ export function disposeIpc(): void {
   logSubscribers.clear();
   for (const id of [...taskTails.keys()]) stopTaskTail(id);
   taskSubscribers.clear();
+  stopConfigWatch?.();
+  stopConfigWatch = null;
   // A cancelled run's child is spawned detached, so it outlives us by design unless it is killed.
   // Without this, quitting the app leaves Claude running against the user's repo with no window
   // left to stop it from.
