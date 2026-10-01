@@ -44,3 +44,20 @@ not in `lib/`, and not generated; there is no `plugin-entries/claims.ts` — mus
 sync the way the cascade pair does. Parity is checked in `test/core/claims.test.ts` and
 `test/core/task-claims-cli.test.ts`, not by `parity.test.ts`'s snapshot-diff pattern, since there is
 no legacy CJS claims module being replaced.
+
+## Worktree isolation (`074`)
+
+When `claim` succeeds but **another live session already holds a claim**, the orchestrator runs
+`maestro-task-status.cjs worktree <filename>` (template Step 2), which creates a sibling git worktree
+`<parent>/<repo>-task-NNN` on branch `task-NNN` and moves the session's state into it
+(`apps/maestro/src/core/worktree.ts` holds the pure naming/pointer helpers; the CLI does the `git`).
+
+- **The queue never moves.** `status.json` and `claims/` always resolve to the *main checkout*, even
+  when the code runs from inside a worktree — `mainCheckoutRoot(dir)` reads a linked worktree's
+  `.git` file (`gitdir: <main>/.git/worktrees/<name>`) to find it. It exists twice, by hand:
+  `worktree.ts` and `maestro-tasks.cjs` (which `tasksDirFor` goes through). Change one, change both.
+- The command is a no-op (prints "no worktree needed") when no other live session holds a claim, and
+  **refuses, rather than reuses or overwrites,** a worktree path or branch that already exists —
+  it tells the user and the orchestrator must not fall back to the main checkout.
+- A worktree and its branch are **never auto-removed or merged**; `done` just reports branch + path
+  to the user.

@@ -36,7 +36,9 @@ node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs"
 node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" claim "<NNN-filename.md>"
 ```
 
-   This always exits 0 — a lost claim is not an error, it means someone else already has it. If the output says the task is already claimed by an active session, do not start it: check `.claude/maestro-tasks/status.json` for another file that is `ready`, claim that one the same way, and re-run Step 2 (from this point) for it. If every `ready` task is already claimed, tell the user plainly rather than working a claimed task or picking a `blocked` one. Once your own claim succeeds, continue to Step 3 — and release it (`maestro-task-status.cjs release`) if you abandon this task before Step 4's `done` would otherwise release it for you (e.g. the user cancels the run).
+   If the claim is lost, pick another `ready` task from `.claude/maestro-tasks/status.json`, claim it the same way and re-run Step 2 from this point; if every `ready` task is claimed, tell the user plainly rather than working a claimed or `blocked` one. Release the claim (`maestro-task-status.cjs release`) if you abandon the task before Step 4's `done` would.
+
+   Once your claim succeeds, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, state its absolute path in every `Task()` dispatch prompt in Step 3 ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay at the main checkout. Never merge, push or remove a worktree yourself.
 
 <!-- Maestro:HANDOFFS:START -->
 # No workflows configured yet. Run /maestro-install to set up.
@@ -67,7 +69,7 @@ Each subagent ends its final message with a `HANDOFF:` line. Read it to decide r
   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" "<agent type>"
   ```
 
-  A printed `agent_id` means resume it — `SendMessage` addressed to that `agent_id` (never by name) — so it keeps its own memory of what it built instead of re-deriving it from scratch; a channel payload carries the receiver's inputs, not the sender's memory of its own work. **Empty output means dispatch a cold `Task` instead**, exactly as for a forward step — no prior run this session, or an agent type shared by two instances in this workflow, both print nothing. So does a `SendMessage` that comes back refused (the user stopped that agent in `/tasks`, or a same-agent-name check rejects it). Never surface a failed resume to the user — it is a performance regression, not a broken run, so fall back silently and continue. Resuming a run's per-invocation `model` override persists only on Claude Code >= 2.1.211; on an older build a refused resume still falls back safely, just without that guarantee. The forward success path never resumes: a cold spawn there gives each step an isolated context, and it is also what bounds how large a repeatedly-revisited agent's context can grow.
+  A printed `agent_id` means resume it: `SendMessage` addressed to that `agent_id` (never by name), so it keeps its memory of what it built. Empty output, or a refused `SendMessage`, means dispatch a cold `Task` instead — silently, since a failed resume is a performance loss, not an error to surface. The forward success path never resumes: a cold spawn gives each step an isolated context.
 
 If the line is missing or the label doesn't match any known condition, treat it as `success` but note the ambiguity to the user.
 
@@ -81,7 +83,7 @@ Run the script with no filename — it reads `active_task` from the session stat
 node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" done
 ```
 
-(You can still pass an explicit filename — `done 002-add-login.md` — to override.) The script flips that file to `done` and recomputes the queue's `status.json` so any dependents whose blockers are now all done become `ready` — you don't compute the cascade yourself. Then mark the mark-task-done task complete. If `active_task` is empty (the run wasn't invoked from a task file), there is no mark-task-done task and you skip this step.
+(You can still pass an explicit filename — `done 002-add-login.md` — to override.) The script flips that file to `done` and recomputes the queue's `status.json` so any dependents whose blockers are now all done become `ready` — you don't compute the cascade yourself. Then mark the mark-task-done task complete. **If this task ran in a worktree (Step 2), finish by telling the user the branch name and worktree path so they can merge it** (e.g. "Done on branch `task-NNN` in `/path/repo-task-NNN` — merge it when ready; nothing was merged, pushed or removed"). The queue is already marked done in the main checkout. If `active_task` is empty (the run wasn't invoked from a task file), there is no mark-task-done task and you skip this step.
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
 

@@ -17,7 +17,8 @@ interface SessionLogTabsProps {
   /** Backend titles keyed by `sessionKey`; missing/null falls back to the derived title. */
   titles: Record<string, string | null>;
   onSelect: (key: string) => void;
-  onDelete: (projectRoot: string, sessionId: string) => void;
+  /** Omitted for views whose sessions cannot be deleted from here (worktree tabs). */
+  onDelete?: (projectRoot: string, sessionId: string) => void;
 }
 
 function projectName(root: string, projectState: ProjectState): string {
@@ -61,7 +62,7 @@ export default function SessionLogTabs({
         const key = sessionKey(s);
         const isActive = key === selectedKey;
         const ended = s.status === "ended";
-        const canDelete = ended || deletable.has(key);
+        const canDelete = !!onDelete && (ended || deletable.has(key));
         const name = projectName(s.projectRoot, projectState);
         const when = formatWhen(s);
         const title = pickSessionTitle(s, titles[key]);
@@ -103,7 +104,7 @@ export default function SessionLogTabs({
             {canDelete && (
               <button
                 type="button"
-                onClick={() => onDelete(s.projectRoot, s.sessionId)}
+                onClick={() => onDelete?.(s.projectRoot, s.sessionId)}
                 className="self-start m-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-(--line-2) bg-(--bg-2) text-(--ink) transition-colors hover:border-red-500 hover:bg-red-500/15 hover:text-red-500 cursor-pointer"
                 aria-label="Delete session"
                 title="Delete session"

@@ -2,16 +2,13 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ScrollText } from "lucide-react";
 import { toast } from "@repo/ui/toast";
-import { usePanelResize, PanelResizeHandle } from "@repo/ui/resizable-panel";
 import TopNav from "../components/top-nav";
-import SessionLogCards from "../components/session-log-cards";
-import SessionLogView from "../components/session-log-view";
-import SessionLogDetail from "../components/session-log-detail";
 import CleanSessionsButton from "../components/clean-sessions-button";
-import SessionLogTabs from "../components/session-log-tabs";
-import { useSessionLog, sessionKey, pickSelection } from "../utils/session-log-context";
+import SessionLogPanes from "../components/session-log-panes";
+import WorktreeTabBar from "../components/worktree-tab-bar";
+import { useWorktreeLog, worktreeLabel, type WorktreeTab } from "../utils/worktree-log-context";
+import { useSessionLog, sessionKey } from "../utils/session-log-context";
 import { callMain } from "../utils/call-main";
-import { buildInstances } from "../utils/session-log";
 import type { ProjectState } from "../../../shared/ipc";
 
 export const Route = createFileRoute("/session-log")({
@@ -23,9 +20,6 @@ function SessionLogPage() {
   const { projectState: initialProjectState } = Route.useLoaderData();
   const { sessions, connected, dismiss } = useSessionLog();
   const [projectState, setProjectState] = useState<ProjectState>(initialProjectState);
-  const [selectedKey, setSelectedKey] = useState<string | null>(null);
-  const [activeId, setActiveId] = useState<number | null>(null);
-  const sectionRefs = useRef<Record<number, HTMLDivElement | null>>({});
 
   // Recent/current project list can change (open, forget) while this route stays mounted — keep
   // the tab groups' names and membership current. Session tracking itself doesn't depend on this:
@@ -105,52 +99,31 @@ function SessionLogPage() {
     void refreshDeletable();
   };
 
-  const gridRef = useRef<HTMLDivElement>(null);
-  const left = usePanelResize({
-    initial: 180,
-    min: 140,
-    max: 400,
-    side: "right",
-    cssVar: "--log-left-w",
-    containerRef: gridRef,
-  });
-  const right = usePanelResize({
-    initial: 320,
-    min: 240,
-    max: 1120,
-    side: "left",
-    cssVar: "--log-right-w",
-    containerRef: gridRef,
-  });
-
-  // Stable selection: re-pick ONLY when the current selection no longer names a tracked session
-  // (evicted by the ended-tab cap, closed by the user, or wiped by a wholesale reset). A tab
-  // appearing, or the selected tab itself ending, must never move the selection. The actual rule
-  // lives in `pickSelection` (session-log-context.tsx) so it's unit-testable on its own.
+  const [view, setView] = useState<string>("main");
+  const { tabs: worktreeTabs, close: closeWorktree } = useWorktreeLog();
+  // A view whose tab vanished (closed) falls back to the main checkout.
+  const activeTab = view === "main" ? null : (worktreeTabs.find((t) => t.path === view) ?? null);
   useEffect(() => {
-    const next = pickSelection(sessions, selectedKey);
-    if (next !== selectedKey) setSelectedKey(next);
-  }, [sessions, selectedKey]);
+    if (view !== "main" && !activeTab) setView("main");
+  }, [view, activeTab]);
 
-  const selected = sessions.find((s) => sessionKey(s) === selectedKey) ?? null;
-  const instances = useMemo(() => (selected ? buildInstances(selected.entries) : []), [selected]);
-
-  const handleSelectTab = (key: string): void => {
-    setSelectedKey(key);
-    setActiveId(null);
-  };
-
-  const handleSelect = (id: number): void => {
-    setActiveId(id);
-    sectionRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "start" });
-  };
-
-  const activeInstance = instances.find((inst) => inst.id === activeId) ?? null;
-
-  const isEmpty = sessions.length === 0;
-  // The selected session's OWN project, not necessarily the currently-open one — a tab can belong
-  // to any recent project, and paths in its log should relativize against where it actually ran.
-  const cwd = selected?.projectRoot ?? projectState.current?.root ?? "";
+  const mainEmpty = (
+    <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
+      <div className="w-12 h-12 rounded-full bg-(--bg-elev) border border-(--line) flex items-center justify-center">
+        <ScrollText size={20} className="text-(--ink-3)" />
+      </div>
+      <div>
+        <p className="text-[13px] font-medium text-(--ink) mb-1">No live sessions in any known project</p>
+        <p className="text-[12px] text-(--ink-3) max-w-xs">
+          A tab appears here while a Maestro session is running, in this project or a recent one.
+        </p>
+      </div>
+      <div className={`flex items-center gap-1.5 text-[11px] ${connected ? "text-(--green)" : "text-(--ink-3)"}`}>
+        <span className="text-[8px]">{connected ? "●" : "○"}</span>
+        {connected ? "live" : "connecting…"}
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
@@ -160,71 +133,92 @@ function SessionLogPage() {
         <CleanSessionsButton />
       </div>
 
-      {isEmpty ? (
-        /* Empty state */
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
-          <div className="w-12 h-12 rounded-full bg-(--bg-elev) border border-(--line) flex items-center justify-center">
-            <ScrollText size={20} className="text-(--ink-3)" />
-          </div>
-          <div>
-            <p className="text-[13px] font-medium text-(--ink) mb-1">No live sessions in any known project</p>
-            <p className="text-[12px] text-(--ink-3) max-w-xs">
-              A tab appears here while a Maestro session is running, in this project or a recent one.
-            </p>
-          </div>
-          {/* Live connection indicator in empty state */}
-          <div className={`flex items-center gap-1.5 text-[11px] ${connected ? "text-(--green)" : "text-(--ink-3)"}`}>
-            <span className="text-[8px]">{connected ? "●" : "○"}</span>
-            {connected ? "live" : "connecting…"}
-          </div>
-        </div>
+      {worktreeTabs.length > 0 && <WorktreeTabBar tabs={worktreeTabs} active={view} onSelect={setView} />}
+
+      {activeTab ? (
+        <WorktreeView
+          key={activeTab.path}
+          tab={activeTab}
+          projectState={projectState}
+          connected={connected}
+          onClose={closeWorktree}
+        />
       ) : (
-        <>
-          <SessionLogTabs
-            sessions={sessions}
-            projectState={projectState}
-            selectedKey={selectedKey}
-            onSelect={handleSelectTab}
-            deletable={deletable}
-            titles={titles}
-            onDelete={(root, id) => void handleDelete(root, id)}
-          />
-
-          {/* Three-pane layout — left & right panes are drag-resizable */}
-          <div
-            ref={gridRef}
-            className="relative flex-1 grid overflow-hidden"
-            style={{
-              gridTemplateColumns: "var(--log-left-w) 1fr var(--log-right-w)",
-              ...left.style,
-              ...right.style,
-            }}
-          >
-            <SessionLogCards instances={instances} activeId={activeId} onSelect={handleSelect} />
-            <SessionLogView
-              instances={instances}
-              activeId={activeId}
-              onSelect={handleSelect}
-              sectionRefs={sectionRefs}
-              connected={connected}
-              cwd={cwd}
-            />
-            <SessionLogDetail instance={activeInstance} cwd={cwd} />
-
-            {/* resize handles overlaid on the pane borders */}
-            <PanelResizeHandle
-              onResizeStart={left.onResizeStart}
-              className="absolute top-0 bottom-0 z-10"
-              style={{ left: "var(--log-left-w)", marginLeft: "-3px" }}
-            />
-            <PanelResizeHandle
-              onResizeStart={right.onResizeStart}
-              className="absolute top-0 bottom-0 z-10"
-              style={{ right: "var(--log-right-w)", marginRight: "-3px" }}
-            />
-          </div>
-        </>
+        <SessionLogPanes
+          sessions={sessions}
+          projectState={projectState}
+          connected={connected}
+          deletable={deletable}
+          titles={titles}
+          onDelete={(root, id) => void handleDelete(root, id)}
+          empty={mainEmpty}
+          fallbackRoot={projectState.current?.root ?? ""}
+        />
       )}
+    </div>
+  );
+}
+
+/** One worktree tab (`075`): its own sessions in the shared panes, or an explicit removed / no-log state. */
+function WorktreeView({
+  tab,
+  projectState,
+  connected,
+  onClose,
+}: {
+  tab: WorktreeTab;
+  projectState: ProjectState;
+  connected: boolean;
+  onClose: (path: string) => void;
+}) {
+  const sessions = useMemo(() => [...tab.sessions.values()], [tab.sessions]);
+  const label = worktreeLabel(tab);
+
+  if (tab.state === "removed") {
+    return (
+      <Notice title={`Worktree ${label} was removed`} testId="worktree-removed">
+        <p className="font-mono break-all">{tab.path}</p>
+        <p>Its log is no longer shown. Nothing from another run is displayed in its place.</p>
+        <button
+          type="button"
+          onClick={() => onClose(tab.path)}
+          className="mt-2 px-3 py-1 rounded-md border border-(--line-2) bg-(--bg-elev) text-(--ink) hover:border-primary cursor-pointer"
+        >
+          Close tab
+        </button>
+      </Notice>
+    );
+  }
+
+  return (
+    <SessionLogPanes
+      sessions={sessions}
+      projectState={projectState}
+      connected={connected}
+      fallbackRoot={tab.path}
+      // Mostly the transient "pending" case: a tab only exists for a worktree that had a log, but
+      // "no-log" is still reachable once every session of a tab has been dismissed or evicted.
+      empty={
+        <Notice
+          title={tab.state === "pending" ? `Opening ${label}…` : `No session log in ${label}`}
+          testId="worktree-no-log"
+        >
+          <p className="font-mono break-all">{tab.path}</p>
+          {tab.state !== "pending" && <p>No Maestro session has written a log in this worktree yet.</p>}
+        </Notice>
+      }
+    />
+  );
+}
+
+function Notice({ title, testId, children }: { title: string; testId: string; children: React.ReactNode }) {
+  return (
+    <div data-testid={testId} className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
+      <div className="w-12 h-12 rounded-full bg-(--bg-elev) border border-(--line) flex items-center justify-center">
+        <ScrollText size={20} className="text-(--ink-3)" />
+      </div>
+      <p className="text-[13px] font-medium text-(--ink)">{title}</p>
+      <div className="text-[12px] text-(--ink-3) max-w-md flex flex-col items-center gap-1">{children}</div>
     </div>
   );
 }

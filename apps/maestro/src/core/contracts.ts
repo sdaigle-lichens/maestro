@@ -2417,3 +2417,25 @@ export interface UsageStatsResult {
   argv: string[];
   durationMs: number;
 }
+
+// `075` — worktree tabs in the Session Log.
+
+/** `live`: a session log is being tailed. `no-log`: the worktree exists but has none. `removed`: the worktree is gone. */
+export type WorktreeTabState = "live" | "no-log" | "removed";
+
+/** One linked worktree of the open project, as offered to the Session Log tab bar. */
+export interface WorktreeTabInfo {
+  /** Absolute path as git spells it. Doubles as the tab's id and the `projectRoot` of its log events. */
+  path: string;
+  branch: string | null;
+  head: string | null;
+  detached: boolean;
+  locked: boolean;
+  /** git reports the directory missing (`git worktree prune` would drop it). */
+  prunable: boolean;
+  /** At least one `.claude/maestro_sessions/<id>/log.jsonl` exists inside it right now. */
+  hasLog: boolean;
+}
+
+export type WorktreeOpenResult =
+  { ok: true; root: string; state: WorktreeTabState } | { ok: false; reason: "no-project" | "not-a-worktree" };

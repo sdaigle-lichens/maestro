@@ -455,6 +455,7 @@ describe("the claude bridge across the process boundary", () => {
       "src/core/git.ts", //         `git init` + first commit for a new marketplace
       "src/core/install.ts", //     `git` during an install
       "src/core/rules.ts", //       `vibe-rules load`
+      "src/core/worktree-list.ts", // read-only `git worktree list` for the Session Log's worktree tabs (`075`)
     ]);
   });
 

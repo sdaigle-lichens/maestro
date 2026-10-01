@@ -45,6 +45,7 @@ __export(maestro_session_exports, {
   SESSION_LOG_NAME: () => SESSION_LOG_NAME,
   SESSION_STATE_NAME: () => SESSION_STATE_NAME,
   SESSION_TASKS_NAME: () => SESSION_TASKS_NAME,
+  SESSION_WORKTREE_NAME: () => SESSION_WORKTREE_NAME,
   agentRunsFromLog: () => agentRunsFromLog,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
@@ -60,6 +61,7 @@ __export(maestro_session_exports, {
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
+  isLinkedWorktree: () => isLinkedWorktree,
   isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
   isSeededHandoff: () => isSeededHandoff,
@@ -67,6 +69,7 @@ __export(maestro_session_exports, {
   isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
   listSessionIds: () => listSessionIds,
+  mainCheckoutRoot: () => mainCheckoutRoot,
   nodeLabel: () => nodeLabel,
   parseStampedContent: () => parseStampedContent,
   projectOwnsHook: () => projectOwnsHook,
@@ -74,6 +77,7 @@ __export(maestro_session_exports, {
   readLane: () => readLane,
   readSession: () => readSession,
   readStdin: () => readStdin,
+  readWorktreePointer: () => readWorktreePointer,
   removeSessionState: () => removeSessionState,
   resolveHandoff: () => resolveHandoff,
   resolveProjectSkillPath: () => resolveProjectSkillPath,
@@ -84,15 +88,19 @@ __export(maestro_session_exports, {
   resumeTarget: () => resumeTarget,
   retire: () => retire,
   routesFrom: () => routesFrom,
+  sessionDirsFor: () => sessionDirsFor,
   sessionLogPath: () => sessionLogPath,
   sessionPathsFor: () => sessionPathsFor,
   sessionsRoot: () => sessionsRoot,
   splitHandoffId: () => splitHandoffId,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
+  taskNumber: () => taskNumber,
   validateConfig: () => validateConfig,
   walkProjectSkillIds: () => walkProjectSkillIds,
   workflowNodeLabels: () => workflowNodeLabels,
+  worktreeBranchFor: () => worktreeBranchFor,
+  worktreePathFor: () => worktreePathFor,
   writeSession: () => writeSession,
   writeStamp: () => writeStamp
 });
@@ -302,6 +310,7 @@ var SESSIONS_DIR_NAME = "maestro_sessions";
 var SESSION_LOG_NAME = "log.jsonl";
 var SESSION_STATE_NAME = "session.json";
 var SESSION_TASKS_NAME = "tasks.json";
+var SESSION_WORKTREE_NAME = "worktree.json";
 var SESSION_ID_ENV = "CLAUDE_CODE_SESSION_ID";
 var LEGACY_SESSION_FILES = [
   "maestro_session.json",
@@ -322,9 +331,27 @@ function resolveSessionId(payload, env = process.env) {
 function sessionsRoot(claudeDir) {
   return import_node_path2.default.join(claudeDir, SESSIONS_DIR_NAME);
 }
+function readWorktreePointer(claudeDir, id) {
+  if (!claudeDir || !isValidSessionId(id)) return null;
+  try {
+    const raw = JSON.parse(
+      import_node_fs3.default.readFileSync(import_node_path2.default.join(sessionsRoot(claudeDir), id, SESSION_WORKTREE_NAME), "utf8")
+    );
+    const p = raw;
+    if (!p || typeof p.path !== "string" || !import_node_path2.default.isAbsolute(p.path)) return null;
+    if (!import_node_fs3.default.statSync(p.path).isDirectory()) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+function effectiveClaudeDir(claudeDir, id) {
+  const pointer = readWorktreePointer(claudeDir, id);
+  return pointer ? import_node_path2.default.join(pointer.path, ".claude") : claudeDir;
+}
 function sessionPathsFor(claudeDir, id) {
   if (!claudeDir || !isValidSessionId(id)) return null;
-  const dir = import_node_path2.default.join(sessionsRoot(claudeDir), id);
+  const dir = import_node_path2.default.join(sessionsRoot(effectiveClaudeDir(claudeDir, id)), id);
   return {
     id,
     dir,
@@ -346,7 +373,7 @@ function ensureSessionsRoot(claudeDir) {
 function ensureSessionPaths(claudeDir, payload, env) {
   const paths = resolveSessionPaths(claudeDir, payload, env);
   if (!paths) return null;
-  ensureSessionsRoot(claudeDir);
+  ensureSessionsRoot(import_node_path2.default.dirname(import_node_path2.default.dirname(paths.dir)));
   import_node_fs3.default.mkdirSync(paths.dir, { recursive: true });
   return paths;
 }
@@ -363,7 +390,10 @@ function removeSessionState(claudeDir, sessionId) {
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return [];
   const removed = [];
-  for (const target of [paths.dir, ...LEGACY_SESSION_FILES.map((f) => import_node_path2.default.join(claudeDir, f))]) {
+  for (const target of [
+    ...sessionDirsFor(claudeDir, sessionId),
+    ...LEGACY_SESSION_FILES.map((f) => import_node_path2.default.join(claudeDir, f))
+  ]) {
     try {
       if (!import_node_fs3.default.existsSync(target)) continue;
       import_node_fs3.default.rmSync(target, { recursive: true, force: true });
@@ -372,6 +402,25 @@ function removeSessionState(claudeDir, sessionId) {
     }
   }
   return removed;
+}
+function sessionDirsFor(claudeDir, sessionId) {
+  const paths = sessionPathsFor(claudeDir, sessionId);
+  if (!paths || !isValidSessionId(sessionId)) return [];
+  const dirs = [paths.dir];
+  const own = import_node_path2.default.join(sessionsRoot(claudeDir), sessionId);
+  if (own !== paths.dir) dirs.push(own);
+  else {
+    try {
+      const state = JSON.parse(import_node_fs3.default.readFileSync(paths.state, "utf8"));
+      const wt = state?.worktree;
+      if (wt && typeof wt.main_root === "string" && import_node_path2.default.isAbsolute(wt.main_root)) {
+        const mainDir = import_node_path2.default.join(sessionsRoot(import_node_path2.default.join(wt.main_root, ".claude")), sessionId);
+        if (mainDir !== paths.dir) dirs.push(mainDir);
+      }
+    } catch {
+    }
+  }
+  return dirs;
 }
 var RESUMABLE_END_REASONS = ["prompt_input_exit", "other", "resume"];
 function isResumableEnd(reason) {
@@ -923,6 +972,42 @@ function isRootSkillPath(root, skillPath) {
   const rootSkillsDir = import_node_path5.default.join(root, ".claude", "skills");
   return import_node_path5.default.dirname(skillDir) === rootSkillsDir;
 }
+
+// src/core/worktree.ts
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_path6 = __toESM(require("node:path"), 1);
+function taskNumber(filename) {
+  const m = /^(\d+)-/.exec(import_node_path6.default.basename(filename));
+  return m ? m[1] : null;
+}
+function worktreeBranchFor(filename) {
+  const n = taskNumber(filename);
+  return n ? `task-${n}` : null;
+}
+function worktreePathFor(mainRoot, filename) {
+  const n = taskNumber(filename);
+  if (!n) return null;
+  return import_node_path6.default.join(import_node_path6.default.dirname(mainRoot), `${import_node_path6.default.basename(mainRoot)}-task-${n}`);
+}
+function mainCheckoutRoot(dir) {
+  const gitEntry = import_node_path6.default.join(dir, ".git");
+  try {
+    if (!import_node_fs8.default.statSync(gitEntry).isFile()) return dir;
+    const text = import_node_fs8.default.readFileSync(gitEntry, "utf8");
+    const m = /^gitdir:\s*(.+?)\s*$/m.exec(text);
+    if (!m) return dir;
+    const gitDir = import_node_path6.default.resolve(dir, m[1]);
+    if (import_node_path6.default.basename(import_node_path6.default.dirname(gitDir)) !== "worktrees") return dir;
+    const common = import_node_path6.default.dirname(import_node_path6.default.dirname(gitDir));
+    if (import_node_path6.default.basename(common) !== ".git") return dir;
+    return import_node_path6.default.dirname(common);
+  } catch {
+    return dir;
+  }
+}
+function isLinkedWorktree(dir) {
+  return mainCheckoutRoot(dir) !== dir;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
@@ -937,6 +1022,7 @@ function isRootSkillPath(root, skillPath) {
   SESSION_LOG_NAME,
   SESSION_STATE_NAME,
   SESSION_TASKS_NAME,
+  SESSION_WORKTREE_NAME,
   agentRunsFromLog,
   appendSessionLog,
   bareAgentName,
@@ -952,6 +1038,7 @@ function isRootSkillPath(root, skillPath) {
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
+  isLinkedWorktree,
   isResumableEnd,
   isRootSkillPath,
   isSeededHandoff,
@@ -959,6 +1046,7 @@ function isRootSkillPath(root, skillPath) {
   isValidSessionId,
   laneFor,
   listSessionIds,
+  mainCheckoutRoot,
   nodeLabel,
   parseStampedContent,
   projectOwnsHook,
@@ -966,6 +1054,7 @@ function isRootSkillPath(root, skillPath) {
   readLane,
   readSession,
   readStdin,
+  readWorktreePointer,
   removeSessionState,
   resolveHandoff,
   resolveProjectSkillPath,
@@ -976,15 +1065,19 @@ function isRootSkillPath(root, skillPath) {
   resumeTarget,
   retire,
   routesFrom,
+  sessionDirsFor,
   sessionLogPath,
   sessionPathsFor,
   sessionsRoot,
   splitHandoffId,
   successPathSteps,
   sweep,
+  taskNumber,
   validateConfig,
   walkProjectSkillIds,
   workflowNodeLabels,
+  worktreeBranchFor,
+  worktreePathFor,
   writeSession,
   writeStamp
 });

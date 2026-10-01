@@ -94,6 +94,28 @@ and entirely separate from the write path.
 
 A fifth piece of session state since `036` is `.claude/channels/` — see `channels.md`.
 
+## Worktree isolation (`074`)
+
+`sessionPathsFor` is **no longer purely path-only**: it reads one small pointer,
+`<main>/.claude/maestro_sessions/<id>/worktree.json` `{path, branch, task, main_root, created_at}`,
+and if it names an existing directory, resolves into **that worktree's**
+`.claude/maestro_sessions/<id>/`. Every hook and CLI follows it with no call-site change. A missing,
+unreadable or dangling pointer falls back to the given `claudeDir`.
+
+- **Queue root vs state root.** Tasks and channels (`maestro-tasks/`, `claims/`, `channels/`) stay in
+  the main checkout; session state and the agents' work move to the worktree. `session.json` gains
+  an optional `worktree: {path, branch, main_root}`.
+- **Trigger:** the orchestrator's `worktree <file>` step after a claim, only when another *live*
+  session holds a claim (see `task-queue` claims).
+- **Cleanup touches two dirs.** `removeSessionState`, `sweepStaleSessions` and `deleteSession` use
+  `sessionDirsFor`, removing both the worktree's and the main checkout's session dir. The worktree
+  and branch themselves are **never** removed automatically.
+- **SubagentStart** (`maestro-inject-agent-context`) prepends a `Git worktree:` block when
+  `session.json` has `worktree`: work only in that path, shared state at the main checkout's
+  absolute paths, never merge/push/remove.
+- Trap: a session that "lost" its log may have a worktree pointer — look in the worktree's
+  `.claude/maestro_sessions/`, not just the main checkout's.
+
 ## Things that bite
 
 - **Session logs are append-only by design.** Don't switch a session's `log.jsonl` back to a

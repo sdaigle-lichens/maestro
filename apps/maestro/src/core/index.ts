@@ -94,6 +94,7 @@ export {
   ensureSessionPaths,
   listSessionIds,
   removeSessionState,
+  readWorktreePointer,
   type SessionPaths,
   type SessionIdSource,
 } from "./session-paths.js";
@@ -184,6 +185,24 @@ export {
 } from "./session-log.js";
 
 export { saveConfig, type SaveResult } from "./save.js";
+
+export {
+  listWorktrees,
+  parseWorktreeList,
+  linkedWorktrees,
+  resolveWorktreeRoot,
+  samePath,
+  type WorktreeInfo,
+  type WorktreeLister,
+  type ViewingRoot,
+} from "./worktree-list.js";
+export {
+  createWorktreeTabs,
+  describeWorktrees,
+  worktreeHasLog,
+  type WorktreeTabs,
+  type WorktreeTabEvents,
+} from "./worktree-tabs.js";
 
 export {
   readAgentReportDefault,

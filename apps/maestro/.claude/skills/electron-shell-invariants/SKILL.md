@@ -121,6 +121,12 @@ regression on its own.
 project switch are each an instance of this same shape — invalidate the loader, then key or guard
 derived state by `projectRoot` so the re-run can't clobber an edit.
 
+**The deliberate counter-instance: state that must NOT follow the open project.** `log-view`'s worktree
+tabs (`075`) are keyed by their own worktree root, live in a registry (`worktreeTabs`) and a provider
+(`WorktreeLogProvider`) that a project switch never touches, and the provider's list-fold only adds tabs.
+Decide per piece of state which side it is on; routing it through a retargeted/reset channel by habit
+kills it on every switch.
+
 ## Code-splitting
 
 The renderer bundle is code-split (`autoCodeSplitting: true`). Measured 2026-07-31: unsplit was one
@@ -175,7 +181,7 @@ guarantees) — that half belongs to `claude-session-bridge`'s own "invariants a
 | `apps/maestro/electron.vite.config.ts` | `externalizeDepsPlugin`, the hand-derived `EXTERNAL` list, `base: "./"`. |
 | `apps/maestro/src/main/project-store.ts` | `getState()`, `currentRoot()`, the read-once pruning rule. |
 | `apps/maestro/src/renderer/src/utils/call-main.ts` | `callMain()` — the one place a fallible IPC call is supposed to go through. |
-| `apps/maestro/src/renderer/src/utils/session-log-context.tsx`, `.../session-context.tsx` | Single-owner subscribers each retargeted on project switch — a `log-view`/`claude-session-bridge` concern, cited here as an instance of the keying pattern. |
+| `apps/maestro/src/renderer/src/utils/session-log-context.tsx`, `.../session-context.tsx` | Single-owner subscribers each retargeted on project switch — a `log-view`/`claude-session-bridge` concern, cited here as an instance of the keying pattern. (`.../worktree-log-context.tsx` is the opposite case: worktree tabs deliberately survive a switch.) |
 | `apps/maestro/src/core/config-watch.ts`, `.../renderer/src/utils/config-watch-context.tsx` | Main-owned `maestro.json` poller and the provider that invalidates the router on `configChanged`. |
 | `apps/maestro/test/isolation.test.ts` | The process-boundary assertions this skill describes, plus the Claude-bridge-specific ones `claude-session-bridge` owns. |
 | `apps/maestro/test/workflow-store.test.ts` | Pins the `projectRoot`-keyed store half of the keying pattern. |

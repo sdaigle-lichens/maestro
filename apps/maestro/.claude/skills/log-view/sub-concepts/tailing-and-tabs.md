@@ -44,12 +44,15 @@ bug.
   (`state.current` plus `state.recent`) is what both `resolveProjectRoot` and the tail's own discovery
   call read; a session in ANY of those roots gets a tab, not only the currently-open one. The app's own
   cwd is irrelevant and always wrong here.
-- **`window.maestro.log.subscribe` is single-owner.** Main keeps one tail per `webContents.id` and stops
-  the old one before starting a new one — so a second subscriber _steals_ the tail, and the first
-  unsubscribe then stops it for both. The owner is `SessionLogProvider`; every other consumer reads from
-  it with `useSessionLog()`. A test pins the call site to that one file.
-- **The tail is retargeted on a project switch**, in `main/ipc.ts`. Without that, discovery would
-  eventually catch up on its own next poll, but the retarget avoids up to one interval of staleness.
+- **`window.maestro.log.subscribe` is single-owner — for the MAIN-checkout stream only.** Main keeps one
+  tail per `webContents.id` in `tails` and stops the old one before starting a new one — so a second
+  subscriber _steals_ the tail, and the first unsubscribe then stops it for both. The owner is
+  `SessionLogProvider`; every other consumer reads from it with `useSessionLog()`. A test pins the call
+  site to that one file. Worktree tabs (`075`) are a second, separate stream — see
+  [Worktree tabs](#worktree-tabs-075) below; "one tail per window" is no longer true of the app as a whole.
+- **The `tails` tail is retargeted on a project switch**, in `main/ipc.ts`. Without that, discovery would
+  eventually catch up on its own next poll, but the retarget avoids up to one interval of staleness. The
+  worktree-tab registry is **not** retargeted — that is its point.
 - **`tails` and `logSubscribers` answer two different questions, and `retargetTails` needs the second
   one.** `tails` (`Map<webContentsId, stop>`) is "which windows have a running watcher"; `logSubscribers`
   (`Set<number>`, `038`) is "which windows asked for one". They're the same set only while a project is
@@ -68,6 +71,55 @@ bug.
   subscribed route-locally from `maestro-tasks.tsx` — only that screen reads live task data. See
   `task-queue` (repo root `.claude/skills/`) for the task side.
 
+## Worktree tabs (`075`)
+
+A session Maestro runs in a git worktree (`074`) logs inside that worktree. The page now has a **top-level
+tab bar** (`WorktreeTabBar`): "Main checkout" plus one tab per linked worktree of the open project that has
+a session log. Each view renders its own `SessionLogPanes` (the session tab bar + three panes, extracted
+from `session-log.tsx`), so selection and active step are per view.
+
+**Viewing roots.** `allowedProjectRoots()` (current + recents) is unchanged. A worktree is a *separate*,
+deliberately recognised class of root: `resolveWorktreeRoot(openProject, requested)`
+(`src/core/worktree-list.ts`) accepts a path **only if `git worktree list` names it as a linked worktree of
+the open project** (`samePath`, symlink-safe) and returns the path as git spells it. Anything else — relative,
+non-string, the main checkout, a path git doesn't list, no open project — is `{ok:false}` and starts nothing.
+**There is no fallback to the main log**: that would show another run under the wrong tab. Hand-made
+`git worktree add` trees qualify exactly like Maestro's; nothing reads Maestro's pointer files for listing.
+
+**One tail per (window, tab).** `createWorktreeTabs` (`src/core/worktree-tabs.ts`) is a registry; each tab is
+its own `tailSessionLogs` over `[worktreeRoot]` plus a state timer. Main keeps `worktreeTabs: Map<webContentsId,
+WorktreeTabs>` in `main/ipc.ts`, **apart from `tails`/`logSubscribers`**, so `retargetTails` (project switch)
+and `log:reset` cannot reach it. `open(path)` is validated against the open project *at call time* and is
+idempotent: a tab opened before a switch keeps streaming, but cannot be re-opened after it. Closed by
+`worktree-log:close`, window `destroyed`, or `disposeIpc`.
+
+**Don't double-show a session: `skipSession`.** `tailSessionLogs` takes an optional 4th arg
+`skipSession(projectRoot, sessionId)`; a skipped session is simply not live there (no `init`, no `end`).
+`startTail` passes one that skips a main-project session whose `worktree.json` pointer
+(`readWorktreePointer`) points at a worktree this window has a tab open for, so it appears once, under the
+tab. Because the answer changes when a tab opens/closes, `worktree-log:open`/`close` call `startTail` to
+rebuild the main tail (`logReset` + `init` burst).
+
+**Tab states** (`WorktreeTabState`, pushed on `worktree-log:state`, also once on open): `live` (≥1 session
+tailed), `no-log` (worktree exists, no session log), `removed` (directory gone, or git no longer lists it as
+linked — directory checked every tick, git every `gitCheckMs`=5s; an *empty* git answer is "failed", never
+"removed"). A removed tab's root list becomes `[]`, so its tail ends every session it showed. The renderer
+shows explicit notices (`worktree-removed`, `worktree-no-log`, "Opening…" while `pending`) — never another
+tab's log — and offers close for removed ones.
+
+**Renderer: `WorktreeLogProvider`** (`worktree-log-context.tsx`, mounted in `__root.tsx` inside
+`SessionLogProvider`) is the worktree analogue of `SessionLogProvider`: it subscribes via
+`window.maestro.worktreeLog.subscribe` **before** any `open` (init events fire synchronously during `open`),
+polls `worktreeLog.list()` every 7s, and opens each listed worktree with `hasLog`. State is
+`Map<root, WorktreeTab>` folded by pure `reduceWorktreeTabs`, whose sessions reuse `reduceSessionLog` with
+`projectRoot = worktree root`. Traps:
+- **`listed` only ever adds tabs, never removes** — after a project switch the list describes the *new*
+  project, and an already-open tab must survive. Only `closed` / `open-failed` (pending tabs only) remove.
+- **Do not have worktree events share `log:*` channels or `onReset`.** `log:reset` means "drop everything"
+  for the main stream; routing worktree tabs through it would silently kill them on every project switch.
+- A closed-but-still-listed worktree stays in the `opened` set so polling doesn't re-add it; roots git stops
+  listing are forgotten so a worktree re-added at the same path reopens.
+
 ## `reset` vs `end` — the two ways tabs disappear
 
 - **`reset` event on SessionEnd.** When the JSONL file disappears (its session's directory deleted by
@@ -85,7 +137,8 @@ bug.
   what's still in `allowedProjectRoots()`. Treat `onEnd` as always meaning "this one session ended, keep
   the tab and grey it out" and `onReset` as always meaning "wholesale rebuild, drop everything, an init
   burst is about to repopulate it" — a consumer never needs to cross-reference the current/recent project
-  list to distinguish "session ended" from "project forgotten" itself.
+  list to distinguish "session ended" from "project forgotten" itself. (This covers the main stream only;
+  worktree tabs survive it by design — see Worktree tabs.)
 
 ## The renderer fold (`session-log-context.tsx`)
 

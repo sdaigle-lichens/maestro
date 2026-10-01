@@ -44,12 +44,20 @@
 import fs from "node:fs";
 import path from "node:path";
 
+import type { WorktreePointer } from "./worktree.js";
+
 /** The directory under `.claude/` holding one subdirectory per session. */
 export const SESSIONS_DIR_NAME = "maestro_sessions";
 
 export const SESSION_LOG_NAME = "log.jsonl";
 export const SESSION_STATE_NAME = "session.json";
 export const SESSION_TASKS_NAME = "tasks.json";
+/**
+ * `074`: written into the MAIN checkout's session directory when the session is given a git
+ * worktree. Everything else of the session (log, session.json, tasks.json) then lives in the
+ * worktree's own `.claude/maestro_sessions/<id>/`, and every path built here follows this pointer.
+ */
+export const SESSION_WORKTREE_NAME = "worktree.json";
 
 /** The environment variable the no-stdin callers resolve from. */
 export const SESSION_ID_ENV = "CLAUDE_CODE_SESSION_ID";
@@ -117,10 +125,40 @@ export function sessionsRoot(claudeDir: string): string {
   return path.join(claudeDir, SESSIONS_DIR_NAME);
 }
 
-/** The path shapes for `id`, or `null` when `id` is not a valid session id. Touches no disk. */
+/**
+ * `074`: the pointer a session was given when it moved into a worktree, or `null` when it has none,
+ * it is unreadable, or the worktree it names no longer exists (a deleted worktree must not strand
+ * the session's state behind a dangling pointer — it falls back to `claudeDir`).
+ */
+export function readWorktreePointer(claudeDir: string, id: unknown): WorktreePointer | null {
+  if (!claudeDir || !isValidSessionId(id)) return null;
+  try {
+    const raw: unknown = JSON.parse(
+      fs.readFileSync(path.join(sessionsRoot(claudeDir), id, SESSION_WORKTREE_NAME), "utf8")
+    );
+    const p = raw as WorktreePointer;
+    if (!p || typeof p.path !== "string" || !path.isAbsolute(p.path)) return null;
+    if (!fs.statSync(p.path).isDirectory()) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+
+/** The `.claude` directory that actually holds session `id`'s state: its worktree's, else `claudeDir`. */
+function effectiveClaudeDir(claudeDir: string, id: string): string {
+  const pointer = readWorktreePointer(claudeDir, id);
+  return pointer ? path.join(pointer.path, ".claude") : claudeDir;
+}
+
+/**
+ * The path shapes for `id`, or `null` when `id` is not a valid session id. Creates nothing. Reads
+ * at most one small pointer file (`074`): a session that moved into a worktree resolves into the
+ * worktree's `.claude/maestro_sessions/<id>/`, so every hook and CLI follows it with no change.
+ */
 export function sessionPathsFor(claudeDir: string, id: unknown): SessionPaths | null {
   if (!claudeDir || !isValidSessionId(id)) return null;
-  const dir = path.join(sessionsRoot(claudeDir), id);
+  const dir = path.join(sessionsRoot(effectiveClaudeDir(claudeDir, id)), id);
   return {
     id,
     dir,
@@ -171,7 +209,7 @@ export function ensureSessionPaths(
 ): SessionPaths | null {
   const paths = resolveSessionPaths(claudeDir, payload, env);
   if (!paths) return null;
-  ensureSessionsRoot(claudeDir);
+  ensureSessionsRoot(path.dirname(path.dirname(paths.dir))); // the effective `.claude` (`074`)
   fs.mkdirSync(paths.dir, { recursive: true });
   return paths;
 }
@@ -202,7 +240,10 @@ export function removeSessionState(claudeDir: string, sessionId: unknown): strin
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return [];
   const removed: string[] = [];
-  for (const target of [paths.dir, ...LEGACY_SESSION_FILES.map((f) => path.join(claudeDir, f))]) {
+  for (const target of [
+    ...sessionDirsFor(claudeDir, sessionId),
+    ...LEGACY_SESSION_FILES.map((f) => path.join(claudeDir, f)),
+  ]) {
     try {
       if (!fs.existsSync(target)) continue;
       fs.rmSync(target, { recursive: true, force: true });
@@ -212,6 +253,34 @@ export function removeSessionState(claudeDir: string, sessionId: unknown): strin
     }
   }
   return removed;
+}
+
+/**
+ * Every directory holding session `id`'s state (`074`): the one its paths resolve to, plus the
+ * main checkout's own directory (which carries the worktree pointer) when the two differ — whether
+ * the caller passed the main checkout's `.claude` (follow the pointer) or the worktree's (read the
+ * `main_root` its `session.json` recorded). The WORKTREE ITSELF is never in this list: it and its
+ * branch are deliberately left for the user to merge.
+ */
+export function sessionDirsFor(claudeDir: string, sessionId: unknown): string[] {
+  const paths = sessionPathsFor(claudeDir, sessionId);
+  if (!paths || !isValidSessionId(sessionId)) return [];
+  const dirs = [paths.dir];
+  const own = path.join(sessionsRoot(claudeDir), sessionId);
+  if (own !== paths.dir) dirs.push(own);
+  else {
+    try {
+      const state: unknown = JSON.parse(fs.readFileSync(paths.state, "utf8"));
+      const wt = (state as { worktree?: { main_root?: unknown } } | null)?.worktree;
+      if (wt && typeof wt.main_root === "string" && path.isAbsolute(wt.main_root)) {
+        const mainDir = path.join(sessionsRoot(path.join(wt.main_root, ".claude")), sessionId);
+        if (mainDir !== paths.dir) dirs.push(mainDir);
+      }
+    } catch {
+      // No state, or none that names a main checkout: this session never had a worktree.
+    }
+  }
+  return dirs;
 }
 
 /**

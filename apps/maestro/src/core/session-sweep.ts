@@ -46,6 +46,7 @@ import {
   isValidSessionId,
   listSessionIds,
   sessionPathsFor,
+  sessionDirsFor,
   SESSION_ID_ENV,
   type SessionIdEnv,
 } from "./session-paths.js";
@@ -118,7 +119,7 @@ export function sweepStaleSessions(projectRoots: string[], options: SessionSweep
       const paths = sessionPathsFor(claudeDir, sessionId);
       if (!paths || !isAbandoned(paths.dir, now, idleCapMs)) continue;
       try {
-        fs.rmSync(paths.dir, { recursive: true, force: true });
+        for (const d of sessionDirsFor(claudeDir, sessionId)) fs.rmSync(d, { recursive: true, force: true });
         removed.push({ projectRoot, sessionId });
       } catch {
         // Cannot delete: it stays, and the next sweep tries again.
@@ -175,7 +176,9 @@ export function deleteSession(
   }
   if (!isAbandoned(paths.dir, now, idleCapMs)) return { removed: false, reason: "running" };
   try {
-    fs.rmSync(paths.dir, { recursive: true, force: true });
+    for (const d of sessionDirsFor(path.join(projectRoot, ".claude"), sessionId)) {
+      fs.rmSync(d, { recursive: true, force: true });
+    }
     return { removed: true };
   } catch {
     return { removed: false, reason: "failed" };
