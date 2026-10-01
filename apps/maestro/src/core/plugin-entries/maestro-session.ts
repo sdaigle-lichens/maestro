@@ -145,3 +145,13 @@ export {
   worktreePathFor,
   type WorktreePointer,
 } from "../worktree.js";
+
+// Channel-only writes for the reviewer and refactor agents (`078`) and SendMessage hand-back
+// recovery. `fs`/`path` only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  checkChannelWrite,
+  isChannelOnlyAgent,
+  CHANNEL_ONLY_AGENTS,
+  type ChannelWriteVerdict,
+} from "../channel-write-guard.js";
+export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";

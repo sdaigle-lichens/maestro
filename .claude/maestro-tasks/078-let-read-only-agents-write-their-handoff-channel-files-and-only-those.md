@@ -20,3 +20,9 @@ The reviewer and refactor agents are defined as unable to write files, yet their
 ## Blocked by
 
 None — can start immediately
+
+## Status notes
+
+- UNMET: plugin version bump (AC 7) — the user explicitly overrode the publishing rule; `plugins/maestro/.claude-plugin/plugin.json` is intentionally unchanged.
+- UNMET: live-subagent acceptance (AC 4 and AC 5) — not verified against a real reviewer/refactor run; only unit tests cover the guard.
+- Hand-back `unknown` (AC 6): met by recovering the label from the agent transcript's last `SendMessage` call (`handoff-label.ts`).

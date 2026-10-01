@@ -34,6 +34,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_session_exports = {};
 __export(maestro_session_exports, {
   CHANNEL_AGE_CAP_MS: () => CHANNEL_AGE_CAP_MS,
+  CHANNEL_ONLY_AGENTS: () => CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
@@ -50,6 +51,7 @@ __export(maestro_session_exports, {
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
   channelDir: () => channelDir,
+  checkChannelWrite: () => checkChannelWrite,
   collectAgentSkills: () => collectAgentSkills,
   duplicateAgentTypes: () => duplicateAgentTypes,
   endSessionState: () => endSessionState,
@@ -61,6 +63,7 @@ __export(maestro_session_exports, {
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
+  isChannelOnlyAgent: () => isChannelOnlyAgent,
   isLinkedWorktree: () => isLinkedWorktree,
   isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
@@ -68,6 +71,7 @@ __export(maestro_session_exports, {
   isValidHandoffId: () => isValidHandoffId,
   isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
+  lastHandoffLabel: () => lastHandoffLabel,
   listSessionIds: () => listSessionIds,
   mainCheckoutRoot: () => mainCheckoutRoot,
   nodeLabel: () => nodeLabel,
@@ -88,6 +92,7 @@ __export(maestro_session_exports, {
   resumeTarget: () => resumeTarget,
   retire: () => retire,
   routesFrom: () => routesFrom,
+  sendMessageHandoff: () => sendMessageHandoff,
   sessionDirsFor: () => sessionDirsFor,
   sessionLogPath: () => sessionLogPath,
   sessionPathsFor: () => sessionPathsFor,
@@ -1008,9 +1013,111 @@ function mainCheckoutRoot(dir) {
 function isLinkedWorktree(dir) {
   return mainCheckoutRoot(dir) !== dir;
 }
+
+// src/core/channel-write-guard.ts
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
+var CHANNEL_ONLY_AGENTS = ["reviewer", "refactor"];
+var WRITE_TOOL_PATH_KEYS = {
+  Write: "file_path",
+  Edit: "file_path",
+  MultiEdit: "file_path",
+  NotebookEdit: "notebook_path"
+};
+function isChannelOnlyAgent(agentType) {
+  return CHANNEL_ONLY_AGENTS.includes(bareAgentName(agentType));
+}
+function realResolve(p) {
+  let cur = import_node_path7.default.resolve(p);
+  const tail = [];
+  for (; ; ) {
+    let st = null;
+    try {
+      st = import_node_fs9.default.lstatSync(cur);
+    } catch {
+      st = null;
+    }
+    if (st) {
+      try {
+        return import_node_path7.default.join(import_node_fs9.default.realpathSync(cur), ...tail);
+      } catch {
+        return null;
+      }
+    }
+    const parent = import_node_path7.default.dirname(cur);
+    if (parent === cur) return cur ? import_node_path7.default.join(cur, ...tail) : null;
+    tail.unshift(import_node_path7.default.basename(cur));
+    cur = parent;
+  }
+}
+function deny(target) {
+  return {
+    allow: false,
+    reason: `Blocked: this agent may only write files under .claude/channels/ (its handoff channel lanes). "${target}" is outside it (or reaches outside through a ".." segment or a symlink). Report findings in your final message instead; delegate edits to the responsible agent.`
+  };
+}
+function checkChannelWrite(input) {
+  const { cwd, agentType, toolName, toolInput } = input;
+  if (!isChannelOnlyAgent(agentType)) return { allow: true };
+  const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : void 0;
+  if (!key) return { allow: true };
+  const raw = toolInput?.[key];
+  if (typeof raw !== "string" || raw === "") return deny(String(raw ?? ""));
+  if (!cwd) return deny(raw);
+  if (raw.split(/[\\/]+/).includes("..")) return deny(raw);
+  const target = realResolve(import_node_path7.default.resolve(cwd, raw));
+  const realCwd = realResolve(cwd);
+  const lane = realResolve(import_node_path7.default.join(cwd, ".claude", "channels"));
+  if (!target || !realCwd || !lane) return deny(raw);
+  if (lane !== import_node_path7.default.join(realCwd, ".claude", "channels") && !lane.startsWith(realCwd + import_node_path7.default.sep)) {
+    return deny(raw);
+  }
+  return target.startsWith(lane + import_node_path7.default.sep) ? { allow: true } : deny(raw);
+}
+
+// src/core/handoff-label.ts
+var HANDOFF_RE = /[`*]*HANDOFF:\s*([^\n`*]+)[`*]*/gi;
+function lastHandoffLabel(msg) {
+  if (typeof msg !== "string") return null;
+  const matches = [...msg.matchAll(HANDOFF_RE)];
+  if (matches.length === 0) return null;
+  return matches[matches.length - 1][1].trim() || null;
+}
+function messageText(input) {
+  if (typeof input === "string") return input;
+  if (!input || typeof input !== "object") return "";
+  const o = input;
+  for (const k of ["message", "content", "text", "summary"]) {
+    if (typeof o[k] === "string" && lastHandoffLabel(o[k])) return o[k];
+  }
+  return "";
+}
+function sendMessageHandoff(transcript) {
+  let found = null;
+  for (const line of transcript.split("\n")) {
+    if (!line.includes("SendMessage")) continue;
+    let entry;
+    try {
+      entry = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const e = entry;
+    const content = e?.message?.content ?? e?.content;
+    if (!Array.isArray(content)) continue;
+    for (const block of content) {
+      if (block && block.type === "tool_use" && block.name === "SendMessage") {
+        const text = messageText(block.input);
+        if (text) found = text;
+      }
+    }
+  }
+  return found;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
+  CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS,
@@ -1027,6 +1134,7 @@ function isLinkedWorktree(dir) {
   appendSessionLog,
   bareAgentName,
   channelDir,
+  checkChannelWrite,
   collectAgentSkills,
   duplicateAgentTypes,
   endSessionState,
@@ -1038,6 +1146,7 @@ function isLinkedWorktree(dir) {
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
+  isChannelOnlyAgent,
   isLinkedWorktree,
   isResumableEnd,
   isRootSkillPath,
@@ -1045,6 +1154,7 @@ function isLinkedWorktree(dir) {
   isValidHandoffId,
   isValidSessionId,
   laneFor,
+  lastHandoffLabel,
   listSessionIds,
   mainCheckoutRoot,
   nodeLabel,
@@ -1065,6 +1175,7 @@ function isLinkedWorktree(dir) {
   resumeTarget,
   retire,
   routesFrom,
+  sendMessageHandoff,
   sessionDirsFor,
   sessionLogPath,
   sessionPathsFor,

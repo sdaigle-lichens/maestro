@@ -378,7 +378,7 @@
     "blockedBy": []
   },
   "078-let-read-only-agents-write-their-handoff-channel-files-and-only-those.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   }
 }
