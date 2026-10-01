@@ -1,4 +1,5 @@
 import { titleFromName, stripNamespace } from "./text";
+import { contextWindowFor } from "../../../core/text.js";
 import type { SessionLogEntry, ChannelDelivery } from "./maestro-session-log";
 
 export type { ChannelDelivery };
@@ -345,4 +346,34 @@ export function humanizeLog(entry: SessionLogEntry, cwd = ""): string | null {
   }
 
   return log || null;
+}
+
+/** An agent's most recent known context-window usage — an estimate (see core/session-usage.ts). */
+export interface ContextUsage {
+  /** Percentage of the model's window, as stamped by the hooks. */
+  pct: number;
+  model: string;
+  /** The model's context window in tokens. */
+  windowTokens: number;
+}
+
+/**
+ * The latest context usage among `entries`, or `null` when none carries one. Entries without a
+ * finite `ctx_pct` (step-gate entries, older logs) are skipped — never read as 0%. Pass `origin`
+ * (bare or namespaced agent name) to restrict to that agent's entries.
+ */
+export function latestContextUsage(entries: SessionLogEntry[], origin?: string): ContextUsage | null {
+  const want = origin == null ? null : stripNamespace(origin);
+  for (let i = entries.length - 1; i >= 0; i--) {
+    const e = entries[i];
+    if (typeof e.ctx_pct !== "number" || !Number.isFinite(e.ctx_pct) || !e.ctx_model) continue;
+    if (want != null && stripNamespace(e.origin) !== want) continue;
+    return { pct: e.ctx_pct, model: e.ctx_model, windowTokens: contextWindowFor(e.ctx_model) };
+  }
+  return null;
+}
+
+/** "200k" / "1M" style label for a token count. */
+export function formatTokenWindow(tokens: number): string {
+  return tokens >= 1_000_000 ? `${tokens / 1_000_000}M` : `${Math.round(tokens / 1000)}k`;
 }

@@ -1,6 +1,7 @@
 import { CircleCheck, CircleX, AlertTriangle, Circle, Inbox } from "lucide-react";
 import { unaccountedSkills } from "../utils/session-log";
 import type { Instance } from "../utils/session-log";
+import { ContextUsageBadge } from "./context-usage";
 
 interface SessionLogCardsProps {
   instances: Instance[];
@@ -55,6 +56,7 @@ export default function SessionLogCards({ instances, activeId, onSelect }: Sessi
                   )}
                 </span>
               )}
+              <ContextUsageBadge instance={inst} />
               {inst.delivered.length > 0 && (
                 <span
                   className="flex items-center gap-0.5 text-[10px] font-mono text-(--ink-3)"

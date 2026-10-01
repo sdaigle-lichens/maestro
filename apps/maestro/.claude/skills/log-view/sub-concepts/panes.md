@@ -21,6 +21,9 @@ A thin (180px) vertical list of step names with status icons. Each row:
 - **Delivery count** (`037`) → an `Inbox` icon + `inst.delivered.length` when non-zero, the same
   at-a-glance class of signal as the skills badge. Omitted when `delivered` is empty.
 
+- **Context badge** (`ContextUsageBadge`, `context-usage.tsx`) → `~NN%` from the instance's latest
+  stamped `ctx_pct`; yellow at 75%, red at 90%. Renders nothing when no entry carries `ctx_pct`.
+
 ## Center pane — framed log (`session-log-view.tsx`)
 
 A header row ("Agents Flow" + `● live` indicator) above a scrollable body of per-instance sections. Each
@@ -40,6 +43,8 @@ section is wrapped in a **rounded bordered frame** (`border rounded-lg p-4`):
 Shows the selected instance's data in sections:
 
 - **Header:** "Logs: {displayName}"
+- **Context line** (`ContextUsageLine`, under the header): "Backend · ~62% of 200k (approx.)". Approximate
+  because parallel subagents share one `transcript_path` (see `core/session-usage.ts`).
 - **Input:** the instance's `input` field — the full spawning message sent by the main session —
   followed by each entry in `inst.delivered` (`037`), rendered as "Delivered from @`<sender>`" plus a
   "channel" badge and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when
@@ -56,6 +61,12 @@ Shows the selected instance's data in sections:
 - When no step is selected, shows "Select a step to view details".
 
 ## Things that bite
+
+- **Context usage is `ctx_pct`/`ctx_model` on entries, and step-gate entries have none.**
+  `latestContextUsage(entries, origin?)` (`utils/session-log.ts`) scans backwards and skips entries
+  without a finite `ctx_pct` — never treat missing as 0%. The window size comes from
+  `contextWindowFor` in `core/text.ts` (moved out of `session-usage.ts`, which imports fs and can't
+  reach the renderer; `session-usage.ts` re-exports it). `formatTokenWindow` renders "200k"/"1M".
 
 - **Large messages in `input`/`output`.** A spawning message that includes injected skills + handoff
   templates can be several kilobytes. The right detail panel sections are scrollable. The JSONL file

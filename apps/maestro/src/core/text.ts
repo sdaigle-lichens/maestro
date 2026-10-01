@@ -71,3 +71,19 @@ export function deriveName(idea: string, fallback: string): string {
   const cleaned = first.replace(/[^a-z0-9-]/g, "");
   return /^[a-z]/.test(cleaned) ? cleaned : fallback;
 }
+
+// Context-window sizes live here (not session-usage.ts, which imports fs) so the renderer can read them.
+/** Context-window ceiling per model, in tokens. Unlisted models fall back to `DEFAULT_CONTEXT_WINDOW`. */
+export const CONTEXT_WINDOW_TOKENS: Record<string, number> = {
+  "claude-opus-5": 200_000,
+  "claude-sonnet-5": 200_000,
+  "claude-fable-5-1": 200_000,
+  "claude-haiku-4-5-20251001": 200_000,
+};
+
+export const DEFAULT_CONTEXT_WINDOW = 200_000;
+
+/** Context-window size for a model id, falling back to `DEFAULT_CONTEXT_WINDOW` when unlisted. */
+export function contextWindowFor(model: string): number {
+  return CONTEXT_WINDOW_TOKENS[model] ?? DEFAULT_CONTEXT_WINDOW;
+}

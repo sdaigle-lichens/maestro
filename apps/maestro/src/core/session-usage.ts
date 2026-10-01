@@ -15,19 +15,12 @@
 // the one this call is stamping. Treat `ctx_pct` on those entries as an estimate, not a guarantee.
 
 import fs from "node:fs";
+import { CONTEXT_WINDOW_TOKENS, DEFAULT_CONTEXT_WINDOW, contextWindowFor } from "./text.js";
 
 const TAIL_CHUNK_BYTES = 64 * 1024;
 const MAX_TAIL_BYTES = 4 * 1024 * 1024; // give up rather than parse an unbounded file
 
-/** Context-window ceiling per model, in tokens. Unlisted models fall back to `DEFAULT_CONTEXT_WINDOW`. */
-export const CONTEXT_WINDOW_TOKENS: Record<string, number> = {
-  "claude-opus-5": 200_000,
-  "claude-sonnet-5": 200_000,
-  "claude-fable-5-1": 200_000,
-  "claude-haiku-4-5-20251001": 200_000,
-};
-
-export const DEFAULT_CONTEXT_WINDOW = 200_000;
+export { CONTEXT_WINDOW_TOKENS, DEFAULT_CONTEXT_WINDOW };
 
 interface TranscriptUsage {
   input_tokens?: number;
@@ -94,6 +87,6 @@ export function deriveUsage(payload: { transcript_path?: string }): DerivedUsage
   if (!usage || !model) return undefined;
   const { input_tokens = 0, cache_read_input_tokens = 0, cache_creation_input_tokens = 0 } = usage;
   const used = input_tokens + cache_read_input_tokens + cache_creation_input_tokens;
-  const window = CONTEXT_WINDOW_TOKENS[model] ?? DEFAULT_CONTEXT_WINDOW;
+  const window = contextWindowFor(model);
   return { ctx_pct: Math.round((used / window) * 1000) / 10, ctx_model: model };
 }

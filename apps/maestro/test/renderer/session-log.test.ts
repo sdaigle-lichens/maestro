@@ -503,3 +503,34 @@ describe("buildInstances — resumed-agent correlation bounded by log position (
     expect(second.input).toBe("SECOND RUN input");
   });
 });
+
+describe("latestContextUsage", () => {
+  const e = (origin: string, extra: Partial<SessionLogEntry> = {}): SessionLogEntry => ({
+    ts,
+    origin,
+    log: "x",
+    ...extra,
+  });
+
+  it("returns the latest stamped entry, skipping unstamped ones (never 0%)", async () => {
+    const { latestContextUsage } = await import("../../src/renderer/src/utils/session-log.js");
+    const entries = [
+      e("backend", { ctx_pct: 10, ctx_model: "claude-sonnet-5" }),
+      e("backend", { ctx_pct: 62, ctx_model: "claude-sonnet-5" }),
+      e("backend", { kind: "phase", phase: "step1_gates" }),
+    ];
+    expect(latestContextUsage(entries, "backend")).toEqual({
+      pct: 62,
+      model: "claude-sonnet-5",
+      windowTokens: 200_000,
+    });
+    expect(latestContextUsage([e("backend")], "backend")).toBeNull();
+  });
+
+  it("filters by origin, ignoring namespace", async () => {
+    const { latestContextUsage } = await import("../../src/renderer/src/utils/session-log.js");
+    const entries = [e("maestro:backend", { ctx_pct: 5, ctx_model: "m" }), e("test", { ctx_pct: 9, ctx_model: "m" })];
+    expect(latestContextUsage(entries, "backend")?.pct).toBe(5);
+    expect(latestContextUsage(entries, "reviewer")).toBeNull();
+  });
+});

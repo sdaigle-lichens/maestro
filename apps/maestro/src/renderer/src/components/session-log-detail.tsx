@@ -1,6 +1,7 @@
 import { humanizeLog, unaccountedSkills } from "../utils/session-log";
 import { stripNamespace } from "../utils/text";
 import type { Instance } from "../utils/session-log";
+import { ContextUsageLine } from "./context-usage";
 
 interface SessionLogDetailProps {
   instance: Instance | null;
@@ -34,6 +35,7 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
       {/* Header */}
       <div className="px-4 py-3 border-b border-(--line) shrink-0">
         <span className="text-[13px] font-medium text-(--ink)">Logs: {instance.displayName}</span>
+        <ContextUsageLine instance={instance} />
       </div>
 
       {/* Scrollable detail body */}
