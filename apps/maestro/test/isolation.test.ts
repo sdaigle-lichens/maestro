@@ -1311,7 +1311,10 @@ describe("session log discovery allow-list discipline (065)", () => {
   it("allowedProjectRoots is exactly current + recent, never a renderer-supplied value", () => {
     const ipc = stripComments(read("src/main/ipc.ts"));
     const body = ipc.slice(ipc.indexOf("function allowedProjectRoots"), ipc.indexOf("function resolveProjectRoot"));
-    expect(body).toMatch(/state\.current\s*\?\s*\[state\.current\.root,\s*\.\.\.state\.recent\.map/);
+    expect(body).toMatch(/composeAllowedRoots\(getState\(\)\)/);
+    expect(stripComments(read("src/core/session-ipc.ts"))).toMatch(
+      /state\.current\s*\?\s*\[state\.current\.root,\s*\.\.\.state\.recent\.map/
+    );
     // Built purely from project-store state — no parameter it could be steered by.
     expect(ipc).toMatch(/function allowedProjectRoots\(\)\s*:\s*string\[\]\s*\{/);
   });

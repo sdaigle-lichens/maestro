@@ -111,6 +111,14 @@ export {
 } from "./session-sweep.js";
 
 export {
+  composeAllowedRoots,
+  titlesForRefs,
+  sweepAndRetarget,
+  deleteAndRetarget,
+  type ProjectRootsState,
+} from "./session-ipc.js";
+
+export {
   resolveSessionTitle,
   resolveSessionTitles,
   sessionTitleKey,

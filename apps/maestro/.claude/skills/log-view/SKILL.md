@@ -118,6 +118,7 @@ Renderer paths are relative to `apps/maestro/`.
 | **Tab bar** — one tab per session (project, date/time, title), ended dimming, ✕ delete on non-running tabs (`065`, `068`)      | `src/renderer/src/components/session-log-tabs.tsx`                                    |
 | **Clean up sessions button** — runs `sessions:clean`, toasts the removed count                                          | `src/renderer/src/components/clean-sessions-button.tsx`                               |
 | **Stale-session sweep + explicit delete** — `sweepStaleSessions`, `deleteSession`, `listDeletableSessions` (`068`)            | `session-sweep.ts` in `apps/maestro/src/core/`                                        |
+| **Sweep / delete / title IPC decisions** — `composeAllowedRoots`, `titlesForRefs`, `sweepAndRetarget`, `deleteAndRetarget`; `main/ipc.ts` only injects project state and the retarget callback (`070`; tests `test/core/session-ipc.test.ts`) | `session-ipc.ts` in `apps/maestro/src/core/` |
 | **Tab title resolution** — task H1 > `claude --resume` transcript title (`068`)                                               | `session-title.ts` in `apps/maestro/src/core/`                                        |
 | Left step list with status icons (CircleCheck/CircleX/AlertTriangle)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |
 | **Context-usage badge + detail header line** (`ContextUsageBadge`, `ContextUsageLine`) | `src/renderer/src/components/context-usage.tsx` |

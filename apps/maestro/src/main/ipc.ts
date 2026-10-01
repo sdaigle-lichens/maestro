@@ -6,10 +6,10 @@
 
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
 import {
-  sweepStaleSessions,
-  deleteSession,
-  resolveSessionTitles,
-  sessionTitleKey,
+  sweepAndRetarget,
+  deleteAndRetarget,
+  titlesForRefs,
+  composeAllowedRoots,
   listDeletableSessions,
   readConfig,
   resolveGates,
@@ -49,7 +49,6 @@ import {
   scaffoldCreate,
   nodeGit,
   tailSessionLogs,
-  dedupeProjectRoots,
   pendingLanes,
   installStatus,
   installRuntime,
@@ -262,9 +261,7 @@ function startTail(webContentsId: number): void {
  * `logReset` + fresh `init` burst rebuilds the tab bar from what is still on disk.
  */
 function sweepAndRefresh(): number {
-  const { count } = sweepStaleSessions(allowedProjectRoots());
-  if (count > 0) retargetTails();
-  return count;
+  return sweepAndRetarget(allowedProjectRoots(), retargetTails);
 }
 
 function stopTaskTail(webContentsId: number): void {
@@ -311,11 +308,7 @@ function startTaskTail(webContentsId: number): void {
  * the multi-session tail reads from either.
  */
 function allowedProjectRoots(): string[] {
-  const state = getState();
-  const roots = state.current
-    ? [state.current.root, ...state.recent.map((r) => r.root)]
-    : state.recent.map((r) => r.root);
-  return dedupeProjectRoots(roots);
+  return composeAllowedRoots(getState());
 }
 
 /**
@@ -873,26 +866,11 @@ export function registerIpc(): void {
   ipcMain.handle(IPC.tasksClose, (_e, filename: string) => closeTask(currentRoot(), filename));
   ipcMain.handle(IPC.tasksDelete, (_e, filename: string) => deleteTask(currentRoot(), filename));
   ipcMain.handle(IPC.sessionsDelete, (_e, projectRoot: string, sessionId: string) => {
-    const res = deleteSession(allowedProjectRoots(), projectRoot, sessionId);
-    if (res.removed) retargetTails();
-    return res;
+    return deleteAndRetarget(allowedProjectRoots(), projectRoot, sessionId, retargetTails);
   });
   ipcMain.handle(IPC.sessionsDeletable, () => listDeletableSessions(allowedProjectRoots()));
   ipcMain.handle(IPC.sessionsTitles, (_e, list: Array<{ projectRoot: string; sessionId: string }>) => {
-    const allowed = new Set(allowedProjectRoots());
-    const asked: Array<{ projectRoot: string; sessionId: string }> = [];
-    const known: Array<{ projectRoot: string; sessionId: string }> = [];
-    if (Array.isArray(list)) {
-      for (const r of list) {
-        if (!r || typeof r.projectRoot !== "string" || typeof r.sessionId !== "string") continue;
-        asked.push(r);
-        if (allowed.has(r.projectRoot)) known.push(r);
-      }
-    }
-    // Every asked-for key is present: refs outside the allow-list resolve to null.
-    const out: Record<string, string | null> = {};
-    for (const r of asked) out[sessionTitleKey(r.projectRoot, r.sessionId)] = null;
-    return Object.assign(out, resolveSessionTitles(known));
+    return titlesForRefs(allowedProjectRoots(), list);
   });
   ipcMain.handle(IPC.sessionsClean, () => sweepAndRefresh());
 
