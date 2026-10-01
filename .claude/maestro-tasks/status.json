@@ -374,7 +374,7 @@
     ]
   },
   "077-keep-session-state-when-a-session-is-stopped-and-resumed.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   }
 }

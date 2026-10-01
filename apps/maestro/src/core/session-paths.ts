@@ -213,3 +213,35 @@ export function removeSessionState(claudeDir: string, sessionId: unknown): strin
   }
   return removed;
 }
+
+/**
+ * The SessionEnd `reason` values after which the SAME session id can come back (`077`), so its
+ * directory — session.json, log.jsonl, tasks.json, and with them the task claim's liveness — must
+ * survive. Observed against the real hook payload; see `.claude/skills/maestro-architecture/sub-concepts/session-end-reasons.md`:
+ *
+ *   - `prompt_input_exit` — `/exit` in an interactive session (resumable with `claude --resume`)
+ *   - `other`             — `claude -p` finishing, and a SIGTERM/SIGINT kill (both resumable)
+ *   - `resume`            — `/resume` switching away to another session (documented value)
+ *
+ * Everything else — `clear` (the id is abandoned), `logout`, `bypass_permissions_disabled`, a value
+ * we have never seen, and a payload with no reason at all (an older Claude Code) — is a FINAL end
+ * and keeps the pre-`077` behaviour: remove. An allow-list rather than a deny-list on purpose: an
+ * unrecognised reason must never silently start leaking directories, and `sweepSessions` reaps
+ * what a resumable end leaves behind if the session never returns.
+ */
+export const RESUMABLE_END_REASONS: readonly string[] = ["prompt_input_exit", "other", "resume"];
+
+/** True only for a string in {@link RESUMABLE_END_REASONS}. Anything else, including non-strings, is final. */
+export function isResumableEnd(reason: unknown): boolean {
+  return typeof reason === "string" && RESUMABLE_END_REASONS.includes(reason);
+}
+
+/**
+ * The ONE SessionEnd decision, called by both the node hook and its bash twin: a resumable end
+ * keeps everything (returns `[]`), a final end is {@link removeSessionState}. Returns the paths
+ * actually removed.
+ */
+export function endSessionState(claudeDir: string, sessionId: unknown, reason: unknown): string[] {
+  if (isResumableEnd(reason)) return [];
+  return removeSessionState(claudeDir, sessionId);
+}

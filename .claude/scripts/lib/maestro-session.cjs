@@ -37,6 +37,7 @@ __export(maestro_session_exports, {
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
+  RESUMABLE_END_REASONS: () => RESUMABLE_END_REASONS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
   SESSIONS_DIR_NAME: () => SESSIONS_DIR_NAME,
   SESSION_ID_ENV: () => SESSION_ID_ENV,
@@ -50,6 +51,7 @@ __export(maestro_session_exports, {
   channelDir: () => channelDir,
   collectAgentSkills: () => collectAgentSkills,
   duplicateAgentTypes: () => duplicateAgentTypes,
+  endSessionState: () => endSessionState,
   ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
   ensureSessionsRoot: () => ensureSessionsRoot,
@@ -58,6 +60,7 @@ __export(maestro_session_exports, {
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
+  isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
@@ -369,6 +372,14 @@ function removeSessionState(claudeDir, sessionId) {
     }
   }
   return removed;
+}
+var RESUMABLE_END_REASONS = ["prompt_input_exit", "other", "resume"];
+function isResumableEnd(reason) {
+  return typeof reason === "string" && RESUMABLE_END_REASONS.includes(reason);
+}
+function endSessionState(claudeDir, sessionId, reason) {
+  if (isResumableEnd(reason)) return [];
+  return removeSessionState(claudeDir, sessionId);
 }
 
 // src/core/session-runtime.ts
@@ -918,6 +929,7 @@ function isRootSkillPath(root, skillPath) {
   CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS,
+  RESUMABLE_END_REASONS,
   SEED_HANDOFFS,
   SESSIONS_DIR_NAME,
   SESSION_ID_ENV,
@@ -931,6 +943,7 @@ function isRootSkillPath(root, skillPath) {
   channelDir,
   collectAgentSkills,
   duplicateAgentTypes,
+  endSessionState,
   ensureSessionPaths,
   ensureSessionRunId,
   ensureSessionsRoot,
@@ -939,6 +952,7 @@ function isRootSkillPath(root, skillPath) {
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
+  isResumableEnd,
   isRootSkillPath,
   isSeededHandoff,
   isValidHandoffId,
