@@ -60,7 +60,29 @@ function activeTaskFromSession() {
     const sess = resolveSessionPaths(path.join(projectDir, ".claude"));
     if (!sess) return null;
     const session = JSON.parse(fs.readFileSync(sess.state, "utf8"));
-    return session && typeof session.active_task === "string" ? session.active_task : null;
+    if (session && typeof session.active_task === "string") return session.active_task;
+  } catch {
+    // fall through: a session that was stopped and resumed has had its state directory removed
+    // by SessionEnd, but the task's claim file (keyed by the same session id) survives it.
+  }
+  return claimedTaskFromOwnSession();
+}
+
+// The one task whose claim this session holds, or null when it holds none or several (guessing
+// between two would mark the wrong one done).
+function claimedTaskFromOwnSession() {
+  try {
+    const sess = resolveSessionPaths(path.join(projectDir, ".claude"));
+    if (!sess) return null;
+    const mine = fs
+      .readdirSync(claimsDir())
+      .filter((f) => f.endsWith(".json"))
+      .filter((f) => {
+        const claim = readClaimFile(path.join(claimsDir(), f));
+        return claim && claim.session_id === sess.id;
+      })
+      .map((f) => f.slice(0, -".json".length));
+    return mine.length === 1 ? mine[0] : null;
   } catch {
     return null;
   }
