@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task."
 metadata:
   type: concept-skill
-  version: "1.2"
-  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
+  version: "1.3"
+  last-update: 05aadeb4cfc7371917375e0433c73c1c77722a76
 ---
 
 # Task queue
@@ -50,7 +50,8 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 | `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |
 | `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |
 | `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |
-| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`). |
+| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `merge` (`076`)). |
+| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. |
 | `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |
 | `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |
 | `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |
@@ -77,8 +78,8 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 - [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,
   and the batch write via `maestro-write-tasks.cjs`.
 - [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.
-- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, and the
-  second parity pair.
+- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the
+  second parity pair, and `074`'s worktree isolation (queue root stays the main checkout).
 - [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the
   committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.
 - [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and

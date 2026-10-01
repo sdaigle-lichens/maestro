@@ -221,7 +221,13 @@ export function dedupeProjectRoots(roots: string[]): string[] {
 export function tailSessionLogs(
   getProjectRoots: () => string[],
   events: Partial<MultiSessionLogTailEvents>,
-  intervalMs = 1000
+  intervalMs = 1000,
+  /**
+   * `075`: sessions another tail owns. `skipSession(root, id)` true means "do not show this
+   * session under this root" (e.g. a session that moved into a worktree whose own tab shows it).
+   * A skipped session is simply not live here: no init, no end.
+   */
+  skipSession?: (projectRoot: string, sessionId: string) => boolean
 ): () => void {
   /** projectRoot -> sessionId -> lines already emitted for that session. */
   const tracked = new Map<string, Map<string, number>>();
@@ -245,7 +251,7 @@ export function tailSessionLogs(
       const claudeDir = path.join(root, ".claude");
       // Absent project directory: listSessionIds already swallows the ENOENT and returns [] — one
       // failed readdir, no throw, no special-casing needed here.
-      const liveIds = new Set(listSessionIds(claudeDir));
+      const liveIds = new Set(listSessionIds(claudeDir).filter((id) => !skipSession?.(root, id)));
       let sessions = tracked.get(root);
 
       if (sessions) {

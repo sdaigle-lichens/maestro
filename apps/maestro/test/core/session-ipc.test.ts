@@ -7,12 +7,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
-import {
-  composeAllowedRoots,
-  titlesForRefs,
-  sweepAndRetarget,
-  deleteAndRetarget,
-} from "../../src/core/session-ipc.js";
+import { composeAllowedRoots, titlesForRefs, sweepAndRetarget, deleteAndRetarget } from "../../src/core/session-ipc.js";
 import { SESSION_SWEEP_IDLE_CAP_MS } from "../../src/core/session-sweep.js";
 import { sessionTitleKey } from "../../src/core/session-title.js";
 

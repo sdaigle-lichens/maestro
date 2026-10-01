@@ -34,6 +34,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 var maestro_session_exports = {};
 __export(maestro_session_exports, {
   CHANNEL_AGE_CAP_MS: () => CHANNEL_AGE_CAP_MS,
+  CHANNEL_ONLY_AGENTS: () => CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
@@ -45,10 +46,12 @@ __export(maestro_session_exports, {
   SESSION_LOG_NAME: () => SESSION_LOG_NAME,
   SESSION_STATE_NAME: () => SESSION_STATE_NAME,
   SESSION_TASKS_NAME: () => SESSION_TASKS_NAME,
+  SESSION_WORKTREE_NAME: () => SESSION_WORKTREE_NAME,
   agentRunsFromLog: () => agentRunsFromLog,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
   channelDir: () => channelDir,
+  checkChannelWrite: () => checkChannelWrite,
   collectAgentSkills: () => collectAgentSkills,
   duplicateAgentTypes: () => duplicateAgentTypes,
   endSessionState: () => endSessionState,
@@ -60,13 +63,17 @@ __export(maestro_session_exports, {
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
+  isChannelOnlyAgent: () => isChannelOnlyAgent,
+  isLinkedWorktree: () => isLinkedWorktree,
   isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
   isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
+  lastHandoffLabel: () => lastHandoffLabel,
   listSessionIds: () => listSessionIds,
+  mainCheckoutRoot: () => mainCheckoutRoot,
   nodeLabel: () => nodeLabel,
   parseStampedContent: () => parseStampedContent,
   projectOwnsHook: () => projectOwnsHook,
@@ -74,6 +81,7 @@ __export(maestro_session_exports, {
   readLane: () => readLane,
   readSession: () => readSession,
   readStdin: () => readStdin,
+  readWorktreePointer: () => readWorktreePointer,
   removeSessionState: () => removeSessionState,
   resolveHandoff: () => resolveHandoff,
   resolveProjectSkillPath: () => resolveProjectSkillPath,
@@ -84,15 +92,20 @@ __export(maestro_session_exports, {
   resumeTarget: () => resumeTarget,
   retire: () => retire,
   routesFrom: () => routesFrom,
+  sendMessageHandoff: () => sendMessageHandoff,
+  sessionDirsFor: () => sessionDirsFor,
   sessionLogPath: () => sessionLogPath,
   sessionPathsFor: () => sessionPathsFor,
   sessionsRoot: () => sessionsRoot,
   splitHandoffId: () => splitHandoffId,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
+  taskNumber: () => taskNumber,
   validateConfig: () => validateConfig,
   walkProjectSkillIds: () => walkProjectSkillIds,
   workflowNodeLabels: () => workflowNodeLabels,
+  worktreeBranchFor: () => worktreeBranchFor,
+  worktreePathFor: () => worktreePathFor,
   writeSession: () => writeSession,
   writeStamp: () => writeStamp
 });
@@ -302,6 +315,7 @@ var SESSIONS_DIR_NAME = "maestro_sessions";
 var SESSION_LOG_NAME = "log.jsonl";
 var SESSION_STATE_NAME = "session.json";
 var SESSION_TASKS_NAME = "tasks.json";
+var SESSION_WORKTREE_NAME = "worktree.json";
 var SESSION_ID_ENV = "CLAUDE_CODE_SESSION_ID";
 var LEGACY_SESSION_FILES = [
   "maestro_session.json",
@@ -322,9 +336,27 @@ function resolveSessionId(payload, env = process.env) {
 function sessionsRoot(claudeDir) {
   return import_node_path2.default.join(claudeDir, SESSIONS_DIR_NAME);
 }
+function readWorktreePointer(claudeDir, id) {
+  if (!claudeDir || !isValidSessionId(id)) return null;
+  try {
+    const raw = JSON.parse(
+      import_node_fs3.default.readFileSync(import_node_path2.default.join(sessionsRoot(claudeDir), id, SESSION_WORKTREE_NAME), "utf8")
+    );
+    const p = raw;
+    if (!p || typeof p.path !== "string" || !import_node_path2.default.isAbsolute(p.path)) return null;
+    if (!import_node_fs3.default.statSync(p.path).isDirectory()) return null;
+    return p;
+  } catch {
+    return null;
+  }
+}
+function effectiveClaudeDir(claudeDir, id) {
+  const pointer = readWorktreePointer(claudeDir, id);
+  return pointer ? import_node_path2.default.join(pointer.path, ".claude") : claudeDir;
+}
 function sessionPathsFor(claudeDir, id) {
   if (!claudeDir || !isValidSessionId(id)) return null;
-  const dir = import_node_path2.default.join(sessionsRoot(claudeDir), id);
+  const dir = import_node_path2.default.join(sessionsRoot(effectiveClaudeDir(claudeDir, id)), id);
   return {
     id,
     dir,
@@ -346,7 +378,7 @@ function ensureSessionsRoot(claudeDir) {
 function ensureSessionPaths(claudeDir, payload, env) {
   const paths = resolveSessionPaths(claudeDir, payload, env);
   if (!paths) return null;
-  ensureSessionsRoot(claudeDir);
+  ensureSessionsRoot(import_node_path2.default.dirname(import_node_path2.default.dirname(paths.dir)));
   import_node_fs3.default.mkdirSync(paths.dir, { recursive: true });
   return paths;
 }
@@ -363,7 +395,10 @@ function removeSessionState(claudeDir, sessionId) {
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return [];
   const removed = [];
-  for (const target of [paths.dir, ...LEGACY_SESSION_FILES.map((f) => import_node_path2.default.join(claudeDir, f))]) {
+  for (const target of [
+    ...sessionDirsFor(claudeDir, sessionId),
+    ...LEGACY_SESSION_FILES.map((f) => import_node_path2.default.join(claudeDir, f))
+  ]) {
     try {
       if (!import_node_fs3.default.existsSync(target)) continue;
       import_node_fs3.default.rmSync(target, { recursive: true, force: true });
@@ -372,6 +407,25 @@ function removeSessionState(claudeDir, sessionId) {
     }
   }
   return removed;
+}
+function sessionDirsFor(claudeDir, sessionId) {
+  const paths = sessionPathsFor(claudeDir, sessionId);
+  if (!paths || !isValidSessionId(sessionId)) return [];
+  const dirs = [paths.dir];
+  const own = import_node_path2.default.join(sessionsRoot(claudeDir), sessionId);
+  if (own !== paths.dir) dirs.push(own);
+  else {
+    try {
+      const state = JSON.parse(import_node_fs3.default.readFileSync(paths.state, "utf8"));
+      const wt = state?.worktree;
+      if (wt && typeof wt.main_root === "string" && import_node_path2.default.isAbsolute(wt.main_root)) {
+        const mainDir = import_node_path2.default.join(sessionsRoot(import_node_path2.default.join(wt.main_root, ".claude")), sessionId);
+        if (mainDir !== paths.dir) dirs.push(mainDir);
+      }
+    } catch {
+    }
+  }
+  return dirs;
 }
 var RESUMABLE_END_REASONS = ["prompt_input_exit", "other", "resume"];
 function isResumableEnd(reason) {
@@ -923,9 +977,147 @@ function isRootSkillPath(root, skillPath) {
   const rootSkillsDir = import_node_path5.default.join(root, ".claude", "skills");
   return import_node_path5.default.dirname(skillDir) === rootSkillsDir;
 }
+
+// src/core/worktree.ts
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_path6 = __toESM(require("node:path"), 1);
+function taskNumber(filename) {
+  const m = /^(\d+)-/.exec(import_node_path6.default.basename(filename));
+  return m ? m[1] : null;
+}
+function worktreeBranchFor(filename) {
+  const n = taskNumber(filename);
+  return n ? `task-${n}` : null;
+}
+function worktreePathFor(mainRoot, filename) {
+  const n = taskNumber(filename);
+  if (!n) return null;
+  return import_node_path6.default.join(import_node_path6.default.dirname(mainRoot), `${import_node_path6.default.basename(mainRoot)}-task-${n}`);
+}
+function mainCheckoutRoot(dir) {
+  const gitEntry = import_node_path6.default.join(dir, ".git");
+  try {
+    if (!import_node_fs8.default.statSync(gitEntry).isFile()) return dir;
+    const text = import_node_fs8.default.readFileSync(gitEntry, "utf8");
+    const m = /^gitdir:\s*(.+?)\s*$/m.exec(text);
+    if (!m) return dir;
+    const gitDir = import_node_path6.default.resolve(dir, m[1]);
+    if (import_node_path6.default.basename(import_node_path6.default.dirname(gitDir)) !== "worktrees") return dir;
+    const common = import_node_path6.default.dirname(import_node_path6.default.dirname(gitDir));
+    if (import_node_path6.default.basename(common) !== ".git") return dir;
+    return import_node_path6.default.dirname(common);
+  } catch {
+    return dir;
+  }
+}
+function isLinkedWorktree(dir) {
+  return mainCheckoutRoot(dir) !== dir;
+}
+
+// src/core/channel-write-guard.ts
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
+var CHANNEL_ONLY_AGENTS = ["reviewer", "refactor"];
+var WRITE_TOOL_PATH_KEYS = {
+  Write: "file_path",
+  Edit: "file_path",
+  MultiEdit: "file_path",
+  NotebookEdit: "notebook_path"
+};
+function isChannelOnlyAgent(agentType) {
+  return CHANNEL_ONLY_AGENTS.includes(bareAgentName(agentType));
+}
+function realResolve(p) {
+  let cur = import_node_path7.default.resolve(p);
+  const tail = [];
+  for (; ; ) {
+    let st = null;
+    try {
+      st = import_node_fs9.default.lstatSync(cur);
+    } catch {
+      st = null;
+    }
+    if (st) {
+      try {
+        return import_node_path7.default.join(import_node_fs9.default.realpathSync(cur), ...tail);
+      } catch {
+        return null;
+      }
+    }
+    const parent = import_node_path7.default.dirname(cur);
+    if (parent === cur) return cur ? import_node_path7.default.join(cur, ...tail) : null;
+    tail.unshift(import_node_path7.default.basename(cur));
+    cur = parent;
+  }
+}
+function deny(target) {
+  return {
+    allow: false,
+    reason: `Blocked: this agent may only write files under .claude/channels/ (its handoff channel lanes). "${target}" is outside it (or reaches outside through a ".." segment or a symlink). Report findings in your final message instead; delegate edits to the responsible agent.`
+  };
+}
+function checkChannelWrite(input) {
+  const { cwd, agentType, toolName, toolInput } = input;
+  if (!isChannelOnlyAgent(agentType)) return { allow: true };
+  const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : void 0;
+  if (!key) return { allow: true };
+  const raw = toolInput?.[key];
+  if (typeof raw !== "string" || raw === "") return deny(String(raw ?? ""));
+  if (!cwd) return deny(raw);
+  if (raw.split(/[\\/]+/).includes("..")) return deny(raw);
+  const target = realResolve(import_node_path7.default.resolve(cwd, raw));
+  const realCwd = realResolve(cwd);
+  const lane = realResolve(import_node_path7.default.join(cwd, ".claude", "channels"));
+  if (!target || !realCwd || !lane) return deny(raw);
+  if (lane !== import_node_path7.default.join(realCwd, ".claude", "channels") && !lane.startsWith(realCwd + import_node_path7.default.sep)) {
+    return deny(raw);
+  }
+  return target.startsWith(lane + import_node_path7.default.sep) ? { allow: true } : deny(raw);
+}
+
+// src/core/handoff-label.ts
+var HANDOFF_RE = /[`*]*HANDOFF:\s*([^\n`*]+)[`*]*/gi;
+function lastHandoffLabel(msg) {
+  if (typeof msg !== "string") return null;
+  const matches = [...msg.matchAll(HANDOFF_RE)];
+  if (matches.length === 0) return null;
+  return matches[matches.length - 1][1].trim() || null;
+}
+function messageText(input) {
+  if (typeof input === "string") return input;
+  if (!input || typeof input !== "object") return "";
+  const o = input;
+  for (const k of ["message", "content", "text", "summary"]) {
+    if (typeof o[k] === "string" && lastHandoffLabel(o[k])) return o[k];
+  }
+  return "";
+}
+function sendMessageHandoff(transcript) {
+  let found = null;
+  for (const line of transcript.split("\n")) {
+    if (!line.includes("SendMessage")) continue;
+    let entry;
+    try {
+      entry = JSON.parse(line);
+    } catch {
+      continue;
+    }
+    const e = entry;
+    const content = e?.message?.content ?? e?.content;
+    if (!Array.isArray(content)) continue;
+    for (const block of content) {
+      if (block && block.type === "tool_use" && block.name === "SendMessage") {
+        const text = messageText(block.input);
+        if (text) found = text;
+      }
+    }
+  }
+  return found;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
+  CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES,
   PRIOR_HANDOFF_SEEDS,
@@ -937,10 +1129,12 @@ function isRootSkillPath(root, skillPath) {
   SESSION_LOG_NAME,
   SESSION_STATE_NAME,
   SESSION_TASKS_NAME,
+  SESSION_WORKTREE_NAME,
   agentRunsFromLog,
   appendSessionLog,
   bareAgentName,
   channelDir,
+  checkChannelWrite,
   collectAgentSkills,
   duplicateAgentTypes,
   endSessionState,
@@ -952,13 +1146,17 @@ function isRootSkillPath(root, skillPath) {
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
+  isChannelOnlyAgent,
+  isLinkedWorktree,
   isResumableEnd,
   isRootSkillPath,
   isSeededHandoff,
   isValidHandoffId,
   isValidSessionId,
   laneFor,
+  lastHandoffLabel,
   listSessionIds,
+  mainCheckoutRoot,
   nodeLabel,
   parseStampedContent,
   projectOwnsHook,
@@ -966,6 +1164,7 @@ function isRootSkillPath(root, skillPath) {
   readLane,
   readSession,
   readStdin,
+  readWorktreePointer,
   removeSessionState,
   resolveHandoff,
   resolveProjectSkillPath,
@@ -976,15 +1175,20 @@ function isRootSkillPath(root, skillPath) {
   resumeTarget,
   retire,
   routesFrom,
+  sendMessageHandoff,
+  sessionDirsFor,
   sessionLogPath,
   sessionPathsFor,
   sessionsRoot,
   splitHandoffId,
   successPathSteps,
   sweep,
+  taskNumber,
   validateConfig,
   walkProjectSkillIds,
   workflowNodeLabels,
+  worktreeBranchFor,
+  worktreePathFor,
   writeSession,
   writeStamp
 });

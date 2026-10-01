@@ -35,6 +35,9 @@ import type {
   TreeNode,
   MaestroTask,
   SessionLogEntry,
+  WorktreeTabInfo,
+  WorktreeTabState,
+  WorktreeOpenResult,
   ChannelDelivery,
   PendingLane,
   SaveResult,
@@ -652,6 +655,13 @@ export const IPC = {
   logSubscribe: "log:subscribe",
   logUnsubscribe: "log:unsubscribe",
 
+  // `075`: worktree tabs in the Session Log. `list` = linked worktrees of the OPEN project;
+  // `open`/`close` start/stop one tail for one worktree for the asking window. `open` rejects any
+  // path git does not list as a linked worktree of the open project.
+  worktreeLogList: "worktree-log:list",
+  worktreeLogOpen: "worktree-log:open",
+  worktreeLogClose: "worktree-log:close",
+
   // `/maestro`'s Channels block (`037`) — every `.claude/channels/<receiver>/` lane holding at
   // least one undelivered file, right now. READ-ONLY: `036`'s hooks are the only thing that
   // delivers, retires or sweeps a channel file; this just reads `handoff-channels.ts`'s
@@ -669,6 +679,12 @@ export const IPC_EVENTS = {
   logEntry: "log:entry",
   logEnd: "log:end",
   logReset: "log:reset",
+  // `075`: pushes for an opened worktree tab. Same payload shapes as `log:*`, with `projectRoot`
+  // = the worktree root. NEVER cleared by `log:reset` or a project switch.
+  worktreeLogInit: "worktree-log:init",
+  worktreeLogEntry: "worktree-log:entry",
+  worktreeLogEnd: "worktree-log:end",
+  worktreeLogState: "worktree-log:state",
   // Pushed by the task-queue poller — see `IPC.tasksSubscribe` above. `tasksInit` is the full
   // snapshot on subscribe; `tasksUpdate` is the full re-derived list, pushed whenever the queue
   // changed (a status flip, a task file's content, or a new task file appearing). There is no
@@ -699,6 +715,15 @@ export interface SessionLogEndEvent {
   projectRoot: string;
   sessionId: string;
 }
+
+/** `075`: a worktree tab's state changed (also pushed once when the tab opens). */
+export interface WorktreeLogStateEvent {
+  /** The worktree root - the tab id. */
+  root: string;
+  state: WorktreeTabState;
+}
+
+export type { WorktreeTabInfo, WorktreeTabState, WorktreeOpenResult };
 
 /** The surface exposed on `window.maestro` by the preload script. */
 export interface MaestroApi {
@@ -1289,6 +1314,31 @@ export interface MaestroApi {
       onEntry(payload: SessionLogEntryEvent): void;
       onEnd(payload: SessionLogEndEvent): void;
       onReset(): void;
+    }): () => void;
+  };
+  /**
+   * `075`: Session Log tabs for the git worktrees of the open project. One tail per (window, tab),
+   * independent of the app-wide `log.subscribe` stream: a project switch or `onReset` never
+   * touches an opened worktree tab; only `close`, the worktree disappearing, or window close does.
+   * Events carry `projectRoot` = the worktree root, so they fold with the same reducer as `log`.
+   */
+  worktreeLog: {
+    /** Linked worktrees of the OPEN project (main checkout excluded), with `hasLog`. `[]` with no project/git. Re-query to refresh. */
+    list(): Promise<WorktreeTabInfo[]>;
+    /**
+     * Start (idempotently) the tail for one worktree. Resolves `{ok:false}` - and starts nothing -
+     * when `path` is not a linked worktree of the OPEN project; there is no fallback to the main
+     * log. Validated against the open project at call time, so a tab opened before a project switch
+     * keeps running, but cannot be re-opened after the switch.
+     */
+    open(path: string): Promise<WorktreeOpenResult>;
+    close(path: string): Promise<void>;
+    /** Listen for pushes of opened tabs. Returns an unsubscribe function; does not open anything. */
+    subscribe(handlers: {
+      onState(payload: WorktreeLogStateEvent): void;
+      onInit(payload: SessionLogInitEvent): void;
+      onEntry(payload: SessionLogEntryEvent): void;
+      onEnd(payload: SessionLogEndEvent): void;
     }): () => void;
   };
   sessions: {

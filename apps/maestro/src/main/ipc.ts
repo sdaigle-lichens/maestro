@@ -5,6 +5,7 @@
 // renderer is allowed to ask for.
 
 import { BrowserWindow, dialog, ipcMain, shell } from "electron";
+import path from "node:path";
 import {
   sweepAndRetarget,
   deleteAndRetarget,
@@ -50,6 +51,11 @@ import {
   scaffoldCreate,
   nodeGit,
   tailSessionLogs,
+  createWorktreeTabs,
+  describeWorktrees,
+  readWorktreePointer,
+  samePath,
+  type WorktreeTabs,
   pendingLanes,
   installStatus,
   installRuntime,
@@ -193,6 +199,36 @@ const tails = new Map<number, () => void>();
 const logSubscribers = new Set<number>();
 
 /**
+ * `075`: worktree-tab tails, one registry per window (each registry holds one tail per tab). Kept
+ * apart from `tails` on purpose: `retargetTails` (project switch) must never reach them, because a
+ * worktree tab is not following the open project.
+ */
+const worktreeTabs = new Map<number, WorktreeTabs>();
+
+function worktreeTabsFor(wc: Electron.WebContents): WorktreeTabs {
+  let reg = worktreeTabs.get(wc.id);
+  if (reg) return reg;
+  const send = (channel: string, payload: unknown): void => {
+    if (!wc.isDestroyed()) wc.send(channel, payload);
+  };
+  reg = createWorktreeTabs({
+    getOpenProject: () => currentRoot() || null,
+    events: {
+      state: (root, state) => send(IPC_EVENTS.worktreeLogState, { root, state }),
+      init: (projectRoot, sessionId, entries) => send(IPC_EVENTS.worktreeLogInit, { projectRoot, sessionId, entries }),
+      entry: (projectRoot, sessionId, entry) => send(IPC_EVENTS.worktreeLogEntry, { projectRoot, sessionId, entry }),
+      end: (projectRoot, sessionId) => send(IPC_EVENTS.worktreeLogEnd, { projectRoot, sessionId }),
+    },
+  });
+  worktreeTabs.set(wc.id, reg);
+  wc.once("destroyed", () => {
+    reg?.closeAll();
+    worktreeTabs.delete(wc.id);
+  });
+  return reg;
+}
+
+/**
  * Active task-queue tails, keyed by webContents id — the same one-tail-per-window shape as
  * `tails`/`logSubscribers` above, for the same reason: `tasks:subscribe` is single-owner, and a
  * second subscriber in the same window would steal the poller.
@@ -259,13 +295,25 @@ function startTail(webContentsId: number): void {
   wc.send(IPC_EVENTS.logReset);
   tails.set(
     webContentsId,
-    tailSessionLogs(allowedProjectRoots, {
-      init: (projectRoot, sessionId, entries) =>
-        !wc.isDestroyed() && wc.send(IPC_EVENTS.logInit, { projectRoot, sessionId, entries }),
-      entry: (projectRoot, sessionId, entry) =>
-        !wc.isDestroyed() && wc.send(IPC_EVENTS.logEntry, { projectRoot, sessionId, entry }),
-      end: (projectRoot, sessionId) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logEnd, { projectRoot, sessionId }),
-    })
+    tailSessionLogs(
+      allowedProjectRoots,
+      {
+        init: (projectRoot, sessionId, entries) =>
+          !wc.isDestroyed() && wc.send(IPC_EVENTS.logInit, { projectRoot, sessionId, entries }),
+        entry: (projectRoot, sessionId, entry) =>
+          !wc.isDestroyed() && wc.send(IPC_EVENTS.logEntry, { projectRoot, sessionId, entry }),
+        end: (projectRoot, sessionId) => !wc.isDestroyed() && wc.send(IPC_EVENTS.logEnd, { projectRoot, sessionId }),
+      },
+      1000,
+      (projectRoot, sessionId) => {
+        // `075`: a session that moved into a worktree is shown by that worktree's own tab, when this
+        // window has one open, instead of a second time under the main project.
+        const open = worktreeTabs.get(webContentsId)?.openRoots();
+        if (!open?.length) return false;
+        const ptr = readWorktreePointer(path.join(projectRoot, ".claude"), sessionId);
+        return !!ptr && open.some((r) => samePath(r, ptr.path));
+      }
+    )
   );
 }
 
@@ -1172,6 +1220,21 @@ export function registerIpc(): void {
     stopTail(e.sender.id);
   });
 
+  // ── worktree tabs (075) ──────────────────────────────────────────────
+  ipcMain.handle(IPC.worktreeLogList, () => describeWorktrees(currentRoot() || null));
+  ipcMain.handle(IPC.worktreeLogOpen, (e, p: unknown) => {
+    const res = worktreeTabsFor(e.sender).open(p);
+    // The main tail may be showing this worktree's session under the main project; rebuild it so
+    // the session appears once, under the tab.
+    if (res.ok && logSubscribers.has(e.sender.id)) startTail(e.sender.id);
+    return res;
+  });
+  ipcMain.handle(IPC.worktreeLogClose, (e, p: unknown) => {
+    if (typeof p !== "string") return;
+    worktreeTabs.get(e.sender.id)?.close(p);
+    if (logSubscribers.has(e.sender.id)) startTail(e.sender.id);
+  });
+
   // ── channels (037) ───────────────────────────────────────────────────
   // Read-only: every receiver lane holding at least one undelivered file, right now. No project
   // open reads back `[]`, matching `reportGet`'s "an empty answer is honest, not an error".
@@ -1189,6 +1252,8 @@ export function registerIpc(): void {
 export function disposeIpc(): void {
   for (const id of [...tails.keys()]) stopTail(id);
   logSubscribers.clear();
+  for (const reg of worktreeTabs.values()) reg.closeAll();
+  worktreeTabs.clear();
   for (const id of [...taskTails.keys()]) stopTaskTail(id);
   taskSubscribers.clear();
   stopConfigWatch?.();

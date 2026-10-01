@@ -15,6 +15,7 @@ import type {
   SessionLogEndEvent,
   SessionLogEntryEvent,
   SessionLogInitEvent,
+  WorktreeLogStateEvent,
 } from "../shared/ipc.js";
 
 const api: MaestroApi = {
@@ -271,6 +272,27 @@ const api: MaestroApi = {
         ipcRenderer.removeListener(IPC_EVENTS.logEnd, onEnd);
         ipcRenderer.removeListener(IPC_EVENTS.logReset, onReset);
         void ipcRenderer.invoke(IPC.logUnsubscribe);
+      };
+    },
+  },
+  worktreeLog: {
+    list: () => ipcRenderer.invoke(IPC.worktreeLogList),
+    open: (p) => ipcRenderer.invoke(IPC.worktreeLogOpen, p),
+    close: (p) => ipcRenderer.invoke(IPC.worktreeLogClose, p),
+    subscribe: (handlers) => {
+      const onState = (_e: unknown, p: WorktreeLogStateEvent) => handlers.onState(p);
+      const onInit = (_e: unknown, p: SessionLogInitEvent) => handlers.onInit(p);
+      const onEntry = (_e: unknown, p: SessionLogEntryEvent) => handlers.onEntry(p);
+      const onEnd = (_e: unknown, p: SessionLogEndEvent) => handlers.onEnd(p);
+      ipcRenderer.on(IPC_EVENTS.worktreeLogState, onState);
+      ipcRenderer.on(IPC_EVENTS.worktreeLogInit, onInit);
+      ipcRenderer.on(IPC_EVENTS.worktreeLogEntry, onEntry);
+      ipcRenderer.on(IPC_EVENTS.worktreeLogEnd, onEnd);
+      return () => {
+        ipcRenderer.removeListener(IPC_EVENTS.worktreeLogState, onState);
+        ipcRenderer.removeListener(IPC_EVENTS.worktreeLogInit, onInit);
+        ipcRenderer.removeListener(IPC_EVENTS.worktreeLogEntry, onEntry);
+        ipcRenderer.removeListener(IPC_EVENTS.worktreeLogEnd, onEnd);
       };
     },
   },

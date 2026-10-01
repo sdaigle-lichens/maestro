@@ -28,6 +28,7 @@ const {
   ensureSessionRunId,
   writeStamp,
   ensureSessionPaths,
+  sendMessageHandoff,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -132,7 +133,21 @@ function parseHandoff(msg) {
           p
         );
       } else {
-        const { status, label } = parseHandoff(lastMsg);
+        let handoffMsg = lastMsg;
+        let { status, label } = parseHandoff(handoffMsg);
+        // `078`: an agent that hands back through a SendMessage call has no HANDOFF: line in its
+        // final message. Recover it from the agent's own transcript so the entry is not `unknown`.
+        if (status === "unknown" && p.agent_transcript_path) {
+          try {
+            const viaSend = sendMessageHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
+            if (viaSend) {
+              handoffMsg = viaSend;
+              ({ status, label } = parseHandoff(viaSend));
+            }
+          } catch {
+            // No readable transcript — keep the unknown entry.
+          }
+        }
         // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
         // thread and every sibling subagent share (only `p.agent_transcript_path` is private to
         // this agent, and deriveUsage doesn't read it — see session-usage.ts's header). Treat this
@@ -146,7 +161,7 @@ function parseHandoff(msg) {
             agent_id: agentId,
             status,
             label,
-            output: lastMsg,
+            output: handoffMsg,
             log: label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
           },
           p

@@ -41,6 +41,9 @@ export {
   SESSION_LOG_NAME,
   SESSION_STATE_NAME,
   SESSION_TASKS_NAME,
+  SESSION_WORKTREE_NAME,
+  readWorktreePointer,
+  sessionDirsFor,
   SESSION_ID_ENV,
   LEGACY_SESSION_FILES,
   isValidSessionId,
@@ -130,3 +133,25 @@ export {
   isRootSkillPath,
   type ProjectSkillEntry,
 } from "../skill-resolve.js";
+
+// Git-worktree isolation for concurrent sessions (`074`). `fs`/`path` only — creating the worktree
+// (which needs the git binary) lives in `maestro-task-status.cjs worktree`, not here. Keeps
+// `grep -c "node:sqlite"` on the generated maestro-session.cjs at 0.
+export {
+  mainCheckoutRoot,
+  isLinkedWorktree,
+  taskNumber,
+  worktreeBranchFor,
+  worktreePathFor,
+  type WorktreePointer,
+} from "../worktree.js";
+
+// Channel-only writes for the reviewer and refactor agents (`078`) and SendMessage hand-back
+// recovery. `fs`/`path` only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  checkChannelWrite,
+  isChannelOnlyAgent,
+  CHANNEL_ONLY_AGENTS,
+  type ChannelWriteVerdict,
+} from "../channel-write-guard.js";
+export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";

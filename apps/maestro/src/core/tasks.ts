@@ -10,6 +10,7 @@ import path from "node:path";
 import type { MaestroTask, TaskStatus } from "./contracts.js";
 export type { MaestroTask, TaskStatus };
 
+import { mainCheckoutRoot } from "./worktree.js";
 import { readClaims, deleteClaimIfAny, type TaskClaim } from "./claims.js";
 export { CLAIMS_DIR_NAME, claimsDirFor, claimTask, releaseTask } from "./claims.js";
 export type { TaskClaim, ClaimResult, ReleaseResult } from "./claims.js";
@@ -24,7 +25,9 @@ interface StatusEntry {
 type StatusMap = Record<string, StatusEntry>;
 
 export function tasksDirFor(projectRoot: string): string {
-  return path.join(projectRoot, TASKS_SUBDIR);
+  // `074`: the queue is ALWAYS the main checkout's, even when called from inside a session's git
+  // worktree — status.json and claims are shared state, never forked per worktree.
+  return path.join(mainCheckoutRoot(projectRoot), TASKS_SUBDIR);
 }
 
 function parseTitle(content: string, filename: string): string {
@@ -158,6 +161,7 @@ function tasksFromFiles(
 
 export function listTasks(projectRoot: string): MaestroTask[] {
   if (!projectRoot) return [];
+  projectRoot = mainCheckoutRoot(projectRoot);
   const dir = tasksDirFor(projectRoot);
   const files = listTaskFiles(dir);
   const claims = readClaims(projectRoot, dir);
@@ -173,6 +177,7 @@ export function listTasks(projectRoot: string): MaestroTask[] {
  */
 export function closeTask(projectRoot: string, filename: string): MaestroTask[] {
   if (!projectRoot) return [];
+  projectRoot = mainCheckoutRoot(projectRoot);
   const dir = tasksDirFor(projectRoot);
   const files = listTaskFiles(dir);
   const existingStatus = readStatusMap(dir);
@@ -198,6 +203,7 @@ const POSTMORTEMS_LOG = "postmortems.log";
  */
 export function deleteTask(projectRoot: string, filename: string): MaestroTask[] {
   if (!projectRoot) return [];
+  projectRoot = mainCheckoutRoot(projectRoot);
   const dir = tasksDirFor(projectRoot);
   const files = listTaskFiles(dir);
   const base = path.basename(filename);

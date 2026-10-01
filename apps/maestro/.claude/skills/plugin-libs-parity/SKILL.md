@@ -131,6 +131,10 @@ only and every hook already requires this bundle" argument:
 - `064` — all of `session-paths.ts` (`resolveSessionId`, `isValidSessionId`, `sessionPathsFor`,
   `resolveSessionPaths`, `ensureSessionPaths`, `ensureSessionsRoot`, `listSessionIds`,
   `removeSessionState`, `LEGACY_SESSION_FILES`, `SESSIONS_DIR_NAME`).
+- `078` — the channel write guard (`checkChannelWrite`, `isChannelOnlyAgent`, `CHANNEL_ONLY_AGENTS`,
+  from `channel-write-guard.ts`, backing `maestro-channel-write-guard.js`) and the transcript
+  hand-back parser (`lastHandoffLabel`, `sendMessageHandoff`, from `handoff-label.ts`). Still `fs`/`path`
+  only; keep the `node:sqlite` grep at `0`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

@@ -358,22 +358,26 @@
     "blockedBy": []
   },
   "074-isolate-concurrent-sessions-in-a-git-worktree.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "075-show-worktree-sessions-as-tabs-in-the-session-log.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "074-isolate-concurrent-sessions-in-a-git-worktree.md"
     ]
   },
   "076-merge-a-finished-worktree-task-back-to-the-base-branch.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "074-isolate-concurrent-sessions-in-a-git-worktree.md"
     ]
   },
   "077-keep-session-state-when-a-session-is-stopped-and-resumed.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "078-let-read-only-agents-write-their-handoff-channel-files-and-only-those.md": {
     "status": "done",
     "blockedBy": []
   }

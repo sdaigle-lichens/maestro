@@ -44,3 +44,42 @@ not in `lib/`, and not generated; there is no `plugin-entries/claims.ts` — mus
 sync the way the cascade pair does. Parity is checked in `test/core/claims.test.ts` and
 `test/core/task-claims-cli.test.ts`, not by `parity.test.ts`'s snapshot-diff pattern, since there is
 no legacy CJS claims module being replaced.
+
+## Worktree isolation (`074`)
+
+When `claim` succeeds but **another live session already holds a claim**, the orchestrator runs
+`maestro-task-status.cjs worktree <filename>` (template Step 2), which creates a sibling git worktree
+`<parent>/<repo>-task-NNN` on branch `task-NNN` and moves the session's state into it
+(`apps/maestro/src/core/worktree.ts` holds the pure naming/pointer helpers; the CLI does the `git`).
+
+- **The queue never moves.** `status.json` and `claims/` always resolve to the *main checkout*, even
+  when the code runs from inside a worktree — `mainCheckoutRoot(dir)` reads a linked worktree's
+  `.git` file (`gitdir: <main>/.git/worktrees/<name>`) to find it. It exists twice, by hand:
+  `worktree.ts` and `maestro-tasks.cjs` (which `tasksDirFor` goes through). Change one, change both.
+- The command is a no-op (prints "no worktree needed") when no other live session holds a claim, and
+  **refuses, rather than reuses or overwrites,** a worktree path or branch that already exists —
+  it tells the user and the orchestrator must not fall back to the main checkout.
+- A worktree and its branch are **never auto-removed or merged by themselves**; `done` just reports
+  branch + path to the user.
+
+### Finishing a worktree task (`076`)
+
+`maestro-task-status.cjs merge <filename|NNN>` — a CLI subcommand (no new lib export, so no
+`build:plugin-libs`), run by the orchestrator **only after the user explicitly asks** (template Step 4
+offers it, never does it). Decided from how worktree tasks behave: the branch is a plain local
+`task-NNN` the CLI already knows, the worktree is a sibling checkout, and `done` has marked the queue
+in the main checkout — so the merge is one `git merge --no-ff` in the main checkout.
+
+- **Refuses, changing nothing:** task not `done` in `status.json`; no branch / no worktree for it
+  (found via `git worktree list`, not a guessed path); uncommitted changes in the worktree (the
+  untracked `.claude/maestro.json` copy `worktree` made is ignored); main checkout on a detached HEAD
+  or mid-merge; or git itself refusing because the merge would overwrite local changes.
+- **Conflict:** the merge is aborted (`merge --abort`) so main is exactly as before, the worktree and
+  branch stay, and the conflicting files are listed with how to resolve (merge the base into the
+  branch inside the worktree, commit, ask again). The orchestrator never resolves one unasked.
+- **Success:** `git worktree remove` (no `--force`), `git branch -d` (merged-only), and any session
+  `worktree.json` pointer aimed at the removed path is deleted.
+- **No pull-request mode, deliberately.** A PR needs a remote, a forge CLI and credentials the plugin
+  cannot assume, and pushing is the one irreversible step; the branch is an ordinary local branch, so
+  `git push -u origin task-NNN` plus the user's own PR flow works at any time before they ask for the
+  merge. One local mechanism covers the in-use case; nothing is ever pushed.

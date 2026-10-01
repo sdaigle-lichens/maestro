@@ -296,6 +296,21 @@ function collectReportContext(cfg, projectDir, agentType) {
 
   const parts = [];
 
+  // `074`: this session works in a git worktree (another live session held a claim). Said first and
+  // on resumed runs too — a subagent that edits the main checkout instead would defeat the isolation.
+  const sessionState = sess ? readJson(sess.state) : null;
+  const wt = sessionState && sessionState.worktree;
+  if (wt && typeof wt.path === "string" && wt.path) {
+    const mainRoot = typeof wt.main_root === "string" && wt.main_root ? wt.main_root : projectDir;
+    parts.push(
+      `Git worktree: this task runs in an isolated worktree, because another Maestro session is working in the main checkout.\n` +
+        `- Work ONLY inside ${wt.path} (branch ${wt.branch || "unknown"}). Use that directory as your working directory and absolute paths under it for every read, edit and command.\n` +
+        `- Never edit files under ${mainRoot} outside \`.claude/\` — that is the other session's working tree.\n` +
+        `- The shared \`.claude/\` state stays in the main checkout: the task queue (${mainRoot}/.claude/maestro-tasks/) and handoff channels (${mainRoot}/.claude/channels/) are read and written at those absolute paths, not inside the worktree.\n` +
+        `- Do not merge, push, or remove the worktree or branch; the user does that.`
+    );
+  }
+
   const result = cfg && cfg.version === 3 ? collect(cfg, sess ? sess.state : null, agentType) : null;
 
   // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
