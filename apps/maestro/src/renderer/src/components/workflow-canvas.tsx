@@ -34,6 +34,12 @@ import {
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
+import {
+  alignMainSession,
+  DAGRE_NODE_BASE_HEIGHT,
+  DAGRE_RANK_SEP,
+  hasSavedPositions,
+} from "../../../core/canvas-layout.js";
 
 interface WorkflowCanvasProps {
   workflow: MaestroWorkflowV3 | null;
@@ -70,12 +76,12 @@ const DRAG_THRESHOLD_PX = 4;
 function dagreNodeHeight(n: Node): number {
   const inst = n.data?.instanceData as MaestroInstanceV3 | undefined;
   const skills = (inst?.loaded_skills?.length ?? 0) + (inst?.referenced_skills?.length ?? 0);
-  return 60 + skills * 30;
+  return DAGRE_NODE_BASE_HEIGHT + skills * 30;
 }
 
 function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
   const g = new dagre.graphlib.Graph();
-  g.setGraph({ rankdir: "TB", ranksep: 80, nodesep: 60 });
+  g.setGraph({ rankdir: "TB", ranksep: DAGRE_RANK_SEP, nodesep: 60 });
   g.setDefaultEdgeLabel(() => ({}));
   for (const n of nodes) g.setNode(n.id, { width: 180, height: dagreNodeHeight(n) });
   for (const e of edges) g.setEdge(e.source, e.target);
@@ -84,18 +90,6 @@ function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[] {
     const pos = g.node(n.id);
     return { ...n, position: { x: pos.x - 90, y: pos.y - dagreNodeHeight(n) / 2 } };
   });
-}
-
-// `main-session` is synthetic and never persisted, so with saved positions it would sit at (0,0)
-// while dagre had put it above the first step. Re-derive the same relation: same x as the first
-// step, one rank (140px) above it.
-function alignMainSession(nodes: Node[], edges: Edge[]): Node[] {
-  const entry = edges.find((e) => e.source === "main-session" && e.type === "successEdge");
-  const target = entry && nodes.find((n) => n.id === entry.target);
-  if (!target) return nodes;
-  return nodes.map((n) =>
-    n.id === "main-session" ? { ...n, position: { x: target.position.x, y: target.position.y - 140 } } : n
-  );
 }
 
 // ── Helpers: MaestroWorkflowV3 <-> React Flow ──────────────────────────
@@ -888,7 +882,7 @@ export default function WorkflowCanvas({
     }
     let nodes = workflowToRfNodes(workflow, instances);
     const edges = workflowToRfEdges(workflow);
-    const hasPositions = workflow.nodes.length > 0 && workflow.nodes.every((n) => n.position != null);
+    const hasPositions = hasSavedPositions(workflow.nodes);
     if (!hasPositions) nodes = applyDagreLayout(nodes, edges);
     else nodes = alignMainSession(nodes, edges);
     setRfNodes(nodes);

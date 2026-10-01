@@ -116,11 +116,11 @@ describe("src/core boundary", () => {
   // from it drags it into the renderer's BUNDLE. Quietly — types still resolve and tsc still
   // passes whenever @types/node is in scope — so nothing but an assertion catches it.
   //
-  // Exactly two modules are renderer-safe, and both are self-contained by construction:
-  // `contracts.ts` is interfaces only, `text.ts` has no imports at all. Adding a third means
-  // proving it imports nothing that reaches the filesystem, so the list is deliberately short and
+  // Exactly three modules are renderer-safe, and all are self-contained by construction:
+  // `contracts.ts` is interfaces only, `text.ts` and `canvas-layout.ts` have no imports at all.
+  // Adding a fourth means proving it imports nothing that reaches the filesystem, so the list is deliberately short and
   // deliberately here rather than derived.
-  const RENDERER_SAFE = ["contracts", "text"];
+  const RENDERER_SAFE = ["canvas-layout", "contracts", "text"];
 
   const outsideMain = [...sourcesUnder("src/shared"), ...sourcesUnder("src/preload"), ...sourcesUnder("src/renderer")];
   const coreDir = path.join(appRoot, "src", "core");

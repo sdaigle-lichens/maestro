@@ -338,7 +338,7 @@
     "blockedBy": []
   },
   "069-make-alignmainsession-unit-testable.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "070-make-the-session-sweep-ipc-wiring-unit-testable.md": {
@@ -355,6 +355,10 @@
   },
   "073-show-context-window-usage-in-the-session-log.md": {
     "status": "done",
+    "blockedBy": []
+  },
+  "074-isolate-concurrent-sessions-in-a-git-worktree.md": {
+    "status": "ready",
     "blockedBy": []
   }
 }
