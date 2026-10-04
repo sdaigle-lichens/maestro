@@ -27,5 +27,6 @@ The fix is one of:
 
 Generalise it: **a template change outside a managed region is not deliverable by an update.** If
 the change must reach existing projects, either put it inside a region, or say plainly in the ship
-notes that it needs the file deleted first. `plugins/maestro/skills/maestro-update/SKILL.md` carries
-this as a Notes bullet so a user driving the terminal path is told the same thing.
+notes that it needs the file deleted first. `plugins/maestro/skills/maestro-update/` carries this in
+`references/frontmatter-trap.md` (pointed to from a Notes bullet) so a user driving the terminal
+path is told the same thing.
