@@ -65,8 +65,10 @@ Two different ways, depending on which reader:
   with no registration anywhere. Heading anchors come from `slugifyHeading()`, which the search index
   and the reader must go on sharing — a second slugifier means search hits that scroll nowhere.
 - **The global `/docs` reader** (unrelated to the open project): drop a `.md` file into
-  `apps/maestro/docs/app/` for the `"app"` group (Maestro's own **end-user** docs — see the root
-  `CLAUDE.md`'s publishing rule for why developer-facing material may not live there), or the
+  `plugins/maestro/docs/app/` for the `"app"` group (Maestro's own **end-user** docs, shipped in the
+  plugin so `maestro-help` can read them — see the root `CLAUDE.md`'s publishing rule for why
+  developer-facing material may not live there, and bump the plugin's version), or into
+  `apps/maestro/docs/app/` for an app-only page the plugin needn't ship (the art credits), or the
   repo-root `docs/` for the `"claude-code"` group (synced into a packaged build by
   `scripts/sync-claude-docs.mjs`). `globalDocsData()`/`readGlobalDoc()` in `src/core/global-docs.ts`
   pick it up the same way, with no registration.

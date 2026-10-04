@@ -96,20 +96,23 @@ export function bundledPluginVersion(): string | null {
 }
 
 /**
- * The global Docs page's Maestro-app corpus — `apps/maestro/docs/app/*.md`.
+ * The global Docs page's Maestro-app corpus, merged from two directories:
  *
- * Simpler than `bundledAgentsDir()` because there is nothing to search up for: the directory is
- * physically inside `apps/maestro`'s own tree, so `app.getAppPath()` (`apps/maestro` in dev/build,
- * `…/resources/app.asar` when packaged) already resolves onto it in every mode with zero extra
- * packaging config — same fixed point `bundledAgentsDir()` uses, one join away.
+ * 1. `<bundled plugin>/docs/app/` — the end-user docs. They live in the plugin, not here, because
+ *    `maestro-help` reads them relative to its own skill directory, and a marketplace install
+ *    copies the plugin folder alone. Found through `bundledPluginDir()`, so the app and the skill
+ *    read the one copy.
+ * 2. `apps/maestro/docs/app/` — app-only pages (the art credits) the plugin has no reason to ship.
+ *    `app.getAppPath()` resolves onto it in every mode, one join away.
  *
- * Null (rather than a directory that doesn't exist) until the docs themselves are authored — see
- * `apps/maestro/docs/app/`. Every caller degrades gracefully on null; see `global-docs.ts`.
+ * `MAESTRO_APP_DOCS_DIR` replaces both. Directories that don't exist are dropped; every caller
+ * degrades gracefully on an empty list — see `global-docs.ts`.
  */
-export function maestroAppDocsDir(): string | null {
+export function maestroAppDocsDirs(): string[] {
   const fromEnv = process.env.MAESTRO_APP_DOCS_DIR;
-  if (fromEnv) return fs.existsSync(fromEnv) ? fromEnv : null;
+  if (fromEnv) return fs.existsSync(fromEnv) ? [fromEnv] : [];
 
-  const dir = path.join(app.getAppPath(), "docs", "app");
-  return fs.existsSync(dir) ? dir : null;
+  const plugin = bundledPluginDir();
+  const dirs = [plugin ? path.join(plugin, "docs", "app") : null, path.join(app.getAppPath(), "docs", "app")];
+  return dirs.filter((d): d is string => d !== null && fs.existsSync(d));
 }

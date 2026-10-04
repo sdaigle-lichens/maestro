@@ -2317,7 +2317,7 @@ export interface DocContent {
  *
  * NOT gated on an open project — `app` is this app's own end-user docs, read from a directory the
  * app ships rather than from anything under a project root. Empty rather than the call failing
- * when the directory doesn't resolve (see `maestroAppDocsDir`).
+ * when no directory resolves (see `maestroAppDocsDirs`).
  */
 export interface GlobalDocsData {
   app: DocMeta[];
