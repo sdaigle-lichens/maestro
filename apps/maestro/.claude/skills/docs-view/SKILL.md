@@ -13,7 +13,7 @@ Two readers, one rendering stack.
 
 | Route | Corpus | Channels | Gated on a project? |
 | --- | --- | --- | --- |
-| `/docs/$group/$slug` | The app's own end-user docs, from a directory the app **ships** (`maestroAppDocsDir` in `src/main/bundled-assets.ts`) | `data:global-docs` / `data:global-doc` | No |
+| `/docs/$group/$slug` | The app's own end-user docs, from directories the app **ships** — the plugin's `docs/app/` plus `apps/maestro/docs/app/` (`maestroAppDocsDirs` in `src/main/bundled-assets.ts`) | `data:global-docs` / `data:global-doc` | No |
 | `/project-docs/$slug` | The open project's `docs/` | `data:docs` / `data:doc` | Yes |
 
 `$group` is a route param with exactly one value today (`"app"`), kept so a second global corpus can

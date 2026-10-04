@@ -1,7 +1,7 @@
 // /docs — the GLOBAL documentation landing page: the Maestro app's own docs.
 //
-// NOT gated on an open project — `window.maestro.data.globalDocs()` reads a fixed directory the app
-// ships (`apps/maestro/docs/app/`), never the open project's own `docs/`. That reader lives at
+// NOT gated on an open project — `window.maestro.data.globalDocs()` reads fixed directories the app
+// ships (`plugins/maestro/docs/app/` and `apps/maestro/docs/app/`), never the open project's own `docs/`. That reader lives at
 // `/project-docs` now (see routes/project-docs.index.tsx) — this route took over `/docs` per the
 // hamburger menu's "Docs = the global page" decision. Claude Code / Anthropic-ecosystem questions
 // aren't a local corpus here — `maestro-help` answers those by fetching the official docs instead.

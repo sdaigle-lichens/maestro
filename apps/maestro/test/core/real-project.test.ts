@@ -133,7 +133,7 @@ describe("save against a really-installed project", () => {
 
   // Frontmatter lives OUTSIDE the managed regions, so a re-sync must not touch it — which is also
   // why an already-installed project needs a purge-and-reinstall to receive the new allowed-tools
-  // line. See plugins/maestro/skills/maestro-update/SKILL.md.
+  // line. See plugins/maestro/skills/maestro-update/references/frontmatter-trap.md.
   it("leaves everything before the STEPS marker byte-identical across a managed-region re-sync", async () => {
     const skillPath = orchestratorSkillPath(root);
     const before = fs.readFileSync(skillPath, "utf8");

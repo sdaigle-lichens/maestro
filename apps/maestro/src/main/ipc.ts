@@ -153,7 +153,7 @@ import type {
   UsageStatsView,
   WorkflowsData,
 } from "../shared/ipc.js";
-import { bundledAgentsDir, bundledPluginDir, bundledPluginVersion, maestroAppDocsDir } from "./bundled-assets.js";
+import { bundledAgentsDir, bundledPluginDir, bundledPluginVersion, maestroAppDocsDirs } from "./bundled-assets.js";
 import {
   answerPermission,
   answerQuestion,
@@ -678,13 +678,13 @@ export function registerIpc(): void {
   // fresh on every call (never cached at module load) so an env override set between calls, e.g. in
   // a test, is honoured immediately.
   ipcMain.handle(IPC.globalDocsData, (): GlobalDocsData => {
-    return globalDocsData({ app: maestroAppDocsDir() });
+    return globalDocsData({ app: maestroAppDocsDirs() });
   });
 
   // Throws on an invalid slug, a missing file, and an unreadable one — same discipline as `data:doc`
   // above.
   ipcMain.handle(IPC.globalDocContent, (_e, group: "app", slug: string): DocContent => {
-    return readGlobalDoc(group, slug, { app: maestroAppDocsDir() });
+    return readGlobalDoc(group, slug, { app: maestroAppDocsDirs() });
   });
 
   // ── save ─────────────────────────────────────────────────────────────
