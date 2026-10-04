@@ -1,6 +1,7 @@
 ---
 name: maestro-uninstall
 description: "Uninstalls the Maestro orchestrator for this project — removes every Maestro hook registered against .claude/scripts/ from .claude/settings.json and deletes the ephemeral session state (the whole .claude/maestro_sessions/ directory, plus any legacy flat maestro_session*.json / .jsonl files an older runtime left). By default keeps maestro.json and the orchestrator skill. Pass --purge to also remove the installed orchestrator skill, runtime scripts, and the maestro.json config — everything the install pipeline produced; purge additionally reports any Maestro tasks (in Claude Code's task list and in the file-based queue at .claude/maestro-tasks/), any materialized report overrides (.claude/reports/), and any materialized handoff protocols (.claude/handoffs/), and, only with explicit user permission asked separately for each, deletes them. Use when the user wants to turn off Maestro, undo /maestro-install, or uninstall the subagents workflow."
+disable-model-invocation: true
 ---
 
 # Maestro Uninstall

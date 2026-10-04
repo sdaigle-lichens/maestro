@@ -1,6 +1,7 @@
 ---
 name: maestro-install
 description: "Installs the Maestro orchestrator into this project from the terminal, with no desktop app required. Detects the implementation agent(s) from the repo, scaffolds the maestro skill + runtime scripts + settings (bash-validation hook) + gitignore, seeds .claude/maestro.json, and renders the orchestrator's handoff table. Use when the user runs /maestro-install, or asks to set up / scaffold / install the Maestro subagents workflow for this project. To edit the workflow graph visually afterwards, open the project in the Maestro desktop app (apps/maestro)."
+disable-model-invocation: true
 ---
 
 # Maestro Install
