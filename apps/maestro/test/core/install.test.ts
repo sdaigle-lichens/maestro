@@ -124,6 +124,8 @@ function legacyPluginRoot(): string {
       fs.symlinkSync(path.join(PLUGIN_ROOT, rel, entry.name), path.join(root, rel, entry.name));
     }
   }
+  // The frozen installer still copies `bash-validation.sh`, which the plugin no longer ships.
+  fs.writeFileSync(path.join(root, "scripts", "bash-validation.sh"), "#!/bin/sh\n");
   fs.copyFileSync(LEGACY_INSTALL, path.join(root, "scripts", "maestro-install.cjs"));
   return root;
 }
@@ -160,7 +162,10 @@ describe("differential against the legacy installer", () => {
 
     // The port copies strictly more (the hook scripts the plugin used to run from its own root),
     // so the legacy tree must be a SUBSET of ours — with identical bytes for every shared file.
-    const legacyFiles = filesUnder(path.join(theirs, ".claude")).filter((f) => f !== "settings.json");
+    // `bash-validation.sh` is excluded: it is retired, so ours deliberately lacks it.
+    const legacyFiles = filesUnder(path.join(theirs, ".claude")).filter(
+      (f) => f !== "settings.json" && !f.endsWith("bash-validation.sh")
+    );
     expect(legacyFiles.length).toBeGreaterThan(5);
     for (const rel of legacyFiles) {
       const a = fs.readFileSync(path.join(mine, ".claude", rel));
@@ -181,11 +186,12 @@ describe("differential against the legacy installer", () => {
     }
     expect(mineGitignore).toContain("**/.claude/channels/");
 
-    // settings.json is where the port deliberately does more. The legacy entry has to survive
-    // verbatim: maestro-uninstall.js removes it by exact string match.
-    const legacyBashCommands = commandsFor(readSettings(theirs), "PreToolUse");
-    expect(legacyBashCommands).toEqual(["$CLAUDE_PROJECT_DIR/.claude/scripts/bash-validation.sh"]);
-    expect(commandsFor(readSettings(mine), "PreToolUse")).toContain(legacyBashCommands[0]);
+    // settings.json is where the port deliberately differs: the legacy installer registered the
+    // retired bash-validation hook, which ours no longer does.
+    expect(commandsFor(readSettings(theirs), "PreToolUse")).toEqual([
+      "$CLAUDE_PROJECT_DIR/.claude/scripts/bash-validation.sh",
+    ]);
+    expect(commandsFor(readSettings(mine), "PreToolUse").join("\n")).not.toContain("bash-validation");
   });
 
   it("keeps the legacy behaviour of preserving a rendered HANDOFFS table on re-sync", async () => {
@@ -248,9 +254,42 @@ describe("installRuntime", () => {
       expect(command).not.toContain("CLAUDE_PLUGIN_ROOT");
       expect(fs.existsSync(path.join(root, ".claude", "scripts", reg.script))).toBe(true);
     }
+  });
 
-    // The .sh hook has to be executable — it is registered as a bare command, not `bash <path>`.
-    expect(fs.statSync(path.join(root, ".claude", "scripts", "bash-validation.sh")).mode & 0o111).toBeTruthy();
+  it("removes the retired bash-validation hook and script from a project an older release installed", async () => {
+    const root = makeProject("p");
+    fs.mkdirSync(path.join(root, ".claude", "scripts"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "scripts", "bash-validation.sh"), "#!/bin/sh\n");
+    fs.writeFileSync(
+      path.join(root, ".claude", "settings.json"),
+      JSON.stringify({
+        hooks: {
+          PreToolUse: [
+            {
+              matcher: "Bash",
+              hooks: [
+                { type: "command", command: "/usr/local/bin/my-guard.sh" },
+                { type: "command", command: "$CLAUDE_PROJECT_DIR/.claude/scripts/bash-validation.sh" },
+              ],
+            },
+          ],
+        },
+      })
+    );
+
+    const report = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+    expect(report.hooksRemoved).toEqual(["PreToolUse:bash-validation.sh"]);
+    expect(report.retiredScriptsRemoved).toEqual([".claude/scripts/bash-validation.sh"]);
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "bash-validation.sh"))).toBe(false);
+    const commands = commandsFor(readSettings(root), "PreToolUse");
+    expect(commands).toContain("/usr/local/bin/my-guard.sh");
+    expect(commands.join("\n")).not.toContain("bash-validation");
+
+    // Gone for good: a second run has nothing left to remove.
+    const second = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    expect(second.hooksRemoved).toEqual([]);
+    expect(second.retiredScriptsRemoved).toEqual([]);
   });
 
   // `041` — the collision the canvas refuses to create can still reach an install through a
@@ -441,13 +480,10 @@ describe("installRuntime", () => {
     expect(commandsFor(settings, "PreToolUse")).toContain("/usr/local/bin/my-guard.sh");
     expect(commandsFor(settings, "SessionEnd")).toContain("my-cleanup.sh");
     expect(commandsFor(settings, "Notification")).toEqual(["say hi"]);
-    // Ours went into the user's existing Bash matcher rather than a competing second entry.
+    // The user's Bash matcher is left exactly as they wrote it — we register no Bash hook any more.
     const bashEntries = settings.hooks.PreToolUse.filter((e: any) => e.matcher === "Bash");
     expect(bashEntries).toHaveLength(1);
-    expect(bashEntries[0].hooks.map((h: any) => h.command)).toEqual([
-      "/usr/local/bin/my-guard.sh",
-      "$CLAUDE_PROJECT_DIR/.claude/scripts/bash-validation.sh",
-    ]);
+    expect(bashEntries[0].hooks.map((h: any) => h.command)).toEqual(["/usr/local/bin/my-guard.sh"]);
   });
 
   it("refuses to touch an unparseable settings.json, and leaves the project retryable", async () => {

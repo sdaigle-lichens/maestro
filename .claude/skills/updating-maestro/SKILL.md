@@ -78,9 +78,7 @@ injection + handoff routing), `PreToolUse`/`SubagentStop` logging, the `TaskCrea
 (since `0.4.0`) the `maestro-step0` readiness check **silently never fire** — no error, the files
 just aren't there. **Step 0 is the worst of these**, because `0.4.0` deleted its prose from
 `templates/maestro/SKILL.md` outright: there is no fallback left in the orchestrator, so a stale
-project gets no readiness check, no fork check, and nothing telling it either was skipped. Meanwhile
-`bash-validation.sh` keeps working, because the installer copies _that one into the project_. That
-asymmetry is what makes the failure look random: one Maestro hook works, the rest don't.
+project gets no readiness check, no fork check, and nothing telling it either was skipped.
 
 This exact gap froze `lichens-ordonnancement-ui` at a May-2026 snapshot — the plugin had been edited
 dozens of times, but `version` stayed `0.1.0`, so autoUpdate never re-pulled.

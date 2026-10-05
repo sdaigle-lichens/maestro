@@ -47,6 +47,7 @@ import { tasksDirFor, CLAIMS_DIR_NAME } from "./tasks.js";
 import { SESSIONS_DIR_NAME } from "./session-paths.js";
 import {
   HOOK_REGISTRATIONS,
+  RETIRED_HOOK_SCRIPTS,
   installStatus,
   projectPath,
   readSettings,
@@ -139,7 +140,7 @@ const SESSION_FILES = [
 
 // ── which hook commands are ours ───────────────────────────────────────────
 
-const HOOK_SCRIPT_NAMES = new Set(HOOK_REGISTRATIONS.map((r) => r.script));
+const HOOK_SCRIPT_NAMES = new Set([...HOOK_REGISTRATIONS.map((r) => r.script), ...RETIRED_HOOK_SCRIPTS]);
 
 /**
  * Every `.claude/scripts/<name>` reference in a command string.
@@ -246,7 +247,7 @@ function filesUnder(projectRoot: string, dir: string): string[] {
  */
 function looksAppInstalled(rel: string): boolean {
   const name = path.posix.basename(rel);
-  return name.startsWith("maestro-") || name === "bash-validation.sh";
+  return name.startsWith("maestro-") || RETIRED_HOOK_SCRIPTS.includes(name);
 }
 
 /**

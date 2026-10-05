@@ -49,7 +49,7 @@ const { tasksDir, listTaskFiles, statusPath } = require("./lib/maestro-tasks.cjs
 // and the asset list this uninstall targets can never drift from what actually gets
 // installed (`060`). Requiring this file has no side effect: everything that reads or
 // writes a project inside it runs only under `require.main === module`.
-const { HOOK_REGISTRATIONS, runtimeAssets } = require("./maestro-install.js");
+const { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, runtimeAssets } = require("./maestro-install.js");
 
 const args = process.argv.slice(2);
 const purge = args.includes("--purge");
@@ -73,7 +73,7 @@ for (const [flag, needsPurge] of [
 // install's own registrations rather than hand-maintained here — an unlisted hook
 // used to survive uninstall silently and still be reported as "nothing to remove"
 // (`060`).
-const HOOK_SCRIPT_NAMES = new Set(HOOK_REGISTRATIONS.map((r) => r.script));
+const HOOK_SCRIPT_NAMES = new Set([...HOOK_REGISTRATIONS.map((r) => r.script), ...RETIRED_HOOK_SCRIPTS]);
 
 /**
  * Every `.claude/scripts/<name>` reference in a command string.
@@ -193,7 +193,7 @@ function materializedFilesFinding(dir) {
  */
 function looksAppInstalled(absPath) {
   const name = path.basename(absPath);
-  return name.startsWith("maestro-") || name === "bash-validation.sh";
+  return name.startsWith("maestro-") || RETIRED_HOOK_SCRIPTS.includes(name);
 }
 
 /**

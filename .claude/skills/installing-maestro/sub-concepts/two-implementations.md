@@ -42,7 +42,7 @@ reports via `priorReportSeeds` from `lib/maestro-report-defaults.cjs`, handoffs 
 ## What only the app does
 
 - **Reports what changed on disk.** `InstallReport` carries `scriptsWritten`, `hooksAdded`,
-  `gitignoreUpdated`, `configSeeded`, `runtimeVersionUpdated` and an `unchanged` flag, which is what
+  `hooksRemoved`, `retiredScriptsRemoved`, `gitignoreUpdated`, `configSeeded`, `runtimeVersionUpdated` and an `unchanged` flag, which is what
   lets a second run say "nothing to do" instead of claiming success ambiguously.
 - **Copies only what differs.** "Always refreshed" in the script meant an unconditional
   `copyFileSync`; comparing hashes first is what makes `unchanged` meaningful.

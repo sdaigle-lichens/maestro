@@ -223,8 +223,6 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // < 22.5 has no `node:sqlite`, and the copy being present does not make it importable.
   { src: "scripts/lib/maestro-report-defaults.cjs", dest: ".claude/scripts/lib/maestro-report-defaults.cjs" },
   { src: "scripts/lib/maestro-handoff-defaults.cjs", dest: ".claude/scripts/lib/maestro-handoff-defaults.cjs" },
-  // PreToolUse Bash guard that blocks reading .env secrets. Runs as a bare command, hence +x.
-  { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh, which does the same three
   // deletions and nothing more (its container teardown went with M5) — the twin is node because
   // the .sh parses the hook payload with python3, which a project cannot assume is installed.
@@ -276,13 +274,14 @@ export interface HookRegistration {
 const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
 
 /**
- * The bash-validation command string, byte-for-byte as the legacy installer wrote it.
+ * Hook scripts earlier releases registered and copied that this one no longer ships.
  *
- * Unquoted and un-prefixed on purpose: maestro-uninstall.js removes it by exact string match, and
- * projects installed by the old skill already carry this exact value. Re-quoting it here would
- * duplicate the entry on those projects and orphan it on uninstall.
+ * Dropping a script from the manifest only stops NEW installs getting it; a project installed
+ * before the removal keeps the settings.json entry and the file, and the entry then fires at a
+ * script nothing refreshes. Install therefore removes both (`removeRetiredHooks`), and uninstall
+ * still recognises these names so it can clean up a project that was never re-installed.
  */
-const BASH_VALIDATION_COMMAND = `${SCRIPTS_VAR}/bash-validation.sh`;
+export const RETIRED_HOOK_SCRIPTS = ["bash-validation.sh"];
 
 function nodeHook(event: HookEvent, matcher: string, script: string): HookRegistration {
   return { event, matcher, script, command: `node "${SCRIPTS_VAR}/${script}"`, id: `${event}:${script}` };
@@ -319,13 +318,6 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
-  {
-    event: "PreToolUse",
-    matcher: "Bash",
-    script: "bash-validation.sh",
-    command: BASH_VALIDATION_COMMAND,
-    id: "PreToolUse:bash-validation.sh",
-  },
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
@@ -365,6 +357,46 @@ function addMissingHooks(settings: Settings, regs: HookRegistration[] = HOOK_REG
     added.push(reg.id);
   }
   return added;
+}
+
+/**
+ * Strip every retired script's hook from `settings` in place. Returns the ids removed.
+ *
+ * Same discipline as uninstall.ts: a command is ours only if it points into `.claude/scripts/` and
+ * names a retired script, and an entry or event list is dropped only where WE emptied it.
+ */
+function removeRetiredHooks(settings: Settings): string[] {
+  const removed: string[] = [];
+  const hooks = settings.hooks;
+  if (!hooks || typeof hooks !== "object") return removed;
+  const retiredScriptIn = (command: unknown): string | null => {
+    if (typeof command !== "string") return null;
+    return RETIRED_HOOK_SCRIPTS.find((name) => command.includes(`.claude/scripts/${name}`)) ?? null;
+  };
+
+  for (const event of Object.keys(hooks)) {
+    const entries = hooks[event];
+    if (!Array.isArray(entries)) continue;
+    const emptied = new Set<unknown>();
+    for (const entry of entries) {
+      if (!entry || !Array.isArray(entry.hooks)) continue;
+      const kept = entry.hooks.filter((h) => {
+        const script = h && retiredScriptIn(h.command);
+        if (script) removed.push(`${event}:${script}`);
+        return !script;
+      });
+      if (kept.length === entry.hooks.length) continue;
+      entry.hooks = kept;
+      if (kept.length === 0) emptied.add(entry);
+    }
+    if (emptied.size === 0) continue;
+    const keptEntries = entries.filter((e) => !emptied.has(e));
+    if (keptEntries.length === 0) delete hooks[event];
+    else hooks[event] = keptEntries;
+  }
+
+  if (removed.length > 0 && Object.keys(hooks).length === 0) delete settings.hooks;
+  return removed;
 }
 
 export function settingsPathFor(projectRoot: string): string {
@@ -658,8 +690,19 @@ export async function installRuntime(
   // The scripts dir exists even when every file was already current, so status can rely on it.
   ensureDir(path.join(projectRoot, ".claude", "scripts"));
 
+  const hooksRemoved = removeRetiredHooks(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksAdded.length > 0) writeJsonAtomic(settingsPath, settings);
+  if (hooksRemoved.length > 0 || hooksAdded.length > 0) writeJsonAtomic(settingsPath, settings);
+  // The retired scripts themselves, after the settings write: a crash between the two leaves a
+  // harmless unreferenced file, never a hook pointing at a file that is gone.
+  const retiredScriptsRemoved: string[] = [];
+  for (const name of RETIRED_HOOK_SCRIPTS) {
+    const rel = `.claude/scripts/${name}`;
+    const abs = projectPath(projectRoot, rel);
+    if (!fs.existsSync(abs)) continue;
+    fs.rmSync(abs, { force: true });
+    retiredScriptsRemoved.push(rel);
+  }
 
   const gitignoreUpdated = ensureRepoRootGitignore(findRepoRoot(projectRoot));
 
@@ -742,6 +785,8 @@ export async function installRuntime(
     orchestratorSkill,
     scriptsWritten,
     hooksAdded,
+    hooksRemoved,
+    retiredScriptsRemoved,
     gitignoreUpdated,
     runtimeVersion,
     runtimeVersionUpdated,
@@ -750,6 +795,8 @@ export async function installRuntime(
       orchestratorSkill.action === "unchanged" &&
       scriptsWritten.length === 0 &&
       hooksAdded.length === 0 &&
+      hooksRemoved.length === 0 &&
+      retiredScriptsRemoved.length === 0 &&
       !gitignoreUpdated &&
       !runtimeVersionUpdated &&
       configSeeded === null &&

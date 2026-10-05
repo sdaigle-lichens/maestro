@@ -98,9 +98,11 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   `032` needed a permission grant and still didn't break this, putting it in the orchestrator
   template's frontmatter as `allowed-tools`. A permissions entry is a claim on the user's
   project-wide configuration that a hook registration is not. See the manifest sub-concept.
-- **`bash-validation.sh`'s command string is unquoted, byte-for-byte as the legacy installer wrote
-  it.** `maestro-uninstall.js` removes it by _exact string match_, and old projects carry that exact
-  value. Re-quoting it here duplicates the entry on those projects and orphans it on uninstall.
+- **A script dropped from the manifest must be listed in `RETIRED_HOOK_SCRIPTS`.** Removing it from
+  `HOOK_REGISTRATIONS`/`runtimeAssets` only stops new installs getting it; an already-installed
+  project keeps the `settings.json` entry and the file, firing at a script nothing refreshes. Install
+  removes both (`hooksRemoved`, `retiredScriptsRemoved`) and uninstall still recognises the name.
+  `bash-validation.sh` (the old secrets-file read guard) is the first entry.
 - **Handoff templates are no longer copied assets at all (`033`).** `handoffAssets()` is gone;
   `.claude/templates/handoffs/` is dead. What an install produces is
   `.claude/handoffs/<sender>/<receiver>.md` via `syncProjectHandoffs()` — a sync, not a blind copy,

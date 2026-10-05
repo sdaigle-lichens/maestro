@@ -813,6 +813,10 @@ export interface InstallReport {
   scriptsWritten: string[];
   /** Hook ids added to the project's `.claude/settings.json`. */
   hooksAdded: string[];
+  /** Hook ids of retired scripts removed from the project's `.claude/settings.json`. */
+  hooksRemoved: string[];
+  /** Project-relative paths of retired hook scripts deleted from `.claude/scripts/`. */
+  retiredScriptsRemoved: string[];
   gitignoreUpdated: boolean;
   /** The plugin.json version this run stamped into `maestro.json`'s `runtimeVersion`. */
   runtimeVersion: string;

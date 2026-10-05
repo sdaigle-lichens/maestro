@@ -14,9 +14,6 @@ Everything lands under `<project>/.claude/`. Three groups — 25 files:
 | Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
-Plus `bash-validation.sh`, the one asset copied **executable** (`0o755`) because its hook runs it as
-a bare command rather than through `node`.
-
 **The shared-libs group is a DEPENDENCY LIST, and it fails silently when it is wrong (`035`).** The
 rule it answers to: *every* `require("./lib/…")` reachable from a copied script must resolve from
 `.claude/scripts/` — including the ones written inside a try/catch, which is all of the sqlite ones
@@ -121,7 +118,6 @@ mirroring the plugin's `hooks.json` one-for-one:
 | `SubagentStart` | `.*`         | `maestro-subagent-log.cjs`         |
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |
 | `PreToolUse`    | `.*`         | `maestro-session-log.cjs`          |
-| `PreToolUse`    | `Bash`       | `bash-validation.sh`               |
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
@@ -140,8 +136,10 @@ Two properties of how they are written:
 - **An existing entry for the same matcher is reused** rather than a second one added, so a user's
   own `Bash` hook and Maestro's live side by side under one matcher.
 
-`bash-validation.sh`'s command is written **unquoted and un-prefixed**, byte-for-byte as the legacy
-installer wrote it, because `maestro-uninstall.js` removes it by exact string match.
+**Retired hooks are removed, not just no longer added.** `RETIRED_HOOK_SCRIPTS` (in both
+`install.ts` and `maestro-install.js`) names scripts earlier releases registered; every install
+strips their `settings.json` entries and deletes the file, and uninstall/purge still match them.
+Today that is `bash-validation.sh`.
 
 **`hooks` is the only key either implementation writes into `settings.json`.** No `permissions`
 block, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
