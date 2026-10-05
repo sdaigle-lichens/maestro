@@ -15,9 +15,9 @@
 //      this install registers runs from a project-local copy rather than
 //      ${CLAUDE_PLUGIN_ROOT} — see apps/maestro/src/core/install.ts's header for why.
 //   3. merges the full Maestro hook set into <project>/.claude/settings.json (preserves other
-//      keys): the bash-validation PreToolUse guard plus UserPromptExpansion/SubagentStart/
-//      SubagentStop/PreToolUse/PostToolUse/SessionEnd, mirroring plugins/maestro/hooks/hooks.json
-//      one-for-one.
+//      keys): UserPromptExpansion/SubagentStart/SubagentStop/PreToolUse/PostToolUse/SessionEnd,
+//      mirroring plugins/maestro/hooks/hooks.json one-for-one. Also removes the hooks and scripts
+//      of RETIRED_HOOK_SCRIPTS that an earlier release installed.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
 //      .claude/maestro_session*.{json,jsonl}, .claude/maestro_sessions/ (`064`) AND
 //      .claude/channels/ (`036`) across the repo /
@@ -194,11 +194,12 @@ function ensureRepoRootGitignore(repoRoot) {
 
 const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
 
-// Byte-for-byte as the legacy installer wrote it — unquoted and un-prefixed. Unlike the node
-// hooks below, this one predates project-local hooks entirely, so re-quoting it here would
-// duplicate the entry on every project the old skill already installed and orphan it on uninstall
-// (which removes it by exact string match).
-const BASH_VALIDATION_COMMAND = `${SCRIPTS_VAR}/bash-validation.sh`;
+// Hook scripts earlier releases registered and copied that this one no longer ships. Dropping a
+// script from the manifest only stops NEW installs getting it; a project installed before keeps the
+// settings.json entry and the file. Install removes both (removeRetiredHooks), and maestro-uninstall
+// still recognises these names for a project that was never re-installed. Mirrors
+// apps/maestro/src/core/install.ts's RETIRED_HOOK_SCRIPTS.
+const RETIRED_HOOK_SCRIPTS = ["bash-validation.sh"];
 
 function nodeHook(event, matcher, script) {
   return { event, matcher, script, command: `node "${SCRIPTS_VAR}/${script}"`, id: `${event}:${script}` };
@@ -207,7 +208,7 @@ function nodeHook(event, matcher, script) {
 // What this install registers in the project's `.claude/settings.json`. Mirrors
 // plugins/maestro/hooks/hooks.json one-for-one (see apps/maestro/src/core/install.ts's
 // HOOK_REGISTRATIONS, which this list is kept in lockstep with) — every hook the plugin would
-// otherwise run from ${CLAUDE_PLUGIN_ROOT}, plus the bash-validation guard.
+// otherwise run from ${CLAUDE_PLUGIN_ROOT}.
 //
 // EXPORTED (below) so maestro-uninstall.js can derive its own removal set — `HOOK_REGISTRATIONS
 // .map(r => r.script)` — from THIS list, rather than hand-typing a second one that silently falls
@@ -228,13 +229,6 @@ const HOOK_REGISTRATIONS = [
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
-  {
-    event: "PreToolUse",
-    matcher: "Bash",
-    script: "bash-validation.sh",
-    command: BASH_VALIDATION_COMMAND,
-    id: "PreToolUse:bash-validation.sh",
-  },
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
@@ -273,6 +267,40 @@ function addMissingHooks(settings) {
   return added;
 }
 
+// Strip every retired script's hook from `settings` in place. Returns the ids removed. A command is
+// ours only if it points into `.claude/scripts/` and names a retired script; an entry or event list
+// is dropped only where WE emptied it.
+function removeRetiredHooks(settings) {
+  const removed = [];
+  const hooks = settings.hooks;
+  if (!hooks || typeof hooks !== "object") return removed;
+  const retiredScriptIn = (command) =>
+    typeof command === "string"
+      ? RETIRED_HOOK_SCRIPTS.find((name) => command.includes(`.claude/scripts/${name}`)) || null
+      : null;
+  for (const event of Object.keys(hooks)) {
+    const entries = hooks[event];
+    if (!Array.isArray(entries)) continue;
+    let touched = false;
+    for (const entry of entries) {
+      if (!entry || !Array.isArray(entry.hooks)) continue;
+      const before = entry.hooks.length;
+      entry.hooks = entry.hooks.filter((h) => {
+        const script = h && retiredScriptIn(h.command);
+        if (script) removed.push(`${event}:${script}`);
+        return !script;
+      });
+      if (entry.hooks.length !== before) touched = true;
+    }
+    if (!touched) continue;
+    const kept = entries.filter((e) => !(e && Array.isArray(e.hooks) && e.hooks.length === 0));
+    if (kept.length === 0) delete hooks[event];
+    else hooks[event] = kept;
+  }
+  if (removed.length > 0 && Object.keys(hooks).length === 0) delete settings.hooks;
+  return removed;
+}
+
 // Merge every missing hook registration into settings.json, preserving all other keys.
 function mergeSettings(settingsPath) {
   let settings = {};
@@ -283,12 +311,13 @@ function mergeSettings(settingsPath) {
       settings = {};
     }
   }
+  const hooksRemoved = removeRetiredHooks(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksAdded.length > 0) {
+  if (hooksRemoved.length > 0 || hooksAdded.length > 0) {
     ensureDir(path.dirname(settingsPath));
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   }
-  return { hooksAdded, setBashHook: hooksAdded.includes("PreToolUse:bash-validation.sh") };
+  return { hooksAdded, hooksRemoved };
 }
 
 // The hook scripts the plugin runs as `.js`, copied into the project as `.cjs` — see
@@ -345,7 +374,6 @@ const STATIC_ASSETS = [
   // silently, and why the handoff store is copied even though its seed would have covered it.
   { src: "scripts/lib/maestro-report-defaults.cjs", dest: ".claude/scripts/lib/maestro-report-defaults.cjs" },
   { src: "scripts/lib/maestro-handoff-defaults.cjs", dest: ".claude/scripts/lib/maestro-handoff-defaults.cjs" },
-  { src: "scripts/bash-validation.sh", dest: ".claude/scripts/bash-validation.sh", executable: true },
   // SessionEnd cleanup. NOT the plugin's maestro-session-cleanup.sh — that one also tears down the
   // per-project web-app container, which is the plugin's business and not a project-local install's.
   { src: "scripts/maestro-session-cleanup.cjs", dest: ".claude/scripts/maestro-session-cleanup.cjs" },
@@ -539,7 +567,7 @@ function syncProjectHandoffs(configPath, projectDir) {
 
 // ── the manifest is importable with no side effect; everything below runs the CLI only ──────────
 
-module.exports = { HOOK_REGISTRATIONS, STATIC_ASSETS, runtimeAssets };
+module.exports = { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, STATIC_ASSETS, runtimeAssets };
 
 function main() {
   // argv: [projectDir] [--impl-agents a,b] [--skill-map '{"agent":["skill"]}']
@@ -659,7 +687,17 @@ function main() {
       scriptsWritten.push(asset.dest);
     }
 
-    const { setBashHook, hooksAdded } = mergeSettings(path.join(claudeDir, "settings.json"));
+    const { hooksAdded, hooksRemoved } = mergeSettings(path.join(claudeDir, "settings.json"));
+    // After the settings write: a crash between the two leaves a harmless unreferenced file, never
+    // a hook pointing at a file that is gone.
+    const retiredScriptsRemoved = [];
+    for (const name of RETIRED_HOOK_SCRIPTS) {
+      const rel = `.claude/scripts/${name}`;
+      const abs = path.join(projectDir, ...rel.split("/"));
+      if (!fs.existsSync(abs)) continue;
+      fs.rmSync(abs, { force: true });
+      retiredScriptsRemoved.push(rel);
+    }
     const wroteRepoGitignore = ensureRepoRootGitignore(findRepoRoot(projectDir));
 
     // Seed maestro.json only when there isn't one. An existing config is the user's own graph —
@@ -700,8 +738,9 @@ function main() {
         installedOrchestratorSkill: orchestratorSkill.action === "installed",
         orchestratorSkill,
         scriptsWritten,
-        setBashHook,
         hooksAdded,
+        hooksRemoved,
+        retiredScriptsRemoved,
         wroteRepoGitignore,
         seededConfig,
         implAgents: seededConfig ? implAgents : undefined,

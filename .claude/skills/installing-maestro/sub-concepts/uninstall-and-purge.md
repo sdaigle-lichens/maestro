@@ -87,7 +87,7 @@ Two sources, unioned and de-duplicated:
 - **The manifest** — what the _current_ release installs.
 - **A sweep** of the two directories the app owns, `.claude/scripts/` and
   `.claude/templates/handoffs/`, filtered by `looksAppInstalled()`: a basename starting with
-  `maestro-`, plus the one exception shipped under another name, `bash-validation.sh`.
+  `maestro-`, plus every name in `RETIRED_HOOK_SCRIPTS` (today `bash-validation.sh`, shipped under another name).
 
 The sweep exists so a project installed by an **older** release isn't left with orphans of scripts
 that release shipped. Anything else in `.claude/scripts/` is the user's.
@@ -133,7 +133,7 @@ simply never looked for, silently. The fix ports the app's own reasoning rather 
 four entries by hand (which would only restore parity until the fifth asset): `maestro-uninstall.js`
 now `require`s `HOOK_REGISTRATIONS` and `runtimeAssets` straight out of `maestro-install.js` — no
 second manifest to fall behind — and carries its own `looksAppInstalled()`, the same narrow
-`maestro-`/`bash-validation.sh` predicate `uninstall.ts` uses, over a **recursive** sweep of
+`maestro-`/`RETIRED_HOOK_SCRIPTS` predicate `uninstall.ts` uses, over a **recursive** sweep of
 `.claude/scripts/` (so `lib/*.cjs` orphans are caught too) plus `.claude/templates/handoffs/`.
 `maestro-install.js`'s manifest data (`HOOK_REGISTRATIONS`, `STATIC_ASSETS`, `runtimeAssets`) is
 therefore importable with no side effect — everything that reads or writes a project in that file
