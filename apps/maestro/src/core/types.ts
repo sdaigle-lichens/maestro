@@ -247,6 +247,31 @@ export interface MaestroSession {
    * See `meeting-mode.ts`.
    */
   meeting?: MaestroMeetingState | null;
+  /**
+   * Handoff problems the SubagentStop hook detected and the orchestrator has not read yet (`083`):
+   * a workflow agent that ended with no HANDOFF line, or with a FAIL verdict and HANDOFF: success.
+   * Read-and-cleared by `maestro-task-status.cjs handoff-issues`.
+   */
+  handoff_issues?: HandoffIssueRecord[];
+  /** The orchestrator's own success-path tracker, the fallback when TaskCreate is unavailable (`083`). */
+  plan?: SessionPlan | null;
+}
+
+export interface HandoffIssueRecord {
+  ts: string;
+  agent: string;
+  agent_id: string;
+  kind: "missing" | "contradiction";
+  verdict: "SUCCESS" | "FAIL" | null;
+  label: string | null;
+  message: string;
+}
+
+export type PlanStepStatus = "pending" | "done";
+
+export interface SessionPlan {
+  steps: { label: string; status: PlanStepStatus }[];
+  updated_at: string;
 }
 
 export interface MaestroMeetingState {

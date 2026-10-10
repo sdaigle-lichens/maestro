@@ -59,6 +59,7 @@ __export(maestro_session_exports, {
   buildRunRecord: () => buildRunRecord,
   channelDir: () => channelDir,
   checkChannelWrite: () => checkChannelWrite,
+  checkHandoff: () => checkHandoff,
   checkWorktreeWrite: () => checkWorktreeWrite,
   closeMeeting: () => closeMeeting,
   collectAgentSkills: () => collectAgentSkills,
@@ -107,6 +108,7 @@ __export(maestro_session_exports, {
   recordSessionRun: () => recordSessionRun,
   removeSessionState: () => removeSessionState,
   renderMetricsDigest: () => renderMetricsDigest,
+  reportVerdict: () => reportVerdict,
   resolveHandoff: () => resolveHandoff,
   resolveProjectSkillPath: () => resolveProjectSkillPath,
   resolveSearchList: () => resolveSearchList,
@@ -1207,6 +1209,37 @@ function sendMessageHandoff(transcript) {
   return found;
 }
 
+// src/core/handoff-check.ts
+var VERDICT_RE = /verdict["'*]*\s*[:=]\s*["'*]*\s*(SUCCESS|FAIL(?:URE|ED)?|PASS(?:ED)?)\b(?!\s*\|)/gi;
+function reportVerdict(msg) {
+  if (typeof msg !== "string") return null;
+  const all = [...msg.matchAll(VERDICT_RE)];
+  if (all.length === 0) return null;
+  const v = all[all.length - 1][1].toUpperCase();
+  return v.startsWith("FAIL") ? "FAIL" : "SUCCESS";
+}
+function checkHandoff(msg) {
+  const label = lastHandoffLabel(msg);
+  const verdict = reportVerdict(msg);
+  if (label === null) {
+    return {
+      kind: "missing",
+      verdict,
+      label: null,
+      message: "The subagent ended with no HANDOFF: line" + (verdict ? " (its report verdict is " + verdict + ")" : "") + ". Do not default to success: decide the route from its report, or resume it and ask for the matching HANDOFF line."
+    };
+  }
+  if (verdict === "FAIL" && label.toLowerCase() === "success") {
+    return {
+      kind: "contradiction",
+      verdict,
+      label,
+      message: "The subagent's report verdict is FAIL but it ended HANDOFF: success, which is invalid. Do not continue the success path: route to the workflow's matching condition edge for this defect, or resume the agent and ask for a corrected HANDOFF line."
+    };
+  }
+  return null;
+}
+
 // src/core/worktree-write-guard.ts
 var import_node_fs10 = __toESM(require("node:fs"), 1);
 var import_node_path8 = __toESM(require("node:path"), 1);
@@ -1740,6 +1773,7 @@ function meetingNotice(meeting, agentType) {
   buildRunRecord,
   channelDir,
   checkChannelWrite,
+  checkHandoff,
   checkWorktreeWrite,
   closeMeeting,
   collectAgentSkills,
@@ -1788,6 +1822,7 @@ function meetingNotice(meeting, agentType) {
   recordSessionRun,
   removeSessionState,
   renderMetricsDigest,
+  reportVerdict,
   resolveHandoff,
   resolveProjectSkillPath,
   resolveSearchList,

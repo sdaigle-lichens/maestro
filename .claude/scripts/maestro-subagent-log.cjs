@@ -38,6 +38,8 @@ const {
   ensureSessionPaths,
   sendMessageHandoff,
   meetingFor,
+  checkHandoff,
+  writeSession,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -161,6 +163,15 @@ function parseHandoff(msg) {
             // No readable transcript — keep the unknown entry.
           }
         }
+        // `083`: a workflow agent whose final message has no HANDOFF line, or whose report verdict
+        // is FAIL while the line says success, must not be routed by guesswork. Judge it, log it on
+        // the entry, and record it in session.json where the orchestrator reads it back
+        // (`maestro-task-status.cjs handoff-issues`). Only agents that map to a workflow instance
+        // are judged: a generic Explore/general-purpose subagent never carries a HANDOFF line.
+        let issue = null;
+        if (!inMeeting && offeredSkills(claudeDir, agentType, sess.state)) {
+          issue = checkHandoff(handoffMsg);
+        }
         // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
         // thread and every sibling subagent share (only `p.agent_transcript_path` is private to
         // this agent, and deriveUsage doesn't read it — see session-usage.ts's header). Treat this
@@ -176,11 +187,39 @@ function parseHandoff(msg) {
             label,
             output: handoffMsg,
             ...meetingMark,
-            log: inMeeting ? "meeting turn" : label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
+            ...(issue
+              ? { handoff_issue: { kind: issue.kind, verdict: issue.verdict, label: issue.label, message: issue.message } }
+              : {}),
+            log: inMeeting
+              ? "meeting turn"
+              : (label ? `HANDOFF: ${label}` : "HANDOFF: (none)") + (issue ? ` [${issue.kind}]` : ""),
           },
           p
         );
         if (inMeeting) process.exit(0);
+
+        if (issue) {
+          try {
+            const session = readSession(sess.state);
+            const pending = Array.isArray(session.handoff_issues) ? session.handoff_issues : [];
+            pending.push({
+              ts: new Date().toISOString(),
+              agent: agentType,
+              agent_id: agentId,
+              kind: issue.kind,
+              verdict: issue.verdict,
+              label: issue.label,
+              message: issue.message,
+            });
+            writeSession(sess.state, { ...session, handoff_issues: pending });
+          } catch {
+            // Best-effort — the log entry above still carries the issue.
+          }
+          // Also visible to the person watching; the orchestrator reads it from session.json.
+          process.stdout.write(
+            JSON.stringify({ systemMessage: `Maestro: ${agentType} handoff problem (${issue.kind}). ${issue.message}` }) + "\n"
+          );
+        }
 
         // `036`: stamp every unstamped channel file THIS agent just wrote, under whichever
         // receiver's lane it landed in, with the run's own id. Only the sender's own SubagentStop

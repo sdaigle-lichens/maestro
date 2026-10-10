@@ -49,7 +49,11 @@ var DEFAULT_REPORT_DEFAULTS_DB_PATH = import_node_path.default.join(import_node_
 function conceptGapsChannelNote(subagent) {
   return `If a concept skill you loaded was missing something you had to work out from the code yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: \`{ "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }] }\`. Leave it unwritten when nothing was missing \u2014 do not write a gap just to fill the file.`;
 }
+var VERDICT_HANDOFF_NOTE = 'Your `"verdict"` and your final `HANDOFF:` line must agree. A real defect must end with the matching condition-edge label when the workflow has one. A verdict of FAIL with `HANDOFF: success` is invalid, and so is ending with no `HANDOFF:` line \u2014 the orchestrator is told about both and never treats either as success.';
 function backendLikeReport(subagent) {
+  return backendLikeV3(subagent) + "\n\n" + VERDICT_HANDOFF_NOTE;
+}
+function backendLikeV3(subagent) {
   return `Always return a JSON report at the end of your work. Output it as a fenced \`json\` code block:
 
 \`\`\`json
@@ -64,7 +68,8 @@ function backendLikeReport(subagent) {
 ` + conceptGapsChannelNote(subagent);
 }
 var SCRIBE_REPORT = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "scribe",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "agentsMdUpdated": 0,\n  "docsUpdated": 0,\n  "claudeFilesUpdated": 0,\n  "conceptSkillsUpdated": 0,\n  "changelogUpdated": false,\n  "description": "<summary of what was updated>"\n}\n```\n\n"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. Use the counts to keep the handoff message small \u2014 do not list individual file names unless the caller asks.\n\n`conceptSkillsUpdated` counts concept skills you created or revised \u2014 it is a subset of `claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept list moved without reading the whole summary.';
-var TEST_REPORT = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "testResult": "<N passed, N failed>",\n  "description": "<summary of what was tested>"\n}\n```\n\n' + conceptGapsChannelNote("test");
+var TEST_REPORT_V3 = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "testResult": "<N passed, N failed>",\n  "description": "<summary of what was tested>"\n}\n```\n\n' + conceptGapsChannelNote("test");
+var TEST_REPORT = TEST_REPORT_V3 + "\n\n" + VERDICT_HANDOFF_NOTE;
 var SEED_REPORTS = {
   backend: backendLikeReport("backend"),
   frontend: backendLikeReport("frontend"),
@@ -104,11 +109,12 @@ var PRIOR_SEEDS = (() => {
 ` + conceptGapsFieldNoteV2;
   const testV2 = 'Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n  "subagent": "test",\n  "verdict": "SUCCESS | FAIL",\n  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n  "conceptSkillGaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }],\n  "testResult": "<N passed, N failed>",\n  "filesChanged": ["<file1>", "<file2>"],\n  "description": "<summary of what was tested>"\n}\n```\n\n' + conceptGapsFieldNoteV2;
   return {
-    backend: [backendLikeV1("backend"), backendLikeV2("backend")],
-    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend")],
-    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile")],
+    backend: [backendLikeV1("backend"), backendLikeV2("backend"), backendLikeV3("backend")],
+    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend"), backendLikeV3("frontend")],
+    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile"), backendLikeV3("mobile")],
+    infra: [backendLikeV3("infra")],
     scribe: [scribeV1],
-    test: [testV1, testV2]
+    test: [testV1, testV2, TEST_REPORT_V3]
   };
 })();
 function openDb(dbPath) {
