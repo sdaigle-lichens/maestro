@@ -52,6 +52,10 @@ export interface Proposal {
   change: string;
   rationale: string;
   evidence: string;
+  /** `skill.placement`: the list the skill moves to. Without it the proposal cannot be applied mechanically. */
+  to?: "loaded" | "referenced";
+  /** `handoff.edit`: the full new template text. Without it the proposal cannot be applied mechanically. */
+  content?: string;
 }
 
 export interface ProposalFile {
@@ -108,7 +112,10 @@ export function parseProposalFile(raw: unknown, expectedAgent?: string, expected
     if (!change) return void errors.push(`${id}: empty "change"`);
     if (seen.has(id)) return void errors.push(`${id}: duplicate id`);
     seen.add(id);
-    proposals.push({ id, kind, target, change, rationale: str(v.rationale), evidence: str(v.evidence) });
+    const prop: Proposal = { id, kind, target, change, rationale: str(v.rationale), evidence: str(v.evidence) };
+    if (v.to === "loaded" || v.to === "referenced") prop.to = v.to;
+    if (typeof v.content === "string" && v.content.trim()) prop.content = v.content;
+    proposals.push(prop);
   });
 
   const withdrawn = Array.isArray(obj.withdrawn) ? obj.withdrawn.filter((w): w is string => typeof w === "string") : [];
@@ -203,6 +210,8 @@ export interface TallyRow {
   rationale: string;
   /** Why a row is blocked, or why an auto-kind row needs approval anyway. */
   note?: string;
+  to?: "loaded" | "referenced";
+  content?: string;
 }
 
 function blockReason(p: Proposal, ctx: TallyContext): string | null {
@@ -253,10 +262,176 @@ export function tally(files: ProposalFile[], ctx: TallyContext): TallyRow[] {
         change: p.change,
         rationale: p.rationale,
         ...(note ? { note } : {}),
+        ...(p.to ? { to: p.to } : {}),
+        ...(p.content ? { content: p.content } : {}),
       });
     }
   }
   return rows;
+}
+
+// ── apply phase ─────────────────────────────────────────────────────────────
+
+/** What the tally persists (`decision.json`) so the apply phase can run after the meeting has closed. */
+export interface DecisionRecord {
+  meetingId: string;
+  rows: TallyRow[];
+  /** Targets still in conflict after the last round. */
+  conflictTargets: string[];
+}
+
+export interface PlacementResult {
+  /** The config with the placement moves applied; every other key is the input's. */
+  cfg: MaestroConfigV3;
+  applied: string[];
+  /** Rows not applied, with the reason. */
+  skipped: Array<{ id: string; reason: string }>;
+  /** Handoff template writes for the caller to perform: project-relative path -> new text. */
+  handoffWrites: Array<{ id: string; path: string; content: string }>;
+}
+
+const SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+
+/**
+ * The automatic tier, applied. Pure: it touches only `workflow_instances` skill lists and returns the
+ * handoff writes for the caller to perform. Only `auto`-tier rows of an AUTO kind are considered; a
+ * target in conflict, an id the user vetoed, or a row lacking its structured field is skipped.
+ */
+export function applyAutoTier(
+  cfg: MaestroConfigV3,
+  record: DecisionRecord,
+  opts: { skipIds?: string[]; handoffExists?: (relPath: string) => boolean } = {}
+): PlacementResult {
+  const skip = new Set(opts.skipIds ?? []);
+  const conflicted = new Set(record.conflictTargets);
+  const result: PlacementResult = { cfg, applied: [], skipped: [], handoffWrites: [] };
+  const instances = (cfg.workflow_instances ?? []).map((i) => ({
+    ...i,
+    loaded_skills: [...i.loaded_skills],
+    referenced_skills: [...i.referenced_skills],
+  }));
+  let moved = false;
+  for (const r of record.rows) {
+    if (r.tier !== "auto" || !AUTO_KINDS.includes(r.kind)) continue;
+    const no = (reason: string) => void result.skipped.push({ id: r.id, reason });
+    if (skip.has(r.id)) {
+      no("vetoed by the user");
+      continue;
+    }
+    if (conflicted.has(r.target)) {
+      no("target is in conflict");
+      continue;
+    }
+    if (r.kind === "skill.placement") {
+      const m = /^instance:(.+)#(.+)$/.exec(r.target);
+      if (!m) {
+        no("malformed target");
+        continue;
+      }
+      if (!r.to) {
+        no('no "to" field (loaded|referenced)');
+        continue;
+      }
+      const inst = instances.find((i) => i.name === m[1]);
+      if (!inst) {
+        no(`no instance "${m[1]}"`);
+        continue;
+      }
+      const [from, dest] =
+        r.to === "loaded" ? [inst.referenced_skills, inst.loaded_skills] : [inst.loaded_skills, inst.referenced_skills];
+      const at = from.indexOf(m[2]);
+      if (at === -1) {
+        no(`"${m[2]}" is not in the ${r.to === "loaded" ? "referenced" : "loaded"} list of ${m[1]}`);
+        continue;
+      }
+      from.splice(at, 1);
+      if (!dest.includes(m[2])) dest.push(m[2]);
+      moved = true;
+      result.applied.push(r.id);
+    } else {
+      const m = /^handoff:([^/]+)\/([^/]+)$/.exec(r.target);
+      if (!m || !SAFE_NAME.test(m[1]) || !SAFE_NAME.test(m[2])) {
+        no("malformed target");
+        continue;
+      }
+      if (!r.content) {
+        no('no "content" field (the full new template text)');
+        continue;
+      }
+      const rel = `.claude/handoffs/${m[1]}/${m[2]}.md`;
+      if (opts.handoffExists && !opts.handoffExists(rel)) {
+        no(`${rel} does not exist`);
+        continue;
+      }
+      result.handoffWrites.push({ id: r.id, path: rel, content: r.content });
+      result.applied.push(r.id);
+    }
+  }
+  if (moved) result.cfg = { ...cfg, workflow_instances: instances };
+  return result;
+}
+
+/** Kinds the main session always applies itself: the graph, rule moves, forks and config-wide changes. */
+const MAIN_SESSION_KINDS = new Set([
+  "workflow.create",
+  "workflow.update",
+  "workflow.delete",
+  "rule.to-agent",
+  "agent.create",
+  "agent.delete",
+  "skill.delete",
+  "gate.change",
+  "skill.placement",
+]);
+
+/**
+ * The single agent that owns an approved row, or null when the main session keeps it. Blocked rows
+ * (plugin-agent forks, config rules) are never owned.
+ */
+export function ownerOf(row: TallyRow): string | null {
+  if (row.tier === "blocked" || MAIN_SESSION_KINDS.has(row.kind)) return null;
+  if (row.kind === "handoff.edit") return bareAgentName(row.target.slice("handoff:".length).split("/")[0]) || null;
+  if (row.kind === "agent.edit" || row.kind === "agent.tools") return bareAgentName(row.target.slice("agent:".length)) || null;
+  if (row.kind === "report.edit") return bareAgentName(row.target.slice("report:".length)) || null;
+  return row.supporters.length === 0 ? row.agent : null;
+}
+
+export interface OwnerPlan {
+  runs: Array<{ agent: string; rows: Array<{ id: string; kind: string; target: string; change: string }> }>;
+  /** Approved ids the main session applies itself. */
+  main: string[];
+}
+
+/**
+ * Group the approved rows into owner runs, or refuse. Refuses when two approved rows sit on one
+ * conflicted target: every conflict is resolved (one winner) before any owner run starts. Rows in
+ * `alreadyApplied` (the mechanical auto tier) are left out.
+ */
+export function planOwnerRuns(
+  record: DecisionRecord,
+  approvedIds: string[],
+  alreadyApplied: string[] = []
+): { ok: true; plan: OwnerPlan } | { ok: false; reason: string } {
+  const done = new Set(alreadyApplied);
+  const rows = record.rows.filter((r) => approvedIds.includes(r.id) && !done.has(r.id));
+  for (const t of new Set(record.conflictTargets)) {
+    if (rows.filter((r) => r.target === t).length > 1) {
+      return { ok: false, reason: `target "${t}" is still in conflict: approve exactly one of its proposals` };
+    }
+  }
+  const byAgent = new Map<string, OwnerPlan["runs"][number]>();
+  const main: string[] = [];
+  for (const r of rows) {
+    const owner = ownerOf(r);
+    if (!owner) {
+      main.push(r.id);
+      continue;
+    }
+    const run = byAgent.get(owner) ?? { agent: owner, rows: [] };
+    run.rows.push({ id: r.id, kind: r.kind, target: r.target, change: r.change });
+    byAgent.set(owner, run);
+  }
+  return { ok: true, plan: { runs: [...byAgent.values()].sort((a, b) => a.agent.localeCompare(b.agent)), main } };
 }
 
 function cell(s: string): string {
@@ -384,7 +559,8 @@ export function buildCommonBrief(input: BriefInput): string {
         `| ${k} | ${prefix === "gates" ? "gates" : k === "skill.placement" ? "instance:<instance>#<skill>" : k === "handoff.edit" ? "handoff:<sender>/<receiver>" : `${prefix}<name>`} |`
     ),
     "",
-    "`skill.placement` and `handoff.edit` are applied automatically; everything else goes to the user for approval. " +
+    "`skill.placement` (add `\"to\": \"loaded\"|\"referenced\"`) and `handoff.edit` (add `\"content\"`: the full new template) " +
+      "are applied automatically; without that field they fall back to approval. Everything else goes to the user for approval. " +
       "Model and effort changes are out of scope for now.",
     "",
     "## Workflows",

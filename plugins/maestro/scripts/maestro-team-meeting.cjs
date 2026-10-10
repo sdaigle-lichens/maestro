@@ -17,7 +17,14 @@
 //   node maestro-team-meeting.cjs conflicts [projectDir]
 //       Read every round-<n>/<agent>.json, report targets agents disagree on.
 //   node maestro-team-meeting.cjs tally [projectDir]
-//       Write <meeting dir>/decision.md and print the decision rows (auto / approval / blocked).
+//       Write <meeting dir>/decision.md + decision.json and print the decision rows
+//       (auto / approval / blocked).
+//   node maestro-team-meeting.cjs apply-placement [--skip id,id] [projectDir]
+//       Apply the auto tier from decision.json: skill loaded/referenced moves and handoff template
+//       edits. Reads maestro.json right before writing, keeps every other slice, skips conflicts.
+//   node maestro-team-meeting.cjs owner-runs --approved id,id [projectDir]
+//       After `end`: group the approved rows into one run per owning agent. Refuses while the
+//       meeting flag is set, or when a conflicted target has more than one approved proposal.
 //
 // The pure logic is lib/maestro-team-meeting.cjs (apps/maestro/src/core/team-meeting.ts); the flag
 // the hooks read is lib/maestro-session.cjs's meeting-mode exports (meeting-mode.ts). Runs from the
@@ -44,7 +51,7 @@ const tm = require("./lib/maestro-team-meeting.cjs");
 const argv = process.argv.slice(2);
 const command = argv[0];
 const rest = argv.slice(1);
-const FLAGS_WITH_VALUE = new Set(["mode", "participants"]);
+const FLAGS_WITH_VALUE = new Set(["mode", "participants", "skip", "approved"]);
 
 function flag(name) {
   const i = rest.indexOf(`--${name}`);
@@ -379,6 +386,17 @@ function runTally() {
   const rows = tm.tally(files, { agentTiers, configRuleIds: (cfg.rules || []).map((r) => r.id) });
   const decisionPath = path.join(meeting.dir, "decision.md");
   fs.writeFileSync(decisionPath, tm.renderDecision(rows, meeting));
+  // The machine-readable twin: apply-placement and owner-runs read it AFTER the meeting is closed.
+  const conflictTargets = tm.findConflicts(files).map((c) => c.target);
+  fs.writeFileSync(
+    path.join(meeting.dir, "decision.json"),
+    JSON.stringify({ meetingId: meeting.id, rows, conflictTargets })
+  );
+  try {
+    fs.rmSync(path.join(meeting.dir, "applied.json"), { force: true });
+  } catch {
+    // best effort
+  }
   const counts = { auto: 0, approval: 0, blocked: 0 };
   for (const r of rows) counts[r.tier]++;
   out({
@@ -398,7 +416,80 @@ function runTally() {
   });
 }
 
-const COMMANDS = { start: runStart, end: runEnd, brief: runBrief, conflicts: runConflicts, tally: runTally };
+// ── apply phase ─────────────────────────────────────────────────────────────
+
+function csv(name) {
+  const v = flag(name);
+  return v ? v.split(",").map((s) => s.trim()).filter(Boolean) : [];
+}
+
+/** The persisted tally of THIS session's meeting, or a refusal. Works before and after `end`. */
+function readDecision() {
+  const sess = resolveSessionPaths(claudeDir);
+  if (!sess) refuse("no Claude Code session id is available (CLAUDE_CODE_SESSION_ID) — a meeting is per session.");
+  const dir = path.join(sess.dir, "meeting");
+  let record;
+  try {
+    record = JSON.parse(fs.readFileSync(path.join(dir, "decision.json"), "utf8"));
+  } catch {
+    refuse("no tally for this session's meeting — run `tally` first.");
+  }
+  if (!record || !Array.isArray(record.rows) || !Array.isArray(record.conflictTargets)) refuse("decision.json is malformed — run `tally` again.");
+  return { sess, dir, record };
+}
+
+// Applies the automatic tier (skill placement, handoff templates) from the tally. maestro.json is
+// read immediately before the write and only `workflow_instances` skill lists change, so every other
+// slice — and any edit made since the tally — survives. Targets in conflict are skipped.
+function runApplyPlacement() {
+  const { dir, record } = readDecision();
+  const cfgPath = path.join(claudeDir, "maestro.json");
+  const cfg = loadConfig();
+  const res = tm.applyAutoTier(cfg, record, {
+    skipIds: csv("skip"),
+    handoffExists: (rel) => fs.existsSync(path.join(projectDir, rel)),
+  });
+  if (res.cfg !== cfg) {
+    const tmp = cfgPath + ".tmp";
+    fs.writeFileSync(tmp, JSON.stringify(res.cfg, null, 2)); // NO trailing newline
+    fs.renameSync(tmp, cfgPath);
+  }
+  for (const w of res.handoffWrites) {
+    const file = path.join(projectDir, w.path);
+    fs.writeFileSync(file, w.content.endsWith("\n") ? w.content : w.content + "\n");
+  }
+  fs.writeFileSync(path.join(dir, "applied.json"), JSON.stringify(res.applied));
+  out({ ok: true, applied: res.applied, skipped: res.skipped });
+}
+
+// Plans the owner runs. Refuses while the meeting flag is set: an owner run must be a normal run, and
+// while the flag is on the hooks would treat it as a meeting turn.
+function runOwnerRuns() {
+  const sess = resolveSessionPaths(claudeDir);
+  if (sess && readMeeting(readJson(sess.state))) {
+    refuse("the team meeting is still open — run `end` first; owner runs only start after the meeting is closed.");
+  }
+  const { dir, record } = readDecision();
+  let applied = [];
+  try {
+    applied = JSON.parse(fs.readFileSync(path.join(dir, "applied.json"), "utf8"));
+  } catch {
+    // apply-placement has not run: nothing is excluded
+  }
+  const planned = tm.planOwnerRuns(record, csv("approved"), Array.isArray(applied) ? applied : []);
+  if (!planned.ok) refuse(planned.reason);
+  out({ ok: true, ...planned.plan });
+}
+
+const COMMANDS = {
+  start: runStart,
+  end: runEnd,
+  brief: runBrief,
+  conflicts: runConflicts,
+  tally: runTally,
+  "apply-placement": runApplyPlacement,
+  "owner-runs": runOwnerRuns,
+};
 
 if (COMMANDS[command]) {
   COMMANDS[command]();
@@ -406,7 +497,9 @@ if (COMMANDS[command]) {
   process.stderr.write(
     "maestro-team-meeting: unknown command. Usage:\n" +
       "  maestro-team-meeting.cjs start --mode review|post-mortem [--participants a,b] [projectDir]\n" +
-      "  maestro-team-meeting.cjs end|brief|conflicts|tally [projectDir]\n"
+      "  maestro-team-meeting.cjs end|brief|conflicts|tally [projectDir]\n" +
+      "  maestro-team-meeting.cjs apply-placement [--skip id,id] [projectDir]\n" +
+      "  maestro-team-meeting.cjs owner-runs --approved id,id [projectDir]\n"
   );
   process.exit(1);
 }

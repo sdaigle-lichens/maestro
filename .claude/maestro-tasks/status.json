@@ -380,5 +380,25 @@
   "078-let-read-only-agents-write-their-handoff-channel-files-and-only-those.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "079-let-owning-agents-apply-approved-team-meeting-changes-and-auto-apply-the-low-risk-tier.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "080-keep-a-durable-per-run-metrics-file-with-compacted-history.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "081-expose-agent-fork-and-rule-move-as-plugin-clis-and-evaluate-an-app-mcp-channel-bridge.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "082-isolate-tests-from-the-real-home-directory-and-keep-runtime-mirrors-in-parity.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

@@ -13,6 +13,13 @@
 // Entries use kind:"dispatch"/"handoff" so the reader can distinguish them from
 // the plain tool-call entries written by maestro-session-log.js.
 // Append-only to the same file so parallel subagents don't race.
+//
+// TEAM MEETINGS: for an agent type listed as a participant of this session's active meeting
+// (apps/maestro/src/core/meeting-mode.ts), both entries carry `meeting: true` — which keeps the run
+// out of `agentRunsFromLog` (no later loop-back resumes a meeting turn) and lets the post-mortem
+// digest label it — and SubagentStop skips the `078` transcript recovery and the channel stamping:
+// a meeting turn has no HANDOFF to recover, and anything it left in a lane must not be delivered
+// into a workflow step as this run's payload.
 
 const fs = require("fs");
 const path = require("path");
@@ -27,8 +34,10 @@ const {
   projectOwnsHook,
   ensureSessionRunId,
   writeStamp,
+  meetingLeftovers,
   ensureSessionPaths,
   sendMessageHandoff,
+  meetingFor,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -98,6 +107,9 @@ function parseHandoff(msg) {
   const agentType = p.agent_type || "";
   const agentId = p.agent_id || "";
   const lastMsg = p.last_assistant_message || null;
+  // A meeting participant's run (null for everyone else, and whenever no meeting runs).
+  const inMeeting = agentType ? !!meetingFor(readJson(sess.state), agentType) : false;
+  const meetingMark = inMeeting ? { meeting: true } : {};
 
   try {
     if (event === "SubagentStart") {
@@ -112,7 +124,8 @@ function parseHandoff(msg) {
           agent_id: agentId,
           input: lastMsg,
           ...(offered ? { offered_skills: offered } : {}),
-          log: `→ ${agentType}`,
+          ...meetingMark,
+          log: inMeeting ? `→ ${agentType} (meeting)` : `→ ${agentType}`,
         },
         p
       );
@@ -137,7 +150,7 @@ function parseHandoff(msg) {
         let { status, label } = parseHandoff(handoffMsg);
         // `078`: an agent that hands back through a SendMessage call has no HANDOFF: line in its
         // final message. Recover it from the agent's own transcript so the entry is not `unknown`.
-        if (status === "unknown" && p.agent_transcript_path) {
+        if (!inMeeting && status === "unknown" && p.agent_transcript_path) {
           try {
             const viaSend = sendMessageHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
             if (viaSend) {
@@ -162,10 +175,12 @@ function parseHandoff(msg) {
             status,
             label,
             output: handoffMsg,
-            log: label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
+            ...meetingMark,
+            log: inMeeting ? "meeting turn" : label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
           },
           p
         );
+        if (inMeeting) process.exit(0);
 
         // `036`: stamp every unstamped channel file THIS agent just wrote, under whichever
         // receiver's lane it landed in, with the run's own id. Only the sender's own SubagentStop
@@ -174,9 +189,15 @@ function parseHandoff(msg) {
         // file this agent was killed before writing (or never wrote) simply isn't found; a file it
         // wrote but the process died before this hook ran stays unstamped, and is treated exactly
         // like a foreign-run file by the receiving agent's SubagentStart.
+        //
+        // Minus a team meeting's leftovers: an unstamped file a participant left in a lane (Bash
+        // writes are invisible to the write guard) is recorded in session.json when the meeting
+        // ends, and stays unstamped while unchanged — the run_id lasts the whole session, so
+        // otherwise this sender's next workflow run would adopt it as its own payload. No meeting
+        // ever held = nothing skipped, the pre-meeting behaviour.
         try {
           const runId = ensureSessionRunId(sess.state);
-          writeStamp(cwd, bareAgentName(agentType), runId);
+          writeStamp(cwd, bareAgentName(agentType), runId, { skip: meetingLeftovers(readJson(sess.state)) });
         } catch {
           // Best-effort — never fail the agent on a stamping error.
         }
