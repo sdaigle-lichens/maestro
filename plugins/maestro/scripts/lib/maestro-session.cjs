@@ -37,6 +37,8 @@ __export(maestro_session_exports, {
   CHANNEL_ONLY_AGENTS: () => CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
+  MEETING_DIR_NAME: () => MEETING_DIR_NAME,
+  MEETING_LEFTOVERS_KEY: () => MEETING_LEFTOVERS_KEY,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
   RESUMABLE_END_REASONS: () => RESUMABLE_END_REASONS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
@@ -52,8 +54,10 @@ __export(maestro_session_exports, {
   bareAgentName: () => bareAgentName,
   channelDir: () => channelDir,
   checkChannelWrite: () => checkChannelWrite,
+  closeMeeting: () => closeMeeting,
   collectAgentSkills: () => collectAgentSkills,
   duplicateAgentTypes: () => duplicateAgentTypes,
+  endMeeting: () => endMeeting,
   endSessionState: () => endSessionState,
   ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
@@ -74,11 +78,16 @@ __export(maestro_session_exports, {
   lastHandoffLabel: () => lastHandoffLabel,
   listSessionIds: () => listSessionIds,
   mainCheckoutRoot: () => mainCheckoutRoot,
+  meetingDirFor: () => meetingDirFor,
+  meetingFor: () => meetingFor,
+  meetingLeftovers: () => meetingLeftovers,
+  meetingNotice: () => meetingNotice,
   nodeLabel: () => nodeLabel,
   parseStampedContent: () => parseStampedContent,
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readLane: () => readLane,
+  readMeeting: () => readMeeting,
   readSession: () => readSession,
   readStdin: () => readStdin,
   readWorktreePointer: () => readWorktreePointer,
@@ -98,11 +107,14 @@ __export(maestro_session_exports, {
   sessionPathsFor: () => sessionPathsFor,
   sessionsRoot: () => sessionsRoot,
   splitHandoffId: () => splitHandoffId,
+  startMeeting: () => startMeeting,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
   taskNumber: () => taskNumber,
+  unstampedFilesOf: () => unstampedFilesOf,
   validateConfig: () => validateConfig,
   walkProjectSkillIds: () => walkProjectSkillIds,
+  withoutMeeting: () => withoutMeeting,
   workflowNodeLabels: () => workflowNodeLabels,
   worktreeBranchFor: () => worktreeBranchFor,
   worktreePathFor: () => worktreePathFor,
@@ -525,8 +537,9 @@ function listFiles(dir) {
     return [];
   }
 }
-function writeStamp(projectDir, sender, runId) {
+function writeStamp(projectDir, sender, runId, opts = {}) {
   const stamped = [];
+  const skip = new Map((opts.skip ?? []).map((m) => [m.path, m]));
   for (const receiver of listDirs(channelsRoot(projectDir))) {
     const dir = channelDir(projectDir, receiver);
     for (const fileName of listFiles(dir)) {
@@ -534,6 +547,11 @@ function writeStamp(projectDir, sender, runId) {
       const filePath = import_node_path3.default.join(dir, fileName);
       let content;
       try {
+        const before = skip.get(filePath);
+        if (before) {
+          const st = import_node_fs5.default.statSync(filePath);
+          if (st.mtimeMs === before.mtimeMs && st.size === before.size) continue;
+        }
         content = import_node_fs5.default.readFileSync(filePath, "utf8");
       } catch {
         continue;
@@ -544,6 +562,23 @@ function writeStamp(projectDir, sender, runId) {
     }
   }
   return stamped;
+}
+function unstampedFilesOf(projectDir, sender) {
+  const out = [];
+  for (const receiver of listDirs(channelsRoot(projectDir))) {
+    const dir = channelDir(projectDir, receiver);
+    for (const fileName of listFiles(dir)) {
+      if (senderOf(fileName) !== sender) continue;
+      const filePath = import_node_path3.default.join(dir, fileName);
+      try {
+        const st = import_node_fs5.default.statSync(filePath);
+        if (STAMP_RE.test(import_node_fs5.default.readFileSync(filePath, "utf8"))) continue;
+        out.push({ path: filePath, mtimeMs: st.mtimeMs, size: st.size });
+      } catch {
+      }
+    }
+  }
+  return out;
 }
 function readLane(projectDir, receiver, now = Date.now()) {
   const dir = channelDir(projectDir, receiver);
@@ -855,11 +890,21 @@ function resolveHandoff(id, projectContent, globalDefault) {
 
 // src/core/agent-runs.ts
 function agentRunsFromLog(lines) {
+  const meetingIds = /* @__PURE__ */ new Set();
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const entry = line;
+    if (entry.kind === "handoff" && entry.meeting === true && typeof entry.agent_id === "string") {
+      meetingIds.add(entry.agent_id);
+    }
+  }
   const runs = [];
   for (const line of lines ?? []) {
     if (!line || typeof line !== "object") continue;
     const entry = line;
     if (entry.kind !== "handoff") continue;
+    if (entry.meeting === true) continue;
+    if (typeof entry.agent_id === "string" && meetingIds.has(entry.agent_id)) continue;
     const agentType = entry.origin;
     const agentId = entry.agent_id;
     if (typeof agentType !== "string" || !agentType) continue;
@@ -1050,6 +1095,28 @@ function realResolve(p) {
     cur = parent;
   }
 }
+function denyMeeting(target, meetingDir) {
+  return {
+    allow: false,
+    reason: `Blocked: a Maestro team meeting is in progress and you are a participant \u2014 you may only write files under ${meetingDir}/ (the meeting directory). "${target}" is outside it (or reaches outside through a ".." segment or a symlink). Propose changes in your round file; never apply them.`
+  };
+}
+function realMeetingDir(meetingDir) {
+  const resolved = import_node_path7.default.resolve(meetingDir);
+  const sessionDir = import_node_path7.default.dirname(resolved);
+  const sessionId = import_node_path7.default.basename(sessionDir);
+  if (import_node_path7.default.basename(resolved) !== "meeting" || import_node_path7.default.basename(import_node_path7.default.dirname(sessionDir)) !== "maestro_sessions") {
+    return null;
+  }
+  const realSession = realResolve(sessionDir);
+  const real = realResolve(resolved);
+  if (!realSession || !real) return null;
+  if (real !== import_node_path7.default.join(realSession, "meeting")) return null;
+  const parts = real.split(import_node_path7.default.sep);
+  const n = parts.length;
+  if (n < 3 || parts[n - 2] !== sessionId || parts[n - 3] !== "maestro_sessions") return null;
+  return real;
+}
 function deny(target) {
   return {
     allow: false,
@@ -1057,9 +1124,19 @@ function deny(target) {
   };
 }
 function checkChannelWrite(input) {
-  const { cwd, agentType, toolName, toolInput } = input;
-  if (!isChannelOnlyAgent(agentType)) return { allow: true };
+  const { cwd, agentType, toolName, toolInput, meetingDir } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : void 0;
+  if (meetingDir) {
+    if (!key) return { allow: true };
+    const raw2 = toolInput?.[key];
+    if (typeof raw2 !== "string" || raw2 === "") return denyMeeting(String(raw2 ?? ""), meetingDir);
+    if (raw2.split(/[\\/]+/).includes("..")) return denyMeeting(raw2, meetingDir);
+    const target2 = realResolve(import_node_path7.default.resolve(cwd || meetingDir, raw2));
+    const root = realMeetingDir(meetingDir);
+    if (!target2 || !root) return denyMeeting(raw2, meetingDir);
+    return target2.startsWith(root + import_node_path7.default.sep) ? { allow: true } : denyMeeting(raw2, meetingDir);
+  }
+  if (!isChannelOnlyAgent(agentType)) return { allow: true };
   if (!key) return { allow: true };
   const raw = toolInput?.[key];
   if (typeof raw !== "string" || raw === "") return deny(String(raw ?? ""));
@@ -1114,12 +1191,116 @@ function sendMessageHandoff(transcript) {
   }
   return found;
 }
+
+// src/core/meeting-mode.ts
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
+var MEETING_DIR_NAME = "meeting";
+var MEETING_LEFTOVERS_KEY = "meeting_leftovers";
+var MEETING_MODES = ["review", "post-mortem"];
+function meetingDirFor(sessionDir) {
+  return import_node_path8.default.join(sessionDir, MEETING_DIR_NAME);
+}
+function readMeeting(session) {
+  if (!session || typeof session !== "object") return null;
+  const m = session.meeting;
+  if (!m || typeof m !== "object") return null;
+  const v = m;
+  if (typeof v.id !== "string" || !v.id) return null;
+  if (typeof v.mode !== "string" || !MEETING_MODES.includes(v.mode)) return null;
+  if (typeof v.dir !== "string") return null;
+  if (!Array.isArray(v.participants) || !v.participants.every((p) => typeof p === "string")) return null;
+  return {
+    id: v.id,
+    mode: v.mode,
+    dir: v.dir,
+    participants: v.participants.map((p) => bareAgentName(p)).filter(Boolean),
+    started_at: typeof v.started_at === "string" ? v.started_at : ""
+  };
+}
+function meetingFor(session, agentType) {
+  const bare = bareAgentName(agentType);
+  if (!bare) return null;
+  const meeting = readMeeting(session);
+  return meeting && meeting.participants.includes(bare) ? meeting : null;
+}
+function withoutMeeting(session) {
+  const copy = { ...session };
+  delete copy.meeting;
+  return copy;
+}
+function readRawState(statePath) {
+  try {
+    const parsed = JSON.parse(import_node_fs10.default.readFileSync(statePath, "utf8"));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+function writeRawState(statePath, state) {
+  import_node_fs10.default.mkdirSync(import_node_path8.default.dirname(statePath), { recursive: true });
+  const tmp = statePath + ".tmp";
+  import_node_fs10.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  import_node_fs10.default.renameSync(tmp, statePath);
+}
+function startMeeting(statePath, sessionDir, opts) {
+  const now = opts.now ?? /* @__PURE__ */ new Date();
+  const dir = meetingDirFor(sessionDir);
+  import_node_fs10.default.mkdirSync(dir, { recursive: true });
+  const meeting = {
+    id: `m-${now.getTime()}`,
+    mode: opts.mode,
+    dir,
+    participants: [...new Set(opts.participants.map((p) => bareAgentName(p)).filter(Boolean))],
+    started_at: now.toISOString()
+  };
+  writeRawState(statePath, { ...readRawState(statePath), meeting });
+  return meeting;
+}
+function meetingLeftovers(session) {
+  if (!session || typeof session !== "object") return [];
+  const raw = session[MEETING_LEFTOVERS_KEY];
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (m) => !!m && typeof m === "object" && typeof m.path === "string" && typeof m.mtimeMs === "number" && typeof m.size === "number"
+  );
+}
+function closeMeeting(session, projectDir) {
+  if (!("meeting" in session)) return { state: session, ended: false };
+  const participants = readMeeting(session)?.participants ?? [];
+  const byPath = new Map(meetingLeftovers(session).map((m) => [m.path, m]));
+  for (const participant of participants) {
+    for (const mark of unstampedFilesOf(projectDir, participant)) byPath.set(mark.path, mark);
+  }
+  const state = withoutMeeting(session);
+  if (byPath.size > 0) state[MEETING_LEFTOVERS_KEY] = [...byPath.values()];
+  return { state, ended: true };
+}
+function projectDirOfState(statePath) {
+  return import_node_path8.default.resolve(statePath, "..", "..", "..", "..");
+}
+function endMeeting(statePath, projectDir = projectDirOfState(statePath)) {
+  if (!import_node_fs10.default.existsSync(statePath)) return false;
+  const { state, ended } = closeMeeting(readRawState(statePath), projectDir);
+  if (ended) writeRawState(statePath, state);
+  return ended;
+}
+function meetingNotice(meeting, agentType) {
+  const bare = bareAgentName(agentType);
+  return `Maestro team meeting in progress (${meeting.mode}, ${meeting.id}). This run is a meeting turn, NOT a workflow step:
+- Ignore every HANDOFF routing line, handoff payload / channel-file instruction and mandatory output format you were given, including any from an earlier run in your history. Do not end with a HANDOFF: line.
+- Do not write anything under .claude/channels/. Your only writable location is the meeting directory: ${meeting.dir}/ \u2014 write your proposals to the round file the moderator names (e.g. round-1/${bare}.json).
+- Propose, never apply: do not edit project files, agents, skills, rules or .claude/maestro.json. Bash is for read-only checks only \u2014 never write or modify a file with it.
+- Follow the moderator's brief, and end your reply with one short line saying what you wrote.`;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
   CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS,
   LEGACY_SESSION_FILES,
+  MEETING_DIR_NAME,
+  MEETING_LEFTOVERS_KEY,
   PRIOR_HANDOFF_SEEDS,
   RESUMABLE_END_REASONS,
   SEED_HANDOFFS,
@@ -1135,8 +1316,10 @@ function sendMessageHandoff(transcript) {
   bareAgentName,
   channelDir,
   checkChannelWrite,
+  closeMeeting,
   collectAgentSkills,
   duplicateAgentTypes,
+  endMeeting,
   endSessionState,
   ensureSessionPaths,
   ensureSessionRunId,
@@ -1157,11 +1340,16 @@ function sendMessageHandoff(transcript) {
   lastHandoffLabel,
   listSessionIds,
   mainCheckoutRoot,
+  meetingDirFor,
+  meetingFor,
+  meetingLeftovers,
+  meetingNotice,
   nodeLabel,
   parseStampedContent,
   projectOwnsHook,
   readJson,
   readLane,
+  readMeeting,
   readSession,
   readStdin,
   readWorktreePointer,
@@ -1181,11 +1369,14 @@ function sendMessageHandoff(transcript) {
   sessionPathsFor,
   sessionsRoot,
   splitHandoffId,
+  startMeeting,
   successPathSteps,
   sweep,
   taskNumber,
+  unstampedFilesOf,
   validateConfig,
   walkProjectSkillIds,
+  withoutMeeting,
   workflowNodeLabels,
   worktreeBranchFor,
   worktreePathFor,

@@ -10,6 +10,12 @@
 // The path is judged by where it REALLY lands: `..` segments are refused outright (the OS resolves
 // `link/..` through the symlink, lexical collapsing does not), and symlinks — in an ancestor, or
 // the file itself, including a dangling one — are resolved before the containment test.
+//
+// Team meetings (`meeting-mode.ts`) narrow this further: a meeting PARTICIPANT, of any agent type,
+// may write only inside the session's meeting directory (`<session dir>/meeting/`) — not even its
+// channel lane, since a lane file it wrote would be stamped and delivered into a later workflow
+// step. The caller passes `meetingDir` only for a participant; it comes from the session's own
+// paths, never from tool input.
 
 import fs from "node:fs";
 import path from "node:path";
@@ -62,6 +68,41 @@ function realResolve(p: string): string | null {
   }
 }
 
+function denyMeeting(target: string, meetingDir: string): ChannelWriteVerdict {
+  return {
+    allow: false,
+    reason:
+      `Blocked: a Maestro team meeting is in progress and you are a participant — you may only write files under ` +
+      `${meetingDir}/ (the meeting directory). "${target}" is outside it (or reaches outside through a ".." segment ` +
+      `or a symlink). Propose changes in your round file; never apply them.`,
+  };
+}
+
+/**
+ * The real path of a meeting directory, or null when it cannot be trusted as one. The caller's
+ * `meetingDir` is `<claudeDir>/maestro_sessions/<id>/meeting` for ITS OWN session `<id>`; the real
+ * path must be exactly that session directory's real path plus `meeting`, and its `<id>` segment
+ * must still be `<id>`. So a `meeting` entry that is a symlink — to another session's meeting
+ * directory or anywhere else — and a session directory that is a symlink to another session's are
+ * both refused rather than followed; a shape-only check would accept either.
+ */
+function realMeetingDir(meetingDir: string): string | null {
+  const resolved = path.resolve(meetingDir);
+  const sessionDir = path.dirname(resolved);
+  const sessionId = path.basename(sessionDir);
+  if (path.basename(resolved) !== "meeting" || path.basename(path.dirname(sessionDir)) !== "maestro_sessions") {
+    return null;
+  }
+  const realSession = realResolve(sessionDir);
+  const real = realResolve(resolved);
+  if (!realSession || !real) return null;
+  if (real !== path.join(realSession, "meeting")) return null; // `meeting` itself is a symlink
+  const parts = real.split(path.sep);
+  const n = parts.length;
+  if (n < 3 || parts[n - 2] !== sessionId || parts[n - 3] !== "maestro_sessions") return null;
+  return real;
+}
+
 function deny(target: string): ChannelWriteVerdict {
   return {
     allow: false,
@@ -74,17 +115,32 @@ function deny(target: string): ChannelWriteVerdict {
 
 /**
  * Decide whether a tool call is allowed. Non-restricted agents, and tools that do not write a
- * file, are always allowed — this guard only ever narrows the reviewer and refactor agents.
+ * file, are always allowed — this guard only ever narrows the reviewer and refactor agents, and
+ * (when `meetingDir` is given) a team-meeting participant of any type.
  */
 export function checkChannelWrite(input: {
   cwd: string;
   agentType: string | null | undefined;
   toolName: string | null | undefined;
   toolInput: Record<string, unknown> | null | undefined;
+  /** Set only when this agent is a participant of the session's active team meeting. */
+  meetingDir?: string | null;
 }): ChannelWriteVerdict {
-  const { cwd, agentType, toolName, toolInput } = input;
-  if (!isChannelOnlyAgent(agentType)) return { allow: true };
+  const { cwd, agentType, toolName, toolInput, meetingDir } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : undefined;
+
+  if (meetingDir) {
+    if (!key) return { allow: true };
+    const raw = toolInput?.[key];
+    if (typeof raw !== "string" || raw === "") return denyMeeting(String(raw ?? ""), meetingDir);
+    if (raw.split(/[\\/]+/).includes("..")) return denyMeeting(raw, meetingDir);
+    const target = realResolve(path.resolve(cwd || meetingDir, raw));
+    const root = realMeetingDir(meetingDir);
+    if (!target || !root) return denyMeeting(raw, meetingDir);
+    return target.startsWith(root + path.sep) ? { allow: true } : denyMeeting(raw, meetingDir);
+  }
+
+  if (!isChannelOnlyAgent(agentType)) return { allow: true };
   if (!key) return { allow: true };
 
   const raw = toolInput?.[key];

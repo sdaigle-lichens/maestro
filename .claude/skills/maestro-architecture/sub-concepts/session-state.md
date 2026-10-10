@@ -84,6 +84,14 @@ is created on disk for a rejected id, which is what makes rejecting cost nothing
 | `kind:"channel_delivery"` (`036`) | `{ts, origin:"main_session", agent_id, sender, receiver, content, log}` | SubagentStart, by `maestro-inject-agent-context.js` itself the same moment it inlines a channel payload, so the log has a durable record of the delivery |
 | `kind:"phase"` (`064`) | phase marker from the two `!`-injected gate scripts | Step 1 / Step 4 gate resolution |
 
+A `dispatch` or `handoff` entry for a team-meeting participant also carries `meeting: true`, which
+keeps it out of resume targets and the post-mortem timeline (see `team-meeting.md`).
+
+`session.json` may also carry `meeting` (an active team meeting) and `meeting_leftovers` (lane files
+an ended meeting left unstamped), both from `meeting-mode.ts`. Every `session.json` writer spreads
+the existing object; `maestro-set-session-workflow.cjs` is the only one that removes a key, ending
+the meeting through `closeMeeting`.
+
 On a `channel_delivery`, `origin` is `"main_session"` too, not the receiver — the desktop app's
 `/session-log` (`037`) correlates it back to the receiving instance by `agent_id`, the same key a
 `dispatch` entry's `input` uses.

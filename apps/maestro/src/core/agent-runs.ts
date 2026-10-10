@@ -31,11 +31,27 @@ export interface AgentRun {
  * fail the orchestrator over one bad line.
  */
 export function agentRunsFromLog(lines: unknown[]): AgentRun[] {
+  // A team meeting may RESUME a workflow agent's existing agent_id (post-mortem mode), so its
+  // meeting turn shares that id with the earlier workflow handoff. Once an agent_id has had any
+  // meeting turn, its latest context is a meeting notice telling it to ignore HANDOFF routing —
+  // resuming it on a later loop-back would be a wrong resume. So EVERY run of such an id is
+  // dropped, not just the meeting entry. `hasCompletedRun` below still counts them all — that
+  // question is "is this SubagentStart a resume", which a meeting run does answer.
+  const meetingIds = new Set<string>();
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const entry = line as Record<string, unknown>;
+    if (entry.kind === "handoff" && entry.meeting === true && typeof entry.agent_id === "string") {
+      meetingIds.add(entry.agent_id);
+    }
+  }
   const runs: AgentRun[] = [];
   for (const line of lines ?? []) {
     if (!line || typeof line !== "object") continue;
     const entry = line as Record<string, unknown>;
     if (entry.kind !== "handoff") continue;
+    if (entry.meeting === true) continue;
+    if (typeof entry.agent_id === "string" && meetingIds.has(entry.agent_id)) continue;
     const agentType = entry.origin;
     const agentId = entry.agent_id;
     if (typeof agentType !== "string" || !agentType) continue;

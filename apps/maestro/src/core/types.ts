@@ -233,4 +233,22 @@ export interface MaestroSession {
   workflow: string | null;
   generated_instances: string[];
   run_id?: string | null;
+  /**
+   * Present only while a team meeting runs in this session (`/maestro-team-meeting`). Its
+   * `participants` get meeting-mode treatment from the hooks: no HANDOFF routing, no channel
+   * delivery or stamping, log entries marked `meeting: true`, writes confined to the meeting
+   * directory. Removed by `maestro-team-meeting.cjs end` and by `maestro-set-session-workflow.cjs`.
+   * See `meeting-mode.ts`.
+   */
+  meeting?: MaestroMeetingState | null;
+}
+
+export interface MaestroMeetingState {
+  id: string;
+  mode: "review" | "post-mortem";
+  /** Absolute path of `<session dir>/meeting/` — informational; the write guard recomputes it. */
+  dir: string;
+  /** BARE agent names that take part. Only these get meeting-mode treatment. */
+  participants: string[];
+  started_at: string;
 }

@@ -75,6 +75,8 @@ export {
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
   CLAIM_IDLE_CAP_MS,
+  unstampedFilesOf,
+  type ChannelFileMark,
   type ChannelEntry,
   type SweepResult,
 } from "../handoff-channels.js";
@@ -155,3 +157,20 @@ export {
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
 export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";
+
+// Team-meeting mode — the `meeting` flag in session.json that the SubagentStart/Stop hooks and the
+// write guard read to treat a meeting participant differently from a workflow agent. `fs`/`path`
+// only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  MEETING_DIR_NAME,
+  meetingDirFor,
+  readMeeting,
+  meetingFor,
+  withoutMeeting,
+  startMeeting,
+  endMeeting,
+  closeMeeting,
+  meetingLeftovers,
+  MEETING_LEFTOVERS_KEY,
+  meetingNotice,
+} from "../meeting-mode.js";
