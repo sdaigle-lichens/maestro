@@ -35,8 +35,8 @@ export default function InstanceSkillPicker({
     if (!emptyHint) return null;
     return (
       <div className="flex flex-col gap-1">
-        <div className="text-[10px] text-subtle uppercase tracking-wide">Skills</div>
-        <p className="text-[12px] text-subtle">{emptyHint}</p>
+        <div className="text-[10px] text-maestro-muted uppercase tracking-wide">Skills</div>
+        <p className="text-[12px] text-maestro-muted">{emptyHint}</p>
       </div>
     );
   }
@@ -66,28 +66,28 @@ export default function InstanceSkillPicker({
 
   const pill = (active: boolean) =>
     `px-1.5 py-0.5 text-[10px] font-medium cursor-pointer focus:outline-none transition-colors ${
-      active ? "bg-primary text-white" : "bg-(--bg-elev) text-(--ink-2) hover:text-(--ink)"
+      active ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:text-maestro"
     }`;
 
   return (
     <div className="flex flex-col gap-1">
-      <div className="text-[10px] text-subtle uppercase tracking-wide">Skills</div>
+      <div className="text-[10px] text-maestro-muted uppercase tracking-wide">Skills</div>
       <div className={`flex flex-col gap-1 ${maxHeight} overflow-y-auto`}>
         {skills.map((s) => {
           const mode = modeOf(s);
           return (
-            <div key={s} className="flex items-center gap-2 py-0.5 px-1 rounded hover:bg-(--bg-elev)">
+            <div key={s} className="flex items-center gap-2 py-0.5 px-1 rounded hover:bg-maestro-elevated">
               <label className="flex items-center gap-2 cursor-pointer flex-1 min-w-0">
                 <input
                   type="checkbox"
                   checked={mode !== null}
                   onChange={() => toggleSelected(s)}
-                  className={`${box} accent-primary cursor-pointer shrink-0`}
+                  className={`${box} accent-maestro-primary cursor-pointer shrink-0`}
                 />
-                <span className={`font-mono ${text} text-(--ink) truncate`}>{s}</span>
+                <span className={`font-mono ${text} text-maestro truncate`}>{s}</span>
               </label>
               {mode && (
-                <div className="flex rounded-md overflow-hidden border border-(--line) shrink-0">
+                <div className="flex rounded-md overflow-hidden border border-maestro shrink-0">
                   <button type="button" onClick={() => setMode(s, "loaded")} className={pill(mode === "loaded")}>
                     Loaded
                   </button>

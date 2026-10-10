@@ -25,14 +25,14 @@ function DocsIndex() {
   const result = Route.useLoaderData();
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro flex flex-col overflow-hidden">
       <TopNav />
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-3xl px-6 pb-16 pt-10 flex flex-col gap-6">
           <div>
             <span className="section-label mb-3 inline-block">Documentation</span>
-            <h1 className="text-2xl font-semibold text-(--ink) m-0 mb-1">Project Docs</h1>
-            <p className="text-[13px] text-subtle m-0">
+            <h1 className="text-2xl font-semibold text-maestro m-0 mb-1">Project Docs</h1>
+            <p className="text-[13px] text-maestro-muted m-0">
               Everything under <span className="font-mono">docs/</span> in the open project. Search matches headings and
               body text, and opens the doc at the section that matched.
             </p>
@@ -42,8 +42,8 @@ function DocsIndex() {
             <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10">
               <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
               <div>
-                <p className="text-[13px] text-(--ink) m-0 mb-1">The docs could not be listed.</p>
-                <p className="text-[12px] text-(--ink-2) m-0">{result.error}</p>
+                <p className="text-[13px] text-maestro m-0 mb-1">The docs could not be listed.</p>
+                <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
               </div>
             </div>
           ) : (
@@ -53,7 +53,7 @@ function DocsIndex() {
               {result.value.docs.length === 0 ? (
                 <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-500/10 text-[12px]">
                   <FolderOpen size={14} className="shrink-0 mt-px text-amber-500" />
-                  <span className="text-(--ink-2)">
+                  <span className="text-maestro-muted">
                     {result.value.projectRoot ? (
                       <>
                         No <span className="font-mono">docs/</span> directory in{" "}
@@ -62,7 +62,7 @@ function DocsIndex() {
                     ) : (
                       <>
                         No project is open, so there are no docs to read.{" "}
-                        <Link to="/" className="text-primary underline">
+                        <Link to="/" className="text-maestro-primary underline">
                           Open a project
                         </Link>
                         .
@@ -78,12 +78,14 @@ function DocsIndex() {
                       to="/project-docs/$slug"
                       params={{ slug: doc.slug }}
                       search={{ q: "", at: "" }}
-                      className="flex items-start gap-2.5 rounded-lg border border-(--line) bg-(--bg-elev) px-3 py-2.5 hover:border-primary"
+                      className="flex items-start gap-2.5 rounded-lg border border-maestro bg-maestro-elevated px-3 py-2.5 hover:border-maestro-primary-strong"
                     >
-                      <FileText size={14} className="shrink-0 mt-0.5 text-(--ink-3)" />
+                      <FileText size={14} className="shrink-0 mt-0.5 text-maestro-muted" />
                       <span className="min-w-0">
-                        <span className="block text-[13px] text-(--ink) truncate">{doc.title}</span>
-                        <span className="block font-mono text-[11px] text-(--ink-3) truncate">docs/{doc.slug}.md</span>
+                        <span className="block text-[13px] text-maestro truncate">{doc.title}</span>
+                        <span className="block font-mono text-[11px] text-maestro-muted truncate">
+                          docs/{doc.slug}.md
+                        </span>
                       </span>
                     </Link>
                   ))}
@@ -91,7 +93,7 @@ function DocsIndex() {
               )}
 
               {result.value.docs.length > 0 && (
-                <p className="flex items-center gap-1.5 text-[12px] text-subtle m-0">
+                <p className="flex items-center gap-1.5 text-[12px] text-maestro-muted m-0">
                   <BookOpen size={12} /> {result.value.docs.length} documents · {result.value.sections.length} sections
                   indexed
                 </p>

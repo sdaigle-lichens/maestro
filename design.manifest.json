@@ -1,0 +1,113 @@
+{
+  "backend": "local",
+  "reconcileRule": "canonical-wins",
+  "pluginVersion": "0.5.0",
+  "studio": {
+    "port": 3009
+  },
+  "palette": {
+    "localPath": "packages/styles/theme.inputs.css",
+    "outputs": {
+      "web": "packages/styles/generated/theme.css",
+      "scheme": "packages/styles/generated/scheme.css",
+      "mobile": "packages/styles/generated/tailwind.css",
+      "json": "packages/styles/generated/palette.json",
+      "sass": null
+    },
+    "script": "packages/styles/scripts/palette.ts",
+    "namespace": "maestro",
+    "designPath": null,
+    "status": "wip",
+    "lastImplementedHash": "c37aabcc7606a850cae15a814df09b43a6258c475ee20743e8db893bff821a5e"
+  },
+  "storybooks": {
+    "web": {
+      "dir": "apps/maestro",
+      "url": "http://localhost:6006",
+      "mcpServer": "storybook",
+      "runCommand": "pnpm --filter maestro storybook"
+    }
+  },
+  "components": [
+    {
+      "name": "Button",
+      "storybook": "web",
+      "localPath": "packages/ui/src/button.tsx",
+      "storyId": "ui-button--default",
+      "designPath": "design/components/button.html",
+      "proposalPath": "design/proposals/button.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "Field",
+      "storybook": "web",
+      "localPath": "packages/ui/src/field.tsx",
+      "storyId": "ui-field--default",
+      "designPath": "design/components/field.html",
+      "proposalPath": "design/proposals/field.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "ChipInput",
+      "storybook": "web",
+      "localPath": "packages/ui/src/chip-input.tsx",
+      "storyId": "ui-chipinput--default",
+      "designPath": "design/components/chip-input.html",
+      "proposalPath": "design/proposals/chip-input.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "Select",
+      "storybook": "web",
+      "localPath": "packages/ui/src/select.tsx",
+      "storyId": "ui-select--default",
+      "designPath": "design/components/select.html",
+      "proposalPath": "design/proposals/select.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "ModePill",
+      "storybook": "web",
+      "localPath": "packages/ui/src/mode-pill.tsx",
+      "storyId": "ui-modepill--default",
+      "designPath": "design/components/mode-pill.html",
+      "proposalPath": "design/proposals/mode-pill.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "SyntaxLine",
+      "storybook": "web",
+      "localPath": "packages/ui/src/syntax-line.tsx",
+      "storyId": "ui-syntaxline--yaml",
+      "designPath": "design/components/syntax-line.html",
+      "proposalPath": "design/proposals/syntax-line.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "FilePreview",
+      "storybook": "web",
+      "localPath": "packages/ui/src/file-preview.tsx",
+      "storyId": "ui-filepreview--default",
+      "designPath": "design/components/file-preview.html",
+      "proposalPath": "design/proposals/file-preview.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "CopyableText",
+      "storybook": "web",
+      "localPath": "packages/ui/src/copyable-text.tsx",
+      "storyId": "ui-copyabletext--default",
+      "designPath": "design/components/copyable-text.html",
+      "proposalPath": "design/proposals/copyable-text.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    }
+  ]
+}

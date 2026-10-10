@@ -49,57 +49,57 @@ export default function ProjectSelect({
         type="button"
         data-testid="project-select"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] border bg-(--bg-elev) border-(--line) text-(--ink) cursor-pointer focus:outline-none hover:border-primary max-w-[280px]"
+        className="flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] border bg-maestro-elevated border-maestro text-maestro cursor-pointer focus:outline-none hover:border-maestro-primary-strong max-w-[280px]"
       >
-        <FolderOpen size={13} className="shrink-0 text-(--ink-3)" />
+        <FolderOpen size={13} className="shrink-0 text-maestro-muted" />
         <span className="truncate">{label}</span>
-        <ChevronDown size={12} className="text-(--ink-3) shrink-0" />
+        <ChevronDown size={12} className="text-maestro-muted shrink-0" />
       </button>
 
       {open && (
-        <div className="absolute left-0 top-9 z-50 w-72 bg-(--bg) border border-(--line) rounded-lg shadow-lg py-1">
+        <div className="absolute left-0 top-9 z-50 w-72 bg-maestro border border-maestro rounded-lg shadow-lg py-1">
           {current && (
             <button
               type="button"
               onClick={() => choose(current.root)}
-              className="w-full text-left flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-(--bg-elev) cursor-pointer focus:outline-none bg-transparent border-0"
+              className="w-full text-left flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-maestro-elevated cursor-pointer focus:outline-none bg-transparent border-0"
             >
               <span className="flex flex-col min-w-0">
-                <span className="text-[13px] text-(--ink) truncate">{current.name}</span>
-                <span className="text-[11px] text-(--ink-3) font-mono truncate">{current.root}</span>
+                <span className="text-[13px] text-maestro truncate">{current.name}</span>
+                <span className="text-[11px] text-maestro-muted font-mono truncate">{current.root}</span>
               </span>
               <span className="flex items-center gap-1 shrink-0">
-                {value === current.root && <Check size={12} className="text-primary" />}
-                <span className="text-[10px] text-subtle uppercase tracking-wide">Open</span>
+                {value === current.root && <Check size={12} className="text-maestro-primary" />}
+                <span className="text-[10px] text-maestro-muted uppercase tracking-wide">Open</span>
               </span>
             </button>
           )}
 
           {otherRecent.length > 0 && (
             <>
-              {current && <hr className="my-1 border-(--line)" />}
+              {current && <hr className="my-1 border-maestro" />}
               {otherRecent.map((r) => (
                 <button
                   key={r.root}
                   type="button"
                   onClick={() => choose(r.root)}
-                  className="w-full text-left flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-(--bg-elev) cursor-pointer focus:outline-none bg-transparent border-0"
+                  className="w-full text-left flex items-center justify-between gap-2 px-3 py-1.5 hover:bg-maestro-elevated cursor-pointer focus:outline-none bg-transparent border-0"
                 >
                   <span className="flex flex-col min-w-0">
-                    <span className="text-[13px] text-(--ink) truncate">{r.name}</span>
-                    <span className="text-[11px] text-(--ink-3) font-mono truncate">{r.root}</span>
+                    <span className="text-[13px] text-maestro truncate">{r.name}</span>
+                    <span className="text-[11px] text-maestro-muted font-mono truncate">{r.root}</span>
                   </span>
-                  {value === r.root && <Check size={12} className="text-primary shrink-0" />}
+                  {value === r.root && <Check size={12} className="text-maestro-primary shrink-0" />}
                 </button>
               ))}
             </>
           )}
 
-          <div className="border-t border-(--line) mt-1 pt-1">
+          <div className="border-t border-maestro mt-1 pt-1">
             <button
               type="button"
               onClick={() => void addProject()}
-              className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink) cursor-pointer focus:outline-none bg-transparent border-0"
+              className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
             >
               <Plus size={13} /> Open another project…
             </button>

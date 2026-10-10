@@ -49,9 +49,9 @@ const statsCache = new Map<UsageStatsView, UsageStats>();
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-lg border border-(--line) bg-(--bg-elev) px-5 py-4">
-      <div className="mb-1.5 font-mono text-2xl font-light text-primary">{value}</div>
-      <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-subtle">{label}</div>
+    <div className="rounded-lg border border-maestro bg-maestro-elevated px-5 py-4">
+      <div className="mb-1.5 font-mono text-2xl font-light text-maestro-primary">{value}</div>
+      <div className="text-[12px] font-medium uppercase tracking-[0.12em] text-maestro-muted">{label}</div>
     </div>
   );
 }
@@ -139,19 +139,19 @@ export default function UsageStatsTab() {
           <div className="flex items-center gap-3">
             <span className="section-label">Usage</span>
             {stats && (
-              <span className="text-[10px] text-subtle">
+              <span className="text-[10px] text-maestro-muted">
                 {stats.entryCount} {label}
                 {stats.lastUpdated && ` · newest ${stats.lastUpdated}`}
               </span>
             )}
           </div>
-          <p className="mt-1.5 text-[12px] text-subtle m-0">
+          <p className="mt-1.5 text-[12px] text-maestro-muted m-0">
             Token and cost totals, read out of <span className="font-mono">~/.claude</span> by{" "}
             <span className="font-mono">ccusage</span>.
           </p>
         </div>
 
-        <div className="flex gap-1 rounded-md border border-(--line) bg-(--bg-elev) p-0.5">
+        <div className="flex gap-1 rounded-md border border-maestro bg-maestro-elevated p-0.5">
           {VIEWS.map((v) => (
             <button
               key={v.id}
@@ -159,7 +159,9 @@ export default function UsageStatsTab() {
               aria-selected={view === v.id}
               onClick={() => setView(v.id)}
               className={`rounded px-2.5 py-1 text-[11px] font-medium transition cursor-pointer border-0 focus:outline-none ${
-                view === v.id ? "bg-primary text-white" : "bg-transparent text-subtle hover:text-(--ink-2)"
+                view === v.id
+                  ? "bg-maestro-primary text-white"
+                  : "bg-transparent text-maestro-muted hover:text-maestro-muted"
               }`}
             >
               {v.label}
@@ -174,7 +176,7 @@ export default function UsageStatsTab() {
       {error && (
         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-[12px]">
           <AlertTriangle size={14} className="shrink-0 mt-px text-red-500" />
-          <span className="text-(--ink-2)">{error}</span>
+          <span className="text-maestro-muted">{error}</span>
         </div>
       )}
 
@@ -195,8 +197,8 @@ export default function UsageStatsTab() {
       )}
 
       {!stats && !error && preview?.source !== "none" && (
-        <p className="text-[12px] text-subtle m-0">
-          Nothing has been run yet. Press <span className="text-(--ink-2)">Run</span> above to read your usage.
+        <p className="text-[12px] text-maestro-muted m-0">
+          Nothing has been run yet. Press <span className="text-maestro-muted">Run</span> above to read your usage.
         </p>
       )}
     </div>
@@ -229,11 +231,11 @@ function RunBar({
         className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-500/10 text-[12px]"
       >
         <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
-        <div className="text-(--ink-2)">
+        <div className="text-maestro-muted">
           <div>{preview.unavailable}</div>
           <details className="mt-1">
-            <summary className="cursor-pointer text-(--ink-3)">Where it looked</summary>
-            <ul className="list-none p-0 m-0 mt-1 max-h-24 overflow-y-auto font-mono text-[10px] text-(--ink-3)">
+            <summary className="cursor-pointer text-maestro-muted">Where it looked</summary>
+            <ul className="list-none p-0 m-0 mt-1 max-h-24 overflow-y-auto font-mono text-[10px] text-maestro-muted">
               {preview.searched.map((dir) => (
                 <li key={dir} className="truncate" title={dir}>
                   {dir}
@@ -253,20 +255,20 @@ function RunBar({
       data-testid="stats-run-bar"
       data-source={preview.source}
       className={`flex flex-col gap-2 rounded-lg border px-3.5 py-3 ${
-        network ? "border-amber-500/40 bg-amber-500/5" : "border-(--line) bg-(--bg-elev)"
+        network ? "border-amber-500/40 bg-amber-500/5" : "border-maestro bg-maestro-elevated"
       }`}
     >
       <div className="flex items-start gap-2">
         {network ? (
           <Cloud size={14} className="shrink-0 mt-px text-amber-500" />
         ) : (
-          <HardDrive size={14} className="shrink-0 mt-px text-(--ink-3)" />
+          <HardDrive size={14} className="shrink-0 mt-px text-maestro-muted" />
         )}
-        <div className="flex-1 text-[12px] text-(--ink-2)">
+        <div className="flex-1 text-[12px] text-maestro-muted">
           {network ? (
             <>
               No <span className="font-mono">ccusage</span> is installed here, so running this{" "}
-              <strong className="text-(--ink)">
+              <strong className="text-maestro">
                 downloads ccusage {preview.pinnedVersion} from npm and executes it
               </strong>{" "}
               on this machine. The version is pinned by this app — it does not float on the latest release.
@@ -282,7 +284,7 @@ function RunBar({
           data-testid="stats-run"
           onClick={onRun}
           disabled={running}
-          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-primary px-3 py-1.5 text-[12px] font-semibold text-white cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed border-0"
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-maestro-primary px-3 py-1.5 text-[12px] font-semibold text-white cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed border-0"
         >
           {running ? (
             <>
@@ -301,8 +303,8 @@ function RunBar({
       </div>
 
       <div className="flex gap-2 text-[10px]">
-        <span className="shrink-0 w-[64px] text-(--ink-3)">Command</span>
-        <span data-testid="stats-argv" className="font-mono text-(--ink-2) break-all select-text">
+        <span className="shrink-0 w-[64px] text-maestro-muted">Command</span>
+        <span data-testid="stats-argv" className="font-mono text-maestro-muted break-all select-text">
           {preview.argv.map((a) => (/\s/.test(a) ? `"${a}"` : a)).join(" ")}
         </span>
       </div>

@@ -63,7 +63,7 @@ function ToastCard({ item }: { item: ToastItem }) {
   return (
     <div
       role="status"
-      className="pointer-events-auto flex items-start gap-2.5 w-[340px] max-w-[90vw] px-3.5 py-3 rounded-[12px] border border-(--line) bg-(--bg-elev) shadow-[0_16px_40px_rgba(0,0,0,.22)] [animation:csRiseIn_.25s_ease-out]"
+      className="pointer-events-auto flex items-start gap-2.5 w-[340px] max-w-[90vw] px-3.5 py-3 rounded-[12px] border border-maestro bg-maestro-elevated shadow-[0_16px_40px_rgba(0,0,0,.22)] [animation:csRiseIn_.25s_ease-out]"
     >
       <div
         className={`mt-px shrink-0 w-5 h-5 rounded-full flex items-center justify-center ${
@@ -71,7 +71,7 @@ function ToastCard({ item }: { item: ToastItem }) {
             ? "bg-red-500/15 text-red-500"
             : isWarning
               ? "bg-amber-500/15 text-amber-500"
-              : "bg-(--primary-dim) text-(--primary)"
+              : "bg-maestro-primary-subtle text-maestro-primary"
         }`}
       >
         <svg
@@ -92,12 +92,12 @@ function ToastCard({ item }: { item: ToastItem }) {
           {!isError && !isWarning && <path d="M5 12l5 5L20 7" />}
         </svg>
       </div>
-      <p className="m-0 text-[13px] leading-snug text-(--ink-2) flex-1">{item.message}</p>
+      <p className="m-0 text-[13px] leading-snug text-maestro-muted flex-1">{item.message}</p>
       <button
         type="button"
         aria-label="Dismiss"
         onClick={() => dismiss(item.id)}
-        className="shrink-0 p-0.5 -mr-1 rounded text-(--ink-3) cursor-pointer hover:text-(--ink) focus:outline-none"
+        className="shrink-0 p-0.5 -mr-1 rounded text-maestro-muted cursor-pointer hover:text-maestro focus:outline-none"
       >
         <svg
           viewBox="0 0 24 24"

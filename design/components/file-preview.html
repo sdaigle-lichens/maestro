@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="en" class="light" data-theme="light">
+  <head>
+    <meta charset="utf-8" />
+    <title>ui-filepreview--default</title>
+    <link rel="stylesheet" href="../assets/project.css" />
+  </head>
+  <body class="sb-main-padded sb-show-main">
+    <div id="storybook-root"><div class="h-96 w-[34rem]"><div class="h-full flex flex-col bg-maestro-faint gap-3 p-5"><div class="flex items-center gap-2"><div class="text-[11px] font-semibold tracking-[0.6px] text-maestro-muted uppercase">Template preview</div><div class="flex-1"></div><div class="font-mono text-[11px] text-maestro-faint">.claude/skills/code-review/</div></div><div class="flex-1 min-h-0 flex flex-col overflow-hidden bg-maestro-elevated rounded-[10px] border border-maestro shadow-[0_2px_10px_rgba(0,0,0,.03)]"><div class="h-[34px] flex items-center gap-1.5 px-2.5 shrink-0 bg-maestro-faint border-b border-maestro"><div class="flex gap-[5px] mr-1.5"><span class="w-2.5 h-2.5 rounded-full bg-[#e5b4a3]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#e9d394]"></span><span class="w-2.5 h-2.5 rounded-full bg-[#a8d59f]"></span></div><div class="flex items-center gap-1.5 font-mono text-[11px] text-maestro-muted px-2.5 py-1 mt-1.5 bg-maestro-elevated border border-maestro border-b-0 rounded-t-[4px]">SKILL.md</div></div><div class="flex-1 overflow-y-auto overflow-x-hidden py-3 font-mono text-xs leading-[1.7]"><div class="grid grid-cols-[40px_1fr] pr-3"><span class="text-maestro-faint opacity-55 text-right pr-3 text-[11px] select-none">1</span><span class="whitespace-pre-wrap wrap-break-word"><span class="text-maestro-faint">---</span></span></div><div class="grid grid-cols-[40px_1fr] pr-3"><span class="text-maestro-faint opacity-55 text-right pr-3 text-[11px] select-none">2</span><span class="whitespace-pre-wrap wrap-break-word"><span class="text-maestro-primary">name</span><span class="text-maestro-muted">: </span><span class="text-maestro-muted">code-review</span></span></div><div class="grid grid-cols-[40px_1fr] pr-3"><span class="text-maestro-faint opacity-55 text-right pr-3 text-[11px] select-none">3</span><span class="whitespace-pre-wrap wrap-break-word"><span class="text-maestro-primary">description</span><span class="text-maestro-muted">: </span><span class="text-maestro-muted">Reviews a diff.</span></span></div><div class="grid grid-cols-[40px_1fr] pr-3"><span class="text-maestro-faint opacity-55 text-right pr-3 text-[11px] select-none">4</span><span class="whitespace-pre-wrap wrap-break-word"><span class="text-maestro-faint">---</span></span></div><div class="grid grid-cols-[40px_1fr] pr-3"><span class="text-maestro-faint opacity-55 text-right pr-3 text-[11px] select-none">5</span><span class="whitespace-pre-wrap wrap-break-word"> </span></div><div class="grid grid-cols-[40px_1fr] pr-3"><span class="text-maestro-faint opacity-55 text-right pr-3 text-[11px] select-none">6</span><span class="whitespace-pre-wrap wrap-break-word"><span class="text-maestro font-bold"># Code review</span></span></div></div></div></div></div></div><div id="storybook-highlights-root" style=""><div id="storybook-highlights-menu" popover="manual" style="display: none;"></div><style>
+                #storybook-highlights-menu {
+                  position: absolute;
+                  z-index: 2147483647;
+                  width: 300px;
+                  padding: 0px;
+                  margin: 15px 0 0 0;
+                  transform: translateX(-50%);
+                  font-family: "Nunito Sans", -apple-system, ".SFNSText-Regular", "San Francisco", BlinkMacSystemFont, "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+                  font-size: 12px;
+                  background: white;
+                  border: none;
+                  border-radius: 6px;
+                  box-shadow: 0 2px 5px 0 rgba(0, 0, 0, 0.05), 0 5px 15px 0 rgba(0, 0, 0, 0.1);
+                  color: #2E3438;
+                }
+                #storybook-highlights-menu ul {
+                  list-style: none;
+                  margin: 0;
+                  padding: 0;
+                }
+                #storybook-highlights-menu > ul {
+                  max-height: 300px;
+                  overflow-y: auto;
+                  padding: 4px 0;
+                }
+                #storybook-highlights-menu li {
+                  padding: 0 4px;
+                  margin: 0;
+                }
+                #storybook-highlights-menu li > :not(ul) {
+                  display: flex;
+                  padding: 8px;
+                  margin: 0;
+                  align-items: center;
+                  gap: 8px;
+                  border-radius: 4px;
+                }
+                #storybook-highlights-menu button {
+                  width: 100%;
+                  border: 0;
+                  background: transparent;
+                  color: inherit;
+                  text-align: left;
+                  font-family: inherit;
+                  font-size: inherit;
+                }
+                #storybook-highlights-menu button:focus-visible {
+                  outline-color: #029CFD;
+                }
+                #storybook-highlights-menu button:hover {
+                  background: rgba(2, 156, 253, 0.07);
+                  color: #029CFD;
+                  cursor: pointer;
+                }
+                #storybook-highlights-menu li code {
+                  white-space: nowrap;
+                  overflow: hidden;
+                  text-overflow: ellipsis;
+                  line-height: 16px;
+                  font-size: 11px;
+                }
+                #storybook-highlights-menu li svg {
+                  flex-shrink: 0;
+                  margin: 1px;
+                  color: #73828C;
+                }
+                #storybook-highlights-menu li > button:hover svg, #storybook-highlights-menu li > button:focus-visible svg {
+                  color: #029CFD;
+                }
+                #storybook-highlights-menu .element-list li svg {
+                  display: none;
+                }
+                #storybook-highlights-menu li.selectable svg, #storybook-highlights-menu li.selected svg {
+                  display: block;
+                }
+                #storybook-highlights-menu .menu-list {
+                  border-top: 1px solid rgba(38, 85, 115, 0.15);
+                }
+                #storybook-highlights-menu .menu-list > li:not(:last-child) {
+                  padding-bottom: 4px;
+                  margin-bottom: 4px;
+                  border-bottom: 1px solid rgba(38, 85, 115, 0.15);
+                }
+                #storybook-highlights-menu .menu-items, #storybook-highlights-menu .menu-items li {
+                  padding: 0;
+                }
+                #storybook-highlights-menu .menu-item {
+                  display: flex;
+                }
+                #storybook-highlights-menu .menu-item-content {
+                  display: flex;
+                  flex-direction: column;
+                  flex-grow: 1;
+                }
+              </style></div><svg id="storybook-a11y-vision-filters" aria-hidden="true" color-interpolation-filters="sRGB" style="position:absolute;width:0;height:0;overflow:hidden">
+      <defs>
+        <filter id="storybook-a11y-vision-protanopia">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.567, 0.433, 0, 0, 0 0.558, 0.442, 0, 0, 0 0, 0.242, 0.758, 0, 0 0, 0, 0, 1, 0"></feColorMatrix>
+        </filter>
+        <filter id="storybook-a11y-vision-protanomaly">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.817, 0.183, 0, 0, 0 0.333, 0.667, 0, 0, 0 0, 0.125, 0.875, 0, 0 0, 0, 0, 1, 0"></feColorMatrix>
+        </filter>
+        <filter id="storybook-a11y-vision-deuteranopia">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.625, 0.375, 0, 0, 0 0.7, 0.3, 0, 0, 0 0, 0.3, 0.7, 0, 0 0, 0, 0, 1, 0"></feColorMatrix>
+        </filter>
+        <filter id="storybook-a11y-vision-deuteranomaly">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.8, 0.2, 0, 0, 0 0.258, 0.742, 0, 0, 0 0, 0.142, 0.858, 0, 0 0, 0, 0, 1, 0"></feColorMatrix>
+        </filter>
+        <filter id="storybook-a11y-vision-tritanopia">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.95, 0.05,  0, 0, 0 0,  0.433, 0.567, 0, 0 0,  0.475, 0.525, 0, 0 0,  0, 0, 1, 0"></feColorMatrix>
+        </filter>
+        <filter id="storybook-a11y-vision-tritanomaly">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.967, 0.033, 0, 0, 0 0, 0.733, 0.267, 0, 0 0, 0.183, 0.817, 0, 0 0, 0, 0, 1, 0"></feColorMatrix>
+        </filter>
+        <filter id="storybook-a11y-vision-achromatopsia">
+          <feColorMatrix in="SourceGraphic" type="matrix" values="0.299, 0.587, 0.114, 0, 0 0.299, 0.587, 0.114, 0, 0 0.299, 0.587, 0.114, 0, 0 0, 0, 0, 1, 0"></feColorMatrix>
+        </filter>
+      </defs>
+    </svg>
+  </body>
+</html>

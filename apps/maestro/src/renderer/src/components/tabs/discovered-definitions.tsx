@@ -9,8 +9,8 @@ import type { DiscoveredDefinition } from "../../utils/tools";
 import SkillTagEditor from "./skill-tag-editor";
 
 const TH =
-  "border-b border-(--line) px-4 py-2.5 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-(--ink-2)";
-const ROW = "border-b border-(--line) last:border-0 hover:bg-(--bg-elev) transition-colors";
+  "border-b border-maestro px-4 py-2.5 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-maestro-muted";
+const ROW = "border-b border-maestro last:border-0 hover:bg-maestro-elevated transition-colors";
 
 function groupLabel(source: string): string {
   if (source === "project") return "Local (this project)";
@@ -74,7 +74,7 @@ export default function DiscoveredDefinitionsList({
 }) {
   if (items.length === 0) {
     return (
-      <p className="text-[13px] text-subtle m-0">
+      <p className="text-[13px] text-maestro-muted m-0">
         No {emptyLabel} were found — locally, on this machine, or from a plugin.
       </p>
     );
@@ -88,12 +88,12 @@ export default function DiscoveredDefinitionsList({
         <section key={group.source}>
           <div className="mb-3 flex items-center gap-3">
             <span className="section-label">{group.label}</span>
-            <span className="text-[10px] text-subtle">{group.items.length}</span>
+            <span className="text-[10px] text-maestro-muted">{group.items.length}</span>
           </div>
-          <div className="overflow-hidden rounded-lg border border-(--line)">
+          <div className="overflow-hidden rounded-lg border border-maestro">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-(--bg-elev)">
+                <tr className="bg-maestro-elevated">
                   <th className={TH}>Name</th>
                   <th className={TH}>Description</th>
                   {onTagsChange && <th className={TH}>Tags</th>}
@@ -104,16 +104,16 @@ export default function DiscoveredDefinitionsList({
                   <tr
                     key={item.id}
                     className={`${ROW} ${onSelect ? "cursor-pointer" : ""} ${
-                      onSelect && selectedId === item.id ? "bg-(--primary-dim)" : ""
+                      onSelect && selectedId === item.id ? "bg-maestro-primary-subtle" : ""
                     }`}
                     onClick={onSelect ? () => onSelect(item.id) : undefined}
                   >
                     <td className="px-4 py-2.5 align-top">
-                      <span className="inline-block rounded-md border border-ring bg-(--primary-dim) px-2 py-0.5 font-mono text-[12px] text-primary">
+                      <span className="inline-block rounded-md border border-maestro-focus-ring bg-maestro-primary-subtle px-2 py-0.5 font-mono text-[12px] text-maestro-primary">
                         {item.id}
                       </span>
                     </td>
-                    <td className="px-4 py-2.5 align-top text-[13px] text-(--ink-2)">{item.description}</td>
+                    <td className="px-4 py-2.5 align-top text-[13px] text-maestro-muted">{item.description}</td>
                     {onTagsChange && (
                       <td className="px-4 py-2.5 align-top">
                         <SkillTagEditor

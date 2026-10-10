@@ -57,7 +57,7 @@ export default function SessionLogTabs({
   ]);
 
   return (
-    <div className="flex items-stretch gap-2 border-b border-(--line-2) px-3 py-2 overflow-x-auto shrink-0 bg-(--bg-2)">
+    <div className="flex items-stretch gap-2 border-b border-maestro-strong px-3 py-2 overflow-x-auto shrink-0 bg-maestro-faint">
       {ordered.map((s) => {
         const key = sessionKey(s);
         const isActive = key === selectedKey;
@@ -74,8 +74,8 @@ export default function SessionLogTabs({
             title={tooltip}
             className={`group shrink-0 flex items-stretch rounded-lg border transition-colors ${
               isActive
-                ? "bg-(--primary-dim-2) border-primary shadow-sm"
-                : "bg-(--bg-elev) border-(--line-2) hover:border-primary"
+                ? "bg-maestro-primary-soft border-maestro-primary-strong shadow-sm"
+                : "bg-maestro-elevated border-maestro-strong hover:border-maestro-primary-strong"
             } ${ended ? "opacity-70" : ""}`}
           >
             <button
@@ -83,20 +83,22 @@ export default function SessionLogTabs({
               onClick={() => onSelect(key)}
               className="flex flex-col items-start gap-0.5 px-3 py-1.5 min-w-0 max-w-64 text-left cursor-pointer"
             >
-              <span className="flex items-center gap-1.5 max-w-full text-[10px] font-semibold uppercase tracking-wider text-(--ink-2)">
-                <span className={`text-[8px] shrink-0 ${ended ? "text-(--ink-3)" : "text-(--green)"}`}>●</span>
+              <span className="flex items-center gap-1.5 max-w-full text-[10px] font-semibold uppercase tracking-wider text-maestro-muted">
+                <span className={`text-[8px] shrink-0 ${ended ? "text-maestro-muted" : "text-maestro-success"}`}>
+                  ●
+                </span>
                 <span className="truncate">{name}</span>
                 {when && (
-                  <span className="shrink-0 normal-case font-normal tracking-normal text-(--ink-3)">
+                  <span className="shrink-0 normal-case font-normal tracking-normal text-maestro-muted">
                     {when.date} {when.time}
                   </span>
                 )}
                 {ended && (
-                  <span className="shrink-0 normal-case font-normal tracking-normal text-(--ink-3)">(ended)</span>
+                  <span className="shrink-0 normal-case font-normal tracking-normal text-maestro-muted">(ended)</span>
                 )}
               </span>
               <span
-                className={`max-w-full truncate text-[12px] ${isActive ? "text-(--ink) font-semibold" : "text-(--ink-2)"}`}
+                className={`max-w-full truncate text-[12px] ${isActive ? "text-maestro font-semibold" : "text-maestro-muted"}`}
               >
                 {title}
               </span>
@@ -105,7 +107,7 @@ export default function SessionLogTabs({
               <button
                 type="button"
                 onClick={() => onDelete?.(s.projectRoot, s.sessionId)}
-                className="self-start m-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-(--line-2) bg-(--bg-2) text-(--ink) transition-colors hover:border-red-500 hover:bg-red-500/15 hover:text-red-500 cursor-pointer"
+                className="self-start m-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-maestro-strong bg-maestro-faint text-maestro transition-colors hover:border-red-500 hover:bg-red-500/15 hover:text-red-500 cursor-pointer"
                 aria-label="Delete session"
                 title="Delete session"
               >

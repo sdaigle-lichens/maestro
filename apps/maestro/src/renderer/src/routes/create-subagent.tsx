@@ -233,12 +233,12 @@ function CreateSubagent() {
         }
       >
         {target === "project" && agentTemplates.length > 0 && (
-          <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-(--bg-elev) border border-(--line) rounded-lg text-[13px] text-(--ink-2)">
-            <div className="w-7 h-7 rounded-[7px] bg-(--primary-dim) text-primary flex items-center justify-center">
+          <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-maestro-elevated border border-maestro rounded-lg text-[13px] text-maestro-muted">
+            <div className="w-7 h-7 rounded-[7px] bg-maestro-primary-subtle text-maestro-primary flex items-center justify-center">
               <Copy size={15} />
             </div>
             <div className="flex-1 leading-normal">
-              <strong className="text-(--ink)">Start from a template.</strong> Seeds the name and description from an
+              <strong className="text-maestro">Start from a template.</strong> Seeds the name and description from an
               agent already on this machine, and switches to Manual — optional.
             </div>
             <div className="w-64">
@@ -255,19 +255,19 @@ function CreateSubagent() {
           </div>
         )}
 
-        <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-(--bg-elev) border border-(--line) rounded-lg text-[13px] text-(--ink-2)">
-          <div className="w-7 h-7 rounded-[7px] bg-(--primary-dim) text-primary flex items-center justify-center">
+        <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-maestro-elevated border border-maestro rounded-lg text-[13px] text-maestro-muted">
+          <div className="w-7 h-7 rounded-[7px] bg-maestro-primary-subtle text-maestro-primary flex items-center justify-center">
             {mode === "auto" ? <Sparkles size={15} /> : <Pencil size={15} />}
           </div>
           <div className="flex-1 leading-normal">
             {mode === "auto" ? (
               <>
-                <strong className="text-(--ink)">Auto.</strong> The frontmatter is written now; Claude fills in the
+                <strong className="text-maestro">Auto.</strong> The frontmatter is written now; Claude fills in the
                 role, workflow and output from your idea.
               </>
             ) : (
               <>
-                <strong className="text-(--ink)">Manual.</strong> You provide every field — the file is complete as
+                <strong className="text-maestro">Manual.</strong> You provide every field — the file is complete as
                 written, with no model involved.
               </>
             )}
@@ -410,8 +410,8 @@ function CreateSubagent() {
             label="Project location"
             hint="The subagent will be created at <project>/.claude/agents/<name>.md."
           >
-            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-(--bg-2) border border-(--line) font-mono text-[12px] text-(--ink-2)">
-              <Folder size={13} className="text-(--ink-3)" />
+            <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-maestro-faint border border-maestro font-mono text-[12px] text-maestro-muted">
+              <Folder size={13} className="text-maestro-muted" />
               {projectRoot || "No project is open — choose one from the top bar."}
             </div>
           </Field>

@@ -85,45 +85,46 @@ export const CATEGORY_LABELS: Record<AvatarCategory, string> = {
 /**
  * Two page-local surfaces the token set has no name for, mixed out of the ones it does so they
  * still follow the theme: `--pane` is the side panes and the avatar frame (a step between `--bg`
- * and `--bg-2`), `--sunken` is the read-only report block (a step the other way). In dark mode
- * these resolve to exactly the design's `#2b2722` and `#2f2b26`.
+ * and `--bg-faint`), `--sunken` is the read-only report block (a step the other way). In dark mode
+ * these resolve to the design's `#2b2722` and `#2f2b26`, give or take a rounding step.
  */
 export const PANE_SURFACES = {
-  "--pane": "color-mix(in srgb, var(--bg) 70%, var(--bg-2))",
-  "--sunken": "color-mix(in srgb, var(--bg) 30%, var(--bg-2))",
+  "--pane": "color-mix(in srgb, var(--bg) 85%, var(--bg-faint))",
+  "--sunken": "color-mix(in srgb, var(--bg) 65%, var(--bg-faint))",
 } as CSSProperties;
 
 /** The 24×24 pane-collapse button, and the 28×28 avatar-category / randomize buttons. */
 export const ICON_BUTTON =
-  "grid place-items-center rounded-[5px] border border-(--line-2) bg-(--bg-elev) text-(--ink-3) " +
-  "cursor-pointer transition-colors duration-[120ms] hover:text-(--ink) hover:border-(--primary)";
+  "grid place-items-center rounded-[5px] border border-maestro-strong bg-maestro-elevated text-maestro-muted " +
+  "cursor-pointer transition-colors duration-[120ms] hover:text-maestro hover:border-maestro-primary-strong";
 
 /** The 22×22 borderless pencil on a list row and on the interactions header. */
 export const PENCIL_BUTTON =
   "w-[22px] h-[22px] shrink-0 grid place-items-center rounded-[5px] border border-transparent bg-transparent " +
-  "text-(--ink-3) cursor-pointer transition-colors duration-[120ms] " +
-  "hover:text-(--primary) hover:bg-(--bg-3) hover:border-(--line)";
+  "text-maestro-muted cursor-pointer transition-colors duration-[120ms] " +
+  "hover:text-maestro-primary hover:bg-maestro-soft hover:border-maestro";
 
 /** The mono id chip: an agent's name in the list, the agent type in the card header. */
-export const PRIMARY_CHIP = "font-mono text-(--primary) bg-(--primary-dim) border border-(--primary-dim-2) rounded-md";
+export const PRIMARY_CHIP =
+  "font-mono text-maestro-primary bg-maestro-primary-subtle border border-maestro-primary rounded-md";
 
 /** The card footer's secondary action — Edit agent, and Cancel. */
 export const FOOTER_BUTTON =
-  "inline-flex items-center gap-[7px] h-[34px] px-[14px] rounded-md border border-(--line-2) bg-(--bg-elev) " +
-  "text-(--ink-2) text-[12.5px] cursor-pointer transition-colors duration-[120ms] " +
-  "hover:text-(--ink) hover:border-(--primary) disabled:cursor-not-allowed disabled:opacity-60";
+  "inline-flex items-center gap-[7px] h-[34px] px-[14px] rounded-md border border-maestro-strong bg-maestro-elevated " +
+  "text-maestro-muted text-[12.5px] cursor-pointer transition-colors duration-[120ms] " +
+  "hover:text-maestro hover:border-maestro-primary-strong disabled:cursor-not-allowed disabled:opacity-60";
 
 /** The dashed round `+` that attaches another skill. */
 export const DASHED_ADD =
-  "w-[26px] h-[26px] grid place-items-center rounded-full border border-dashed border-(--line-2) bg-transparent " +
-  "text-(--ink-3) text-[13px] cursor-pointer transition-colors duration-[120ms] " +
-  "hover:text-(--primary) hover:border-(--primary) disabled:cursor-not-allowed disabled:opacity-50 " +
-  "disabled:hover:text-(--ink-3) disabled:hover:border-(--line-2)";
+  "w-[26px] h-[26px] grid place-items-center rounded-full border border-dashed border-maestro-strong bg-transparent " +
+  "text-maestro-muted text-[13px] cursor-pointer transition-colors duration-[120ms] " +
+  "hover:text-maestro-primary hover:border-maestro-primary-strong disabled:cursor-not-allowed disabled:opacity-50 " +
+  "disabled:hover:text-maestro-muted disabled:hover:border-maestro-strong";
 
 /** Inputs and the two `<select>`s: the filter box, the agent type, the project tag. */
 export const FIELD_CONTROL =
-  "h-[30px] px-[10px] rounded-md bg-(--bg-2) border border-(--line-2) text-(--ink) text-[12px] " +
-  "outline-none focus:border-(--primary)";
+  "h-[30px] px-[10px] rounded-md bg-maestro-faint border border-maestro-strong text-maestro text-[12px] " +
+  "outline-none focus:border-maestro-primary-strong";
 
 /**
  * Truncate a description on a word boundary with a real `…`.

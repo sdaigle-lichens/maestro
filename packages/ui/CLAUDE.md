@@ -8,7 +8,7 @@ since `apps/help-server` was folded into it, though nothing here assumes that.
 - **One component per file.** Kebab-case filenames, `default export` from each file.
 - **No domain knowledge.** Anything here must be reusable across apps. Domain-specific composition (e.g. `SkillTemplatePreview` for the skill creation form) lives in the consuming app, not here.
 - **Icons are props, not deps.** Components accept `ReactNode` for icons (e.g. `icon`, `titleIcon`, `fileIcon`). The package does NOT depend on `lucide-react` or any icon library — that lives in the consuming app. Convention follows `dialog.tsx`'s inline-SVG close button and `mode-pill.tsx`'s `icon` prop.
-- **Tailwind for styling.** Uses CSS custom properties from `@repo/styles` (`var(--ink)`, `var(--bg-elev)`, `var(--primary)`, `var(--line)`, etc.). Don't hard-code colors — pull them from those tokens so apps can theme.
+- **Tailwind for styling.** Uses the palette from `@repo/styles` (generated from `packages/styles/theme.inputs.css`): namespaced classes such as `text-maestro-muted`, `bg-maestro-elevated`, `border-maestro` and `bg-maestro-primary`, or `var(--text)`, `var(--bg-elevated)`, `var(--primary)`, `var(--border)`. Don't hard-code colors — pull them from those tokens so apps can theme.
 - **Base UI for primitives.** `dialog.tsx` wraps `@base-ui/react/dialog` — the only runtime dep. Use Base UI rather than rolling new accessibility primitives.
 
 ## Component map

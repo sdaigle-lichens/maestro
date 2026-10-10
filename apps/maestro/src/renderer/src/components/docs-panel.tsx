@@ -22,11 +22,11 @@ export default function DocsPanel({
 }) {
   return (
     <SlidePanel isOpen={isOpen} onClose={onClose} side="left" widthClass="w-80" toggleDataAttr="data-docs-toggle">
-      <div className="flex items-center border-b border-(--line) px-4 py-3">
+      <div className="flex items-center border-b border-maestro px-4 py-3">
         <span className="section-label">Docs</span>
       </div>
 
-      <div className="px-4 py-3 border-b border-(--line)">
+      <div className="px-4 py-3 border-b border-maestro">
         <DocsSearch sections={sections} onNavigate={onClose} placeholder="Search…" />
       </div>
 
@@ -39,10 +39,10 @@ export default function DocsPanel({
                 params={{ slug: doc.slug }}
                 search={{ q: "", at: "" }}
                 onClick={onClose}
-                className="flex items-center gap-2 px-4 py-2 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink)"
+                className="flex items-center gap-2 px-4 py-2 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro"
                 activeProps={{
                   className:
-                    "flex items-center gap-2 px-4 py-2 text-[13px] text-primary bg-(--primary-dim) border-l-2 border-primary",
+                    "flex items-center gap-2 px-4 py-2 text-[13px] text-maestro-primary bg-maestro-primary-subtle border-l-2 border-maestro-primary-strong",
                 }}
               >
                 {doc.title}

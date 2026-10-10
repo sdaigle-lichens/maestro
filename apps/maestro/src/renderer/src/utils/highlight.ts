@@ -24,7 +24,7 @@ export function termPattern(terms: string[]): RegExp | null {
   return new RegExp(`(${parts.map(escapeRegExp).join("|")})`, "gi");
 }
 
-export const MARK_CLASS = "bg-(--primary-dim-2) text-primary rounded-sm px-0.5";
+export const MARK_CLASS = "bg-maestro-primary-soft text-maestro-primary rounded-sm px-0.5";
 
 /** The subset of hast this walk needs. Kept local: `hast` is not a dependency of this app. */
 interface HastNode {

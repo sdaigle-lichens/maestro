@@ -55,15 +55,15 @@ export function CollapsibleGroup({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 py-1 px-1 rounded hover:bg-(--bg-elev) cursor-pointer text-left focus:outline-none"
+        className="flex items-center gap-1 py-1 px-1 rounded hover:bg-maestro-elevated cursor-pointer text-left focus:outline-none"
       >
         {open ? (
-          <ChevronDown size={11} className="text-subtle shrink-0" />
+          <ChevronDown size={11} className="text-maestro-muted shrink-0" />
         ) : (
-          <ChevronRight size={11} className="text-subtle shrink-0" />
+          <ChevronRight size={11} className="text-maestro-muted shrink-0" />
         )}
-        <span className="text-[10px] font-semibold text-subtle uppercase tracking-wide truncate">{title}</span>
-        <span className="ml-auto shrink-0 text-[10px] text-subtle">{count}</span>
+        <span className="text-[10px] font-semibold text-maestro-muted uppercase tracking-wide truncate">{title}</span>
+        <span className="ml-auto shrink-0 text-[10px] text-maestro-muted">{count}</span>
       </button>
       {open && <div className="flex flex-col gap-0.5 pl-1">{children}</div>}
     </div>

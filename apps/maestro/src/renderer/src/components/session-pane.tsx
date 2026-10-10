@@ -123,16 +123,16 @@ export default function SessionPane() {
     <aside
       data-testid="session-pane"
       style={{ width: session.width }}
-      className="shrink-0 h-screen border-l border-(--line) bg-(--bg) flex flex-col relative"
+      className="shrink-0 h-screen border-l border-maestro bg-maestro flex flex-col relative"
     >
       <ResizeHandle width={session.width} onResize={session.setWidth} />
 
-      <header className="flex items-center justify-between border-b border-(--line) px-4 py-3 shrink-0">
+      <header className="flex items-center justify-between border-b border-maestro px-4 py-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <MessagesSquare size={16} className="text-primary shrink-0" />
+          <MessagesSquare size={16} className="text-maestro-primary shrink-0" />
           <div className="min-w-0">
-            <h2 className="text-[13px] font-semibold text-(--ink) m-0">Session</h2>
-            <p data-testid="session-status" className="text-[10px] text-subtle m-0 truncate">
+            <h2 className="text-[13px] font-semibold text-maestro m-0">Session</h2>
+            <p data-testid="session-status" className="text-[10px] text-maestro-muted m-0 truncate">
               {noProject
                 ? "No project open"
                 : session.waiting > 0
@@ -156,7 +156,7 @@ export default function SessionPane() {
             onClick={() => setShowResume((v) => !v)}
             disabled={noProject}
             title="Pick up a conversation recorded for this project"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-subtle hover:bg-(--bg-elev) hover:text-(--ink) bg-transparent border-0 cursor-pointer focus:outline-none disabled:opacity-40"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none disabled:opacity-40"
           >
             <History size={14} />
           </button>
@@ -165,7 +165,7 @@ export default function SessionPane() {
             data-testid="session-scope-toggle"
             onClick={() => setShowScope((v) => !v)}
             title="What this session can read and write"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-subtle hover:bg-(--bg-elev) hover:text-(--ink) bg-transparent border-0 cursor-pointer focus:outline-none"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
           >
             <Eye size={14} />
           </button>
@@ -175,7 +175,7 @@ export default function SessionPane() {
               data-testid="session-clear"
               onClick={() => void session.end()}
               title="End this session and clear the transcript"
-              className="flex h-7 w-7 items-center justify-center rounded-md text-subtle hover:bg-(--bg-elev) hover:text-(--ink) bg-transparent border-0 cursor-pointer focus:outline-none"
+              className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
             >
               <Trash2 size={14} />
             </button>
@@ -184,7 +184,7 @@ export default function SessionPane() {
             type="button"
             onClick={() => session.setOpen(false)}
             aria-label="Close session pane"
-            className="flex h-7 w-7 items-center justify-center rounded-md text-subtle hover:bg-(--bg-elev) hover:text-(--ink) bg-transparent border-0 cursor-pointer focus:outline-none"
+            className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
           >
             <X size={14} />
           </button>
@@ -211,16 +211,16 @@ export default function SessionPane() {
       {showScope && session.info && (
         <div
           data-testid="session-scope"
-          className="border-b border-(--line) bg-(--bg-elev) px-4 py-3 flex flex-col gap-2"
+          className="border-b border-maestro bg-maestro-elevated px-4 py-3 flex flex-col gap-2"
         >
           <ReadScope read={session.info.read} compact />
           <GrantList grants={session.info.grants} onRevoke={(path) => void session.revoke(path)} />
           <WriteScope writes={session.info.writes} />
-          <p className="m-0 text-[10px] text-(--ink-3)">
-            Tools: <span className="font-mono text-(--ink-2)">{session.info.tools.join(", ")}</span>
+          <p className="m-0 text-[10px] text-maestro-muted">
+            Tools: <span className="font-mono text-maestro-muted">{session.info.tools.join(", ")}</span>
           </p>
-          <p className="m-0 text-[10px] text-(--ink-3)">
-            Skills: <span className="font-mono text-(--ink-2)">{session.info.skills.join(", ")}</span>
+          <p className="m-0 text-[10px] text-maestro-muted">
+            Skills: <span className="font-mono text-maestro-muted">{session.info.skills.join(", ")}</span>
           </p>
         </div>
       )}
@@ -231,11 +231,11 @@ export default function SessionPane() {
           <Entry key={entry.seq} entry={entry} cwd={current?.root ?? ""} outcomes={session.outcomes} />
         ))}
         {session.starting && (
-          <div className="mb-3 text-[11px] text-(--ink-3)">Starting a session… (nothing has been asked yet)</div>
+          <div className="mb-3 text-[11px] text-maestro-muted">Starting a session… (nothing has been asked yet)</div>
         )}
         {session.busy && (
           <div className="mb-3 flex items-center gap-2">
-            <span className="text-[11px] text-(--ink-3)">● working</span>
+            <span className="text-[11px] text-maestro-muted">● working</span>
             <button
               type="button"
               data-testid="session-stop"
@@ -252,7 +252,7 @@ export default function SessionPane() {
             className="mb-3 flex items-start gap-1.5 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-[11px]"
           >
             <AlertTriangle size={12} className="shrink-0 mt-px text-red-500" />
-            <span className="text-(--ink-2) whitespace-pre-wrap break-words">{session.error}</span>
+            <span className="text-maestro-muted whitespace-pre-wrap break-words">{session.error}</span>
           </div>
         )}
       </div>
@@ -264,7 +264,7 @@ export default function SessionPane() {
         from whatever route the user was on.
       */}
       {session.pending.length > 0 && (
-        <div data-testid="session-permissions" className="border-t border-(--line) px-4 pt-3 shrink-0">
+        <div data-testid="session-permissions" className="border-t border-maestro px-4 pt-3 shrink-0">
           {session.pending.map((request) => (
             <PermissionCard
               key={request.requestId}
@@ -282,7 +282,7 @@ export default function SessionPane() {
         card. See `agent-question.tsx`.
       */}
       {session.questions.length > 0 && (
-        <div data-testid="session-questions" className="border-t border-(--line) px-4 pt-3 shrink-0">
+        <div data-testid="session-questions" className="border-t border-maestro px-4 pt-3 shrink-0">
           {session.questions.map((request) => (
             <QuestionCard
               key={request.requestId}
@@ -300,7 +300,7 @@ export default function SessionPane() {
       */}
       {session.info?.canContinue && <ContinueCard />}
 
-      <div className="border-t border-(--line) px-4 py-3 shrink-0">
+      <div className="border-t border-maestro px-4 py-3 shrink-0">
         <div className="flex items-end gap-2">
           <textarea
             ref={inputRef}
@@ -322,7 +322,7 @@ export default function SessionPane() {
                   ? "This session reached its ceiling — press Continue to carry on."
                   : "Ask about this project…"
             }
-            className="min-h-9 max-h-40 flex-1 resize-none rounded-md border border-(--line) bg-(--bg) px-3 py-2 text-[13px] text-(--ink) placeholder-subtle outline-none transition focus:border-primary disabled:opacity-50"
+            className="min-h-9 max-h-40 flex-1 resize-none rounded-md border border-maestro bg-maestro px-3 py-2 text-[13px] text-maestro placeholder-maestro-muted outline-none transition focus:border-maestro-primary-strong disabled:opacity-50"
             style={{ lineHeight: "1.4" }}
           />
           <button
@@ -331,12 +331,12 @@ export default function SessionPane() {
             onClick={submit}
             disabled={!input.trim() || session.busy || noProject || exhausted}
             aria-label="Send"
-            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-primary text-white transition hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none border-0"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-maestro-primary text-white transition hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none border-0"
           >
             <Send size={15} />
           </button>
         </div>
-        <p className="mt-1.5 text-[10px] text-subtle m-0">
+        <p className="mt-1.5 text-[10px] text-maestro-muted m-0">
           Enter to send. Every turn is yours — the app writes none of them, and anything outside what this session was
           given comes back to you as a question.
         </p>
@@ -373,7 +373,7 @@ function SessionControls() {
   return (
     <div
       data-testid="session-controls"
-      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-(--line) px-4 py-2 shrink-0"
+      className="flex flex-wrap items-center gap-x-3 gap-y-1.5 border-b border-maestro px-4 py-2 shrink-0"
     >
       <span
         data-testid="session-spend"
@@ -388,28 +388,28 @@ function SessionControls() {
           `${spend.allowances > 1 ? `, ${usd(spend.estimateUsd)} across ${spend.allowances} allowances` : ""}. ` +
           `The session stops at the ceiling and offers to continue.`
         }
-        className="inline-flex items-center gap-1.5 text-[10px] text-(--ink-3) cursor-help"
+        className="inline-flex items-center gap-1.5 text-[10px] text-maestro-muted cursor-help"
       >
-        <span className="font-mono text-(--ink-2)">
+        <span className="font-mono text-maestro-muted">
           ≈ {usd(spend.allowanceUsd)} / {usd(spend.ceilingUsd)}
         </span>
-        <span className="h-1 w-10 overflow-hidden rounded-full bg-(--bg-elev)">
+        <span className="h-1 w-10 overflow-hidden rounded-full bg-maestro-elevated">
           <span
-            className={`block h-full ${share > 0.8 ? "bg-amber-500" : "bg-primary"}`}
+            className={`block h-full ${share > 0.8 ? "bg-amber-500" : "bg-maestro-primary"}`}
             style={{ width: `${Math.round(share * 100)}%` }}
           />
         </span>
         <span>estimate</span>
       </span>
 
-      <label className="inline-flex items-center gap-1 text-[10px] text-(--ink-3)">
+      <label className="inline-flex items-center gap-1 text-[10px] text-maestro-muted">
         Effort
         <select
           data-testid="session-effort"
           value={info.effort}
           disabled={!session.live}
           onChange={(e) => void session.setEffort(e.target.value as (typeof levels)[number])}
-          className="rounded-md border border-(--line) bg-(--bg) px-1.5 py-0.5 text-[10px] text-(--ink) outline-none focus:border-primary disabled:opacity-50"
+          className="rounded-md border border-maestro bg-maestro px-1.5 py-0.5 text-[10px] text-maestro outline-none focus:border-maestro-primary-strong disabled:opacity-50"
         >
           {levels.map((level) => (
             <option key={level} value={level}>
@@ -419,7 +419,7 @@ function SessionControls() {
         </select>
       </label>
 
-      <label className="inline-flex min-w-0 items-center gap-1 text-[10px] text-(--ink-3)">
+      <label className="inline-flex min-w-0 items-center gap-1 text-[10px] text-maestro-muted">
         Model
         <select
           data-testid="session-model"
@@ -427,7 +427,7 @@ function SessionControls() {
           value={info.model ?? ""}
           disabled={!session.live || models.length === 0}
           onChange={(e) => void session.setModel(e.target.value === "" ? null : e.target.value)}
-          className="max-w-[9rem] truncate rounded-md border border-(--line) bg-(--bg) px-1.5 py-0.5 text-[10px] text-(--ink) outline-none focus:border-primary disabled:opacity-50"
+          className="max-w-[9rem] truncate rounded-md border border-maestro bg-maestro px-1.5 py-0.5 text-[10px] text-maestro outline-none focus:border-maestro-primary-strong disabled:opacity-50"
         >
           {/*
             The CLI's own default, named as such — this app has no opinion about which model. Only
@@ -466,17 +466,17 @@ function ContinueCard() {
   const turnCeiling = info.endReason === "turns";
 
   return (
-    <div data-testid="session-continue-card" className="border-t border-(--line) px-4 pt-3 shrink-0">
-      <div className="mb-2 rounded-xl border border-primary/40 bg-(--primary-dim) px-3 py-2.5">
+    <div data-testid="session-continue-card" className="border-t border-maestro px-4 pt-3 shrink-0">
+      <div className="mb-2 rounded-xl border border-maestro-primary bg-maestro-primary-subtle px-3 py-2.5">
         <div className="flex items-start gap-2">
-          <Wallet size={14} className="mt-0.5 shrink-0 text-primary" />
+          <Wallet size={14} className="mt-0.5 shrink-0 text-maestro-primary" />
           <div className="min-w-0 flex-1">
-            <p className="m-0 text-[12px] font-semibold text-(--ink)">
+            <p className="m-0 text-[12px] font-semibold text-maestro">
               {turnCeiling
                 ? `Stopped at ${info.spend.maxTurns} turn${info.spend.maxTurns === 1 ? "" : "s"}`
                 : `Stopped at its ceiling of ${usd(info.spend.ceilingUsd)}`}
             </p>
-            <p className="m-0 mt-0.5 text-[11px] text-(--ink-2)">
+            <p className="m-0 mt-0.5 text-[11px] text-maestro-muted">
               This conversation used ≈ {usd(info.spend.allowanceUsd)} — an estimate, not a bill. Nothing has been lost:
               continuing resumes it with a fresh {usd(info.spend.ceilingUsd)} allowance, and nothing is spent until you
               do.
@@ -490,7 +490,7 @@ function ContinueCard() {
             data-testid="session-continue"
             disabled={session.continuing}
             onClick={() => void session.continueSession()}
-            className="inline-flex items-center gap-1 rounded-md border-0 bg-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
+            className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
           >
             <Play size={11} /> {session.continuing ? "Continuing…" : "Continue"}
           </button>
@@ -498,7 +498,7 @@ function ContinueCard() {
             type="button"
             data-testid="session-continue-discard"
             onClick={() => void session.end()}
-            className="inline-flex items-center gap-1 rounded-md border border-(--line) bg-(--bg) px-2.5 py-1 text-[11px] text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+            className="inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
           >
             <Trash2 size={11} /> Discard
           </button>
@@ -524,7 +524,7 @@ function GrantList({ grants, onRevoke }: { grants: SessionGrant[]; onRevoke(path
   if (grants.length === 0) return null;
   return (
     <div data-testid="session-grants" className="flex flex-col gap-1">
-      <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+      <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-maestro-muted">
         Granted by you, for this session only
       </p>
       {grants.map((grant) => (
@@ -533,11 +533,11 @@ function GrantList({ grants, onRevoke }: { grants: SessionGrant[]; onRevoke(path
           data-testid="session-grant"
           data-path={grant.path}
           data-scope={grant.scope}
-          className="flex items-start gap-2 rounded-md border border-(--line) bg-(--bg) px-2 py-1.5"
+          className="flex items-start gap-2 rounded-md border border-maestro bg-maestro px-2 py-1.5"
         >
           <div className="min-w-0 flex-1">
-            <div className="font-mono text-[10px] text-(--ink-2) break-all">{grant.path}</div>
-            <div className="text-[10px] text-(--ink-3)">
+            <div className="font-mono text-[10px] text-maestro-muted break-all">{grant.path}</div>
+            <div className="text-[10px] text-maestro-muted">
               {grant.scope === "file" ? "This file only" : "This folder and everything under it"} · granted answering a{" "}
               {grant.tool} prompt · nothing written to disk
             </div>
@@ -547,7 +547,7 @@ function GrantList({ grants, onRevoke }: { grants: SessionGrant[]; onRevoke(path
             data-testid="session-grant-revoke"
             onClick={() => onRevoke(grant.path)}
             title="Put this back out of scope"
-            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-(--line) bg-(--bg) px-2 py-0.5 text-[10px] text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+            className="inline-flex shrink-0 items-center gap-1 rounded-md border border-maestro bg-maestro px-2 py-0.5 text-[10px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
           >
             <Undo2 size={10} /> Revoke
           </button>
@@ -570,7 +570,7 @@ function GrantList({ grants, onRevoke }: { grants: SessionGrant[]; onRevoke(path
 function WriteScope({ writes }: { writes: SessionWrite[] }) {
   if (writes.length === 0) {
     return (
-      <p data-testid="session-write-scope" data-count="0" className="m-0 text-[10px] text-(--ink-3)">
+      <p data-testid="session-write-scope" data-count="0" className="m-0 text-[10px] text-maestro-muted">
         This session's write scope is empty — only a create-* form handed off from its confirmation can add to it — so
         every Edit or Write is stopped and asked about instead. Allowing one lets that single call through; it grants
         nothing beyond it, and the next write asks again.
@@ -579,7 +579,7 @@ function WriteScope({ writes }: { writes: SessionWrite[] }) {
   }
   return (
     <div data-testid="session-write-scope" data-count={writes.length} className="flex flex-col gap-1">
-      <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+      <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-maestro-muted">
         Writable, from {writes.length === 1 ? "the form you submitted" : "the forms you submitted"}
       </p>
       {writes.map((write) => (
@@ -589,19 +589,19 @@ function WriteScope({ writes }: { writes: SessionWrite[] }) {
           data-path={write.path}
           data-scope={write.scope}
           data-kind={write.kind}
-          className="flex items-start gap-2 rounded-md border border-(--line) bg-(--bg) px-2 py-1.5"
+          className="flex items-start gap-2 rounded-md border border-maestro bg-maestro px-2 py-1.5"
         >
-          <FilePen size={11} className="mt-0.5 shrink-0 text-primary" />
+          <FilePen size={11} className="mt-0.5 shrink-0 text-maestro-primary" />
           <div className="min-w-0 flex-1">
-            <div className="font-mono text-[10px] text-(--ink-2) break-all">{write.path}</div>
-            <div className="text-[10px] text-(--ink-3)">
+            <div className="font-mono text-[10px] text-maestro-muted break-all">{write.path}</div>
+            <div className="text-[10px] text-maestro-muted">
               {write.scope === "file" ? "This file only" : "This folder and everything under it"} · opened by the{" "}
               {write.kind} form · scaffolded <span className="font-mono break-all">{write.artifact}</span>
             </div>
           </div>
         </div>
       ))}
-      <p className="m-0 text-[10px] text-(--ink-3)">
+      <p className="m-0 text-[10px] text-maestro-muted">
         Writes inside {writes.length === 1 ? "it" : "them"} happen without asking. Anywhere else is still stopped and
         asked about, and allowing one of those adds nothing to this list. It all ends with the session.
       </p>
@@ -661,21 +661,21 @@ function PermissionCard({
       <div className="flex items-start gap-2">
         <ShieldQuestion size={14} className="mt-0.5 shrink-0 text-amber-500" />
         <div className="min-w-0 flex-1">
-          <p className="m-0 text-[12px] font-semibold text-(--ink)">
+          <p className="m-0 text-[12px] font-semibold text-maestro">
             {request.title ?? `Claude wants to use ${request.tool}`}
           </p>
           {/* Which agent asked. Absent for the session itself, and never guessed. */}
-          {request.agentId && <p className="m-0 text-[10px] text-(--ink-3)">Asked by subagent {request.agentId}</p>}
+          {request.agentId && <p className="m-0 text-[10px] text-maestro-muted">Asked by subagent {request.agentId}</p>}
         </div>
       </div>
 
       <PermissionDetailView detail={request.detail} />
 
-      <p data-testid="session-permission-reason" className="m-0 mt-2 text-[11px] text-(--ink-2)">
+      <p data-testid="session-permission-reason" className="m-0 mt-2 text-[11px] text-maestro-muted">
         {request.reason}
       </p>
       {request.decisionReason && request.decisionReason !== request.reason && (
-        <p className="m-0 mt-1 text-[10px] text-(--ink-3)">Claude Code says: {request.decisionReason}</p>
+        <p className="m-0 mt-1 text-[10px] text-maestro-muted">Claude Code says: {request.decisionReason}</p>
       )}
 
       <input
@@ -683,7 +683,7 @@ function PermissionCard({
         value={reason}
         onChange={(e) => setReason(e.target.value)}
         placeholder="Why not? (sent to Claude, which reads it and adapts)"
-        className="mt-2 w-full rounded-md border border-(--line) bg-(--bg) px-2 py-1.5 text-[11px] text-(--ink) placeholder-subtle outline-none focus:border-primary"
+        className="mt-2 w-full rounded-md border border-maestro bg-maestro px-2 py-1.5 text-[11px] text-maestro placeholder-maestro-muted outline-none focus:border-maestro-primary-strong"
       />
 
       <div className="mt-2 flex flex-wrap items-center gap-1.5">
@@ -692,7 +692,7 @@ function PermissionCard({
           data-testid="session-permission-allow"
           disabled={sent}
           onClick={() => answer({ choice: "allow" })}
-          className="inline-flex items-center gap-1 rounded-md border-0 bg-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
+          className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
           <Check size={11} /> Allow once
         </button>
@@ -719,7 +719,7 @@ function PermissionCard({
             className={`inline-flex items-center gap-1 rounded-md px-2.5 py-1 text-[11px] disabled:opacity-40 cursor-pointer focus:outline-none ${
               option.broad
                 ? "border border-amber-500/60 bg-amber-500/10 text-amber-600 hover:bg-amber-500/20"
-                : "border border-ring bg-(--primary-dim) text-primary hover:brightness-110"
+                : "border border-maestro-focus-ring bg-maestro-primary-subtle text-maestro-primary hover:brightness-110"
             }`}
           >
             {option.broad ? <AlertTriangle size={11} /> : <FolderOpen size={11} />} {option.label}
@@ -730,7 +730,7 @@ function PermissionCard({
           data-testid="session-permission-deny"
           disabled={sent}
           onClick={() => answer({ choice: "deny", reason: reasonOr(request.denyReason || DEFAULT_DENY_REASON) })}
-          className="inline-flex items-center gap-1 rounded-md border border-(--line) bg-(--bg) px-2.5 py-1 text-[11px] text-(--ink-2) hover:text-(--ink) disabled:opacity-40 cursor-pointer focus:outline-none"
+          className="inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro disabled:opacity-40 cursor-pointer focus:outline-none"
         >
           <Ban size={11} /> Deny
         </button>
@@ -760,8 +760,8 @@ function PermissionCard({
       {request.grants.length > 0 && (
         <ul data-testid="session-permission-grant-notes" className="m-0 mt-1.5 list-none p-0 flex flex-col gap-0.5">
           {request.grants.map((option) => (
-            <li key={option.scope} className="text-[10px] text-(--ink-3)">
-              <span className={`font-mono break-all ${option.broad ? "text-amber-600" : "text-(--ink-2)"}`}>
+            <li key={option.scope} className="text-[10px] text-maestro-muted">
+              <span className={`font-mono break-all ${option.broad ? "text-amber-600" : "text-maestro-muted"}`}>
                 {option.path}
               </span>
               <span> — {option.note}</span>
@@ -775,7 +775,7 @@ function PermissionCard({
 
 /** The per-tool body of a prompt. Every branch renders FIELDS, never the raw input object. */
 function PermissionDetailView({ detail }: { detail: PermissionDetail }) {
-  const box = "mt-2 rounded-md border border-(--line) bg-(--bg) px-2 py-1.5 font-mono text-[10px] break-all";
+  const box = "mt-2 rounded-md border border-maestro bg-maestro px-2 py-1.5 font-mono text-[10px] break-all";
 
   if (detail.kind === "fetch") {
     return (
@@ -785,17 +785,17 @@ function PermissionDetailView({ detail }: { detail: PermissionDetail }) {
           the user's project, and an outbound request is how the contents of it leave; `example.com`
           and `example.com/c?body=<their file>` are the same prompt if the path is hidden.
         */}
-        <div data-testid="session-permission-url" className={`${box} text-(--ink)`}>
+        <div data-testid="session-permission-url" className={`${box} text-maestro`}>
           {detail.url}
         </div>
-        {detail.prompt && <p className="m-0 mt-1 text-[10px] text-(--ink-3)">Asking it: {detail.prompt}</p>}
+        {detail.prompt && <p className="m-0 mt-1 text-[10px] text-maestro-muted">Asking it: {detail.prompt}</p>}
       </div>
     );
   }
 
   if (detail.kind === "search") {
     return (
-      <div data-testid="session-permission-query" className={`${box} text-(--ink)`}>
+      <div data-testid="session-permission-query" className={`${box} text-maestro`}>
         {detail.query}
       </div>
     );
@@ -804,25 +804,25 @@ function PermissionDetailView({ detail }: { detail: PermissionDetail }) {
   if (detail.kind === "write") {
     return (
       <div>
-        <div data-testid="session-permission-path" className={`${box} text-(--ink)`}>
+        <div data-testid="session-permission-path" className={`${box} text-maestro`}>
           {detail.path || "(no path given)"}
         </div>
         {detail.diff && (
           <div data-testid="session-permission-diff" className="mt-1.5 flex flex-col gap-1">
             {detail.diff.hunks.map((hunk, i) => (
-              <div key={i} className="rounded-md border border-(--line) overflow-hidden">
+              <div key={i} className="rounded-md border border-maestro overflow-hidden">
                 {hunk.before !== null && (
-                  <pre className="m-0 max-h-24 overflow-auto bg-red-500/10 px-2 py-1 font-mono text-[10px] text-(--ink-2) whitespace-pre-wrap break-all">
+                  <pre className="m-0 max-h-24 overflow-auto bg-red-500/10 px-2 py-1 font-mono text-[10px] text-maestro-muted whitespace-pre-wrap break-all">
                     {hunk.before}
                   </pre>
                 )}
-                <pre className="m-0 max-h-24 overflow-auto bg-green-500/10 px-2 py-1 font-mono text-[10px] text-(--ink-2) whitespace-pre-wrap break-all">
+                <pre className="m-0 max-h-24 overflow-auto bg-green-500/10 px-2 py-1 font-mono text-[10px] text-maestro-muted whitespace-pre-wrap break-all">
                   {hunk.after}
                 </pre>
               </div>
             ))}
             {(detail.diff.more > 0 || detail.diff.clipped) && (
-              <p className="m-0 text-[10px] text-(--ink-3)">
+              <p className="m-0 text-[10px] text-maestro-muted">
                 {detail.diff.more > 0 && `${detail.diff.more} more change${detail.diff.more === 1 ? "" : "s"}. `}
                 {detail.diff.clipped && "Shortened for display."}
               </p>
@@ -835,7 +835,7 @@ function PermissionDetailView({ detail }: { detail: PermissionDetail }) {
 
   if (detail.kind === "read") {
     return (
-      <div data-testid="session-permission-path" className={`${box} text-(--ink)`}>
+      <div data-testid="session-permission-path" className={`${box} text-maestro`}>
         {detail.path || "(no path given)"}
       </div>
     );
@@ -843,15 +843,15 @@ function PermissionDetailView({ detail }: { detail: PermissionDetail }) {
 
   if (detail.kind === "scan") {
     return (
-      <div data-testid="session-permission-path" className={`${box} text-(--ink)`}>
+      <div data-testid="session-permission-path" className={`${box} text-maestro`}>
         {detail.pattern ?? "*"}
-        {detail.path && <span className="text-(--ink-3)"> in {detail.path}</span>}
+        {detail.path && <span className="text-maestro-muted"> in {detail.path}</span>}
       </div>
     );
   }
 
   return (
-    <div data-testid="session-permission-summary" className={`${box} text-(--ink)`}>
+    <div data-testid="session-permission-summary" className={`${box} text-maestro`}>
       {detail.summary}
     </div>
   );
@@ -899,7 +899,7 @@ function ResizeHandle({ width, onResize }: { width: number; onResize(next: numbe
         setDragging(true);
       }}
       className={`absolute left-0 top-0 h-full w-1 -ml-0.5 cursor-col-resize z-10 ${
-        dragging ? "bg-primary" : "bg-transparent hover:bg-(--primary-dim)"
+        dragging ? "bg-maestro-primary" : "bg-transparent hover:bg-maestro-primary-subtle"
       }`}
     />
   );
@@ -908,25 +908,27 @@ function ResizeHandle({ width, onResize }: { width: number; onResize(next: numbe
 function EmptyState({ noProject, live }: { noProject: boolean; live: boolean }) {
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
-      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-(--primary-dim)">
-        <MessagesSquare size={20} className="text-primary" />
+      <div className="flex h-12 w-12 items-center justify-center rounded-full bg-maestro-primary-subtle">
+        <MessagesSquare size={20} className="text-maestro-primary" />
       </div>
       <div>
-        <p className="m-0 mb-1 text-[13px] font-medium text-(--ink)">
+        <p className="m-0 mb-1 text-[13px] font-medium text-maestro">
           {noProject ? "Open a project to start" : live ? "Ask anything about this project" : "Ask the first question"}
         </p>
-        <p className="m-0 text-[12px] text-subtle max-w-[26rem]">
+        <p className="m-0 text-[12px] text-maestro-muted max-w-[26rem]">
           {noProject
             ? "The session runs in the open project's directory, so it needs one."
             : "One conversation, per project, that can read this repository and your marketplaces. Anything else — a write, a fetch, a file outside them — it has to ask you about first, and you can open that file or its folder for the rest of the session when it does."}
         </p>
       </div>
-      <div className="w-full rounded-xl border border-(--line) bg-(--bg-elev) px-3.5 py-3 text-left">
-        <p className="m-0 mb-1.5 text-[11px] font-medium uppercase tracking-wider text-subtle">Also available here</p>
-        <code className="inline-flex items-center gap-1.5 rounded-md border border-ring bg-(--primary-dim) px-2 py-1 font-mono text-[12px] text-primary">
+      <div className="w-full rounded-xl border border-maestro bg-maestro-elevated px-3.5 py-3 text-left">
+        <p className="m-0 mb-1.5 text-[11px] font-medium uppercase tracking-wider text-maestro-muted">
+          Also available here
+        </p>
+        <code className="inline-flex items-center gap-1.5 rounded-md border border-maestro-focus-ring bg-maestro-primary-subtle px-2 py-1 font-mono text-[12px] text-maestro-primary">
           <Terminal size={11} /> {HELP_SKILL}
         </code>
-        <p className="m-0 mt-1.5 text-[11px] text-(--ink-3)">
+        <p className="m-0 mt-1.5 text-[11px] text-maestro-muted">
           The help skill the old chat panel ran, now a skill this session can reach by name.
         </p>
         {/*
@@ -935,7 +937,7 @@ function EmptyState({ noProject, live }: { noProject: boolean; live: boolean }) 
           terminal, half-finished — and retyping it is what they are about to do instead.
         */}
         {!noProject && (
-          <p data-testid="session-empty-resume" className="m-0 mt-2.5 text-[11px] text-(--ink-3)">
+          <p data-testid="session-empty-resume" className="m-0 mt-2.5 text-[11px] text-maestro-muted">
             Started this in your terminal? The clock icon above lists the conversations recorded for this project, shows
             what each one already read, and picks one up as a fork — your terminal session keeps its own history.
           </p>
@@ -980,7 +982,7 @@ function Entry({
   if (entry.kind === "user") {
     return (
       <div className="mb-3 flex justify-end" data-testid="session-turn" data-role="user">
-        <div className="max-w-[85%] rounded-xl border border-ring bg-(--primary-dim) px-3.5 py-2.5 text-[13px] leading-relaxed text-(--ink) whitespace-pre-wrap break-words select-text">
+        <div className="max-w-[85%] rounded-xl border border-maestro-focus-ring bg-maestro-primary-subtle px-3.5 py-2.5 text-[13px] leading-relaxed text-maestro whitespace-pre-wrap break-words select-text">
           {entry.text}
         </div>
       </div>
@@ -990,7 +992,7 @@ function Entry({
   if (entry.kind === "assistant") {
     return (
       <div className="mb-3 flex" data-testid="session-turn" data-role="assistant">
-        <div className="max-w-[95%] rounded-xl bg-(--bg-elev) px-3.5 py-2.5 text-[13px] leading-relaxed text-(--ink) whitespace-pre-wrap break-words select-text">
+        <div className="max-w-[95%] rounded-xl bg-maestro-elevated px-3.5 py-2.5 text-[13px] leading-relaxed text-maestro whitespace-pre-wrap break-words select-text">
           {entry.text}
         </div>
       </div>
@@ -1006,7 +1008,7 @@ function Entry({
       <div
         data-testid="session-tool"
         data-tool={entry.tool}
-        className="mb-1.5 flex items-start gap-1.5 text-[11px] text-(--ink-3)"
+        className="mb-1.5 flex items-start gap-1.5 text-[11px] text-maestro-muted"
       >
         <Wrench size={11} className="shrink-0 mt-0.5" />
         <span className="break-all">{label}</span>
@@ -1024,7 +1026,7 @@ function Entry({
         className="mb-3 flex items-start gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-[11px]"
       >
         <Ban size={12} className="shrink-0 mt-px text-amber-500" />
-        <span className="text-(--ink-2) break-words">
+        <span className="text-maestro-muted break-words">
           <span className="font-semibold">{entry.tool}</span>
           {entry.target && <span className="font-mono"> {entry.target}</span>} — {entry.reason}
           {/*
@@ -1033,7 +1035,7 @@ function Entry({
             user answering a prompt, and the SDK's own auto-denial event for deny RULES and MODE
             denials. "It was refused" without "by what" leaves the user with nothing to change.
           */}
-          <span className="ml-1 text-(--ink-3)">({REFUSED_BY[entry.source](entry.decidedBy)})</span>
+          <span className="ml-1 text-maestro-muted">({REFUSED_BY[entry.source](entry.decidedBy)})</span>
         </span>
       </div>
     );
@@ -1048,11 +1050,11 @@ function Entry({
         data-testid="session-permission-entry"
         data-request={entry.request.requestId}
         data-outcome={outcome ?? "pending"}
-        className="mb-3 flex items-start gap-1.5 text-[11px] text-(--ink-3)"
+        className="mb-3 flex items-start gap-1.5 text-[11px] text-maestro-muted"
       >
         <ShieldQuestion size={11} className="shrink-0 mt-0.5" />
         <span className="break-words">
-          Asked about <span className="font-semibold text-(--ink-2)">{entry.request.tool}</span>
+          Asked about <span className="font-semibold text-maestro-muted">{entry.request.tool}</span>
           {entry.request.target && <span className="font-mono"> {entry.request.target}</span>} —{" "}
           {outcome ? OUTCOME_LABEL[outcome] : "waiting for you"}
         </span>
@@ -1069,12 +1071,12 @@ function Entry({
         data-testid="session-question-entry"
         data-request={entry.request.requestId}
         data-outcome={outcome ?? "pending"}
-        className="mb-3 flex items-start gap-1.5 text-[11px] text-(--ink-3)"
+        className="mb-3 flex items-start gap-1.5 text-[11px] text-maestro-muted"
       >
         <CircleHelp size={11} className="shrink-0 mt-0.5" />
         <span className="break-words">
           Asked you to decide:{" "}
-          <span className="font-semibold text-(--ink-2)">
+          <span className="font-semibold text-maestro-muted">
             {entry.request.questions.map((q) => q.header).join(", ")}
           </span>{" "}
           — {outcome ? OUTCOME_LABEL[outcome] : "waiting for you"}
@@ -1090,15 +1092,18 @@ function Entry({
     // headline says what it is and what it cost; the body is one click away and is the exact text
     // the model was given.
     return (
-      <details data-testid="session-context" className="mb-3 rounded-lg border border-(--line) bg-(--bg-elev) px-2.5">
-        <summary className="cursor-pointer list-none py-1.5 text-[11px] text-(--ink-2) flex items-start gap-1.5">
-          <FileText size={11} className="shrink-0 mt-0.5 text-primary" />
+      <details
+        data-testid="session-context"
+        className="mb-3 rounded-lg border border-maestro bg-maestro-elevated px-2.5"
+      >
+        <summary className="cursor-pointer list-none py-1.5 text-[11px] text-maestro-muted flex items-start gap-1.5">
+          <FileText size={11} className="shrink-0 mt-0.5 text-maestro-primary" />
           <span className="break-words">
             {entry.title}
-            <span className="text-(--ink-3)"> — added without a turn, so nothing was spent</span>
+            <span className="text-maestro-muted"> — added without a turn, so nothing was spent</span>
           </span>
         </summary>
-        <pre className="m-0 mb-2 max-h-64 overflow-auto font-mono text-[10px] leading-4 text-(--ink-2) whitespace-pre-wrap break-words select-text">
+        <pre className="m-0 mb-2 max-h-64 overflow-auto font-mono text-[10px] leading-4 text-maestro-muted whitespace-pre-wrap break-words select-text">
           {entry.text}
         </pre>
       </details>
@@ -1107,7 +1112,7 @@ function Entry({
 
   if (entry.kind === "notice") {
     return (
-      <div data-testid="session-notice" className="mb-1.5 flex items-start gap-1.5 text-[11px] text-(--ink-3)">
+      <div data-testid="session-notice" className="mb-1.5 flex items-start gap-1.5 text-[11px] text-maestro-muted">
         <Info size={11} className="shrink-0 mt-0.5" />
         <span className="whitespace-pre-wrap break-words">{entry.text}</span>
       </div>
@@ -1119,7 +1124,7 @@ function Entry({
     return (
       <div className="mb-3 flex items-start gap-1.5 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-[11px]">
         <AlertTriangle size={12} className="shrink-0 mt-px text-red-500" />
-        <span className="text-(--ink-2)">{entry.error}</span>
+        <span className="text-maestro-muted">{entry.error}</span>
       </div>
     );
   }
@@ -1138,7 +1143,7 @@ function Entry({
       data-testid="session-ended"
       data-reason={entry.reason}
       data-continuable={entry.canContinue ? "yes" : "no"}
-      className="mb-3 flex items-center gap-1.5 text-[11px] text-(--ink-3)"
+      className="mb-3 flex items-center gap-1.5 text-[11px] text-maestro-muted"
     >
       <Play size={11} className="shrink-0 rotate-90" />
       <span>{ENDED[entry.reason]}</span>

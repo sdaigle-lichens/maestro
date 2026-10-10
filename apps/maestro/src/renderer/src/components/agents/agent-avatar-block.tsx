@@ -55,7 +55,7 @@ function ColorControl({
     <div className="flex items-center justify-center gap-1.5">
       <div
         title={color !== null ? `Custom ${label.toLowerCase()}` : `Native ${label.toLowerCase()} (unrecolored)`}
-        className="relative w-6 h-6 rounded-md border border-(--line-2) overflow-hidden"
+        className="relative w-6 h-6 rounded-md border border-maestro-strong overflow-hidden"
         style={{ backgroundColor: color ?? native }}
       >
         {color !== null && (
@@ -63,7 +63,7 @@ function ColorControl({
             type="button"
             onClick={() => onChange(null)}
             title="Reset to the upstream color"
-            className="absolute -top-1 -right-1 w-3 h-3 grid place-items-center rounded-full border border-(--line-2) bg-(--bg-elev) text-(--ink-3) text-[8px] leading-none cursor-pointer hover:text-(--ink) hover:border-(--primary)"
+            className="absolute -top-1 -right-1 w-3 h-3 grid place-items-center rounded-full border border-maestro-strong bg-maestro-elevated text-maestro-muted text-[8px] leading-none cursor-pointer hover:text-maestro hover:border-maestro-primary-strong"
           >
             ×
           </button>
@@ -73,7 +73,7 @@ function ColorControl({
         type="button"
         onClick={() => inputRef.current?.click()}
         title={`Choose a custom ${label.toLowerCase()}`}
-        className="text-[10px] text-(--ink-3) hover:text-(--ink) cursor-pointer bg-transparent border-none p-0"
+        className="text-[10px] text-maestro-muted hover:text-maestro cursor-pointer bg-transparent border-none p-0"
       >
         Select color
       </button>
@@ -136,7 +136,7 @@ export default function AgentAvatarBlock({
       type="button"
       onClick={() => cycle(dir)}
       title={label}
-      className="flex-none w-[30px] h-[56px] grid place-items-center rounded-lg border border-(--line-2) bg-(--bg-2) text-(--ink-2) text-[18px] leading-none cursor-pointer transition-colors duration-[120ms] hover:text-(--primary) hover:border-(--primary)"
+      className="flex-none w-[30px] h-[56px] grid place-items-center rounded-lg border border-maestro-strong bg-maestro-faint text-maestro-muted text-[18px] leading-none cursor-pointer transition-colors duration-[120ms] hover:text-maestro-primary hover:border-maestro-primary-strong"
     >
       {glyph}
     </button>
@@ -155,15 +155,15 @@ export default function AgentAvatarBlock({
                 type="button"
                 onClick={() => onActiveCat(cat)}
                 title={`${CATEGORY_LABELS[cat]} — ${partName(cat, layers[cat])}`}
-                className="relative flex-none w-7 h-7 grid place-items-center rounded-md border border-(--line) bg-(--pane) p-0 cursor-pointer transition-colors duration-[120ms] hover:border-(--line-2)"
+                className="relative flex-none w-7 h-7 grid place-items-center rounded-md border border-maestro bg-(--pane) p-0 cursor-pointer transition-colors duration-[120ms] hover:border-maestro-strong"
               >
                 {active && (
                   <span
                     aria-hidden
-                    className="absolute -inset-px rounded-md border border-(--primary) bg-(--primary-dim) pointer-events-none"
+                    className="absolute -inset-px rounded-md border border-maestro-primary-strong bg-maestro-primary-subtle pointer-events-none"
                   />
                 )}
-                <Icon size={14} className={`relative ${active ? "text-(--primary)" : "text-(--ink-3)"}`} />
+                <Icon size={14} className={`relative ${active ? "text-maestro-primary" : "text-maestro-muted"}`} />
               </button>
             );
           })}
@@ -172,7 +172,7 @@ export default function AgentAvatarBlock({
             type="button"
             onClick={() => onChange(randomAvatarLayers())}
             title="Randomize every part"
-            className={`flex-none w-7 h-7 p-0 rounded-md text-(--ink-2) ${ICON_BUTTON}`}
+            className={`flex-none w-7 h-7 p-0 rounded-md text-maestro-muted ${ICON_BUTTON}`}
           >
             <Dices size={14} />
           </button>
@@ -182,7 +182,7 @@ export default function AgentAvatarBlock({
       <div className="flex items-center gap-1.5">
         {editing && arrow(-1, "‹", "Previous option")}
         <div
-          className="relative flex-1 aspect-square mx-auto rounded-xl border border-(--line) bg-(--pane) overflow-hidden"
+          className="relative flex-1 aspect-square mx-auto rounded-xl border border-maestro bg-(--pane) overflow-hidden"
           style={{ maxWidth: editing ? AVATAR_FRAME_EDIT : AVATAR_FRAME_VIEW }}
         >
           <AvatarCanvas layers={layers} fill />
@@ -192,7 +192,7 @@ export default function AgentAvatarBlock({
 
       {editing ? (
         <>
-          <span className="font-mono text-[10.5px] text-(--ink-3) text-center">
+          <span className="font-mono text-[10.5px] text-maestro-muted text-center">
             {CATEGORY_LABELS[activeCat]} · {partName(activeCat, layers[activeCat])}
           </span>
           {eyesRecolorable && (
@@ -213,7 +213,7 @@ export default function AgentAvatarBlock({
           )}
         </>
       ) : (
-        <p className="m-0 text-[10.5px] leading-[1.5] text-(--ink-3)">
+        <p className="m-0 text-[10.5px] leading-[1.5] text-maestro-muted">
           Cosmetic only — the avatar never reaches a run.
         </p>
       )}

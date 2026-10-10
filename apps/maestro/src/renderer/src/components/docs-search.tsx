@@ -55,25 +55,25 @@ export default function DocsSearch({
   return (
     <div className="flex flex-col gap-3 min-h-0">
       <div
-        className={`flex items-center gap-2 rounded-md border bg-(--bg-elev) px-3 py-1.5 transition-colors ${
-          query ? "border-primary" : "border-(--line)"
+        className={`flex items-center gap-2 rounded-md border bg-maestro-elevated px-3 py-1.5 transition-colors ${
+          query ? "border-maestro-primary-strong" : "border-maestro"
         }`}
       >
-        <Search size={12} className="shrink-0 text-subtle" />
+        <Search size={12} className="shrink-0 text-maestro-muted" />
         <input
           type="search"
           autoFocus={autoFocus}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           placeholder={placeholder}
-          className="w-full bg-transparent text-[13px] text-(--ink) placeholder-subtle outline-none"
+          className="w-full bg-transparent text-[13px] text-maestro placeholder-maestro-muted outline-none"
         />
         {query && (
           <button
             type="button"
             onClick={() => setQuery("")}
             aria-label="Clear search"
-            className="shrink-0 text-subtle hover:text-(--ink) cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
+            className="shrink-0 text-maestro-muted hover:text-maestro cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
           >
             <X size={12} />
           </button>
@@ -83,29 +83,29 @@ export default function DocsSearch({
       {query.trim() && (
         <div className="flex flex-col gap-1 overflow-y-auto min-h-0">
           {results.length === 0 ? (
-            <p className="text-[12px] text-subtle px-1 py-2 m-0">No section matches “{query.trim()}”.</p>
+            <p className="text-[12px] text-maestro-muted px-1 py-2 m-0">No section matches “{query.trim()}”.</p>
           ) : (
             results.map((section) => (
               <button
                 key={`${section.slug}#${section.headingId}`}
                 type="button"
                 onClick={() => open(section)}
-                className="text-left rounded-lg border border-(--line) bg-(--bg-elev) px-3 py-2 cursor-pointer hover:border-primary focus:outline-none"
+                className="text-left rounded-lg border border-maestro bg-maestro-elevated px-3 py-2 cursor-pointer hover:border-maestro-primary-strong focus:outline-none"
               >
                 <div className="flex items-baseline justify-between gap-2">
-                  <span className="text-[13px] text-(--ink) truncate">
+                  <span className="text-[13px] text-maestro truncate">
                     <HighlightText text={section.headingText} terms={terms} />
                   </span>
                   <span className="flex items-center gap-1.5 shrink-0">
                     {section.group && (
-                      <span className="rounded-md border border-(--line) bg-(--bg-elev) px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-subtle">
+                      <span className="rounded-md border border-maestro bg-maestro-elevated px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wider text-maestro-muted">
                         {section.group === "app" ? "Maestro" : "Claude Code"}
                       </span>
                     )}
-                    <span className="font-mono text-[10px] text-(--ink-3)">{section.docTitle}</span>
+                    <span className="font-mono text-[10px] text-maestro-muted">{section.docTitle}</span>
                   </span>
                 </div>
-                <p className="text-[12px] text-(--ink-2) m-0 mt-0.5 line-clamp-2">
+                <p className="text-[12px] text-maestro-muted m-0 mt-0.5 line-clamp-2">
                   <HighlightText text={excerptAround(section.bodyText, query)} terms={terms} />
                 </p>
               </button>

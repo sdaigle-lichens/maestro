@@ -28,7 +28,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
         data-testid="hamburger-menu"
         onClick={() => setOpen((v) => !v)}
         title="Menu"
-        className="relative flex items-center justify-center w-7 h-7 rounded-md text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none bg-transparent border-0"
+        className="relative flex items-center justify-center w-7 h-7 rounded-md text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
       >
         <Menu size={15} />
         {badge !== "none" && (
@@ -46,11 +46,11 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
       </button>
 
       {open && (
-        <div className="absolute left-0 top-8 z-50 w-64 bg-(--bg) border border-(--line) rounded-lg shadow-lg py-1">
+        <div className="absolute left-0 top-8 z-50 w-64 bg-maestro border border-maestro rounded-lg shadow-lg py-1">
           <Link
             to="/docs"
             onClick={close}
-            activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }}
+            activeProps={{ className: "text-maestro bg-maestro-elevated" }}
             className={MENU_ITEM}
           >
             <BookOpen size={13} /> Docs
@@ -58,7 +58,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
           <Link
             to="/tools"
             onClick={close}
-            activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }}
+            activeProps={{ className: "text-maestro bg-maestro-elevated" }}
             className={MENU_ITEM}
           >
             <LayoutGrid size={13} /> Tools
@@ -66,17 +66,19 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
           <Link
             to="/templates"
             onClick={close}
-            activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }}
+            activeProps={{ className: "text-maestro bg-maestro-elevated" }}
             className={MENU_ITEM}
           >
             <LayoutTemplate size={13} /> Templates
           </Link>
 
-          <hr className="my-1 border-(--line)" />
+          <hr className="my-1 border-maestro" />
 
-          <div className="px-3 py-1 text-[11px] font-semibold text-subtle uppercase tracking-wide">Recent projects</div>
+          <div className="px-3 py-1 text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
+            Recent projects
+          </div>
           {recent.length === 0 ? (
-            <div className="px-3 py-1.5 text-[12px] text-subtle">No projects yet</div>
+            <div className="px-3 py-1.5 text-[12px] text-maestro-muted">No projects yet</div>
           ) : (
             recent.map((r) => (
               <button
@@ -86,22 +88,22 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
                   void openProject(r.root);
                   close();
                 }}
-                className="w-full text-left flex flex-col px-3 py-1.5 hover:bg-(--bg-elev) cursor-pointer focus:outline-none bg-transparent border-0"
+                className="w-full text-left flex flex-col px-3 py-1.5 hover:bg-maestro-elevated cursor-pointer focus:outline-none bg-transparent border-0"
               >
-                <span className="text-[13px] text-(--ink) truncate">{r.name}</span>
-                <span className="text-[11px] text-(--ink-3) font-mono truncate">{r.root}</span>
+                <span className="text-[13px] text-maestro truncate">{r.name}</span>
+                <span className="text-[11px] text-maestro-muted font-mono truncate">{r.root}</span>
               </button>
             ))
           )}
 
-          <div className="border-t border-(--line) mt-1 pt-1">
+          <div className="border-t border-maestro mt-1 pt-1">
             <button
               type="button"
               onClick={() => {
                 void pick();
                 close();
               }}
-              className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink) cursor-pointer focus:outline-none bg-transparent border-0"
+              className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
             >
               <Plus size={13} /> Add project…
             </button>

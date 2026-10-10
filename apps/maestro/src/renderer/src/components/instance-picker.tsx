@@ -125,12 +125,12 @@ export default function InstancePicker({
   }
   const tabClass = (active: boolean) =>
     `flex-1 py-1 text-[11px] font-medium cursor-pointer focus:outline-none transition-colors ${
-      active ? "bg-primary text-white" : "bg-(--bg-elev) text-(--ink-2) hover:bg-(--bg)"
+      active ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"
     }`;
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex rounded-lg overflow-hidden border border-(--line)">
+      <div className="flex rounded-lg overflow-hidden border border-maestro">
         <button type="button" onClick={() => set({ mode: "reuse" })} className={tabClass(value.mode === "reuse")}>
           Reuse instance
         </button>
@@ -141,7 +141,7 @@ export default function InstancePicker({
 
       {value.mode === "reuse" ? (
         reusableInstances.length === 0 ? (
-          <p className="text-[12px] text-subtle">
+          <p className="text-[12px] text-maestro-muted">
             No available instances. All existing instances are placed, or none have been created yet. Switch to "New
             instance" to create one.
           </p>
@@ -149,7 +149,7 @@ export default function InstancePicker({
           <select
             value={value.reuseInstanceName}
             onChange={(e) => set({ reuseInstanceName: e.target.value })}
-            className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+            className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
           >
             <option value="">Select instance…</option>
             {reusableInstances.map((i) => (
@@ -164,7 +164,7 @@ export default function InstancePicker({
           <select
             value={value.newAgent}
             onChange={(e) => set({ newAgent: e.target.value })}
-            className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+            className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
           >
             <option value="">Pick subagent…</option>
             {allAgents.map((a) => (
@@ -175,7 +175,7 @@ export default function InstancePicker({
           </select>
           {noFreeAgents && (
             <div className="flex flex-col gap-2">
-              <p className="text-[11px] text-subtle m-0">
+              <p className="text-[11px] text-maestro-muted m-0">
                 Every available subagent is already placed in this workflow — a subagent can only appear once, since the
                 runtime routes handoffs by agent type. Add another subagent from the left panel, reuse an existing
                 instance
@@ -184,14 +184,14 @@ export default function InstancePicker({
                   : "."}
               </p>
               {canFork && (
-                <div className="flex flex-col gap-1.5 rounded-lg border border-(--line) p-2">
-                  <div className="text-[10px] font-semibold text-subtle uppercase tracking-wide">
+                <div className="flex flex-col gap-1.5 rounded-lg border border-maestro p-2">
+                  <div className="text-[10px] font-semibold text-maestro-muted uppercase tracking-wide">
                     Fork an agent as new
                   </div>
                   <select
                     value={forkSource}
                     onChange={(e) => setForkSource(e.target.value)}
-                    className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                    className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
                   >
                     <option value="">Fork which agent…</option>
                     {forkSources.map((a) => (
@@ -205,14 +205,14 @@ export default function InstancePicker({
                     placeholder="New agent name (e.g. backend-worker)"
                     value={forkName}
                     onChange={(e) => setForkName(e.target.value)}
-                    className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                    className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
                   />
                   {forkError && <p className="text-[11px] text-red-500 m-0">{forkError}</p>}
                   <button
                     type="button"
                     disabled={!forkSource || !forkName.trim() || forking}
                     onClick={() => void handleFork()}
-                    className="px-2.5 py-1.5 text-[12px] rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="px-2.5 py-1.5 text-[12px] rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {forking ? "Forking…" : "Fork agent"}
                   </button>
@@ -230,8 +230,8 @@ export default function InstancePicker({
               if (e.key === "Escape") onEscape?.();
             }}
             aria-invalid={nameTaken}
-            className={`w-full text-[12px] bg-(--bg-elev) border rounded px-2 py-1.5 text-(--ink) focus:outline-none ${
-              nameTaken ? "border-red-400 focus:border-red-500" : "border-(--line) focus:border-primary"
+            className={`w-full text-[12px] bg-maestro-elevated border rounded px-2 py-1.5 text-maestro focus:outline-none ${
+              nameTaken ? "border-red-400 focus:border-red-500" : "border-maestro focus:border-maestro-primary-strong"
             }`}
           />
           {nameTaken && (

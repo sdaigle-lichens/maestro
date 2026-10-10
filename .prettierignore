@@ -61,3 +61,14 @@ plugins/*/scripts/lib/
 # skill. Prose is reviewed by reading it.
 CLAUDE.md
 docs/
+
+# design-palette: the generated tokens, and the vendored generator that must stay byte-identical
+# to the design plugin's copy
+packages/styles/generated/
+packages/styles/scripts/palette.ts
+
+# Storybook static build
+storybook-static/
+
+# design plugin: the captured references and index.json are written by capture.mjs and the studio
+design/

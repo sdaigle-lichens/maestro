@@ -16,8 +16,8 @@ import { setSkillAgentTypes, setSkillProjectTags, AGENT_TYPES, GLOBAL_TAG } from
 
 const PILL_BASE =
   "rounded-md border px-2 py-0.5 font-mono text-[11px] transition-colors disabled:cursor-not-allowed disabled:opacity-60";
-const PILL_ON = "border-ring bg-(--primary-dim) text-primary";
-const PILL_OFF = "border-(--line) text-subtle hover:text-(--ink-2) hover:border-(--ink-2)";
+const PILL_ON = "border-maestro-focus-ring bg-maestro-primary-subtle text-maestro-primary";
+const PILL_OFF = "border-maestro text-maestro-muted hover:text-maestro-muted hover:border-maestro-text-muted";
 
 function PillRow({
   values,

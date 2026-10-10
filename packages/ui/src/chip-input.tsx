@@ -35,16 +35,16 @@ export default function ChipInput({ id, values, onChange, placeholder }: ChipInp
   return (
     <div
       onClick={() => inputRef.current?.focus()}
-      className="flex flex-wrap items-center gap-1.5 py-1.5 pl-2.5 pr-2 min-h-10 rounded-lg bg-(--bg-elev) cursor-text transition-all duration-150"
+      className="flex flex-wrap items-center gap-1.5 py-1.5 pl-2.5 pr-2 min-h-10 rounded-lg bg-maestro-elevated cursor-text transition-all duration-150"
       style={{
-        border: `1.5px solid ${focus ? "var(--primary)" : "var(--line)"}`,
-        boxShadow: focus ? "0 0 0 3px var(--primary-dim)" : "none",
+        border: `1.5px solid ${focus ? "var(--primary)" : "var(--border)"}`,
+        boxShadow: focus ? "0 0 0 3px var(--primary-bg)" : "none",
       }}
     >
       {values.map((v, i) => (
         <span
           key={i}
-          className="inline-flex items-center gap-1.5 py-[3px] pl-[9px] pr-1 rounded-md bg-(--bg-elev) border border-(--line) text-xs text-(--ink-2)"
+          className="inline-flex items-center gap-1.5 py-[3px] pl-[9px] pr-1 rounded-md bg-maestro-elevated border border-maestro text-xs text-maestro-muted"
         >
           {v}
           <button
@@ -54,7 +54,7 @@ export default function ChipInput({ id, values, onChange, placeholder }: ChipInp
               remove(i);
             }}
             aria-label={`Remove ${v}`}
-            className="p-0.5 rounded-[3px] flex items-center text-(--ink-3) cursor-pointer focus:outline-none focus:shadow-none"
+            className="p-0.5 rounded-[3px] flex items-center text-maestro-muted cursor-pointer focus:outline-none focus:shadow-none"
           >
             <svg
               viewBox="0 0 24 24"
@@ -85,7 +85,7 @@ export default function ChipInput({ id, values, onChange, placeholder }: ChipInp
           setDraft("");
         }}
         placeholder={values.length ? "" : placeholder}
-        className="flex-1 min-w-[120px] h-[26px] bg-transparent border-none outline-none text-[13px] text-(--ink) font-sans placeholder:text-(--ink-4) focus:outline-none focus:shadow-none"
+        className="flex-1 min-w-[120px] h-[26px] bg-transparent border-none outline-none text-[13px] text-maestro font-sans placeholder:text-maestro-faint focus:outline-none focus:shadow-none"
       />
     </div>
   );

@@ -14,9 +14,9 @@ interface ButtonProps {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-(--primary) text-white border-(--primary) hover:brightness-95 shadow-(--shadow-1)",
-  secondary: "bg-(--bg-elev) text-(--ink) border-(--line) hover:bg-(--bg-2)",
-  ghost: "bg-transparent text-(--ink-2) border-transparent hover:bg-(--bg-2)",
+  primary: "bg-maestro-primary text-white border-maestro-primary-strong hover:brightness-95 shadow-(--shadow-1)",
+  secondary: "bg-maestro-elevated text-maestro border-maestro hover:bg-maestro-faint",
+  ghost: "bg-transparent text-maestro-muted border-transparent hover:bg-maestro-faint",
 };
 
 function Spinner({ size = 13 }: { size?: number }) {
@@ -46,7 +46,7 @@ export default function Button({
       disabled={isDisabled}
       className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-[13px] font-semibold border box-border transition-all duration-150 ${
         isDisabled
-          ? "bg-(--bg-2) text-(--ink-4) border-(--line) cursor-not-allowed opacity-60"
+          ? "bg-maestro-faint text-maestro-faint border-maestro cursor-not-allowed opacity-60"
           : `cursor-pointer ${variantClasses[variant]}`
       } ${className}`}
     >

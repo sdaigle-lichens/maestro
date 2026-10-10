@@ -17,7 +17,7 @@ export default function CreateLink({
     <div className="pt-2">
       <Link
         to={to}
-        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] border bg-(--bg-elev) border-(--line) text-(--ink-2) hover:text-(--ink) hover:border-primary no-underline"
+        className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro hover:border-maestro-primary-strong no-underline"
       >
         <Plus size={13} /> {label}
       </Link>

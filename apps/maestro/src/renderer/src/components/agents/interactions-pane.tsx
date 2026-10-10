@@ -23,8 +23,9 @@ type PaneTab = "interactions" | "content";
 
 const TAB_BUTTON =
   "h-[26px] px-[10px] rounded-md text-[11.5px] cursor-pointer transition-colors duration-[120ms] border";
-const TAB_BUTTON_ACTIVE = "bg-(--primary-dim) border-(--primary-dim-2) text-(--primary)";
-const TAB_BUTTON_INACTIVE = "bg-transparent border-transparent text-(--ink-2) hover:text-(--ink) hover:bg-(--bg-3)";
+const TAB_BUTTON_ACTIVE = "bg-maestro-primary-subtle border-maestro-primary text-maestro-primary";
+const TAB_BUTTON_INACTIVE =
+  "bg-transparent border-transparent text-maestro-muted hover:text-maestro hover:bg-maestro-soft";
 
 /** The tier a body resolved from, in the pane's own words. Four cases — see `ResolvedHandoff`. */
 const HANDOFF_TIER: Record<ResolvedHandoffRoute["source"], string> = {
@@ -108,12 +109,12 @@ export default function InteractionsPane({
     <aside
       ref={asideRef}
       style={{ width }}
-      className="relative flex-none min-h-0 flex flex-col border-l border-(--line) bg-(--pane)"
+      className="relative flex-none min-h-0 flex flex-col border-l border-maestro bg-(--pane)"
     >
       <div
         onMouseDown={startResize}
         title="Drag to resize"
-        className="absolute -left-[3px] top-0 bottom-0 w-1.5 z-10 cursor-col-resize hover:bg-(--primary-dim-2)"
+        className="absolute -left-[3px] top-0 bottom-0 w-1.5 z-10 cursor-col-resize hover:bg-maestro-primary-soft"
       />
       <div className="flex-none flex items-center gap-2 pt-[14px] px-4 pb-[10px]">
         <span className="text-[15px] font-semibold tracking-[-0.01em]">Interactions</span>
@@ -168,14 +169,16 @@ export default function InteractionsPane({
               value={content}
               onChange={(e) => onContent(e.target.value)}
               placeholder="This agent has no content yet."
-              className="flex-1 min-h-0 w-full resize-none p-3 rounded-[10px] bg-(--bg-2) border border-(--line-2) text-(--ink) font-mono text-[11.5px] leading-[1.65] outline-none focus:border-(--primary)"
+              className="flex-1 min-h-0 w-full resize-none p-3 rounded-[10px] bg-maestro-faint border border-maestro-strong text-maestro font-mono text-[11.5px] leading-[1.65] outline-none focus:border-maestro-primary-strong"
             />
           ) : (
-            <pre className="flex-1 min-h-0 m-0 overflow-y-auto whitespace-pre-wrap p-3 rounded-[10px] bg-(--sunken) border border-(--line) text-(--ink-2) font-mono text-[11.5px] leading-[1.65]">
+            <pre className="flex-1 min-h-0 m-0 overflow-y-auto whitespace-pre-wrap p-3 rounded-[10px] bg-(--sunken) border border-maestro text-maestro-muted font-mono text-[11.5px] leading-[1.65]">
               {content || "No content."}
             </pre>
           )}
-          {contentNote && <p className="m-0 text-[10.5px] leading-[1.55] text-(--ink-3) text-pretty">{contentNote}</p>}
+          {contentNote && (
+            <p className="m-0 text-[10.5px] leading-[1.55] text-maestro-muted text-pretty">{contentNote}</p>
+          )}
         </div>
       )}
 
@@ -212,10 +215,12 @@ export default function InteractionsPane({
                 key={`${route.label}:${route.receiver ?? "—"}`}
                 testId={id ?? undefined}
                 header={
-                  <span className="inline-flex items-center gap-1 font-mono text-[11.5px] text-(--ink-2)">
-                    <ArrowRight size={11} className="text-(--ink-3)" />
+                  <span className="inline-flex items-center gap-1 font-mono text-[11.5px] text-maestro-muted">
+                    <ArrowRight size={11} className="text-maestro-muted" />
                     {route.receiver ?? "nowhere"}
-                    {route.label !== "success" && <span className="text-(--ink-3) not-italic"> · {route.label}</span>}
+                    {route.label !== "success" && (
+                      <span className="text-maestro-muted not-italic"> · {route.label}</span>
+                    )}
                   </span>
                 }
                 value={value}
@@ -305,13 +310,13 @@ function Entry({
           value={value}
           onChange={(e) => onChange(e.target.value)}
           placeholder={placeholder}
-          className="flex-none w-full overflow-hidden resize-none p-3 rounded-[10px] bg-(--bg-2) border border-(--line-2) text-(--ink) font-mono text-[11.5px] leading-[1.65] outline-none focus:border-(--primary)"
+          className="flex-none w-full overflow-hidden resize-none p-3 rounded-[10px] bg-maestro-faint border border-maestro-strong text-maestro font-mono text-[11.5px] leading-[1.65] outline-none focus:border-maestro-primary-strong"
         />
       ) : (
         // Content height, capped at 320px, with the clipped tail faded rather than cut — a hard
         // edge reads as the end of the body, which it isn't.
         <pre
-          className="flex-none m-0 max-h-[320px] overflow-hidden p-3 rounded-[10px] bg-(--sunken) border border-(--line) text-(--ink-2) font-mono text-[11.5px] leading-[1.65] whitespace-pre-wrap"
+          className="flex-none m-0 max-h-[320px] overflow-hidden p-3 rounded-[10px] bg-(--sunken) border border-maestro text-maestro-muted font-mono text-[11.5px] leading-[1.65] whitespace-pre-wrap"
           style={{
             maskImage: "linear-gradient(#000 78%, transparent)",
             WebkitMaskImage: "linear-gradient(#000 78%, transparent)",
@@ -320,8 +325,10 @@ function Entry({
           {value || emptyText}
         </pre>
       )}
-      {note && <p className="m-0 text-[10.5px] leading-[1.55] text-(--ink-3) text-pretty">{note}</p>}
-      {lanePath && <p className="m-0 text-[10.5px] leading-[1.55] text-(--ink-3) font-mono truncate">→ {lanePath}</p>}
+      {note && <p className="m-0 text-[10.5px] leading-[1.55] text-maestro-muted text-pretty">{note}</p>}
+      {lanePath && (
+        <p className="m-0 text-[10.5px] leading-[1.55] text-maestro-muted font-mono truncate">→ {lanePath}</p>
+      )}
     </div>
   );
 }

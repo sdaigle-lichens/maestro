@@ -93,7 +93,7 @@ export function useCreateFlow(label: string) {
         onWritten?.(res.value);
         toast(
           <>
-            {label} written to <span className="font-mono text-(--ink)">{res.value.path}</span>
+            {label} written to <span className="font-mono text-maestro">{res.value.path}</span>
           </>
         );
         // Only when something is actually left for a model. A manual skeleton and a plugin manifest

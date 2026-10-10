@@ -69,14 +69,14 @@ function DescriptionPair({ entry }: { entry: AgentSyncEntry }) {
   return (
     <div className="grid grid-cols-2 gap-2">
       <div className="flex flex-col gap-1">
-        <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">Your description</div>
-        <p className="text-[12px] text-(--ink-2) m-0">{entry.description || <em>none</em>}</p>
+        <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">Your description</div>
+        <p className="text-[12px] text-maestro-muted m-0">{entry.description || <em>none</em>}</p>
       </div>
       <div className="flex flex-col gap-1">
-        <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">
+        <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
           Template&rsquo;s description
         </div>
-        <p className={`text-[12px] m-0 ${drifted ? "text-amber-500" : "text-(--ink-3)"}`}>
+        <p className={`text-[12px] m-0 ${drifted ? "text-amber-500" : "text-maestro-muted"}`}>
           {entry.templateDescription || <em>none</em>}
         </p>
       </div>
@@ -88,20 +88,22 @@ function DiffBlock({ entry }: { entry: AgentSyncEntry }) {
   const changed = entry.diff.filter((l) => l.kind !== "ctx").length;
   if (entry.diff.length === 0) {
     return (
-      <p className="text-[12px] text-(--ink-3) m-0">No diff to show — the fork or its template could not be read.</p>
+      <p className="text-[12px] text-maestro-muted m-0">
+        No diff to show — the fork or its template could not be read.
+      </p>
     );
   }
   if (changed === 0) {
-    return <p className="text-[12px] text-(--ink-3) m-0">The body is identical to the template&rsquo;s.</p>;
+    return <p className="text-[12px] text-maestro-muted m-0">The body is identical to the template&rsquo;s.</p>;
   }
   return (
     <div className="flex flex-col gap-1">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
         Body diff — {changed} line{changed === 1 ? "" : "s"} would change
       </div>
       <div
         data-testid="agent-fork-diff"
-        className="max-h-72 overflow-auto rounded-lg border border-(--line) bg-(--sunken) p-2"
+        className="max-h-72 overflow-auto rounded-lg border border-maestro bg-(--sunken) p-2"
       >
         <pre className="m-0 font-mono text-[11px] leading-[1.45] whitespace-pre">
           {entry.diff.map((line, i) => (
@@ -109,10 +111,10 @@ function DiffBlock({ entry }: { entry: AgentSyncEntry }) {
               key={i}
               className={
                 line.kind === "add"
-                  ? "text-(--green) bg-green-500/10"
+                  ? "text-maestro-success bg-green-500/10"
                   : line.kind === "del"
                     ? "text-red-500 bg-red-500/10"
-                    : "text-(--ink-3)"
+                    : "text-maestro-muted"
               }
             >
               {line.kind === "add" ? "+" : line.kind === "del" ? "-" : " "}
@@ -146,27 +148,33 @@ export default function AgentForkReview({
     <div
       data-testid="agent-fork-review"
       data-verdict={entry.verdict}
-      className="mx-6 mb-6 flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+      className="mx-6 mb-6 flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated"
     >
       <div className="flex items-center gap-2">
-        <GitBranch size={13} className="text-(--ink-3)" />
-        <span className="text-[13px] font-semibold text-(--ink)">Forked from a template</span>
-        <span className="ml-auto font-mono text-[11px] text-(--ink-3)">{entry.templateFile ?? "template missing"}</span>
+        <GitBranch size={13} className="text-maestro-muted" />
+        <span className="text-[13px] font-semibold text-maestro">Forked from a template</span>
+        <span className="ml-auto font-mono text-[11px] text-maestro-muted">
+          {entry.templateFile ?? "template missing"}
+        </span>
       </div>
 
-      <p className="text-[12px] text-(--ink-3) m-0">{originLine(entry)}</p>
+      <p className="text-[12px] text-maestro-muted m-0">{originLine(entry)}</p>
 
       <div
         className={`flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] ${
-          verdict.tone === "warn" ? "bg-amber-500/10" : verdict.tone === "info" ? "bg-(--primary-dim)" : "bg-(--sunken)"
+          verdict.tone === "warn"
+            ? "bg-amber-500/10"
+            : verdict.tone === "info"
+              ? "bg-maestro-primary-subtle"
+              : "bg-(--sunken)"
         }`}
       >
         {verdict.tone === "warn" ? (
           <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
         ) : (
-          <Check size={14} className="shrink-0 mt-px text-(--green)" />
+          <Check size={14} className="shrink-0 mt-px text-maestro-success" />
         )}
-        <span className="text-(--ink-2)">{verdict.text}</span>
+        <span className="text-maestro-muted">{verdict.text}</span>
       </div>
 
       <DescriptionPair entry={entry} />
@@ -203,7 +211,7 @@ export default function AgentForkReview({
           <Unlink size={13} /> Detach
         </button>
       </div>
-      <p className="text-[12px] text-(--ink-3) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         <b>Update</b> keeps your description and your name and replaces the body. <b>Keep as fork</b> changes nothing
         and asks again the next time the template moves. <b>Detach</b> removes only the provenance record — the file
         stays exactly where it is, and Maestro stops tracking it.

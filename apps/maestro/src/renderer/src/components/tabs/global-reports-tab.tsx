@@ -48,7 +48,7 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
       setDirty(false);
       toast(
         <>
-          Saved as the global default for <span className="font-mono text-(--ink)">{selected}</span> (version{" "}
+          Saved as the global default for <span className="font-mono text-maestro">{selected}</span> (version{" "}
           {res.value.version}).
         </>
       );
@@ -59,20 +59,22 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
 
   return (
     <div
-      className="grid overflow-hidden rounded-lg border border-(--line)"
+      className="grid overflow-hidden rounded-lg border border-maestro"
       style={{ gridTemplateColumns: "280px 1fr", minHeight: 520 }}
     >
-      <div className="border-r border-(--line) overflow-y-auto">
+      <div className="border-r border-maestro overflow-y-auto">
         {agentNames.length === 0 ? (
-          <p className="text-[13px] text-subtle m-0 p-4">No agent has a global default yet.</p>
+          <p className="text-[13px] text-maestro-muted m-0 p-4">No agent has a global default yet.</p>
         ) : (
           agentNames.map((name) => (
             <button
               key={name}
               type="button"
               onClick={() => setSelected(name)}
-              className={`w-full text-left px-4 py-2.5 border-b border-(--line) last:border-0 font-mono text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 ${
-                selected === name ? "bg-(--primary-dim) text-primary" : "text-(--ink) hover:bg-(--bg-elev)"
+              className={`w-full text-left px-4 py-2.5 border-b border-maestro last:border-0 font-mono text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 ${
+                selected === name
+                  ? "bg-maestro-primary-subtle text-maestro-primary"
+                  : "text-maestro hover:bg-maestro-elevated"
               }`}
             >
               {name}
@@ -83,16 +85,18 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
 
       <div className="flex flex-col p-4 gap-3">
         {!selected ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-(--ink-2)">
-            <FileText size={18} className="text-(--ink-3)" />
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-maestro-muted">
+            <FileText size={18} className="text-maestro-muted" />
             <p className="text-[12px] m-0">Select an agent on the left to edit its global default.</p>
           </div>
         ) : (
           <>
             <div className="flex items-center justify-between gap-2">
               <div>
-                <div className="font-mono text-[13px] text-(--ink)">{selected}</div>
-                <div className="text-[11px] text-(--ink-3)">Global default · version {reports[selected]?.version}</div>
+                <div className="font-mono text-[13px] text-maestro">{selected}</div>
+                <div className="text-[11px] text-maestro-muted">
+                  Global default · version {reports[selected]?.version}
+                </div>
               </div>
               <Button
                 variant="primary"
@@ -117,7 +121,7 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
               />
             </div>
 
-            <p className="text-[11px] text-(--ink-3) m-0">
+            <p className="text-[11px] text-maestro-muted m-0">
               Saving updates the global fallback every project without its own override for{" "}
               <span className="font-mono">{selected}</span> receives, and bumps its version — the next install or update
               in a project still on the old content will refresh it.

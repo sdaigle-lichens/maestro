@@ -59,14 +59,14 @@ function SkillsPage() {
 
   if (!result.ok) {
     return (
-      <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
+      <div className="w-full h-screen bg-maestro font-sans text-maestro flex flex-col overflow-hidden">
         <TopNav />
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10 max-w-lg">
             <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
             <div>
-              <p className="text-[13px] text-(--ink) m-0 mb-1">Skills could not be loaded.</p>
-              <p className="text-[12px] text-(--ink-2) m-0">{result.error}</p>
+              <p className="text-[13px] text-maestro m-0 mb-1">Skills could not be loaded.</p>
+              <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
             </div>
           </div>
         </div>
@@ -108,7 +108,7 @@ function SkillsPage() {
   }
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro flex flex-col overflow-hidden">
       <TopNav />
 
       <div className="flex-1 overflow-y-auto">
@@ -116,8 +116,8 @@ function SkillsPage() {
           <div className="mb-8 flex items-start justify-between gap-4">
             <div>
               <span className="section-label mb-3 inline-block">AI Dev Tools</span>
-              <h1 className="text-2xl font-semibold text-(--ink) m-0 mb-1">Skills</h1>
-              <p className="text-[13px] text-subtle m-0">
+              <h1 className="text-2xl font-semibold text-maestro m-0 mb-1">Skills</h1>
+              <p className="text-[13px] text-maestro-muted m-0">
                 Every skill this project, this machine, or an installed plugin makes available, tagged with the agent(s)
                 it belongs to.
               </p>

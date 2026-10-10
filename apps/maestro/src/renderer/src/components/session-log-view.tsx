@@ -11,11 +11,11 @@ interface SessionLogViewProps {
 }
 
 function borderColor(status: Instance["status"]): string {
-  if (status === "condition") return "border-[var(--red)]";
-  if (status === "unknown") return "border-[var(--yellow)]";
-  if (status === "transition") return "border-[var(--line-2)]";
-  if (status === "success") return "border-[var(--green)]";
-  return "border-[var(--green)]";
+  if (status === "condition") return "border-maestro-danger-strong";
+  if (status === "unknown") return "border-maestro-warning-strong";
+  if (status === "transition") return "border-maestro-strong";
+  if (status === "success") return "border-maestro-success-strong";
+  return "border-maestro-success-strong";
 }
 
 export default function SessionLogView({
@@ -29,9 +29,11 @@ export default function SessionLogView({
   return (
     <div className="flex flex-col min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-(--line) shrink-0">
-        <span className="text-[13px] font-medium text-(--ink)">Agents Flow</span>
-        <div className={`flex items-center gap-1.5 text-[11px] ${connected ? "text-(--green)" : "text-(--ink-3)"}`}>
+      <div className="flex items-center justify-between px-6 py-3 border-b border-maestro shrink-0">
+        <span className="text-[13px] font-medium text-maestro">Agents Flow</span>
+        <div
+          className={`flex items-center gap-1.5 text-[11px] ${connected ? "text-maestro-success" : "text-maestro-muted"}`}
+        >
           <span className="text-[8px]">{connected ? "●" : "○"}</span>
           {connected ? "live" : "reconnecting…"}
         </div>
@@ -51,26 +53,26 @@ export default function SessionLogView({
               }}
               onClick={() => onSelect(inst.id)}
               className={`scroll-mt-4 mb-4 rounded-lg p-4 cursor-pointer transition-colors ${
-                isActive ? `border-2 ${borderColor(inst.status)}` : "border border-(--line) hover:border-(--line-2)"
+                isActive ? `border-2 ${borderColor(inst.status)}` : "border border-maestro hover:border-maestro-strong"
               }`}
             >
               {/* Section label */}
               <div className="flex items-center justify-between py-1 mb-0.5">
-                <span className="text-(--ink-3) text-[10px] font-semibold uppercase tracking-wider">
+                <span className="text-maestro-muted text-[10px] font-semibold uppercase tracking-wider">
                   {inst.displayName}
                 </span>
                 <span className="flex items-center gap-2">
                   {inst.skillsTriage && (
                     <span className="text-[10px] font-mono">
-                      <span className="text-(--green)">{inst.skillsTriage.loaded.length} loaded</span>
+                      <span className="text-maestro-success">{inst.skillsTriage.loaded.length} loaded</span>
                       {inst.skillsTriage.skipped.length > 0 && (
-                        <span className="text-(--yellow)">
+                        <span className="text-maestro-warning">
                           {" · "}
                           {inst.skillsTriage.skipped.length} skipped
                         </span>
                       )}
                       {unaccountedSkills(inst).length > 0 && (
-                        <span className="text-(--red)">
+                        <span className="text-maestro-danger">
                           {" · "}
                           {unaccountedSkills(inst).length} unaccounted
                         </span>
@@ -78,14 +80,14 @@ export default function SessionLogView({
                     </span>
                   )}
                   {inst.delivered.length > 0 && (
-                    <span className="text-[10px] font-mono text-(--ink-3)">{inst.delivered.length} delivered</span>
+                    <span className="text-[10px] font-mono text-maestro-muted">{inst.delivered.length} delivered</span>
                   )}
                 </span>
               </div>
 
               {lines.length > 0 ? (
                 lines.map((line, i) => (
-                  <div key={i} className="whitespace-pre-wrap break-words text-(--ink-2)">
+                  <div key={i} className="whitespace-pre-wrap break-words text-maestro-muted">
                     -{" "}
                     {inst.origin === "main_session" || inst.origin === "transition"
                       ? line
@@ -93,7 +95,7 @@ export default function SessionLogView({
                   </div>
                 ))
               ) : (
-                <div className="text-(--ink-3) italic">no tool calls recorded</div>
+                <div className="text-maestro-muted italic">no tool calls recorded</div>
               )}
             </div>
           );

@@ -2,12 +2,18 @@
   "name": "@repo/styles",
   "version": "0.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
+    "palette": "node scripts/palette.ts theme.inputs.css --theme generated/theme.css --scheme generated/scheme.css --mobile generated/tailwind.css --json generated/palette.json --namespace maestro",
     "check": "prettier --check . --ignore-path ../../.prettierignore",
     "format": "prettier --write . --ignore-path ../../.prettierignore"
   },
   "exports": {
-    "./shared-styles.css": "./shared-styles.css"
+    "./shared-styles.css": "./shared-styles.css",
+    "./theme.css": "./generated/theme.css",
+    "./scheme.css": "./generated/scheme.css",
+    "./tailwind.css": "./generated/tailwind.css",
+    "./palette.json": "./generated/palette.json"
   },
   "dependencies": {
     "@tailwindcss/typography": "0.5.16",

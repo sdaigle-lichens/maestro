@@ -31,8 +31,8 @@ const CATEGORY_LABELS: Record<AvatarCategory, string> = {
 
 const SWATCH_BASE =
   "w-9 h-9 rounded-md border flex items-center justify-center overflow-hidden shrink-0 transition-colors cursor-pointer";
-const SWATCH_ON = "border-ring bg-(--primary-dim)";
-const SWATCH_OFF = "border-(--line) bg-(--bg-elev) hover:border-(--ink-2)";
+const SWATCH_ON = "border-maestro-focus-ring bg-maestro-primary-subtle";
+const SWATCH_OFF = "border-maestro bg-maestro-elevated hover:border-maestro-text-muted";
 
 /** Same swatch + "Select color" + nested-Reset control as the `/agents` card's avatar block. */
 function ColorControl({
@@ -59,7 +59,7 @@ function ColorControl({
             type="button"
             onClick={() => onChange(null)}
             title="Reset to the upstream color"
-            className="absolute -top-1 -right-1 w-3.5 h-3.5 grid place-items-center rounded-full border border-(--line) bg-(--bg-elev) text-(--ink-3) text-[9px] leading-none cursor-pointer hover:text-(--ink-2) hover:border-(--ink-2)"
+            className="absolute -top-1 -right-1 w-3.5 h-3.5 grid place-items-center rounded-full border border-maestro bg-maestro-elevated text-maestro-muted text-[9px] leading-none cursor-pointer hover:text-maestro-muted hover:border-maestro-text-muted"
           >
             ×
           </button>
@@ -69,7 +69,7 @@ function ColorControl({
         type="button"
         onClick={() => inputRef.current?.click()}
         title={`Choose a custom ${label.toLowerCase()}`}
-        className="text-[10px] text-(--ink-3) hover:text-(--ink-2) self-center cursor-pointer bg-transparent border-none p-0"
+        className="text-[10px] text-maestro-muted hover:text-maestro-muted self-center cursor-pointer bg-transparent border-none p-0"
       >
         Select color
       </button>
@@ -112,7 +112,7 @@ export default function AvatarPicker({
       <div className="flex-1 flex flex-col gap-3 min-w-0">
         {AVATAR_CATEGORIES.map((cat) => (
           <div key={cat} className="flex items-center gap-2">
-            <div className="w-12 shrink-0 text-[11px] text-(--ink-3) uppercase tracking-wide">
+            <div className="w-12 shrink-0 text-[11px] text-maestro-muted uppercase tracking-wide">
               {CATEGORY_LABELS[cat]}
             </div>
             <div className="flex flex-wrap gap-1.5">
@@ -122,7 +122,7 @@ export default function AvatarPicker({
                   aria-pressed={value[cat] === null}
                   title="None"
                   onClick={() => setCategory(cat, null)}
-                  className={`${SWATCH_BASE} ${value[cat] === null ? SWATCH_ON : SWATCH_OFF} text-[10px] text-(--ink-3)`}
+                  className={`${SWATCH_BASE} ${value[cat] === null ? SWATCH_ON : SWATCH_OFF} text-[10px] text-maestro-muted`}
                 >
                   &ndash;
                 </button>
@@ -171,17 +171,17 @@ export default function AvatarPicker({
             to="/docs/$group/$slug"
             params={{ group: "app", slug: "avatar-art-credits" }}
             search={{ q: "", at: "" }}
-            className="text-[11px] text-(--ink-3) hover:text-(--ink-2) no-underline"
+            className="text-[11px] text-maestro-muted hover:text-maestro-muted no-underline"
           >
             Character art: Universal LPC Spritesheet &mdash; GPL-3.0 / CC-BY-SA 3.0
           </Link>
         </div>
       </div>
       <div className="shrink-0 flex flex-col items-center gap-2">
-        <div className="rounded-lg border border-(--line) bg-(--bg-elev) p-2">
+        <div className="rounded-lg border border-maestro bg-maestro-elevated p-2">
           <AvatarCanvas layers={value} size={112} />
         </div>
-        <span className="text-[11px] text-(--ink-3)">Preview</span>
+        <span className="text-[11px] text-maestro-muted">Preview</span>
       </div>
     </div>
   );

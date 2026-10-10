@@ -133,7 +133,7 @@ export default function ClaudeRunDialog({
       text={preview.prompt}
       copiedText="Prompt copied!"
       previewText="Copy the exact prompt, to run in a session yourself"
-      className="inline-flex items-center gap-1.5 rounded-lg border border-(--line) bg-(--bg-elev) px-3 py-1.5 text-[12px] font-medium text-(--ink-2) transition-colors hover:text-(--ink) data-[copied]:border-(--green) data-[copied]:text-(--green)"
+      className="inline-flex items-center gap-1.5 rounded-lg border border-maestro bg-maestro-elevated px-3 py-1.5 text-[12px] font-medium text-maestro-muted transition-colors hover:text-maestro data-[copied]:border-maestro-success-strong data-[copied]:text-maestro-success"
     >
       {(copied) =>
         copied ? (
@@ -156,15 +156,15 @@ export default function ClaudeRunDialog({
       onClick={() => !running && onClose()}
     >
       <div
-        className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-[680px] max-w-[92vw] max-h-[88vh] flex flex-col gap-3"
+        className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-[680px] max-w-[92vw] max-h-[88vh] flex flex-col gap-3"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 text-[13px] font-semibold text-(--ink)">
-          <Terminal size={14} className="text-primary" />
+        <div className="flex items-center gap-2 text-[13px] font-semibold text-maestro">
+          <Terminal size={14} className="text-maestro-primary" />
           Run Claude on “{title}”
         </div>
 
-        <p className="text-[12px] text-(--ink-2) m-0">
+        <p className="text-[12px] text-maestro-muted m-0">
           {/*
             TWO DOORS SINCE `022`, and the intro has to say so or the second button reads as a
             variant of the first. They spend the same single-use authorisation: one runs it
@@ -188,8 +188,8 @@ export default function ClaudeRunDialog({
           {/* Working directory + argv: the two things "what will actually happen" reduces to. */}
           <div className="flex flex-col gap-1.5 text-[11px]">
             <div className="flex gap-2">
-              <span className="shrink-0 w-[86px] text-(--ink-3)">Working dir</span>
-              <span data-testid="claude-cwd" className="font-mono text-(--ink) break-all select-text">
+              <span className="shrink-0 w-[86px] text-maestro-muted">Working dir</span>
+              <span data-testid="claude-cwd" className="font-mono text-maestro break-all select-text">
                 {preview.cwd}
               </span>
             </div>
@@ -200,8 +200,8 @@ export default function ClaudeRunDialog({
                 to do the same thing yourself, and it is the honest label for it — claiming it is
                 the literal argv would be a claim the user cannot check and that is no longer true.
               */}
-              <span className="shrink-0 w-[86px] text-(--ink-3)">Equivalent</span>
-              <span data-testid="claude-argv" className="font-mono text-(--ink-2) break-all select-text">
+              <span className="shrink-0 w-[86px] text-maestro-muted">Equivalent</span>
+              <span data-testid="claude-argv" className="font-mono text-maestro-muted break-all select-text">
                 {/* Quoted so the prompt argument reads as one argument, which is what it is. */}
                 {preview.argv.map((a) => (/\s/.test(a) ? `"${a}"` : a)).join(" ")}
               </span>
@@ -210,10 +210,12 @@ export default function ClaudeRunDialog({
 
           {/* The full prompt, verbatim. Never a summary — this is the thing being consented to. */}
           <div className="flex flex-col gap-1">
-            <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">Prompt sent to Claude</div>
+            <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
+              Prompt sent to Claude
+            </div>
             <pre
               data-testid="claude-prompt"
-              className="m-0 max-h-40 overflow-auto rounded-lg border border-(--line) bg-(--bg-elev) p-3 font-mono text-[11px] leading-5 text-(--ink) whitespace-pre-wrap break-words select-text"
+              className="m-0 max-h-40 overflow-auto rounded-lg border border-maestro bg-maestro-elevated p-3 font-mono text-[11px] leading-5 text-maestro whitespace-pre-wrap break-words select-text"
             >
               {preview.prompt}
             </pre>
@@ -222,21 +224,23 @@ export default function ClaudeRunDialog({
           <ReadScope read={preview.read} />
 
           <div className="flex flex-col gap-1">
-            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-subtle uppercase tracking-wide">
+            <div className="flex items-center gap-1.5 text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
               <FilePen size={12} /> What it may write
             </div>
             <ul data-testid="claude-targets" className="list-none p-0 m-0 flex flex-col gap-0.5">
               {preview.targets.length === 0 && (
-                <li className="text-[11px] text-(--ink-3)">Nothing — this invocation carries no write authority.</li>
+                <li className="text-[11px] text-maestro-muted">
+                  Nothing — this invocation carries no write authority.
+                </li>
               )}
               {preview.targets.map((t) => (
-                <li key={t.path} className="text-[11px] text-(--ink-3)">
-                  <span className="font-mono text-(--ink-2) break-all">{t.path}</span>
+                <li key={t.path} className="text-[11px] text-maestro-muted">
+                  <span className="font-mono text-maestro-muted break-all">{t.path}</span>
                   {t.note && <span> — {t.note}</span>}
                 </li>
               ))}
               {/* Not a hope about the model: a write anywhere else is refused by the app, per call. */}
-              <li className="text-[11px] text-(--ink-3) mt-0.5">
+              <li className="text-[11px] text-maestro-muted mt-0.5">
                 Anything else is refused. The session is also offered no shell and no subagents.
               </li>
             </ul>
@@ -251,10 +255,10 @@ export default function ClaudeRunDialog({
           */}
           {preview.handoff && phase === "confirm" && (
             <div className="flex flex-col gap-1">
-              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-subtle uppercase tracking-wide">
+              <div className="flex items-center gap-1.5 text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
                 <MessagesSquare size={12} /> Or continue in the session pane
               </div>
-              <p className="m-0 text-[11px] text-(--ink-3)">
+              <p className="m-0 text-[11px] text-maestro-muted">
                 The same work, as a conversation you steer. The session is told what the scaffold wrote and what is left
                 — appended without starting a turn, so it costs nothing until you type — and this one directory becomes
                 writable for as long as the session lasts:
@@ -262,11 +266,11 @@ export default function ClaudeRunDialog({
               <div
                 data-testid="claude-handoff-scope"
                 data-scope={preview.handoff.scope}
-                className="rounded-md border border-(--line) bg-(--bg-elev) px-2 py-1.5 font-mono text-[11px] text-(--ink) break-all"
+                className="rounded-md border border-maestro bg-maestro-elevated px-2 py-1.5 font-mono text-[11px] text-maestro break-all"
               >
                 {preview.handoff.writeScope}
               </div>
-              <p className="m-0 text-[11px] text-(--ink-3)">
+              <p className="m-0 text-[11px] text-maestro-muted">
                 {preview.handoff.scope === "directory"
                   ? "That folder and everything under it. "
                   : "That file and nothing else. "}
@@ -283,11 +287,11 @@ export default function ClaudeRunDialog({
               className="flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] bg-amber-500/10"
             >
               <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
-              <div className="text-(--ink-2)">
+              <div className="text-maestro-muted">
                 <div>{preview.unavailable}</div>
                 <details className="mt-1">
-                  <summary className="cursor-pointer text-(--ink-3)">Where it looked</summary>
-                  <ul className="list-none p-0 m-0 mt-1 max-h-24 overflow-y-auto font-mono text-[10px] text-(--ink-3)">
+                  <summary className="cursor-pointer text-maestro-muted">Where it looked</summary>
+                  <ul className="list-none p-0 m-0 mt-1 max-h-24 overflow-y-auto font-mono text-[10px] text-maestro-muted">
                     {preview.searched.map((dir) => (
                       <li key={dir} className="truncate" title={dir}>
                         {dir}
@@ -302,20 +306,20 @@ export default function ClaudeRunDialog({
           {refusal && (
             <div className="flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] bg-red-500/10">
               <AlertTriangle size={14} className="shrink-0 mt-px text-red-500" />
-              <span className="text-(--ink-2)">{refusal}</span>
+              <span className="text-maestro-muted">{refusal}</span>
             </div>
           )}
 
           {(running || result) && (
             <div className="flex flex-col gap-1">
               <div className="flex items-center justify-between">
-                <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">Output</div>
-                {running && <span className="text-[11px] text-(--ink-3)">● running</span>}
+                <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">Output</div>
+                {running && <span className="text-[11px] text-maestro-muted">● running</span>}
               </div>
               <pre
                 ref={outputRef}
                 data-testid="claude-output"
-                className="m-0 h-44 overflow-auto rounded-lg border border-(--line) bg-(--bg-elev) p-3 font-mono text-[11px] leading-5 text-(--ink-2) whitespace-pre-wrap break-words select-text"
+                className="m-0 h-44 overflow-auto rounded-lg border border-maestro bg-maestro-elevated p-3 font-mono text-[11px] leading-5 text-maestro-muted whitespace-pre-wrap break-words select-text"
               >
                 {output || (running ? "Waiting for output…" : "")}
               </pre>
@@ -340,7 +344,7 @@ export default function ClaudeRunDialog({
             <button
               type="button"
               onClick={onClose}
-              className="px-3 py-1.5 text-[12px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+              className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
             >
               {phase === "done" ? "Close" : "Cancel"}
             </button>
@@ -354,7 +358,7 @@ export default function ClaudeRunDialog({
               data-testid="claude-handoff"
               disabled={running || handingOff}
               onClick={() => void continueInPane()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg border border-ring bg-(--primary-dim) text-primary cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg border border-maestro-focus-ring bg-maestro-primary-subtle text-maestro-primary cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <MessagesSquare size={12} /> {handingOff ? "Opening…" : "Continue in the pane"}
             </button>
@@ -366,7 +370,7 @@ export default function ClaudeRunDialog({
               type="button"
               disabled={running}
               onClick={() => void start()}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <Play size={12} /> {running ? "Running…" : "Run"}
             </button>
@@ -388,9 +392,9 @@ export default function ClaudeRunDialog({
 function Outcome({ result }: { result: ClaudeRunResult }) {
   const tone =
     result.outcome === "ok"
-      ? "bg-(--green-dim) text-(--green)"
+      ? "bg-maestro-success-subtle text-maestro-success"
       : result.outcome === "cancelled"
-        ? "bg-(--bg-elev) text-(--ink-2)"
+        ? "bg-maestro-elevated text-maestro-muted"
         : "bg-red-500/10 text-red-500";
 
   const line =
@@ -409,7 +413,7 @@ function Outcome({ result }: { result: ClaudeRunResult }) {
       className={`px-3 py-2 rounded-lg text-[12px] ${tone}`}
     >
       {line}
-      {result.truncated && <span className="text-(--ink-3)"> (earlier output was dropped)</span>}
+      {result.truncated && <span className="text-maestro-muted"> (earlier output was dropped)</span>}
     </div>
   );
 }

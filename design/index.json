@@ -1,0 +1,108 @@
+{
+  "pages": [
+    {
+      "kind": "component",
+      "name": "button",
+      "title": "Button",
+      "reference": "components/button.html",
+      "proposal": "proposals/button.html",
+      "storyId": "ui-button--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "9c21ec606002a9323b8cac43563111588a842a0cbe74af664072c048763fb712",
+      "referenceHash": "afe53e57b6a9e8191ba1c7b857ab49d53bc995bdb6ec79442679343732206797"
+    },
+    {
+      "kind": "component",
+      "name": "chip-input",
+      "title": "ChipInput",
+      "reference": "components/chip-input.html",
+      "proposal": "proposals/chip-input.html",
+      "storyId": "ui-chipinput--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "efb9565d7610eb4e7cf04a65ebef2dab4941d5893ec6bbfec6edec0e32de5ba7",
+      "referenceHash": "1ff9519301a1d6abe747cdbd97ac8749ae6ca7b19b795bfe6a0991663de01648"
+    },
+    {
+      "kind": "component",
+      "name": "copyable-text",
+      "title": "CopyableText",
+      "reference": "components/copyable-text.html",
+      "proposal": "proposals/copyable-text.html",
+      "storyId": "ui-copyabletext--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "39f30f2b0df4ffbfe8fd175ec4521577e739d16826fbf6bea952055fc7e21dee",
+      "referenceHash": "c7f562698e061aa111f3063e9b50957f71be80b87ed358b281bd8a78ca7bc051"
+    },
+    {
+      "kind": "component",
+      "name": "field",
+      "title": "Field",
+      "reference": "components/field.html",
+      "proposal": "proposals/field.html",
+      "storyId": "ui-field--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "a4d28f668917330aa600921fb241e877c190d022fd714669874163f9c2fcf103",
+      "referenceHash": "db405f29789d68c240efc76472ea99159dc323072cd75a26a06604cbdbc0504e"
+    },
+    {
+      "kind": "component",
+      "name": "file-preview",
+      "title": "FilePreview",
+      "reference": "components/file-preview.html",
+      "proposal": "proposals/file-preview.html",
+      "storyId": "ui-filepreview--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "049616cc55c4ce59a7958bd8e0d74340ca9b622bf5283443f473d6e8c321e3bd",
+      "referenceHash": "0d4a80cd1623437cd408fb94fea5d1f7c3d26401bd47f6b1e6fe63786f391326"
+    },
+    {
+      "kind": "component",
+      "name": "mode-pill",
+      "title": "ModePill",
+      "reference": "components/mode-pill.html",
+      "proposal": "proposals/mode-pill.html",
+      "storyId": "ui-modepill--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "f5480ac2eb209b3d26b7ee1544c8ff66582a7eb53a0ceb78cc863748a68a95d9",
+      "referenceHash": "d114f81f199c35244c74853f1491fcc923e3416ec534e717531479ebd4df7c1f"
+    },
+    {
+      "kind": "component",
+      "name": "select",
+      "title": "Select",
+      "reference": "components/select.html",
+      "proposal": "proposals/select.html",
+      "storyId": "ui-select--default",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "8d85075c6889c980dfda0059b428caad79e9fff4168dae55720e660306cc936a",
+      "referenceHash": "a95471cc8439d15e202c1cf00b025e13272e2f8e88a72568f72af1d2f8b5855c"
+    },
+    {
+      "kind": "component",
+      "name": "syntax-line",
+      "title": "SyntaxLine",
+      "reference": "components/syntax-line.html",
+      "proposal": "proposals/syntax-line.html",
+      "storyId": "ui-syntaxline--yaml",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "258bfb549d0e723564fc09355aeef20bd6285dcf9e67c45bcedf819915cc6507",
+      "referenceHash": "72033c84fde63480a4ada7bf6ad1cbb4076f016ab169e1b1c5e689007a92fad6"
+    }
+  ]
+}

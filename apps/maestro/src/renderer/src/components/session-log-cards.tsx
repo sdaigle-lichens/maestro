@@ -10,24 +10,24 @@ interface SessionLogCardsProps {
 }
 
 function StatusIcon({ status }: { status: Instance["status"] }) {
-  if (status === "success") return <CircleCheck size={16} className="text-(--green) shrink-0" />;
-  if (status === "condition") return <CircleX size={16} className="text-(--red) shrink-0" />;
-  if (status === "unknown") return <AlertTriangle size={16} className="text-(--yellow) shrink-0" />;
-  if (status === "transition") return <Circle size={16} className="text-(--ink-3) shrink-0" />;
-  return <CircleCheck size={16} className="text-(--green) shrink-0" />;
+  if (status === "success") return <CircleCheck size={16} className="text-maestro-success shrink-0" />;
+  if (status === "condition") return <CircleX size={16} className="text-maestro-danger shrink-0" />;
+  if (status === "unknown") return <AlertTriangle size={16} className="text-maestro-warning shrink-0" />;
+  if (status === "transition") return <Circle size={16} className="text-maestro-muted shrink-0" />;
+  return <CircleCheck size={16} className="text-maestro-success shrink-0" />;
 }
 
 function underlineColor(status: Instance["status"]): string {
-  if (status === "condition") return "border-b-[var(--red)]";
-  if (status === "unknown") return "border-b-[var(--yellow)]";
-  if (status === "transition") return "border-b-[var(--line-2)]";
-  return "border-b-[var(--green)]";
+  if (status === "condition") return "border-b-maestro-danger-strong";
+  if (status === "unknown") return "border-b-maestro-warning-strong";
+  if (status === "transition") return "border-b-maestro-strong";
+  return "border-b-maestro-success-strong";
 }
 
 export default function SessionLogCards({ instances, activeId, onSelect }: SessionLogCardsProps) {
   return (
-    <div className="border-r border-(--line) overflow-y-auto py-4 px-3">
-      <div className="text-[10px] font-semibold uppercase tracking-wider text-(--ink-3) mb-3 px-1">Workflow</div>
+    <div className="border-r border-maestro overflow-y-auto py-4 px-3">
+      <div className="text-[10px] font-semibold uppercase tracking-wider text-maestro-muted mb-3 px-1">Workflow</div>
       {instances.map((inst) => {
         const isActive = inst.id === activeId;
 
@@ -39,27 +39,27 @@ export default function SessionLogCards({ instances, activeId, onSelect }: Sessi
             className={`w-full flex items-center gap-2 px-1 py-1.5 text-left cursor-pointer transition-colors rounded-sm focus:outline-none ${
               isActive
                 ? `font-medium border-b-2 ${underlineColor(inst.status)}`
-                : "border-b border-transparent hover:bg-(--bg-elev)"
+                : "border-b border-transparent hover:bg-maestro-elevated"
             }`}
           >
             <StatusIcon status={inst.status} />
-            <span className="text-[13px] text-(--ink) truncate">{inst.displayName}</span>
+            <span className="text-[13px] text-maestro truncate">{inst.displayName}</span>
             <span className="ml-auto shrink-0 flex items-center gap-1.5">
               {inst.skillsTriage && (
                 <span className="text-[10px] font-mono" title="skills loaded / skipped / unaccounted">
-                  <span className="text-(--green)">{inst.skillsTriage.loaded.length}</span>
+                  <span className="text-maestro-success">{inst.skillsTriage.loaded.length}</span>
                   {inst.skillsTriage.skipped.length > 0 && (
-                    <span className="text-(--yellow)">/{inst.skillsTriage.skipped.length}</span>
+                    <span className="text-maestro-warning">/{inst.skillsTriage.skipped.length}</span>
                   )}
                   {unaccountedSkills(inst).length > 0 && (
-                    <span className="text-(--red)">/{unaccountedSkills(inst).length}</span>
+                    <span className="text-maestro-danger">/{unaccountedSkills(inst).length}</span>
                   )}
                 </span>
               )}
               <ContextUsageBadge instance={inst} />
               {inst.delivered.length > 0 && (
                 <span
-                  className="flex items-center gap-0.5 text-[10px] font-mono text-(--ink-3)"
+                  className="flex items-center gap-0.5 text-[10px] font-mono text-maestro-muted"
                   title={`${inst.delivered.length} channel deliveries`}
                 >
                   <Inbox size={10} />

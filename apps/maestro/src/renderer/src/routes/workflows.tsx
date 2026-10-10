@@ -170,7 +170,7 @@ function WorkflowsPage() {
       if (result.warnings.length > 0) {
         toast(
           <>
-            Saved to <span className="font-mono text-(--ink)">{result.configPath}</span>. {result.warnings.join(" ")}
+            Saved to <span className="font-mono text-maestro">{result.configPath}</span>. {result.warnings.join(" ")}
           </>,
           // The save succeeded (res.ok is true) — a warning here is a caveat, not a failure, so it
           // gets the amber "warning" toast rather than red "error", which read as though the save
@@ -181,7 +181,7 @@ function WorkflowsPage() {
       }
       toast(
         <>
-          Saved to <span className="font-mono text-(--ink)">{result.configPath}</span> and re-rendered{" "}
+          Saved to <span className="font-mono text-maestro">{result.configPath}</span> and re-rendered{" "}
           {result.render.rows.length} workflow{result.render.rows.length === 1 ? "" : "s"} into the orchestrator.
         </>
       );
@@ -223,7 +223,7 @@ function WorkflowsPage() {
   ];
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav
         workflowSelector={{
           workflows: config.workflows.map((wf, i) => wf.name || `Workflow ${i + 1}`),
@@ -237,7 +237,7 @@ function WorkflowsPage() {
 
       {loaderData.seeded && (
         <SeededBanner>
-          The workflows below are a starter configuration and are <strong className="text-(--ink)">not saved</strong> —
+          The workflows below are a starter configuration and are <strong className="text-maestro">not saved</strong> —
           press Save workflows to write them.
         </SeededBanner>
       )}
@@ -255,7 +255,7 @@ function WorkflowsPage() {
         {/* Left pane. Split into a scrollable body and a footer that never scrolls out of view —
             Save used to sit at the end of the same scroll region as Agents/Skills, so a project
             with enough of either pushed it below the fold. */}
-        <div className="border-r border-(--line) flex flex-col overflow-hidden">
+        <div className="border-r border-maestro flex flex-col overflow-hidden">
           <div className="flex-1 overflow-y-auto flex flex-col p-4 gap-4">
             {/*
               Only while seeded, and only for the default (first) workflow — every other seeded
@@ -278,7 +278,7 @@ function WorkflowsPage() {
                 collapsible so a project with many plugins doesn't turn this into a wall of rows.
                 Collapsed by default except the repository's own agents and the bundled ones. */}
             <div>
-              <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide mb-2">Agents</div>
+              <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide mb-2">Agents</div>
               <div className="flex flex-col gap-1">
                 {groupBySource(allAgents).map((group) => (
                   <CollapsibleGroup
@@ -293,7 +293,7 @@ function WorkflowsPage() {
                         <label
                           key={agent.id}
                           title={agent.description}
-                          className="flex items-center gap-2 py-1 px-1 rounded hover:bg-(--bg-elev) cursor-pointer"
+                          className="flex items-center gap-2 py-1 px-1 rounded hover:bg-maestro-elevated cursor-pointer"
                         >
                           <input
                             type="checkbox"
@@ -305,15 +305,15 @@ function WorkflowsPage() {
                                   : [...config.agents_available, agent.id]
                               )
                             }
-                            className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                            className="w-3.5 h-3.5 accent-maestro-primary cursor-pointer"
                           />
-                          <span className="font-mono text-[13px] text-(--ink) truncate">{agent.id}</span>
+                          <span className="font-mono text-[13px] text-maestro truncate">{agent.id}</span>
                         </label>
                       );
                     })}
                   </CollapsibleGroup>
                 ))}
-                {allAgents.length === 0 && <p className="text-[12px] text-subtle">No agents found.</p>}
+                {allAgents.length === 0 && <p className="text-[12px] text-maestro-muted">No agents found.</p>}
               </div>
               <button
                 type="button"
@@ -321,7 +321,7 @@ function WorkflowsPage() {
                   const name = window.prompt("Agent ID:");
                   if (name?.trim()) storeSetAgentsAvailable([...config.agents_available, name.trim()]);
                 }}
-                className="mt-1.5 flex items-center gap-1 text-[11px] text-(--ink-3) hover:text-(--ink) cursor-pointer py-0.5 px-1 rounded focus:outline-none"
+                className="mt-1.5 flex items-center gap-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer py-0.5 px-1 rounded focus:outline-none"
               >
                 <Plus size={10} /> Agent
               </button>
@@ -329,7 +329,7 @@ function WorkflowsPage() {
 
             {/* Skills — same grouping/collapse rule as Agents above. */}
             <div>
-              <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide mb-2">Skills</div>
+              <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide mb-2">Skills</div>
               <div className="flex flex-col gap-1">
                 {groupBySource(allSkills).map((group) => (
                   <CollapsibleGroup
@@ -344,7 +344,7 @@ function WorkflowsPage() {
                         <label
                           key={skill.id}
                           title={skill.description}
-                          className="flex items-center gap-2 py-1 px-1 rounded hover:bg-(--bg-elev) cursor-pointer"
+                          className="flex items-center gap-2 py-1 px-1 rounded hover:bg-maestro-elevated cursor-pointer"
                         >
                           <input
                             type="checkbox"
@@ -356,15 +356,15 @@ function WorkflowsPage() {
                                   : [...config.skills_available, skill.id]
                               )
                             }
-                            className="w-3.5 h-3.5 accent-primary cursor-pointer"
+                            className="w-3.5 h-3.5 accent-maestro-primary cursor-pointer"
                           />
-                          <span className="font-mono text-[13px] text-(--ink) truncate">{skill.id}</span>
+                          <span className="font-mono text-[13px] text-maestro truncate">{skill.id}</span>
                         </label>
                       );
                     })}
                   </CollapsibleGroup>
                 ))}
-                {allSkills.length === 0 && <p className="text-[12px] text-subtle">No skills found.</p>}
+                {allSkills.length === 0 && <p className="text-[12px] text-maestro-muted">No skills found.</p>}
               </div>
               <button
                 type="button"
@@ -372,7 +372,7 @@ function WorkflowsPage() {
                   const name = window.prompt("Skill ID:");
                   if (name?.trim()) storeSetSkillsAvailable([...config.skills_available, name.trim()]);
                 }}
-                className="mt-1.5 flex items-center gap-1 text-[11px] text-(--ink-3) hover:text-(--ink) cursor-pointer py-0.5 px-1 rounded focus:outline-none"
+                className="mt-1.5 flex items-center gap-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer py-0.5 px-1 rounded focus:outline-none"
               >
                 <Plus size={10} /> Skill
               </button>
@@ -380,7 +380,7 @@ function WorkflowsPage() {
           </div>
 
           {/* Footer — outside the scroll region, so Save is always visible. */}
-          <div className="shrink-0 border-t border-(--line) p-4">
+          <div className="shrink-0 border-t border-maestro p-4">
             <Button
               variant="primary"
               icon={phase === "idle" ? <Sparkles size={14} /> : undefined}
@@ -393,18 +393,20 @@ function WorkflowsPage() {
         </div>
 
         {/* Center — canvas or create form */}
-        <div className="flex flex-col overflow-hidden bg-(--bg-elev)">
+        <div className="flex flex-col overflow-hidden bg-maestro-elevated">
           {creatingWorkflow ? (
             <div className="flex-1 flex items-center justify-center">
-              <div className="bg-(--bg) border border-(--line) rounded-xl p-6 shadow-lg w-80 flex flex-col gap-4">
-                <h2 className="text-[15px] font-semibold text-(--ink) m-0">New workflow</h2>
+              <div className="bg-maestro border border-maestro rounded-xl p-6 shadow-lg w-80 flex flex-col gap-4">
+                <h2 className="text-[15px] font-semibold text-maestro m-0">New workflow</h2>
                 {config.workflows.length > 0 && (
                   <label className="flex flex-col gap-1.5">
-                    <span className="text-[11px] font-semibold text-subtle uppercase tracking-wide">Start from</span>
+                    <span className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
+                      Start from
+                    </span>
                     <select
                       value={newWorkflowSource ?? ""}
                       onChange={(e) => setNewWorkflowSource(e.target.value === "" ? null : Number(e.target.value))}
-                      className="w-full text-[13px] bg-(--bg-elev) border border-(--line) rounded-md px-3 py-2 text-(--ink) focus:outline-none focus:border-primary cursor-pointer"
+                      className="w-full text-[13px] bg-maestro-elevated border border-maestro rounded-md px-3 py-2 text-maestro focus:outline-none focus:border-maestro-primary-strong cursor-pointer"
                     >
                       <option value="">Empty workflow</option>
                       {config.workflows.map((wf, i) => (
@@ -425,20 +427,20 @@ function WorkflowsPage() {
                     if (e.key === "Escape") cancelCreateWorkflow();
                   }}
                   placeholder="e.g. Backend update"
-                  className="w-full text-[13px] bg-(--bg-elev) border border-(--line) rounded-md px-3 py-2 text-(--ink) focus:outline-none focus:border-primary"
+                  className="w-full text-[13px] bg-maestro-elevated border border-maestro rounded-md px-3 py-2 text-maestro focus:outline-none focus:border-maestro-primary-strong"
                 />
                 <div className="flex gap-2 justify-end">
                   <button
                     type="button"
                     onClick={cancelCreateWorkflow}
-                    className="px-3 py-1.5 text-[13px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                    className="px-3 py-1.5 text-[13px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                   >
                     Cancel
                   </button>
                   <button
                     type="button"
                     onClick={confirmCreateWorkflow}
-                    className="px-3 py-1.5 text-[13px] rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
+                    className="px-3 py-1.5 text-[13px] rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
                   >
                     Create
                   </button>
@@ -459,11 +461,11 @@ function WorkflowsPage() {
             />
           ) : (
             <div className="flex-1 flex flex-col items-center justify-center gap-3">
-              <p className="text-[13px] text-(--ink-2)">Add a workflow to get started.</p>
+              <p className="text-[13px] text-maestro-muted">Add a workflow to get started.</p>
               <button
                 type="button"
                 onClick={openCreateWorkflow}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-primary text-white text-[13px] font-medium cursor-pointer focus:outline-none hover:opacity-90"
+                className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-maestro-primary text-white text-[13px] font-medium cursor-pointer focus:outline-none hover:opacity-90"
               >
                 <Plus size={14} /> Add workflow
               </button>

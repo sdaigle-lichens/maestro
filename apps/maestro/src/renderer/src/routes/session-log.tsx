@@ -109,16 +109,18 @@ function SessionLogPage() {
 
   const mainEmpty = (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
-      <div className="w-12 h-12 rounded-full bg-(--bg-elev) border border-(--line) flex items-center justify-center">
-        <ScrollText size={20} className="text-(--ink-3)" />
+      <div className="w-12 h-12 rounded-full bg-maestro-elevated border border-maestro flex items-center justify-center">
+        <ScrollText size={20} className="text-maestro-muted" />
       </div>
       <div>
-        <p className="text-[13px] font-medium text-(--ink) mb-1">No live sessions in any known project</p>
-        <p className="text-[12px] text-(--ink-3) max-w-xs">
+        <p className="text-[13px] font-medium text-maestro mb-1">No live sessions in any known project</p>
+        <p className="text-[12px] text-maestro-muted max-w-xs">
           A tab appears here while a Maestro session is running, in this project or a recent one.
         </p>
       </div>
-      <div className={`flex items-center gap-1.5 text-[11px] ${connected ? "text-(--green)" : "text-(--ink-3)"}`}>
+      <div
+        className={`flex items-center gap-1.5 text-[11px] ${connected ? "text-maestro-success" : "text-maestro-muted"}`}
+      >
         <span className="text-[8px]">{connected ? "●" : "○"}</span>
         {connected ? "live" : "connecting…"}
       </div>
@@ -126,10 +128,10 @@ function SessionLogPage() {
   );
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav />
 
-      <div className="shrink-0 flex items-center justify-end px-3 py-1.5 border-b border-(--line)">
+      <div className="shrink-0 flex items-center justify-end px-3 py-1.5 border-b border-maestro">
         <CleanSessionsButton />
       </div>
 
@@ -182,7 +184,7 @@ function WorktreeView({
         <button
           type="button"
           onClick={() => onClose(tab.path)}
-          className="mt-2 px-3 py-1 rounded-md border border-(--line-2) bg-(--bg-elev) text-(--ink) hover:border-primary cursor-pointer"
+          className="mt-2 px-3 py-1 rounded-md border border-maestro-strong bg-maestro-elevated text-maestro hover:border-maestro-primary-strong cursor-pointer"
         >
           Close tab
         </button>
@@ -214,11 +216,11 @@ function WorktreeView({
 function Notice({ title, testId, children }: { title: string; testId: string; children: React.ReactNode }) {
   return (
     <div data-testid={testId} className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
-      <div className="w-12 h-12 rounded-full bg-(--bg-elev) border border-(--line) flex items-center justify-center">
-        <ScrollText size={20} className="text-(--ink-3)" />
+      <div className="w-12 h-12 rounded-full bg-maestro-elevated border border-maestro flex items-center justify-center">
+        <ScrollText size={20} className="text-maestro-muted" />
       </div>
-      <p className="text-[13px] font-medium text-(--ink)">{title}</p>
-      <div className="text-[12px] text-(--ink-3) max-w-md flex flex-col items-center gap-1">{children}</div>
+      <p className="text-[13px] font-medium text-maestro">{title}</p>
+      <div className="text-[12px] text-maestro-muted max-w-md flex flex-col items-center gap-1">{children}</div>
     </div>
   );
 }

@@ -45,15 +45,15 @@ type Outcome = { kind: "install"; report: InstallReport } | { kind: "uninstall";
 
 function Row({ ok, label, detail }: { ok: boolean; label: string; detail: React.ReactNode }) {
   return (
-    <div className="flex items-start gap-2.5 py-2 border-b border-(--line) last:border-b-0">
+    <div className="flex items-start gap-2.5 py-2 border-b border-maestro last:border-b-0">
       {ok ? (
-        <Check size={14} className="shrink-0 mt-0.5 text-(--green)" />
+        <Check size={14} className="shrink-0 mt-0.5 text-maestro-success" />
       ) : (
         <X size={14} className="shrink-0 mt-0.5 text-amber-500" />
       )}
       <div className="flex-1 min-w-0">
-        <div className="text-[13px] text-(--ink)">{label}</div>
-        <div className="text-[12px] text-(--ink-3)">{detail}</div>
+        <div className="text-[13px] text-maestro">{label}</div>
+        <div className="text-[12px] text-maestro-muted">{detail}</div>
       </div>
     </div>
   );
@@ -64,7 +64,7 @@ function Note({ variant, children }: { variant: "warn" | "error"; children: Reac
   return (
     <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] ${tone}`}>
       <AlertTriangle size={14} className="shrink-0 mt-px" />
-      <span className="text-(--ink-2)">{children}</span>
+      <span className="text-maestro-muted">{children}</span>
     </div>
   );
 }
@@ -73,16 +73,18 @@ function Note({ variant, children }: { variant: "warn" | "error"; children: Reac
 function ReportCard({ report }: { report: InstallReport }) {
   const { orchestratorSkill: skill, scriptsWritten, hooksAdded } = report;
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">What changed on disk</div>
+    <div className="flex flex-col gap-2 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">What changed on disk</div>
       {report.unchanged ? (
-        <p className="text-[12px] text-(--ink-2) m-0">Nothing — this project already has the runtime the app ships.</p>
+        <p className="text-[12px] text-maestro-muted m-0">
+          Nothing — this project already has the runtime the app ships.
+        </p>
       ) : (
-        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-(--ink-2)">
+        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-maestro-muted">
           {skill.action !== "unchanged" && (
             <li>
               Orchestrator skill:{" "}
-              <span className="text-(--ink)">
+              <span className="text-maestro">
                 {skill.action === "installed" && "installed"}
                 {skill.action === "synced" && `re-synced (${skill.regions.join(", ")})`}
                 {skill.action === "migrated" && "replaced — it predates Maestro's managed regions"}
@@ -93,7 +95,7 @@ function ReportCard({ report }: { report: InstallReport }) {
                   <button
                     type="button"
                     onClick={() => void window.maestro.shell.reveal(skill.backup!)}
-                    className="inline-flex items-center gap-1 text-primary underline cursor-pointer bg-transparent border-0 p-0 text-[12px]"
+                    className="inline-flex items-center gap-1 text-maestro-primary underline cursor-pointer bg-transparent border-0 p-0 text-[12px]"
                   >
                     <FolderOpen size={11} /> show the backup
                   </button>
@@ -109,7 +111,7 @@ function ReportCard({ report }: { report: InstallReport }) {
                 every one buries the two lines that matter (the skill, the hooks) under a wall of
                 paths, so the tail is summarised instead.
               */}
-              <span className="font-mono text-(--ink-3)">
+              <span className="font-mono text-maestro-muted">
                 {scriptsWritten.slice(0, 6).join(", ")}
                 {scriptsWritten.length > 6 && ` and ${scriptsWritten.length - 6} more`}
               </span>
@@ -118,28 +120,28 @@ function ReportCard({ report }: { report: InstallReport }) {
           {hooksAdded.length > 0 && (
             <li>
               {hooksAdded.length} hook{hooksAdded.length === 1 ? "" : "s"} registered in{" "}
-              <span className="font-mono text-(--ink)">.claude/settings.json</span>:{" "}
-              <span className="font-mono text-(--ink-3)">{hooksAdded.join(", ")}</span>
+              <span className="font-mono text-maestro">.claude/settings.json</span>:{" "}
+              <span className="font-mono text-maestro-muted">{hooksAdded.join(", ")}</span>
             </li>
           )}
           {report.gitignoreUpdated && <li>Session files added to the repo&rsquo;s .gitignore.</li>}
           {report.reportsSync.materialized.length > 0 && (
             <li>
               Report{report.reportsSync.materialized.length === 1 ? "" : "s"} materialized from the global default:{" "}
-              <span className="font-mono text-(--ink-3)">{report.reportsSync.materialized.join(", ")}</span>
+              <span className="font-mono text-maestro-muted">{report.reportsSync.materialized.join(", ")}</span>
             </li>
           )}
           {report.reportsSync.refreshed.length > 0 && (
             <li>
               Report{report.reportsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global default:{" "}
-              <span className="font-mono text-(--ink-3)">{report.reportsSync.refreshed.join(", ")}</span>
+              <span className="font-mono text-maestro-muted">{report.reportsSync.refreshed.join(", ")}</span>
             </li>
           )}
           {report.reportsSync.staleCustomized.length > 0 && (
             <li>
               Stale but customized — left alone since you edited{" "}
               {report.reportsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
-              <span className="font-mono text-(--ink-3)">{report.reportsSync.staleCustomized.join(", ")}</span>
+              <span className="font-mono text-maestro-muted">{report.reportsSync.staleCustomized.join(", ")}</span>
             </li>
           )}
           {/*
@@ -150,20 +152,21 @@ function ReportCard({ report }: { report: InstallReport }) {
           {report.handoffsSync.materialized.length > 0 && (
             <li>
               Handoff protocol{report.handoffsSync.materialized.length === 1 ? "" : "s"} materialized from the global
-              default: <span className="font-mono text-(--ink-3)">{report.handoffsSync.materialized.join(", ")}</span>
+              default:{" "}
+              <span className="font-mono text-maestro-muted">{report.handoffsSync.materialized.join(", ")}</span>
             </li>
           )}
           {report.handoffsSync.refreshed.length > 0 && (
             <li>
               Handoff protocol{report.handoffsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global
-              default: <span className="font-mono text-(--ink-3)">{report.handoffsSync.refreshed.join(", ")}</span>
+              default: <span className="font-mono text-maestro-muted">{report.handoffsSync.refreshed.join(", ")}</span>
             </li>
           )}
           {report.handoffsSync.staleCustomized.length > 0 && (
             <li>
               Handoff protocol{report.handoffsSync.staleCustomized.length === 1 ? "" : "s"} stale but customized — left
               alone since you edited {report.handoffsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
-              <span className="font-mono text-(--ink-3)">{report.handoffsSync.staleCustomized.join(", ")}</span>
+              <span className="font-mono text-maestro-muted">{report.handoffsSync.staleCustomized.join(", ")}</span>
             </li>
           )}
         </ul>
@@ -190,21 +193,21 @@ function ReportCard({ report }: { report: InstallReport }) {
 /** What the uninstall took — and, just as importantly, what it left. */
 function RemovalCard({ report }: { report: UninstallReport }) {
   return (
-    <div className="flex flex-col gap-2 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">
+    <div className="flex flex-col gap-2 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
         {report.purge ? "What was deleted" : "What was removed"}
       </div>
       {report.noop ? (
-        <p className="text-[12px] text-(--ink-2) m-0">
+        <p className="text-[12px] text-maestro-muted m-0">
           Nothing — this project had no Maestro runtime installed. No files were changed.
         </p>
       ) : (
-        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-(--ink-2)">
+        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-maestro-muted">
           {report.hooksRemoved.length > 0 && (
             <li>
               {report.hooksRemoved.length} hook{report.hooksRemoved.length === 1 ? "" : "s"} unregistered from{" "}
-              <span className="font-mono text-(--ink)">.claude/settings.json</span>:{" "}
-              <span className="font-mono text-(--ink-3)">{report.hooksRemoved.join(", ")}</span>
+              <span className="font-mono text-maestro">.claude/settings.json</span>:{" "}
+              <span className="font-mono text-maestro-muted">{report.hooksRemoved.join(", ")}</span>
             </li>
           )}
           {report.sessionFilesRemoved.length > 0 && (
@@ -221,7 +224,7 @@ function RemovalCard({ report }: { report: UninstallReport }) {
           {report.purged.length > 0 && (
             <li>
               {report.purged.length} file{report.purged.length === 1 ? "" : "s"} deleted:{" "}
-              <span className="font-mono text-(--ink-3)">
+              <span className="font-mono text-maestro-muted">
                 {report.purged.slice(0, 6).join(", ")}
                 {report.purged.length > 6 && ` and ${report.purged.length - 6} more`}
               </span>
@@ -229,24 +232,24 @@ function RemovalCard({ report }: { report: UninstallReport }) {
           )}
           {report.maestroTasksDeleted && (
             <li>
-              The task queue at <span className="font-mono text-(--ink)">.claude/maestro-tasks/</span> was deleted too —
+              The task queue at <span className="font-mono text-maestro">.claude/maestro-tasks/</span> was deleted too —
               you opted into that separately.
             </li>
           )}
         </ul>
       )}
       {/* The half that makes the two levels legible: say what is still there. */}
-      <div className="pt-2 mt-1 border-t border-(--line) text-[12px] text-(--ink-3)">
+      <div className="pt-2 mt-1 border-t border-maestro text-[12px] text-maestro-muted">
         {report.configKept ? (
           <>
-            Kept: <span className="font-mono text-(--ink-2)">.claude/maestro.json</span> — your workflow and rule
+            Kept: <span className="font-mono text-maestro-muted">.claude/maestro.json</span> — your workflow and rule
             configuration. Install again to switch the hooks back on.
           </>
         ) : report.purge ? (
           <>Nothing of Maestro&rsquo;s is left in this project. Installing again starts from a fresh config.</>
         ) : (
           <>
-            This project had no <span className="font-mono text-(--ink-2)">.claude/maestro.json</span> to keep.
+            This project had no <span className="font-mono text-maestro-muted">.claude/maestro.json</span> to keep.
           </>
         )}
       </div>
@@ -290,24 +293,24 @@ function PurgeDialog({
       onClick={() => !busy && onCancel()}
     >
       <div
-        className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-[520px] max-w-[90vw] flex flex-col gap-3"
+        className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-[520px] max-w-[90vw] flex flex-col gap-3"
         onClick={(e) => e.stopPropagation()}
       >
-        <div className="flex items-center gap-2 text-[13px] font-semibold text-(--ink)">
+        <div className="flex items-center gap-2 text-[13px] font-semibold text-maestro">
           <Trash2 size={14} className="text-red-500" />
           Delete Maestro from this project
         </div>
-        <p className="text-[12px] text-(--ink-2) m-0">
+        <p className="text-[12px] text-maestro-muted m-0">
           This permanently deletes {plan.purgeFiles.length} file
           {plan.purgeFiles.length === 1 ? "" : "s"} from{" "}
-          <span className="font-mono text-(--ink)">{plan.projectRoot}</span>, plus the registered hooks and the session
+          <span className="font-mono text-maestro">{plan.projectRoot}</span>, plus the registered hooks and the session
           files. It cannot be undone from the app.
         </p>
         {plan.purgeRemovesConfig && (
           <div className="flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] bg-red-500/10 text-red-500">
             <AlertTriangle size={14} className="shrink-0 mt-px" />
-            <span className="text-(--ink-2)">
-              <span className="font-mono text-(--ink)">.claude/maestro.json</span> is included — your workflow graph and
+            <span className="text-maestro-muted">
+              <span className="font-mono text-maestro">.claude/maestro.json</span> is included — your workflow graph and
               rule assignments go with it. Plain <b>Uninstall</b> keeps that file.
             </span>
           </div>
@@ -321,20 +324,20 @@ function PurgeDialog({
               disabled={busy}
               className="mt-0.5 shrink-0 cursor-pointer"
             />
-            <span className="text-(--ink-2)">
-              Also delete <span className="font-mono text-(--ink)">{plan.maestroTasks.dir}/</span> —{" "}
+            <span className="text-maestro-muted">
+              Also delete <span className="font-mono text-maestro">{plan.maestroTasks.dir}/</span> —{" "}
               {plan.maestroTasks.files.length} task file{plan.maestroTasks.files.length === 1 ? "" : "s"} written by{" "}
               <span className="font-mono">/to-maestro-tasks</span>. Unchecked, this purge leaves it alone.
             </span>
           </label>
         )}
-        <div className="max-h-60 overflow-y-auto rounded-lg border border-(--line) bg-(--bg-elev) p-2">
+        <div className="max-h-60 overflow-y-auto rounded-lg border border-maestro bg-maestro-elevated p-2">
           <ul className="list-none p-0 m-0 flex flex-col">
             {plan.purgeFiles.map((file) => (
               <li
                 key={file}
                 className={`font-mono text-[11px] leading-5 truncate ${
-                  file.endsWith("maestro.json") ? "text-red-500" : "text-(--ink-3)"
+                  file.endsWith("maestro.json") ? "text-red-500" : "text-maestro-muted"
                 }`}
                 title={file}
               >
@@ -348,7 +351,7 @@ function PurgeDialog({
             type="button"
             disabled={busy}
             onClick={onCancel}
-            className="px-3 py-1.5 text-[12px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
+            className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none disabled:opacity-60 disabled:cursor-not-allowed"
           >
             Cancel
           </button>
@@ -408,11 +411,11 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <TagIcon size={12} /> Project tags
       </div>
-      <p className="text-[12px] text-(--ink-2) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         Which of the catalog&rsquo;s categories this project belongs to. Tags matched from repo detection at install
         time are pre-checked; adding one may add a matching bundled agent (backend/frontend/mobile) to{" "}
         <span className="font-mono">agents_available</span> — unchecking never removes one, that stays a manual edit on
@@ -420,7 +423,7 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
         Project Tags tab.
       </p>
       {data.catalog.length === 0 ? (
-        <p className="text-[12px] text-(--ink-3) m-0">
+        <p className="text-[12px] text-maestro-muted m-0">
           The catalog is empty — add tags from <span className="font-mono">/templates</span> first.
         </p>
       ) : (
@@ -431,7 +434,9 @@ function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
               <label
                 key={tag}
                 className={`inline-flex items-center gap-1.5 h-7 pl-2 pr-2.5 rounded-full border font-mono text-[12px] cursor-pointer ${
-                  checked ? "border-primary text-(--ink) bg-(--primary-dim)" : "border-(--line) text-(--ink-2)"
+                  checked
+                    ? "border-maestro-primary-strong text-maestro bg-maestro-primary-subtle"
+                    : "border-maestro text-maestro-muted"
                 } ${busy ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <input
@@ -514,11 +519,11 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <Sparkles size={12} /> New categories detected
       </div>
-      <p className="text-[12px] text-(--ink-2) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         Detection found {tags.length === 1 ? "a category" : "categories"} this project&rsquo;s Project Tags catalog has
         never held, so {tags.length === 1 ? "it wasn&rsquo;t" : "they weren&rsquo;t"} recorded. A project can carry more
         than one — check which to add to the catalog and tag this project with. Leaving{" "}
@@ -529,7 +534,7 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
         {tags.map((tag) => (
           <label
             key={tag}
-            className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+            className={`flex items-start gap-2 text-[12px] text-maestro-muted ${
               busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
             }`}
           >
@@ -538,10 +543,10 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
               checked={checked.has(tag)}
               disabled={busy}
               onChange={() => toggle(tag)}
-              className="mt-0.5 accent-primary cursor-pointer"
+              className="mt-0.5 accent-maestro-primary cursor-pointer"
             />
             <span>
-              Add <span className="font-mono text-(--ink)">&ldquo;{tag}&rdquo;</span> to the catalog and tag this
+              Add <span className="font-mono text-maestro">&ldquo;{tag}&rdquo;</span> to the catalog and tag this
               project with it
             </span>
           </label>
@@ -613,11 +618,11 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
   ];
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <ShieldCheck size={12} /> Step 1 gates
       </div>
-      <p className="text-[12px] text-(--ink-2) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         Which gate skills the <span className="font-mono">/maestro</span> orchestrator runs before it classifies a
         request. Both start off — uncheck both and Step 1 is skipped entirely, and the run goes straight to matching a
         workflow. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
@@ -627,7 +632,7 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
         {rows.map((row) => (
           <label
             key={row.key}
-            className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+            className={`flex items-start gap-2 text-[12px] text-maestro-muted ${
               busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
             }`}
           >
@@ -636,11 +641,11 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
               checked={data.gates[row.key]}
               disabled={busy}
               onChange={() => void toggle(row.key)}
-              className="mt-0.5 accent-primary cursor-pointer"
+              className="mt-0.5 accent-maestro-primary cursor-pointer"
             />
             <span>
               Run <span className="font-mono">{row.skill}</span>
-              <span className="block text-(--ink-3)">{row.blurb}</span>
+              <span className="block text-maestro-muted">{row.blurb}</span>
             </span>
           </label>
         ))}
@@ -689,18 +694,18 @@ function TaskRoutingCard({ viewedRoot }: { viewedRoot: string }) {
   };
 
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <ListChecks size={12} /> Task routing
       </div>
-      <p className="text-[12px] text-(--ink-2) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         Whether the <span className="font-mono">/maestro</span> orchestrator's Step 4 suggests running{" "}
         <span className="font-mono">/to-maestro-tasks</span> to queue up follow-up work after a rough session. Off by
         default. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
         of the next orchestration.
       </p>
       <label
-        className={`flex items-start gap-2 text-[12px] text-(--ink-2) ${
+        className={`flex items-start gap-2 text-[12px] text-maestro-muted ${
           busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
         }`}
       >
@@ -709,11 +714,11 @@ function TaskRoutingCard({ viewedRoot }: { viewedRoot: string }) {
           checked={data.useMaestroTasks}
           disabled={busy}
           onChange={() => void toggle()}
-          className="mt-0.5 accent-primary cursor-pointer"
+          className="mt-0.5 accent-maestro-primary cursor-pointer"
         />
         <span>
           Use maestro tasks
-          <span className="block text-(--ink-3)">Nudge toward queuing follow-up work with /to-maestro-tasks.</span>
+          <span className="block text-maestro-muted">Nudge toward queuing follow-up work with /to-maestro-tasks.</span>
         </span>
       </label>
     </div>
@@ -757,12 +762,12 @@ function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
     <div
       data-testid="maestro-channels"
       data-lanes={lanes.length}
-      className="flex flex-col gap-3 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+      className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated"
     >
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <Inbox size={12} /> Channels
       </div>
-      <p className="text-[12px] text-(--ink-2) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         Payloads waiting in <span className="font-mono">.claude/channels/</span> for an agent that hasn&rsquo;t consumed
         them yet. A route with no workflow to it — like the scribe&rsquo;s concept-skill gaps — simply queues here until
         that agent is next invoked, which can be a later run.
@@ -774,9 +779,9 @@ function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
             data-testid={`channel-lane-${lane.receiver}`}
             className="text-[12px] flex flex-wrap items-baseline gap-x-1.5"
           >
-            <span className="font-mono text-(--ink)">{lane.receiver}</span>
-            <span className="text-(--ink-2)">{lane.count} pending</span>
-            <span className="text-(--ink-3)">
+            <span className="font-mono text-maestro">{lane.receiver}</span>
+            <span className="text-maestro-muted">{lane.count} pending</span>
+            <span className="text-maestro-muted">
               {lane.stranded === 0
                 ? "— will be delivered this run"
                 : lane.current > 0
@@ -807,23 +812,23 @@ function ForkedAgentsCard({ summary }: { summary: AgentSyncSummary }) {
     <div
       data-testid="maestro-diverged-forks"
       data-count={count}
-      className="flex flex-col gap-2 p-4 rounded-lg border border-(--line) bg-(--bg-elev)"
+      className="flex flex-col gap-2 p-4 rounded-lg border border-maestro bg-maestro-elevated"
     >
-      <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide flex items-center gap-1.5">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <GitBranch size={12} /> Forked agents
       </div>
-      <p className="text-[12px] text-(--ink-2) m-0">
+      <p className="text-[12px] text-maestro-muted m-0">
         <b>
           {count} forked agent{count === 1 ? "" : "s"} differ{count === 1 ? "s" : ""} from{" "}
           {count === 1 ? "its" : "their"} template
         </b>{" "}
-        — <span className="font-mono text-(--ink-3)">{summary.diverged.join(", ")}</span>. Nothing has been rewritten:
-        reviewing each one is how you take the new body, keep the fork as it is, or detach it.
+        — <span className="font-mono text-maestro-muted">{summary.diverged.join(", ")}</span>. Nothing has been
+        rewritten: reviewing each one is how you take the new body, keep the fork as it is, or detach it.
       </p>
       <div>
         <Link
           to="/agents"
-          className="inline-flex items-center gap-1.5 text-[12px] text-primary underline cursor-pointer"
+          className="inline-flex items-center gap-1.5 text-[12px] text-maestro-primary underline cursor-pointer"
         >
           Review them on /agents
         </Link>
@@ -835,7 +840,7 @@ function ForkedAgentsCard({ summary }: { summary: AgentSyncSummary }) {
 function StatusCard({ status }: { status: InstallStatus }) {
   const scriptTrouble = status.scriptsMissing.length + status.scriptsOutOfDate.length;
   return (
-    <div className="p-4 rounded-lg border border-(--line) bg-(--bg-elev)">
+    <div className="p-4 rounded-lg border border-maestro bg-maestro-elevated">
       <Row
         ok={status.orchestratorSkill && !status.orchestratorSkillOutOfDate}
         label="Orchestrator skill"
@@ -879,7 +884,7 @@ function StatusCard({ status }: { status: InstallStatus }) {
             : "No .claude/maestro.json yet — it is written the first time you save on Workflows."
         }
       />
-      <div className="pt-3 mt-1 border-t border-(--line) text-[11px] text-(--ink-3) font-mono">
+      <div className="pt-3 mt-1 border-t border-maestro text-[11px] text-maestro-muted font-mono">
         runtime {status.installedRuntimeId} · ships {status.shippedRuntimeId}
       </div>
     </div>
@@ -1026,14 +1031,14 @@ function InstallPage() {
   const error = statusError;
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav />
 
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-2xl mx-auto p-8 flex flex-col gap-4">
           <div>
             <h1 className="text-[15px] font-semibold m-0">Maestro runtime</h1>
-            <p className="text-[12px] text-(--ink-3) m-0 mt-1">
+            <p className="text-[12px] text-maestro-muted m-0 mt-1">
               The hook scripts that run inside a Claude Code session, installed into{" "}
               <span className="font-mono">
                 {viewedRoot ? `${viewedRoot.replace(/\/+$/, "")}/.claude/` : "the open project"}
@@ -1097,7 +1102,7 @@ function InstallPage() {
               Re-check
             </Button>
             {status && !status.stale && status.installed && (
-              <span className="text-[12px] text-(--ink-3)">Up to date — nothing to do.</span>
+              <span className="text-[12px] text-maestro-muted">Up to date — nothing to do.</span>
             )}
           </div>
 
@@ -1110,8 +1115,8 @@ function InstallPage() {
             behind a confirmation that names its files. Collapsing them into one button — or giving
             the destructive one the same weight — is how "stop the hooks firing" becomes data loss.
           */}
-          <div className="mt-2 p-4 rounded-lg border border-(--line) bg-(--bg-elev) flex flex-col gap-4">
-            <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide">Remove</div>
+          <div className="mt-2 p-4 rounded-lg border border-maestro bg-maestro-elevated flex flex-col gap-4">
+            <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">Remove</div>
 
             <div className="flex flex-col gap-1.5">
               <div>
@@ -1125,14 +1130,14 @@ function InstallPage() {
                   Uninstall
                 </Button>
               </div>
-              <p className="text-[12px] text-(--ink-3) m-0">
+              <p className="text-[12px] text-maestro-muted m-0">
                 Unregisters the hooks and deletes the ephemeral session files, so nothing fires in a Claude session any
                 more. <span className="font-mono">.claude/maestro.json</span>, the orchestrator skill and the copied
                 scripts all stay — installing again switches it back on.
               </p>
             </div>
 
-            <div className="flex flex-col gap-1.5 pt-3 border-t border-(--line)">
+            <div className="flex flex-col gap-1.5 pt-3 border-t border-maestro">
               <div>
                 <button
                   type="button"
@@ -1144,7 +1149,7 @@ function InstallPage() {
                   <span>{phase === "purging" ? "Deleting…" : "Delete everything…"}</span>
                 </button>
               </div>
-              <p className="text-[12px] text-(--ink-3) m-0">
+              <p className="text-[12px] text-maestro-muted m-0">
                 Everything above, plus the orchestrator skill, the copied scripts and{" "}
                 <span className="font-mono">.claude/maestro.json</span> — your workflow graph and rule assignments. You
                 will see the exact list of files before anything is deleted.{" "}

@@ -69,10 +69,10 @@ describe("ContextUsageBadge", () => {
   it("colors by threshold", () => {
     const at = (p: number) =>
       html(createElement(ContextUsageBadge, { instance: inst([e({ ctx_pct: p, ctx_model: "m" })]) }));
-    expect(at(74)).toContain("--ink-3");
-    expect(at(75)).toContain("--yellow");
-    expect(at(89)).toContain("--yellow");
-    expect(at(90)).toContain("--red");
+    expect(at(74)).toContain("text-maestro-muted");
+    expect(at(75)).toContain("text-maestro-warning");
+    expect(at(89)).toContain("text-maestro-warning");
+    expect(at(90)).toContain("text-maestro-danger");
   });
 });
 

@@ -36,7 +36,7 @@ function AgentRow({
   return (
     <div
       onClick={() => onSelect(agent.id)}
-      className="relative p-[11px] rounded-[10px] border border-(--line) bg-(--bg-2) cursor-pointer transition-colors duration-[120ms] hover:border-(--line-2)"
+      className="relative p-[11px] rounded-[10px] border border-maestro bg-maestro-faint cursor-pointer transition-colors duration-[120ms] hover:border-maestro-strong"
     >
       {/*
         The selected state is an overlay at -1px rather than a border colour on the card itself, so
@@ -46,7 +46,7 @@ function AgentRow({
       {agent.id === selected && (
         <span
           aria-hidden
-          className="absolute -inset-px rounded-[10px] border border-(--primary) bg-(--primary-dim) pointer-events-none"
+          className="absolute -inset-px rounded-[10px] border border-maestro-primary-strong bg-maestro-primary-subtle pointer-events-none"
         />
       )}
       <div className="relative flex items-center justify-between gap-2 mb-2">
@@ -65,10 +65,10 @@ function AgentRow({
         </button>
       </div>
       <div className="relative flex gap-[10px] items-start">
-        <div className="relative flex-none w-[52px] h-[52px] rounded-lg border border-(--line) bg-(--pane) overflow-hidden">
+        <div className="relative flex-none w-[52px] h-[52px] rounded-lg border border-maestro bg-(--pane) overflow-hidden">
           <AvatarCanvas layers={agent.layers} fill />
         </div>
-        <p title={agent.description} className="m-0 text-[12.5px] leading-[1.45] text-(--ink-3) text-pretty">
+        <p title={agent.description} className="m-0 text-[12.5px] leading-[1.45] text-maestro-muted text-pretty">
           {clampText(agent.description)}
         </p>
       </div>
@@ -79,7 +79,7 @@ function AgentRow({
 /** A left-pane section header — "Project" / "Global" — shown only when its section has rows. */
 function SectionLabel({ children }: { children: string }) {
   return (
-    <p className="m-0 mt-1 mb-0.5 px-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-(--ink-3)">
+    <p className="m-0 mt-1 mb-0.5 px-0.5 text-[10.5px] font-semibold uppercase tracking-[0.08em] text-maestro-muted">
       {children}
     </p>
   );
@@ -111,7 +111,7 @@ export default function AgentList({
   const globalItems = items.filter((a) => a.source !== "project");
 
   return (
-    <aside className="flex-none w-[292px] min-h-0 flex flex-col border-r border-(--line) bg-(--pane)">
+    <aside className="flex-none w-[292px] min-h-0 flex flex-col border-r border-maestro bg-(--pane)">
       <div className="flex-none flex items-center gap-2 pt-[14px] px-4 pb-[10px]">
         <button
           type="button"
@@ -131,13 +131,13 @@ export default function AgentList({
               value={query}
               onChange={(e) => onQueryChange(e.target.value)}
               placeholder="Filter agents…"
-              className="w-full h-[30px] px-[10px] rounded-md bg-(--bg-2) border border-(--line) text-(--ink) text-[12px] outline-none placeholder:text-(--ink-3) focus:border-(--primary) focus:bg-(--bg-3)"
+              className="w-full h-[30px] px-[10px] rounded-md bg-maestro-faint border border-maestro text-maestro text-[12px] outline-none placeholder:text-maestro-muted focus:border-maestro-primary-strong focus:bg-maestro-soft"
             />
           </div>
 
           <div className="flex-1 min-h-0 overflow-y-auto px-4 pb-3 flex flex-col gap-[10px]">
             {items.length === 0 && (
-              <p className="m-0 text-[12px] text-(--ink-3)">
+              <p className="m-0 text-[12px] text-maestro-muted">
                 {query ? "No agent matches that filter." : "No agents discovered for this project."}
               </p>
             )}
@@ -162,7 +162,7 @@ export default function AgentList({
 
             <Link
               to="/create-subagent"
-              className="flex items-center justify-center gap-1.5 h-8 rounded-lg border border-dashed border-(--line-2) text-(--ink-3) text-[12px] no-underline transition-colors duration-[120ms] hover:text-(--primary) hover:border-(--primary)"
+              className="flex items-center justify-center gap-1.5 h-8 rounded-lg border border-dashed border-maestro-strong text-maestro-muted text-[12px] no-underline transition-colors duration-[120ms] hover:text-maestro-primary hover:border-maestro-primary-strong"
             >
               + New agent
             </Link>

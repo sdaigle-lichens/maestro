@@ -54,7 +54,7 @@ export default function ThemeToggle() {
       onClick={toggleMode}
       aria-label={label}
       title={label}
-      className="rounded-md border border-(--line) px-3 py-1.5 text-[12px] font-medium text-(--ink-2) hover:border-border-strong hover:bg-(--bg-3) hover:text-(--ink)"
+      className="rounded-md border border-maestro px-3 py-1.5 text-[12px] font-medium text-maestro-muted hover:border-maestro-strong hover:bg-maestro-soft hover:text-maestro"
     >
       {mode === "auto" ? "Auto" : mode === "dark" ? "Dark" : "Light"}
     </button>

@@ -64,14 +64,14 @@ function TemplatesPage() {
             : null;
   if (failed) {
     return (
-      <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
+      <div className="w-full h-screen bg-maestro font-sans text-maestro flex flex-col overflow-hidden">
         <TopNav />
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10 max-w-lg">
             <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
             <div>
-              <p className="text-[13px] text-(--ink) m-0 mb-1">Templates could not be loaded.</p>
-              <p className="text-[12px] text-(--ink-2) m-0">{failed.error}</p>
+              <p className="text-[13px] text-maestro m-0 mb-1">Templates could not be loaded.</p>
+              <p className="text-[12px] text-maestro-muted m-0">{failed.error}</p>
             </div>
           </div>
         </div>
@@ -80,15 +80,15 @@ function TemplatesPage() {
   }
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav />
 
       <div className="flex-1 overflow-y-auto">
         <div className="mx-auto max-w-5xl px-6 pb-16 pt-10">
           <div className="mb-8">
             <span className="section-label mb-3 inline-block">AI Dev Tools</span>
-            <h1 className="text-2xl font-semibold text-(--ink) m-0 mb-1">Templates</h1>
-            <p className="text-[13px] text-subtle m-0">
+            <h1 className="text-2xl font-semibold text-maestro m-0 mb-1">Templates</h1>
+            <p className="text-[13px] text-maestro-muted m-0">
               Global defaults every project falls back to when it has no override of its own.
             </p>
           </div>
