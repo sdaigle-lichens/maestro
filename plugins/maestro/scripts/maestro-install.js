@@ -189,6 +189,8 @@ function ensureRepoRootGitignore(repoRoot) {
     // rules. `ensureClaimsDir()`'s own `*` .gitignore, written into the directory as it's created,
     // is the mechanism for a project installed before this line existed.
     "**/.claude/maestro-tasks/claims/",
+    // `080`: durable run metrics; recordRun also writes its own `*` .gitignore into the directory.
+    "**/.claude/maestro-metrics/",
   ]);
 }
 
@@ -363,12 +365,16 @@ const STATIC_ASSETS = [
   // STATIC_ASSETS for the full rationale; same read/mutate/write/re-render shape as
   // maestro-render-orchestrator.cjs above.
   { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
+  // The epics CLI (`084`) — see apps/maestro/src/core/install.ts's STATIC_ASSETS.
+  { src: "scripts/maestro-epic.cjs", dest: ".claude/scripts/maestro-epic.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
   // Backs maestro-workflow-spec.cjs above, generated from apps/maestro/src/core/workflow-spec.ts.
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
+  // Backs maestro-epic.cjs above (`084`).
+  { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
   // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
   // silently, and why the handoff store is copied even though its seed would have covered it.

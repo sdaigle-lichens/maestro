@@ -772,14 +772,14 @@
   ],
   "rules": [],
   "gates": {
-    "confidence_check": false,
-    "use_code_architecture_design_check": false
+    "confidence_check": true,
+    "use_code_architecture_design_check": true
   },
   "project_tags": [
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.9.8",
+  "runtimeVersion": "0.10.6",
   "reports": {
     "backend": {
       "id": "backend",

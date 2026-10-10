@@ -69,8 +69,13 @@ function parseLog(file) {
 
 function analyze(entries, session) {
   const toolCalls = entries.filter((e) => !e.kind);
-  const dispatches = entries.filter((e) => e.kind === "dispatch");
-  const handoffs = entries.filter((e) => e.kind === "handoff");
+  // Team-meeting turns (`meeting: true`, written by maestro-subagent-log.js) are not workflow
+  // runs: kept out of the timeline and the outcome tally — a resumed participant's meeting handoff
+  // would otherwise overwrite its workflow handoff under the same agent_id — and counted apart.
+  const dispatches = entries.filter((e) => e.kind === "dispatch" && e.meeting !== true);
+  const handoffs = entries.filter((e) => e.kind === "handoff" && e.meeting !== true);
+  const meetingTurns = entries.filter((e) => e.kind === "handoff" && e.meeting === true);
+  const meetingAgents = [...new Set(meetingTurns.map((e) => e.origin).filter(Boolean))];
 
   // counts per origin
   const byOrigin = {};
@@ -167,8 +172,10 @@ function analyze(entries, session) {
       toolCalls: toolCalls.length,
       dispatches: dispatches.length,
       handoffs: handoffs.length,
+      meetingTurns: meetingTurns.length,
       byOrigin,
     },
+    meetingAgents,
     outcomes,
     subagents,
     flags,
@@ -188,6 +195,12 @@ function renderMarkdown(a) {
     .map(([k, v]) => `${k}: ${v}`)
     .join(", ");
   if (oc) L.push(`- **Handoff outcomes**: ${oc}`);
+  if (a.counts.meetingTurns > 0) {
+    L.push(
+      `- **Team-meeting turns** (excluded from the timeline): ${a.counts.meetingTurns} ` +
+        `(${a.meetingAgents.join(", ")}) — their tool calls still count under their origin below`
+    );
+  }
   const bo = Object.entries(a.counts.byOrigin)
     .map(([k, v]) => `${k} (${v})`)
     .join(", ");

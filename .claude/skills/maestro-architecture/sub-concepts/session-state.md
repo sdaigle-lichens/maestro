@@ -84,6 +84,14 @@ is created on disk for a rejected id, which is what makes rejecting cost nothing
 | `kind:"channel_delivery"` (`036`) | `{ts, origin:"main_session", agent_id, sender, receiver, content, log}` | SubagentStart, by `maestro-inject-agent-context.js` itself the same moment it inlines a channel payload, so the log has a durable record of the delivery |
 | `kind:"phase"` (`064`) | phase marker from the two `!`-injected gate scripts | Step 1 / Step 4 gate resolution |
 
+A `dispatch` or `handoff` entry for a team-meeting participant also carries `meeting: true`, which
+keeps it out of resume targets and the post-mortem timeline (see `team-meeting.md`).
+
+`session.json` may also carry `meeting` (an active team meeting) and `meeting_leftovers` (lane files
+an ended meeting left unstamped), both from `meeting-mode.ts`. Every `session.json` writer spreads
+the existing object; `maestro-set-session-workflow.cjs` is the only one that removes a key, ending
+the meeting through `closeMeeting`.
+
 On a `channel_delivery`, `origin` is `"main_session"` too, not the receiver — the desktop app's
 `/session-log` (`037`) correlates it back to the receiving instance by `agent_id`, the same key a
 `dispatch` entry's `input` uses.
@@ -93,6 +101,38 @@ over `window.maestro.log` — the hooks stay append-only and network-free, and t
 and entirely separate from the write path.
 
 A fifth piece of session state since `036` is `.claude/channels/` — see `channels.md`.
+
+## The durable run-metrics file (`080`)
+
+Everything above dies with its session. `<project>/.claude/maestro-metrics/metrics.json` is the one
+per-project record that outlives them: **gitignored** (`**/.claude/maestro-metrics/` in the install
+lists, and `recordRun` writes a `*` `.gitignore` into the directory itself for projects installed
+before it existed), kept in the **main checkout's** `.claude/` even when a session runs in a worktree.
+
+- **Recorded** by both SessionEnd hooks (`maestro-session-cleanup.sh`/`.cjs`) via `recordSessionRun`
+  in `run-metrics.ts` (exported through `lib/maestro-session.cjs`), called **before**
+  `endSessionState` removes the session directory, on every end including a resumable one. One
+  session = one run record, built from `log.jsonl` + `session.json`. Records are keyed by
+  `session.run_id` (else the session id) and an existing id is **replaced**, so a resumed session
+  never double-counts.
+- **A full record** holds: workflow, `task` (the bare `active_task` filename, nothing else about it),
+  per-agent runs/success/failure/duration/peak `ctx_pct`, skill-node steps that ran, the HANDOFF
+  labels in order, loop-backs (`{from agent, condition label, count}`), human-review stops
+  (`{after agent, outcome}` — outcome inferred from which agent was dispatched next: later step =
+  `approved`, same or earlier = `changes_requested`, none = `no_decision`), duration, peak
+  `ctx_pct`, `team_meeting`, and `outcome` (`success` iff the last workflow handoff was `success`).
+  **No Post-Mortem text and no log `input`/`output` is copied**; the task file's `## Post-Mortem`
+  section stays the only home for prose.
+- **Retention.** The newest N records (`maestro.json` `metrics.recent_runs`, default 10, read by
+  `recentRunsLimit`) stay in `runs`. Older ones are folded by `foldRun` into `totals.by_workflow` and
+  `totals.by_agent` (run count, success/failure, loop-back and human-review counts and per-run rates,
+  duration and ctx sums with derived averages, first/last seen) and dropped, so the file is bounded by
+  the number of workflows and agents. Folding loses the `task` link on purpose. `compact` only moves
+  the overflow, so it is idempotent. A run resumed after it was already folded is counted again.
+- **Concurrency.** Read-modify-write runs under a `mkdir` lock (`maestro-metrics/lock`, stale after
+  15s) and publishes by temp file + rename.
+- **Read by** the team-meeting evidence digest: `maestro-team-meeting.cjs brief` puts the recent runs
+  (detail) and the totals (trends) under "Run metrics across sessions" in `brief.md`.
 
 ## Worktree isolation (`074`)
 

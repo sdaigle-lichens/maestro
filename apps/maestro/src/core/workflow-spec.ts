@@ -307,3 +307,41 @@ export function workflowToSpec(wf: MaestroWorkflowV3, _instances: MaestroInstanc
 
   return { name: wf.name, steps, conditions: conditions.length > 0 ? conditions : undefined };
 }
+
+export interface DeleteWorkflowResult {
+  config: MaestroConfigV3;
+  /** The workflow's instances that no remaining workflow places any more (kept, never deleted). */
+  unplacedInstances: string[];
+  errors: string[];
+}
+
+/**
+ * Remove one workflow from the config. Its `workflow_instances` entries are KEPT — the same rule
+ * `update-workflow` follows when a step is removed: an unplaced instance costs nothing and stays
+ * reusable. Refuses to remove the last workflow, since every reader of `maestro.json` (the
+ * orchestrator render, `resolveWorkflowName`'s default) assumes at least one exists. Pure.
+ */
+export function deleteWorkflow(cfg: MaestroConfigV3, name: string): DeleteWorkflowResult {
+  const target = cfg.workflows.find((w) => w.name === name);
+  if (!target) {
+    const available = cfg.workflows.map((w) => w.name);
+    return {
+      config: cfg,
+      unplacedInstances: [],
+      errors: [`No workflow named "${name}". Available: ${available.length > 0 ? available.join(", ") : "(none)"}.`],
+    };
+  }
+  if (cfg.workflows.length === 1) {
+    return {
+      config: cfg,
+      unplacedInstances: [],
+      errors: [`"${name}" is the only workflow; a project needs at least one.`],
+    };
+  }
+  const workflows = cfg.workflows.filter((w) => w.name !== name);
+  const stillPlaced = new Set(workflows.flatMap((w) => w.nodes.map((n) => n.instance).filter(Boolean) as string[]));
+  const unplacedInstances = [
+    ...new Set(target.nodes.map((n) => n.instance).filter((i): i is string => !!i && !stillPlaced.has(i))),
+  ];
+  return { config: { ...cfg, workflows }, unplacedInstances, errors: [] };
+}

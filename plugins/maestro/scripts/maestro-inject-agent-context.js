@@ -47,6 +47,18 @@
 // routing, per-route protocols, and the report — for one line. The channel delivery is NOT
 // skipped: a payload may have arrived in this agent's lane between its two runs, and it doesn't
 // duplicate on its own (`retire()` already moved the first run's file to `.consumed/`).
+//
+// TEAM MEETINGS: while this session's session.json carries a `meeting` that lists this agent type
+// as a participant (apps/maestro/src/core/meeting-mode.ts), the run is a meeting turn, not a
+// workflow step. HANDOFF routing, the per-route protocols, the report AND the channel delivery are
+// all skipped — delivery would inline and retire a same-run payload meant for this agent's next
+// workflow step — and the meeting notice is injected instead, on a first run and on a resume alike
+// (a resumed workflow agent carries its first run's routing in its history; the notice overrides
+// it). The skills blocks stay on a first run: they are what a participant reviews.
+//
+// OWNER RUNS (`081`): an agent type listed in session.json's `owner_runs` (a closed meeting's
+// approved change being applied) gets the skills and an owner-run notice, and NO routing, payload
+// protocols, channel delivery or report — it is a normal agent outside the workflow. Not write-confined.
 
 const fs = require("fs");
 const path = require("path");
@@ -69,6 +81,10 @@ const {
   retire,
   ensureSessionPaths,
   hasCompletedRun,
+  meetingFor,
+  meetingNotice,
+  ownerRunFor,
+  ownerRunNotice,
   resolveProjectSkillPath,
   isRootSkillPath,
 } = require("./lib/maestro-session.cjs");
@@ -313,6 +329,14 @@ function collectReportContext(cfg, projectDir, agentType) {
 
   const result = cfg && cfg.version === 3 ? collect(cfg, sess ? sess.state : null, agentType) : null;
 
+  // Team meeting: null unless this session runs one AND lists this agent type as a participant.
+  const meeting = meetingFor(sessionState, agentType);
+  // Owner run (`081`): an approved change being applied after the meeting closed. Not a workflow
+  // step either, but not write-confined — it gets its skills and a notice, and none of the routing,
+  // payload instructions, channel delivery or output format below.
+  const ownerRun = meeting ? null : ownerRunFor(sessionState, agentType);
+  const offWorkflow = !!(meeting || ownerRun);
+
   // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
   // `dispatch`, never session.json) is the right, race-proof signal. No session directory ⇒ no
   // lines ⇒ not a resume ⇒ full injection.
@@ -351,11 +375,15 @@ function collectReportContext(cfg, projectDir, agentType) {
   // Replaces loaded_skills, referenced_skills, HANDOFF routing, the per-route protocols and the
   // report below — not silence. Placed before the channel delivery, which is the one block that
   // is NOT static and is never skipped.
-  if (isResume) {
+  if (meeting) {
+    parts.push(meetingNotice(meeting, agentType));
+  } else if (ownerRun) {
+    parts.push(ownerRunNotice(ownerRun, agentType));
+  } else if (isResume) {
     parts.push("Resumed run — the skills, handoff routes and output format from your first run still apply.");
   }
 
-  if (!isResume && result && result.routes.length > 0) {
+  if (!offWorkflow && !isResume && result && result.routes.length > 0) {
     const hasSuccess = result.routes.some((r) => r.label === "success");
     const lines = result.routes.map((r) => {
       const to = r.receiver ? ` (routes to \`${r.receiver}\`)` : "";
@@ -366,7 +394,10 @@ function collectReportContext(cfg, projectDir, agentType) {
     parts.push(
       `Handoff routing for the \`${agentType}\` agent. End your final message with exactly one \`HANDOFF:\` line so ` +
         `the orchestrator can route deterministically:\n${lines.join("\n")}` +
-        (hasSuccess ? "" : "\n(No success path leaves this node — it only feeds back via the condition above.)")
+        (hasSuccess ? "" : "\n(No success path leaves this node — it only feeds back via the condition above.)") +
+        "\n\nYour report's verdict and your HANDOFF line must agree. A real defect must end with the matching condition label " +
+        "when one is listed above. A report verdict of FAIL with `HANDOFF: success` is invalid, and so is ending with no " +
+        "HANDOFF line at all — the orchestrator is told about both and will not treat either as success."
     );
 
     // Per-route payload protocol, resolved across the three tiers above so the communication
@@ -404,7 +435,9 @@ function collectReportContext(cfg, projectDir, agentType) {
   // lane, the bug `033` fixed on both ends of a route id. Same-run deliveries are inlined and
   // retired (moved to `.consumed/`, never deleted); anything else is only mentioned, never
   // inlined — see the header of handoff-channels.ts for why.
-  {
+  // Skipped for a meeting participant: neither inlined nor retired, so a payload waiting for this
+  // agent's next workflow step is still there when that step runs.
+  if (!offWorkflow) {
     const bareAgent = bareAgentName(agentType);
     const entries = readLane(projectDir, bareAgent);
     if (entries.length > 0) {
@@ -463,7 +496,7 @@ function collectReportContext(cfg, projectDir, agentType) {
   // (project or global), regardless of whether `result` matched a workflow instance at all. Still
   // one of the five static blocks `040` skips on a resume — it governs the NEW final message the
   // resumed agent is about to write, but that message is already in its history from the first run.
-  if (!isResume) {
+  if (!offWorkflow && !isResume) {
     const reportPart = collectReportContext(cfg, projectDir, agentType);
     if (reportPart) parts.push(reportPart);
   }

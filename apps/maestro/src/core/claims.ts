@@ -60,6 +60,12 @@ export interface ClaimFile {
   session_id: string;
   claimed_at: string;
   project_root: string;
+  /**
+   * The claiming session's NAME (`084`) — what cross-session messages are addressed by, which the
+   * internal `session_id` is not. Absent when the claimer did not know it (an older runtime, or a
+   * session that could not read it from the agent listing): such a claim still works.
+   */
+  session_name?: string;
 }
 
 /** The claim `listTasks` attaches to a `MaestroTask` — `null` when the task carries none. */
@@ -67,6 +73,13 @@ export interface TaskClaim {
   sessionId: string;
   claimedAt: string;
   live: boolean;
+  /** Set only when the claim recorded one (`084`); absent means "unnamed". */
+  sessionName?: string;
+}
+
+/** A claim's session name as a `TaskClaim` fragment — absent, never `undefined`-valued. */
+function nameOf(claim: ClaimFile): { sessionName?: string } {
+  return typeof claim.session_name === "string" && claim.session_name ? { sessionName: claim.session_name } : {};
 }
 
 function readClaimFile(filePath: string): ClaimFile | null {
@@ -128,7 +141,7 @@ export function readClaims(projectRoot: string, tasksDir: string, now: number = 
     if (!claim) continue;
     const filename = fileName.slice(0, -".json".length);
     const live = isSessionLive(claudeDir, claim.session_id, now);
-    out.set(filename, { sessionId: claim.session_id, claimedAt: claim.claimed_at, live });
+    out.set(filename, { sessionId: claim.session_id, claimedAt: claim.claimed_at, live, ...nameOf(claim) });
     if (!live) {
       try {
         fs.rmSync(filePath, { force: true });
@@ -153,7 +166,8 @@ export function claimTask(
   tasksDir: string,
   filename: string,
   sessionId: string,
-  now: number = Date.now()
+  now: number = Date.now(),
+  sessionName?: string | null
 ): ClaimResult {
   const base = path.basename(filename);
   const dir = ensureClaimsDir(tasksDir);
@@ -165,7 +179,7 @@ export function claimTask(
     if (isSessionLive(claudeDir, existing.session_id, now)) {
       return {
         outcome: "already-claimed",
-        claim: { sessionId: existing.session_id, claimedAt: existing.claimed_at, live: true },
+        claim: { sessionId: existing.session_id, claimedAt: existing.claimed_at, live: true, ...nameOf(existing) },
       };
     }
     try {
@@ -179,6 +193,7 @@ export function claimTask(
     session_id: sessionId,
     claimed_at: new Date(now).toISOString(),
     project_root: projectRoot,
+    ...(sessionName ? { session_name: sessionName } : {}),
   };
   try {
     fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, { flag: "wx" });
@@ -193,7 +208,7 @@ export function claimTask(
     }
     return {
       outcome: "already-claimed",
-      claim: { sessionId: winner.session_id, claimedAt: winner.claimed_at, live: true },
+      claim: { sessionId: winner.session_id, claimedAt: winner.claimed_at, live: true, ...nameOf(winner) },
     };
   }
 }

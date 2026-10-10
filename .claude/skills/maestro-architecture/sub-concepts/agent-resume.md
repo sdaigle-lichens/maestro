@@ -15,6 +15,10 @@ keeps its own memory of what it built; empty output, or a `SendMessage` refused 
 agent, or a same-agent-name check), falls back to a cold `Task` exactly as before, with no visible
 error.
 
+An `agent_id` that ever had a team-meeting turn (`meeting: true` handoff) is never a resume target:
+`agentRunsFromLog` drops all of its runs, since its latest context tells it to ignore routing.
+`hasCompletedRun` still counts them (see `team-meeting.md`).
+
 The **forward** success path is unchanged — always a fresh `Task`, since a clean context is the
 point there, and restricting resume to backward edges is also what bounds context growth over a long
 session.

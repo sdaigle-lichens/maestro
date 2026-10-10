@@ -17,7 +17,8 @@ and recomputes the cascade, so a single close can unblock several tasks at once.
 
 `/to-maestro-tasks` does not hand-assemble the files for a fresh batch: it hands
 `maestro-write-tasks.cjs` a JSON array of slices (title, body, `blockedBy` as indices into that same
-array), and the script assigns numbers/slugs, renders each file, and calls `sync()` in one pass —
+array, or as strings naming a task already in the queue by filename or `NNN` — refused unless it
+matches exactly one existing file), and the script assigns numbers/slugs, renders each file, and calls `sync()` in one pass —
 folding what used to be two separate steps (write the files, then run `maestro-task-status.cjs sync`)
 into one script call.
 

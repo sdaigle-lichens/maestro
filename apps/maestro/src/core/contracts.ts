@@ -480,7 +480,9 @@ export interface MaestroTask {
    * is `false` for exactly one read, the one that discovers the claim's session has gone idle or
    * away; the claim file is gone by the next read.
    */
-  claim: { sessionId: string; claimedAt: string; live: boolean } | null;
+  claim: { sessionId: string; claimedAt: string; live: boolean; sessionName?: string } | null;
+  /** The epic this task belongs to (`084`), from its tracker entry; absent when it belongs to none. */
+  epic?: string;
 }
 
 export interface SessionLogEntry {

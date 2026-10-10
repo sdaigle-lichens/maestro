@@ -196,6 +196,10 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // re-render shape as maestro-render-orchestrator.cjs above, hence the same project-copy
   // treatment. Invoked directly by those skills, not by a hook.
   { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
+  // The epics CLI (`084`): create an epic, link tasks, show it, and the report inbox. Invoked
+  // directly by the orchestrator's done step, `maestro-manager` and `to-maestro-tasks`, so it is a
+  // project copy for the same $CLAUDE_PROJECT_DIR reason as every orchestrator-invoked script above.
+  { src: "scripts/maestro-epic.cjs", dest: ".claude/scripts/maestro-epic.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
@@ -213,6 +217,8 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // Backs maestro-workflow-spec.cjs above (`applyWorkflowSpec`/`workflowToSpec`), generated from
   // apps/maestro/src/core/workflow-spec.ts.
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
+  // Backs maestro-epic.cjs above, generated from apps/maestro/src/core/epics.ts (`084`).
+  { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (`035`). Reports have no
   // seed tier at all, so without this file a project-local hook resolves NO output format for an
   // agent whose report is only global — the failure that motivated the slice. Handoffs do have a
@@ -501,6 +507,9 @@ const GITIGNORE_ENTRIES = [
   // maestro-tasks/ (user-authored, committed content) rather than directly under .claude/, so it
   // needs its own line here rather than reusing that directory's ignore rules.
   "**/.claude/maestro-tasks/claims/",
+  // `080`: the durable run-metrics directory. recordRun also writes a `*` .gitignore into it, which is
+  // the mechanism for a project installed before this line existed.
+  "**/.claude/maestro-metrics/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */

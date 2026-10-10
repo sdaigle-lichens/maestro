@@ -4,7 +4,8 @@
 // user has approved a slice breakdown, so the model never hand-assembles
 // filenames/numbering/the "## Blocked by" section itself.
 //
-//   node maestro-write-tasks.cjs <path-to-json>
+//   node maestro-write-tasks.cjs <path-to-json> [--epic <slug>]
+//       `--epic` (`084`) links every written task to that existing epic in the tracker.
 //
 // <path-to-json> is a JSON array, one entry per slice, already in topological
 // order (blockers before dependents):
@@ -24,9 +25,11 @@
 //     }
 //   ]
 //
-// `blockedBy` is a list of indices into this same array, each required to be
-// less than the entry's own index — the input is expected pre-sorted, this
-// only catches a caller that got the order wrong. Numbering appends after the
+// Each `blockedBy` entry is either an index into this same array, required to
+// be less than the entry's own index — the input is expected pre-sorted, this
+// only catches a caller that got the order wrong — or a string naming a task
+// ALREADY in the queue, by full filename ("083-foo.md") or number ("083"), so a
+// new batch can depend on earlier-queued work. Numbering appends after the
 // highest existing NNN-*.md (never overwrites), each title is slugged (deduped
 // within the batch and against existing files), and `blockedBy` indices are
 // resolved into sibling filenames once every filename in the batch is known.
@@ -109,7 +112,21 @@ ${blockedBy}
 }
 
 if (!jsonPath) {
-  fail("usage: maestro-write-tasks.cjs <path-to-json>");
+  fail("usage: maestro-write-tasks.cjs <path-to-json> [--epic <slug>]");
+}
+
+// `084`: `--epic <slug>` links every task this batch writes to that epic, through the tracker's
+// `epic` field. The epic must already exist (checked BEFORE anything is written, so a mistyped slug
+// leaves the queue untouched).
+const epicFlag = process.argv.indexOf("--epic");
+const epicSlug = epicFlag === -1 ? null : process.argv[epicFlag + 1];
+if (epicFlag !== -1 && !epicSlug) fail("--epic needs an epic name");
+let epicLib = null;
+if (epicSlug) {
+  epicLib = require("./lib/maestro-epic.cjs");
+  if (!epicLib.readEpicState(projectDir, epicSlug)) {
+    fail(`no epic "${epicSlug}" — create it first with maestro-epic.cjs create ${epicSlug}. Nothing was written.`);
+  }
 }
 
 let slices;
@@ -135,9 +152,10 @@ slices.forEach((slice, i) => {
   }
   const blockedBy = slice.blockedBy || [];
   if (!Array.isArray(blockedBy)) {
-    fail(`slice ${i} ("${slice.title}"): "blockedBy" must be an array of indices`);
+    fail(`slice ${i} ("${slice.title}"): "blockedBy" must be an array of indices or task filenames`);
   }
   for (const b of blockedBy) {
+    if (typeof b === "string") continue; // an existing task, resolved once the queue is listed
     if (!Number.isInteger(b) || b < 0 || b >= slices.length) {
       fail(`slice ${i} ("${slice.title}"): blockedBy index ${b} is out of range`);
     }
@@ -163,6 +181,21 @@ let nextNumber =
     return m ? Math.max(max, parseInt(m[1], 10)) : max;
   }, 0) + 1;
 
+// A string blocker must name exactly one task already in the queue.
+function resolveExisting(ref, i, title) {
+  const match = /^\d{3}$/.test(ref)
+    ? existing.filter((f) => f.startsWith(`${ref}-`))
+    : existing.filter((f) => f === ref);
+  if (match.length !== 1) {
+    fail(`slice ${i} ("${title}"): blockedBy "${ref}" does not name exactly one existing task`);
+  }
+  return match[0];
+}
+
+const existingBlockers = slices.map((slice, i) =>
+  (slice.blockedBy || []).map((b) => (typeof b === "string" ? resolveExisting(b, i, slice.title) : null))
+);
+
 const filenames = slices.map((slice) => {
   const slug = uniqueSlug(slugify(slice.title), takenSlugs);
   const filename = `${String(nextNumber).padStart(3, "0")}-${slug}.md`;
@@ -171,12 +204,15 @@ const filenames = slices.map((slice) => {
 });
 
 slices.forEach((slice, i) => {
-  const blockedByFilenames = (slice.blockedBy || []).map((b) => filenames[b]);
+  const blockedByFilenames = (slice.blockedBy || []).map(
+    (b, j) => existingBlockers[i][j] || filenames[b]
+  );
   const body = renderBody(slice, blockedByFilenames);
   fs.writeFileSync(path.join(dir, filenames[i]), body, { flag: "wx" });
 });
 
 const map = sync(projectDir);
+if (epicLib) epicLib.linkTasks(projectDir, epicSlug, filenames);
 const counts = Object.values(map).reduce(
   (c, v) => {
     c[v.status] = (c[v.status] || 0) + 1;
@@ -189,5 +225,7 @@ const range =
   filenames.length === 1 ? filenames[0] : `${filenames[0]}–${filenames[filenames.length - 1]}`;
 process.stdout.write(
   `Maestro tasks: wrote ${range} — ` +
-    `${Object.keys(map).length} task(s): ${counts.done} done, ${counts.ready} ready, ${counts.blocked} blocked\n`
+    `${Object.keys(map).length} task(s): ${counts.done} done, ${counts.ready} ready, ${counts.blocked} blocked` +
+    (epicSlug ? ` — linked to epic "${epicSlug}"` : "") +
+    "\n"
 );

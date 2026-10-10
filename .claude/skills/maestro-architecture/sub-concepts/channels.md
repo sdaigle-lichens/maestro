@@ -23,15 +23,28 @@ the starting agent's BARE type in `.claude/channels/<bareAgentType>/`:
 
 It is gated on nothing but the lane having files — a filesystem fact, not a workflow-routing one,
 which is what lets a gap reach `@scribe` on a run whose workflow never wired a route to it. It fires
-regardless of first-run/resumed, because a payload may be new since the agent's last run.
+regardless of first-run/resumed, because a payload may be new since the agent's last run. The one
+exception is a team-meeting participant: no delivery at all, so nothing is inlined or retired (see
+`team-meeting.md`).
 
 ## Stamping and lifecycle
 
 `SubagentStop` mints/reads the session's `run_id` (`ensureSessionRunId`, stored in that session's
 `session.json` — per session since `064`, so two concurrent runs can no longer mint each other's
-stamp) and calls `writeStamp(cwd, bareAgentName(agentType), runId)`, stamping every **unstamped**
-channel file whose filename's sender segment matches this agent's own bare type — a parallel
-subagent of a different type can't stamp another's write.
+stamp) and calls `writeStamp(cwd, bareAgentName(agentType), runId, { skip })`. The stamping rules,
+all in `handoff-channels.ts`:
+
+| Rule | Why |
+| --- | --- |
+| Only the **sender's own** `SubagentStop` stamps, and only files whose filename sender segment is its bare type, in any receiver's lane. | A parallel subagent of another type can't stamp someone else's write. |
+| Only **unstamped** files are stamped; an existing stamp is never rewritten. | Idempotent, and a stale stamp stays stale (see below). |
+| A file in `skip` (the session's `meeting_leftovers`) that still has the same path, `mtimeMs` and `size` is left unstamped. Once rewritten, it is stamped as usual. | The `run_id` lasts the whole session, so without this the sender's next workflow run would adopt a team-meeting participant's leftover as its payload. A snapshot comparison, so it doesn't depend on clock or mtime granularity. |
+| A team-meeting participant's `SubagentStop` doesn't stamp at all. | See `team-meeting.md`. |
+| A file written by an agent killed before its `SubagentStop` stays unstamped. | It is then treated like a foreign-run file: mentioned, never inlined. |
+
+A skipped leftover stays in its lane, is reported as unstamped (mentioned, not inlined) and is aged
+out by `sweep()` like any other file. `unstampedFilesOf(projectDir, sender)` is the snapshot
+`closeMeeting` takes to build `meeting_leftovers`.
 
 `SessionEnd`'s `sweep()` retires `.consumed/` outright and ages out anything left in a live lane past
 `CHANNEL_AGE_CAP_MS` (14 days). Unlike the per-session files, a lane is **not** deleted at

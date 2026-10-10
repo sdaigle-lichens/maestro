@@ -1,6 +1,6 @@
 ---
 name: plugin-libs-parity
-description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the twelve plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
+description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the sixteen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
   version: "1.11"
@@ -79,12 +79,14 @@ Related, same task: `SESSION_LOG_FILE` is now an alias for `SESSION_LOG_NAME` wi
 callers** — retained solely because this rule forbids removing it. An export you find with no
 callers is probably load-bearing for exactly that reason; check before deleting it.
 
-## The twelve generated entries
+## The sixteen generated entries
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed`, `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
-`maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`).
+`maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
+`maestro-agent-fork`, `maestro-rule-move` (`081`) and `maestro-epic` (`084`: epics, the report
+inbox; copied into projects, fs/path only, no `node:sqlite`).
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.
@@ -96,13 +98,14 @@ it imports is inlined into the bundle. Reaching into a module that touches Elect
 or a third-party dependency is how an entry stops being buildable — or worse, builds and fails at
 hook time in a project with no dependencies installed.
 
-**Six of the twelve are also COPIED into projects, which widens what a rename breaks (`035`).** A
+**Seven of the sixteen are also COPIED into projects, which widens what a rename breaks (`035`).** A
 bundle runs from the marketplace cache *and*, if it is in `install.ts`'s `STATIC_ASSETS`, from
 `<project>/.claude/scripts/lib/` — where the copy is a snapshot that only a re-install refreshes.
 The copied set is `maestro-session`, `maestro-skill-regions`, `maestro-agent-sync`,
 `maestro-report-defaults` and `maestro-handoff-defaults` (since `035`), and — since `063` —
 `maestro-workflow-spec`, which backs the `maestro-workflow-spec.cjs` CLI the `create-workflow`/
-`update-workflow` skills invoke directly (plus the hand-maintained `maestro-tasks.cjs`). So removing
+`update-workflow` skills invoke directly, and — since `084` — `maestro-epic`, behind the
+`maestro-epic.cjs` CLI (plus the hand-maintained `maestro-tasks.cjs`). So removing
 or renaming an export from one of those breaks two populations with different clocks: the cache
 re-pulls on a `plugin.json` version bump, the project copies do not move until someone re-installs.
 See `installing-maestro`'s manifest sub-concept for the rule the copied list answers to, and why a
@@ -135,6 +138,12 @@ only and every hook already requires this bundle" argument:
   from `channel-write-guard.ts`, backing `maestro-channel-write-guard.js`) and the transcript
   hand-back parser (`lastHandoffLabel`, `sendMessageHandoff`, from `handoff-label.ts`). Still `fs`/`path`
   only; keep the `node:sqlite` grep at `0`.
+- `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,
+  `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by
+  `maestro-team-meeting.cjs`. `fs`/`path` only.
+- team meetings — all of `meeting-mode.ts` (`readMeeting`, `meetingFor`, `startMeeting`,
+  `endMeeting`, `closeMeeting`, `meetingLeftovers`, `meetingNotice`, …) and `unstampedFilesOf`, read
+  by the SubagentStart/Stop hooks, the write guard and `maestro-set-session-workflow.cjs`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any
@@ -150,9 +159,49 @@ a missing or throwing `require` fails it outright regardless of cause. It happen
 `node:sqlite` (`workflow-spec.ts` only reaches `config.ts`, `success-path.ts` and `seed.ts`'s layout
 helpers), but that is incidental, not an invariant.
 
+**`maestro-team-meeting` is plugin-only.** It holds `team-meeting.ts`'s pure logic (briefs,
+proposal schema, conflicts, tally), is `require`d only by `plugins/maestro/scripts/maestro-team-meeting.cjs`,
+and is **not** copied into projects. The meeting flag the hooks read is not in it; that lives in
+`maestro-session`.
+
+**`maestro-agent-fork` and `maestro-rule-move` are plugin-only too (`081`).** Each is `require`d by
+exactly one plugin script, `maestro-agent-fork.cjs` and `maestro-rules.cjs`, run from the plugin and
+never copied into a project (`maestro-agent-forks.cjs` is the copied one, which is why `fork` is not a
+subcommand of it). **`maestro-agent-fork` DOES contain `node:sqlite`** (`forkAgent`'s
+`copyAgentAttributeRows`), so its script requires it lazily and turns a failed require into a refusal;
+it must never be imported by `maestro-session` or `maestro-agent-sync`. `maestro-rule-move` has none.
+The owner-run marker (`startOwnerRuns`, `ownerRunFor`, `closeOwnerRuns`, ...) lives in
+`maestro-session`, from `meeting-mode.ts`, and stays `fs`/`path` only.
+
 **`maestro-tasks.cjs` is not generated.** It has no entry in `plugin-entries/` and is hand-maintained
 alongside `src/core/tasks.ts`, kept in sync so a task close from the UI and one from the orchestrator
 cannot disagree about which tasks are ready. Editing `tasks.ts` alone is not enough.
+
+## After rebuilding: refresh the `.claude/scripts/lib` mirrors and run the parity test (`082`)
+
+This repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin libs listed in
+`install.ts`'s `STATIC_ASSETS` (the repo is a Maestro project too). `build:plugin-libs` writes only
+`plugins/maestro/scripts/lib/`, so a rebuild leaves the mirrors stale and `parity.test.ts`'s
+"plugin-lib project mirror parity (066)" fails. After every rebuild:
+
+1. `cp plugins/maestro/scripts/lib/<name>.cjs .claude/scripts/lib/<name>.cjs` for each lib in
+   `STATIC_ASSETS` that changed (and the plugin script copies, e.g. `maestro-task-status.cjs`);
+2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.
+
+**Decision (`082`): the mirrors stay tracked.** Untracking them would leave a fresh clone without a
+working runtime for the repo's own hooks. The cost is a guaranteed merge conflict whenever two task
+branches both rebuild a lib; `maestro-task-status.cjs merge` therefore detects "every conflicting
+file is a generated lib or its mirror" and prints the resolution: resolve `src/core` first, rebuild,
+copy over the mirrors, run the parity test, commit, merge again. Never hand-merge bundle text.
+
+**Worktree path comments.** The bundle's `// <path>` comments must not depend on where the checkout
+lives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, which used to stamp
+`// ../../../maestro/packages/...` and fail the freshness check; `build-plugin-libs.mjs` now aliases
+`@repo/claude-fs` to this checkout's own `packages/` source. A new workspace import in a bundled
+module needs an alias there too.
+
+`maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the
+worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
 
 ## Why the build is so specific
 
@@ -174,7 +223,7 @@ cannot disagree about which tasks are ready. Editing `tasks.ts` alone is not eno
 | File                                           | Role                                                    |
 | ---------------------------------------------- | ------------------------------------------------------- |
 | `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments. |
-| `apps/maestro/src/core/plugin-entries/*.ts`    | The twelve entry points — thin re-exports of `src/core`. |
+| `apps/maestro/src/core/plugin-entries/*.ts`    | The sixteen entry points — thin re-exports of `src/core`. |
 | `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.          |
 | `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.       |
 | `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                             |

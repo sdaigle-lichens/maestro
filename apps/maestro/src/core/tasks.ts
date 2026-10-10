@@ -21,6 +21,8 @@ const STATUS_FILE = "status.json";
 interface StatusEntry {
   status?: TaskStatus;
   blockedBy?: string[];
+  /** The epic this task belongs to (`084`). Owned by `setTaskEpic`; every other writer preserves it. */
+  epic?: string;
 }
 type StatusMap = Record<string, StatusEntry>;
 
@@ -80,7 +82,7 @@ function writeStatusMap(dir: string, statusMap: StatusMap): void {
     ordered[k] = statusMap[k];
   }
   const target = path.join(dir, STATUS_FILE);
-  const tmp = `${target}.tmp`;
+  const tmp = `${target}.${process.pid}.tmp`; // per process, so two writers never share a temp file
   fs.writeFileSync(tmp, `${JSON.stringify(ordered, null, 2)}\n`);
   fs.renameSync(tmp, target);
 }
@@ -109,7 +111,7 @@ function readFileSafe(dir: string, filename: string): string {
  * Recompute the full status map from the files on disk plus an authoritative done-set — the
  * single source of cascade logic. A blocker that no longer exists counts as satisfied.
  */
-function buildStatusMap(dir: string, files: string[], doneSet: Set<string>): StatusMap {
+function buildStatusMap(dir: string, files: string[], doneSet: Set<string>, previous: StatusMap = {}): StatusMap {
   const fileSet = new Set(files);
   const out: StatusMap = {};
   for (const filename of files) {
@@ -121,6 +123,8 @@ function buildStatusMap(dir: string, files: string[], doneSet: Set<string>): Sta
           ? "ready"
           : "blocked",
       blockedBy,
+      // `084`: the tracker owns `epic`, the markdown never does, so a rebuild keeps what was linked.
+      ...(previous[filename]?.epic ? { epic: previous[filename].epic } : {}),
     };
   }
   return out;
@@ -155,6 +159,7 @@ function tasksFromFiles(
       status,
       content,
       claim: claims.get(filename) ?? null,
+      ...(entry?.epic ? { epic: entry.epic } : {}),
     };
   });
 }
@@ -186,10 +191,60 @@ export function closeTask(projectRoot: string, filename: string): MaestroTask[] 
 
   const doneSet = new Set(files.filter((f) => existingStatus[f]?.status === "done"));
   doneSet.add(base);
-  const statusMap = buildStatusMap(dir, files, doneSet);
+  const statusMap = buildStatusMap(dir, files, doneSet, existingStatus);
   writeStatusMap(dir, statusMap);
   deleteClaimIfAny(dir, base);
   return tasksFromFiles(dir, files, statusMap, readClaims(projectRoot, dir));
+}
+
+export interface SetEpicResult {
+  /** Tasks whose entry now carries (or no longer carries) the epic. */
+  changed: string[];
+  /** Names with no task file. Reported, never invented as tracker entries; any of them aborts the write. */
+  missing: string[];
+}
+
+/**
+ * Link (`epic` = a slug) or unlink (`epic` = null) tasks in the tracker (`084`). The tracker is the
+ * ONLY place a task's epic lives. Reads status.json immediately before writing and touches nothing
+ * but the named entries' `epic`, so a concurrent writer's entries and statuses survive. A task
+ * file missing from the tracker is derived first, the way `sync` would.
+ */
+export function setTaskEpic(projectRoot: string, filenames: string[], epic: string | null): SetEpicResult {
+  const dir = tasksDirFor(projectRoot);
+  const files = new Set(listTaskFiles(dir));
+  const map = readStatusMap(dir);
+  const changed: string[] = [];
+  const missing: string[] = [];
+  for (const raw of filenames) {
+    const name = path.basename(raw);
+    if (!files.has(name)) {
+      missing.push(name);
+      continue;
+    }
+    const entry: StatusEntry = map[name] ?? buildStatusMap(dir, [name], new Set())[name];
+    if (epic) entry.epic = epic;
+    else delete entry.epic;
+    map[name] = entry;
+    changed.push(name);
+  }
+  // All or nothing: one unknown name means the caller mistyped, so nothing is written.
+  if (missing.length) return { changed: [], missing };
+  if (changed.length) writeStatusMap(dir, map);
+  return { changed, missing };
+}
+
+export interface TrackerEntry {
+  status: TaskStatus | undefined;
+  epic: string | undefined;
+}
+
+/** The tracker as the epic module needs it (status and epic per task filename), read fresh. */
+export function readTaskTracker(projectRoot: string): Record<string, TrackerEntry> {
+  const map = readStatusMap(tasksDirFor(projectRoot));
+  const out: Record<string, TrackerEntry> = {};
+  for (const [name, entry] of Object.entries(map)) out[name] = { status: entry?.status, epic: entry?.epic };
+  return out;
 }
 
 const POSTMORTEMS_LOG = "postmortems.log";
@@ -224,7 +279,7 @@ export function deleteTask(projectRoot: string, filename: string): MaestroTask[]
 
   const remainingFiles = files.filter((f) => f !== base);
   const doneSet = new Set(remainingFiles.filter((f) => existingStatus[f]?.status === "done"));
-  const statusMap = buildStatusMap(dir, remainingFiles, doneSet);
+  const statusMap = buildStatusMap(dir, remainingFiles, doneSet, existingStatus);
   writeStatusMap(dir, statusMap);
   return tasksFromFiles(dir, remainingFiles, statusMap, readClaims(projectRoot, dir));
 }

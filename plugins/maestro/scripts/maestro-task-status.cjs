@@ -20,6 +20,16 @@
 //       the orchestrator marks exactly the task it started without re-deriving
 //       the filename — and never the task a CONCURRENT session started.
 //
+//   node maestro-task-status.cjs plan <step>... | plan-step <step> <done|pending> | plan-show (`083`)
+//       The orchestrator's success-path tracker for when TaskCreate is unavailable: the planned steps
+//       (agent steps, human review, the loop-backs that reset them) and their progress live in THIS
+//       session's session.json. `done` REFUSES while a recorded plan has an unfinished step, so
+//       mark-task-done still runs only after every prior step, including human review.
+//
+//   node maestro-task-status.cjs handoff-issues (`083`)
+//       Prints, then clears, the handoff problems the SubagentStop hook recorded (a missing HANDOFF
+//       line, or a FAIL verdict ending HANDOFF: success) so the orchestrator routes deliberately.
+//
 //   node maestro-task-status.cjs claim <filename>
 //       Claim a task for THIS session, so a concurrent session picking "the
 //       next ready task" at the same moment can't take the same one (`066`).
@@ -29,6 +39,11 @@
 //       maestro_sessions/<id>/log.jsonl) or away (its directory deleted by a
 //       clean SessionEnd) is reaped automatically before the attempt, so a
 //       crashed session's claim never blocks a fresh one.
+//
+//       `--name <session name>` (`084`) records the claiming session's NAME beside its id, because
+//       cross-session messages are addressed by name and the id is all a hook can learn. The
+//       orchestrator reads its name from the agent listing. A claim without it works and shows as
+//       unnamed. `maestro-epic.cjs show` lists each running task with that name.
 //
 //   node maestro-task-status.cjs release [filename]
 //       Release THIS session's own claim on a task. Never removes a claim held
@@ -50,7 +65,9 @@
 //       worktree has uncommitted changes, the branch has no worktree, the main checkout is mid-merge or
 //       on a detached HEAD, or the merge would overwrite local changes. On a CONFLICT it aborts the
 //       merge (main goes back to how it was), keeps the worktree and branch, and lists the conflicting
-//       files. Never pushes. No pull-request mode: the branch is an ordinary local branch the user
+//       files — and, when ALL of them are generated plugin libs or their .claude/scripts/lib mirrors
+//       (`082`), names the mechanical resolution: rebuild the libs, copy each over its mirror.
+//       Never pushes. No pull-request mode: the branch is an ordinary local branch the user
 //       can `git push` themselves (see .claude/skills/task-queue, "Finishing a worktree task").
 //
 // All cascade/status logic lives in lib/maestro-tasks.cjs so the app and the
@@ -79,6 +96,15 @@ const {
 // project dir — so claims and session pointers resolve the same for every session.
 const projectDir = mainCheckoutRoot(process.env.CLAUDE_PROJECT_DIR || process.cwd());
 const [command, arg] = process.argv.slice(2);
+
+// `084`: `claim <filename> --name <session name>`. The orchestrator learns its session's name from
+// the agent listing (hooks never have it) and records it so a manager can message the session
+// running a task. Absent or empty means an unnamed claim, which works exactly as before.
+function flagValue(flag) {
+  const args = process.argv.slice(2);
+  const i = args.indexOf(flag);
+  return i !== -1 && typeof args[i + 1] === "string" && args[i + 1].trim() ? args[i + 1].trim() : null;
+}
 
 // Fall back to the task recorded by maestro-set-session-workflow.cjs (--task) so
 // the orchestrator can run `done`/`release` with no argument and act on exactly
@@ -171,7 +197,7 @@ function isSessionLive(sessionId, now) {
 // Claim `filename` for `sessionId`. Reaps a dead claim on this file first, then attempts an
 // exclusive ("wx") create. Returns { outcome: "claimed" } or
 // { outcome: "already-claimed", claim: { sessionId, claimedAt } } — EEXIST is never an error.
-function claimTask(filename, sessionId, now) {
+function claimTask(filename, sessionId, now, sessionName) {
   const base = path.basename(filename);
   ensureClaimsDir();
   const filePath = claimPathFor(base);
@@ -179,7 +205,10 @@ function claimTask(filename, sessionId, now) {
   const existing = readClaimFile(filePath);
   if (existing) {
     if (isSessionLive(existing.session_id, now)) {
-      return { outcome: "already-claimed", claim: { sessionId: existing.session_id, claimedAt: existing.claimed_at } };
+      return {
+        outcome: "already-claimed",
+        claim: { sessionId: existing.session_id, claimedAt: existing.claimed_at, sessionName: existing.session_name },
+      };
     }
     try {
       fs.rmSync(filePath, { force: true });
@@ -189,6 +218,7 @@ function claimTask(filename, sessionId, now) {
   }
 
   const payload = { session_id: sessionId, claimed_at: new Date(now).toISOString(), project_root: projectDir };
+  if (sessionName) payload.session_name = sessionName; // `084`
   try {
     fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, { flag: "wx" });
     return { outcome: "claimed" };
@@ -196,7 +226,10 @@ function claimTask(filename, sessionId, now) {
     if (err.code !== "EEXIST") throw err;
     const winner = readClaimFile(filePath);
     if (!winner) return { outcome: "claimed" }; // winner released/reaped between our EEXIST and this read
-    return { outcome: "already-claimed", claim: { sessionId: winner.session_id, claimedAt: winner.claimed_at } };
+    return {
+      outcome: "already-claimed",
+      claim: { sessionId: winner.session_id, claimedAt: winner.claimed_at, sessionName: winner.session_name },
+    };
   }
 }
 
@@ -392,9 +425,104 @@ function resolveTaskName(arg) {
   return { filename: base, status: map[base] ? map[base].status : null };
 }
 
-function refuse(message) {
-  process.stdout.write(`Maestro tasks: merge REFUSED — ${message}. Nothing was merged, pushed or removed.\n`);
+function refuse(message, extra) {
+  process.stdout.write(
+    `Maestro tasks: merge REFUSED — ${message}. Nothing was merged, pushed or removed.\n${extra ? extra + "\n" : ""}`
+  );
   process.exit(1);
+}
+
+// `083`: a worktree task ends uncommitted (no workflow step owns the commit), so the first `merge`
+// always meets a dirty worktree. Name the exact commit to make, so the refusal is actionable: the
+// worktree path and a suggested message built from the task's own title. Only the USER approves it.
+function shellQuote(s) {
+  return `'${String(s).replace(/'/g, `'\\''`)}'`;
+}
+
+function taskTitle(filename) {
+  try {
+    const text = fs.readFileSync(path.join(tasksDir(projectDir), filename), "utf8");
+    const m = /^#\s+(.+)$/m.exec(text);
+    if (m) return m[1].trim();
+  } catch {
+    // no readable task file — fall back to the filename
+  }
+  return filename.replace(/\.md$/, "");
+}
+
+function commitSuggestion(filename, branch, wtPath, excludeMaestroJson) {
+  const num = (/^(\d+)-/.exec(filename) || [])[1] || branch;
+  const message = `${taskTitle(filename)} (task ${num})`;
+  const pathspec = excludeMaestroJson ? ` -- . ${shellQuote(":!.claude/maestro.json")}` : "";
+  return (
+    `Suggested commit (run it only once the user has approved the message):\n` +
+    `  worktree: ${wtPath}\n` +
+    `  message:  ${message}\n` +
+    `  command:  git -C ${shellQuote(wtPath)} add -A${pathspec} && git -C ${shellQuote(wtPath)} commit -m ${shellQuote(message)}\n` +
+    `Then ask for the merge again. Never commit without the user's approval.`
+  );
+}
+
+// `083`: untracked files in the MAIN checkout whose path the task branch also carries — git would
+// refuse the merge ("untracked working tree files would be overwritten"). Each is reported as
+// byte-identical to the branch's copy (safe to delete) or different (needs a look).
+function collidingUntracked(branch) {
+  const tree = gitTry(projectDir, ["ls-tree", "-r", "-z", "--name-only", branch]);
+  const untracked = gitTry(projectDir, ["ls-files", "--others", "--exclude-standard", "-z"]);
+  if (!tree.ok || !untracked.ok) return [];
+  const onBranch = new Set(tree.out.split("\0").filter(Boolean));
+  const hits = [];
+  for (const rel of untracked.out.split("\0").filter(Boolean)) {
+    if (!onBranch.has(rel)) continue;
+    let identical = false;
+    try {
+      const local = path.join(projectDir, rel);
+      if (fs.lstatSync(local).isFile()) {
+        const theirs = execFileSync("git", ["show", `${branch}:${rel}`], {
+          cwd: projectDir,
+          maxBuffer: 256 * 1024 * 1024,
+          stdio: ["ignore", "pipe", "ignore"],
+        });
+        identical = fs.readFileSync(local).equals(theirs);
+      }
+    } catch {
+      identical = false;
+    }
+    hits.push({ rel, identical });
+  }
+  return hits;
+}
+
+// `083`: the sandbox denies writes under some main-checkout paths (e.g. .claude/skills), so a merge
+// the orchestrator runs can die mid-checkout. Recognisable output, and the exact command for the user.
+// Matches git's own "unable to unlink old '<path>': Operation not permitted" family, not any stray
+// "Operation not permitted" (a sandboxed git also prints one about its xcrun cache on a plain conflict).
+const SANDBOX_DENIAL = /unable to (?:unlink|create file|write|remove|create directory)[^\n]*(?:Operation not permitted|Permission denied|Read-only file system)/i;
+
+// `082`: a conflict in a GENERATED plugin lib (plugins/maestro/scripts/lib/*.cjs, except the
+// hand-maintained maestro-tasks.cjs) or in this repo's tracked MIRROR of one
+// (.claude/scripts/lib/*.cjs) is never resolved by hand-merging the bundle text. Two tasks that both
+// rebuilt the same lib always collide there. The fix is mechanical: resolve the TypeScript source
+// conflicts first, rebuild the plugin libs, then copy each plugin lib over its mirror.
+function generatedLibResolution(conflicts) {
+  const kinds = conflicts.map((f) => {
+    const m = /^(plugins\/maestro|\.claude)\/scripts\/lib\/([^/]+\.cjs)$/.exec(f);
+    if (!m || m[2] === "maestro-tasks.cjs") return null;
+    return { file: f, name: m[2], mirror: m[1] === ".claude" };
+  });
+  if (!conflicts.length || kinds.some((k) => k === null)) return null;
+  const mirrors = kinds.filter((k) => k.mirror);
+  return (
+    "Every conflicting file is a generated plugin lib or its tracked mirror, so do NOT edit the bundle text. Resolve like this in the worktree:\n" +
+    "  1. resolve any conflict in apps/maestro/src/core/** first (none listed here means the sources merged cleanly);\n" +
+    "  2. rebuild the libs: `pnpm --filter maestro build:plugin-libs`;\n" +
+    (mirrors.length
+      ? "  3. copy each plugin lib over its mirror: " +
+        mirrors.map((k) => `\`cp plugins/maestro/scripts/lib/${k.name} .claude/scripts/lib/${k.name}\``).join(", ") +
+        ";\n"
+      : "  3. (no mirror conflicted, but copy any changed lib over its .claude/scripts/lib/ mirror anyway);\n") +
+    "  4. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
+  );
 }
 
 function mergeWorktreeTask(arg) {
@@ -415,7 +543,10 @@ function mergeWorktreeTask(arg) {
   if (!dirty.ok) refuse(`could not read the worktree ${wtPath} (${dirty.err})`);
   const dirtyLines = dirty.out.split("\n").filter((l) => l && l !== "?? .claude/maestro.json" && l !== "?? .claude/");
   if (dirtyLines.length) {
-    refuse(`worktree ${wtPath} has uncommitted changes (${dirtyLines.length} path(s), e.g. ${dirtyLines[0].trim()}) — commit or discard them first`);
+    refuse(
+      `worktree ${wtPath} has uncommitted changes (${dirtyLines.length} path(s), e.g. ${dirtyLines[0].trim()}) — commit or discard them first`,
+      commitSuggestion(filename, branch, wtPath, dirty.out.split("\n").includes("?? .claude/maestro.json"))
+    );
   }
 
   const base = gitTry(projectDir, ["symbolic-ref", "--short", "-q", "HEAD"]);
@@ -424,8 +555,31 @@ function mergeWorktreeTask(arg) {
     refuse(`the main checkout (${projectDir}) is in the middle of a merge — finish or abort it first`);
   }
 
+  const colliding = collidingUntracked(branch);
+  if (colliding.length) {
+    refuse(
+      `${colliding.length} untracked file(s) in the main checkout (${projectDir}) would be overwritten by the merge`,
+      colliding
+        .map((c) =>
+          c.identical
+            ? `  ${c.rel} — identical to ${branch}'s copy (safe to delete)`
+            : `  ${c.rel} — DIFFERENT from ${branch}'s copy (needs a look before deleting)`
+        )
+        .join("\n") + "\nDelete or move each one (the user decides), then ask for the merge again."
+    );
+  }
+
   const merged = gitTry(projectDir, ["merge", "--no-ff", "-m", `Merge ${branch} (${filename})`, branch]);
   if (!merged.ok) {
+    if (SANDBOX_DENIAL.test(`${merged.err}\n${merged.out}`)) {
+      if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok) gitTry(projectDir, ["merge", "--abort"]);
+      process.stdout.write(
+        `Maestro tasks: merge SANDBOX-BLOCKED — git could not write into the main checkout (${merged.err.split("\n")[0] || "write denied"}). ` +
+          `Do NOT retry it from this session. Check \`git -C ${shellQuote(projectDir)} status\` for a half-applied merge, then ask the user to run:\n` +
+          `  ! CLAUDE_PROJECT_DIR=${shellQuote(projectDir)} node ${shellQuote(__filename)} merge ${shellQuote(filename)}\n`
+      );
+      process.exit(1);
+    }
     const conflicts = gitTry(projectDir, ["diff", "--name-only", "--diff-filter=U"]).out.split("\n").filter(Boolean);
     const mergeStarted = gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok;
     if (mergeStarted) gitTry(projectDir, ["merge", "--abort"]);
@@ -433,7 +587,8 @@ function mergeWorktreeTask(arg) {
       process.stdout.write(
         `Maestro tasks: merge CONFLICT merging ${branch} into ${base.out}. The merge was aborted; ${base.out} is unchanged, and the worktree (${wtPath}) and branch ${branch} are intact.\n` +
           `Conflicting files:\n${conflicts.map((f) => `  ${f}`).join("\n")}\n` +
-          `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again. Do NOT resolve them for the user without asking.\n`
+          `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again. Do NOT resolve them for the user without asking.\n` +
+          (generatedLibResolution(conflicts) || "")
       );
     } else {
       process.stdout.write(
@@ -481,6 +636,138 @@ function dropPointersTo(wtPath) {
   }
 }
 
+// ── the success-path tracker (`083`) ────────────────────────────────────────
+// TaskCreate has repeatedly been unavailable in orchestrator sessions, and Step 3 plus the
+// mark-task-done node both assumed it. With no task graph the orchestrator tracked the path from
+// memory — and dropped human review or the final `done`. This is the fallback: the planned path
+// and its progress live in THIS session's session.json under `plan`, updated through these
+// commands, and `done` refuses while any planned step is still pending (so mark-task-done still
+// runs only after every prior step, including human review). A session that never recorded a plan
+// (TaskCreate worked) is not affected.
+
+function sessionStateFile() {
+  const sess = resolveSessionPaths(path.join(projectDir, ".claude"));
+  return sess ? sess.state : null;
+}
+
+function readSessionState(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8")) || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeSessionState(file, state) {
+  const tmp = file + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  fs.renameSync(tmp, file);
+}
+
+// The recorded plan, or null when there is none (or no resolvable session).
+function readPlan() {
+  const file = sessionStateFile();
+  if (!file) return null;
+  const plan = readSessionState(file).plan;
+  return plan && Array.isArray(plan.steps) && plan.steps.length ? plan : null;
+}
+
+function renderPlan(plan) {
+  const next = plan.steps.findIndex((s) => s.status !== "done");
+  const lines = plan.steps.map((s, i) => `  ${i + 1}. [${s.status === "done" ? "x" : " "}] ${s.label}${i === next ? "   <- next" : ""}`);
+  return (
+    lines.join("\n") +
+    "\n" +
+    (next === -1
+      ? "Every planned step is done — you may run `done` (mark-task-done)."
+      : `Not finished: ${plan.steps.filter((s) => s.status !== "done").length} step(s) pending — \`done\` will refuse until they are done.`)
+  );
+}
+
+function requireSessionFile(what) {
+  const file = sessionStateFile();
+  if (!file) {
+    process.stderr.write(`maestro-task-status: no resolvable session id — cannot ${what}\n`);
+    process.exit(1);
+  }
+  return file;
+}
+
+function planCommand(labels) {
+  if (!labels.length) {
+    process.stderr.write('maestro-task-status: "plan" needs the success-path step labels, in order (e.g. plan "@backend" "human review" "@scribe")\n');
+    process.exit(1);
+  }
+  const file = requireSessionFile("record a plan");
+  const state = readSessionState(file);
+  state.plan = { steps: labels.map((label) => ({ label, status: "pending" })), updated_at: new Date().toISOString() };
+  writeSessionState(file, state);
+  process.stdout.write(`Maestro plan: recorded ${labels.length} step(s).\n${renderPlan(state.plan)}\n`);
+}
+
+// done: mark the FIRST pending step with that label done. pending: a loop-back — reset the LAST done
+// step with that label AND every step after it, because everything downstream has to run again.
+function planStepCommand(label, status) {
+  if (!label || (status !== "done" && status !== "pending")) {
+    process.stderr.write('maestro-task-status: usage: plan-step "<label>" <done|pending>\n');
+    process.exit(1);
+  }
+  const file = requireSessionFile("update the plan");
+  const state = readSessionState(file);
+  const plan = state.plan;
+  if (!plan || !Array.isArray(plan.steps) || !plan.steps.length) {
+    process.stderr.write('maestro-task-status: no plan recorded for this session — run `plan "<step>" ...` first\n');
+    process.exit(1);
+  }
+  let index = -1;
+  if (status === "done") index = plan.steps.findIndex((s) => s.label === label && s.status !== "done");
+  else {
+    for (let i = plan.steps.length - 1; i >= 0; i--) {
+      if (plan.steps[i].label === label) {
+        index = i;
+        break;
+      }
+    }
+  }
+  if (index === -1) {
+    process.stderr.write(
+      `maestro-task-status: no ${status === "done" ? "pending " : ""}plan step labelled "${label}" — steps are: ${plan.steps.map((s) => `"${s.label}"`).join(", ")}\n`
+    );
+    process.exit(1);
+  }
+  if (status === "done") plan.steps[index].status = "done";
+  else for (let i = index; i < plan.steps.length; i++) plan.steps[i].status = "pending";
+  plan.updated_at = new Date().toISOString();
+  writeSessionState(file, state);
+  process.stdout.write(`Maestro plan: "${label}" -> ${status}.\n${renderPlan(plan)}\n`);
+}
+
+function planShowCommand() {
+  const plan = readPlan();
+  process.stdout.write(plan ? `Maestro plan:\n${renderPlan(plan)}\n` : "Maestro plan: none recorded for this session.\n");
+}
+
+// Read-and-clear the handoff problems the SubagentStop hook recorded since the orchestrator last asked.
+function handoffIssuesCommand() {
+  const file = sessionStateFile();
+  const state = file ? readSessionState(file) : {};
+  const issues = Array.isArray(state.handoff_issues) ? state.handoff_issues : [];
+  if (!issues.length) {
+    process.stdout.write("Maestro handoffs: no problems recorded.\n");
+    return;
+  }
+  const lines = issues.map(
+    (i) =>
+      `  - ${i.agent}: ${i.kind === "missing" ? "NO HANDOFF line" : "verdict FAIL but HANDOFF: success"}` +
+      `${i.verdict ? ` (verdict ${i.verdict})` : ""}. ${i.message}`
+  );
+  delete state.handoff_issues;
+  writeSessionState(file, state);
+  process.stdout.write(
+    `Maestro handoffs: ${issues.length} problem(s) — route deliberately, never default to success:\n${lines.join("\n")}\n`
+  );
+}
+
 function counts(map) {
   const c = { done: 0, ready: 0, blocked: 0 };
   for (const k of Object.keys(map)) {
@@ -512,6 +799,16 @@ try {
       process.exit(1);
     }
     const filename = path.basename(target); // tolerate a path; key on the bare filename
+    const plan = readPlan();
+    const pending = plan ? plan.steps.filter((s) => s.status !== "done") : [];
+    if (pending.length) {
+      process.stdout.write(
+        `Maestro tasks: done REFUSED — the recorded plan still has ${pending.length} unfinished step(s) ` +
+          `(${pending.map((s) => `"${s.label}"`).join(", ")}). Nothing was marked done. Finish them — a human review stops for the user's approval — ` +
+          'and mark each one with `plan-step "<label>" done`, then run `done` again.\n'
+      );
+      process.exit(1);
+    }
     const { map, marked } = markDone(projectDir, filename);
     if (!marked) {
       process.stderr.write(
@@ -521,6 +818,26 @@ try {
     }
     deleteClaimIfAny(filename); // `066`: a done task has nothing left for a claim to protect
     process.stdout.write(`Maestro tasks: marked "${filename}" done — ${summary(map)}\n`);
+    process.exit(0);
+  }
+
+  if (command === "plan") {
+    planCommand(process.argv.slice(3));
+    process.exit(0);
+  }
+
+  if (command === "plan-step") {
+    planStepCommand(process.argv[3], process.argv[4]);
+    process.exit(0);
+  }
+
+  if (command === "plan-show") {
+    planShowCommand();
+    process.exit(0);
+  }
+
+  if (command === "handoff-issues") {
+    handoffIssuesCommand();
     process.exit(0);
   }
 
@@ -536,13 +853,19 @@ try {
       process.exit(1);
     }
     const filename = path.basename(target);
-    const result = claimTask(filename, sessionId, Date.now());
+    const sessionName = flagValue("--name");
+    const result = claimTask(filename, sessionId, Date.now(), sessionName);
     if (result.outcome === "claimed") {
-      process.stdout.write(`Maestro tasks: claimed "${filename}" for session ${sessionId}\n`);
+      process.stdout.write(
+        `Maestro tasks: claimed "${filename}" for session ${sessionId}` +
+          (sessionName ? ` (named "${sessionName}")` : " (unnamed)") +
+          "\n"
+      );
       process.exit(0);
     }
+    const holder = result.claim.sessionName ? `${result.claim.sessionId}, named "${result.claim.sessionName}"` : result.claim.sessionId;
     process.stdout.write(
-      `Maestro tasks: "${filename}" is already claimed by an active session (${result.claim.sessionId}, since ${result.claim.claimedAt}) — take the next ready task instead\n`
+      `Maestro tasks: "${filename}" is already claimed by an active session (${holder}, since ${result.claim.claimedAt}) — take the next ready task instead\n`
     );
     process.exit(0);
   }
@@ -601,7 +924,7 @@ try {
   }
 
   process.stderr.write(
-    "maestro-task-status: unknown command. Usage:\n  maestro-task-status.cjs sync\n  maestro-task-status.cjs done <filename>\n  maestro-task-status.cjs claim <filename>\n  maestro-task-status.cjs release <filename>\n  maestro-task-status.cjs worktree <filename>\n  maestro-task-status.cjs merge <filename|NNN>\n"
+    "maestro-task-status: unknown command. Usage:\n  maestro-task-status.cjs sync\n  maestro-task-status.cjs done <filename>\n  maestro-task-status.cjs claim <filename>\n  maestro-task-status.cjs release <filename>\n  maestro-task-status.cjs worktree <filename>\n  maestro-task-status.cjs merge <filename|NNN>\n  maestro-task-status.cjs plan <step>...\n  maestro-task-status.cjs plan-step <step> <done|pending>\n  maestro-task-status.cjs plan-show\n  maestro-task-status.cjs handoff-issues\n"
   );
   process.exit(1);
 } catch (err) {

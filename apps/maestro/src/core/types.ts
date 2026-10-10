@@ -123,6 +123,12 @@ export interface MaestroConfigV3 {
    * `resolveUseMaestroTasks` in `config.ts`; `maestro-step4-gate.cjs` mirrors it for the runtime.
    */
   use_maestro_tasks?: boolean;
+  /**
+   * Run-metrics retention (`080`): `recent_runs` is how many finished workflow runs stay as full
+   * records in `.claude/maestro-metrics/metrics.json` before older ones fold into per-workflow and
+   * per-agent totals. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader.
+   */
+  metrics?: { recent_runs?: number };
 }
 
 /**
@@ -233,4 +239,62 @@ export interface MaestroSession {
   workflow: string | null;
   generated_instances: string[];
   run_id?: string | null;
+  /**
+   * Present only while a team meeting runs in this session (`/maestro-team-meeting`). Its
+   * `participants` get meeting-mode treatment from the hooks: no HANDOFF routing, no channel
+   * delivery or stamping, log entries marked `meeting: true`, writes confined to the meeting
+   * directory. Removed by `maestro-team-meeting.cjs end` and by `maestro-set-session-workflow.cjs`.
+   * See `meeting-mode.ts`.
+   */
+  meeting?: MaestroMeetingState | null;
+  /**
+   * Present only while a closed team meeting's approved changes are being applied by owner runs
+   * (`081`). Its `agents` get owner-run treatment from the hooks: their own skills and a notice, but
+   * no HANDOFF routing, payload instructions, channel delivery or stamping, log entries marked
+   * `owner_run: true` (never a resume target). Removed by `maestro-team-meeting.cjs owner-runs-done`
+   * and by `maestro-set-session-workflow.cjs`. See `meeting-mode.ts`.
+   */
+  owner_runs?: MaestroOwnerRunsState | null;
+  /**
+   * Handoff problems the SubagentStop hook detected and the orchestrator has not read yet (`083`):
+   * a workflow agent that ended with no HANDOFF line, or with a FAIL verdict and HANDOFF: success.
+   * Read-and-cleared by `maestro-task-status.cjs handoff-issues`.
+   */
+  handoff_issues?: HandoffIssueRecord[];
+  /** The orchestrator's own success-path tracker, the fallback when TaskCreate is unavailable (`083`). */
+  plan?: SessionPlan | null;
+}
+
+export interface MaestroOwnerRunsState {
+  meeting_id: string;
+  /** BARE agent names whose runs are owner runs. */
+  agents: string[];
+  started_at: string;
+}
+
+export interface HandoffIssueRecord {
+  ts: string;
+  agent: string;
+  agent_id: string;
+  kind: "missing" | "contradiction";
+  verdict: "SUCCESS" | "FAIL" | null;
+  label: string | null;
+  message: string;
+}
+
+export type PlanStepStatus = "pending" | "done";
+
+export interface SessionPlan {
+  steps: { label: string; status: PlanStepStatus }[];
+  updated_at: string;
+}
+
+export interface MaestroMeetingState {
+  id: string;
+  mode: "review" | "post-mortem";
+  /** Absolute path of `<session dir>/meeting/` — informational; the write guard recomputes it. */
+  dir: string;
+  /** BARE agent names that take part. Only these get meeting-mode treatment. */
+  participants: string[];
+  started_at: string;
 }

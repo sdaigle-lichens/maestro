@@ -13,6 +13,17 @@
 // Entries use kind:"dispatch"/"handoff" so the reader can distinguish them from
 // the plain tool-call entries written by maestro-session-log.js.
 // Append-only to the same file so parallel subagents don't race.
+//
+// TEAM MEETINGS: for an agent type listed as a participant of this session's active meeting
+// (apps/maestro/src/core/meeting-mode.ts), both entries carry `meeting: true` — which keeps the run
+// out of `agentRunsFromLog` (no later loop-back resumes a meeting turn) and lets the post-mortem
+// digest label it — and SubagentStop skips the `078` transcript recovery and the channel stamping:
+// a meeting turn has no HANDOFF to recover, and anything it left in a lane must not be delivered
+// into a workflow step as this run's payload.
+//
+// OWNER RUNS (`081`): an agent type listed in session.json's `owner_runs` (set between a closed
+// meeting and the last approved change being applied) gets the same treatment under `owner_run: true`:
+// never a resume target, no recovery, no stamping. Unlike a meeting turn it is not write-confined.
 
 const fs = require("fs");
 const path = require("path");
@@ -27,8 +38,14 @@ const {
   projectOwnsHook,
   ensureSessionRunId,
   writeStamp,
+  meetingLeftovers,
   ensureSessionPaths,
   sendMessageHandoff,
+  meetingFor,
+  checkHandoff,
+  writeSession,
+  ownerRunFor,
+  ownerRunLeftovers,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -98,6 +115,12 @@ function parseHandoff(msg) {
   const agentType = p.agent_type || "";
   const agentId = p.agent_id || "";
   const lastMsg = p.last_assistant_message || null;
+  // A meeting participant's run (null for everyone else, and whenever no meeting runs).
+  const sessionState = readJson(sess.state);
+  const inMeeting = agentType ? !!meetingFor(sessionState, agentType) : false;
+  // An owner run (`081`): a post-meeting run applying an approved change, outside the workflow.
+  const inOwnerRun = !inMeeting && agentType ? !!ownerRunFor(sessionState, agentType) : false;
+  const meetingMark = inMeeting ? { meeting: true } : inOwnerRun ? { owner_run: true } : {};
 
   try {
     if (event === "SubagentStart") {
@@ -112,7 +135,12 @@ function parseHandoff(msg) {
           agent_id: agentId,
           input: lastMsg,
           ...(offered ? { offered_skills: offered } : {}),
-          log: `→ ${agentType}`,
+          ...meetingMark,
+          log: inMeeting
+            ? `→ ${agentType} (meeting)`
+            : inOwnerRun
+              ? `→ ${agentType} (owner run)`
+              : `→ ${agentType}`,
         },
         p
       );
@@ -137,7 +165,7 @@ function parseHandoff(msg) {
         let { status, label } = parseHandoff(handoffMsg);
         // `078`: an agent that hands back through a SendMessage call has no HANDOFF: line in its
         // final message. Recover it from the agent's own transcript so the entry is not `unknown`.
-        if (status === "unknown" && p.agent_transcript_path) {
+        if (!inMeeting && !inOwnerRun && status === "unknown" && p.agent_transcript_path) {
           try {
             const viaSend = sendMessageHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
             if (viaSend) {
@@ -147,6 +175,15 @@ function parseHandoff(msg) {
           } catch {
             // No readable transcript — keep the unknown entry.
           }
+        }
+        // `083`: a workflow agent whose final message has no HANDOFF line, or whose report verdict
+        // is FAIL while the line says success, must not be routed by guesswork. Judge it, log it on
+        // the entry, and record it in session.json where the orchestrator reads it back
+        // (`maestro-task-status.cjs handoff-issues`). Only agents that map to a workflow instance
+        // are judged: a generic Explore/general-purpose subagent never carries a HANDOFF line.
+        let issue = null;
+        if (!inMeeting && !inOwnerRun && offeredSkills(claudeDir, agentType, sess.state)) {
+          issue = checkHandoff(handoffMsg);
         }
         // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
         // thread and every sibling subagent share (only `p.agent_transcript_path` is private to
@@ -162,10 +199,42 @@ function parseHandoff(msg) {
             status,
             label,
             output: handoffMsg,
-            log: label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
+            ...meetingMark,
+            ...(issue
+              ? { handoff_issue: { kind: issue.kind, verdict: issue.verdict, label: issue.label, message: issue.message } }
+              : {}),
+            log: inMeeting
+              ? "meeting turn"
+              : inOwnerRun
+                ? "owner run"
+                : (label ? `HANDOFF: ${label}` : "HANDOFF: (none)") + (issue ? ` [${issue.kind}]` : ""),
           },
           p
         );
+        if (inMeeting || inOwnerRun) process.exit(0);
+
+        if (issue) {
+          try {
+            const session = readSession(sess.state);
+            const pending = Array.isArray(session.handoff_issues) ? session.handoff_issues : [];
+            pending.push({
+              ts: new Date().toISOString(),
+              agent: agentType,
+              agent_id: agentId,
+              kind: issue.kind,
+              verdict: issue.verdict,
+              label: issue.label,
+              message: issue.message,
+            });
+            writeSession(sess.state, { ...session, handoff_issues: pending });
+          } catch {
+            // Best-effort — the log entry above still carries the issue.
+          }
+          // Also visible to the person watching; the orchestrator reads it from session.json.
+          process.stdout.write(
+            JSON.stringify({ systemMessage: `Maestro: ${agentType} handoff problem (${issue.kind}). ${issue.message}` }) + "\n"
+          );
+        }
 
         // `036`: stamp every unstamped channel file THIS agent just wrote, under whichever
         // receiver's lane it landed in, with the run's own id. Only the sender's own SubagentStop
@@ -174,9 +243,17 @@ function parseHandoff(msg) {
         // file this agent was killed before writing (or never wrote) simply isn't found; a file it
         // wrote but the process died before this hook ran stays unstamped, and is treated exactly
         // like a foreign-run file by the receiving agent's SubagentStart.
+        //
+        // Minus a team meeting's leftovers: an unstamped file a participant left in a lane (Bash
+        // writes are invisible to the write guard) is recorded in session.json when the meeting
+        // ends, and stays unstamped while unchanged — the run_id lasts the whole session, so
+        // otherwise this sender's next workflow run would adopt it as its own payload. No meeting
+        // ever held = nothing skipped, the pre-meeting behaviour.
         try {
           const runId = ensureSessionRunId(sess.state);
-          writeStamp(cwd, bareAgentName(agentType), runId);
+          writeStamp(cwd, bareAgentName(agentType), runId, {
+            skip: [...meetingLeftovers(sessionState), ...ownerRunLeftovers(sessionState)],
+          });
         } catch {
           // Best-effort — never fail the agent on a stamping error.
         }
