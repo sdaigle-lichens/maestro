@@ -412,7 +412,8 @@ const MAIN_SESSION_KINDS = new Set([
 export function ownerOf(row: TallyRow): string | null {
   if (row.tier === "blocked" || MAIN_SESSION_KINDS.has(row.kind)) return null;
   if (row.kind === "handoff.edit") return bareAgentName(row.target.slice("handoff:".length).split("/")[0]) || null;
-  if (row.kind === "agent.edit" || row.kind === "agent.tools") return bareAgentName(row.target.slice("agent:".length)) || null;
+  if (row.kind === "agent.edit" || row.kind === "agent.tools")
+    return bareAgentName(row.target.slice("agent:".length)) || null;
   if (row.kind === "report.edit") return bareAgentName(row.target.slice("report:".length)) || null;
   return row.supporters.length === 0 ? row.agent : null;
 }
@@ -580,7 +581,7 @@ export function buildCommonBrief(input: BriefInput): string {
         `| ${k} | ${prefix === "gates" ? "gates" : k === "skill.placement" ? "instance:<instance>#<skill>" : k === "handoff.edit" ? "handoff:<sender>/<receiver>" : `${prefix}<name>`} |`
     ),
     "",
-    "`skill.placement` (add `\"to\": \"loaded\"|\"referenced\"`) and `handoff.edit` (add `\"content\"`: the full new template) " +
+    '`skill.placement` (add `"to": "loaded"|"referenced"`) and `handoff.edit` (add `"content"`: the full new template) ' +
       "are applied automatically; without that field they fall back to approval. Everything else goes to the user for approval. " +
       "Model and effort changes are out of scope for now.",
     "",

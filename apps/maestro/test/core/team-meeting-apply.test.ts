@@ -98,7 +98,9 @@ describe("applyAutoTier", () => {
       ],
     };
     const res = applyAutoTier(CFG, record, { handoffExists: (p) => p === ".claude/handoffs/backend/frontend.md" });
-    expect(res.handoffWrites).toEqual([{ id: "backend-1", path: ".claude/handoffs/backend/frontend.md", content: "NEW" }]);
+    expect(res.handoffWrites).toEqual([
+      { id: "backend-1", path: ".claude/handoffs/backend/frontend.md", content: "NEW" },
+    ]);
     expect(res.skipped.map((s) => s.id)).toEqual(["backend-2", "backend-3", "backend-4"]);
     expect(res.cfg).toBe(CFG);
   });
@@ -220,8 +222,13 @@ describe("maestro-team-meeting.cjs apply-placement", () => {
     expect(cfg.workflow_instances[0].loaded_skills).toEqual([]);
     expect(cfg.workflow_instances[0].referenced_skills).toEqual(["react", "expressjs"]);
     expect(cfg.workflow_instances[1].loaded_skills).toEqual(["react"]);
-    expect({ ...cfg, workflow_instances: null }).toEqual({ ...JSON.parse(JSON.stringify(CFG)), workflow_instances: null });
-    expect(fs.readFileSync(path.join(root, ".claude", "handoffs", "backend", "frontend.md"), "utf8")).toBe("NEW TEMPLATE\n");
+    expect({ ...cfg, workflow_instances: null }).toEqual({
+      ...JSON.parse(JSON.stringify(CFG)),
+      workflow_instances: null,
+    });
+    expect(fs.readFileSync(path.join(root, ".claude", "handoffs", "backend", "frontend.md"), "utf8")).toBe(
+      "NEW TEMPLATE\n"
+    );
   });
 
   it("reads maestro.json at apply time, so an edit made after the tally survives", () => {
@@ -284,10 +291,17 @@ describe("maestro-team-meeting.cjs owner-runs ordering", () => {
 // Extra coverage: conflict skipping on handoffs, no-op writes, the applied.json hand-off.
 
 describe("apply-placement: further edges", () => {
-  const mk = (rows: TallyRow[], conflictTargets: string[] = []): DecisionRecord => ({ meetingId: "m-1", conflictTargets, rows });
+  const mk = (rows: TallyRow[], conflictTargets: string[] = []): DecisionRecord => ({
+    meetingId: "m-1",
+    conflictTargets,
+    rows,
+  });
 
   it("moves a skill referenced to loaded", () => {
-    const res = applyAutoTier(CFG, mk([row("backend-1", "skill.placement", "instance:backend#react", { to: "loaded" })]));
+    const res = applyAutoTier(
+      CFG,
+      mk([row("backend-1", "skill.placement", "instance:backend#react", { to: "loaded" })])
+    );
     expect(res.applied).toEqual(["backend-1"]);
     expect(res.cfg.workflow_instances![0].loaded_skills).toEqual(["expressjs", "react"]);
     expect(res.cfg.workflow_instances![0].referenced_skills).toEqual([]);
@@ -342,7 +356,10 @@ describe("apply-placement: further edges", () => {
   });
 
   it("is idempotent: a second run applies nothing and leaves the config unchanged", () => {
-    const root = project(mk([row("backend-1", "skill.placement", "instance:backend#expressjs", { to: "referenced" })]), false);
+    const root = project(
+      mk([row("backend-1", "skill.placement", "instance:backend#expressjs", { to: "referenced" })]),
+      false
+    );
     cli(root, ["apply-placement"]);
     const once = readCfg(root);
     expect(cli(root, ["apply-placement"]).out.applied).toEqual([]);
@@ -350,7 +367,10 @@ describe("apply-placement: further edges", () => {
   });
 
   it("works after the meeting is closed (reads the persisted tally)", () => {
-    const root = project(mk([row("backend-1", "skill.placement", "instance:backend#expressjs", { to: "referenced" })]), true);
+    const root = project(
+      mk([row("backend-1", "skill.placement", "instance:backend#expressjs", { to: "referenced" })]),
+      true
+    );
     cli(root, ["end"]);
     expect(cli(root, ["apply-placement"]).out.applied).toEqual(["backend-1"]);
   });
@@ -377,7 +397,11 @@ describe("owner-runs: ordering after apply-placement", () => {
   });
 
   it("plans nothing for no approvals and refuses without a tally", () => {
-    const rec: DecisionRecord = { meetingId: "m-1", conflictTargets: [], rows: [row("backend-1", "agent.edit", "agent:backend")] };
+    const rec: DecisionRecord = {
+      meetingId: "m-1",
+      conflictTargets: [],
+      rows: [row("backend-1", "agent.edit", "agent:backend")],
+    };
     const root = project(rec, false);
     expect(cli(root, ["owner-runs", "--approved", ""]).out.runs).toEqual([]);
     fs.rmSync(path.join(root, ".claude", "maestro_sessions", SESSION, "meeting", "decision.json"));
@@ -385,7 +409,11 @@ describe("owner-runs: ordering after apply-placement", () => {
   });
 
   it("refuses while the meeting is open even when nothing is conflicted", () => {
-    const rec: DecisionRecord = { meetingId: "m-1", conflictTargets: [], rows: [row("backend-1", "agent.edit", "agent:backend")] };
+    const rec: DecisionRecord = {
+      meetingId: "m-1",
+      conflictTargets: [],
+      rows: [row("backend-1", "agent.edit", "agent:backend")],
+    };
     expect(cli(project(rec, true), ["owner-runs", "--approved", "backend-1"]).code).toBe(1);
   });
 });

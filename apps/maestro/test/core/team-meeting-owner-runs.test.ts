@@ -302,7 +302,11 @@ describe("owner runs after the fix (081)", () => {
     expect(state.owner_runs).toBeUndefined();
     expect(state.workflow).toBe("build");
     expect(state.owner_run_leftovers).toEqual([
-      expect.objectContaining({ path: expect.stringContaining("test/backend.1.md"), size: expect.any(Number), mtimeMs: expect.any(Number) }),
+      expect.objectContaining({
+        path: expect.stringContaining("test/backend.1.md"),
+        size: expect.any(Number),
+        mtimeMs: expect.any(Number),
+      }),
     ]);
 
     // the recorded leftover is not adopted by a later backend run, which is otherwise normal

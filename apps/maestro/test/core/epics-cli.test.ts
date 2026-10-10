@@ -197,7 +197,9 @@ describe("claim records the session name", () => {
     expect(claim("002-b.md").session_name).toBeUndefined();
 
     const shown = JSON.parse(epic(root, ["show", "e1", "--json"]).stdout);
-    const by = Object.fromEntries(shown.tasks.map((t: { filename: string; running: unknown }) => [t.filename, t.running]));
+    const by = Object.fromEntries(
+      shown.tasks.map((t: { filename: string; running: unknown }) => [t.filename, t.running])
+    );
     expect(by["001-a.md"]).toEqual({ sessionId: SESSION_A, sessionName: "worker-one" });
     expect(by["002-b.md"]).toEqual({ sessionId: SESSION_B, sessionName: null });
     expect(epic(root, ["show", "e1"]).stdout).toContain('running in session "worker-one"');
@@ -221,7 +223,11 @@ describe("the report inbox", () => {
     epic(root, ["create", "e1"]);
     epic(root, ["link", "e1", "001-a.md"]);
 
-    const written = epic(root, ["report", "--task", "001-a.md", "--from", "worker-one"], "Outcome: shipped\nFinding: none\n");
+    const written = epic(
+      root,
+      ["report", "--task", "001-a.md", "--from", "worker-one"],
+      "Outcome: shipped\nFinding: none\n"
+    );
     expect(written.code).toBe(0);
     expect(written.stdout).toContain("No manager session is recorded");
     const file = path.join(root, ".claude", "epics", "e1", "inbox", "r001-001-a.md");
@@ -327,7 +333,9 @@ describe("to-maestro-tasks linking", () => {
 
     const bad = writer(root, [spec, "--epic", "nope"]);
     expect(bad.status).toBe(1);
-    const written = fs.existsSync(tasksDir(root)) ? fs.readdirSync(tasksDir(root)).filter((f) => f.endsWith(".md")) : [];
+    const written = fs.existsSync(tasksDir(root))
+      ? fs.readdirSync(tasksDir(root)).filter((f) => f.endsWith(".md"))
+      : [];
     expect(written).toEqual([]);
 
     const ok = writer(root, [spec, "--epic", "e1"]);

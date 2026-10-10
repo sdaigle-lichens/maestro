@@ -163,13 +163,19 @@ export interface CreateEpicOptions {
 /** Create the epic directory, its EPIC.md and state.json. Refuses an existing epic or a bad slug. */
 export function createEpic(projectRoot: string, slug: string, options: CreateEpicOptions = {}): { dir: string } {
   const dir = epicDirFor(projectRoot, slug);
-  if (!dir) throw new Error(`"${slug}" is not a valid epic name (lowercase letters, digits and dashes, starting with a letter or digit)`);
+  if (!dir)
+    throw new Error(
+      `"${slug}" is not a valid epic name (lowercase letters, digits and dashes, starting with a letter or digit)`
+    );
   if (fs.existsSync(path.join(dir, STATE_FILE))) throw new Error(`epic "${slug}" already exists`);
   fs.mkdirSync(path.join(dir, INBOX_DIR), { recursive: true });
   const goal = options.goal?.trim() || "_State the goal of this epic._";
   const epicMd = path.join(dir, EPIC_FILE);
   if (!fs.existsSync(epicMd)) {
-    fs.writeFileSync(epicMd, `# Epic: ${slug}\n\n## Goal\n\n${goal}\n\n## Scope\n\n_What is in and out of this epic._\n\n## Decisions\n\n_Record decisions here as the manager makes them._\n`);
+    fs.writeFileSync(
+      epicMd,
+      `# Epic: ${slug}\n\n## Goal\n\n${goal}\n\n## Scope\n\n_What is in and out of this epic._\n\n## Decisions\n\n_Record decisions here as the manager makes them._\n`
+    );
   }
   const state: EpicState = {
     slug,
@@ -254,7 +260,8 @@ export function writeReport(projectRoot: string, task: string, body: string, fro
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
   const dir = epicDirFor(projectRoot, slug);
-  if (!dir || !readEpicState(projectRoot, slug)) throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
+  if (!dir || !readEpicState(projectRoot, slug))
+    throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   return updateState(projectRoot, slug, (s) => {
     const used = s.log.filter((e): e is EpicReportEntry => e.kind === "report").map((e) => Number(e.id.slice(1)) || 0);
     const id = `r${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
@@ -269,7 +276,12 @@ export function writeReport(projectRoot: string, task: string, body: string, fro
 }
 
 /** Records an acknowledgement. Idempotent; an unknown report id is an error. */
-export function acknowledgeReport(projectRoot: string, slug: string, id: string, by?: string): "acknowledged" | "already" {
+export function acknowledgeReport(
+  projectRoot: string,
+  slug: string,
+  id: string,
+  by?: string
+): "acknowledged" | "already" {
   return updateState(projectRoot, slug, (s) => {
     if (!s.log.some((e) => e.kind === "report" && e.id === id)) throw new Error(`epic "${slug}" has no report "${id}"`);
     if (s.log.some((e) => e.kind === "ack" && e.id === id)) return "already";
@@ -341,7 +353,9 @@ export function formatEpic(view: EpicView): string {
     `  tasks (${view.tasks.length}):`,
   ];
   for (const t of view.tasks) {
-    const who = t.running ? ` — running in session ${t.running.sessionName ? `"${t.running.sessionName}"` : "(unnamed)"}` : "";
+    const who = t.running
+      ? ` — running in session ${t.running.sessionName ? `"${t.running.sessionName}"` : "(unnamed)"}`
+      : "";
     lines.push(`    ${t.filename}  [${t.status}]${who}`);
   }
   lines.push(`  unacknowledged reports (${view.unacknowledged.length}):`);

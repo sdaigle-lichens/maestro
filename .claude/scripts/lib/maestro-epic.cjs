@@ -379,13 +379,18 @@ function updateState(projectRoot, slug, fn) {
 }
 function createEpic(projectRoot, slug, options = {}) {
   const dir = epicDirFor(projectRoot, slug);
-  if (!dir) throw new Error(`"${slug}" is not a valid epic name (lowercase letters, digits and dashes, starting with a letter or digit)`);
+  if (!dir)
+    throw new Error(
+      `"${slug}" is not a valid epic name (lowercase letters, digits and dashes, starting with a letter or digit)`
+    );
   if (import_node_fs8.default.existsSync(import_node_path6.default.join(dir, STATE_FILE))) throw new Error(`epic "${slug}" already exists`);
   import_node_fs8.default.mkdirSync(import_node_path6.default.join(dir, INBOX_DIR), { recursive: true });
   const goal = options.goal?.trim() || "_State the goal of this epic._";
   const epicMd = import_node_path6.default.join(dir, EPIC_FILE);
   if (!import_node_fs8.default.existsSync(epicMd)) {
-    import_node_fs8.default.writeFileSync(epicMd, `# Epic: ${slug}
+    import_node_fs8.default.writeFileSync(
+      epicMd,
+      `# Epic: ${slug}
 
 ## Goal
 
@@ -398,7 +403,8 @@ _What is in and out of this epic._
 ## Decisions
 
 _Record decisions here as the manager makes them._
-`);
+`
+    );
   }
   const state = {
     slug,
@@ -453,7 +459,8 @@ function writeReport(projectRoot, task, body, from) {
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
   const dir = epicDirFor(projectRoot, slug);
-  if (!dir || !readEpicState(projectRoot, slug)) throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
+  if (!dir || !readEpicState(projectRoot, slug))
+    throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   return updateState(projectRoot, slug, (s) => {
     const used = s.log.filter((e) => e.kind === "report").map((e) => Number(e.id.slice(1)) || 0);
     const id = `r${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;

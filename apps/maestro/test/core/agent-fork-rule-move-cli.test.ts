@@ -19,7 +19,9 @@ import { pinnedEnv } from "../helpers/env.js";
 const PLUGIN_ROOT = findUpPluginRoot(path.dirname(new URL(import.meta.url).pathname))!;
 const SCRIPTS = path.join(PLUGIN_ROOT, "scripts");
 const AGENTS_DIR = path.join(PLUGIN_ROOT, "agents");
-const PLUGIN_VERSION: string = JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), "utf8")).version;
+const PLUGIN_VERSION: string = JSON.parse(
+  fs.readFileSync(path.join(PLUGIN_ROOT, ".claude-plugin", "plugin.json"), "utf8")
+).version;
 const SESSION = "sess-cli-081";
 
 let tmp: string; // HOME + parent of every project
@@ -147,7 +149,11 @@ describe("maestro-rules.cjs", () => {
   it("parity: CLI and core moveRule give the same rules slice and file placement", async () => {
     setupProject(projA);
     setupProject(projB);
-    for (const [to, scopeOnly] of [["pkg/web", false], [".", false], ["pkg", true]] as const) {
+    for (const [to, scopeOnly] of [
+      ["pkg/web", false],
+      [".", false],
+      ["pkg", true],
+    ] as const) {
       const cli = rules(projA, ["move", "style", "--to", to, ...(scopeOnly ? ["--scope-only"] : [])]);
       expect(cli.code, cli.stdout).toBe(0);
       const core = await moveRule(projB, "style", to, { scopeOnly });

@@ -39,8 +39,7 @@ export type RuleMoveResult =
   | { ok: false; reason: string; configWritten?: boolean };
 
 export type RuleUnassignResult =
-  | { ok: true; id: string; warnings: string[] }
-  | { ok: false; reason: string; configWritten?: boolean };
+  { ok: true; id: string; warnings: string[] } | { ok: false; reason: string; configWritten?: boolean };
 
 export interface RuleListEntry {
   id: string;
@@ -77,7 +76,10 @@ export function resolveDestination(
   projectRoot: string,
   raw: string
 ): { ok: true; relDir: string } | { ok: false; reason: string } {
-  let rel = raw.trim().replace(/\\/g, "/").replace(/\/\*\*$/, "");
+  let rel = raw
+    .trim()
+    .replace(/\\/g, "/")
+    .replace(/\/\*\*$/, "");
   rel = rel.replace(/^\.\/+/, "").replace(/\/+$/, "");
   if (rel === "" || rel === ".") return { ok: true, relDir: "" };
   if (path.isAbsolute(rel) || /^[A-Za-z]:/.test(rel)) {
@@ -134,7 +136,9 @@ export function listRules(projectRoot: string): RuleListEntry[] {
       out.push({
         id,
         dir: dirOfRuleFile(projectRoot, file),
-        assignment: a ? { dir: targetDirFor(a), placement: a.placement === "scope-only" ? "scope-only" : "move" } : null,
+        assignment: a
+          ? { dir: targetDirFor(a), placement: a.placement === "scope-only" ? "scope-only" : "move" }
+          : null,
       });
     }
   }
