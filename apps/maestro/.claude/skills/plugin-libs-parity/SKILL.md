@@ -135,6 +135,9 @@ only and every hook already requires this bundle" argument:
   from `channel-write-guard.ts`, backing `maestro-channel-write-guard.js`) and the transcript
   hand-back parser (`lastHandoffLabel`, `sendMessageHandoff`, from `handoff-label.ts`). Still `fs`/`path`
   only; keep the `node:sqlite` grep at `0`.
+- `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,
+  `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by
+  `maestro-team-meeting.cjs`. `fs`/`path` only.
 - team meetings — all of `meeting-mode.ts` (`readMeeting`, `meetingFor`, `startMeeting`,
   `endMeeting`, `closeMeeting`, `meetingLeftovers`, `meetingNotice`, …) and `unstampedFilesOf`, read
   by the SubagentStart/Stop hooks, the write guard and `maestro-set-session-workflow.cjs`.

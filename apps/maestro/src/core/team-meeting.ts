@@ -315,6 +315,8 @@ export interface BriefInput {
     digest: string | null;
     postmortemsLog: string | null;
     taskPostMortems: Array<{ file: string; text: string }>;
+    /** `080`: markdown from `renderMetricsDigest` — recent runs as detail, totals as trends. */
+    metrics?: string | null;
   };
 }
 
@@ -423,13 +425,16 @@ export function buildCommonBrief(input: BriefInput): string {
   L.push("", "## Evidence", "");
   const ev = input.evidence;
   if (ev.digest) L.push("### This session's digest", "", ev.digest.trim(), "");
+  if (ev.metrics) {
+    L.push("### Run metrics across sessions (.claude/maestro-metrics/metrics.json)", "", ev.metrics.trim(), "");
+  }
   if (ev.taskPostMortems.length > 0) {
     L.push("### Post-Mortem sections of open tasks", "");
     for (const t of ev.taskPostMortems) L.push(`From \`${t.file}\`:`, "", t.text.trim(), "");
   }
   if (ev.postmortemsLog)
     L.push("### postmortems.log (latest)", "", clipTail(ev.postmortemsLog.trim(), EVIDENCE_CLIP), "");
-  if (!ev.digest && ev.taskPostMortems.length === 0 && !ev.postmortemsLog) {
+  if (!ev.digest && !ev.metrics && ev.taskPostMortems.length === 0 && !ev.postmortemsLog) {
     L.push("_No recorded evidence — base proposals on the configuration and files themselves._");
   }
   return L.join("\n");

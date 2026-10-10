@@ -189,6 +189,8 @@ function ensureRepoRootGitignore(repoRoot) {
     // rules. `ensureClaimsDir()`'s own `*` .gitignore, written into the directory as it's created,
     // is the mechanism for a project installed before this line existed.
     "**/.claude/maestro-tasks/claims/",
+    // `080`: durable run metrics; recordRun also writes its own `*` .gitignore into the directory.
+    "**/.claude/maestro-metrics/",
   ]);
 }
 

@@ -501,6 +501,9 @@ const GITIGNORE_ENTRIES = [
   // maestro-tasks/ (user-authored, committed content) rather than directly under .claude/, so it
   // needs its own line here rather than reusing that directory's ignore rules.
   "**/.claude/maestro-tasks/claims/",
+  // `080`: the durable run-metrics directory. recordRun also writes a `*` .gitignore into it, which is
+  // the mechanism for a project installed before this line existed.
+  "**/.claude/maestro-metrics/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */

@@ -123,6 +123,12 @@ export interface MaestroConfigV3 {
    * `resolveUseMaestroTasks` in `config.ts`; `maestro-step4-gate.cjs` mirrors it for the runtime.
    */
   use_maestro_tasks?: boolean;
+  /**
+   * Run-metrics retention (`080`): `recent_runs` is how many finished workflow runs stay as full
+   * records in `.claude/maestro-metrics/metrics.json` before older ones fold into per-workflow and
+   * per-agent totals. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader.
+   */
+  metrics?: { recent_runs?: number };
 }
 
 /**

@@ -43,6 +43,13 @@ directory plus `meeting`, with the `<id>` segment unchanged. A `meeting` entry t
 session directory symlinked to another session's, is refused rather than followed. The guard fails
 closed for a participant, like it does for reviewer/refactor.
 
+## Evidence includes cross-session metrics (`080`)
+
+`maestro-team-meeting.cjs brief` adds the durable run-metrics file (`.claude/maestro-metrics/`, see
+`session-state.md`) to the evidence beside the session digest: recent full runs as detail, folded
+totals per workflow and agent as trends, so a proposal can cite numbers across sessions. A session
+that held a meeting is itself recorded with `team_meeting: true`.
+
 ## Ending a meeting
 
 Two paths, both through `closeMeeting`:

@@ -36,7 +36,12 @@ __export(maestro_session_exports, {
   CHANNEL_AGE_CAP_MS: () => CHANNEL_AGE_CAP_MS,
   CHANNEL_ONLY_AGENTS: () => CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
+  DEFAULT_RECENT_RUNS: () => DEFAULT_RECENT_RUNS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
+  MEETING_DIR_NAME: () => MEETING_DIR_NAME,
+  MEETING_LEFTOVERS_KEY: () => MEETING_LEFTOVERS_KEY,
+  METRICS_DIR_NAME: () => METRICS_DIR_NAME,
+  METRICS_FILE_NAME: () => METRICS_FILE_NAME,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
   RESUMABLE_END_REASONS: () => RESUMABLE_END_REASONS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
@@ -50,14 +55,19 @@ __export(maestro_session_exports, {
   agentRunsFromLog: () => agentRunsFromLog,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
+  buildRunRecord: () => buildRunRecord,
   channelDir: () => channelDir,
   checkChannelWrite: () => checkChannelWrite,
+  closeMeeting: () => closeMeeting,
   collectAgentSkills: () => collectAgentSkills,
+  compactMetrics: () => compact,
   duplicateAgentTypes: () => duplicateAgentTypes,
+  endMeeting: () => endMeeting,
   endSessionState: () => endSessionState,
   ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
   ensureSessionsRoot: () => ensureSessionsRoot,
+  foldRun: () => foldRun,
   formatStampedContent: () => formatStampedContent,
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
@@ -74,15 +84,27 @@ __export(maestro_session_exports, {
   lastHandoffLabel: () => lastHandoffLabel,
   listSessionIds: () => listSessionIds,
   mainCheckoutRoot: () => mainCheckoutRoot,
+  meetingDirFor: () => meetingDirFor,
+  meetingFor: () => meetingFor,
+  meetingLeftovers: () => meetingLeftovers,
+  meetingNotice: () => meetingNotice,
+  metricsDirFor: () => metricsDirFor,
+  metricsFileFor: () => metricsFileFor,
   nodeLabel: () => nodeLabel,
   parseStampedContent: () => parseStampedContent,
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readLane: () => readLane,
+  readMeeting: () => readMeeting,
+  readMetrics: () => readMetrics,
   readSession: () => readSession,
   readStdin: () => readStdin,
   readWorktreePointer: () => readWorktreePointer,
+  recentRunsLimit: () => recentRunsLimit,
+  recordRun: () => recordRun,
+  recordSessionRun: () => recordSessionRun,
   removeSessionState: () => removeSessionState,
+  renderMetricsDigest: () => renderMetricsDigest,
   resolveHandoff: () => resolveHandoff,
   resolveProjectSkillPath: () => resolveProjectSkillPath,
   resolveSearchList: () => resolveSearchList,
@@ -98,11 +120,14 @@ __export(maestro_session_exports, {
   sessionPathsFor: () => sessionPathsFor,
   sessionsRoot: () => sessionsRoot,
   splitHandoffId: () => splitHandoffId,
+  startMeeting: () => startMeeting,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
   taskNumber: () => taskNumber,
+  unstampedFilesOf: () => unstampedFilesOf,
   validateConfig: () => validateConfig,
   walkProjectSkillIds: () => walkProjectSkillIds,
+  withoutMeeting: () => withoutMeeting,
   workflowNodeLabels: () => workflowNodeLabels,
   worktreeBranchFor: () => worktreeBranchFor,
   worktreePathFor: () => worktreePathFor,
@@ -525,8 +550,9 @@ function listFiles(dir) {
     return [];
   }
 }
-function writeStamp(projectDir, sender, runId) {
+function writeStamp(projectDir, sender, runId, opts = {}) {
   const stamped = [];
+  const skip = new Map((opts.skip ?? []).map((m) => [m.path, m]));
   for (const receiver of listDirs(channelsRoot(projectDir))) {
     const dir = channelDir(projectDir, receiver);
     for (const fileName of listFiles(dir)) {
@@ -534,6 +560,11 @@ function writeStamp(projectDir, sender, runId) {
       const filePath = import_node_path3.default.join(dir, fileName);
       let content;
       try {
+        const before = skip.get(filePath);
+        if (before) {
+          const st = import_node_fs5.default.statSync(filePath);
+          if (st.mtimeMs === before.mtimeMs && st.size === before.size) continue;
+        }
         content = import_node_fs5.default.readFileSync(filePath, "utf8");
       } catch {
         continue;
@@ -544,6 +575,23 @@ function writeStamp(projectDir, sender, runId) {
     }
   }
   return stamped;
+}
+function unstampedFilesOf(projectDir, sender) {
+  const out = [];
+  for (const receiver of listDirs(channelsRoot(projectDir))) {
+    const dir = channelDir(projectDir, receiver);
+    for (const fileName of listFiles(dir)) {
+      if (senderOf(fileName) !== sender) continue;
+      const filePath = import_node_path3.default.join(dir, fileName);
+      try {
+        const st = import_node_fs5.default.statSync(filePath);
+        if (STAMP_RE.test(import_node_fs5.default.readFileSync(filePath, "utf8"))) continue;
+        out.push({ path: filePath, mtimeMs: st.mtimeMs, size: st.size });
+      } catch {
+      }
+    }
+  }
+  return out;
 }
 function readLane(projectDir, receiver, now = Date.now()) {
   const dir = channelDir(projectDir, receiver);
@@ -855,11 +903,21 @@ function resolveHandoff(id, projectContent, globalDefault) {
 
 // src/core/agent-runs.ts
 function agentRunsFromLog(lines) {
+  const meetingIds = /* @__PURE__ */ new Set();
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const entry = line;
+    if (entry.kind === "handoff" && entry.meeting === true && typeof entry.agent_id === "string") {
+      meetingIds.add(entry.agent_id);
+    }
+  }
   const runs = [];
   for (const line of lines ?? []) {
     if (!line || typeof line !== "object") continue;
     const entry = line;
     if (entry.kind !== "handoff") continue;
+    if (entry.meeting === true) continue;
+    if (typeof entry.agent_id === "string" && meetingIds.has(entry.agent_id)) continue;
     const agentType = entry.origin;
     const agentId = entry.agent_id;
     if (typeof agentType !== "string" || !agentType) continue;
@@ -1050,6 +1108,28 @@ function realResolve(p) {
     cur = parent;
   }
 }
+function denyMeeting(target, meetingDir) {
+  return {
+    allow: false,
+    reason: `Blocked: a Maestro team meeting is in progress and you are a participant \u2014 you may only write files under ${meetingDir}/ (the meeting directory). "${target}" is outside it (or reaches outside through a ".." segment or a symlink). Propose changes in your round file; never apply them.`
+  };
+}
+function realMeetingDir(meetingDir) {
+  const resolved = import_node_path7.default.resolve(meetingDir);
+  const sessionDir = import_node_path7.default.dirname(resolved);
+  const sessionId = import_node_path7.default.basename(sessionDir);
+  if (import_node_path7.default.basename(resolved) !== "meeting" || import_node_path7.default.basename(import_node_path7.default.dirname(sessionDir)) !== "maestro_sessions") {
+    return null;
+  }
+  const realSession = realResolve(sessionDir);
+  const real = realResolve(resolved);
+  if (!realSession || !real) return null;
+  if (real !== import_node_path7.default.join(realSession, "meeting")) return null;
+  const parts = real.split(import_node_path7.default.sep);
+  const n = parts.length;
+  if (n < 3 || parts[n - 2] !== sessionId || parts[n - 3] !== "maestro_sessions") return null;
+  return real;
+}
 function deny(target) {
   return {
     allow: false,
@@ -1057,9 +1137,19 @@ function deny(target) {
   };
 }
 function checkChannelWrite(input) {
-  const { cwd, agentType, toolName, toolInput } = input;
-  if (!isChannelOnlyAgent(agentType)) return { allow: true };
+  const { cwd, agentType, toolName, toolInput, meetingDir } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : void 0;
+  if (meetingDir) {
+    if (!key) return { allow: true };
+    const raw2 = toolInput?.[key];
+    if (typeof raw2 !== "string" || raw2 === "") return denyMeeting(String(raw2 ?? ""), meetingDir);
+    if (raw2.split(/[\\/]+/).includes("..")) return denyMeeting(raw2, meetingDir);
+    const target2 = realResolve(import_node_path7.default.resolve(cwd || meetingDir, raw2));
+    const root = realMeetingDir(meetingDir);
+    if (!target2 || !root) return denyMeeting(raw2, meetingDir);
+    return target2.startsWith(root + import_node_path7.default.sep) ? { allow: true } : denyMeeting(raw2, meetingDir);
+  }
+  if (!isChannelOnlyAgent(agentType)) return { allow: true };
   if (!key) return { allow: true };
   const raw = toolInput?.[key];
   if (typeof raw !== "string" || raw === "") return deny(String(raw ?? ""));
@@ -1114,12 +1204,468 @@ function sendMessageHandoff(transcript) {
   }
   return found;
 }
+
+// src/core/run-metrics.ts
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
+var METRICS_DIR_NAME = "maestro-metrics";
+var METRICS_FILE_NAME = "metrics.json";
+var DEFAULT_RECENT_RUNS = 10;
+var LOCK_STALE_MS = 15e3;
+var LOCK_WAIT_MS = 1e4;
+function emptyMetrics() {
+  return { version: 1, runs: [], totals: { by_workflow: {}, by_agent: {} } };
+}
+function metricsDirFor(projectRoot) {
+  return import_node_path8.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
+}
+function metricsFileFor(projectRoot) {
+  return import_node_path8.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
+}
+function day(ts) {
+  return typeof ts === "string" ? ts.slice(0, 10) : "";
+}
+function derive(t) {
+  t.avg_duration_ms = t.runs ? Math.round(t.duration_ms_sum / t.runs) : 0;
+  t.avg_ctx_pct = t.ctx_runs ? Math.round(t.ctx_pct_sum / t.ctx_runs * 10) / 10 : null;
+  t.loop_back_rate = t.runs ? Math.round(t.loop_backs / t.runs * 1e3) / 1e3 : 0;
+  t.human_review_rate = t.runs ? Math.round(t.human_reviews / t.runs * 1e3) / 1e3 : 0;
+  return t;
+}
+function fresh(ts) {
+  return derive({
+    runs: 0,
+    success: 0,
+    failure: 0,
+    loop_backs: 0,
+    human_reviews: 0,
+    duration_ms_sum: 0,
+    ctx_pct_sum: 0,
+    ctx_runs: 0,
+    avg_duration_ms: 0,
+    avg_ctx_pct: null,
+    loop_back_rate: 0,
+    human_review_rate: 0,
+    first_seen: ts,
+    last_seen: ts
+  });
+}
+function add(map, key, seen, v) {
+  const t = map[key] ??= fresh(seen);
+  t.runs += v.runs;
+  t.success += v.success;
+  t.failure += v.failure;
+  t.loop_backs += v.loop_backs;
+  t.human_reviews += v.human_reviews;
+  t.duration_ms_sum += v.duration_ms;
+  if (v.ctx_pct != null) {
+    t.ctx_pct_sum += v.ctx_pct;
+    t.ctx_runs += 1;
+  }
+  if (seen && (!t.first_seen || seen < t.first_seen)) t.first_seen = seen;
+  if (seen && seen > t.last_seen) t.last_seen = seen;
+  derive(t);
+}
+function foldRun(totals, run) {
+  const seen = day(run.started_at);
+  add(totals.by_workflow, run.workflow, seen, {
+    runs: 1,
+    success: run.outcome === "success" ? 1 : 0,
+    failure: run.outcome === "success" ? 0 : 1,
+    loop_backs: run.loop_backs.reduce((n, l) => n + l.count, 0),
+    human_reviews: run.human_reviews.length,
+    duration_ms: run.duration_ms,
+    ctx_pct: run.ctx_pct
+  });
+  for (const a of run.agents) {
+    add(totals.by_agent, a.agent, seen, {
+      runs: a.runs,
+      success: a.success,
+      failure: a.failure,
+      loop_backs: a.loop_backs,
+      human_reviews: a.human_reviews,
+      duration_ms: a.duration_ms,
+      ctx_pct: a.ctx_pct
+    });
+  }
+}
+function compact(file, keep) {
+  const n = Math.max(1, Math.floor(Number.isFinite(keep) ? keep : DEFAULT_RECENT_RUNS));
+  if (file.runs.length <= n) return file;
+  const ordered = [...file.runs].sort((a, b) => a.ended_at < b.ended_at ? -1 : a.ended_at > b.ended_at ? 1 : 0);
+  const folded = ordered.slice(0, ordered.length - n);
+  const totals = structuredClone(file.totals);
+  for (const run of folded) foldRun(totals, run);
+  return { version: 1, runs: ordered.slice(ordered.length - n), totals };
+}
+function successOrder(cfg, workflow) {
+  const wf = cfg?.workflows?.find((w) => w.name === workflow);
+  const order = [];
+  const reviewAfter = [];
+  const skillIds = /* @__PURE__ */ new Set();
+  if (!wf) return { order, reviewAfter, skillIds };
+  for (const n of wf.nodes ?? []) if (n.type === "skill" && n.skill) skillIds.add(n.skill);
+  const agentOf = (id) => {
+    const n = wf.nodes.find((x) => x.id === id);
+    if (!n || n.type !== "agent") return null;
+    const inst = cfg?.workflow_instances?.find((i) => i.name === n.instance);
+    return bareAgentName(inst?.agent ?? n.instance ?? "") || null;
+  };
+  let cur = "main-session";
+  let lastAgent = null;
+  const seen = /* @__PURE__ */ new Set();
+  while (!seen.has(cur)) {
+    seen.add(cur);
+    const e = (wf.edges ?? []).find((x) => x.from === cur && x.kind === "success");
+    if (!e) break;
+    const node = wf.nodes.find((n) => n.id === e.to);
+    if (node?.type === "human_review" && lastAgent) reviewAfter.push(lastAgent);
+    const a = agentOf(e.to);
+    if (a) {
+      order.push(a);
+      lastAgent = a;
+    }
+    cur = e.to;
+  }
+  return { order, reviewAfter, skillIds };
+}
+function buildRunRecord(entries, session, cfg, sessionId) {
+  const log = (entries ?? []).filter((e) => !!e && typeof e === "object");
+  const teamMeeting = log.some((e) => e.meeting === true);
+  const dispatches = log.filter((e) => e.kind === "dispatch" && e.meeting !== true);
+  const handoffs = log.filter((e) => e.kind === "handoff" && e.meeting !== true);
+  const meetingTurns = log.filter((e) => e.kind === "handoff" && e.meeting === true);
+  if (dispatches.length === 0 && handoffs.length === 0 && meetingTurns.length === 0) return null;
+  const workflow = session?.workflow || "(none)";
+  const { order, reviewAfter, skillIds } = successOrder(cfg, session?.workflow ?? null);
+  const stamps = log.map((e) => e.ts).filter((t) => typeof t === "string" && !Number.isNaN(Date.parse(t)));
+  stamps.sort();
+  const started_at = stamps[0] ?? (/* @__PURE__ */ new Date()).toISOString();
+  const ended_at = stamps[stamps.length - 1] ?? started_at;
+  const duration_ms = Math.max(0, Date.parse(ended_at) - Date.parse(started_at));
+  const dispatchById = /* @__PURE__ */ new Map();
+  for (const d of dispatches) if (d.agent_id) dispatchById.set(d.agent_id, d);
+  const agents = /* @__PURE__ */ new Map();
+  const agentOfRun = (name) => {
+    let a = agents.get(name);
+    if (!a) {
+      a = { agent: name, runs: 0, success: 0, failure: 0, loop_backs: 0, human_reviews: 0, duration_ms: 0, ctx_pct: null };
+      agents.set(name, a);
+    }
+    return a;
+  };
+  for (const d of dispatches) {
+    const name = bareAgentName(d.agent ?? "");
+    if (name) agentOfRun(name).runs += 1;
+  }
+  if (dispatches.length === 0 && handoffs.length === 0) {
+    for (const m of meetingTurns) {
+      const name = bareAgentName(m.origin ?? "");
+      if (name) agentOfRun(name).runs += 1;
+    }
+  }
+  const loopMap = /* @__PURE__ */ new Map();
+  const handoffList = [];
+  const reviews = [];
+  for (const h of handoffs) {
+    const name = bareAgentName(h.origin ?? "");
+    if (!name) continue;
+    const a = agentOfRun(name);
+    const ok = h.status === "success";
+    if (ok) a.success += 1;
+    else a.failure += 1;
+    if (typeof h.ctx_pct === "number") a.ctx_pct = Math.max(a.ctx_pct ?? 0, h.ctx_pct);
+    const d = h.agent_id ? dispatchById.get(h.agent_id) : void 0;
+    if (d?.ts && h.ts) a.duration_ms += Math.max(0, Date.parse(h.ts) - Date.parse(d.ts)) || 0;
+    const label = h.label || (ok ? "success" : "(none)");
+    handoffList.push({ agent: name, label });
+    if (h.status === "condition" && h.label) {
+      a.loop_backs += 1;
+      const key = `${name}\0${h.label}`;
+      const lb = loopMap.get(key) ?? { from: name, label: h.label, count: 0 };
+      lb.count += 1;
+      loopMap.set(key, lb);
+    }
+    if (ok && reviewAfter.includes(name)) {
+      const idx = log.indexOf(h);
+      const next = log.slice(idx + 1).find((e) => e.kind === "dispatch" && e.meeting !== true);
+      let outcome = "no_decision";
+      if (next) {
+        const nextPos = order.indexOf(bareAgentName(next.agent ?? ""));
+        outcome = nextPos > order.indexOf(name) ? "approved" : "changes_requested";
+      }
+      reviews.push({ after: name, outcome });
+      a.human_reviews += 1;
+    }
+  }
+  const skills = /* @__PURE__ */ new Set();
+  for (const e of log) {
+    const m = /^Skill\((.+)\)$/.exec(e.log ?? "");
+    if (m && m[1] && skillIds.has(m[1])) skills.add(m[1]);
+  }
+  const ctxs = log.map((e) => e.ctx_pct).filter((n) => typeof n === "number");
+  const last = handoffs[handoffs.length - 1];
+  return {
+    id: session?.run_id || sessionId,
+    workflow,
+    task: session?.active_task ? import_node_path8.default.basename(session.active_task) : null,
+    started_at,
+    ended_at,
+    duration_ms,
+    agents: [...agents.values()],
+    skills: [...skills],
+    handoffs: handoffList,
+    loop_backs: [...loopMap.values()],
+    human_reviews: reviews,
+    ctx_pct: ctxs.length ? Math.max(...ctxs) : null,
+    team_meeting: teamMeeting,
+    outcome: last && last.status === "success" ? "success" : "failure"
+  };
+}
+function sleepSync(ms) {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
+}
+function withLock(dir, fn) {
+  import_node_fs10.default.mkdirSync(dir, { recursive: true });
+  const lock = import_node_path8.default.join(dir, "lock");
+  const deadline = Date.now() + LOCK_WAIT_MS;
+  let held = false;
+  for (; ; ) {
+    try {
+      import_node_fs10.default.mkdirSync(lock);
+      held = true;
+      break;
+    } catch (err) {
+      if (err.code !== "EEXIST") break;
+      try {
+        if (Date.now() - import_node_fs10.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
+          import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
+          continue;
+        }
+      } catch {
+        continue;
+      }
+      if (Date.now() > deadline) break;
+      sleepSync(15 + Math.floor(Math.random() * 30));
+    }
+  }
+  try {
+    return fn();
+  } finally {
+    if (held) import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
+  }
+}
+function readMetrics(projectRoot) {
+  try {
+    const v = JSON.parse(import_node_fs10.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
+    if (v && v.version === 1 && Array.isArray(v.runs) && v.totals?.by_workflow && v.totals?.by_agent) return v;
+  } catch {
+  }
+  return emptyMetrics();
+}
+function recentRunsLimit(cfg) {
+  const n = cfg?.metrics?.recent_runs;
+  return typeof n === "number" && Number.isFinite(n) && n >= 1 ? Math.floor(n) : DEFAULT_RECENT_RUNS;
+}
+function recordRun(projectRoot, run, keep = DEFAULT_RECENT_RUNS) {
+  const dir = metricsDirFor(projectRoot);
+  withLock(dir, () => {
+    const gi = import_node_path8.default.join(dir, ".gitignore");
+    if (!import_node_fs10.default.existsSync(gi)) import_node_fs10.default.writeFileSync(gi, "*\n");
+    const file = readMetrics(projectRoot);
+    const runs = file.runs.filter((r) => r.id !== run.id);
+    runs.push(run);
+    const next = compact({ ...file, runs }, keep);
+    const target = metricsFileFor(projectRoot);
+    const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
+    import_node_fs10.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
+    import_node_fs10.default.renameSync(tmp, target);
+  });
+}
+function recordSessionRun(projectRoot, sessionId) {
+  const claudeDir = import_node_path8.default.join(projectRoot, ".claude");
+  const paths = sessionPathsFor(claudeDir, sessionId);
+  if (!paths) return false;
+  let raw;
+  try {
+    raw = import_node_fs10.default.readFileSync(paths.log, "utf8");
+  } catch {
+    return false;
+  }
+  const entries = [];
+  for (const line of raw.split("\n")) {
+    if (!line.trim()) continue;
+    try {
+      entries.push(JSON.parse(line));
+    } catch {
+    }
+  }
+  const readJson2 = (p) => {
+    try {
+      return JSON.parse(import_node_fs10.default.readFileSync(p, "utf8"));
+    } catch {
+      return null;
+    }
+  };
+  const cfg = readJson2(import_node_path8.default.join(claudeDir, "maestro.json"));
+  const run = buildRunRecord(entries, readJson2(paths.state), cfg, paths.id);
+  if (!run) return false;
+  recordRun(projectRoot, run, recentRunsLimit(cfg));
+  return true;
+}
+function mins(ms) {
+  return ms >= 6e4 ? `${(ms / 6e4).toFixed(1)}m` : `${Math.round(ms / 1e3)}s`;
+}
+function totalsRow(name, t) {
+  const ctx = t.avg_ctx_pct == null ? "n/a" : `${t.avg_ctx_pct}%`;
+  return `| ${name} | ${t.runs} | ${t.success}/${t.failure} | ${Math.round(t.loop_back_rate * 100)}% | ${Math.round(t.human_review_rate * 100)}% | ${mins(t.avg_duration_ms)} | ${ctx} | ${t.first_seen} - ${t.last_seen} |`;
+}
+function renderMetricsDigest(file) {
+  const wf = Object.entries(file.totals.by_workflow);
+  const ag = Object.entries(file.totals.by_agent);
+  if (file.runs.length === 0 && wf.length === 0) return null;
+  const L = [];
+  if (file.runs.length > 0) {
+    L.push(`#### Recent runs (${file.runs.length}, newest last)`, "");
+    for (const r of file.runs) {
+      const loops = r.loop_backs.map((l) => `${l.from}:${l.label} x${l.count}`).join(", ") || "none";
+      const reviews = r.human_reviews.map((h) => `after ${h.after}: ${h.outcome}`).join(", ") || "none";
+      const ctx = r.ctx_pct == null ? "n/a" : `${r.ctx_pct}%`;
+      L.push(
+        `- ${r.started_at.slice(0, 10)} \`${r.workflow}\`${r.team_meeting ? " (team meeting)" : ""} - ${r.outcome}, ${mins(r.duration_ms)}, peak ctx ${ctx}; agents: ${r.agents.map((a) => `${a.agent} x${a.runs}`).join(", ") || "none"}; loop-backs: ${loops}; human review: ${reviews}` + (r.skills.length ? `; skills: ${r.skills.join(", ")}` : "") + (r.task ? `; task: \`.claude/maestro-tasks/${r.task}\`` : "")
+      );
+    }
+    L.push("");
+  }
+  const header = [
+    "| | runs | ok/fail | loop-backs per run | human reviews per run | avg duration | avg ctx | seen |",
+    "|---|---|---|---|---|---|---|---|"
+  ];
+  if (wf.length > 0) {
+    L.push("#### Totals of older runs, by workflow (folded, cross-session trends)", "", ...header);
+    for (const [k, t] of wf) L.push(totalsRow(k, t));
+    L.push("");
+  }
+  if (ag.length > 0) {
+    L.push("#### Totals of older runs, by agent", "", ...header);
+    for (const [k, t] of ag) L.push(totalsRow(k, t));
+    L.push("");
+  }
+  return L.join("\n");
+}
+
+// src/core/meeting-mode.ts
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
+var MEETING_DIR_NAME = "meeting";
+var MEETING_LEFTOVERS_KEY = "meeting_leftovers";
+var MEETING_MODES = ["review", "post-mortem"];
+function meetingDirFor(sessionDir) {
+  return import_node_path9.default.join(sessionDir, MEETING_DIR_NAME);
+}
+function readMeeting(session) {
+  if (!session || typeof session !== "object") return null;
+  const m = session.meeting;
+  if (!m || typeof m !== "object") return null;
+  const v = m;
+  if (typeof v.id !== "string" || !v.id) return null;
+  if (typeof v.mode !== "string" || !MEETING_MODES.includes(v.mode)) return null;
+  if (typeof v.dir !== "string") return null;
+  if (!Array.isArray(v.participants) || !v.participants.every((p) => typeof p === "string")) return null;
+  return {
+    id: v.id,
+    mode: v.mode,
+    dir: v.dir,
+    participants: v.participants.map((p) => bareAgentName(p)).filter(Boolean),
+    started_at: typeof v.started_at === "string" ? v.started_at : ""
+  };
+}
+function meetingFor(session, agentType) {
+  const bare = bareAgentName(agentType);
+  if (!bare) return null;
+  const meeting = readMeeting(session);
+  return meeting && meeting.participants.includes(bare) ? meeting : null;
+}
+function withoutMeeting(session) {
+  const copy = { ...session };
+  delete copy.meeting;
+  return copy;
+}
+function readRawState(statePath) {
+  try {
+    const parsed = JSON.parse(import_node_fs11.default.readFileSync(statePath, "utf8"));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+  } catch {
+    return {};
+  }
+}
+function writeRawState(statePath, state) {
+  import_node_fs11.default.mkdirSync(import_node_path9.default.dirname(statePath), { recursive: true });
+  const tmp = statePath + ".tmp";
+  import_node_fs11.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  import_node_fs11.default.renameSync(tmp, statePath);
+}
+function startMeeting(statePath, sessionDir, opts) {
+  const now = opts.now ?? /* @__PURE__ */ new Date();
+  const dir = meetingDirFor(sessionDir);
+  import_node_fs11.default.mkdirSync(dir, { recursive: true });
+  const meeting = {
+    id: `m-${now.getTime()}`,
+    mode: opts.mode,
+    dir,
+    participants: [...new Set(opts.participants.map((p) => bareAgentName(p)).filter(Boolean))],
+    started_at: now.toISOString()
+  };
+  writeRawState(statePath, { ...readRawState(statePath), meeting });
+  return meeting;
+}
+function meetingLeftovers(session) {
+  if (!session || typeof session !== "object") return [];
+  const raw = session[MEETING_LEFTOVERS_KEY];
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (m) => !!m && typeof m === "object" && typeof m.path === "string" && typeof m.mtimeMs === "number" && typeof m.size === "number"
+  );
+}
+function closeMeeting(session, projectDir) {
+  if (!("meeting" in session)) return { state: session, ended: false };
+  const participants = readMeeting(session)?.participants ?? [];
+  const byPath = new Map(meetingLeftovers(session).map((m) => [m.path, m]));
+  for (const participant of participants) {
+    for (const mark of unstampedFilesOf(projectDir, participant)) byPath.set(mark.path, mark);
+  }
+  const state = withoutMeeting(session);
+  if (byPath.size > 0) state[MEETING_LEFTOVERS_KEY] = [...byPath.values()];
+  return { state, ended: true };
+}
+function projectDirOfState(statePath) {
+  return import_node_path9.default.resolve(statePath, "..", "..", "..", "..");
+}
+function endMeeting(statePath, projectDir = projectDirOfState(statePath)) {
+  if (!import_node_fs11.default.existsSync(statePath)) return false;
+  const { state, ended } = closeMeeting(readRawState(statePath), projectDir);
+  if (ended) writeRawState(statePath, state);
+  return ended;
+}
+function meetingNotice(meeting, agentType) {
+  const bare = bareAgentName(agentType);
+  return `Maestro team meeting in progress (${meeting.mode}, ${meeting.id}). This run is a meeting turn, NOT a workflow step:
+- Ignore every HANDOFF routing line, handoff payload / channel-file instruction and mandatory output format you were given, including any from an earlier run in your history. Do not end with a HANDOFF: line.
+- Do not write anything under .claude/channels/. Your only writable location is the meeting directory: ${meeting.dir}/ \u2014 write your proposals to the round file the moderator names (e.g. round-1/${bare}.json).
+- Propose, never apply: do not edit project files, agents, skills, rules or .claude/maestro.json. Bash is for read-only checks only \u2014 never write or modify a file with it.
+- Follow the moderator's brief, and end your reply with one short line saying what you wrote.`;
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   CHANNEL_AGE_CAP_MS,
   CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS,
+  DEFAULT_RECENT_RUNS,
   LEGACY_SESSION_FILES,
+  MEETING_DIR_NAME,
+  MEETING_LEFTOVERS_KEY,
+  METRICS_DIR_NAME,
+  METRICS_FILE_NAME,
   PRIOR_HANDOFF_SEEDS,
   RESUMABLE_END_REASONS,
   SEED_HANDOFFS,
@@ -1133,14 +1679,19 @@ function sendMessageHandoff(transcript) {
   agentRunsFromLog,
   appendSessionLog,
   bareAgentName,
+  buildRunRecord,
   channelDir,
   checkChannelWrite,
+  closeMeeting,
   collectAgentSkills,
+  compactMetrics,
   duplicateAgentTypes,
+  endMeeting,
   endSessionState,
   ensureSessionPaths,
   ensureSessionRunId,
   ensureSessionsRoot,
+  foldRun,
   formatStampedContent,
   handoffId,
   handoffPairs,
@@ -1157,15 +1708,27 @@ function sendMessageHandoff(transcript) {
   lastHandoffLabel,
   listSessionIds,
   mainCheckoutRoot,
+  meetingDirFor,
+  meetingFor,
+  meetingLeftovers,
+  meetingNotice,
+  metricsDirFor,
+  metricsFileFor,
   nodeLabel,
   parseStampedContent,
   projectOwnsHook,
   readJson,
   readLane,
+  readMeeting,
+  readMetrics,
   readSession,
   readStdin,
   readWorktreePointer,
+  recentRunsLimit,
+  recordRun,
+  recordSessionRun,
   removeSessionState,
+  renderMetricsDigest,
   resolveHandoff,
   resolveProjectSkillPath,
   resolveSearchList,
@@ -1181,11 +1744,14 @@ function sendMessageHandoff(transcript) {
   sessionPathsFor,
   sessionsRoot,
   splitHandoffId,
+  startMeeting,
   successPathSteps,
   sweep,
   taskNumber,
+  unstampedFilesOf,
   validateConfig,
   walkProjectSkillIds,
+  withoutMeeting,
   workflowNodeLabels,
   worktreeBranchFor,
   worktreePathFor,
