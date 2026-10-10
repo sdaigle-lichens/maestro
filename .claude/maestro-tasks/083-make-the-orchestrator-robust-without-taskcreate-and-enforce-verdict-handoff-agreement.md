@@ -5,7 +5,7 @@ criterion below is met.
 
 ## What to build
 
-Five problems in the orchestrator and subagent contract came up in recent runs.
+Six problems in the orchestrator and subagent contract came up in recent runs.
 
 1. No task graph. TaskCreate has repeatedly been unavailable in orchestrator sessions. The orchestrator's Step 3 and the mark-task-done node both assume it, so the orchestrator ended up tracking the success path from memory. Give the orchestrator template a defined fallback when TaskCreate isn't available. For example, keep the planned success path, the human-review stops, loop-backs and the mark-task-done step in the session's state, through a small runtime command the orchestrator updates as it goes. Then Step 4's done marking still runs only after every prior step, including human review.
 
@@ -22,6 +22,8 @@ Have the stop hook detect a missing HANDOFF line, or a report verdict that contr
 
 5. Sandbox-blocked merge. The sandbox denies writes under .claude/skills in the main checkout, so the orchestrator's own `merge` failed with "unable to unlink ... Operation not permitted" and the user had to run it. When a merge touches sandbox-protected paths, or fails that way, the orchestrator should hand the user the exact merge command (absolute paths, `!` prefix) instead of retrying.
 
+6. Colliding untracked files in the main checkout. In task 080, untracked copies of files committed on the task branch appeared in the main checkout, and git refused the merge with "untracked working tree files would be overwritten by merge". The cause isn't proven: task 082's worktree write guard prevents file-tool writes into the main checkout, but not Bash redirects. Make the failure easy to understand instead: before merging, `merge` lists any untracked files in the main checkout that would collide with the task branch, and says for each whether it is byte-identical to the branch's copy (safe to delete) or different (needs a look). It refuses with that list instead of letting git fail.
+
 ## Acceptance criteria
 
 - [ ] With TaskCreate unavailable, the orchestrator follows a documented fallback that records the planned path and its progress in session state, and mark-task-done still only runs after every prior step, including human review.
@@ -31,6 +33,7 @@ Have the stop hook detect a missing HANDOFF line, or a report verdict that contr
 - [ ] `merge` on a dirty worktree still refuses, and also prints the worktree path and a suggested commit command. A test spawns the real CLI against a temp worktree to cover it.
 - [ ] The orchestrator template requires absolute paths (or an explicit cd) in every command handed to the user while a worktree is active.
 - [ ] When the orchestrator's merge fails on a sandbox write denial, it hands the user the exact merge command instead of retrying. `merge` reports that failure in a recognisable way.
+- [ ] Before merging, `merge` detects untracked files in the main checkout that would collide with the task branch, refuses, and lists each one as identical to the branch's copy or different. A test spawns the real CLI with an identical and a differing colliding file.
 - [ ] Generated plugin libs are rebuilt and the .claude/scripts mirrors refreshed, parity passes, the plugin version is bumped, and the maestro-architecture docs are updated.
 
 ## Blocked by
