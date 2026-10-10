@@ -1,7 +1,7 @@
 {
   "name": "maestro-repo",
   "private": true,
-  "packageManager": "pnpm@11.9.0",
+  "packageManager": "pnpm@12.10.1",
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
