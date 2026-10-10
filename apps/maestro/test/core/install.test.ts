@@ -72,7 +72,6 @@ function hookEnv(root: string, sessionId: string | null, home: string): NodeJS.P
 const sessionDir = (root: string, id: string = HOOK_SESSION) => path.join(root, ".claude", "maestro_sessions", id);
 const logPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "log.jsonl");
 const statePathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "session.json");
-const tasksPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "tasks.json");
 
 let tmp: string;
 // Every installRuntime()/refreshStaleRuntime() call below passes this, so the report-sync step
@@ -874,7 +873,9 @@ describe("maestro-check-runtime.cjs", () => {
     const root = makeProject(name);
     writeConfig(root, defaultish);
     await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: pinnedEnv(tmp) });
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
     const home = path.join(tmp, "home-" + name);
     writeInstalledPlugins(home, {
       "maestro@maestro": [
@@ -1849,7 +1850,9 @@ describe("maestro-step1-gates.cjs (032)", () => {
   // from the app's own content hash above.
   it("makes maestro-check-runtime say update when the script is gone", async () => {
     const root = await installed("check");
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: pinnedEnv(tmp) });
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
     const check = (): { action: string; reason?: string } =>
       JSON.parse(
         execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
@@ -1978,7 +1981,9 @@ describe("maestro-step4-gate.cjs (046)", () => {
 
   it("makes maestro-check-runtime say update when the script is gone", async () => {
     const root = await installed("step4-check");
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: pinnedEnv(tmp) });
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
     const check = (): { action: string; reason?: string } =>
       JSON.parse(
         execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {

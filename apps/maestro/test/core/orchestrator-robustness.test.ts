@@ -43,7 +43,14 @@ const cfg = {
       edges: [
         { from: "main-session", to: "scribe", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
         { from: "scribe", to: "reviewer", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
-        { from: "reviewer", to: "scribe", kind: "condition", label: "changes requested", sourceHandle: "right", targetHandle: "top" },
+        {
+          from: "reviewer",
+          to: "scribe",
+          kind: "condition",
+          label: "changes requested",
+          sourceHandle: "right",
+          targetHandle: "top",
+        },
       ],
     },
   ],
@@ -183,7 +190,11 @@ describe("SubagentStop hook flags verdict/HANDOFF disagreement (083)", () => {
     expect(entry.handoff_issue).toMatchObject({ kind: "contradiction", verdict: "FAIL", label: "success" });
     expect(entry.log).toBe("HANDOFF: success [contradiction]");
 
-    expect(readState(root, SESS).handoff_issues[0]).toMatchObject({ agent: "reviewer", kind: "contradiction", verdict: "FAIL" });
+    expect(readState(root, SESS).handoff_issues[0]).toMatchObject({
+      agent: "reviewer",
+      kind: "contradiction",
+      verdict: "FAIL",
+    });
     const seen = cli(root, ["handoff-issues"], SESS);
     expect(seen.stdout).toContain("reviewer: verdict FAIL but HANDOFF: success");
     expect(seen.stdout).toContain("(verdict FAIL)");
@@ -343,7 +354,12 @@ describe("the success-path tracker (083)", () => {
     const back = cli(root, ["plan-step", "@backend", "pending"], SESS);
     expect(back.code, back.stderr).toBe(0);
 
-    expect(readState(root, SESS).plan.steps.map((s: any) => s.status)).toEqual(["pending", "pending", "pending", "pending"]);
+    expect(readState(root, SESS).plan.steps.map((s: any) => s.status)).toEqual([
+      "pending",
+      "pending",
+      "pending",
+      "pending",
+    ]);
     expect(back.stdout).toContain("1. [ ] @backend   <- next");
     expect(cli(root, ["done", "002-b.md"], SESS).code).toBe(1);
   });

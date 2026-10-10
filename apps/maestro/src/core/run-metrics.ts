@@ -318,7 +318,16 @@ export function buildRunRecord(
   const agentOfRun = (name: string): RunAgent => {
     let a = agents.get(name);
     if (!a) {
-      a = { agent: name, runs: 0, success: 0, failure: 0, loop_backs: 0, human_reviews: 0, duration_ms: 0, ctx_pct: null };
+      a = {
+        agent: name,
+        runs: 0,
+        success: 0,
+        failure: 0,
+        loop_backs: 0,
+        human_reviews: 0,
+        duration_ms: 0,
+        ctx_pct: null,
+      };
       agents.set(name, a);
     }
     return a;

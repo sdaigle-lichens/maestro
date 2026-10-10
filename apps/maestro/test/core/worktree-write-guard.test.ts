@@ -119,8 +119,12 @@ describe("worktree write guard (082)", () => {
 
     expect(runHook(wt, SESSION_B, path.join(wt, "src", "new-module.ts")).denied).toBe(false);
     expect(runHook(wt, SESSION_B, path.join(root, ".claude", "maestro-tasks", "002-b.md")).denied).toBe(false);
-    expect(runHook(wt, SESSION_B, path.join(root, ".claude", "channels", "frontend", "backend.1.md")).denied).toBe(false);
-    expect(runHook(wt, SESSION_B, path.join(root, ".claude", "maestro_sessions", SESSION_B, "x.json")).denied).toBe(false);
+    expect(runHook(wt, SESSION_B, path.join(root, ".claude", "channels", "frontend", "backend.1.md")).denied).toBe(
+      false
+    );
+    expect(runHook(wt, SESSION_B, path.join(root, ".claude", "maestro_sessions", SESSION_B, "x.json")).denied).toBe(
+      false
+    );
   });
 
   it("does not restrict a session that has no worktree", async () => {
@@ -133,17 +137,31 @@ describe("checkWorktreeWrite (082) unit", () => {
   const worktree = { path: "/nope/wt", main_root: "/nope/main" };
 
   it("allows when there is no worktree or the tool does not write files", () => {
-    expect(checkWorktreeWrite({ cwd: "/x", toolName: "Write", toolInput: { file_path: "/nope/main/a" }, worktree: null }).allow).toBe(true);
-    expect(checkWorktreeWrite({ cwd: "/x", toolName: "Read", toolInput: { file_path: "/nope/main/a" }, worktree }).allow).toBe(true);
+    expect(
+      checkWorktreeWrite({ cwd: "/x", toolName: "Write", toolInput: { file_path: "/nope/main/a" }, worktree: null })
+        .allow
+    ).toBe(true);
+    expect(
+      checkWorktreeWrite({ cwd: "/x", toolName: "Read", toolInput: { file_path: "/nope/main/a" }, worktree }).allow
+    ).toBe(true);
   });
 
   it("denies a main-checkout path and allows a worktree path", () => {
-    expect(checkWorktreeWrite({ cwd: "/nope/wt", toolName: "Edit", toolInput: { file_path: "/nope/main/a.ts" }, worktree }).allow).toBe(false);
-    expect(checkWorktreeWrite({ cwd: "/nope/wt", toolName: "Edit", toolInput: { file_path: "/nope/wt/a.ts" }, worktree }).allow).toBe(true);
+    expect(
+      checkWorktreeWrite({ cwd: "/nope/wt", toolName: "Edit", toolInput: { file_path: "/nope/main/a.ts" }, worktree })
+        .allow
+    ).toBe(false);
+    expect(
+      checkWorktreeWrite({ cwd: "/nope/wt", toolName: "Edit", toolInput: { file_path: "/nope/wt/a.ts" }, worktree })
+        .allow
+    ).toBe(true);
   });
 
   it("resolves a relative path against cwd", () => {
-    expect(checkWorktreeWrite({ cwd: "/nope/wt", toolName: "Write", toolInput: { file_path: "../main/a.ts" }, worktree }).allow).toBe(false);
+    expect(
+      checkWorktreeWrite({ cwd: "/nope/wt", toolName: "Write", toolInput: { file_path: "../main/a.ts" }, worktree })
+        .allow
+    ).toBe(false);
   });
 });
 
@@ -180,7 +198,9 @@ describe("merge conflict on a generated lib names the resolution (082)", () => {
 
     expect(run.status).toBe(1);
     expect(run.stdout).toContain("pnpm --filter maestro build:plugin-libs");
-    expect(run.stdout).toContain("cp plugins/maestro/scripts/lib/maestro-scratch-lib.cjs .claude/scripts/lib/maestro-scratch-lib.cjs");
+    expect(run.stdout).toContain(
+      "cp plugins/maestro/scripts/lib/maestro-scratch-lib.cjs .claude/scripts/lib/maestro-scratch-lib.cjs"
+    );
   });
 
   it("gives no mirror-copy hint when a hand-written file (or the hand-maintained maestro-tasks.cjs) also conflicts", async () => {

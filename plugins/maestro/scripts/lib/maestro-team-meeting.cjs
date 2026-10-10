@@ -322,7 +322,8 @@ var MAIN_SESSION_KINDS = /* @__PURE__ */ new Set([
 function ownerOf(row) {
   if (row.tier === "blocked" || MAIN_SESSION_KINDS.has(row.kind)) return null;
   if (row.kind === "handoff.edit") return bareAgentName(row.target.slice("handoff:".length).split("/")[0]) || null;
-  if (row.kind === "agent.edit" || row.kind === "agent.tools") return bareAgentName(row.target.slice("agent:".length)) || null;
+  if (row.kind === "agent.edit" || row.kind === "agent.tools")
+    return bareAgentName(row.target.slice("agent:".length)) || null;
   if (row.kind === "report.edit") return bareAgentName(row.target.slice("report:".length)) || null;
   return row.supporters.length === 0 ? row.agent : null;
 }

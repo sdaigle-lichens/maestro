@@ -247,7 +247,7 @@ export function readTaskTracker(projectRoot: string): Record<string, TrackerEntr
   return out;
 }
 
-const POSTMORTEMS_LOG ="postmortems.log";
+const POSTMORTEMS_LOG = "postmortems.log";
 
 /**
  * Permanently delete a task file — the in-app "Delete task" action, distinct from `closeTask`

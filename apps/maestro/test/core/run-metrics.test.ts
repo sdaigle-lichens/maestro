@@ -131,7 +131,14 @@ function seedSession(
 const t = (mins: number, base = "2026-03-01T10:00:00.000Z") => new Date(Date.parse(base) + mins * 60_000).toISOString();
 
 const disp = (ts: string, agent: string, agent_id: string) => ({ ts, kind: "dispatch", agent, agent_id });
-const hand = (ts: string, origin: string, agent_id: string, status: string, label: string | null = null, extra = {}) => ({
+const hand = (
+  ts: string,
+  origin: string,
+  agent_id: string,
+  status: string,
+  label: string | null = null,
+  extra = {}
+) => ({
   ts,
   kind: "handoff",
   origin,
@@ -142,7 +149,12 @@ const hand = (ts: string, origin: string, agent_id: string, status: string, labe
 });
 
 const END = (root: string, id: string, reason?: string) =>
-  hook(root, "maestro-session-cleanup.cjs", { cwd: root, session_id: id, ...(reason ? { hook_event_name: "SessionEnd", reason } : {}) }, null);
+  hook(
+    root,
+    "maestro-session-cleanup.cjs",
+    { cwd: root, session_id: id, ...(reason ? { hook_event_name: "SessionEnd", reason } : {}) },
+    null
+  );
 
 function run(over: Partial<RunRecord> & { id: string; ended_at: string }): RunRecord {
   return {
@@ -150,7 +162,18 @@ function run(over: Partial<RunRecord> & { id: string; ended_at: string }): RunRe
     task: "001-a.md",
     started_at: over.ended_at,
     duration_ms: 60_000,
-    agents: [{ agent: "backend", runs: 1, success: 1, failure: 0, loop_backs: 0, human_reviews: 0, duration_ms: 60_000, ctx_pct: 40 }],
+    agents: [
+      {
+        agent: "backend",
+        runs: 1,
+        success: 1,
+        failure: 0,
+        loop_backs: 0,
+        human_reviews: 0,
+        duration_ms: 60_000,
+        ctx_pct: 40,
+      },
+    ],
     skills: [],
     handoffs: [{ agent: "backend", label: "success" }],
     loop_backs: [],
@@ -169,13 +192,18 @@ describe("recording a finished run", () => {
     const root = await installed();
     const S = "sess-rec-1";
     const sub = (type: string, id: string, event: string, msg?: string) =>
-      hook(root, "maestro-subagent-log.cjs", {
-        cwd: root,
-        hook_event_name: event,
-        agent_type: type,
-        agent_id: id,
-        ...(msg ? { last_assistant_message: msg } : {}),
-      }, S);
+      hook(
+        root,
+        "maestro-subagent-log.cjs",
+        {
+          cwd: root,
+          hook_event_name: event,
+          agent_type: type,
+          agent_id: id,
+          ...(msg ? { last_assistant_message: msg } : {}),
+        },
+        S
+      );
     // Establish the workflow through the real CLI.
     const wf = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-set-session-workflow.cjs"), "build"], {
       encoding: "utf8",
@@ -338,7 +366,9 @@ describe("recording a finished run", () => {
 
   it("a linked worktree records into the main checkout's metrics file", async () => {
     const root = await installed();
-    execFileSync("git", ["-c", "user.email=a@b.c", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "i"], { cwd: root });
+    execFileSync("git", ["-c", "user.email=a@b.c", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "i"], {
+      cwd: root,
+    });
     const wt = path.join(tmp, "p-task-9");
     execFileSync("git", ["worktree", "add", "-q", wt, "-b", "task-9"], { cwd: root });
     fs.mkdirSync(path.join(wt, ".claude"), { recursive: true });
@@ -393,13 +423,18 @@ describe("retention and folding", () => {
       const id = `s${String(i).padStart(2, "0")}`;
       seedSession(root, id, {
         task: `t${i}x.md`,
-        log: [disp(t(i * 10), "backend", "x"), hand(t(i * 10 + 1), "backend", "x", i % 4 === 0 ? "failure" : "success", null, { ctx_pct: 20 + i })],
+        log: [
+          disp(t(i * 10), "backend", "x"),
+          hand(t(i * 10 + 1), "backend", "x", i % 4 === 0 ? "failure" : "success", null, { ctx_pct: 20 + i }),
+        ],
       });
       expect(END(root, id).code).toBe(0);
     }
     const f = readFile(root);
     expect(f.runs).toHaveLength(10);
-    expect(f.runs.map((r) => r.id)).toEqual(Array.from({ length: 10 }, (_, k) => `run-s${String(k + 3).padStart(2, "0")}`));
+    expect(f.runs.map((r) => r.id)).toEqual(
+      Array.from({ length: 10 }, (_, k) => `run-s${String(k + 3).padStart(2, "0")}`)
+    );
     const wf = f.totals.by_workflow["build"]!;
     expect(wf.runs).toBe(3);
     expect(wf.failure).toBe(1); // s00 failed; s01, s02 succeeded
@@ -418,7 +453,9 @@ describe("retention and folding", () => {
   it("honours maestro.json metrics.recent_runs", async () => {
     const root = await installed({ metrics: { recent_runs: 2 } });
     for (let i = 0; i < 5; i++) {
-      seedSession(root, `s${i}`, { log: [disp(t(i * 10), "backend", "x"), hand(t(i * 10 + 1), "backend", "x", "success")] });
+      seedSession(root, `s${i}`, {
+        log: [disp(t(i * 10), "backend", "x"), hand(t(i * 10 + 1), "backend", "x", "success")],
+      });
       END(root, `s${i}`);
     }
     const f = readFile(root);
@@ -429,7 +466,9 @@ describe("retention and folding", () => {
   it.each([0, -3, "7", null, 1.5])("an invalid recent_runs (%s) falls back to a sane window", async (bad) => {
     const root = await installed({ metrics: { recent_runs: bad } });
     for (let i = 0; i < 12; i++) {
-      seedSession(root, `s${i}`, { log: [disp(t(i * 10), "backend", "x"), hand(t(i * 10 + 1), "backend", "x", "success")] });
+      seedSession(root, `s${i}`, {
+        log: [disp(t(i * 10), "backend", "x"), hand(t(i * 10 + 1), "backend", "x", "success")],
+      });
       END(root, `s${i}`);
     }
     const f = readFile(root);
@@ -472,8 +511,26 @@ describe("folding is correct and idempotent", () => {
         loop_backs: [{ from: "reviewer", label: "x", count: 2 }],
         human_reviews: [{ after: "backend", outcome: "approved" }],
         agents: [
-          { agent: "backend", runs: 2, success: 1, failure: 1, loop_backs: 2, human_reviews: 1, duration_ms: 500, ctx_pct: 30 },
-          { agent: "reviewer", runs: 1, success: 1, failure: 0, loop_backs: 0, human_reviews: 0, duration_ms: 100, ctx_pct: null },
+          {
+            agent: "backend",
+            runs: 2,
+            success: 1,
+            failure: 1,
+            loop_backs: 2,
+            human_reviews: 1,
+            duration_ms: 500,
+            ctx_pct: 30,
+          },
+          {
+            agent: "reviewer",
+            runs: 1,
+            success: 1,
+            failure: 0,
+            loop_backs: 0,
+            human_reviews: 0,
+            duration_ms: 100,
+            ctx_pct: null,
+          },
         ],
       }),
       mk(1, "a", "failure"),
@@ -565,7 +622,7 @@ describe("two sessions ending at the same time", () => {
     const N = 24;
     for (let i = 0; i < N; i++) {
       seedSession(root, `c${i}`, {
-        log: [disp(t(i), "backend", "x"), hand(t(i) , "backend", "x", "success")],
+        log: [disp(t(i), "backend", "x"), hand(t(i), "backend", "x", "success")],
       });
     }
     const script = path.join(root, ".claude", "scripts", "maestro-session-cleanup.cjs");
@@ -638,10 +695,14 @@ describe("the team-meeting evidence digest", () => {
         env: env(root, "sess-brief"),
       });
     // Render the orchestrator once so `start` does not refuse the project as stale.
-    const rendered = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
-      encoding: "utf8",
-      env: env(root, null),
-    });
+    const rendered = spawnSync(
+      "node",
+      [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root],
+      {
+        encoding: "utf8",
+        env: env(root, null),
+      }
+    );
     expect(rendered.status, rendered.stderr).toBe(0);
 
     for (let i = 0; i < 4; i++) {
@@ -671,7 +732,9 @@ describe("the team-meeting evidence digest", () => {
 
   it("brief without a metrics file reports metrics:false and still works", async () => {
     const root = await installed();
-    spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: env(root, null) });
+    spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: env(root, null),
+    });
     const sh = (args: string[]) =>
       spawnSync("node", [path.join(PLUGIN_SCRIPTS, "maestro-team-meeting.cjs"), ...args, root], {
         encoding: "utf8",

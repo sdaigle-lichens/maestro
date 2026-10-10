@@ -203,9 +203,7 @@ describe("maestro-workflow-spec.cjs post-write consequences (acceptance criterio
     // Independently confirm the re-rendered table matches what the renderer itself would produce
     // right now (i.e. the same check the readiness hook's check-5 makes) — the table is not
     // merely present, it AGREES with the config on disk.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { handoffTable } = require(path.join(REPO_ROOT, "plugins/maestro/scripts/maestro-render-orchestrator.cjs"));
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { extractRegion } = require(path.join(REPO_ROOT, "plugins/maestro/scripts/lib/maestro-skill-regions.cjs"));
     const cfgAfter = JSON.parse(fs.readFileSync(maestroJsonPath, "utf8"));
     const rendered = extractRegion(skillMd, "HANDOFFS");
