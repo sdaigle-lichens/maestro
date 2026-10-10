@@ -414,7 +414,7 @@
     ]
   },
   "086-add-a-shared-eslint-config-package-and-lint-the-monorepo.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "081-expose-agent-fork-and-rule-move-as-plugin-clis-and-evaluate-an-app-mcp-channel-bridge.md",
       "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md"
