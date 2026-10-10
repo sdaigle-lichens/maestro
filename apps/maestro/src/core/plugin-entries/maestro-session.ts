@@ -158,6 +158,28 @@ export {
 } from "../channel-write-guard.js";
 export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";
 
+// Durable per-project run metrics (`080`) — recorded by the SessionEnd hooks before the session
+// directory is removed, read by the team-meeting evidence digest. `fs`/`path` only — keeps
+// `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  recordSessionRun,
+  recordRun,
+  readMetrics,
+  renderMetricsDigest,
+  buildRunRecord,
+  foldRun,
+  compact as compactMetrics,
+  recentRunsLimit,
+  metricsFileFor,
+  metricsDirFor,
+  METRICS_DIR_NAME,
+  METRICS_FILE_NAME,
+  DEFAULT_RECENT_RUNS,
+  type RunRecord,
+  type MetricsFile,
+  type Totals,
+} from "../run-metrics.js";
+
 // Team-meeting mode — the `meeting` flag in session.json that the SubagentStart/Stop hooks and the
 // write guard read to treat a meeting participant differently from a workflow agent. `fs`/`path`
 // only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.

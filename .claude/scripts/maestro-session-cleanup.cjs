@@ -29,7 +29,7 @@
 // Reads the hook payload on stdin; no-op when it carries no cwd.
 
 const path = require("path");
-const { readStdin, sweep, resolveSessionId, endSessionState } = require("./lib/maestro-session.cjs");
+const { readStdin, sweep, resolveSessionId, endSessionState, recordSessionRun } = require("./lib/maestro-session.cjs");
 
 async function main() {
   let payload = {};
@@ -40,6 +40,14 @@ async function main() {
   }
   const cwd = payload.cwd;
   if (!cwd) return;
+  try {
+    // `080`: fold this session's finished run into the durable metrics file BEFORE its directory
+    // can be removed below. Runs on every end (a resumable one too): a run id already recorded is
+    // replaced, not duplicated. Best-effort — metrics must never block a session's exit.
+    recordSessionRun(cwd, resolveSessionId(payload));
+  } catch {
+    // ignored
+  }
   try {
     // `064`: the payload's own `session_id` first, CLAUDE_CODE_SESSION_ID second, and nothing at
     // all when neither resolves. `removeSessionState` owns the "only mine, plus the legacy flat

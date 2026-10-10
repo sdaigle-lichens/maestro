@@ -43,6 +43,8 @@ const {
   endMeeting,
   agentRunsFromLog,
   bareAgentName,
+  readMetrics,
+  renderMetricsDigest,
 } = require("./lib/maestro-session.cjs");
 const tm = require("./lib/maestro-team-meeting.cjs");
 
@@ -294,6 +296,7 @@ function runBrief() {
     reportFiles: collectReportFiles(),
     evidence: {
       digest: sessionDigest(),
+      metrics: renderMetricsDigest(readMetrics(projectDir)),
       postmortemsLog: readText(path.join(claudeDir, "postmortems.log")),
       taskPostMortems: taskPostMortems(),
     },
@@ -314,6 +317,7 @@ function runBrief() {
     slices,
     evidence: {
       digest: !!input.evidence.digest,
+      metrics: !!input.evidence.metrics,
       postmortemsLog: !!input.evidence.postmortemsLog,
       taskPostMortems: input.evidence.taskPostMortems.length,
     },
