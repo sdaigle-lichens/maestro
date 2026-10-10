@@ -38,6 +38,7 @@ __export(maestro_session_exports, {
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   DEFAULT_RECENT_RUNS: () => DEFAULT_RECENT_RUNS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
+  MAIN_CHECKOUT_SHARED_DIRS: () => MAIN_CHECKOUT_SHARED_DIRS,
   MEETING_DIR_NAME: () => MEETING_DIR_NAME,
   MEETING_LEFTOVERS_KEY: () => MEETING_LEFTOVERS_KEY,
   METRICS_DIR_NAME: () => METRICS_DIR_NAME,
@@ -58,6 +59,7 @@ __export(maestro_session_exports, {
   buildRunRecord: () => buildRunRecord,
   channelDir: () => channelDir,
   checkChannelWrite: () => checkChannelWrite,
+  checkWorktreeWrite: () => checkWorktreeWrite,
   closeMeeting: () => closeMeeting,
   collectAgentSkills: () => collectAgentSkills,
   compactMetrics: () => compact,
@@ -1205,9 +1207,64 @@ function sendMessageHandoff(transcript) {
   return found;
 }
 
-// src/core/run-metrics.ts
+// src/core/worktree-write-guard.ts
 var import_node_fs10 = __toESM(require("node:fs"), 1);
 var import_node_path8 = __toESM(require("node:path"), 1);
+var MAIN_CHECKOUT_SHARED_DIRS = ["maestro-tasks", "channels", "maestro_sessions"];
+var WRITE_TOOL_PATH_KEYS2 = {
+  Write: "file_path",
+  Edit: "file_path",
+  MultiEdit: "file_path",
+  NotebookEdit: "notebook_path"
+};
+function realResolve2(p) {
+  let cur = import_node_path8.default.resolve(p);
+  const tail = [];
+  for (; ; ) {
+    let exists = true;
+    try {
+      import_node_fs10.default.lstatSync(cur);
+    } catch {
+      exists = false;
+    }
+    if (exists) {
+      try {
+        return import_node_path8.default.join(import_node_fs10.default.realpathSync(cur), ...tail);
+      } catch {
+        return null;
+      }
+    }
+    const parent = import_node_path8.default.dirname(cur);
+    if (parent === cur) return import_node_path8.default.join(cur, ...tail);
+    tail.unshift(import_node_path8.default.basename(cur));
+    cur = parent;
+  }
+}
+var within = (target, root) => target === root || target.startsWith(root + import_node_path8.default.sep);
+function checkWorktreeWrite(input) {
+  const { cwd, toolName, toolInput, worktree } = input;
+  const key = toolName ? WRITE_TOOL_PATH_KEYS2[toolName] : void 0;
+  if (!key || !worktree) return { allow: true };
+  if (typeof worktree.path !== "string" || typeof worktree.main_root !== "string") return { allow: true };
+  if (!worktree.path || !worktree.main_root) return { allow: true };
+  const raw = toolInput?.[key];
+  if (typeof raw !== "string" || raw === "") return { allow: true };
+  const wt = realResolve2(worktree.path);
+  const main = realResolve2(worktree.main_root);
+  const target = realResolve2(import_node_path8.default.resolve(cwd || worktree.path, raw));
+  if (!wt || !main || !target) return { allow: true };
+  if (within(target, wt)) return { allow: true };
+  if (!within(target, main)) return { allow: true };
+  if (MAIN_CHECKOUT_SHARED_DIRS.some((d) => within(target, import_node_path8.default.join(main, ".claude", d)))) return { allow: true };
+  return {
+    allow: false,
+    reason: `Blocked: this session runs its task in the git worktree ${worktree.path}, and "${raw}" resolves to ${target}, inside the main checkout (${worktree.main_root}), which another session may be using and which a merge would later refuse to overwrite. Write the file at the same relative path under ${worktree.path} instead. Only ${MAIN_CHECKOUT_SHARED_DIRS.map((d) => `.claude/${d}/`).join(", ")} stay in the main checkout.`
+  };
+}
+
+// src/core/run-metrics.ts
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 var METRICS_DIR_NAME = "maestro-metrics";
 var METRICS_FILE_NAME = "metrics.json";
 var DEFAULT_RECENT_RUNS = 10;
@@ -1217,10 +1274,10 @@ function emptyMetrics() {
   return { version: 1, runs: [], totals: { by_workflow: {}, by_agent: {} } };
 }
 function metricsDirFor(projectRoot) {
-  return import_node_path8.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
+  return import_node_path9.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
 }
 function metricsFileFor(projectRoot) {
-  return import_node_path8.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
+  return import_node_path9.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
 }
 function day(ts) {
   return typeof ts === "string" ? ts.slice(0, 10) : "";
@@ -1408,7 +1465,7 @@ function buildRunRecord(entries, session, cfg, sessionId) {
   return {
     id: session?.run_id || sessionId,
     workflow,
-    task: session?.active_task ? import_node_path8.default.basename(session.active_task) : null,
+    task: session?.active_task ? import_node_path9.default.basename(session.active_task) : null,
     started_at,
     ended_at,
     duration_ms,
@@ -1426,20 +1483,20 @@ function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 function withLock(dir, fn) {
-  import_node_fs10.default.mkdirSync(dir, { recursive: true });
-  const lock = import_node_path8.default.join(dir, "lock");
+  import_node_fs11.default.mkdirSync(dir, { recursive: true });
+  const lock = import_node_path9.default.join(dir, "lock");
   const deadline = Date.now() + LOCK_WAIT_MS;
   let held = false;
   for (; ; ) {
     try {
-      import_node_fs10.default.mkdirSync(lock);
+      import_node_fs11.default.mkdirSync(lock);
       held = true;
       break;
     } catch (err) {
       if (err.code !== "EEXIST") break;
       try {
-        if (Date.now() - import_node_fs10.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
-          import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
+        if (Date.now() - import_node_fs11.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
+          import_node_fs11.default.rmSync(lock, { recursive: true, force: true });
           continue;
         }
       } catch {
@@ -1452,12 +1509,12 @@ function withLock(dir, fn) {
   try {
     return fn();
   } finally {
-    if (held) import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
+    if (held) import_node_fs11.default.rmSync(lock, { recursive: true, force: true });
   }
 }
 function readMetrics(projectRoot) {
   try {
-    const v = JSON.parse(import_node_fs10.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
+    const v = JSON.parse(import_node_fs11.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
     if (v && v.version === 1 && Array.isArray(v.runs) && v.totals?.by_workflow && v.totals?.by_agent) return v;
   } catch {
   }
@@ -1470,25 +1527,25 @@ function recentRunsLimit(cfg) {
 function recordRun(projectRoot, run, keep = DEFAULT_RECENT_RUNS) {
   const dir = metricsDirFor(projectRoot);
   withLock(dir, () => {
-    const gi = import_node_path8.default.join(dir, ".gitignore");
-    if (!import_node_fs10.default.existsSync(gi)) import_node_fs10.default.writeFileSync(gi, "*\n");
+    const gi = import_node_path9.default.join(dir, ".gitignore");
+    if (!import_node_fs11.default.existsSync(gi)) import_node_fs11.default.writeFileSync(gi, "*\n");
     const file = readMetrics(projectRoot);
     const runs = file.runs.filter((r) => r.id !== run.id);
     runs.push(run);
     const next = compact({ ...file, runs }, keep);
     const target = metricsFileFor(projectRoot);
     const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
-    import_node_fs10.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
-    import_node_fs10.default.renameSync(tmp, target);
+    import_node_fs11.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
+    import_node_fs11.default.renameSync(tmp, target);
   });
 }
 function recordSessionRun(projectRoot, sessionId) {
-  const claudeDir = import_node_path8.default.join(projectRoot, ".claude");
+  const claudeDir = import_node_path9.default.join(projectRoot, ".claude");
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return false;
   let raw;
   try {
-    raw = import_node_fs10.default.readFileSync(paths.log, "utf8");
+    raw = import_node_fs11.default.readFileSync(paths.log, "utf8");
   } catch {
     return false;
   }
@@ -1502,12 +1559,12 @@ function recordSessionRun(projectRoot, sessionId) {
   }
   const readJson2 = (p) => {
     try {
-      return JSON.parse(import_node_fs10.default.readFileSync(p, "utf8"));
+      return JSON.parse(import_node_fs11.default.readFileSync(p, "utf8"));
     } catch {
       return null;
     }
   };
-  const cfg = readJson2(import_node_path8.default.join(claudeDir, "maestro.json"));
+  const cfg = readJson2(import_node_path9.default.join(claudeDir, "maestro.json"));
   const run = buildRunRecord(entries, readJson2(paths.state), cfg, paths.id);
   if (!run) return false;
   recordRun(projectRoot, run, recentRunsLimit(cfg));
@@ -1555,13 +1612,13 @@ function renderMetricsDigest(file) {
 }
 
 // src/core/meeting-mode.ts
-var import_node_fs11 = __toESM(require("node:fs"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
+var import_node_fs12 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
 var MEETING_DIR_NAME = "meeting";
 var MEETING_LEFTOVERS_KEY = "meeting_leftovers";
 var MEETING_MODES = ["review", "post-mortem"];
 function meetingDirFor(sessionDir) {
-  return import_node_path9.default.join(sessionDir, MEETING_DIR_NAME);
+  return import_node_path10.default.join(sessionDir, MEETING_DIR_NAME);
 }
 function readMeeting(session) {
   if (!session || typeof session !== "object") return null;
@@ -1593,22 +1650,22 @@ function withoutMeeting(session) {
 }
 function readRawState(statePath) {
   try {
-    const parsed = JSON.parse(import_node_fs11.default.readFileSync(statePath, "utf8"));
+    const parsed = JSON.parse(import_node_fs12.default.readFileSync(statePath, "utf8"));
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
 }
 function writeRawState(statePath, state) {
-  import_node_fs11.default.mkdirSync(import_node_path9.default.dirname(statePath), { recursive: true });
+  import_node_fs12.default.mkdirSync(import_node_path10.default.dirname(statePath), { recursive: true });
   const tmp = statePath + ".tmp";
-  import_node_fs11.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
-  import_node_fs11.default.renameSync(tmp, statePath);
+  import_node_fs12.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  import_node_fs12.default.renameSync(tmp, statePath);
 }
 function startMeeting(statePath, sessionDir, opts) {
   const now = opts.now ?? /* @__PURE__ */ new Date();
   const dir = meetingDirFor(sessionDir);
-  import_node_fs11.default.mkdirSync(dir, { recursive: true });
+  import_node_fs12.default.mkdirSync(dir, { recursive: true });
   const meeting = {
     id: `m-${now.getTime()}`,
     mode: opts.mode,
@@ -1639,10 +1696,10 @@ function closeMeeting(session, projectDir) {
   return { state, ended: true };
 }
 function projectDirOfState(statePath) {
-  return import_node_path9.default.resolve(statePath, "..", "..", "..", "..");
+  return import_node_path10.default.resolve(statePath, "..", "..", "..", "..");
 }
 function endMeeting(statePath, projectDir = projectDirOfState(statePath)) {
-  if (!import_node_fs11.default.existsSync(statePath)) return false;
+  if (!import_node_fs12.default.existsSync(statePath)) return false;
   const { state, ended } = closeMeeting(readRawState(statePath), projectDir);
   if (ended) writeRawState(statePath, state);
   return ended;
@@ -1662,6 +1719,7 @@ function meetingNotice(meeting, agentType) {
   CLAIM_IDLE_CAP_MS,
   DEFAULT_RECENT_RUNS,
   LEGACY_SESSION_FILES,
+  MAIN_CHECKOUT_SHARED_DIRS,
   MEETING_DIR_NAME,
   MEETING_LEFTOVERS_KEY,
   METRICS_DIR_NAME,
@@ -1682,6 +1740,7 @@ function meetingNotice(meeting, agentType) {
   buildRunRecord,
   channelDir,
   checkChannelWrite,
+  checkWorktreeWrite,
   closeMeeting,
   collectAgentSkills,
   compactMetrics,

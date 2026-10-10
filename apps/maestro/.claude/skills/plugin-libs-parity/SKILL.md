@@ -165,6 +165,32 @@ and is **not** copied into projects. The meeting flag the hooks read is not in i
 alongside `src/core/tasks.ts`, kept in sync so a task close from the UI and one from the orchestrator
 cannot disagree about which tasks are ready. Editing `tasks.ts` alone is not enough.
 
+## After rebuilding: refresh the `.claude/scripts/lib` mirrors and run the parity test (`082`)
+
+This repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin libs listed in
+`install.ts`'s `STATIC_ASSETS` (the repo is a Maestro project too). `build:plugin-libs` writes only
+`plugins/maestro/scripts/lib/`, so a rebuild leaves the mirrors stale and `parity.test.ts`'s
+"plugin-lib project mirror parity (066)" fails. After every rebuild:
+
+1. `cp plugins/maestro/scripts/lib/<name>.cjs .claude/scripts/lib/<name>.cjs` for each lib in
+   `STATIC_ASSETS` that changed (and the plugin script copies, e.g. `maestro-task-status.cjs`);
+2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.
+
+**Decision (`082`): the mirrors stay tracked.** Untracking them would leave a fresh clone without a
+working runtime for the repo's own hooks. The cost is a guaranteed merge conflict whenever two task
+branches both rebuild a lib; `maestro-task-status.cjs merge` therefore detects "every conflicting
+file is a generated lib or its mirror" and prints the resolution: resolve `src/core` first, rebuild,
+copy over the mirrors, run the parity test, commit, merge again. Never hand-merge bundle text.
+
+**Worktree path comments.** The bundle's `// <path>` comments must not depend on where the checkout
+lives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, which used to stamp
+`// ../../../maestro/packages/...` and fail the freshness check; `build-plugin-libs.mjs` now aliases
+`@repo/claude-fs` to this checkout's own `packages/` source. A new workspace import in a bundled
+module needs an alias there too.
+
+`maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the
+worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
+
 ## Why the build is so specific
 
 - **`absWorkingDir` is pinned to the app root.** esbuild stamps a `// <path>` comment above each

@@ -31,6 +31,7 @@ import { renderOrchestrator } from "../../src/core/render.js";
 import { defaultish, withSkillNodes } from "./fixtures/configs.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
+import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // Snapshotted as .cjs, not .js: this package is "type": "module", so node would refuse to run the
@@ -158,6 +159,7 @@ describe("differential against the legacy installer", () => {
     await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     execFileSync("node", [path.join(legacyPluginRoot(), "scripts", "maestro-install.cjs"), theirs], {
       encoding: "utf8",
+      env: pinnedEnv(tmp),
     });
 
     // The port copies strictly more (the hook scripts the plugin used to run from its own root),
@@ -872,7 +874,7 @@ describe("maestro-check-runtime.cjs", () => {
     const root = makeProject(name);
     writeConfig(root, defaultish);
     await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: pinnedEnv(tmp) });
     const home = path.join(tmp, "home-" + name);
     writeInstalledPlugins(home, {
       "maestro@maestro": [
@@ -1847,7 +1849,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
   // from the app's own content hash above.
   it("makes maestro-check-runtime say update when the script is gone", async () => {
     const root = await installed("check");
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: pinnedEnv(tmp) });
     const check = (): { action: string; reason?: string } =>
       JSON.parse(
         execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
@@ -1976,7 +1978,7 @@ describe("maestro-step4-gate.cjs (046)", () => {
 
   it("makes maestro-check-runtime say update when the script is gone", async () => {
     const root = await installed("step4-check");
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], { env: pinnedEnv(tmp) });
     const check = (): { action: string; reason?: string } =>
       JSON.parse(
         execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {

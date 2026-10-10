@@ -158,6 +158,9 @@ export {
 } from "../channel-write-guard.js";
 export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";
 
+// A worktree run may not write into the main checkout (`082`). `fs`/`path` only.
+export { checkWorktreeWrite, MAIN_CHECKOUT_SHARED_DIRS } from "../worktree-write-guard.js";
+
 // Durable per-project run metrics (`080`) — recorded by the SessionEnd hooks before the session
 // directory is removed, read by the team-meeting evidence digest. `fs`/`path` only — keeps
 // `grep -c "node:sqlite"` on maestro-session.cjs at 0.

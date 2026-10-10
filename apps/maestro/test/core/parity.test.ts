@@ -386,6 +386,19 @@ describe("generated bundle freshness (066)", () => {
       fs.rmSync(tmpDir, { recursive: true, force: true });
     }
   });
+
+  it("no bundle stamps a module path that escapes this checkout (082: a worktree's symlinked node_modules)", () => {
+    // esbuild's `// <path>` comments are relative to apps/maestro. A workspace package resolved
+    // through a symlink to ANOTHER checkout comes out as `../../../<other>/packages/...`, so the
+    // bytes depend on where the checkout lives. The build aliases workspace packages to prevent it.
+    for (const name of fs.readdirSync(LIB).filter((f) => f.endsWith(".cjs"))) {
+      const escaping = fs
+        .readFileSync(path.join(LIB, name), "utf8")
+        .split("\n")
+        .filter((l) => /^\/\/ (\.\.\/){3,}/.test(l));
+      expect(escaping, `${name} has module-path comments outside the checkout`).toEqual([]);
+    }
+  });
 });
 
 // The second half of `066`'s incident: even a fresh plugins/maestro/scripts/lib bundle is not

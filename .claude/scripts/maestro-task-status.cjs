@@ -50,7 +50,9 @@
 //       worktree has uncommitted changes, the branch has no worktree, the main checkout is mid-merge or
 //       on a detached HEAD, or the merge would overwrite local changes. On a CONFLICT it aborts the
 //       merge (main goes back to how it was), keeps the worktree and branch, and lists the conflicting
-//       files. Never pushes. No pull-request mode: the branch is an ordinary local branch the user
+//       files — and, when ALL of them are generated plugin libs or their .claude/scripts/lib mirrors
+//       (`082`), names the mechanical resolution: rebuild the libs, copy each over its mirror.
+//       Never pushes. No pull-request mode: the branch is an ordinary local branch the user
 //       can `git push` themselves (see .claude/skills/task-queue, "Finishing a worktree task").
 //
 // All cascade/status logic lives in lib/maestro-tasks.cjs so the app and the
@@ -397,6 +399,32 @@ function refuse(message) {
   process.exit(1);
 }
 
+// `082`: a conflict in a GENERATED plugin lib (plugins/maestro/scripts/lib/*.cjs, except the
+// hand-maintained maestro-tasks.cjs) or in this repo's tracked MIRROR of one
+// (.claude/scripts/lib/*.cjs) is never resolved by hand-merging the bundle text. Two tasks that both
+// rebuilt the same lib always collide there. The fix is mechanical: resolve the TypeScript source
+// conflicts first, rebuild the plugin libs, then copy each plugin lib over its mirror.
+function generatedLibResolution(conflicts) {
+  const kinds = conflicts.map((f) => {
+    const m = /^(plugins\/maestro|\.claude)\/scripts\/lib\/([^/]+\.cjs)$/.exec(f);
+    if (!m || m[2] === "maestro-tasks.cjs") return null;
+    return { file: f, name: m[2], mirror: m[1] === ".claude" };
+  });
+  if (!conflicts.length || kinds.some((k) => k === null)) return null;
+  const mirrors = kinds.filter((k) => k.mirror);
+  return (
+    "Every conflicting file is a generated plugin lib or its tracked mirror, so do NOT edit the bundle text. Resolve like this in the worktree:\n" +
+    "  1. resolve any conflict in apps/maestro/src/core/** first (none listed here means the sources merged cleanly);\n" +
+    "  2. rebuild the libs: `pnpm --filter maestro build:plugin-libs`;\n" +
+    (mirrors.length
+      ? "  3. copy each plugin lib over its mirror: " +
+        mirrors.map((k) => `\`cp plugins/maestro/scripts/lib/${k.name} .claude/scripts/lib/${k.name}\``).join(", ") +
+        ";\n"
+      : "  3. (no mirror conflicted, but copy any changed lib over its .claude/scripts/lib/ mirror anyway);\n") +
+    "  4. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
+  );
+}
+
 function mergeWorktreeTask(arg) {
   const { filename, status } = resolveTaskName(arg);
   const branch = worktreeBranchFor(filename);
@@ -433,7 +461,8 @@ function mergeWorktreeTask(arg) {
       process.stdout.write(
         `Maestro tasks: merge CONFLICT merging ${branch} into ${base.out}. The merge was aborted; ${base.out} is unchanged, and the worktree (${wtPath}) and branch ${branch} are intact.\n` +
           `Conflicting files:\n${conflicts.map((f) => `  ${f}`).join("\n")}\n` +
-          `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again. Do NOT resolve them for the user without asking.\n`
+          `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again. Do NOT resolve them for the user without asking.\n` +
+          (generatedLibResolution(conflicts) || "")
       );
     } else {
       process.stdout.write(

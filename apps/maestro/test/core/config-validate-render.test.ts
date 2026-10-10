@@ -13,6 +13,7 @@ import { fileURLToPath } from "node:url";
 
 import { writeConfig } from "../../src/core/config.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
+import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_SCRIPT = path.join(here, "../../../../plugins/maestro/scripts/maestro-render-orchestrator.cjs");
@@ -78,7 +79,7 @@ afterEach(() => {
 describe("maestro-render-orchestrator.cjs — duplicate-agent-type reporting (041)", () => {
   it("reports the collision on stderr and still re-renders the orchestrator", () => {
     const root = makeProject(duplicateConfig);
-    const result = spawnSync("node", [PLUGIN_SCRIPT, root], { encoding: "utf8" });
+    const result = spawnSync("node", [PLUGIN_SCRIPT, root], { encoding: "utf8", env: pinnedEnv(tmp) });
     // Never blocks — a stale orchestrator is worse than a rendered one plus a warning.
     expect(result.status).toBe(0);
     expect(result.stderr).toContain("backend-api");
@@ -102,7 +103,7 @@ describe("maestro-render-orchestrator.cjs — duplicate-agent-type reporting (04
       ],
     };
     const root = makeProject(healthy);
-    const result = spawnSync("node", [PLUGIN_SCRIPT, root], { encoding: "utf8" });
+    const result = spawnSync("node", [PLUGIN_SCRIPT, root], { encoding: "utf8", env: pinnedEnv(tmp) });
     expect(result.status).toBe(0);
     // The point of this case: a clean config must produce a CLEAN stderr. Asserting only that
     // stdout says "re-rendered" would pass just as happily while every render warned.

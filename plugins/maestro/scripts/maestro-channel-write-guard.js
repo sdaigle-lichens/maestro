@@ -1,5 +1,7 @@
 #!/usr/bin/env node
-// PreToolUse hook (matcher: Write|Edit|MultiEdit|NotebookEdit) — confines the reviewer and
+// PreToolUse hook (matcher: Write|Edit|MultiEdit|NotebookEdit). Also refuses, for ANY caller, a
+// write into the main checkout while the session runs its task in a git worktree (`082`; logic in
+// apps/maestro/src/core/worktree-write-guard.ts). Its original job — confines the reviewer and
 // refactor agents' file writes to `<cwd>/.claude/channels/`, so they can hand a payload to the
 // next agent without being able to modify code, docs or config. Every other agent is untouched.
 //
@@ -23,6 +25,7 @@ const {
   resolveSessionPaths,
   meetingFor,
   meetingDirFor,
+  checkWorktreeWrite,
 } = require("./lib/maestro-session.cjs");
 
 (async () => {
@@ -44,6 +47,23 @@ const {
         meetingDir = meetingDirFor(sess.dir);
       }
     }
+    // A session running its task in a git worktree may not write into the main checkout (`082`).
+    // Applies to every agent AND the main session. Fails open: it only ever narrows.
+    let worktreeVerdict = { allow: true };
+    try {
+      if (p.cwd) {
+        const sess = resolveSessionPaths(path.join(p.cwd, ".claude"), p);
+        const state = sess ? readJson(sess.state) : null;
+        worktreeVerdict = checkWorktreeWrite({
+          cwd: p.cwd,
+          toolName: p.tool_name,
+          toolInput: p.tool_input,
+          worktree: state && state.worktree,
+        });
+      }
+    } catch {
+      worktreeVerdict = { allow: true };
+    }
     verdict = checkChannelWrite({
       cwd: p.cwd || "",
       agentType: p.agent_type,
@@ -51,6 +71,7 @@ const {
       toolInput: p.tool_input,
       meetingDir,
     });
+    if (verdict.allow) verdict = worktreeVerdict;
   } catch (err) {
     // A restricted agent or a meeting participant must fail closed; anyone else was never in scope.
     if (!participant && !isChannelOnlyAgent(p.agent_type)) process.exit(0);
