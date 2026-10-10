@@ -5,14 +5,16 @@
   "scripts": {
     "build": "turbo run build",
     "dev": "turbo run dev",
-    "lint": "turbo run lint",
+    "lint": "turbo run lint && eslint plugins/maestro/scripts",
     "check": "turbo run check",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "verify": "turbo run check typecheck test",
+    "verify": "pnpm lint && turbo run check typecheck test",
     "format": "turbo run format"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "eslint": "^9.39.0",
     "prettier": "^3.8.1",
     "turbo": "latest"
   }

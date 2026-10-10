@@ -72,7 +72,6 @@ function hookEnv(root: string, sessionId: string | null, home: string): NodeJS.P
 const sessionDir = (root: string, id: string = HOOK_SESSION) => path.join(root, ".claude", "maestro_sessions", id);
 const logPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "log.jsonl");
 const statePathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "session.json");
-const tasksPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "tasks.json");
 
 let tmp: string;
 // Every installRuntime()/refreshStaleRuntime() call below passes this, so the report-sync step
