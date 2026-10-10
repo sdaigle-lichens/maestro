@@ -158,6 +158,10 @@ export {
 } from "../channel-write-guard.js";
 export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";
 
+// Does a final message agree with itself — report verdict vs HANDOFF line (`083`)? Read by the
+// SubagentStop hook. `fs`-free.
+export { checkHandoff, reportVerdict, type HandoffIssue, type HandoffIssueKind } from "../handoff-check.js";
+
 // A worktree run may not write into the main checkout (`082`). `fs`/`path` only.
 export { checkWorktreeWrite, MAIN_CHECKOUT_SHARED_DIRS } from "../worktree-write-guard.js";
 

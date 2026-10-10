@@ -71,7 +71,11 @@ Orchestrator (.claude/skills/maestro/SKILL.md):
                                  maestro_sessions/<session_id>/session.json, and ends any
                                  team meeting in it (closeMeeting)
   Step 3  execute the workflow: the success path from the Maestro:HANDOFFS table,
-          TaskCreate per step, Task() each agent step
+          TaskCreate per step, Task() each agent step. No TaskCreate (`083`): the path is
+          recorded with `maestro-task-status.cjs plan` / `plan-step` in session.json, and Step 4's
+          `done` refuses while a planned step (human review included) is unfinished. In a worktree
+          run Step 4 offers a user-approved commit before ever mentioning merge, and every command
+          handed to the user carries absolute paths (the session's cwd IS the worktree).
   Step 4  mark the task done (the mark-task-done node), then the OPTIONAL task-routing nudge
           (`046`) and the always-on /maestro-post-mortem question (`049`)
         │

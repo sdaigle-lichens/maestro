@@ -394,7 +394,10 @@ function collectReportContext(cfg, projectDir, agentType) {
     parts.push(
       `Handoff routing for the \`${agentType}\` agent. End your final message with exactly one \`HANDOFF:\` line so ` +
         `the orchestrator can route deterministically:\n${lines.join("\n")}` +
-        (hasSuccess ? "" : "\n(No success path leaves this node — it only feeds back via the condition above.)")
+        (hasSuccess ? "" : "\n(No success path leaves this node — it only feeds back via the condition above.)") +
+        "\n\nYour report's verdict and your HANDOFF line must agree. A real defect must end with the matching condition label " +
+        "when one is listed above. A report verdict of FAIL with `HANDOFF: success` is invalid, and so is ending with no " +
+        "HANDOFF line at all — the orchestrator is told about both and will not treat either as success."
     );
 
     // Per-route payload protocol, resolved across the three tiers above so the communication

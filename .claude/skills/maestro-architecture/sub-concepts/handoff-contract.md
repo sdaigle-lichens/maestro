@@ -66,7 +66,22 @@ The orchestrator (`templates/maestro/SKILL.md`, Step 5) reads the `HANDOFF:` lin
 continues the workflow's success path; a label matching a condition edge routes back to that edge's
 target node — resuming the target agent when `maestro-resume-target.cjs` finds it a completed run
 this session (`039`, see `agent-resume.md`), otherwise dispatching a fresh `Task` exactly as the
-success path always does. A missing/unknown line is treated as `success` but flagged.
+success path always does. A missing/unknown line is never
+silently `success` (`083`, below).
+
+### Verdict and HANDOFF must agree (`083`)
+
+A real defect must end with the matching condition-edge label when the workflow has one, and a
+report `"verdict": "FAIL"` with `HANDOFF: success` is **invalid**. Both the injected routing block
+(`maestro-inject-agent-context.js`) and the backend-like/test report seeds (`VERDICT_HANDOFF_NOTE` in
+`report-defaults.ts`, previous bodies in `PRIOR_SEEDS`) say so. The `SubagentStop` hook judges every
+workflow agent's final message with `checkHandoff` (`core/handoff-check.ts`, in `maestro-session.cjs`):
+a **missing** `HANDOFF:` line or a **contradiction** is put on the `kind:"handoff"` log entry as
+`handoff_issue`, appended to `session.json`'s `handoff_issues`, and echoed as a `systemMessage`. The
+orchestrator template tells it to run `maestro-task-status.cjs handoff-issues` after each subagent
+returns — it prints and clears the list — and to route deliberately (matching condition edge, or
+resume the agent for a corrected line) instead of defaulting to success. Agents that map to no workflow
+instance, and meeting participants, are never judged.
 
 **It never sees the payload (`036`).** The sender wrote it straight to the receiver's channel file,
 and the receiver's own `SubagentStart` inlines it — the orchestrator's job is routing only. The one
