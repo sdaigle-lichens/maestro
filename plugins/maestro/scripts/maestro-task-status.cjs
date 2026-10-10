@@ -40,6 +40,11 @@
 //       clean SessionEnd) is reaped automatically before the attempt, so a
 //       crashed session's claim never blocks a fresh one.
 //
+//       `--name <session name>` (`084`) records the claiming session's NAME beside its id, because
+//       cross-session messages are addressed by name and the id is all a hook can learn. The
+//       orchestrator reads its name from the agent listing. A claim without it works and shows as
+//       unnamed. `maestro-epic.cjs show` lists each running task with that name.
+//
 //   node maestro-task-status.cjs release [filename]
 //       Release THIS session's own claim on a task. Never removes a claim held
 //       by a DIFFERENT session, live or dead — that check is the whole point.
@@ -91,6 +96,15 @@ const {
 // project dir — so claims and session pointers resolve the same for every session.
 const projectDir = mainCheckoutRoot(process.env.CLAUDE_PROJECT_DIR || process.cwd());
 const [command, arg] = process.argv.slice(2);
+
+// `084`: `claim <filename> --name <session name>`. The orchestrator learns its session's name from
+// the agent listing (hooks never have it) and records it so a manager can message the session
+// running a task. Absent or empty means an unnamed claim, which works exactly as before.
+function flagValue(flag) {
+  const args = process.argv.slice(2);
+  const i = args.indexOf(flag);
+  return i !== -1 && typeof args[i + 1] === "string" && args[i + 1].trim() ? args[i + 1].trim() : null;
+}
 
 // Fall back to the task recorded by maestro-set-session-workflow.cjs (--task) so
 // the orchestrator can run `done`/`release` with no argument and act on exactly
@@ -183,7 +197,7 @@ function isSessionLive(sessionId, now) {
 // Claim `filename` for `sessionId`. Reaps a dead claim on this file first, then attempts an
 // exclusive ("wx") create. Returns { outcome: "claimed" } or
 // { outcome: "already-claimed", claim: { sessionId, claimedAt } } — EEXIST is never an error.
-function claimTask(filename, sessionId, now) {
+function claimTask(filename, sessionId, now, sessionName) {
   const base = path.basename(filename);
   ensureClaimsDir();
   const filePath = claimPathFor(base);
@@ -191,7 +205,10 @@ function claimTask(filename, sessionId, now) {
   const existing = readClaimFile(filePath);
   if (existing) {
     if (isSessionLive(existing.session_id, now)) {
-      return { outcome: "already-claimed", claim: { sessionId: existing.session_id, claimedAt: existing.claimed_at } };
+      return {
+        outcome: "already-claimed",
+        claim: { sessionId: existing.session_id, claimedAt: existing.claimed_at, sessionName: existing.session_name },
+      };
     }
     try {
       fs.rmSync(filePath, { force: true });
@@ -201,6 +218,7 @@ function claimTask(filename, sessionId, now) {
   }
 
   const payload = { session_id: sessionId, claimed_at: new Date(now).toISOString(), project_root: projectDir };
+  if (sessionName) payload.session_name = sessionName; // `084`
   try {
     fs.writeFileSync(filePath, `${JSON.stringify(payload, null, 2)}\n`, { flag: "wx" });
     return { outcome: "claimed" };
@@ -208,7 +226,10 @@ function claimTask(filename, sessionId, now) {
     if (err.code !== "EEXIST") throw err;
     const winner = readClaimFile(filePath);
     if (!winner) return { outcome: "claimed" }; // winner released/reaped between our EEXIST and this read
-    return { outcome: "already-claimed", claim: { sessionId: winner.session_id, claimedAt: winner.claimed_at } };
+    return {
+      outcome: "already-claimed",
+      claim: { sessionId: winner.session_id, claimedAt: winner.claimed_at, sessionName: winner.session_name },
+    };
   }
 }
 
@@ -832,13 +853,19 @@ try {
       process.exit(1);
     }
     const filename = path.basename(target);
-    const result = claimTask(filename, sessionId, Date.now());
+    const sessionName = flagValue("--name");
+    const result = claimTask(filename, sessionId, Date.now(), sessionName);
     if (result.outcome === "claimed") {
-      process.stdout.write(`Maestro tasks: claimed "${filename}" for session ${sessionId}\n`);
+      process.stdout.write(
+        `Maestro tasks: claimed "${filename}" for session ${sessionId}` +
+          (sessionName ? ` (named "${sessionName}")` : " (unnamed)") +
+          "\n"
+      );
       process.exit(0);
     }
+    const holder = result.claim.sessionName ? `${result.claim.sessionId}, named "${result.claim.sessionName}"` : result.claim.sessionId;
     process.stdout.write(
-      `Maestro tasks: "${filename}" is already claimed by an active session (${result.claim.sessionId}, since ${result.claim.claimedAt}) — take the next ready task instead\n`
+      `Maestro tasks: "${filename}" is already claimed by an active session (${holder}, since ${result.claim.claimedAt}) — take the next ready task instead\n`
     );
     process.exit(0);
   }

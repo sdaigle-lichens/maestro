@@ -37,3 +37,12 @@ Out of scope: desktop-app views for epics, and communication between managers of
 ## Blocked by
 
 - `083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md`
+
+## Post-Mortem
+
+- **Problem:** The reviewer found `.claude/scripts/maestro-epic.cjs` stale against the plugin copy, so a no-epic `report` read stdin first and could hang. `parity.test.ts` does not cover plugin script copies, so it passed, and the test agent's first no-hang test closed stdin and could not have caught it.
+  **Fix:** none
+- **Problem:** Every subagent's final message was flagged by the hook for a missing `HANDOFF:` line, because the report reached the orchestrator as a hand-back message.
+  **Fix:** none
+- **Problem:** A test agent's ad-hoc probe ran against the real repo because `mktemp` was sandbox-blocked. It cleaned up and left no stray changes.
+  **Fix:** none

@@ -402,13 +402,13 @@
     "blockedBy": []
   },
   "084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md"
     ]
   },
   "085-let-maestro-manager-sessions-of-different-epics-notify-each-other.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md"
     ]

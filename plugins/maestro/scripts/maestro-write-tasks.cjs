@@ -4,7 +4,8 @@
 // user has approved a slice breakdown, so the model never hand-assembles
 // filenames/numbering/the "## Blocked by" section itself.
 //
-//   node maestro-write-tasks.cjs <path-to-json>
+//   node maestro-write-tasks.cjs <path-to-json> [--epic <slug>]
+//       `--epic` (`084`) links every written task to that existing epic in the tracker.
 //
 // <path-to-json> is a JSON array, one entry per slice, already in topological
 // order (blockers before dependents):
@@ -111,7 +112,21 @@ ${blockedBy}
 }
 
 if (!jsonPath) {
-  fail("usage: maestro-write-tasks.cjs <path-to-json>");
+  fail("usage: maestro-write-tasks.cjs <path-to-json> [--epic <slug>]");
+}
+
+// `084`: `--epic <slug>` links every task this batch writes to that epic, through the tracker's
+// `epic` field. The epic must already exist (checked BEFORE anything is written, so a mistyped slug
+// leaves the queue untouched).
+const epicFlag = process.argv.indexOf("--epic");
+const epicSlug = epicFlag === -1 ? null : process.argv[epicFlag + 1];
+if (epicFlag !== -1 && !epicSlug) fail("--epic needs an epic name");
+let epicLib = null;
+if (epicSlug) {
+  epicLib = require("./lib/maestro-epic.cjs");
+  if (!epicLib.readEpicState(projectDir, epicSlug)) {
+    fail(`no epic "${epicSlug}" — create it first with maestro-epic.cjs create ${epicSlug}. Nothing was written.`);
+  }
 }
 
 let slices;
@@ -197,6 +212,7 @@ slices.forEach((slice, i) => {
 });
 
 const map = sync(projectDir);
+if (epicLib) epicLib.linkTasks(projectDir, epicSlug, filenames);
 const counts = Object.values(map).reduce(
   (c, v) => {
     c[v.status] = (c[v.status] || 0) + 1;
@@ -209,5 +225,7 @@ const range =
   filenames.length === 1 ? filenames[0] : `${filenames[0]}–${filenames[filenames.length - 1]}`;
 process.stdout.write(
   `Maestro tasks: wrote ${range} — ` +
-    `${Object.keys(map).length} task(s): ${counts.done} done, ${counts.ready} ready, ${counts.blocked} blocked\n`
+    `${Object.keys(map).length} task(s): ${counts.done} done, ${counts.ready} ready, ${counts.blocked} blocked` +
+    (epicSlug ? ` — linked to epic "${epicSlug}"` : "") +
+    "\n"
 );

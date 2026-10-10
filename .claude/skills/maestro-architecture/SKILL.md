@@ -138,6 +138,27 @@ SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
 | A subagent got a "team meeting in progress" notice instead of its routing, or a write was blocked outside `meeting/` | this session's `session.json` has a `meeting` listing that agent type. Starting a workflow (`maestro-set-session-workflow.cjs`) or `maestro-team-meeting.cjs end` removes it. See `sub-concepts/team-meeting.md`. |
 | Why does a hand-edited config's duplicate agent type show up as a banner / stderr warning / install report line? (`041`) | `apps/maestro/src/core/config-validate.ts`'s `duplicateAgentTypes(cfg)` — a pure validator reporting two **placed** instances in one workflow sharing a bare agent, run from three call sites (the app's config load, `/maestro-update`, and `install.ts`) and never auto-repairing. See `maestro-config-model` (apps/maestro's `.claude/skills`) for where each call site computes it. |
 
+## Epics and the manager (`084`)
+
+A task can belong to an **epic**: related tasks that several `/maestro` sessions run at once, coordinated
+by a resumable `maestro-manager` session (a published skill, not a hook or an agent). What changes
+inside a worker session, and only for a task that has an epic:
+
+- **Claim records the session name** (`claim --name "<session name>"`, read from the `ListAgents`
+  entry); a nameless claim still works. The manager finds workers by name, never by address.
+- **Step 4's report.** Before the task is marked done, the orchestrator runs
+  `maestro-epic.cjs report --task <active_task> --from <name> --file -` with the report on stdin. It
+  writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator
+  sends ONE short SendMessage line. A task in no epic prints "belongs to no epic" and nothing else
+  happens. A report written while no manager runs survives and is listed unacknowledged when a
+  manager resumes; the manager's `ack` is the only delivery proof.
+- **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and
+  the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the
+  user in the worker's own session.
+
+Everything else (the tracker's `epic` field, the inbox, the write discipline, why session names)
+is in `task-queue`'s `sub-concepts/epics.md`.
+
 ## Things that bite
 
 Each sub-concept carries the traps specific to it. These cut across all of them:

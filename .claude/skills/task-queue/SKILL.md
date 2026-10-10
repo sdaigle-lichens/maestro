@@ -49,6 +49,9 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
 | `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |
 | `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |
+| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |
+| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`). |
+| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`). |
 | `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |
 | `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |
 | `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. |
@@ -80,6 +83,8 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 - [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.
 - [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the
   second parity pair, and `074`'s worktree isolation (queue root stays the main checkout).
+- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's
+  report inbox with acknowledgement, and the design decisions.
 - [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the
   committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.
 - [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and

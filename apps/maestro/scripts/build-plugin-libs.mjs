@@ -73,6 +73,7 @@ export const PLUGIN_LIB_ENTRIES = [
   { name: "maestro-team-meeting", entry: "src/core/plugin-entries/maestro-team-meeting.ts" },
   { name: "maestro-agent-fork", entry: "src/core/plugin-entries/maestro-agent-fork.ts" },
   { name: "maestro-rule-move", entry: "src/core/plugin-entries/maestro-rule-move.ts" },
+  { name: "maestro-epic", entry: "src/core/plugin-entries/maestro-epic.ts" },
 ];
 
 /**
