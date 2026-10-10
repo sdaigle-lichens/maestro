@@ -23,6 +23,7 @@ export { projectOwnsHook } from "../hook-arbitration.js";
 export {
   readStdin,
   readJson,
+  readLogLines,
   readSession,
   writeSession,
   ensureSessionRunId,

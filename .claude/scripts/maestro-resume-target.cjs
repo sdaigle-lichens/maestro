@@ -24,29 +24,8 @@
 // Self-contained on purpose: maestro-install.js copies this file into the project's
 // .claude/scripts/ so the orchestrator can run it via $CLAUDE_PROJECT_DIR.
 
-const fs = require("fs");
 const path = require("path");
-const { readJson, readSession, resolveSessionPaths, resumeTarget } = require("./lib/maestro-session.cjs");
-
-function readLogLines(p) {
-  if (!p) return []; // `064`: no session directory resolved — treat it as an empty log.
-  let text;
-  try {
-    text = fs.readFileSync(p, "utf8");
-  } catch {
-    return [];
-  }
-  const lines = [];
-  for (const raw of text.split("\n")) {
-    if (!raw.trim()) continue;
-    try {
-      lines.push(JSON.parse(raw));
-    } catch {
-      // A malformed line is skipped, not fatal — best-effort read of a hook-written log.
-    }
-  }
-  return lines;
-}
+const { readJson, readLogLines, readSession, resolveSessionPaths, resumeTarget } = require("./lib/maestro-session.cjs");
 
 try {
   const agentType = process.argv[2] || "";

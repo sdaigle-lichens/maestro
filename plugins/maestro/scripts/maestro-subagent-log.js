@@ -52,6 +52,7 @@ const {
   writeSession,
   ownerRunFor,
   ownerRunLeftovers,
+  readLogLines,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -91,25 +92,6 @@ function agentPayloadRoutes(cwd, claudeDir, agentType, sessionStatePath) {
   const { searchList } = resolveSearchList(cfg, readSession(sessionStatePath));
   const routes = routesFrom(handoffRoutes(searchList, cfg.workflow_instances || []), agentType);
   return payloadRoutes(cwd, routes, readGlobalHandoff);
-}
-
-function readLogLines(p) {
-  let text;
-  try {
-    text = fs.readFileSync(p, "utf8");
-  } catch {
-    return [];
-  }
-  const lines = [];
-  for (const raw of text.split("\n")) {
-    if (!raw.trim()) continue;
-    try {
-      lines.push(JSON.parse(raw));
-    } catch {
-      // A malformed line is skipped.
-    }
-  }
-  return lines;
 }
 
 // Parse the HANDOFF: label from the agent's final message.

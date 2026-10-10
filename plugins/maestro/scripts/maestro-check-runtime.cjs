@@ -224,8 +224,7 @@ function checkRuntime(projectDir) {
   // runtime came from a newer app or plugin checkout) is not behind: /maestro-update would
   // DOWNGRADE it. That case continues, with a notice telling the user to update the plugin.
   // Unstamped or unparseable versions keep the old answer: any difference means `update`.
-  const verdict = versionVerdict(config.runtimeVersion, match.version);
-  const stale = verdict === "older" || (verdict === "unknown" && config.runtimeVersion !== match.version);
+  const { verdict, stale } = versionVerdict(config.runtimeVersion, match.version);
   const pluginBehind = verdict === "newer";
   return answer({
     action: stale ? "update" : "continue",
@@ -243,17 +242,23 @@ function checkRuntime(projectDir) {
   });
 }
 
-// `compareRuntimeVersions` lives in the generated session lib (apps/maestro/src/core/runtime-version.ts,
-// shared with the app's refreshStaleRuntime so both reach the same verdict). Required lazily and
-// defensively: a copy whose lib predates it answers "unknown", which is the old equality check.
+// `compareRuntimeVersions` and `runtimeNeedsRefresh` live in the generated session lib
+// (apps/maestro/src/core/runtime-version.ts, shared with the app's refreshStaleRuntime so both
+// reach the same verdict). Required lazily and defensively: a copy whose lib predates them answers
+// "unknown", stale on any difference — the old equality check.
 function versionVerdict(projectVersion, pluginVersion) {
   try {
-    const { compareRuntimeVersions } = require("./lib/maestro-session.cjs");
-    if (typeof compareRuntimeVersions === "function") return compareRuntimeVersions(projectVersion, pluginVersion);
+    const { compareRuntimeVersions, runtimeNeedsRefresh } = require("./lib/maestro-session.cjs");
+    if (typeof compareRuntimeVersions === "function" && typeof runtimeNeedsRefresh === "function") {
+      return {
+        verdict: compareRuntimeVersions(projectVersion, pluginVersion),
+        stale: runtimeNeedsRefresh(projectVersion, pluginVersion),
+      };
+    }
   } catch {
     /* fall through */
   }
-  return "unknown";
+  return { verdict: "unknown", stale: projectVersion !== pluginVersion };
 }
 
 // Addressed to the model, which relays it: the plugin is the stale half, so the fix is on the

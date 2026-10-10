@@ -112,6 +112,7 @@ __export(maestro_session_exports, {
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readLane: () => readLane,
+  readLogLines: () => readLogLines,
   readMeeting: () => readMeeting,
   readMetrics: () => readMetrics,
   readOwnerRuns: () => readOwnerRuns,
@@ -499,6 +500,24 @@ function readJson(p) {
   } catch {
     return null;
   }
+}
+function readLogLines(p) {
+  if (!p) return [];
+  let text;
+  try {
+    text = import_node_fs4.default.readFileSync(p, "utf8");
+  } catch {
+    return [];
+  }
+  const lines = [];
+  for (const raw of text.split("\n")) {
+    if (!raw.trim()) continue;
+    try {
+      lines.push(JSON.parse(raw));
+    } catch {
+    }
+  }
+  return lines;
 }
 function readSession(p) {
   return (p ? readJson(p) : null) ?? { workflow: null, generated_instances: [], run_id: null };
@@ -2059,6 +2078,7 @@ function meetingNotice(meeting, agentType) {
   projectOwnsHook,
   readJson,
   readLane,
+  readLogLines,
   readMeeting,
   readMetrics,
   readOwnerRuns,

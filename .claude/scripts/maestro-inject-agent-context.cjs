@@ -90,31 +90,8 @@ const {
   ownerRunNotice,
   resolveProjectSkillPath,
   isRootSkillPath,
+  readLogLines,
 } = require("./lib/maestro-session.cjs");
-
-// The resume signal (`040`): a `kind:"handoff"` entry already logged for this `agent_id`, read
-// straight off disk — best-effort, exactly like maestro-resume-target.cjs's own copy of this same
-// tiny reader. A missing or unreadable log comes back `[]`, which `hasCompletedRun` answers
-// `false` for, so the safe fall-through is a first run's full injection.
-function readLogLines(p) {
-  if (!p) return []; // `064`: no session directory resolved — treat it as an empty log.
-  let text;
-  try {
-    text = fs.readFileSync(p, "utf8");
-  } catch {
-    return [];
-  }
-  const lines = [];
-  for (const raw of text.split("\n")) {
-    if (!raw.trim()) continue;
-    try {
-      lines.push(JSON.parse(raw));
-    } catch {
-      // A malformed line is skipped, not fatal — best-effort read of a hook-written log.
-    }
-  }
-  return lines;
-}
 
 // ── nested-skill fallback (`061`) ───────────────────────────────────────────
 //
@@ -388,29 +365,26 @@ function collectReportContext(cfg, projectDir, agentType) {
         "when one is listed above. A report verdict of FAIL with `HANDOFF: success` is invalid, and so is ending with no " +
         "HANDOFF line at all — the orchestrator is told about both and will not treat either as success."
     );
-
-    // Per-route payload protocol, resolved across the three tiers above so the communication
-    // contract is owned here rather than duplicated in the agent files. Only emitted for routes
-    // whose pair resolves to something — a wired route with no template anywhere (`scribe ->
-    // reviewer`) is silently skipped, exactly as the install-time sync skips it.
-    //
-    // `036`: the payload no longer rides in the final-message JSON. Each route names the CHANNEL
-    // FILE to write it to instead — `.claude/channels/<receiver>/<sender>.1.md` — which the
-    // receiving agent's own SubagentStart delivers on its next invocation. The orchestrator never
-    // sees the content at all.
-    //
-    // `087`: the write is a REQUIRED step before the HANDOFF line (the SubagentStop hook flags a
-    // route whose payload was not written this run as `missing_payload`), and the wording comes
-    // from `payloadRequirement`, the same helper the resume branch below uses.
-    const required = payloadRequirement(payloadRoutes(projectDir, result.routes, readGlobalHandoff), { withShapes: true });
-    if (required) parts.push(required);
   }
 
-  // `087`: a RESUMED run gets the requirement too, without the shapes. `040` drops the routing and
-  // protocol blocks on a resume, and that is how task 086's second @reviewer pass ended without
-  // writing its payload — the one instruction that governs the NEW hand-back must not be static.
-  if (!offWorkflow && isResume && result && result.routes.length > 0) {
-    const required = payloadRequirement(payloadRoutes(projectDir, result.routes, readGlobalHandoff), { withShapes: false });
+  // Per-route payload protocol, resolved across the three tiers above so the communication
+  // contract is owned here rather than duplicated in the agent files. Only emitted for routes
+  // whose pair resolves to something — a wired route with no template anywhere (`scribe ->
+  // reviewer`) is silently skipped, exactly as the install-time sync skips it.
+  //
+  // `036`: the payload no longer rides in the final-message JSON. Each route names the CHANNEL
+  // FILE to write it to instead — `.claude/channels/<receiver>/<sender>.1.md` — which the
+  // receiving agent's own SubagentStart delivers on its next invocation. The orchestrator never
+  // sees the content at all.
+  //
+  // `087`: the write is a REQUIRED step before the HANDOFF line (the SubagentStop hook flags a
+  // route whose payload was not written this run as `missing_payload`). A RESUMED run gets the
+  // requirement too, without the shapes: `040` drops the routing block above on a resume, and that
+  // is how task 086's second @reviewer pass ended without writing its payload — the one
+  // instruction that governs the NEW hand-back must not be static.
+  if (!offWorkflow && result && result.routes.length > 0) {
+    const routes = payloadRoutes(projectDir, result.routes, readGlobalHandoff);
+    const required = payloadRequirement(routes, { withShapes: !isResume });
     if (required) parts.push(required);
   }
 

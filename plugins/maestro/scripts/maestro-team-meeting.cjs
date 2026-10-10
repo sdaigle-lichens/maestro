@@ -51,6 +51,7 @@ const {
   bareAgentName,
   readMetrics,
   renderMetricsDigest,
+  readLogLines,
 } = require("./lib/maestro-session.cjs");
 const tm = require("./lib/maestro-team-meeting.cjs");
 
@@ -92,25 +93,6 @@ function loadConfig() {
   const cfg = readJson(path.join(claudeDir, "maestro.json"));
   if (!cfg || cfg.version !== 3) refuse(`no valid .claude/maestro.json (v3) under ${projectDir} — run /maestro-install first.`);
   return cfg;
-}
-
-function readLogLines(file) {
-  let text;
-  try {
-    text = fs.readFileSync(file, "utf8");
-  } catch {
-    return [];
-  }
-  const lines = [];
-  for (const raw of text.split("\n")) {
-    if (!raw.trim()) continue;
-    try {
-      lines.push(JSON.parse(raw));
-    } catch {
-      // tolerate a partial line
-    }
-  }
-  return lines;
 }
 
 function readText(file) {
