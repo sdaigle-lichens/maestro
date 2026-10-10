@@ -39,7 +39,7 @@ place the refresh procedure is written down.
    placeholder, and this restores it from each workflow's derived success path:
 
    ```bash
-   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-render-orchestrator.cjs"
+   node .claude/scripts/maestro-render-orchestrator.cjs
    ```
 
    If it reports `maestro/SKILL.md not found`, the orchestrator was never installed. Stop and ask
@@ -49,7 +49,7 @@ place the refresh procedure is written down.
    one line per forked agent and names the ones that differ:
 
    ```bash
-   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-agent-forks.cjs" list
+   node .claude/scripts/maestro-agent-forks.cjs list
    ```
 
    If it names any, see `references/forked-agents.md` for showing the diff and applying the user's
@@ -61,6 +61,10 @@ place the refresh procedure is written down.
 
 ## Notes
 
+- Run each command exactly as written, one per call: sandbox exclude rules match the command text.
+- An `EPERM` on `.claude/skills/maestro/SKILL.md` is the sandbox. Don't retry; give the user the
+  exclude rules `node *maestro-install.js*` and `node *maestro-render-orchestrator.cjs*` (or a `!`
+  run of the failed command). Never edit sandbox settings yourself.
 - `maestro.json` is the source of truth. The `SubagentStart` hook reads it at runtime, so subagent
   skill injection is current even between updates — only the handoff table needs re-rendering.
 - If `/maestro` fails to start on a long-installed project, the cause is usually stale

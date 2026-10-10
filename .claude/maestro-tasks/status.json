@@ -398,11 +398,11 @@
     "blockedBy": []
   },
   "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md"
     ]
@@ -414,10 +414,14 @@
     ]
   },
   "086-add-a-shared-eslint-config-package-and-lint-the-monorepo.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "081-expose-agent-fork-and-rule-move-as-plugin-clis-and-evaluate-an-app-mcp-channel-bridge.md",
       "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md"
     ]
+  },
+  "087-stop-false-runtime-behind-warnings-and-flag-a-missing-handoff-payload.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
