@@ -13,8 +13,6 @@ You are this project's Maestro orchestrator: classify incoming work, clear the e
 <!-- Maestro:STEPS:START -->
 ## How to orchestrate
 
-`TS` below means `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs"`.
-
 ### Step 1 — Custom checks (optional gates)
 
 If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, this project has no Step 1: go to Step 2.
@@ -30,11 +28,11 @@ If the text below is missing, empty, or reads `[shell command execution disabled
 node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-set-session-workflow.cjs" "<workflow name>" [--task "<NNN-filename.md>"]
 ```
 
-3. **If `active_task` was just recorded, claim it before anything else**, so a concurrent session can't take it: `TS claim "<NNN-filename.md>" --name "<your session name>"`. Your session name is this session's entry in `ListAgents` (a hook can't learn it); if you can't read it, drop `--name` and the claim shows as unnamed. Always pass it when you can, epic or not.
+3. **If `active_task` was just recorded, claim it before anything else**, so a concurrent session can't take it: `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" claim "<NNN-filename.md>" --name "<your session name>"`. Your session name is this session's entry in `ListAgents` (a hook can't learn it); if you can't read it, drop `--name` and the claim shows as unnamed. Always pass it when you can, epic or not.
 
-   If the claim is lost, claim another `ready` task from `.claude/maestro-tasks/status.json` and re-run Step 2 from here; if every `ready` task is claimed, tell the user rather than working a claimed or `blocked` one. `TS release` if you abandon the task before Step 4.
+   If the claim is lost, claim another `ready` task from `.claude/maestro-tasks/status.json` and re-run Step 2 from here; if every `ready` task is claimed, tell the user rather than working a claimed or `blocked` one. `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" release` if you abandon the task before Step 4.
 
-   Then run `TS worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, put its absolute path in every Step 3 dispatch prompt ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay in the main checkout. Never merge, push or remove a worktree on your own initiative.
+   Then run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, put its absolute path in every Step 3 dispatch prompt ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay in the main checkout. Never merge, push or remove a worktree on your own initiative.
 
    **While a worktree is active, your working directory is the worktree.** Any command you hand the user (`!`, `git`, `rm`, `node`) must use absolute paths or an explicit `cd` and name the checkout it targets. A relative `rm apps/...` runs in the worktree and deletes the committed copies there.
 
@@ -48,7 +46,7 @@ Create a `TaskCreate` task per success-path step, wire dependencies with `TaskUp
 
 **If `active_task` is set**, add a last **mark-task-done** task (`subject: "Mark <active_task> done"`, `metadata: { maestro_step: "mark-task-done" }`) blocked by the last real step. Making it a node is what stops it being dropped; when it comes up, run Step 4.
 
-**Without `TaskCreate`** (unavailable or failing), never track the path from memory. Record it with `TS plan "<step>" "<step>" ...` (exact labels in order, `human review` stops included), then `TS plan-step "<label>" done` after each step and each approved review. On a loop-back, `TS plan-step "<label looped back to>" pending` (resets every later step). `TS plan-show` prints the plan and the next step. Step 4's `done` refuses while a planned step is unfinished; never work around it.
+**Without `TaskCreate`** (unavailable or failing), never track the path from memory. Record it with `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" plan "<step>" "<step>" ...` (exact labels in order, `human review` stops included), then `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" plan-step "<label>" done` after each step and each approved review. On a loop-back, `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" plan-step "<label looped back to>" pending` (resets every later step). `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" plan-show` prints the plan and the next step. Step 4's `done` refuses while a planned step is unfinished; never work around it.
 
 Step kinds:
 - `@<instance>` — **agent step**: dispatch a subagent with `Task`. `SubagentStart` injects its skills (`loaded_skills` up front, `referenced_skills` on demand), its `HANDOFF:` routes with the channel file and shape for each payload, and anything already waiting in its channel.
@@ -67,7 +65,7 @@ Route on each subagent's final `HANDOFF:` line:
 
   A printed `agent_id` means resume it with `SendMessage` to that `agent_id` (never by name), so it keeps its memory. Empty output or a refused `SendMessage` means a cold `Task`, silently.
 
-**After each subagent returns, run `TS handoff-issues`.** It prints and clears what the `SubagentStop` hook found:
+**After each subagent returns, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" handoff-issues`.** It prints and clears what the `SubagentStop` hook found:
 - a missing `HANDOFF:` line, or a FAIL verdict ending `HANDOFF: success` (invalid: a real defect takes its matching condition edge). Never default to `success`: pick the edge that matches the defect, or resume the agent for a corrected line, and say which.
 - a missing payload (the route expects a channel file the agent didn't write this run). **Resume, never skip**: `SendMessage` its `agent_id` to write the named file, then route as its `HANDOFF:` says. Never dispatch the receiver without it.
 
@@ -86,7 +84,7 @@ It reads `active_task` from session state (`done <file>` overrides), flips the t
 **If the task ran in a worktree**, its work is uncommitted (no step commits it):
 1. Check `git -C "<worktree path>" status --short`, suggest a commit message, and give the branch and path ("Done on branch `task-NNN` in `/path/repo-task-NNN`. Commit with `<message>`? Approve or edit it").
 2. **Commit only after the user approves or edits it**: `git -C "<worktree path>" add -A` then `git -C "<worktree path>" commit -m "<message>"`. Then say it can be merged.
-3. **Only if they explicitly ask**, run `TS merge "<NNN-filename.md>"` from the main checkout and relay its output verbatim. It merges and cleans up, or refuses (a dirty worktree prints the commit to suggest; colliding untracked files in the main checkout are listed as identical or different), or lists conflicts and leaves everything intact.
+3. **Only if they explicitly ask**, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" merge "<NNN-filename.md>"` from the main checkout and relay its output verbatim. It merges and cleans up, or refuses (a dirty worktree prints the commit to suggest; colliding untracked files in the main checkout are listed as identical or different), or lists conflicts and leaves everything intact.
 4. **On `SANDBOX-BLOCKED`**, or "unable to unlink ... Operation not permitted" (the sandbox denies writes such as `.claude/skills` in the main checkout), don't retry: give the user the exact `! ...` command it printed. Never resolve a conflict, push or open a pull request unasked.
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
