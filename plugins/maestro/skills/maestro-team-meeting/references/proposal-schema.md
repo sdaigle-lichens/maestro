@@ -21,6 +21,10 @@ bare agent name (`backend`, not `maestro:backend`).
 }
 ```
 
+- Auto kinds need a structured field to be applied mechanically by `TM apply-placement`:
+  `skill.placement` takes `"to": "loaded"` or `"referenced"`; `handoff.edit` takes `"content"`, the
+  full new template text. Without it, the row is skipped by apply-placement and goes through the
+  owner run (handoff.edit) or the main session (skill.placement).
 - If an id lacks the `<agent>-` prefix, the parser adds it.
 - A proposal with an unknown kind, a wrong target shape or an empty `change` is dropped, and `TM conflicts` and `TM tally` report it under `errors`. The rest of the file still counts.
 - Each agent's latest round replaces its earlier rounds, minus the ids it lists in `withdrawn`.

@@ -39,6 +39,16 @@ command prints one line of JSON.
    - If `start` returns `ok:false`, stop. Tell the user its `reason`. A stale runtime needs `/maestro-update` first: the project's hook copies must know about meetings.
    - Keep `meeting.dir` and the `brief` and `slices` paths. Do not read the brief into your own context; the participants read it.
 
+   **Agenda confirmation (user checkpoint 1).** Before round 1, show the user, in your own context:
+   - the participants (`meeting.participants`);
+   - a short summary of the evidence (the `evidence` counts from `brief`, plus what the digest covers);
+   - the focus areas (default: skills and placement, handoffs, agents and tools, rules, gates, workflows).
+
+   Ask with `AskUserQuestion`: go ahead, add or drop participants, narrow or widen the focus, or cancel.
+   - Participant changes: run `TM start` again with the new `--participants` list, then `TM brief` again.
+   - A narrowed or widened focus goes into the round-1 prompt as one extra line.
+   - Cancel: run `TM end "${CLAUDE_PROJECT_DIR:-.}"` (a cancelled meeting is still closed properly), tell the user nothing changed, and stop.
+
 3. **Round 1: all participants in parallel**, in a single message.
    - **Review mode:** spawn each participant with the `Agent` tool, using its agent type. Plugin agents are namespaced, e.g. `maestro:backend`.
    - **Post-mortem mode:** resume each agent that ran, so it keeps its memory of the run:
@@ -46,6 +56,17 @@ command prints one line of JSON.
      - spawn the agent fresh when that prints nothing.
    - Prompt: [references/participant-brief.md](references/participant-brief.md), round 1.
    - Keep each agent's id for round 2.
+
+   **Mid-meeting checkpoint (user checkpoint 2).** After round 1, read each participant's round file
+   with `TM conflicts` (its `filed` list) and the files themselves, and show the user one short line
+   per participant: how many proposals and what they are about. This happens in your context;
+   participants never talk to the user. Ask with `AskUserQuestion`:
+   - **Continue**: go to step 4.
+   - **Redirect a participant** with extra guidance: `SendMessage` that participant once, with the
+     guidance and the instruction to rewrite its own `round-1/<agent>.json` (the full list). It is one
+     more turn, under the same meeting rules and notice, with the meeting still open. Then show the
+     positions again.
+   - **Stop**: run `TM end "${CLAUDE_PROJECT_DIR:-.}"`, tell the user nothing was applied, and stop. Do not tally.
 
 4. **Find conflicts.**
 
@@ -66,8 +87,8 @@ command prints one line of JSON.
    TM tally "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
-   It writes `decision.md` and returns rows with a tier:
-   - `auto`: apply it without asking.
+   It writes `decision.md` and `decision.json` and returns rows with a tier:
+   - `auto`: applied by `TM apply-placement` without asking (unless the user vetoes it).
    - `approval`: needs the user's approval.
    - `blocked`: report its `note` to the user. Examples: fork a plugin agent in the app's `/agents` view first; move a rule listed in maestro.json in the app's `/rules` view.
 
@@ -84,16 +105,57 @@ command prints one line of JSON.
 
    This way any subagent spawned while applying changes runs normally.
 
-9. **Apply the auto rows and the approved rows** using the table below.
-   - Read `.claude/maestro.json` right before each write.
-   - Change only the slice concerned and keep every other key.
-   - Write it back without a trailing newline.
+9. **Apply the auto tier:**
 
-10. **Finish.**
+   ```bash
+   TM apply-placement [--skip <vetoed ids>] "${CLAUDE_PROJECT_DIR:-.}"
+   ```
+
+   It applies skill loaded/referenced moves and handoff-template edits from `decision.json`. It reads
+   `maestro.json` right before writing, changes only the instances' skill lists, keeps every other
+   slice, and skips targets in conflict, vetoed ids and rows without their structured field
+   (`skipped`, with reasons). Take the skipped rows to the user like approval rows.
+
+10. **Resolve every conflict first.** A target still in conflict is the user's choice: exactly one
+    of its proposals may be approved. Do this in the step 7 batch. `TM owner-runs` refuses otherwise.
+
+11. **Apply the approved rows.** Ask the plan:
+
+    ```bash
+    TM owner-runs --approved <approved ids> "${CLAUDE_PROJECT_DIR:-.}"
+    ```
+
+    It refuses while the meeting flag is set, and returns `runs` (one per owning agent) and `main`.
+    - **`runs`**: for each, spawn that agent with the `Agent` tool (agent type as in step 3), one
+      after the other, with a prompt listing its rows (id, kind, target, change) and saying to apply
+      exactly those and nothing else. These are normal runs: normal routing, channel delivery and
+      stamping, no meeting notice. Run them sequentially, since two may touch `maestro.json`.
+    - **`main`**: you apply these yourself with the table below. These are workflow changes, rule
+      moves (`rule.to-agent`, `/rules`), plugin-agent forks (`/agents`), gates, and creating or
+      deleting agents and skills.
+    - When you apply by hand: read `.claude/maestro.json` right before each write, change only the
+      slice concerned, keep every other key, and write it without a trailing newline.
+
+12. **Finish.**
     - Run `/maestro-update` if any agent, skill or workflow changed.
     - Then report in a few lines: what was applied, what was rejected, and what is blocked, with the step the user must take for each blocked row.
 
-## Applying each kind
+## Owner runs: how they are dispatched
+
+Decision: the moderator dispatches them with the plain `Agent` tool, after `end`, **without starting
+a workflow** (starting one would only re-record session state and is not needed). An owner run is
+then an ordinary subagent run: if the session has a recorded workflow (a post-mortem after a run),
+the hooks use it; if not, they fall back to the project's default workflow, exactly as for any
+subagent. Either way the run gets routing, channel delivery and stamping, and no meeting notice. A
+guard enforces the order: `TM owner-runs` exits with `ok:false` while the meeting flag is set.
+
+## What does not change during the meeting
+
+Participants still only propose. The write guard still confines them to this session's meeting
+directory. The accepted Bash gap stays: Bash cannot be confined, so the notice limits participants
+to read-only checks. The checkpoints run in your context only; participants never talk to the user.
+
+## Applying each kind (by hand, the `main` rows)
 
 | kind | how |
 |---|---|

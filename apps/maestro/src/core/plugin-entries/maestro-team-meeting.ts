@@ -12,6 +12,9 @@ export {
   tierOf,
   tally,
   renderDecision,
+  applyAutoTier,
+  ownerOf,
+  planOwnerRuns,
   placedAgents,
   buildCommonBrief,
   buildAgentBrief,
@@ -25,4 +28,7 @@ export {
   type BriefAgent,
   type BriefRule,
   type BriefInput,
+  type DecisionRecord,
+  type PlacementResult,
+  type OwnerPlan,
 } from "../team-meeting.js";

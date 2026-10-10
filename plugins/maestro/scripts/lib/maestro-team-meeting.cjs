@@ -25,12 +25,15 @@ var maestro_team_meeting_exports = {};
 __export(maestro_team_meeting_exports, {
   AUTO_KINDS: () => AUTO_KINDS,
   PROPOSAL_KINDS: () => PROPOSAL_KINDS,
+  applyAutoTier: () => applyAutoTier,
   buildAgentBrief: () => buildAgentBrief,
   buildCommonBrief: () => buildCommonBrief,
   currentPositions: () => currentPositions,
   findConflicts: () => findConflicts,
+  ownerOf: () => ownerOf,
   parseProposalFile: () => parseProposalFile,
   placedAgents: () => placedAgents,
+  planOwnerRuns: () => planOwnerRuns,
   renderDecision: () => renderDecision,
   tally: () => tally,
   tierOf: () => tierOf
@@ -121,7 +124,10 @@ function parseProposalFile(raw, expectedAgent, expectedRound) {
     if (!change) return void errors.push(`${id}: empty "change"`);
     if (seen.has(id)) return void errors.push(`${id}: duplicate id`);
     seen.add(id);
-    proposals.push({ id, kind, target, change, rationale: str(v.rationale), evidence: str(v.evidence) });
+    const prop = { id, kind, target, change, rationale: str(v.rationale), evidence: str(v.evidence) };
+    if (v.to === "loaded" || v.to === "referenced") prop.to = v.to;
+    if (typeof v.content === "string" && v.content.trim()) prop.content = v.content;
+    proposals.push(prop);
   });
   const withdrawn = Array.isArray(obj.withdrawn) ? obj.withdrawn.filter((w) => typeof w === "string") : [];
   return { file: { agent, round, proposals, withdrawn }, errors };
@@ -213,11 +219,122 @@ function tally(files, ctx) {
         tier,
         change: p.change,
         rationale: p.rationale,
-        ...note ? { note } : {}
+        ...note ? { note } : {},
+        ...p.to ? { to: p.to } : {},
+        ...p.content ? { content: p.content } : {}
       });
     }
   }
   return rows;
+}
+var SAFE_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]*$/;
+function applyAutoTier(cfg, record, opts = {}) {
+  const skip = new Set(opts.skipIds ?? []);
+  const conflicted = new Set(record.conflictTargets);
+  const result = { cfg, applied: [], skipped: [], handoffWrites: [] };
+  const instances = (cfg.workflow_instances ?? []).map((i) => ({
+    ...i,
+    loaded_skills: [...i.loaded_skills],
+    referenced_skills: [...i.referenced_skills]
+  }));
+  let moved = false;
+  for (const r of record.rows) {
+    if (r.tier !== "auto" || !AUTO_KINDS.includes(r.kind)) continue;
+    const no = (reason) => void result.skipped.push({ id: r.id, reason });
+    if (skip.has(r.id)) {
+      no("vetoed by the user");
+      continue;
+    }
+    if (conflicted.has(r.target)) {
+      no("target is in conflict");
+      continue;
+    }
+    if (r.kind === "skill.placement") {
+      const m = /^instance:(.+)#(.+)$/.exec(r.target);
+      if (!m) {
+        no("malformed target");
+        continue;
+      }
+      if (!r.to) {
+        no('no "to" field (loaded|referenced)');
+        continue;
+      }
+      const inst = instances.find((i) => i.name === m[1]);
+      if (!inst) {
+        no(`no instance "${m[1]}"`);
+        continue;
+      }
+      const [from, dest] = r.to === "loaded" ? [inst.referenced_skills, inst.loaded_skills] : [inst.loaded_skills, inst.referenced_skills];
+      const at = from.indexOf(m[2]);
+      if (at === -1) {
+        no(`"${m[2]}" is not in the ${r.to === "loaded" ? "referenced" : "loaded"} list of ${m[1]}`);
+        continue;
+      }
+      from.splice(at, 1);
+      if (!dest.includes(m[2])) dest.push(m[2]);
+      moved = true;
+      result.applied.push(r.id);
+    } else {
+      const m = /^handoff:([^/]+)\/([^/]+)$/.exec(r.target);
+      if (!m || !SAFE_NAME.test(m[1]) || !SAFE_NAME.test(m[2])) {
+        no("malformed target");
+        continue;
+      }
+      if (!r.content) {
+        no('no "content" field (the full new template text)');
+        continue;
+      }
+      const rel = `.claude/handoffs/${m[1]}/${m[2]}.md`;
+      if (opts.handoffExists && !opts.handoffExists(rel)) {
+        no(`${rel} does not exist`);
+        continue;
+      }
+      result.handoffWrites.push({ id: r.id, path: rel, content: r.content });
+      result.applied.push(r.id);
+    }
+  }
+  if (moved) result.cfg = { ...cfg, workflow_instances: instances };
+  return result;
+}
+var MAIN_SESSION_KINDS = /* @__PURE__ */ new Set([
+  "workflow.create",
+  "workflow.update",
+  "workflow.delete",
+  "rule.to-agent",
+  "agent.create",
+  "agent.delete",
+  "skill.delete",
+  "gate.change",
+  "skill.placement"
+]);
+function ownerOf(row) {
+  if (row.tier === "blocked" || MAIN_SESSION_KINDS.has(row.kind)) return null;
+  if (row.kind === "handoff.edit") return bareAgentName(row.target.slice("handoff:".length).split("/")[0]) || null;
+  if (row.kind === "agent.edit" || row.kind === "agent.tools") return bareAgentName(row.target.slice("agent:".length)) || null;
+  if (row.kind === "report.edit") return bareAgentName(row.target.slice("report:".length)) || null;
+  return row.supporters.length === 0 ? row.agent : null;
+}
+function planOwnerRuns(record, approvedIds, alreadyApplied = []) {
+  const done = new Set(alreadyApplied);
+  const rows = record.rows.filter((r) => approvedIds.includes(r.id) && !done.has(r.id));
+  for (const t of new Set(record.conflictTargets)) {
+    if (rows.filter((r) => r.target === t).length > 1) {
+      return { ok: false, reason: `target "${t}" is still in conflict: approve exactly one of its proposals` };
+    }
+  }
+  const byAgent = /* @__PURE__ */ new Map();
+  const main = [];
+  for (const r of rows) {
+    const owner = ownerOf(r);
+    if (!owner) {
+      main.push(r.id);
+      continue;
+    }
+    const run = byAgent.get(owner) ?? { agent: owner, rows: [] };
+    run.rows.push({ id: r.id, kind: r.kind, target: r.target, change: r.change });
+    byAgent.set(owner, run);
+  }
+  return { ok: true, plan: { runs: [...byAgent.values()].sort((a, b) => a.agent.localeCompare(b.agent)), main } };
 }
 function cell(s) {
   return s.replace(/\|/g, "\\|").replace(/\s+/g, " ").trim();
@@ -289,7 +406,7 @@ function buildCommonBrief(input) {
       ([k, prefix]) => `| ${k} | ${prefix === "gates" ? "gates" : k === "skill.placement" ? "instance:<instance>#<skill>" : k === "handoff.edit" ? "handoff:<sender>/<receiver>" : `${prefix}<name>`} |`
     ),
     "",
-    "`skill.placement` and `handoff.edit` are applied automatically; everything else goes to the user for approval. Model and effort changes are out of scope for now.",
+    '`skill.placement` (add `"to": "loaded"|"referenced"`) and `handoff.edit` (add `"content"`: the full new template) are applied automatically; without that field they fall back to approval. Everything else goes to the user for approval. Model and effort changes are out of scope for now.',
     "",
     "## Workflows",
     ""
@@ -367,12 +484,15 @@ function buildAgentBrief(input, agentName) {
 0 && (module.exports = {
   AUTO_KINDS,
   PROPOSAL_KINDS,
+  applyAutoTier,
   buildAgentBrief,
   buildCommonBrief,
   currentPositions,
   findConflicts,
+  ownerOf,
   parseProposalFile,
   placedAgents,
+  planOwnerRuns,
   renderDecision,
   tally,
   tierOf

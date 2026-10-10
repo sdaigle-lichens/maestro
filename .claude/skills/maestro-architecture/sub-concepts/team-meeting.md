@@ -9,7 +9,7 @@ look like workflow steps to every hook. The flag is one key in **this session's*
 | --- | --- |
 | `apps/maestro/src/core/meeting-mode.ts` | The flag: `readMeeting`/`meetingFor`, `startMeeting`/`endMeeting`/`closeMeeting`, `meetingLeftovers`, `meetingNotice`. Re-exported from `maestro-session` (`fs`/`path` only). |
 | `apps/maestro/src/core/team-meeting.ts` | Pure meeting logic: briefs, proposal schema, conflicts, tally. Bundled as `maestro-team-meeting`. |
-| `plugins/maestro/scripts/maestro-team-meeting.cjs` | CLI: `start`/`end`/`brief`/`conflicts`/`tally`. Runs from the plugin only, never copied into a project. |
+| `plugins/maestro/scripts/maestro-team-meeting.cjs` | CLI: `start`/`end`/`brief`/`conflicts`/`tally`/`apply-placement`/`owner-runs`. Runs from the plugin only, never copied into a project. |
 
 ## The flag
 
@@ -57,10 +57,36 @@ Two paths, both through `closeMeeting`:
 (transcript, briefs, rounds, `decision.md`) stays until the session directory is removed at
 `SessionEnd`. Why the leftovers exist: see the stamping rules in `channels.md`.
 
+## Apply phase (`079`)
+
+The moderator runs two user checkpoints with `AskUserQuestion`: the **agenda** before round 1, and
+a **positions** check after round 1 (continue / redirect / stop). Approval is still one batch at the end.
+
+`tally` writes `meeting/decision.json` (`{meetingId, rows, conflictTargets}`), the machine-readable
+twin of `decision.md`, and deletes any stale `applied.json`. Both new commands read it, so they work
+**after** `end`. Proposals may carry optional structured fields, kept by `parseProposalFile` and
+copied onto `TallyRow`: `to` (`skill.placement`: `loaded`|`referenced`) and `content`
+(`handoff.edit`: the full new template). An auto-tier row missing its field is skipped, not guessed.
+
+| Command | Does |
+| --- | --- |
+| `apply-placement [--skip id,id]` | `applyAutoTier`: moves skills between an instance's `loaded_skills`/`referenced_skills` and writes `.claude/handoffs/<agent>/<name>.md` (must already exist). Re-reads `maestro.json` right before writing and changes only `workflow_instances` skill lists. Skips vetoed ids and conflicted targets. Writes `applied.json` (ids). |
+| `owner-runs --approved id,id` | `planOwnerRuns`: groups approved rows, minus `applied.json`, into one run per owning agent (`ownerOf`) plus `main` ids. Refuses while the meeting flag is set, and when a conflicted target has more than one approved row. |
+
+**Main-session-only kinds** (`ownerOf` returns null): `workflow.*`, `rule.to-agent`, `agent.create`,
+`agent.delete`, `skill.delete`, `gate.change`, `skill.placement`, and any `blocked` row. Others are
+owned by the agent named in the target (`handoff:`, `agent:`, `report:`), else by the sole proposer.
+
+**Owner-run dispatch decision:** after `end`, the moderator launches each owner with the plain Agent
+tool. No workflow is started, so the runs are ordinary: normal hooks, **no meeting notice**, no
+`meeting: true` log entries. `owner-runs` refusing while the flag is set is what enforces it; a
+run under the flag would be treated as a meeting turn.
+
 ## Things that bite
 
 - **The guard cannot see a Bash write.** A participant told "propose, never apply" can still write a
   lane file with Bash. `meeting_leftovers` is what keeps such a file from being adopted later. Don't
-  remove it on the grounds that the guard already confines participants.
+  remove it on the grounds that the guard already confines participants. The apply phase changed
+  neither the write guard nor this gap: owner runs are not participants, so they write normally.
 - **`start` refuses a stale project-local runtime.** A project that registers its own hook copies runs
   those, and a copy older than meeting mode would treat participants as workflow steps.
