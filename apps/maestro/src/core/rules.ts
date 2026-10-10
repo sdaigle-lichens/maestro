@@ -51,7 +51,7 @@ export function targetDirFor(rule: MaestroRuleV3): string {
  * Read the frontmatter `name:` (the rule id), falling back to the file basename — mirrors
  * discoverProjectRules so we match the same id the form assigned.
  */
-function ruleIdOf(filePath: string): string | null {
+export function ruleIdOf(filePath: string): string | null {
   let text: string;
   try {
     text = fs.readFileSync(filePath, "utf8");
@@ -62,7 +62,7 @@ function ruleIdOf(filePath: string): string | null {
 }
 
 /** Locate the on-disk file for a project rule id by scanning every .claude/rules/ in the tree. */
-function findProjectRuleFile(projectRoot: string, id: string): string | null {
+export function findProjectRuleFile(projectRoot: string, id: string): string | null {
   for (const dir of ruleSearchDirs(projectRoot)) {
     for (const file of rulesFilesIn(dir)) {
       if (ruleIdOf(file) === id) return file;

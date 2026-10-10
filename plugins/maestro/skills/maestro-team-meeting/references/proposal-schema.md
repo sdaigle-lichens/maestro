@@ -25,6 +25,9 @@ bare agent name (`backend`, not `maestro:backend`).
   `skill.placement` takes `"to": "loaded"` or `"referenced"`; `handoff.edit` takes `"content"`, the
   full new template text. Without it, the row is skipped by apply-placement and goes through the
   owner run (handoff.edit) or the main session (skill.placement).
+- `agent.fork` takes an optional `"newName"` (kebab-case); `rule.move` takes `"destination"`, a
+  project-relative directory (`"."` for the root), and optionally `"scopeOnly": true`. Both are
+  applied by the main session with `maestro-agent-fork.cjs` / `maestro-rules.cjs`.
 - If an id lacks the `<agent>-` prefix, the parser adds it.
 - A proposal with an unknown kind, a wrong target shape or an empty `change` is dropped, and `TM conflicts` and `TM tally` report it under `errors`. The rest of the file still counts.
 - Each agent's latest round replaces its earlier rounds, minus the ids it lists in `withdrawn`.
@@ -36,8 +39,8 @@ bare agent name (`backend`, not `maestro:backend`).
 | `workflow.create` / `.update` / `.delete` | `workflow:<name>` | approval |
 | `skill.create` / `.edit` / `.delete` | `skill:<id>` | approval |
 | `skill.placement` | `instance:<instance>#<skill>` | auto |
-| `agent.create` / `.edit` / `.delete` / `.tools` | `agent:<name>` | approval; a plugin agent is blocked until forked |
-| `rule.edit` / `.delete` / `.to-agent` | `rule:<id>` | approval; delete or to-agent of a rule listed in maestro.json is blocked (use `/rules`) |
+| `agent.create` / `.edit` / `.delete` / `.tools` / `.fork` | `agent:<name>` | approval; edit/delete/tools of a plugin agent is blocked until an `agent.fork` is applied |
+| `rule.edit` / `.delete` / `.to-agent` / `.move` | `rule:<id>` | approval; delete or to-agent of a rule listed in maestro.json is blocked (use `rule.move` or `/rules`) |
 | `handoff.edit` | `handoff:<sender>/<receiver>` | auto |
 | `report.edit` | `report:<agent>` | approval |
 | `gate.change` | `gates` | approval |

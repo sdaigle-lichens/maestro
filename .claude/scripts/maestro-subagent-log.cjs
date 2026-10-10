@@ -20,6 +20,10 @@
 // digest label it — and SubagentStop skips the `078` transcript recovery and the channel stamping:
 // a meeting turn has no HANDOFF to recover, and anything it left in a lane must not be delivered
 // into a workflow step as this run's payload.
+//
+// OWNER RUNS (`081`): an agent type listed in session.json's `owner_runs` (set between a closed
+// meeting and the last approved change being applied) gets the same treatment under `owner_run: true`:
+// never a resume target, no recovery, no stamping. Unlike a meeting turn it is not write-confined.
 
 const fs = require("fs");
 const path = require("path");
@@ -38,6 +42,8 @@ const {
   ensureSessionPaths,
   sendMessageHandoff,
   meetingFor,
+  ownerRunFor,
+  ownerRunLeftovers,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -108,8 +114,11 @@ function parseHandoff(msg) {
   const agentId = p.agent_id || "";
   const lastMsg = p.last_assistant_message || null;
   // A meeting participant's run (null for everyone else, and whenever no meeting runs).
-  const inMeeting = agentType ? !!meetingFor(readJson(sess.state), agentType) : false;
-  const meetingMark = inMeeting ? { meeting: true } : {};
+  const sessionState = readJson(sess.state);
+  const inMeeting = agentType ? !!meetingFor(sessionState, agentType) : false;
+  // An owner run (`081`): a post-meeting run applying an approved change, outside the workflow.
+  const inOwnerRun = !inMeeting && agentType ? !!ownerRunFor(sessionState, agentType) : false;
+  const meetingMark = inMeeting ? { meeting: true } : inOwnerRun ? { owner_run: true } : {};
 
   try {
     if (event === "SubagentStart") {
@@ -125,7 +134,11 @@ function parseHandoff(msg) {
           input: lastMsg,
           ...(offered ? { offered_skills: offered } : {}),
           ...meetingMark,
-          log: inMeeting ? `→ ${agentType} (meeting)` : `→ ${agentType}`,
+          log: inMeeting
+            ? `→ ${agentType} (meeting)`
+            : inOwnerRun
+              ? `→ ${agentType} (owner run)`
+              : `→ ${agentType}`,
         },
         p
       );
@@ -150,7 +163,7 @@ function parseHandoff(msg) {
         let { status, label } = parseHandoff(handoffMsg);
         // `078`: an agent that hands back through a SendMessage call has no HANDOFF: line in its
         // final message. Recover it from the agent's own transcript so the entry is not `unknown`.
-        if (!inMeeting && status === "unknown" && p.agent_transcript_path) {
+        if (!inMeeting && !inOwnerRun && status === "unknown" && p.agent_transcript_path) {
           try {
             const viaSend = sendMessageHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
             if (viaSend) {
@@ -176,11 +189,17 @@ function parseHandoff(msg) {
             label,
             output: handoffMsg,
             ...meetingMark,
-            log: inMeeting ? "meeting turn" : label ? `HANDOFF: ${label}` : "HANDOFF: (none)",
+            log: inMeeting
+              ? "meeting turn"
+              : inOwnerRun
+                ? "owner run"
+                : label
+                  ? `HANDOFF: ${label}`
+                  : "HANDOFF: (none)",
           },
           p
         );
-        if (inMeeting) process.exit(0);
+        if (inMeeting || inOwnerRun) process.exit(0);
 
         // `036`: stamp every unstamped channel file THIS agent just wrote, under whichever
         // receiver's lane it landed in, with the run's own id. Only the sender's own SubagentStop
@@ -197,7 +216,9 @@ function parseHandoff(msg) {
         // ever held = nothing skipped, the pre-meeting behaviour.
         try {
           const runId = ensureSessionRunId(sess.state);
-          writeStamp(cwd, bareAgentName(agentType), runId, { skip: meetingLeftovers(readJson(sess.state)) });
+          writeStamp(cwd, bareAgentName(agentType), runId, {
+            skip: [...meetingLeftovers(sessionState), ...ownerRunLeftovers(sessionState)],
+          });
         } catch {
           // Best-effort — never fail the agent on a stamping error.
         }

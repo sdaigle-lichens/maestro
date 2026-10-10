@@ -90,7 +90,7 @@ command prints one line of JSON.
    It writes `decision.md` and `decision.json` and returns rows with a tier:
    - `auto`: applied by `TM apply-placement` without asking (unless the user vetoes it).
    - `approval`: needs the user's approval.
-   - `blocked`: report its `note` to the user. Examples: fork a plugin agent in the app's `/agents` view first; move a rule listed in maestro.json in the app's `/rules` view.
+   - `blocked`: report its `note` to the user. Examples: a plugin agent cannot be edited until forked (propose `agent.fork` first, then re-run the meeting); a rule listed in maestro.json cannot be deleted or folded into an agent (propose `rule.move`, or use the app's `/rules` view).
 
 7. **One batch of approvals.**
    - Show the `approval` rows as a compact table: id, from, change, and a one-line rationale.
@@ -126,12 +126,19 @@ command prints one line of JSON.
     ```
 
     It refuses while the meeting flag is set, and returns `runs` (one per owning agent) and `main`.
+    When there are runs it also marks those agents as owner runs in the session (`marked: true`).
     - **`runs`**: for each, spawn that agent with the `Agent` tool (agent type as in step 3), one
       after the other, with a prompt listing its rows (id, kind, target, change) and saying to apply
-      exactly those and nothing else. These are normal runs: normal routing, channel delivery and
-      stamping, no meeting notice. Run them sequentially, since two may touch `maestro.json`.
+      exactly those and nothing else. These are owner runs: the agent gets its own skills and a short
+      owner-run notice, but no HANDOFF routing, no payload instructions, no channel delivery, and it
+      must not write channel files. Run them sequentially, since two may touch `maestro.json`.
+      When the last one has returned, clear the marker:
+
+      ```bash
+      TM owner-runs-done "${CLAUDE_PROJECT_DIR:-.}"
+      ```
     - **`main`**: you apply these yourself with the table below. These are workflow changes, rule
-      moves (`rule.to-agent`, `/rules`), plugin-agent forks (`/agents`), gates, and creating or
+      moves (`rule.move`, `rule.to-agent`), agent forks (`agent.fork`), gates, and creating or
       deleting agents and skills.
     - When you apply by hand: read `.claude/maestro.json` right before each write, change only the
       slice concerned, keep every other key, and write it without a trailing newline.
@@ -145,9 +152,14 @@ command prints one line of JSON.
 Decision: the moderator dispatches them with the plain `Agent` tool, after `end`, **without starting
 a workflow** (starting one would only re-record session state and is not needed). An owner run is
 then an ordinary subagent run: if the session has a recorded workflow (a post-mortem after a run),
-the hooks use it; if not, they fall back to the project's default workflow, exactly as for any
-subagent. Either way the run gets routing, channel delivery and stamping, and no meeting notice. A
-guard enforces the order: `TM owner-runs` exits with `ok:false` while the meeting flag is set.
+the hooks would treat the run as a workflow step, so `TM owner-runs` writes an `owner_runs` marker
+into `session.json` for the owning agents. While it is set, those agents get their skills and an
+owner-run notice, and nothing else workflow-shaped: no routing, no payload instructions, no channel
+delivery, no stamping of lane files, and their log entries carry `owner_run: true`, so they are never
+a resume target for a later loop-back. They are not write-confined: an owner run edits the files it
+owns. `TM owner-runs-done` clears the marker (so does starting a workflow) and records any lane file
+the owners left behind so it is never stamped later. A guard enforces the order: `TM owner-runs`
+exits with `ok:false` while the meeting flag is set.
 
 ## What does not change during the meeting
 
@@ -169,6 +181,8 @@ to read-only checks. The checkpoints run in your context only; participants neve
 | `agent.edit` / `agent.tools` | edit `.claude/agents/<name>.md`: the body, or the frontmatter `tools:` |
 | `agent.delete` | only if no workflow places it (otherwise `update-workflow` first); delete the file and drop it from `agents_available` |
 | `rule.edit` / `rule.delete` | edit or delete `.claude/rules/<id>.md` |
+| `agent.fork` | `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-agent-fork.cjs" <agent> [--as <newName>] "${CLAUDE_PROJECT_DIR:-.}"`. Prints one JSON line; on `ok:false` tell the user the `reason` and that `/agents` in the Maestro desktop app can fork it instead. |
+| `rule.move` | `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-rules.cjs" move <id> --to <destination> [--scope-only] "${CLAUDE_PROJECT_DIR:-.}"` (`list` shows the rules, `unassign <id>` drops an assignment). On `ok:false` tell the user the `reason` and that `/rules` in the desktop app can do it instead. A row with no `destination` cannot be applied: ask the user. |
 | `rule.to-agent` | add the rule's content to the named project agent's file under `## Project rules`, then delete the rule file |
 | `handoff.edit` | edit `.claude/handoffs/<sender>/<receiver>.md` |
 | `report.edit` | edit `.claude/reports/<id>.md`; if `reports` has no entry for the agent, add `{ "id": "<agent>" }` |

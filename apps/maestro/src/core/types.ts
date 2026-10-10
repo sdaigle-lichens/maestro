@@ -247,6 +247,21 @@ export interface MaestroSession {
    * See `meeting-mode.ts`.
    */
   meeting?: MaestroMeetingState | null;
+  /**
+   * Present only while a closed team meeting's approved changes are being applied by owner runs
+   * (`081`). Its `agents` get owner-run treatment from the hooks: their own skills and a notice, but
+   * no HANDOFF routing, payload instructions, channel delivery or stamping, log entries marked
+   * `owner_run: true` (never a resume target). Removed by `maestro-team-meeting.cjs owner-runs-done`
+   * and by `maestro-set-session-workflow.cjs`. See `meeting-mode.ts`.
+   */
+  owner_runs?: MaestroOwnerRunsState | null;
+}
+
+export interface MaestroOwnerRunsState {
+  meeting_id: string;
+  /** BARE agent names whose runs are owner runs. */
+  agents: string[];
+  started_at: string;
 }
 
 export interface MaestroMeetingState {

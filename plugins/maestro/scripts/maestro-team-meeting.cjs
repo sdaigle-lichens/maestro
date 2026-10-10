@@ -24,7 +24,11 @@
 //       edits. Reads maestro.json right before writing, keeps every other slice, skips conflicts.
 //   node maestro-team-meeting.cjs owner-runs --approved id,id [projectDir]
 //       After `end`: group the approved rows into one run per owning agent. Refuses while the
-//       meeting flag is set, or when a conflicted target has more than one approved proposal.
+//       meeting flag is set, or when a conflicted target has more than one approved proposal. Also
+//       marks the owning agents in session.json (`owner_runs`) so the hooks give their runs no
+//       workflow routing, payload instructions, channel delivery or stamping (`081`).
+//   node maestro-team-meeting.cjs owner-runs-done [projectDir]
+//       After the last owner run: clear the marker and record any lane files the owners left.
 //
 // The pure logic is lib/maestro-team-meeting.cjs (apps/maestro/src/core/team-meeting.ts); the flag
 // the hooks read is lib/maestro-session.cjs's meeting-mode exports (meeting-mode.ts). Runs from the
@@ -41,6 +45,8 @@ const {
   readMeeting,
   startMeeting,
   endMeeting,
+  startOwnerRuns,
+  endOwnerRuns,
   agentRunsFromLog,
   bareAgentName,
   readMetrics,
@@ -137,6 +143,8 @@ function requireMeeting() {
 // The hooks that read the meeting flag, in the project-copied form a project may register itself.
 // Any copy present must know about meeting mode, whatever runtimeVersion says.
 const MEETING_AWARE_COPIES = ["maestro-inject-agent-context.cjs", "maestro-subagent-log.cjs"];
+// The same copies must also know owner-run marking (`081`) before `owner-runs` sets the marker.
+const OWNER_RUN_AWARE_COPIES = MEETING_AWARE_COPIES;
 
 function runtimeProblem() {
   try {
@@ -478,7 +486,30 @@ function runOwnerRuns() {
   }
   const planned = tm.planOwnerRuns(record, csv("approved"), Array.isArray(applied) ? applied : []);
   if (!planned.ok) refuse(planned.reason);
-  out({ ok: true, ...planned.plan });
+  // `081`: mark the owning agents so the hooks treat their runs as owner runs (no workflow routing,
+  // payload instructions, channel delivery or stamping, never a resume target). Without this marker a
+  // plain Agent dispatch is indistinguishable from a workflow step. Cleared by `owner-runs-done`.
+  let marked = false;
+  if (planned.plan.runs.length > 0) {
+    if (!sess) refuse("no Claude Code session id is available (CLAUDE_CODE_SESSION_ID) — owner runs are per session.");
+    for (const name of OWNER_RUN_AWARE_COPIES) {
+      const text = readText(path.join(claudeDir, "scripts", name));
+      if (text !== null && !text.includes("ownerRunFor")) {
+        refuse(`the project's copy of ${name} predates owner-run marking — run /maestro-update first.`);
+      }
+    }
+    startOwnerRuns(sess.state, { meetingId: record.meetingId, agents: planned.plan.runs.map((r) => r.agent) });
+    marked = true;
+  }
+  out({ ok: true, ...planned.plan, marked });
+}
+
+// Ends owner-run mode once the last owner run has returned. Records any unstamped lane files the
+// owners left as `owner_run_leftovers`, so the same agents' next workflow run never adopts one.
+function runOwnerRunsDone() {
+  const sess = resolveSessionPaths(claudeDir);
+  if (!sess) refuse("no Claude Code session id is available (CLAUDE_CODE_SESSION_ID) — owner runs are per session.");
+  out({ ok: true, ended: endOwnerRuns(sess.state, projectDir) });
 }
 
 const COMMANDS = {
@@ -489,6 +520,7 @@ const COMMANDS = {
   tally: runTally,
   "apply-placement": runApplyPlacement,
   "owner-runs": runOwnerRuns,
+  "owner-runs-done": runOwnerRunsDone,
 };
 
 if (COMMANDS[command]) {
@@ -499,7 +531,8 @@ if (COMMANDS[command]) {
       "  maestro-team-meeting.cjs start --mode review|post-mortem [--participants a,b] [projectDir]\n" +
       "  maestro-team-meeting.cjs end|brief|conflicts|tally [projectDir]\n" +
       "  maestro-team-meeting.cjs apply-placement [--skip id,id] [projectDir]\n" +
-      "  maestro-team-meeting.cjs owner-runs --approved id,id [projectDir]\n"
+      "  maestro-team-meeting.cjs owner-runs --approved id,id [projectDir]\n" +
+      "  maestro-team-meeting.cjs owner-runs-done [projectDir]\n"
   );
   process.exit(1);
 }

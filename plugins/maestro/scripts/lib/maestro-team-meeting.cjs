@@ -82,7 +82,9 @@ var PROPOSAL_KINDS = {
   "agent.edit": "agent:",
   "agent.delete": "agent:",
   "agent.tools": "agent:",
+  "agent.fork": "agent:",
   "rule.edit": "rule:",
+  "rule.move": "rule:",
   "rule.delete": "rule:",
   "rule.to-agent": "rule:",
   "handoff.edit": "handoff:",
@@ -127,6 +129,11 @@ function parseProposalFile(raw, expectedAgent, expectedRound) {
     const prop = { id, kind, target, change, rationale: str(v.rationale), evidence: str(v.evidence) };
     if (v.to === "loaded" || v.to === "referenced") prop.to = v.to;
     if (typeof v.content === "string" && v.content.trim()) prop.content = v.content;
+    if (kind === "agent.fork" && str(v.newName)) prop.newName = str(v.newName);
+    if (kind === "rule.move") {
+      if (str(v.destination)) prop.destination = str(v.destination);
+      if (v.scopeOnly === true) prop.scopeOnly = true;
+    }
     proposals.push(prop);
   });
   const withdrawn = Array.isArray(obj.withdrawn) ? obj.withdrawn.filter((w) => typeof w === "string") : [];
@@ -178,16 +185,16 @@ function tierOf(kind) {
   return AUTO_KINDS.includes(kind) ? "auto" : "approval";
 }
 function blockReason(p, ctx) {
-  if (p.kind.startsWith("agent.") && p.kind !== "agent.create") {
+  if (p.kind.startsWith("agent.") && p.kind !== "agent.create" && p.kind !== "agent.fork") {
     const name = bareAgentName(p.target.slice("agent:".length));
     if (ctx.agentTiers[name] === "plugin") {
-      return `"${name}" is a plugin agent \u2014 fork it in the app's /agents view first, then re-run the meeting to edit the fork`;
+      return `"${name}" is a plugin agent \u2014 propose an agent.fork first (or fork it in the app's /agents view), then re-run the meeting to edit the fork`;
     }
   }
   if (p.kind === "rule.delete" || p.kind === "rule.to-agent") {
     const id = p.target.slice("rule:".length);
     if (ctx.configRuleIds.includes(id)) {
-      return `rule "${id}" is listed in maestro.json's rules \u2014 move or remove it in the app's /rules view`;
+      return `rule "${id}" is listed in maestro.json's rules \u2014 propose a rule.move, or move or remove it in the app's /rules view`;
     }
   }
   return null;
@@ -221,7 +228,10 @@ function tally(files, ctx) {
         rationale: p.rationale,
         ...note ? { note } : {},
         ...p.to ? { to: p.to } : {},
-        ...p.content ? { content: p.content } : {}
+        ...p.content ? { content: p.content } : {},
+        ...p.newName ? { newName: p.newName } : {},
+        ...p.destination ? { destination: p.destination } : {},
+        ...p.scopeOnly ? { scopeOnly: true } : {}
       });
     }
   }
@@ -301,7 +311,9 @@ var MAIN_SESSION_KINDS = /* @__PURE__ */ new Set([
   "workflow.update",
   "workflow.delete",
   "rule.to-agent",
+  "rule.move",
   "agent.create",
+  "agent.fork",
   "agent.delete",
   "skill.delete",
   "gate.change",

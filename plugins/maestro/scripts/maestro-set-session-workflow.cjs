@@ -28,7 +28,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { ensureSessionPaths, closeMeeting } = require("./lib/maestro-session.cjs");
+const { ensureSessionPaths, closeMeeting, closeOwnerRuns } = require("./lib/maestro-session.cjs");
 
 // Parse args: the first non-flag positional is the workflow name; `--task <f>`
 // (or `--task=<f>`) carries the optional task filename.
@@ -104,7 +104,9 @@ try {
   // deliberately removes a key (see apps/maestro/src/core/meeting-mode.ts). `closeMeeting` also
   // records the participants' unstamped lane files as `meeting_leftovers`, so the sender's next
   // workflow SubagentStop never stamps one as its own payload — the same close `end` performs.
-  const { state: closed, ended: endedMeeting } = closeMeeting(updated, projectDir);
+  const { state: meetingClosed, ended: endedMeeting } = closeMeeting(updated, projectDir);
+  // Likewise an owner-run marker (`081`): a workflow step must never be treated as an owner run.
+  const { state: closed } = closeOwnerRuns(meetingClosed, projectDir);
 
   const tmp = sessionPath + ".tmp";
   fs.writeFileSync(tmp, JSON.stringify(closed, null, 2));

@@ -9,7 +9,7 @@ look like workflow steps to every hook. The flag is one key in **this session's*
 | --- | --- |
 | `apps/maestro/src/core/meeting-mode.ts` | The flag: `readMeeting`/`meetingFor`, `startMeeting`/`endMeeting`/`closeMeeting`, `meetingLeftovers`, `meetingNotice`. Re-exported from `maestro-session` (`fs`/`path` only). |
 | `apps/maestro/src/core/team-meeting.ts` | Pure meeting logic: briefs, proposal schema, conflicts, tally. Bundled as `maestro-team-meeting`. |
-| `plugins/maestro/scripts/maestro-team-meeting.cjs` | CLI: `start`/`end`/`brief`/`conflicts`/`tally`/`apply-placement`/`owner-runs`. Runs from the plugin only, never copied into a project. |
+| `plugins/maestro/scripts/maestro-team-meeting.cjs` | CLI: `start`/`end`/`brief`/`conflicts`/`tally`/`apply-placement`/`owner-runs`/`owner-runs-done`. Runs from the plugin only, never copied into a project. |
 
 ## The flag
 
@@ -84,10 +84,17 @@ copied onto `TallyRow`: `to` (`skill.placement`: `loaded`|`referenced`) and `con
 `agent.delete`, `skill.delete`, `gate.change`, `skill.placement`, and any `blocked` row. Others are
 owned by the agent named in the target (`handoff:`, `agent:`, `report:`), else by the sole proposer.
 
-**Owner-run dispatch decision:** after `end`, the moderator launches each owner with the plain Agent
-tool. No workflow is started, so the runs are ordinary: normal hooks, **no meeting notice**, no
-`meeting: true` log entries. `owner-runs` refusing while the flag is set is what enforces it; a
-run under the flag would be treated as a meeting turn.
+**Owner-run dispatch decision (revised by `081`):** after `end`, the moderator launches each owner
+with the plain Agent tool. That call carries no marker, and a baseline test showed the hooks then gave
+it the workflow's HANDOFF routes and payload protocols, stamped its lane files and made it a resume
+target. So `owner-runs` also writes `owner_runs { meeting_id, agents, started_at }` into
+`session.json`, and `owner-runs-done` (or `maestro-set-session-workflow.cjs`) removes it, recording the
+owners' unstamped lane files as `owner_run_leftovers`. While it lists an agent: SubagentStart injects
+its skills and an owner-run notice only (no routing, protocols, channel delivery or report);
+SubagentStop marks its log entries `owner_run: true`, skips stamping, and `agentRunsFromLog` drops them
+so a later loop-back never resumes one. Owner runs are NOT write-confined, unlike participants.
+`owner-runs` still refuses while the meeting flag is set. New kinds: `agent.fork` and `rule.move` are
+main-session kinds, applied with `maestro-agent-fork.cjs` and `maestro-rules.cjs`.
 
 ## Things that bite
 

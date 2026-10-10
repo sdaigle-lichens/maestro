@@ -191,3 +191,30 @@ describe("project scoping (030)", () => {
     expect(getAvatar("reviewer", dbPath, projectA)).toEqual(scoped);
   });
 });
+
+describe("openDb parent directory (081)", () => {
+  it("creates a missing parent directory instead of failing (a machine with no ~/.claude)", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-avatars-nodir-"));
+    try {
+      const dbPath = path.join(root, "not", "yet", "there", "avatars.sqlite");
+      expect(fs.existsSync(path.dirname(dbPath))).toBe(false);
+      const layers = fullLayers();
+      setAvatar("reviewer", layers, dbPath);
+      expect(fs.existsSync(dbPath)).toBe(true);
+      expect(getAvatar("reviewer", dbPath)).toEqual(layers);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it("a read on a missing parent directory also works and returns null", () => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-avatars-nodir-"));
+    try {
+      const dbPath = path.join(root, "a", "b", "avatars.sqlite");
+      expect(getAvatar("nobody", dbPath)).toBeNull();
+      expect(fs.existsSync(dbPath)).toBe(true);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+});

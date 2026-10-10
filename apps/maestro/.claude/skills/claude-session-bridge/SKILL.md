@@ -147,6 +147,13 @@ committed and does not exist**; do not go looking for it.
 - `maestro-architecture` (repo root `.claude/skills/`) — the _other_ way Claude runs in Maestro:
   hooks inside a session the app never started. Nothing in this cluster runs there.
 
+## Related
+
+- `docs/ideas/mcp-channel-bridge.md` (in `apps/maestro`) — why an MCP server and a Claude Code channel
+  between a session and this app were evaluated and deferred (`081`): the app's own sessions are Agent
+  SDK sessions and cannot receive channel events, and a second front door would sidestep the preview,
+  token, run design above.
+
 ## Sub-concepts
 
 - [Run pipeline](sub-concepts/run-pipeline.md) — preview → token → run, and why it is three files.
