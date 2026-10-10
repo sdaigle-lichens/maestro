@@ -22,6 +22,8 @@ The evaluation must address:
 
 End with a recommendation: build, defer, or drop. If build, give a proposed first slice.
 
+Part 3 (owner-run routing fix): after a meeting closes, the team meeting's owner runs are dispatched with the plain Agent tool under the session's recorded workflow. As a result, the subagent-start hook probably gives each owner that workflow's HANDOFF routes and payload instructions. An owner that follows them writes channel payloads, the stop hook stamps them, and a later workflow step in the same session would receive them. Confirm this with a test first. If it holds, mark owner runs so the hook gives them no routing, no payload instructions and no channel delivery, and they write no channel payloads. They should otherwise run as normal agents: their own skills, tools and write rules, outside meeting mode. An owner run must still not be a resume target for a later workflow loop-back.
+
 ## Acceptance criteria
 
 - [ ] Plugin CLIs can fork a plugin agent into the project and move or reassign a project rule. Both reuse the existing core logic (no duplicate implementation), and maestro.json writes are read-before-write and preserve other slices.
@@ -29,6 +31,7 @@ End with a recommendation: build, defer, or drop. If build, give a proposed firs
 - [ ] maestro-team-meeting applies approved fork and rule-move proposals with the CLIs after approval and after the meeting has closed. It only sends the user to the app when a CLI refuses.
 - [ ] Tests spawn the real CLIs against temp projects for fork, rule move, refusal cases and slice preservation. The existing team-meeting suites still pass.
 - [ ] A written evaluation of the MCP + channel bridge covers the listed constraints and ends with a build, defer or drop recommendation (and a first slice if build). It lives in this repo's developer documentation, not under plugins/.
+- [ ] A test proves whether an owner run currently receives workflow HANDOFF routing and leaves stamped channel payloads. After the fix, owner runs get no routing, no payload instructions and no channel delivery, leave no stamped payload for a later workflow step, and are never resume targets.
 - [ ] The plugin version is bumped per the publishing rules, and the developer concept skills are updated.
 
 ## Blocked by
