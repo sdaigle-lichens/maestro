@@ -24,9 +24,11 @@
 //     }
 //   ]
 //
-// `blockedBy` is a list of indices into this same array, each required to be
-// less than the entry's own index — the input is expected pre-sorted, this
-// only catches a caller that got the order wrong. Numbering appends after the
+// Each `blockedBy` entry is either an index into this same array, required to
+// be less than the entry's own index — the input is expected pre-sorted, this
+// only catches a caller that got the order wrong — or a string naming a task
+// ALREADY in the queue, by full filename ("083-foo.md") or number ("083"), so a
+// new batch can depend on earlier-queued work. Numbering appends after the
 // highest existing NNN-*.md (never overwrites), each title is slugged (deduped
 // within the batch and against existing files), and `blockedBy` indices are
 // resolved into sibling filenames once every filename in the batch is known.
@@ -135,9 +137,10 @@ slices.forEach((slice, i) => {
   }
   const blockedBy = slice.blockedBy || [];
   if (!Array.isArray(blockedBy)) {
-    fail(`slice ${i} ("${slice.title}"): "blockedBy" must be an array of indices`);
+    fail(`slice ${i} ("${slice.title}"): "blockedBy" must be an array of indices or task filenames`);
   }
   for (const b of blockedBy) {
+    if (typeof b === "string") continue; // an existing task, resolved once the queue is listed
     if (!Number.isInteger(b) || b < 0 || b >= slices.length) {
       fail(`slice ${i} ("${slice.title}"): blockedBy index ${b} is out of range`);
     }
@@ -163,6 +166,21 @@ let nextNumber =
     return m ? Math.max(max, parseInt(m[1], 10)) : max;
   }, 0) + 1;
 
+// A string blocker must name exactly one task already in the queue.
+function resolveExisting(ref, i, title) {
+  const match = /^\d{3}$/.test(ref)
+    ? existing.filter((f) => f.startsWith(`${ref}-`))
+    : existing.filter((f) => f === ref);
+  if (match.length !== 1) {
+    fail(`slice ${i} ("${title}"): blockedBy "${ref}" does not name exactly one existing task`);
+  }
+  return match[0];
+}
+
+const existingBlockers = slices.map((slice, i) =>
+  (slice.blockedBy || []).map((b) => (typeof b === "string" ? resolveExisting(b, i, slice.title) : null))
+);
+
 const filenames = slices.map((slice) => {
   const slug = uniqueSlug(slugify(slice.title), takenSlugs);
   const filename = `${String(nextNumber).padStart(3, "0")}-${slug}.md`;
@@ -171,7 +189,9 @@ const filenames = slices.map((slice) => {
 });
 
 slices.forEach((slice, i) => {
-  const blockedByFilenames = (slice.blockedBy || []).map((b) => filenames[b]);
+  const blockedByFilenames = (slice.blockedBy || []).map(
+    (b, j) => existingBlockers[i][j] || filenames[b]
+  );
   const body = renderBody(slice, blockedByFilenames);
   fs.writeFileSync(path.join(dir, filenames[i]), body, { flag: "wx" });
 });
