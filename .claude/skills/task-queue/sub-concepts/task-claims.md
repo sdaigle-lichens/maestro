@@ -7,8 +7,12 @@ without touching `status.json` or the `done`/`ready`/`blocked` enum — a claim 
 ```
 <project>/.claude/maestro-tasks/claims/
   .gitignore              "*", written by ensureClaimsDir() on first create
-  <task-file>.md.json     { session_id, claimed_at, project_root }
+  <task-file>.md.json     { session_id, claimed_at, project_root, session_name? }
 ```
+
+`session_name` (`084`) is optional: `claim <file> --name "<session name>"` records it so an epic's
+manager can find the worker by name; a claim without it still works and reads as unnamed. It is
+exposed as `claim.sessionName` on `MaestroTask` only when set. See [Epics](epics.md).
 
 - **Created with an exclusive `fs` create (`flag: "wx"`).** The create either succeeds (this session
   won the race) or fails with `EEXIST` (someone else has it — take the next ready task instead).

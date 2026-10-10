@@ -99,7 +99,7 @@ function writeStatus(projectDir, statusMap) {
     ordered[k] = statusMap[k];
   }
   const p = statusPath(projectDir);
-  const tmp = p + ".tmp";
+  const tmp = `${p}.${process.pid}.tmp`; // per process: two writers never share a temp file
   fs.writeFileSync(tmp, JSON.stringify(ordered, null, 2) + "\n");
   fs.renameSync(tmp, p);
   return ordered;
@@ -114,7 +114,7 @@ function writeStatus(projectDir, statusMap) {
 //     otherwise `blocked`.
 // Entries for files that no longer exist are dropped. New files appear as
 // ready/blocked. Pure single pass — readiness depends only on the done-set.
-function buildStatusMap(projectDir, doneSet) {
+function buildStatusMap(projectDir, doneSet, previous = {}) {
   const files = listTaskFiles(projectDir);
   const fileSet = new Set(files);
   const out = {};
@@ -134,6 +134,8 @@ function buildStatusMap(projectDir, doneSet) {
       status = satisfied ? "ready" : "blocked";
     }
     out[filename] = { status, blockedBy };
+    // `084`: the tracker owns `epic` (the markdown never does), so a rebuild keeps what was linked.
+    if (previous[filename] && previous[filename].epic) out[filename].epic = previous[filename].epic;
   }
   return out;
 }
@@ -149,18 +151,19 @@ function doneSetFrom(statusMap) {
 // missing ones, refresh every blockedBy from the markdown, preserve `done`, and
 // recompute all ready/blocked. Returns the written map.
 function sync(projectDir) {
-  const doneSet = doneSetFrom(readStatus(projectDir));
-  return writeStatus(projectDir, buildStatusMap(projectDir, doneSet));
+  const previous = readStatus(projectDir);
+  return writeStatus(projectDir, buildStatusMap(projectDir, doneSetFrom(previous), previous));
 }
 
 // Mark a single task file done (idempotent), then recompute the cascade and
 // persist. Re-syncs from markdown first so the JSON is current even if files
 // changed since the last write. Returns { map, marked, known }.
 function markDone(projectDir, filename) {
-  const doneSet = doneSetFrom(readStatus(projectDir));
+  const previous = readStatus(projectDir);
+  const doneSet = doneSetFrom(previous);
   const known = listTaskFiles(projectDir).includes(filename);
   if (known) doneSet.add(filename);
-  const map = writeStatus(projectDir, buildStatusMap(projectDir, doneSet));
+  const map = writeStatus(projectDir, buildStatusMap(projectDir, doneSet, previous));
   return { map, marked: known, known };
 }
 

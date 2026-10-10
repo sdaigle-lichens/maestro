@@ -1,5 +1,9 @@
 # Version bump precedent — the worked examples
 
+**Latest: `0.11.0` (`084`), a minor.** A new directory under `skills/` (`maestro-manager`) grows the
+published surface. The new scripts (`maestro-epic.cjs` and its lib) and the `claim --name` /
+`--epic` flags alone would have been a patch: a new file under `scripts/` is not a published surface.
+
 The [table in `SKILL.md`](../SKILL.md#which-component-to-bump) says which component to bump. This is
 the case law behind it: every bump the repo has argued about, and the reasoning that settled it.
 Read it when a change feels like it might be a minor.

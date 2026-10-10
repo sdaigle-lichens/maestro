@@ -93,6 +93,8 @@ Once approved, prepare one object per approved task — **do not write the markd
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-write-tasks.cjs" <path-to-json>
 ```
 
+**Epic (optional).** When the tasks belong to an epic — the user named one, or you are running for a `maestro-manager` — add `--epic <slug>` to that command; every task it writes is linked to the epic in the tracker (`epic` field), and the command refuses, writing nothing, when the epic does not exist (create it first with `node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-epic.cjs" create <slug>`). To link or unlink tasks that already exist, use `maestro-epic.cjs link <slug> <task.md>...` / `unlink <task.md>...`. Without an epic, nothing changes.
+
 ### 6. Report
 
 Tell the user what was written — a single file, or the count and numeric range (e.g. `003–007`) — and that each is ready to paste into (or run from) a session where the `/maestro` skill is invoked.
