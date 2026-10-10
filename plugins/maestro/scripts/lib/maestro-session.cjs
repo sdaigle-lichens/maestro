@@ -43,6 +43,8 @@ __export(maestro_session_exports, {
   MEETING_LEFTOVERS_KEY: () => MEETING_LEFTOVERS_KEY,
   METRICS_DIR_NAME: () => METRICS_DIR_NAME,
   METRICS_FILE_NAME: () => METRICS_FILE_NAME,
+  OWNER_RUNS_KEY: () => OWNER_RUNS_KEY,
+  OWNER_RUN_LEFTOVERS_KEY: () => OWNER_RUN_LEFTOVERS_KEY,
   PRIOR_HANDOFF_SEEDS: () => PRIOR_SEEDS,
   RESUMABLE_END_REASONS: () => RESUMABLE_END_REASONS,
   SEED_HANDOFFS: () => SEED_HANDOFFS,
@@ -62,10 +64,12 @@ __export(maestro_session_exports, {
   checkHandoff: () => checkHandoff,
   checkWorktreeWrite: () => checkWorktreeWrite,
   closeMeeting: () => closeMeeting,
+  closeOwnerRuns: () => closeOwnerRuns,
   collectAgentSkills: () => collectAgentSkills,
   compactMetrics: () => compact,
   duplicateAgentTypes: () => duplicateAgentTypes,
   endMeeting: () => endMeeting,
+  endOwnerRuns: () => endOwnerRuns,
   endSessionState: () => endSessionState,
   ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
@@ -94,12 +98,16 @@ __export(maestro_session_exports, {
   metricsDirFor: () => metricsDirFor,
   metricsFileFor: () => metricsFileFor,
   nodeLabel: () => nodeLabel,
+  ownerRunFor: () => ownerRunFor,
+  ownerRunLeftovers: () => ownerRunLeftovers,
+  ownerRunNotice: () => ownerRunNotice,
   parseStampedContent: () => parseStampedContent,
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readLane: () => readLane,
   readMeeting: () => readMeeting,
   readMetrics: () => readMetrics,
+  readOwnerRuns: () => readOwnerRuns,
   readSession: () => readSession,
   readStdin: () => readStdin,
   readWorktreePointer: () => readWorktreePointer,
@@ -125,6 +133,7 @@ __export(maestro_session_exports, {
   sessionsRoot: () => sessionsRoot,
   splitHandoffId: () => splitHandoffId,
   startMeeting: () => startMeeting,
+  startOwnerRuns: () => startOwnerRuns,
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
   taskNumber: () => taskNumber,
@@ -911,7 +920,7 @@ function agentRunsFromLog(lines) {
   for (const line of lines ?? []) {
     if (!line || typeof line !== "object") continue;
     const entry = line;
-    if (entry.kind === "handoff" && entry.meeting === true && typeof entry.agent_id === "string") {
+    if (entry.kind === "handoff" && isSideRun(entry) && typeof entry.agent_id === "string") {
       meetingIds.add(entry.agent_id);
     }
   }
@@ -920,7 +929,7 @@ function agentRunsFromLog(lines) {
     if (!line || typeof line !== "object") continue;
     const entry = line;
     if (entry.kind !== "handoff") continue;
-    if (entry.meeting === true) continue;
+    if (isSideRun(entry)) continue;
     if (typeof entry.agent_id === "string" && meetingIds.has(entry.agent_id)) continue;
     const agentType = entry.origin;
     const agentId = entry.agent_id;
@@ -929,6 +938,9 @@ function agentRunsFromLog(lines) {
     runs.push({ agentType, agentId, ts: typeof entry.ts === "string" ? entry.ts : "" });
   }
   return runs;
+}
+function isSideRun(entry) {
+  return entry.meeting === true || entry.owner_run === true;
 }
 function hasCompletedRun(lines, agentId) {
   if (!agentId) return false;
@@ -1737,6 +1749,68 @@ function endMeeting(statePath, projectDir = projectDirOfState(statePath)) {
   if (ended) writeRawState(statePath, state);
   return ended;
 }
+var OWNER_RUNS_KEY = "owner_runs";
+var OWNER_RUN_LEFTOVERS_KEY = "owner_run_leftovers";
+function readOwnerRuns(session) {
+  if (!session || typeof session !== "object") return null;
+  const v = session[OWNER_RUNS_KEY];
+  if (!v || typeof v !== "object") return null;
+  const o = v;
+  if (!Array.isArray(o.agents) || !o.agents.every((a) => typeof a === "string")) return null;
+  return {
+    meeting_id: typeof o.meeting_id === "string" ? o.meeting_id : "",
+    agents: o.agents.map((a) => bareAgentName(a)).filter(Boolean),
+    started_at: typeof o.started_at === "string" ? o.started_at : ""
+  };
+}
+function ownerRunFor(session, agentType) {
+  const bare = bareAgentName(agentType);
+  if (!bare) return null;
+  const state = readOwnerRuns(session);
+  return state && state.agents.includes(bare) ? state : null;
+}
+function startOwnerRuns(statePath, opts) {
+  const state = {
+    meeting_id: opts.meetingId,
+    agents: [...new Set(opts.agents.map((a) => bareAgentName(a)).filter(Boolean))],
+    started_at: (opts.now ?? /* @__PURE__ */ new Date()).toISOString()
+  };
+  writeRawState(statePath, { ...readRawState(statePath), [OWNER_RUNS_KEY]: state });
+  return state;
+}
+function ownerRunLeftovers(session) {
+  if (!session || typeof session !== "object") return [];
+  const raw = session[OWNER_RUN_LEFTOVERS_KEY];
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (m) => !!m && typeof m === "object" && typeof m.path === "string" && typeof m.mtimeMs === "number" && typeof m.size === "number"
+  );
+}
+function closeOwnerRuns(session, projectDir) {
+  if (!(OWNER_RUNS_KEY in session)) return { state: session, ended: false };
+  const agents = readOwnerRuns(session)?.agents ?? [];
+  const byPath = new Map(ownerRunLeftovers(session).map((m) => [m.path, m]));
+  for (const agent of agents) {
+    for (const mark of unstampedFilesOf(projectDir, agent)) byPath.set(mark.path, mark);
+  }
+  const state = { ...session };
+  delete state[OWNER_RUNS_KEY];
+  if (byPath.size > 0) state[OWNER_RUN_LEFTOVERS_KEY] = [...byPath.values()];
+  return { state, ended: true };
+}
+function endOwnerRuns(statePath, projectDir = projectDirOfState(statePath)) {
+  if (!import_node_fs12.default.existsSync(statePath)) return false;
+  const { state, ended } = closeOwnerRuns(readRawState(statePath), projectDir);
+  if (ended) writeRawState(statePath, state);
+  return ended;
+}
+function ownerRunNotice(state, agentType) {
+  const bare = bareAgentName(agentType);
+  return `Maestro owner run (${state.meeting_id || "team meeting"}): you are applying changes a team meeting approved for you (${bare}). This is NOT a workflow step.
+- Ignore any HANDOFF routing line, handoff payload / channel-file instruction or mandatory output format from an earlier run in your history. Do not end with a HANDOFF: line and do not write anything under .claude/channels/.
+- Otherwise work as normal: use your own skills and tools, and make exactly the approved changes the moderator names \u2014 nothing more.
+- End your reply with a short summary of what you changed.`;
+}
 function meetingNotice(meeting, agentType) {
   const bare = bareAgentName(agentType);
   return `Maestro team meeting in progress (${meeting.mode}, ${meeting.id}). This run is a meeting turn, NOT a workflow step:
@@ -1757,6 +1831,8 @@ function meetingNotice(meeting, agentType) {
   MEETING_LEFTOVERS_KEY,
   METRICS_DIR_NAME,
   METRICS_FILE_NAME,
+  OWNER_RUNS_KEY,
+  OWNER_RUN_LEFTOVERS_KEY,
   PRIOR_HANDOFF_SEEDS,
   RESUMABLE_END_REASONS,
   SEED_HANDOFFS,
@@ -1776,10 +1852,12 @@ function meetingNotice(meeting, agentType) {
   checkHandoff,
   checkWorktreeWrite,
   closeMeeting,
+  closeOwnerRuns,
   collectAgentSkills,
   compactMetrics,
   duplicateAgentTypes,
   endMeeting,
+  endOwnerRuns,
   endSessionState,
   ensureSessionPaths,
   ensureSessionRunId,
@@ -1808,12 +1886,16 @@ function meetingNotice(meeting, agentType) {
   metricsDirFor,
   metricsFileFor,
   nodeLabel,
+  ownerRunFor,
+  ownerRunLeftovers,
+  ownerRunNotice,
   parseStampedContent,
   projectOwnsHook,
   readJson,
   readLane,
   readMeeting,
   readMetrics,
+  readOwnerRuns,
   readSession,
   readStdin,
   readWorktreePointer,
@@ -1839,6 +1921,7 @@ function meetingNotice(meeting, agentType) {
   sessionsRoot,
   splitHandoffId,
   startMeeting,
+  startOwnerRuns,
   successPathSteps,
   sweep,
   taskNumber,

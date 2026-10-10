@@ -71,6 +71,8 @@ export const PLUGIN_LIB_ENTRIES = [
   { name: "maestro-handoff-defaults", entry: "src/core/plugin-entries/maestro-handoff-defaults.ts" },
   { name: "maestro-workflow-spec", entry: "src/core/plugin-entries/maestro-workflow-spec.ts" },
   { name: "maestro-team-meeting", entry: "src/core/plugin-entries/maestro-team-meeting.ts" },
+  { name: "maestro-agent-fork", entry: "src/core/plugin-entries/maestro-agent-fork.ts" },
+  { name: "maestro-rule-move", entry: "src/core/plugin-entries/maestro-rule-move.ts" },
 ];
 
 /**

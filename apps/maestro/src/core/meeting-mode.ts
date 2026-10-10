@@ -30,7 +30,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { bareAgentName } from "./success-path.js";
 import { unstampedFilesOf, type ChannelFileMark } from "./handoff-channels.js";
-import type { MaestroMeetingState } from "./types.js";
+import type { MaestroMeetingState, MaestroOwnerRunsState } from "./types.js";
 
 /** `<session dir>/meeting/` — the transcript directory and the only place participants may write. */
 export const MEETING_DIR_NAME = "meeting";
@@ -184,6 +184,119 @@ export function endMeeting(statePath: string, projectDir: string = projectDirOfS
   const { state, ended } = closeMeeting(readRawState(statePath), projectDir);
   if (ended) writeRawState(statePath, state);
   return ended;
+}
+
+// ── owner runs (`081`) ──────────────────────────────────────────────────────
+//
+// After a meeting closes, each approved proposal is applied by an OWNER RUN: the owning agent,
+// dispatched with the plain Agent tool from the main session. Nothing on that call marks it as an
+// owner run, so a project running a workflow would give it the workflow's HANDOFF routing and payload
+// instructions, the stop hook would stamp whatever it left in a lane, and its `kind:"handoff"` entry
+// would make it a resume target for a later loop-back. `owner_runs` is the marker: the moderator sets
+// it before the first owner run (`maestro-team-meeting.cjs owner-runs`) and clears it after the last
+// (`owner-runs-done`), and `maestro-set-session-workflow.cjs` clears it too. While it lists an agent
+// type that agent gets its own skills and a notice, and NO routing, payload instructions, channel
+// delivery, stamping or resume-target entry. It deliberately does NOT confine writes — an owner run
+// must be able to edit the files it owns.
+
+/** The `session.json` key holding the active owner-run marker. */
+export const OWNER_RUNS_KEY = "owner_runs";
+
+/** The `session.json` key `closeOwnerRuns` records leftover lane files under. */
+export const OWNER_RUN_LEFTOVERS_KEY = "owner_run_leftovers";
+
+/** The owner-run marker in a parsed `session.json`, or null when absent or malformed (fail-safe: normal behaviour). */
+export function readOwnerRuns(session: unknown): MaestroOwnerRunsState | null {
+  if (!session || typeof session !== "object") return null;
+  const v = (session as Record<string, unknown>)[OWNER_RUNS_KEY];
+  if (!v || typeof v !== "object") return null;
+  const o = v as Record<string, unknown>;
+  if (!Array.isArray(o.agents) || !o.agents.every((a) => typeof a === "string")) return null;
+  return {
+    meeting_id: typeof o.meeting_id === "string" ? o.meeting_id : "",
+    agents: o.agents.map((a) => bareAgentName(a as string)).filter(Boolean),
+    started_at: typeof o.started_at === "string" ? o.started_at : "",
+  };
+}
+
+/** The owner-run marker when `agentType` is listed in it, else null. Compared bare. */
+export function ownerRunFor(session: unknown, agentType: string | null | undefined): MaestroOwnerRunsState | null {
+  const bare = bareAgentName(agentType);
+  if (!bare) return null;
+  const state = readOwnerRuns(session);
+  return state && state.agents.includes(bare) ? state : null;
+}
+
+/** Mark `agents` as owner runs in `statePath`, keeping every other key. Replaces an existing marker. */
+export function startOwnerRuns(
+  statePath: string,
+  opts: { meetingId: string; agents: string[]; now?: Date }
+): MaestroOwnerRunsState {
+  const state: MaestroOwnerRunsState = {
+    meeting_id: opts.meetingId,
+    agents: [...new Set(opts.agents.map((a) => bareAgentName(a)).filter(Boolean))],
+    started_at: (opts.now ?? new Date()).toISOString(),
+  };
+  writeRawState(statePath, { ...readRawState(statePath), [OWNER_RUNS_KEY]: state });
+  return state;
+}
+
+/** Owner-run leftovers recorded in a parsed `session.json`. Malformed entries are dropped. */
+export function ownerRunLeftovers(session: unknown): ChannelFileMark[] {
+  if (!session || typeof session !== "object") return [];
+  const raw = (session as Record<string, unknown>)[OWNER_RUN_LEFTOVERS_KEY];
+  if (!Array.isArray(raw)) return [];
+  return raw.filter(
+    (m): m is ChannelFileMark =>
+      !!m &&
+      typeof m === "object" &&
+      typeof (m as ChannelFileMark).path === "string" &&
+      typeof (m as ChannelFileMark).mtimeMs === "number" &&
+      typeof (m as ChannelFileMark).size === "number"
+  );
+}
+
+/**
+ * A parsed `session.json` with its owner-run marker removed, every other key kept, and the owner
+ * agents' current unstamped lane files merged into `owner_run_leftovers` — so the next normal run of
+ * the same agent never adopts a file an owner run left behind. `ended` is false (state untouched)
+ * when no marker was present.
+ */
+export function closeOwnerRuns(
+  session: Record<string, unknown>,
+  projectDir: string
+): { state: Record<string, unknown>; ended: boolean } {
+  if (!(OWNER_RUNS_KEY in session)) return { state: session, ended: false };
+  const agents = readOwnerRuns(session)?.agents ?? [];
+  const byPath = new Map(ownerRunLeftovers(session).map((m) => [m.path, m]));
+  for (const agent of agents) {
+    for (const mark of unstampedFilesOf(projectDir, agent)) byPath.set(mark.path, mark);
+  }
+  const state = { ...session };
+  delete state[OWNER_RUNS_KEY];
+  if (byPath.size > 0) state[OWNER_RUN_LEFTOVERS_KEY] = [...byPath.values()];
+  return { state, ended: true };
+}
+
+/** Switch owner-run mode off through `closeOwnerRuns`. Returns whether a marker was on. */
+export function endOwnerRuns(statePath: string, projectDir: string = projectDirOfState(statePath)): boolean {
+  if (!fs.existsSync(statePath)) return false;
+  const { state, ended } = closeOwnerRuns(readRawState(statePath), projectDir);
+  if (ended) writeRawState(statePath, state);
+  return ended;
+}
+
+/** The context SubagentStart injects for an owner run: what it is, and what it does not get. */
+export function ownerRunNotice(state: MaestroOwnerRunsState, agentType: string): string {
+  const bare = bareAgentName(agentType);
+  return (
+    `Maestro owner run (${state.meeting_id || "team meeting"}): you are applying changes a team meeting approved for you (${bare}). ` +
+    `This is NOT a workflow step.\n` +
+    `- Ignore any HANDOFF routing line, handoff payload / channel-file instruction or mandatory output format from an earlier run ` +
+    `in your history. Do not end with a HANDOFF: line and do not write anything under .claude/channels/.\n` +
+    `- Otherwise work as normal: use your own skills and tools, and make exactly the approved changes the moderator names — nothing more.\n` +
+    `- End your reply with a short summary of what you changed.`
+  );
 }
 
 /**

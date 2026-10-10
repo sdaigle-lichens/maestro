@@ -153,6 +153,18 @@ The save is a single `config:save` carrying only `{ sliceType: "rules", slice: {
 (`placement` x `source`), the idempotency guards and the vibe-rules traps are
 [`sub-concepts/applying-placements.md`](sub-concepts/applying-placements.md).
 
+## The same move without the window (`081`)
+
+`src/core/rule-move.ts` is `handleAssign` / `handleUnassign` plus Save as a function, for a caller with
+no renderer: `assignRule` (drop the old assignment of that id, append the new one with `source` last),
+`assignmentFor` (the `rule-tree.tsx` shape), then `saveConfig` (rules slice merge, re-render,
+`applyRules`). `plugins/maestro/scripts/maestro-rules.cjs` (`list`, `move <id> --to <dir|.>
+[--scope-only]`, `unassign <id>`) is its terminal front end, via the plugin-only `maestro-rule-move`
+bundle. It reads `maestro.json` right before writing, because `mergeSlice` replaces the whole `rules`
+block, and refuses a missing or non-v3 file instead of saving over it (`readConfig` would answer a
+blank config). A move made there shows in `/rules` as a normal assignment. The team-meeting skill uses
+it for `rule.move` proposals.
+
 ## Things that bite
 
 - **Save only touches the rules slice.** Don't widen `submitMaestroConfig`'s rules branch to write `workflows`/instances — that's the `/workflows` route's slice, and a stray write will clobber it.

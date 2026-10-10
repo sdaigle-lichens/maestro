@@ -248,6 +248,14 @@ export interface MaestroSession {
    */
   meeting?: MaestroMeetingState | null;
   /**
+   * Present only while a closed team meeting's approved changes are being applied by owner runs
+   * (`081`). Its `agents` get owner-run treatment from the hooks: their own skills and a notice, but
+   * no HANDOFF routing, payload instructions, channel delivery or stamping, log entries marked
+   * `owner_run: true` (never a resume target). Removed by `maestro-team-meeting.cjs owner-runs-done`
+   * and by `maestro-set-session-workflow.cjs`. See `meeting-mode.ts`.
+   */
+  owner_runs?: MaestroOwnerRunsState | null;
+  /**
    * Handoff problems the SubagentStop hook detected and the orchestrator has not read yet (`083`):
    * a workflow agent that ended with no HANDOFF line, or with a FAIL verdict and HANDOFF: success.
    * Read-and-cleared by `maestro-task-status.cjs handoff-issues`.
@@ -255,6 +263,13 @@ export interface MaestroSession {
   handoff_issues?: HandoffIssueRecord[];
   /** The orchestrator's own success-path tracker, the fallback when TaskCreate is unavailable (`083`). */
   plan?: SessionPlan | null;
+}
+
+export interface MaestroOwnerRunsState {
+  meeting_id: string;
+  /** BARE agent names whose runs are owner runs. */
+  agents: string[];
+  started_at: string;
 }
 
 export interface HandoffIssueRecord {

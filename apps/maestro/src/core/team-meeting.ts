@@ -29,7 +29,9 @@ export const PROPOSAL_KINDS: Readonly<Record<string, string>> = {
   "agent.edit": "agent:",
   "agent.delete": "agent:",
   "agent.tools": "agent:",
+  "agent.fork": "agent:",
   "rule.edit": "rule:",
+  "rule.move": "rule:",
   "rule.delete": "rule:",
   "rule.to-agent": "rule:",
   "handoff.edit": "handoff:",
@@ -56,6 +58,12 @@ export interface Proposal {
   to?: "loaded" | "referenced";
   /** `handoff.edit`: the full new template text. Without it the proposal cannot be applied mechanically. */
   content?: string;
+  /** `agent.fork`: the kebab-case name for the fork. Omitted = same name as the template. */
+  newName?: string;
+  /** `rule.move`: project-relative directory the rule moves to ("." = project root). Required to apply it. */
+  destination?: string;
+  /** `rule.move`: scope the rule to the directory without moving its file. */
+  scopeOnly?: boolean;
 }
 
 export interface ProposalFile {
@@ -115,6 +123,11 @@ export function parseProposalFile(raw: unknown, expectedAgent?: string, expected
     const prop: Proposal = { id, kind, target, change, rationale: str(v.rationale), evidence: str(v.evidence) };
     if (v.to === "loaded" || v.to === "referenced") prop.to = v.to;
     if (typeof v.content === "string" && v.content.trim()) prop.content = v.content;
+    if (kind === "agent.fork" && str(v.newName)) prop.newName = str(v.newName);
+    if (kind === "rule.move") {
+      if (str(v.destination)) prop.destination = str(v.destination);
+      if (v.scopeOnly === true) prop.scopeOnly = true;
+    }
     proposals.push(prop);
   });
 
@@ -212,19 +225,22 @@ export interface TallyRow {
   note?: string;
   to?: "loaded" | "referenced";
   content?: string;
+  newName?: string;
+  destination?: string;
+  scopeOnly?: boolean;
 }
 
 function blockReason(p: Proposal, ctx: TallyContext): string | null {
-  if (p.kind.startsWith("agent.") && p.kind !== "agent.create") {
+  if (p.kind.startsWith("agent.") && p.kind !== "agent.create" && p.kind !== "agent.fork") {
     const name = bareAgentName(p.target.slice("agent:".length));
     if (ctx.agentTiers[name] === "plugin") {
-      return `"${name}" is a plugin agent — fork it in the app's /agents view first, then re-run the meeting to edit the fork`;
+      return `"${name}" is a plugin agent — propose an agent.fork first (or fork it in the app's /agents view), then re-run the meeting to edit the fork`;
     }
   }
   if (p.kind === "rule.delete" || p.kind === "rule.to-agent") {
     const id = p.target.slice("rule:".length);
     if (ctx.configRuleIds.includes(id)) {
-      return `rule "${id}" is listed in maestro.json's rules — move or remove it in the app's /rules view`;
+      return `rule "${id}" is listed in maestro.json's rules — propose a rule.move, or move or remove it in the app's /rules view`;
     }
   }
   return null;
@@ -264,6 +280,9 @@ export function tally(files: ProposalFile[], ctx: TallyContext): TallyRow[] {
         ...(note ? { note } : {}),
         ...(p.to ? { to: p.to } : {}),
         ...(p.content ? { content: p.content } : {}),
+        ...(p.newName ? { newName: p.newName } : {}),
+        ...(p.destination ? { destination: p.destination } : {}),
+        ...(p.scopeOnly ? { scopeOnly: true } : {}),
       });
     }
   }
@@ -377,7 +396,9 @@ const MAIN_SESSION_KINDS = new Set([
   "workflow.update",
   "workflow.delete",
   "rule.to-agent",
+  "rule.move",
   "agent.create",
+  "agent.fork",
   "agent.delete",
   "skill.delete",
   "gate.change",

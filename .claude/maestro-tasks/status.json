@@ -390,7 +390,7 @@
     "blockedBy": []
   },
   "081-expose-agent-fork-and-rule-move-as-plugin-clis-and-evaluate-an-app-mcp-channel-bridge.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "082-isolate-tests-from-the-real-home-directory-and-keep-runtime-mirrors-in-parity.md": {
@@ -402,13 +402,22 @@
     "blockedBy": []
   },
   "084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md": {
-    "status": "ready",
-    "blockedBy": []
+    "status": "blocked",
+    "blockedBy": [
+      "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md"
+    ]
   },
   "085-let-maestro-manager-sessions-of-different-epics-notify-each-other.md": {
     "status": "blocked",
     "blockedBy": [
       "084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md"
+    ]
+  },
+  "086-add-a-shared-eslint-config-package-and-lint-the-monorepo.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "081-expose-agent-fork-and-rule-move-as-plugin-clis-and-evaluate-an-app-mcp-channel-bridge.md",
+      "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md"
     ]
   }
 }
