@@ -392,5 +392,13 @@
   "081-expose-agent-fork-and-rule-move-as-plugin-clis-and-evaluate-an-app-mcp-channel-bridge.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "082-isolate-tests-from-the-real-home-directory-and-keep-runtime-mirrors-in-parity.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "083-make-the-orchestrator-robust-without-taskcreate-and-enforce-verdict-handoff-agreement.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
