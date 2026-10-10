@@ -58,7 +58,9 @@ User invokes /maestro in a session
 UserPromptExpansion hook (matcher "maestro") → maestro-step0.js
   • Step 0, before the expanded prompt reaches the model: readiness (maestro-check-runtime) + forked
     agents (computeAgentSync). Healthy ⇒ silent. Behind ⇒ one instruction as context. Not installed
-    ⇒ exit 2, and the invocation never happens.
+    ⇒ exit 2, and the invocation never happens. Versions compare semantically (`087`,
+    `runtime-version.ts`): a project NEWER than the plugin is not behind — `pluginBehind` + one
+    notice ("update the plugin, never /maestro-update"), and the session continues.
         │
         ▼
 Orchestrator (.claude/skills/maestro/SKILL.md):
@@ -84,12 +86,15 @@ SubagentStart hook  (matcher ".*")  → maestro-inject-agent-context.js
   • reads active workflow from this session's session.json + the instance from maestro.json
   • FIRST run of this agent_id: injects skills + condition-edge routing + per-route payload
     protocol + report format;  RESUMED run: one reminder line instead
+  • REQUIRED-payload block on EVERY pass (`087`, `payloadRequirement`): names the channel file per
+    payload route — with shapes on a first/cold run, file names only on a resume
   • if the active workflow can't be resolved → prepends a ⚠️ warning (skills may be unioned/wrong)
   • channel delivery and the ⚠️ warning fire either way — a payload may be new since the agent's
     last run, and a warning is about now
         │
         ▼
-Subagent runs, ends with a HANDOFF: line
+Subagent runs, writes its payload, ends with a HANDOFF: line (in its final text, or inside a
+SubagentHandback/SendMessage tool call — the SubagentStop hook recovers it from the transcript)
         │
         ▼
 Orchestrator reads HANDOFF:  → `success` continues the success path; a matching label routes back

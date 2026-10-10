@@ -40,9 +40,15 @@ const {
   writeStamp,
   meetingLeftovers,
   ensureSessionPaths,
-  sendMessageHandoff,
+  handbackHandoff,
   meetingFor,
   checkHandoff,
+  checkPayload,
+  handoffRoutes,
+  routesFrom,
+  payloadRoutes,
+  payloadWrittenSince,
+  runStartedAt,
   writeSession,
   ownerRunFor,
   ownerRunLeftovers,
@@ -66,6 +72,44 @@ function offeredSkills(claudeDir, agentType, sessionStatePath) {
   );
   if (matchedInstances.length === 0) return null;
   return { loaded, referenced };
+}
+
+// `087`: the routes this agent may take whose receiver expects a payload — the same resolution
+// (project file, global sqlite, seed) maestro-inject-agent-context.js told the agent to write.
+function readGlobalHandoff(handoffId) {
+  try {
+    const { readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs");
+    return readHandoffDefault(handoffId);
+  } catch {
+    return null;
+  }
+}
+
+function agentPayloadRoutes(cwd, claudeDir, agentType, sessionStatePath) {
+  const cfg = readJson(path.join(claudeDir, "maestro.json"));
+  if (!cfg || cfg.version !== 3) return [];
+  const { searchList } = resolveSearchList(cfg, readSession(sessionStatePath));
+  const routes = routesFrom(handoffRoutes(searchList, cfg.workflow_instances || []), agentType);
+  return payloadRoutes(cwd, routes, readGlobalHandoff);
+}
+
+function readLogLines(p) {
+  let text;
+  try {
+    text = fs.readFileSync(p, "utf8");
+  } catch {
+    return [];
+  }
+  const lines = [];
+  for (const raw of text.split("\n")) {
+    if (!raw.trim()) continue;
+    try {
+      lines.push(JSON.parse(raw));
+    } catch {
+      // A malformed line is skipped.
+    }
+  }
+  return lines;
 }
 
 // Parse the HANDOFF: label from the agent's final message.
@@ -163,11 +207,14 @@ function parseHandoff(msg) {
       } else {
         let handoffMsg = lastMsg;
         let { status, label } = parseHandoff(handoffMsg);
-        // `078`: an agent that hands back through a SendMessage call has no HANDOFF: line in its
-        // final message. Recover it from the agent's own transcript so the entry is not `unknown`.
+        // `078`: an agent that hands back through a tool call has no HANDOFF: line in its final
+        // message. Recover it from the agent's own transcript so the entry is not `unknown`. `087`:
+        // that includes `SubagentHandback`, the hand-back tool current Claude Code tells every
+        // subagent to end with — matching `SendMessage` alone is what flagged every agent of task
+        // 084 as `missing` while each had ended `HANDOFF: success`.
         if (!inMeeting && !inOwnerRun && status === "unknown" && p.agent_transcript_path) {
           try {
-            const viaSend = sendMessageHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
+            const viaSend = handbackHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
             if (viaSend) {
               handoffMsg = viaSend;
               ({ status, label } = parseHandoff(viaSend));
@@ -184,6 +231,19 @@ function parseHandoff(msg) {
         let issue = null;
         if (!inMeeting && !inOwnerRun && offeredSkills(claudeDir, agentType, sess.state)) {
           issue = checkHandoff(handoffMsg);
+          // `087`: the third issue — the route taken expects a payload and this run wrote none.
+          // Checked BEFORE the stamping below; measured from this run's own dispatch entry, so a
+          // file left from an earlier pass (or a loop-back's first run) does not count.
+          if (!issue) {
+            try {
+              const since = runStartedAt(readLogLines(sess.log), agentId);
+              issue = checkPayload(handoffMsg, agentPayloadRoutes(cwd, claudeDir, agentType, sess.state), (r) =>
+                payloadWrittenSince(cwd, r, since)
+              );
+            } catch {
+              // Best-effort — never fail the agent on a payload check.
+            }
+          }
         }
         // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
         // thread and every sibling subagent share (only `p.agent_transcript_path` is private to
@@ -201,7 +261,15 @@ function parseHandoff(msg) {
             output: handoffMsg,
             ...meetingMark,
             ...(issue
-              ? { handoff_issue: { kind: issue.kind, verdict: issue.verdict, label: issue.label, message: issue.message } }
+              ? {
+                  handoff_issue: {
+                    kind: issue.kind,
+                    verdict: issue.verdict,
+                    label: issue.label,
+                    message: issue.message,
+                    ...(issue.files ? { files: issue.files } : {}),
+                  },
+                }
               : {}),
             log: inMeeting
               ? "meeting turn"
@@ -225,6 +293,7 @@ function parseHandoff(msg) {
               verdict: issue.verdict,
               label: issue.label,
               message: issue.message,
+              ...(issue.files ? { files: issue.files } : {}),
             });
             writeSession(sess.state, { ...session, handoff_issues: pending });
           } catch {

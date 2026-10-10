@@ -37,6 +37,7 @@ __export(maestro_session_exports, {
   CHANNEL_ONLY_AGENTS: () => CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
   DEFAULT_RECENT_RUNS: () => DEFAULT_RECENT_RUNS,
+  HANDBACK_TOOLS: () => HANDBACK_TOOLS,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   MAIN_CHECKOUT_SHARED_DIRS: () => MAIN_CHECKOUT_SHARED_DIRS,
   MEETING_DIR_NAME: () => MEETING_DIR_NAME,
@@ -62,11 +63,13 @@ __export(maestro_session_exports, {
   channelDir: () => channelDir,
   checkChannelWrite: () => checkChannelWrite,
   checkHandoff: () => checkHandoff,
+  checkPayload: () => checkPayload,
   checkWorktreeWrite: () => checkWorktreeWrite,
   closeMeeting: () => closeMeeting,
   closeOwnerRuns: () => closeOwnerRuns,
   collectAgentSkills: () => collectAgentSkills,
   compactMetrics: () => compact,
+  compareRuntimeVersions: () => compareRuntimeVersions,
   duplicateAgentTypes: () => duplicateAgentTypes,
   endMeeting: () => endMeeting,
   endOwnerRuns: () => endOwnerRuns,
@@ -76,6 +79,7 @@ __export(maestro_session_exports, {
   ensureSessionsRoot: () => ensureSessionsRoot,
   foldRun: () => foldRun,
   formatStampedContent: () => formatStampedContent,
+  handbackHandoff: () => handbackHandoff,
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
@@ -102,12 +106,16 @@ __export(maestro_session_exports, {
   ownerRunLeftovers: () => ownerRunLeftovers,
   ownerRunNotice: () => ownerRunNotice,
   parseStampedContent: () => parseStampedContent,
+  payloadRequirement: () => payloadRequirement,
+  payloadRoutes: () => payloadRoutes,
+  payloadWrittenSince: () => payloadWrittenSince,
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readLane: () => readLane,
   readMeeting: () => readMeeting,
   readMetrics: () => readMetrics,
   readOwnerRuns: () => readOwnerRuns,
+  readProjectHandoff: () => readProjectHandoff,
   readSession: () => readSession,
   readStdin: () => readStdin,
   readWorktreePointer: () => readWorktreePointer,
@@ -126,6 +134,8 @@ __export(maestro_session_exports, {
   resumeTarget: () => resumeTarget,
   retire: () => retire,
   routesFrom: () => routesFrom,
+  runStartedAt: () => runStartedAt,
+  runtimeNeedsRefresh: () => runtimeNeedsRefresh,
   sendMessageHandoff: () => sendMessageHandoff,
   sessionDirsFor: () => sessionDirsFor,
   sessionLogPath: () => sessionLogPath,
@@ -1183,6 +1193,7 @@ function checkChannelWrite(input) {
 
 // src/core/handoff-label.ts
 var HANDOFF_RE = /[`*]*HANDOFF:\s*([^\n`*]+)[`*]*/gi;
+var HANDBACK_TOOLS = ["SubagentHandback", "SendMessage"];
 function lastHandoffLabel(msg) {
   if (typeof msg !== "string") return null;
   const matches = [...msg.matchAll(HANDOFF_RE)];
@@ -1193,15 +1204,15 @@ function messageText(input) {
   if (typeof input === "string") return input;
   if (!input || typeof input !== "object") return "";
   const o = input;
-  for (const k of ["message", "content", "text", "summary"]) {
+  for (const k of ["message", "content", "text", "summary", "report"]) {
     if (typeof o[k] === "string" && lastHandoffLabel(o[k])) return o[k];
   }
   return "";
 }
-function sendMessageHandoff(transcript) {
+function handbackHandoff(transcript) {
   let found = null;
   for (const line of transcript.split("\n")) {
-    if (!line.includes("SendMessage")) continue;
+    if (!HANDBACK_TOOLS.some((t) => line.includes(t))) continue;
     let entry;
     try {
       entry = JSON.parse(line);
@@ -1212,7 +1223,7 @@ function sendMessageHandoff(transcript) {
     const content = e?.message?.content ?? e?.content;
     if (!Array.isArray(content)) continue;
     for (const block of content) {
-      if (block && block.type === "tool_use" && block.name === "SendMessage") {
+      if (block && block.type === "tool_use" && HANDBACK_TOOLS.includes(block.name)) {
         const text = messageText(block.input);
         if (text) found = text;
       }
@@ -1220,6 +1231,7 @@ function sendMessageHandoff(transcript) {
   }
   return found;
 }
+var sendMessageHandoff = handbackHandoff;
 
 // src/core/handoff-check.ts
 var VERDICT_RE = /verdict["'*]*\s*[:=]\s*["'*]*\s*(SUCCESS|FAIL(?:URE|ED)?|PASS(?:ED)?)\b(?!\s*\|)/gi;
@@ -1251,10 +1263,148 @@ function checkHandoff(msg) {
   }
   return null;
 }
+function checkPayload(msg, routes, written) {
+  const label = lastHandoffLabel(msg);
+  if (label === null) return null;
+  const want = label.toLowerCase();
+  const unwritten = routes.filter((r) => r.label.toLowerCase() === want && !written(r));
+  if (unwritten.length === 0) return null;
+  const receivers = unwritten.map((r) => r.receiver);
+  const files = unwritten.map((r) => r.channelFile);
+  return {
+    kind: "missing_payload",
+    verdict: reportVerdict(msg),
+    label,
+    receivers,
+    files,
+    message: "The subagent ended HANDOFF: " + label + " but wrote no payload to " + files.join(", ") + " during this run. Do not dispatch " + receivers.join(", ") + " without it, and do not skip it: resume this agent (SendMessage to its agent_id) and ask it to write that file, then route."
+  };
+}
 
-// src/core/worktree-write-guard.ts
+// src/core/handoff-payload.ts
 var import_node_fs10 = __toESM(require("node:fs"), 1);
 var import_node_path8 = __toESM(require("node:path"), 1);
+function readProjectHandoff(projectDir, handoffId2) {
+  try {
+    const [sender, receiver] = handoffId2.split("/");
+    const body = import_node_fs10.default.readFileSync(import_node_path8.default.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`), "utf8").trim();
+    return body || null;
+  } catch {
+    return null;
+  }
+}
+function payloadRoutes(projectDir, routes, readGlobal) {
+  const out = [];
+  for (const r of routes) {
+    if (!r.receiver) continue;
+    const id = `${r.sender}/${r.receiver}`;
+    let global = null;
+    try {
+      global = readGlobal(id);
+    } catch {
+      global = null;
+    }
+    const resolved = resolveHandoff(id, readProjectHandoff(projectDir, id), global);
+    if (!resolved.content) continue;
+    out.push({
+      label: r.label,
+      sender: r.sender,
+      receiver: r.receiver,
+      channelFile: `.claude/channels/${r.receiver}/${r.sender}.1.md`,
+      protocol: resolved.content
+    });
+  }
+  return out;
+}
+function payloadRequirement(routes, opts) {
+  if (routes.length === 0) return null;
+  const head = "REQUIRED before your HANDOFF line: write the payload for the route you take to that route's channel file. This is a step of the handoff, not a recommendation \u2014 the receiving agent starts from that file, and the stop hook checks it was written during THIS run. A missing payload is not skipped: the orchestrator resumes you to write it before the next agent is dispatched. When nothing applies, still write the file, containing an empty JSON object (`{}`).";
+  if (opts.withShapes) {
+    const blocks = routes.map(
+      (r) => `Route \`HANDOFF: ${r.label}\` \u2192 \`${r.receiver}\` \u2014 write this to \`${r.channelFile}\`:
+
+${r.protocol}`
+    );
+    return `${head}
+
+${blocks.join("\n\n")}`;
+  }
+  const lines = routes.map((r) => `- \`HANDOFF: ${r.label}\` \u2192 write \`${r.channelFile}\` (for \`${r.receiver}\`)`);
+  return `${head}
+${lines.join("\n")}
+The shape for each route is the one from your first run.`;
+}
+function runStartedAt(lines, agentId) {
+  if (!agentId) return null;
+  let at = null;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const e = line;
+    if (e.kind !== "dispatch" || e.agent_id !== agentId || typeof e.ts !== "string") continue;
+    const t = Date.parse(e.ts);
+    if (!Number.isNaN(t)) at = t;
+  }
+  return at;
+}
+var MTIME_SLACK_MS = 1e3;
+function payloadWrittenSince(projectDir, route, sinceMs) {
+  let stat;
+  try {
+    stat = import_node_fs10.default.statSync(laneFor(projectDir, route.sender, route.receiver));
+  } catch {
+    return false;
+  }
+  if (!stat.isFile()) return false;
+  if (sinceMs === null) return true;
+  return stat.mtimeMs >= sinceMs - MTIME_SLACK_MS;
+}
+
+// src/core/runtime-version.ts
+var VERSION_RE = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
+function parse(v) {
+  if (typeof v !== "string") return null;
+  const m = VERSION_RE.exec(v.trim());
+  if (!m) return null;
+  return { core: [Number(m[1]), Number(m[2]), Number(m[3])], pre: m[4] ?? null };
+}
+function comparePre(a, b) {
+  if (a === b) return 0;
+  if (a === null) return 1;
+  if (b === null) return -1;
+  const as = a.split(".");
+  const bs = b.split(".");
+  for (let i = 0; i < Math.max(as.length, bs.length); i++) {
+    if (as[i] === void 0) return -1;
+    if (bs[i] === void 0) return 1;
+    const an = /^\d+$/.test(as[i]) ? Number(as[i]) : null;
+    const bn = /^\d+$/.test(bs[i]) ? Number(bs[i]) : null;
+    if (an !== null && bn !== null) {
+      if (an !== bn) return an < bn ? -1 : 1;
+    } else if (an !== null) return -1;
+    else if (bn !== null) return 1;
+    else if (as[i] !== bs[i]) return as[i] < bs[i] ? -1 : 1;
+  }
+  return 0;
+}
+function compareRuntimeVersions(projectVersion, pluginVersion) {
+  const p = parse(projectVersion);
+  const q = parse(pluginVersion);
+  if (!p || !q) return "unknown";
+  for (let i = 0; i < 3; i++) {
+    if (p.core[i] !== q.core[i]) return p.core[i] < q.core[i] ? "older" : "newer";
+  }
+  const pre = comparePre(p.pre, q.pre);
+  return pre === 0 ? "equal" : pre < 0 ? "older" : "newer";
+}
+function runtimeNeedsRefresh(projectVersion, pluginVersion) {
+  const verdict = compareRuntimeVersions(projectVersion, pluginVersion);
+  if (verdict === "unknown") return projectVersion !== pluginVersion;
+  return verdict === "older";
+}
+
+// src/core/worktree-write-guard.ts
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
 var MAIN_CHECKOUT_SHARED_DIRS = ["maestro-tasks", "channels", "maestro_sessions"];
 var WRITE_TOOL_PATH_KEYS2 = {
   Write: "file_path",
@@ -1263,29 +1413,29 @@ var WRITE_TOOL_PATH_KEYS2 = {
   NotebookEdit: "notebook_path"
 };
 function realResolve2(p) {
-  let cur = import_node_path8.default.resolve(p);
+  let cur = import_node_path9.default.resolve(p);
   const tail = [];
   for (; ; ) {
     let exists = true;
     try {
-      import_node_fs10.default.lstatSync(cur);
+      import_node_fs11.default.lstatSync(cur);
     } catch {
       exists = false;
     }
     if (exists) {
       try {
-        return import_node_path8.default.join(import_node_fs10.default.realpathSync(cur), ...tail);
+        return import_node_path9.default.join(import_node_fs11.default.realpathSync(cur), ...tail);
       } catch {
         return null;
       }
     }
-    const parent = import_node_path8.default.dirname(cur);
-    if (parent === cur) return import_node_path8.default.join(cur, ...tail);
-    tail.unshift(import_node_path8.default.basename(cur));
+    const parent = import_node_path9.default.dirname(cur);
+    if (parent === cur) return import_node_path9.default.join(cur, ...tail);
+    tail.unshift(import_node_path9.default.basename(cur));
     cur = parent;
   }
 }
-var within = (target, root) => target === root || target.startsWith(root + import_node_path8.default.sep);
+var within = (target, root) => target === root || target.startsWith(root + import_node_path9.default.sep);
 function checkWorktreeWrite(input) {
   const { cwd, toolName, toolInput, worktree } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS2[toolName] : void 0;
@@ -1296,11 +1446,11 @@ function checkWorktreeWrite(input) {
   if (typeof raw !== "string" || raw === "") return { allow: true };
   const wt = realResolve2(worktree.path);
   const main = realResolve2(worktree.main_root);
-  const target = realResolve2(import_node_path8.default.resolve(cwd || worktree.path, raw));
+  const target = realResolve2(import_node_path9.default.resolve(cwd || worktree.path, raw));
   if (!wt || !main || !target) return { allow: true };
   if (within(target, wt)) return { allow: true };
   if (!within(target, main)) return { allow: true };
-  if (MAIN_CHECKOUT_SHARED_DIRS.some((d) => within(target, import_node_path8.default.join(main, ".claude", d)))) return { allow: true };
+  if (MAIN_CHECKOUT_SHARED_DIRS.some((d) => within(target, import_node_path9.default.join(main, ".claude", d)))) return { allow: true };
   return {
     allow: false,
     reason: `Blocked: this session runs its task in the git worktree ${worktree.path}, and "${raw}" resolves to ${target}, inside the main checkout (${worktree.main_root}), which another session may be using and which a merge would later refuse to overwrite. Write the file at the same relative path under ${worktree.path} instead. Only ${MAIN_CHECKOUT_SHARED_DIRS.map((d) => `.claude/${d}/`).join(", ")} stay in the main checkout.`
@@ -1308,8 +1458,8 @@ function checkWorktreeWrite(input) {
 }
 
 // src/core/run-metrics.ts
-var import_node_fs11 = __toESM(require("node:fs"), 1);
-var import_node_path9 = __toESM(require("node:path"), 1);
+var import_node_fs12 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
 var METRICS_DIR_NAME = "maestro-metrics";
 var METRICS_FILE_NAME = "metrics.json";
 var DEFAULT_RECENT_RUNS = 10;
@@ -1319,10 +1469,10 @@ function emptyMetrics() {
   return { version: 1, runs: [], totals: { by_workflow: {}, by_agent: {} } };
 }
 function metricsDirFor(projectRoot) {
-  return import_node_path9.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
+  return import_node_path10.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
 }
 function metricsFileFor(projectRoot) {
-  return import_node_path9.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
+  return import_node_path10.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
 }
 function day(ts) {
   return typeof ts === "string" ? ts.slice(0, 10) : "";
@@ -1519,7 +1669,7 @@ function buildRunRecord(entries, session, cfg, sessionId) {
   return {
     id: session?.run_id || sessionId,
     workflow,
-    task: session?.active_task ? import_node_path9.default.basename(session.active_task) : null,
+    task: session?.active_task ? import_node_path10.default.basename(session.active_task) : null,
     started_at,
     ended_at,
     duration_ms,
@@ -1537,20 +1687,20 @@ function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 function withLock(dir, fn) {
-  import_node_fs11.default.mkdirSync(dir, { recursive: true });
-  const lock = import_node_path9.default.join(dir, "lock");
+  import_node_fs12.default.mkdirSync(dir, { recursive: true });
+  const lock = import_node_path10.default.join(dir, "lock");
   const deadline = Date.now() + LOCK_WAIT_MS;
   let held = false;
   for (; ; ) {
     try {
-      import_node_fs11.default.mkdirSync(lock);
+      import_node_fs12.default.mkdirSync(lock);
       held = true;
       break;
     } catch (err) {
       if (err.code !== "EEXIST") break;
       try {
-        if (Date.now() - import_node_fs11.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
-          import_node_fs11.default.rmSync(lock, { recursive: true, force: true });
+        if (Date.now() - import_node_fs12.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
+          import_node_fs12.default.rmSync(lock, { recursive: true, force: true });
           continue;
         }
       } catch {
@@ -1563,12 +1713,12 @@ function withLock(dir, fn) {
   try {
     return fn();
   } finally {
-    if (held) import_node_fs11.default.rmSync(lock, { recursive: true, force: true });
+    if (held) import_node_fs12.default.rmSync(lock, { recursive: true, force: true });
   }
 }
 function readMetrics(projectRoot) {
   try {
-    const v = JSON.parse(import_node_fs11.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
+    const v = JSON.parse(import_node_fs12.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
     if (v && v.version === 1 && Array.isArray(v.runs) && v.totals?.by_workflow && v.totals?.by_agent) return v;
   } catch {
   }
@@ -1581,25 +1731,25 @@ function recentRunsLimit(cfg) {
 function recordRun(projectRoot, run, keep = DEFAULT_RECENT_RUNS) {
   const dir = metricsDirFor(projectRoot);
   withLock(dir, () => {
-    const gi = import_node_path9.default.join(dir, ".gitignore");
-    if (!import_node_fs11.default.existsSync(gi)) import_node_fs11.default.writeFileSync(gi, "*\n");
+    const gi = import_node_path10.default.join(dir, ".gitignore");
+    if (!import_node_fs12.default.existsSync(gi)) import_node_fs12.default.writeFileSync(gi, "*\n");
     const file = readMetrics(projectRoot);
     const runs = file.runs.filter((r) => r.id !== run.id);
     runs.push(run);
     const next = compact({ ...file, runs }, keep);
     const target = metricsFileFor(projectRoot);
     const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
-    import_node_fs11.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
-    import_node_fs11.default.renameSync(tmp, target);
+    import_node_fs12.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
+    import_node_fs12.default.renameSync(tmp, target);
   });
 }
 function recordSessionRun(projectRoot, sessionId) {
-  const claudeDir = import_node_path9.default.join(projectRoot, ".claude");
+  const claudeDir = import_node_path10.default.join(projectRoot, ".claude");
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return false;
   let raw;
   try {
-    raw = import_node_fs11.default.readFileSync(paths.log, "utf8");
+    raw = import_node_fs12.default.readFileSync(paths.log, "utf8");
   } catch {
     return false;
   }
@@ -1613,12 +1763,12 @@ function recordSessionRun(projectRoot, sessionId) {
   }
   const readJson2 = (p) => {
     try {
-      return JSON.parse(import_node_fs11.default.readFileSync(p, "utf8"));
+      return JSON.parse(import_node_fs12.default.readFileSync(p, "utf8"));
     } catch {
       return null;
     }
   };
-  const cfg = readJson2(import_node_path9.default.join(claudeDir, "maestro.json"));
+  const cfg = readJson2(import_node_path10.default.join(claudeDir, "maestro.json"));
   const run = buildRunRecord(entries, readJson2(paths.state), cfg, paths.id);
   if (!run) return false;
   recordRun(projectRoot, run, recentRunsLimit(cfg));
@@ -1666,13 +1816,13 @@ function renderMetricsDigest(file) {
 }
 
 // src/core/meeting-mode.ts
-var import_node_fs12 = __toESM(require("node:fs"), 1);
-var import_node_path10 = __toESM(require("node:path"), 1);
+var import_node_fs13 = __toESM(require("node:fs"), 1);
+var import_node_path11 = __toESM(require("node:path"), 1);
 var MEETING_DIR_NAME = "meeting";
 var MEETING_LEFTOVERS_KEY = "meeting_leftovers";
 var MEETING_MODES = ["review", "post-mortem"];
 function meetingDirFor(sessionDir) {
-  return import_node_path10.default.join(sessionDir, MEETING_DIR_NAME);
+  return import_node_path11.default.join(sessionDir, MEETING_DIR_NAME);
 }
 function readMeeting(session) {
   if (!session || typeof session !== "object") return null;
@@ -1704,22 +1854,22 @@ function withoutMeeting(session) {
 }
 function readRawState(statePath) {
   try {
-    const parsed = JSON.parse(import_node_fs12.default.readFileSync(statePath, "utf8"));
+    const parsed = JSON.parse(import_node_fs13.default.readFileSync(statePath, "utf8"));
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
 }
 function writeRawState(statePath, state) {
-  import_node_fs12.default.mkdirSync(import_node_path10.default.dirname(statePath), { recursive: true });
+  import_node_fs13.default.mkdirSync(import_node_path11.default.dirname(statePath), { recursive: true });
   const tmp = statePath + ".tmp";
-  import_node_fs12.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
-  import_node_fs12.default.renameSync(tmp, statePath);
+  import_node_fs13.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  import_node_fs13.default.renameSync(tmp, statePath);
 }
 function startMeeting(statePath, sessionDir, opts) {
   const now = opts.now ?? /* @__PURE__ */ new Date();
   const dir = meetingDirFor(sessionDir);
-  import_node_fs12.default.mkdirSync(dir, { recursive: true });
+  import_node_fs13.default.mkdirSync(dir, { recursive: true });
   const meeting = {
     id: `m-${now.getTime()}`,
     mode: opts.mode,
@@ -1750,10 +1900,10 @@ function closeMeeting(session, projectDir) {
   return { state, ended: true };
 }
 function projectDirOfState(statePath) {
-  return import_node_path10.default.resolve(statePath, "..", "..", "..", "..");
+  return import_node_path11.default.resolve(statePath, "..", "..", "..", "..");
 }
 function endMeeting(statePath, projectDir = projectDirOfState(statePath)) {
-  if (!import_node_fs12.default.existsSync(statePath)) return false;
+  if (!import_node_fs13.default.existsSync(statePath)) return false;
   const { state, ended } = closeMeeting(readRawState(statePath), projectDir);
   if (ended) writeRawState(statePath, state);
   return ended;
@@ -1808,7 +1958,7 @@ function closeOwnerRuns(session, projectDir) {
   return { state, ended: true };
 }
 function endOwnerRuns(statePath, projectDir = projectDirOfState(statePath)) {
-  if (!import_node_fs12.default.existsSync(statePath)) return false;
+  if (!import_node_fs13.default.existsSync(statePath)) return false;
   const { state, ended } = closeOwnerRuns(readRawState(statePath), projectDir);
   if (ended) writeRawState(statePath, state);
   return ended;
@@ -1834,6 +1984,7 @@ function meetingNotice(meeting, agentType) {
   CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS,
   DEFAULT_RECENT_RUNS,
+  HANDBACK_TOOLS,
   LEGACY_SESSION_FILES,
   MAIN_CHECKOUT_SHARED_DIRS,
   MEETING_DIR_NAME,
@@ -1859,11 +2010,13 @@ function meetingNotice(meeting, agentType) {
   channelDir,
   checkChannelWrite,
   checkHandoff,
+  checkPayload,
   checkWorktreeWrite,
   closeMeeting,
   closeOwnerRuns,
   collectAgentSkills,
   compactMetrics,
+  compareRuntimeVersions,
   duplicateAgentTypes,
   endMeeting,
   endOwnerRuns,
@@ -1873,6 +2026,7 @@ function meetingNotice(meeting, agentType) {
   ensureSessionsRoot,
   foldRun,
   formatStampedContent,
+  handbackHandoff,
   handoffId,
   handoffPairs,
   handoffRoutes,
@@ -1899,12 +2053,16 @@ function meetingNotice(meeting, agentType) {
   ownerRunLeftovers,
   ownerRunNotice,
   parseStampedContent,
+  payloadRequirement,
+  payloadRoutes,
+  payloadWrittenSince,
   projectOwnsHook,
   readJson,
   readLane,
   readMeeting,
   readMetrics,
   readOwnerRuns,
+  readProjectHandoff,
   readSession,
   readStdin,
   readWorktreePointer,
@@ -1923,6 +2081,8 @@ function meetingNotice(meeting, agentType) {
   resumeTarget,
   retire,
   routesFrom,
+  runStartedAt,
+  runtimeNeedsRefresh,
   sendMessageHandoff,
   sessionDirsFor,
   sessionLogPath,

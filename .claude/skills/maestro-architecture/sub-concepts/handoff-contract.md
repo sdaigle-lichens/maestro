@@ -83,6 +83,27 @@ returns — it prints and clears the list — and to route deliberately (matchin
 resume the agent for a corrected line) instead of defaulting to success. Agents that map to no workflow
 instance, and meeting participants, are never judged.
 
+**The line may arrive in a tool call (`078`, `087`).** Current Claude Code tells every subagent to
+end with a `SubagentHandback({message})` call, and then the `SubagentStop` payload has no
+`last_assistant_message`. The hook recovers the label from the agent's transcript via
+`handbackHandoff` (`core/handoff-label.ts`), which matches every tool in `HANDBACK_TOOLS`
+(`SubagentHandback`, `SendMessage`). Trap: `078` matched `SendMessage` only, so in task 084 every
+agent was flagged `missing` while each had ended `HANDOFF: success`.
+
+### A payload route must be written (`087`)
+
+The third issue kind, `missing_payload` (`checkPayload` in `handoff-check.ts`): the `HANDOFF:` label
+names a route whose pair resolves a protocol (same three-tier resolution as the injector, via
+`payloadRoutes` in `core/handoff-payload.ts`, so the two hooks cannot disagree), and the sender's
+channel file for that receiver was not written **during this run**. "This run" starts at the agent's
+LAST `kind:"dispatch"` log entry (`runStartedAt`, so a resume is measured from its own start), with
+1 s mtime slack (`payloadWrittenSince`); no dispatch entry ⇒ the file merely existing counts. It is
+checked only when `checkHandoff` found nothing, and travels the same way as the other two, plus
+`files[]` on the log entry and `session.json`. The orchestrator **resumes** the sender to write the
+named file, never skips it and never dispatches the receiver without it. Prevention side: the
+injected block (`payloadRequirement`) states the write as REQUIRED before the `HANDOFF:` line and
+reaches every pass, resumes included (see `agent-resume.md`).
+
 **It never sees the payload (`036`).** The sender wrote it straight to the receiver's channel file,
 and the receiver's own `SubagentStart` inlines it — the orchestrator's job is routing only. The one
 place the orchestrator still touches a channel file is a **skill step** in the success path: a skill

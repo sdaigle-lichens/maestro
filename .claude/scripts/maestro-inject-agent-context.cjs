@@ -47,6 +47,8 @@
 // routing, per-route protocols, and the report — for one line. The channel delivery is NOT
 // skipped: a payload may have arrived in this agent's lane between its two runs, and it doesn't
 // duplicate on its own (`retire()` already moved the first run's file to `.consumed/`).
+// `087`: nor is the REQUIRED-payload instruction — a resume gets it again, file names but no shapes,
+// because it governs the hand-back the resumed run is about to make (see `payloadRequirement`).
 //
 // TEAM MEETINGS: while this session's session.json carries a `meeting` that lists this agent type
 // as a participant (apps/maestro/src/core/meeting-mode.ts), the run is a meeting turn, not a
@@ -76,7 +78,8 @@ const {
   projectOwnsHook,
   handoffRoutes,
   routesFrom,
-  resolveHandoff,
+  payloadRoutes,
+  payloadRequirement,
   readLane,
   retire,
   ensureSessionPaths,
@@ -145,20 +148,10 @@ function nestedSkillNote(nested) {
 
 // ── handoff protocol resolution — three tiers, one shared decision ─────────
 
-// The project tier: `.claude/handoffs/<sender>/<receiver>.md`, which install now MATERIALIZES for
-// every route the workflows wire (see apps/maestro/src/core/handoff-sync.ts) rather than leaving
-// as an undocumented escape hatch. There is no second file candidate any more: the plugin's
-// `templates/handoffs/` copy is gone, because an installer that blind-overwrites its own fallback
-// on every run means a user's edit there disappears silently.
-function readProjectHandoff(projectDir, handoffId) {
-  try {
-    const [sender, receiver] = handoffId.split("/");
-    const body = fs.readFileSync(path.join(projectDir, ".claude", "handoffs", sender, `${receiver}.md`), "utf8").trim();
-    return body || null;
-  } catch {
-    return null;
-  }
-}
+// The project tier — `.claude/handoffs/<sender>/<receiver>.md`, which install MATERIALIZES for
+// every route the workflows wire (see apps/maestro/src/core/handoff-sync.ts) — is read by
+// `payloadRoutes` (`087`, apps/maestro/src/core/handoff-payload.ts), the one resolver this hook
+// and the SubagentStop payload check share, so they cannot disagree about which routes need one.
 
 // The global tier: ~/.claude/maestro-handoff-defaults.sqlite. Wrapped in try/catch like every
 // other caller of a generated sqlite lib — an older `node` on this session's PATH (< 22.5, no
@@ -174,13 +167,9 @@ function readGlobalHandoff(handoffId) {
   }
 }
 
-// Project file -> global row -> shipped seed -> nothing. `resolveHandoff` is the same pure
-// function apps/maestro's own surfaces call, so the hook and the app cannot disagree about what
-// an agent will be told to emit.
-function handoffProtocol(projectDir, handoffId) {
-  const resolved = resolveHandoff(handoffId, readProjectHandoff(projectDir, handoffId), readGlobalHandoff(handoffId));
-  return resolved.content;
-}
+// Project file -> global row -> shipped seed -> nothing: `payloadRoutes` applies `resolveHandoff`,
+// the same pure function apps/maestro's own surfaces call, so the hook and the app cannot disagree
+// about what an agent will be told to emit.
 
 function collect(cfg, sessionPath, agentType) {
   const instances = cfg.workflow_instances || [];
@@ -409,23 +398,20 @@ function collectReportContext(cfg, projectDir, agentType) {
     // FILE to write it to instead — `.claude/channels/<receiver>/<sender>.1.md` — which the
     // receiving agent's own SubagentStart delivers on its next invocation. The orchestrator never
     // sees the content at all.
-    const bareAgent = bareAgentName(agentType);
-    const protocols = [];
-    for (const r of result.routes) {
-      if (!r.receiver) continue;
-      const proto = handoffProtocol(projectDir, `${r.sender}/${r.receiver}`);
-      if (!proto) continue;
-      protocols.push(
-        `Route \`HANDOFF: ${r.label}\` → \`${r.receiver}\` — write this to ` +
-          `\`.claude/channels/${r.receiver}/${bareAgent}.1.md\`:\n\n${proto}`
-      );
-    }
-    if (protocols.length > 0) {
-      parts.push(
-        `When you hand off, write the shape for the route you take to your channel file, verbatim ` +
-          `(skip the write, or write an empty JSON object, when nothing applies):\n\n${protocols.join("\n\n")}`
-      );
-    }
+    //
+    // `087`: the write is a REQUIRED step before the HANDOFF line (the SubagentStop hook flags a
+    // route whose payload was not written this run as `missing_payload`), and the wording comes
+    // from `payloadRequirement`, the same helper the resume branch below uses.
+    const required = payloadRequirement(payloadRoutes(projectDir, result.routes, readGlobalHandoff), { withShapes: true });
+    if (required) parts.push(required);
+  }
+
+  // `087`: a RESUMED run gets the requirement too, without the shapes. `040` drops the routing and
+  // protocol blocks on a resume, and that is how task 086's second @reviewer pass ended without
+  // writing its payload — the one instruction that governs the NEW hand-back must not be static.
+  if (!offWorkflow && isResume && result && result.routes.length > 0) {
+    const required = payloadRequirement(payloadRoutes(projectDir, result.routes, readGlobalHandoff), { withShapes: false });
+    if (required) parts.push(required);
   }
 
   // ── channel delivery — independent of workflow matching ────────────────

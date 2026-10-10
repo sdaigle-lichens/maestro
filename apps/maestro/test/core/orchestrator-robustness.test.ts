@@ -209,6 +209,15 @@ describe("SubagentStop hook flags verdict/HANDOFF disagreement (083)", () => {
 
   it("sound handoffs raise nothing: FAIL with the condition label, SUCCESS with success", async () => {
     const root = await installed();
+    // `087`: a sound handoff also wrote the payload its route expects (a route with no protocol
+    // anywhere needs none, so writing both lanes covers either case).
+    for (const [receiver, sender] of [
+      ["scribe", "reviewer"],
+      ["reviewer", "scribe"],
+    ]) {
+      fs.mkdirSync(path.join(root, ".claude", "channels", receiver), { recursive: true });
+      fs.writeFileSync(path.join(root, ".claude", "channels", receiver, `${sender}.1.md`), "{}\n");
+    }
 
     const a = stop(root, "reviewer", "r1", '"verdict": "FAIL"\nHANDOFF: changes requested');
     const b = stop(root, "scribe", "a1", '"verdict": "SUCCESS"\nHANDOFF: success');

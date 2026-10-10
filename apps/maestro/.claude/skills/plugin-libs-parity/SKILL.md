@@ -138,6 +138,12 @@ only and every hook already requires this bundle" argument:
   from `channel-write-guard.ts`, backing `maestro-channel-write-guard.js`) and the transcript
   hand-back parser (`lastHandoffLabel`, `sendMessageHandoff`, from `handoff-label.ts`). Still `fs`/`path`
   only; keep the `node:sqlite` grep at `0`.
+- `087` — `handbackHandoff` + `HANDBACK_TOOLS` (`sendMessageHandoff` stays as an alias: the export
+  surface only grows), `checkPayload` (`handoff-check.ts`), all of `handoff-payload.ts`
+  (`payloadRoutes`, `payloadRequirement`, `payloadWrittenSince`, `runStartedAt`,
+  `readProjectHandoff`) and `runtime-version.ts` (`compareRuntimeVersions`, `runtimeNeedsRefresh`).
+  The global handoff tier is passed **in** as a reader, so the sqlite bundle stays out; the grep is
+  still `0`.
 - `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,
   `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by
   `maestro-team-meeting.cjs`. `fs`/`path` only.
@@ -187,6 +193,12 @@ This repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin
 1. `cp plugins/maestro/scripts/lib/<name>.cjs .claude/scripts/lib/<name>.cjs` for each lib in
    `STATIC_ASSETS` that changed (and the plugin script copies, e.g. `maestro-task-status.cjs`);
 2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.
+
+Since `087` that test covers **every** `.claude/scripts/` asset in `runtimeAssets()` — hand-written
+scripts and hook scripts (with the `.js` → `.cjs` rename) as well as libs — via
+`test/helpers/mirror-parity.ts` (`staleMirrors`, `describeStale`). A stale or missing mirror fails
+and the message is the `cp plugins/maestro/<src> <dest>` that fixes it. Task 084's stale
+`maestro-epic.cjs` passed the old lib-only check.
 
 **Decision (`082`): the mirrors stay tracked.** Untracking them would leave a fresh clone without a
 working runtime for the repo's own hooks. The cost is a guaranteed merge conflict whenever two task

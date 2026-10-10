@@ -67,6 +67,10 @@
 // app's installRuntime() applies, and same degrade-on-old-`node` discipline as the skill-tags read
 // above.
 //
+// `--allow-downgrade` (`087`, a bare flag): without it, a project whose maestro.json `runtimeVersion`
+// is NEWER than this plugin's version is refused before anything is written — JSON
+// `{ ok:false, refused:"downgrade", projectRuntimeVersion, pluginVersion, reason }`, exit 1.
+//
 // Prints a JSON summary to stdout.
 
 const fs = require("fs");
@@ -75,7 +79,7 @@ const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
 const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
-const { walkProjectSkillIds } = require("./lib/maestro-session.cjs");
+const { walkProjectSkillIds, compareRuntimeVersions } = require("./lib/maestro-session.cjs");
 
 /**
  * Project skill ids from EVERY `.claude/skills` in the tree — not only the root's, which in a
@@ -575,6 +579,32 @@ function syncProjectHandoffs(configPath, projectDir) {
 
 module.exports = { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, STATIC_ASSETS, runtimeAssets };
 
+// The refusal `main()` prints when the project's stamped runtime is NEWER than this plugin, or null.
+function downgradeRefusal(projectDir, pluginRoot) {
+  let projectRuntimeVersion = null;
+  let pluginVersion = null;
+  try {
+    projectRuntimeVersion = JSON.parse(
+      fs.readFileSync(path.join(projectDir, ".claude", "maestro.json"), "utf8")
+    ).runtimeVersion;
+    pluginVersion = JSON.parse(fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8")).version;
+  } catch {
+    return null;
+  }
+  if (typeof compareRuntimeVersions !== "function") return null;
+  if (compareRuntimeVersions(projectRuntimeVersion, pluginVersion) !== "newer") return null;
+  return {
+    ok: false,
+    refused: "downgrade",
+    projectRuntimeVersion,
+    pluginVersion,
+    reason:
+      `this project's runtime ${projectRuntimeVersion} is newer than this maestro plugin ${pluginVersion}; ` +
+      `installing would downgrade it. Update the maestro plugin instead, or re-run with --allow-downgrade ` +
+      `only if you really want to roll the project back to ${pluginVersion}.`,
+  };
+}
+
 function main() {
   // argv: [projectDir] [--impl-agents a,b] [--skill-map '{"agent":["skill"]}']
   // Parsed positionally-first so the long-standing `maestro-install.js <dir>` call still works.
@@ -582,12 +612,25 @@ function main() {
   const positional = [];
   const flags = {};
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
+    // `--allow-downgrade` is a bare boolean; every other flag takes the next argument as its value.
+    if (argv[i] === "--allow-downgrade") flags["allow-downgrade"] = true;
+    else if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
     else positional.push(argv[i]);
   }
 
   const projectDir = positional[0] || process.env.CLAUDE_PROJECT_DIR || process.cwd();
   const pluginRoot = path.resolve(__dirname, "..");
+
+  // `087`: refuse a DOWNGRADE before the first byte is written. A project whose stamped runtime is
+  // newer than this plugin got it from a newer app or plugin checkout; re-copying this plugin's
+  // scripts over it would silently roll the runtime back. Only an explicit `--allow-downgrade`
+  // (the user asked for it) proceeds. Unstamped/unparseable versions are not judged, as before.
+  const refusal = downgradeRefusal(projectDir, pluginRoot);
+  if (refusal && !flags["allow-downgrade"]) {
+    process.stdout.write(JSON.stringify(refusal) + "\n");
+    process.stderr.write(`maestro-install: ${refusal.reason}\n`);
+    process.exit(1);
+  }
 
   const implAgents = (flags["impl-agents"] || "")
     .split(",")

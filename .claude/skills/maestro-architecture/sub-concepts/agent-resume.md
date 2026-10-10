@@ -36,7 +36,10 @@ session's `session.json`.
 
 A resumed run gets one line — "Resumed run — the skills, handoff routes and output format from your
 first run still apply." — in place of `loaded_skills`, `referenced_skills`, the `HANDOFF:` routing +
-per-route protocols, and the report. Channel delivery and the `⚠️` unresolvable-workflow warning are
+per-route protocols, and the report — **except the REQUIRED-payload instruction (`087`)**, which a
+resume still gets (`payloadRequirement(..., { withShapes: false })`: the channel file per route, no
+shapes). It governs the hand-back the resumed run is about to make; dropping it with the static
+blocks is how task 086's second @reviewer pass ended without a payload. Channel delivery and the `⚠️` unresolvable-workflow warning are
 unconditional either way: they are the parts of the injection that are genuinely new each call. A
 missing/unreadable log degrades to "not a resume" (full injection), the same safe direction as
 `resumeTarget`.

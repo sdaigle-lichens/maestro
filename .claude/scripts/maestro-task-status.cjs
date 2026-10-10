@@ -756,10 +756,15 @@ function handoffIssuesCommand() {
     process.stdout.write("Maestro handoffs: no problems recorded.\n");
     return;
   }
+  // `087` adds `missing_payload`: the route taken expects a payload the sender never wrote.
+  const what = (i) =>
+    i.kind === "missing"
+      ? "NO HANDOFF line"
+      : i.kind === "missing_payload"
+        ? `NO PAYLOAD written for HANDOFF: ${i.label}${i.agent_id ? ` (agent_id ${i.agent_id})` : ""}`
+        : "verdict FAIL but HANDOFF: success";
   const lines = issues.map(
-    (i) =>
-      `  - ${i.agent}: ${i.kind === "missing" ? "NO HANDOFF line" : "verdict FAIL but HANDOFF: success"}` +
-      `${i.verdict ? ` (verdict ${i.verdict})` : ""}. ${i.message}`
+    (i) => `  - ${i.agent}: ${what(i)}` + `${i.verdict ? ` (verdict ${i.verdict})` : ""}. ${i.message}`
   );
   delete state.handoff_issues;
   writeSessionState(file, state);

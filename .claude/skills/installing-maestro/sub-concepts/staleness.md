@@ -6,7 +6,7 @@ different callers. Reaching for the wrong one is the usual mistake.
 | Answer         | Where                               | Cost                               | Used by                            |
 | -------------- | ----------------------------------- | ---------------------------------- | ---------------------------------- |
 | Content hash   | `installStatus()` → `runtimeDigest` | reads every asset, both sides      | the app's install page             |
-| Version string | `refreshStaleRuntime()`             | one config read + a string compare | project selection, automatically   |
+| Version string | `refreshStaleRuntime()`             | one config read + a semver compare | project selection, automatically   |
 | Readiness      | `maestro-check-runtime.cjs`         | six ordered checks                 | the `maestro-step0` hook, inside a session |
 
 ## The content hash
@@ -27,8 +27,21 @@ Decided **by content, not by modification times**; there is a test asserting exa
 
 `installRuntime` stamps `plugin.json`'s version into `maestro.json` as `runtimeVersion`, **last** —
 after the files it describes are current. `refreshStaleRuntime()` is the cheap trigger built on it:
-a project already current costs one config read and a string compare, with **zero** reads of the
+a project already current costs one config read and a version compare, with **zero** reads of the
 runtime assets.
+
+**Never `!==` (`087`).** Every comparison of a project's `runtimeVersion` against a plugin or
+shipped version goes through `compareRuntimeVersions` / `runtimeNeedsRefresh`
+(`core/runtime-version.ts`, re-exported by `maestro-session.cjs`). Only `older` refreshes; a
+project **newer** than the plugin is never refreshed down; `unknown` (unstamped/unparseable) keeps
+the old any-difference rule. Plain inequality read "newer" as "behind" and told the user to run the
+refresh that copies the older runtime over the newer one. The three places that ask:
+
+| Caller | Project newer than the plugin/app |
+| --- | --- |
+| `refreshStaleRuntime()` | returns null, writes nothing |
+| `installStatus()` | `appBehind: {projectVersion, shippedVersion}`, `stale` forced false; the app toasts "update the Maestro app" and disables the install button |
+| `maestro-install.js` | refuses before writing: exit 1, JSON `refused:"downgrade"`; `--allow-downgrade` (bare flag) overrides, only on the user's explicit ask |
 
 Two deliberate refusals, both because it fires on project _selection_ rather than a button press:
 
@@ -61,7 +74,9 @@ Six checks, cheapest and most fundamental first:
 4. Every script in `SKILL_INVOKED_SCRIPTS` is present in `.claude/scripts/` → else `update`, with
    the reason naming the missing file (`032`)
 5. Its `<!-- Maestro:HANDOFFS -->` table matches what `maestro.json` renders to **today** → else `update`
-6. The stamped `runtimeVersion` matches the plugin the marketplace last pulled → else `update`
+6. The stamped `runtimeVersion` is not **older** than the plugin the marketplace last pulled →
+   else `update`. Newer (`087`) ⇒ `continue` with `pluginBehind: true` and a `notice` that the
+   Step 0 hook injects: update the plugin, do not run /maestro-update.
 
 **Check 4 is new and it guards an abort, not a degradation** (`032`). `SKILL_INVOKED_SCRIPTS` is the
 set the orchestrator invokes **by `$CLAUDE_PROJECT_DIR` path** rather than through a hook:

@@ -26,6 +26,8 @@ import { replaceRegion, extractRegion, syncManagedRegions } from "../../src/core
 import { allConfigs } from "./fixtures/configs.js";
 import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
 import { buildPluginLibs, PLUGIN_LIB_ENTRIES } from "../../scripts/build-plugin-libs.mjs";
+import { runtimeAssets } from "../../src/core/install.js";
+import { staleMirrors, describeStale } from "../helpers/mirror-parity.js";
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -442,6 +444,61 @@ describe("plugin-lib project mirror parity (066)", () => {
       expect(fs.readFileSync(mirrorFile, "utf8"), `${dest} is stale against ${src}`).toBe(
         fs.readFileSync(pluginFile, "utf8")
       );
+    }
+  });
+});
+
+// `087`: the same property for EVERY file the install copies into `.claude/scripts/` — the
+// hand-written scripts and the hook scripts (renamed `.js` -> `.cjs` on copy) as well as the libs.
+// Driven by `runtimeAssets()` itself, so the rename and any asset added later come for free.
+describe("hand-written plugin script mirror parity (087)", () => {
+  const REPO = path.resolve(here, "../../../..");
+  const PLUGIN = path.join(REPO, "plugins/maestro");
+
+  it("every .claude/scripts/ asset in the install manifest is byte-identical to its plugin source", () => {
+    const assets = runtimeAssets().filter((a) => a.dest.startsWith(".claude/scripts/"));
+    // The scan covers hand-written scripts AND renamed hooks, not just libs.
+    expect(assets.some((a) => a.src.endsWith(".js") && a.dest.endsWith(".cjs"))).toBe(true);
+    expect(assets.some((a) => a.src === "scripts/maestro-check-runtime.cjs")).toBe(true);
+    const stale = staleMirrors(PLUGIN, REPO, assets);
+    expect(stale, describeStale(stale)).toEqual([]);
+  });
+
+  it("a deliberately stale mirror fails and is named, with the .js -> .cjs rename", () => {
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-mirror-"));
+    try {
+      const plugin = path.join(tmp, "plugin");
+      const project = path.join(tmp, "project");
+      const assets = runtimeAssets().filter((a) => a.dest.startsWith(".claude/scripts/"));
+      for (const a of assets) {
+        const from = path.join(PLUGIN, a.src);
+        const pTo = path.join(plugin, a.src);
+        const mTo = path.join(project, a.dest);
+        fs.mkdirSync(path.dirname(pTo), { recursive: true });
+        fs.mkdirSync(path.dirname(mTo), { recursive: true });
+        fs.copyFileSync(from, pTo);
+        fs.copyFileSync(from, mTo);
+      }
+      expect(staleMirrors(plugin, project, assets)).toEqual([]);
+
+      const hook = assets.find((a) => a.src === "scripts/maestro-subagent-log.js");
+      expect(hook?.dest).toBe(".claude/scripts/maestro-subagent-log.cjs");
+      fs.appendFileSync(path.join(project, hook!.dest), "\n// stale\n");
+      fs.rmSync(path.join(project, ".claude/scripts/maestro-check-runtime.cjs"));
+
+      const stale = staleMirrors(plugin, project, assets);
+      expect(stale.map((s) => [s.dest, s.reason])).toEqual(
+        expect.arrayContaining([
+          [".claude/scripts/maestro-subagent-log.cjs", "differs"],
+          [".claude/scripts/maestro-check-runtime.cjs", "missing"],
+        ])
+      );
+      expect(stale).toHaveLength(2);
+      expect(describeStale(stale)).toContain(
+        "cp plugins/maestro/scripts/maestro-subagent-log.js .claude/scripts/maestro-subagent-log.cjs"
+      );
+    } finally {
+      fs.rmSync(tmp, { recursive: true, force: true });
     }
   });
 });

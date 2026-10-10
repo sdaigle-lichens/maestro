@@ -7,7 +7,7 @@
 
 import { lastHandoffLabel } from "./handoff-label.js";
 
-export type HandoffIssueKind = "missing" | "contradiction";
+export type HandoffIssueKind = "missing" | "contradiction" | "missing_payload";
 
 export interface HandoffIssue {
   kind: HandoffIssueKind;
@@ -17,6 +17,17 @@ export interface HandoffIssue {
   label: string | null;
   /** One sentence addressed to the orchestrator. */
   message: string;
+  /** `missing_payload` only: the receivers whose payload was not written. */
+  receivers?: string[];
+  /** `missing_payload` only: the project-relative channel files that were not written. */
+  files?: string[];
+}
+
+/** The slice of a `PayloadRoute` (handoff-payload.ts) this judgement needs. */
+export interface PayloadRouteRef {
+  label: string;
+  receiver: string;
+  channelFile: string;
 }
 
 // verdict: FAIL, "verdict": "FAIL", Verdict: FAIL. The unfilled template value "SUCCESS | FAIL" is
@@ -61,4 +72,39 @@ export function checkHandoff(msg: unknown): HandoffIssue | null {
     };
   }
   return null;
+}
+
+/**
+ * The third issue (`087`): the HANDOFF label the agent took names a route whose receiver expects a
+ * payload, and the sender wrote no channel file for it during this run. Null when the message has
+ * no HANDOFF line (that is `checkHandoff`'s `missing`), when no route with that label expects a
+ * payload, or when every such payload was written. `written` is the caller's filesystem probe.
+ */
+export function checkPayload<R extends PayloadRouteRef>(
+  msg: unknown,
+  routes: R[],
+  written: (route: R) => boolean
+): HandoffIssue | null {
+  const label = lastHandoffLabel(msg);
+  if (label === null) return null;
+  const want = label.toLowerCase();
+  const unwritten = routes.filter((r) => r.label.toLowerCase() === want && !written(r));
+  if (unwritten.length === 0) return null;
+  const receivers = unwritten.map((r) => r.receiver);
+  const files = unwritten.map((r) => r.channelFile);
+  return {
+    kind: "missing_payload",
+    verdict: reportVerdict(msg),
+    label,
+    receivers,
+    files,
+    message:
+      "The subagent ended HANDOFF: " +
+      label +
+      " but wrote no payload to " +
+      files.join(", ") +
+      " during this run. Do not dispatch " +
+      receivers.join(", ") +
+      " without it, and do not skip it: resume this agent (SendMessage to its agent_id) and ask it to write that file, then route.",
+  };
 }

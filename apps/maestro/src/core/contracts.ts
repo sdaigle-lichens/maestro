@@ -669,6 +669,14 @@ export interface InstallStatus {
   installedRuntimeId: string;
   /** Installed, but something is missing or older than what the app ships. */
   stale: boolean;
+  /**
+   * `087`: the project's stamped `runtimeVersion` is NEWER than the runtime this app ships — a
+   * newer plugin installed it, and this app is the one behind. `stale` is forced false then:
+   * updating from here would copy the older runtime over the newer one, which is exactly what
+   * `refreshStaleRuntime()` and the Step 0 readiness check (`pluginBehind`) both refuse to do.
+   * `null` in every other case, including an unstamped or unparseable stamp.
+   */
+  appBehind: { projectVersion: string; shippedVersion: string } | null;
   /** `.claude/settings.json` exists but is not valid JSON — install would refuse to touch it. */
   settingsUnreadable: boolean;
 }

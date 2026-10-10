@@ -156,11 +156,32 @@ export {
   CHANNEL_ONLY_AGENTS,
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
-export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";
+export { lastHandoffLabel, sendMessageHandoff, handbackHandoff, HANDBACK_TOOLS } from "../handoff-label.js";
 
 // Does a final message agree with itself — report verdict vs HANDOFF line (`083`)? Read by the
-// SubagentStop hook. `fs`-free.
-export { checkHandoff, reportVerdict, type HandoffIssue, type HandoffIssueKind } from "../handoff-check.js";
+// SubagentStop hook. `fs`-free. `087` adds the third issue, a route expecting a payload whose
+// channel file the sender never wrote (`checkPayload`), and the payload-route helpers both the
+// SubagentStart injector and the SubagentStop check use (`handoff-payload.ts`, `fs`/`path` only).
+export {
+  checkHandoff,
+  checkPayload,
+  reportVerdict,
+  type HandoffIssue,
+  type HandoffIssueKind,
+  type PayloadRouteRef,
+} from "../handoff-check.js";
+export {
+  payloadRoutes,
+  payloadRequirement,
+  payloadWrittenSince,
+  readProjectHandoff,
+  runStartedAt,
+  type PayloadRoute,
+} from "../handoff-payload.js";
+
+// Project runtime vs plugin version, semantically (`087`) — the readiness check and
+// `maestro-install.js`'s downgrade refusal both ask it; the app's refreshStaleRuntime too. Pure.
+export { compareRuntimeVersions, runtimeNeedsRefresh, type RuntimeVersionVerdict } from "../runtime-version.js";
 
 // A worktree run may not write into the main checkout (`082`). `fs`/`path` only.
 export { checkWorktreeWrite, MAIN_CHECKOUT_SHARED_DIRS } from "../worktree-write-guard.js";

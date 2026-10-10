@@ -35,6 +35,7 @@ import { execFileSync } from "node:child_process";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
+import { compareRuntimeVersions, runtimeNeedsRefresh } from "./runtime-version.js";
 import { syncProjectReports } from "./report-sync.js";
 import { syncProjectHandoffs } from "./handoff-sync.js";
 import { duplicateAgentTypes } from "./config-validate.js";
@@ -619,8 +620,17 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
 
   const scriptsDir = fs.existsSync(path.join(projectRoot, ".claude", "scripts"));
   const installed = hasSkill && scriptsDir;
+  // `087`: the same semantic comparison `refreshStaleRuntime()` uses. A project stamped newer than
+  // this app's runtime differs from it by content too, but "update" would be a downgrade.
+  const stamped = readJsonSafe<MaestroConfigV3>(maestroJsonPath(projectRoot))?.runtimeVersion;
+  const shippedVersion = shippedRuntimeVersion(root);
+  const appBehind =
+    installed && typeof stamped === "string" && compareRuntimeVersions(stamped, shippedVersion) === "newer"
+      ? { projectVersion: stamped, shippedVersion }
+      : null;
   const stale =
     installed &&
+    !appBehind &&
     (scriptsMissing.length > 0 || scriptsOutOfDate.length > 0 || hooksMissing.length > 0 || skillOutOfDate);
 
   return {
@@ -640,6 +650,7 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
       return fs.existsSync(dest) ? fs.readFileSync(dest) : null;
     }),
     stale,
+    appBehind,
     settingsUnreadable,
   };
 }
@@ -822,8 +833,9 @@ export async function installRuntime(
 }
 
 /**
- * Refresh an ALREADY-installed project's runtime iff its stamped `runtimeVersion` doesn't match
- * what the plugin currently ships — the cheap trigger task 027 exists to add, decoupled from the
+ * Refresh an ALREADY-installed project's runtime iff its stamped `runtimeVersion` is OLDER than
+ * what the plugin currently ships (`087`: compared semantically; an unstamped or unparseable stamp
+ * keeps the old any-difference rule, and a NEWER stamp is never refreshed down) — the cheap trigger task 027 exists to add, decoupled from the
  * content-hash comparison `installStatus()` does. A project already current costs one config read
  * and a version-string compare: zero file reads of the runtime assets themselves, zero writes.
  *
@@ -849,7 +861,10 @@ export async function refreshStaleRuntime(
   if (!parsed || parsed.version !== 3) return null;
   const cfg = parsed;
   const shipped = shippedRuntimeVersion(root);
-  if (cfg.runtimeVersion === shipped) return null;
+  // `087`: semantic, not `!==`. A project whose runtime is NEWER than what this app ships (an
+  // older app opening a project a newer plugin installed) must not be refreshed — that would copy
+  // the older runtime over the newer one. Same verdict as the Step 0 readiness check.
+  if (!runtimeNeedsRefresh(cfg.runtimeVersion, shipped)) return null;
   const status = await installStatus(projectRoot, root);
   if (!status.installed) return null;
   return installRuntime(projectRoot, root, reportsDbPath, projectTagsDbPath, handoffsDbPath);

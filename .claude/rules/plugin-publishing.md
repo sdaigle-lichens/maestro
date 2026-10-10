@@ -20,7 +20,8 @@ description: Invariants for everything under plugins/<name>/ — it ships to tha
 - After rebuilding the libs, refresh this repo's tracked mirrors and prove parity before handing off:
   copy each changed lib in `install.ts`'s `STATIC_ASSETS` from `plugins/maestro/scripts/lib/` over
   `.claude/scripts/lib/` (likewise a changed `.js`/`.cjs` plugin script over its `.claude/scripts/`
-  copy), then run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`. The mirrors stay
+  copy), then run `pnpm --filter maestro exec vitest run test/core/parity.test.ts` — it checks every
+  `.claude/scripts/` asset in `runtimeAssets()` and names the `cp` for a stale one. The mirrors stay
   tracked on purpose; when two branches both rebuild a lib, `maestro-task-status.cjs merge` names the
   resolution (rebuild, copy, parity test) instead of leaving a hand-merge of bundle text.
 - A hook script committed as `.js` under `plugins/maestro/scripts/` is copied into a project as

@@ -1065,8 +1065,11 @@ export interface MaestroApi {
     run(projectRoot?: string): Promise<InstallReport>;
     /**
      * Task 027: refresh the runtime IFF it's already installed and its stamped `runtimeVersion`
-     * doesn't match what the app ships — the cheap comparison, decoupled from `status()`'s content
-     * hashes, that lets a project already current cost zero file writes. Never installs fresh.
+     * is OLDER than what the app ships (`087`: compared semantically; an unstamped or unparseable
+     * stamp still refreshes on any difference) — the cheap comparison, decoupled from `status()`'s
+     * content hashes, that lets a project already current cost zero file writes. Never installs
+     * fresh, and never refreshes a project stamped NEWER than the app down to the older runtime —
+     * `status().appBehind` is how the renderer tells the user the app needs updating instead.
      * Resolves `null` when there was nothing to refresh (including "not installed at all").
      */
     autoRefresh(projectRoot?: string): Promise<InstallReport | null>;

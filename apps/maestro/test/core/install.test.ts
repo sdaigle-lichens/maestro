@@ -1410,7 +1410,9 @@ describe("the installed hooks actually run", () => {
       expect(first).toContain("expressjs"); // backend's loaded_skills
       expect(first).toContain("Skills to load for the `backend` agent instance");
       expect(first).toContain("Handoff routing for the `backend` agent");
-      expect(first).toContain("write the shape for the route you take");
+      // `087`: the payload write is a REQUIRED step, with the route's shape inlined on a first run.
+      expect(first).toContain("REQUIRED before your HANDOFF line");
+      expect(first).toContain("write this to `.claude/channels/test/backend.1.md`");
       expect(first).not.toContain("Resumed run —");
 
       // Rerunning the SAME first-run payload must be pinned identical — the regression that
@@ -1429,7 +1431,10 @@ describe("the installed hooks actually run", () => {
       expect(resumed).not.toContain("Skills to load for the");
       expect(resumed).not.toContain("Skills available to the");
       expect(resumed).not.toContain("Handoff routing for the");
-      expect(resumed).not.toContain("write the shape for the route you take");
+      expect(resumed).not.toContain("write this to `.claude/channels/test/backend.1.md`");
+      // `087`: the requirement itself is NOT static — a resume still names the file to write.
+      expect(resumed).toContain("REQUIRED before your HANDOFF line");
+      expect(resumed).toContain("`HANDOFF: success` → write `.claude/channels/test/backend.1.md`");
     });
 
     it("still delivers a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
