@@ -79,7 +79,6 @@ function isolateFromRealMachine() {
       err.code = "ENOENT";
       throw err;
     }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (real as any)(p, opts);
   }) as typeof fs.statSync);
 }

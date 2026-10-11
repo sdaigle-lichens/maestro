@@ -4,11 +4,16 @@
   "private": true,
   "scripts": {
     "check": "prettier --check . --ignore-path ../../.prettierignore",
-    "format": "prettier --write . --ignore-path ../../.prettierignore"
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "lint": "eslint ."
   },
   "type": "module",
   "main": "./src/index.ts",
   "exports": {
     ".": "./src/index.ts"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "eslint": "^9.39.0"
   }
 }

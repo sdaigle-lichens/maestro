@@ -13,6 +13,7 @@
     "format": "prettier --write . --ignore-path ../../.prettierignore",
     "test": "vitest run --project unit",
     "build:plugin-libs": "node scripts/build-plugin-libs.mjs",
+    "lint": "eslint .",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
@@ -24,6 +25,7 @@
     "@faker-js/faker": "10.6.0",
     "@hookform/resolvers": "^5.2.2",
     "@repo/claude-fs": "workspace:*",
+    "@repo/eslint-config": "workspace:*",
     "@repo/styles": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@repo/ui": "workspace:*",
@@ -48,6 +50,7 @@
     "electron": "^40.0.0",
     "electron-vite": "^4.0.0",
     "esbuild": "^0.25.0",
+    "eslint": "^9.39.0",
     "lucide-react": "^1.16.0",
     "playwright": "1.64.0",
     "react": "19.2.0",

@@ -87,11 +87,13 @@ Once approved, prepare one object per approved task — **do not write the markd
 
 (A single-task array is the common case; the second entry above only exists to show how `blockedBy` is spelled.)
 
-`blockedBy` is a list of **indices into this same array** (not filenames — the script hasn't assigned any yet). Write the array to a scratch file and run:
+`blockedBy` entries are **indices into this same array** for tasks in this batch (the script hasn't assigned their filenames yet). To depend on a task **already in the queue**, use its filename or its number as a string, e.g. `["083"]` — the script refuses a name that matches no existing task. If a new task depends on queued work, say so here rather than only in `whatToBuild`, so the tracker keeps it blocked. Write the array to a scratch file and run:
 
 ```bash
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-write-tasks.cjs" <path-to-json>
 ```
+
+**Epic (optional).** When the tasks belong to an epic — the user named one, or you are running for a `maestro-manager` — add `--epic <slug>` to that command; every task it writes is linked to the epic in the tracker (`epic` field), and the command refuses, writing nothing, when the epic does not exist (create it first with `node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-epic.cjs" create <slug>`). To link or unlink tasks that already exist, use `maestro-epic.cjs link <slug> <task.md>...` / `unlink <task.md>...`. Without an epic, nothing changes.
 
 ### 6. Report
 

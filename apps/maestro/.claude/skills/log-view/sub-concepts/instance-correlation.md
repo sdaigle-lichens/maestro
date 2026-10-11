@@ -1,7 +1,8 @@
 # Deriving instances and correlating by `agent_id`
 
 `buildInstances` in `src/renderer/src/utils/session-log.ts` (pure, no Node imports) walks entries in
-order and starts a **new segment whenever `origin` changes**. Everything else on an `Instance` —
+order and starts a **new segment whenever `origin` changes** — except on a `channel_delivery` entry,
+which never opens a segment unless there is no current one (`088`, below). Everything else on an `Instance` —
 `input`, `offeredSkills`, `delivered` — is correlated by `agent_id` **bounded by position in the log**
 (`042`), because segment membership alone gets it wrong.
 
@@ -11,6 +12,10 @@ order and starts a **new segment whenever `origin` changes**. Everything else on
   second invocation). Before `039` this also meant a fresh `agent_id`, since each invocation was a cold
   `Task`; a **resumed** run (`SendMessage` to an agent with a completed run this session) still segments
   into a separate step, but now shares its `agent_id` with the run it resumed.
+- **A `channel_delivery` never starts a segment (`088`).** Its `origin` is always `"main_session"`, and
+  a resumed run's delivery (`via:"resume"`) is logged at that run's own `SubagentStop` — after its tool
+  calls, just before its handoff. Segmenting on it would split the resumed card into a status-less half
+  and a lone handoff card. It attaches by `agent_id` in the delivery pass below, like every delivery.
 - The main session itself segments into multiple "Main Session" steps when subagents interleave (normal
   for sequential Maestro dispatch).
 - Parallel subagents would fragment — they'd interleave their tool-call lines into many steps — but
@@ -51,6 +56,10 @@ logged between two runs of a resumed agent lands on the later run's card only, n
 `agent_id` matching no instance is simply never pulled out of the map — nothing crashes, nothing
 attaches to an arbitrary instance; it is just absent from every card. This is why `delivered` is
 populated in the *same* per-instance loop as `input`/`offeredSkills`, not a separate pass.
+
+A resume delivery (`088`) is logged before the resumed run's handoff, so it falls inside that run's
+`(p, h)` window and lands on the resumed card. Its `via:"resume"` is carried onto the
+`ChannelDelivery`, and the detail panel badges it "channel · resume" instead of "channel".
 
 ## Things that bite
 

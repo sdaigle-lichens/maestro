@@ -29,5 +29,6 @@ pnpm --filter maestro dev        # electron-vite dev, HMR on the renderer
 pnpm --filter maestro build
 pnpm --filter maestro typecheck  # both tsconfig projects
 pnpm --filter maestro test       # test/ and test/core/ as one suite
+pnpm --filter maestro lint       # ESLint via @repo/eslint-config; `pnpm lint` at the root runs every package plus the plugin's CJS scripts
 pnpm --filter maestro build:plugin-libs   # after ANY edit under src/core/plugin-entries' graph
 ```

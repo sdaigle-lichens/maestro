@@ -99,6 +99,19 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
     if (res.ok) {
       setStatus(res.value);
       setError(null);
+      // `087`: the one case the auto-refresh above now skips silently — the project's runtime is
+      // newer than this app's, so the fix is updating the app, not the project. Toasted here so it
+      // reaches whatever route the user is on; /maestro repeats it next to the disabled button.
+      const behind = res.value.appBehind;
+      if (behind) {
+        toast(
+          <>
+            This project&rsquo;s Maestro runtime ({behind.projectVersion}) is newer than this app&rsquo;s (
+            {behind.shippedVersion}). Update the Maestro app.
+          </>,
+          { variant: "warning" }
+        );
+      }
     } else {
       setStatus(null);
       setError(res.error);

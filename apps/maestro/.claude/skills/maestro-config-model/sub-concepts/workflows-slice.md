@@ -31,6 +31,11 @@ own `readConfig` → `applyWorkflowSpec` → `writeConfig` → re-render cycle a
 `.claude/maestro.json`, entirely outside the app and its `mergeSlice`/IPC path. See this skill's own
 `## Slice merges` section for how that makes it the `workflows` slice's third writer.
 
+Its `delete --name <wf>` command runs `workflow-spec.ts`'s pure `deleteWorkflow`. It refuses to delete
+the only workflow, because every reader assumes at least one exists. It keeps the workflow's
+`workflow_instances` and reports the ones no remaining workflow places as `unplacedInstances`,
+following the same rule as removing a step on `update`.
+
 **Trap: renaming a condition's `label` on `update` does not preserve its prior exit side.** An
 `update` re-derives each condition edge's `sourceHandle` fresh through `sideTracker` rather than
 carrying over the one already on disk, so a spec that only changes a `label` (not the endpoints) can

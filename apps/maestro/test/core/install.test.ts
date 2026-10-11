@@ -31,6 +31,7 @@ import { renderOrchestrator } from "../../src/core/render.js";
 import { defaultish, withSkillNodes } from "./fixtures/configs.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
+import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // Snapshotted as .cjs, not .js: this package is "type": "module", so node would refuse to run the
@@ -71,7 +72,6 @@ function hookEnv(root: string, sessionId: string | null, home: string): NodeJS.P
 const sessionDir = (root: string, id: string = HOOK_SESSION) => path.join(root, ".claude", "maestro_sessions", id);
 const logPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "log.jsonl");
 const statePathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "session.json");
-const tasksPathFor = (root: string, id: string = HOOK_SESSION) => path.join(sessionDir(root, id), "tasks.json");
 
 let tmp: string;
 // Every installRuntime()/refreshStaleRuntime() call below passes this, so the report-sync step
@@ -158,6 +158,7 @@ describe("differential against the legacy installer", () => {
     await installRuntime(mine, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
     execFileSync("node", [path.join(legacyPluginRoot(), "scripts", "maestro-install.cjs"), theirs], {
       encoding: "utf8",
+      env: pinnedEnv(tmp),
     });
 
     // The port copies strictly more (the hook scripts the plugin used to run from its own root),
@@ -872,7 +873,9 @@ describe("maestro-check-runtime.cjs", () => {
     const root = makeProject(name);
     writeConfig(root, defaultish);
     await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
     const home = path.join(tmp, "home-" + name);
     writeInstalledPlugins(home, {
       "maestro@maestro": [
@@ -1407,7 +1410,9 @@ describe("the installed hooks actually run", () => {
       expect(first).toContain("expressjs"); // backend's loaded_skills
       expect(first).toContain("Skills to load for the `backend` agent instance");
       expect(first).toContain("Handoff routing for the `backend` agent");
-      expect(first).toContain("write the shape for the route you take");
+      // `087`: the payload write is a REQUIRED step, with the route's shape inlined on a first run.
+      expect(first).toContain("REQUIRED before your HANDOFF line");
+      expect(first).toContain("write this to `.claude/channels/test/backend.1.md`");
       expect(first).not.toContain("Resumed run —");
 
       // Rerunning the SAME first-run payload must be pinned identical — the regression that
@@ -1426,10 +1431,13 @@ describe("the installed hooks actually run", () => {
       expect(resumed).not.toContain("Skills to load for the");
       expect(resumed).not.toContain("Skills available to the");
       expect(resumed).not.toContain("Handoff routing for the");
-      expect(resumed).not.toContain("write the shape for the route you take");
+      expect(resumed).not.toContain("write this to `.claude/channels/test/backend.1.md`");
+      // `087`: the requirement itself is NOT static — a resume still names the file to write.
+      expect(resumed).toContain("REQUIRED before your HANDOFF line");
+      expect(resumed).toContain("`HANDOFF: success` → write `.claude/channels/test/backend.1.md`");
     });
 
-    it("still delivers a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
+    it("still names a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
       const root = makeProject("resume-warn");
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
@@ -1456,8 +1464,13 @@ describe("the installed hooks actually run", () => {
       );
       expect(resumed).toContain("⚠️ Maestro warning:");
       expect(resumed).toContain("not-a-real-workflow");
-      expect(resumed).toContain("Delivered to your channel");
-      expect(resumed).toContain("NEW SINCE THE FIRST RUN");
+      // `088`: a resume never receives this context, so the payload is named by path (the
+      // orchestrator's SendMessage carries it) — never inlined, and left in the lane, not retired.
+      expect(resumed).toContain("In your channel from this run");
+      expect(resumed).toContain("`.claude/channels/backend/test.1.md`");
+      expect(resumed).not.toContain("Delivered to your channel");
+      expect(resumed).not.toContain("NEW SINCE THE FIRST RUN");
+      expect(fs.existsSync(path.join(laneDir, "test.1.md"))).toBe(true);
     });
 
     it("classifies two agents running in parallel independently — one resuming does not make the other look resumed", async () => {
@@ -1847,7 +1860,9 @@ describe("maestro-step1-gates.cjs (032)", () => {
   // from the app's own content hash above.
   it("makes maestro-check-runtime say update when the script is gone", async () => {
     const root = await installed("check");
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
     const check = (): { action: string; reason?: string } =>
       JSON.parse(
         execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
@@ -1976,7 +1991,9 @@ describe("maestro-step4-gate.cjs (046)", () => {
 
   it("makes maestro-check-runtime say update when the script is gone", async () => {
     const root = await installed("step4-check");
-    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root]);
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
     const check = (): { action: string; reason?: string } =>
       JSON.parse(
         execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {

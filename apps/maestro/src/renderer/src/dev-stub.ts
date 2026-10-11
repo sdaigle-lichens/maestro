@@ -4,6 +4,8 @@
  * a browser has none and the first provider crashes. Dev only: `main.tsx` imports this behind
  * `import.meta.env.DEV` and only when the bridge is absent. Returns invented sample projects.
  */
+export {};
+
 const recent = [
   { root: "/home/dev/projects/atlas-api", name: "atlas-api", lastOpened: "2026-10-09T14:12:00Z" },
   { root: "/home/dev/projects/harbor-web", name: "harbor-web", lastOpened: "2026-10-08T09:30:00Z" },
@@ -18,11 +20,7 @@ const methods: Record<string, Record<string, unknown>> = {
 const namespace = (name: string) =>
   new Proxy(methods[name] ?? {}, {
     get: (target, method: string) =>
-      method in target
-        ? target[method]
-        : /^(on|subscribe)/.test(method)
-          ? () => () => {}
-          : async () => null,
+      method in target ? target[method] : /^(on|subscribe)/.test(method) ? () => () => {} : async () => null,
   });
 
 if (!("maestro" in window)) {

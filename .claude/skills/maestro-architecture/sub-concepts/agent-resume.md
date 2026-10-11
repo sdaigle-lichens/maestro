@@ -1,4 +1,4 @@
-# Resuming an agent, and the thinner injection that follows (`039`, `040`)
+# Resuming an agent, the thinner injection, and resume delivery (`039`, `040`, `088`)
 
 ## A condition-edge loop-back can resume instead of spawn (`039`)
 
@@ -14,6 +14,10 @@ A printed id resumes the agent via `SendMessage` addressed to that `agent_id` (n
 keeps its own memory of what it built; empty output, or a `SendMessage` refused (a user-stopped
 agent, or a same-agent-name check), falls back to a cold `Task` exactly as before, with no visible
 error.
+
+An `agent_id` that ever had a team-meeting turn (`meeting: true` handoff) is never a resume target:
+`agentRunsFromLog` drops all of its runs, since its latest context tells it to ignore routing.
+`hasCompletedRun` still counts them (see `team-meeting.md`).
 
 The **forward** success path is unchanged — always a fresh `Task`, since a clean context is the
 point there, and restricting resume to backward edges is also what bounds context growth over a long
@@ -32,7 +36,33 @@ session's `session.json`.
 
 A resumed run gets one line — "Resumed run — the skills, handoff routes and output format from your
 first run still apply." — in place of `loaded_skills`, `referenced_skills`, the `HANDOFF:` routing +
-per-route protocols, and the report. Channel delivery and the `⚠️` unresolvable-workflow warning are
-unconditional either way: they are the parts of the injection that are genuinely new each call. A
-missing/unreadable log degrades to "not a resume" (full injection), the same safe direction as
-`resumeTarget`.
+per-route protocols, and the report — **except the REQUIRED-payload instruction (`087`)**, which a
+resume still gets (`payloadRequirement(..., { withShapes: false })`: the channel file per route, no
+shapes). It governs the hand-back the resumed run is about to make; dropping it with the static
+blocks is how task 086's second @reviewer pass ended without a payload. A missing/unreadable log
+degrades to "not a resume" (full injection), the same safe direction as `resumeTarget`.
+
+## A resume never receives `additionalContext` (`088`)
+
+**Trap: everything above is what the hook *emits*, not what a resumed agent *sees*.** Claude Code
+runs `SubagentStart` for a `SendMessage` resume but drops its `additionalContext` — the resumed
+transcript has a `hook_success` attachment and no `hook_additional_context`. So the reminder line,
+the REQUIRED-payload block and any inlined channel payload never reach a resumed agent. Before `088`
+the hook still inlined the lane and retired it, so task 085's resumed backend found its lane empty.
+
+A resume's payload therefore travels **by path, in the orchestrator's own `SendMessage`**
+(`src/core/resume-delivery.ts`, in the `maestro-session` bundle):
+
+| Step | Who | What |
+| --- | --- | --- |
+| 1 | `maestro-resume-target.cjs` | After the `agent_id`, prints `deliver: <file>` per current-run file in the target's lane and records them in `session.json` `resume_deliveries[<agent_id>]` (`{file, sender, run_id}[]`). |
+| 2 | Orchestrator | Names every `deliver:` path in the `SendMessage` and tells the agent to Read it. It never reads the payload itself. |
+| 3 | `SubagentStart` (resume) | Leaves the lane alone: no inline, no retire, just a path mention. |
+| 4 | Resumed run's own `SubagentStop` | `retireResumeDeliveries` retires exactly the recorded files, logs each as `channel_delivery` with `via:"resume"` **before** the run's handoff entry, and drops the record. |
+
+The same CLI also checks the loop-back's **expected** payload, resume or cold: if the latest
+workflow handoff's route to this target resolves a protocol (`expectedLoopbackPayloads`, via
+`payloadRoutes`) and no current-run file from that sender is in the lane, it prints
+`missing: <file> (from <sender>)` and appends a `missing_payload` issue to `handoff_issues` (deduped
+by kind, agent_id, files), so `handoff-issues` reports it too. The orchestrator then has the sender
+write the file and reruns the CLI. A first output line starting `missing:` means no `agent_id`.

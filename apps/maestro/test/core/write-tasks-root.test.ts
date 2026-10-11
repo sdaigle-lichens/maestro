@@ -85,3 +85,55 @@ describe("maestro-write-tasks root resolution", () => {
     expect(hasTask(repo)).toBe(true);
   });
 });
+
+// A new batch can depend on a task already in the queue, named by filename or NNN.
+describe("maestro-write-tasks blockedBy on existing tasks", () => {
+  const EXISTING = "001-earlier-work.md";
+
+  function setup(): string {
+    const repo = mkdir("repo");
+    mkdir("repo", ".git");
+    const dir = mkdir("repo", ".claude", "maestro-tasks");
+    fs.writeFileSync(path.join(dir, EXISTING), "# Earlier work\n\n## Blocked by\n\nNone — can start immediately\n");
+    return repo;
+  }
+
+  function run(repo: string, slices: unknown[]) {
+    const json = path.join(tmp, "slices.json");
+    fs.writeFileSync(json, JSON.stringify(slices));
+    const childEnv: NodeJS.ProcessEnv = { ...process["env"], HOME: tmp, CLAUDE_PROJECT_DIR: repo };
+    delete childEnv.CLAUDE_CODE_SESSION_ID;
+    return spawnSync("node", [SCRIPT, json], { cwd: repo, env: childEnv, encoding: "utf8" });
+  }
+
+  const slice = (title: string, blockedBy: unknown[]) => ({
+    title,
+    whatToBuild: "x",
+    acceptanceCriteria: ["a"],
+    blockedBy,
+  });
+
+  const status = (repo: string) =>
+    JSON.parse(fs.readFileSync(path.join(repo, ".claude", "maestro-tasks", "status.json"), "utf8"));
+
+  it("resolves an existing task by number and by filename, alongside batch indices", () => {
+    const repo = setup();
+    const r = run(repo, [slice("By number", ["001"]), slice("By name and index", [EXISTING, 0])]);
+    expect(r.status, r.stderr).toBe(0);
+    const s = status(repo);
+    expect(s["002-by-number.md"]).toEqual({ status: "blocked", blockedBy: [EXISTING] });
+    expect(s["003-by-name-and-index.md"].blockedBy).toEqual([EXISTING, "002-by-number.md"]);
+    const body = fs.readFileSync(path.join(repo, ".claude", "maestro-tasks", "002-by-number.md"), "utf8");
+    expect(body).toContain(`## Blocked by\n\n- \`${EXISTING}\``);
+  });
+
+  it("refuses a name that matches no existing task and writes nothing", () => {
+    const repo = setup();
+    for (const ref of ["099", "001-missing.md"]) {
+      const r = run(repo, [slice("Bad", [ref])]);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain(`blockedBy "${ref}" does not name exactly one existing task`);
+    }
+    expect(fs.readdirSync(path.join(repo, ".claude", "maestro-tasks"))).toEqual([EXISTING]);
+  });
+});

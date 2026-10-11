@@ -106,6 +106,10 @@ you record reflects the file a session will actually load.
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-id> --bump major
 ```
 
+Run it alone in its own Bash call, exactly as written: no `cd`, `;`, `&&`, pipe or redirect. A
+sandbox exclude rule only matches a call that is just that command, and the skill file it writes is
+often sandbox-protected.
+
 A major bump, because this pass is the thing that distinguishes a researched skill from a skeleton —
 that is exactly what step 1 reads. The repo-level `concept-skills.json` record is **not** touched: the
 list itself did not change, only one skill's depth.

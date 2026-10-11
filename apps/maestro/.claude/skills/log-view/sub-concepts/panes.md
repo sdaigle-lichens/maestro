@@ -47,7 +47,7 @@ Shows the selected instance's data in sections:
   because parallel subagents share one `transcript_path` (see `core/session-usage.ts`).
 - **Input:** the instance's `input` field — the full spawning message sent by the main session —
   followed by each entry in `inst.delivered` (`037`), rendered as "Delivered from @`<sender>`" plus a
-  "channel" badge and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when
+  "channel" badge ("channel · resume" for a `via:"resume"` delivery, `088`) and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when
   `delivered` is empty; shows "No input captured" for main_session instances or when there is neither a
   dispatch entry nor a delivery.
 - **Process:** the humanized log lines (same content as the center pane section for this step).

@@ -22,16 +22,32 @@ the starting agent's BARE type in `.claude/channels/<bareAgentType>/`:
 - anything from a different or absent run is only **mentioned** (sender, age, path), never inlined.
 
 It is gated on nothing but the lane having files — a filesystem fact, not a workflow-routing one,
-which is what lets a gap reach `@scribe` on a run whose workflow never wired a route to it. It fires
-regardless of first-run/resumed, because a payload may be new since the agent's last run.
+which is what lets a gap reach `@scribe` on a run whose workflow never wired a route to it. Two
+exceptions: a team-meeting participant gets no delivery at all, so nothing is inlined or retired
+(see `team-meeting.md`); and a **resumed** run (`088`) is neither inlined nor retired, because
+Claude Code drops a resume's `additionalContext`. Its current-run files are handed over by path —
+`maestro-resume-target.cjs` prints them as `deliver:` lines for the orchestrator's `SendMessage` and
+records them in `session.json` `resume_deliveries` — and retired at that run's own `SubagentStop`,
+logged as `channel_delivery` with `via:"resume"` (see `agent-resume.md`).
 
 ## Stamping and lifecycle
 
 `SubagentStop` mints/reads the session's `run_id` (`ensureSessionRunId`, stored in that session's
 `session.json` — per session since `064`, so two concurrent runs can no longer mint each other's
-stamp) and calls `writeStamp(cwd, bareAgentName(agentType), runId)`, stamping every **unstamped**
-channel file whose filename's sender segment matches this agent's own bare type — a parallel
-subagent of a different type can't stamp another's write.
+stamp) and calls `writeStamp(cwd, bareAgentName(agentType), runId, { skip })`. The stamping rules,
+all in `handoff-channels.ts`:
+
+| Rule | Why |
+| --- | --- |
+| Only the **sender's own** `SubagentStop` stamps, and only files whose filename sender segment is its bare type, in any receiver's lane. | A parallel subagent of another type can't stamp someone else's write. |
+| Only **unstamped** files are stamped; an existing stamp is never rewritten. | Idempotent, and a stale stamp stays stale (see below). |
+| A file in `skip` (the session's `meeting_leftovers`) that still has the same path, `mtimeMs` and `size` is left unstamped. Once rewritten, it is stamped as usual. | The `run_id` lasts the whole session, so without this the sender's next workflow run would adopt a team-meeting participant's leftover as its payload. A snapshot comparison, so it doesn't depend on clock or mtime granularity. |
+| A team-meeting participant's `SubagentStop` doesn't stamp at all. | See `team-meeting.md`. |
+| A file written by an agent killed before its `SubagentStop` stays unstamped. | It is then treated like a foreign-run file: mentioned, never inlined. |
+
+A skipped leftover stays in its lane, is reported as unstamped (mentioned, not inlined) and is aged
+out by `sweep()` like any other file. `unstampedFilesOf(projectDir, sender)` is the snapshot
+`closeMeeting` takes to build `meeting_leftovers`.
 
 `SessionEnd`'s `sweep()` retires `.consumed/` outright and ages out anything left in a live lane past
 `CHANNEL_AGE_CAP_MS` (14 days). Unlike the per-session files, a lane is **not** deleted at
@@ -49,8 +65,9 @@ about "too old".
   for the current one. If a delivery that should have inlined is only being *mentioned* instead,
   check the `run_id` in the file's first line against the live session's, not when the file was
   written.
-- **Retiring a channel file is `SubagentStart`'s job alone — never delete one by hand or from a
-  script.** `retire()` moves a delivered file to `.claude/channels/.consumed/<receiver>/`; it is
+- **Retiring a channel file is the hooks' job alone — `SubagentStart` on a cold start, the resumed
+  run's `SubagentStop` on a resume (`088`) — never delete one by hand or from a script.** Retiring
+  before the receiver has actually seen the file is the 085 bug. `retire()` moves a delivered file to `.claude/channels/.consumed/<receiver>/`; it is
   never removed outright until `SessionEnd`'s `sweep()` ages it out (14 days). A delivered-but-then-
   failed agent's payload is recoverable for that window rather than gone the moment it was read.
 - **The desktop app surfaces both halves of this mechanism read-only (`037`)**, and neither surface

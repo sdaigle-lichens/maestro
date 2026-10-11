@@ -67,6 +67,7 @@ maestro/
 │   ├── ui/                    # Shared React component library
 │   ├── styles/                # Shared CSS
 │   ├── claude-fs/             # Filesystem abstraction
+│   ├── eslint-config/         # Shared ESLint presets (react, node, cjs)
 │   └── typescript-config/     # Shared tsconfig bases
 └── plugins/
     └── maestro/                # The maestro Claude Code plugin (skills, agents, hooks)

@@ -110,3 +110,7 @@ fix, a mid-task refactor, or didn't land correctly on the first pass — is plai
 prose in the same `Maestro:STEPS` region: no script, no `maestro.json` field, reaches every project
 on install/update regardless of any setting. It also carries its own gate in prose, not code: skip
 the question entirely on a clean run, so it doesn't become something the user sees on every task.
+
+The question comes after the epic report (`084`). If the report reached a manager, the worker points
+the user to that session for `/maestro-post-mortem` instead of offering it locally, so a problem seen
+across tasks is fixed once; `maestro-manager` offers it there.

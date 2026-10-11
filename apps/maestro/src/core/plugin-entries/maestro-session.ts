@@ -23,6 +23,7 @@ export { projectOwnsHook } from "../hook-arbitration.js";
 export {
   readStdin,
   readJson,
+  readLogLines,
   readSession,
   writeSession,
   ensureSessionRunId,
@@ -75,6 +76,8 @@ export {
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
   CLAIM_IDLE_CAP_MS,
+  unstampedFilesOf,
+  type ChannelFileMark,
   type ChannelEntry,
   type SweepResult,
 } from "../handoff-channels.js";
@@ -154,4 +157,95 @@ export {
   CHANNEL_ONLY_AGENTS,
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
-export { lastHandoffLabel, sendMessageHandoff } from "../handoff-label.js";
+export { lastHandoffLabel, sendMessageHandoff, handbackHandoff, HANDBACK_TOOLS } from "../handoff-label.js";
+
+// Does a final message agree with itself — report verdict vs HANDOFF line (`083`)? Read by the
+// SubagentStop hook. `fs`-free. `087` adds the third issue, a route expecting a payload whose
+// channel file the sender never wrote (`checkPayload`), and the payload-route helpers both the
+// SubagentStart injector and the SubagentStop check use (`handoff-payload.ts`, `fs`/`path` only).
+export {
+  checkHandoff,
+  checkPayload,
+  reportVerdict,
+  type HandoffIssue,
+  type HandoffIssueKind,
+  type PayloadRouteRef,
+} from "../handoff-check.js";
+export {
+  payloadRoutes,
+  payloadRequirement,
+  payloadWrittenSince,
+  readProjectHandoff,
+  runStartedAt,
+  type PayloadRoute,
+} from "../handoff-payload.js";
+
+// A resumed loop-back target gets its lane by path through the orchestrator's SendMessage, since a
+// resume never receives SubagentStart's additionalContext (`088`). `fs`/`path` only.
+export {
+  pendingResumeDeliveries,
+  recordResumeDeliveries,
+  retireResumeDeliveries,
+  latestWorkflowHandoff,
+  expectedLoopbackPayloads,
+  missingLoopbackPayload,
+  dropResolvedMissingPayloads,
+  appendHandoffIssue,
+  type LatestHandoff,
+} from "../resume-delivery.js";
+
+// Project runtime vs plugin version, semantically (`087`) — the readiness check and
+// `maestro-install.js`'s downgrade refusal both ask it; the app's refreshStaleRuntime too. Pure.
+export { compareRuntimeVersions, runtimeNeedsRefresh, type RuntimeVersionVerdict } from "../runtime-version.js";
+
+// A worktree run may not write into the main checkout (`082`). `fs`/`path` only.
+export { checkWorktreeWrite, MAIN_CHECKOUT_SHARED_DIRS } from "../worktree-write-guard.js";
+
+// Durable per-project run metrics (`080`) — recorded by the SessionEnd hooks before the session
+// directory is removed, read by the team-meeting evidence digest. `fs`/`path` only — keeps
+// `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  recordSessionRun,
+  recordRun,
+  readMetrics,
+  renderMetricsDigest,
+  buildRunRecord,
+  foldRun,
+  compact as compactMetrics,
+  recentRunsLimit,
+  metricsFileFor,
+  metricsDirFor,
+  METRICS_DIR_NAME,
+  METRICS_FILE_NAME,
+  DEFAULT_RECENT_RUNS,
+  type RunRecord,
+  type MetricsFile,
+  type Totals,
+} from "../run-metrics.js";
+
+// Team-meeting mode — the `meeting` flag in session.json that the SubagentStart/Stop hooks and the
+// write guard read to treat a meeting participant differently from a workflow agent. `fs`/`path`
+// only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  MEETING_DIR_NAME,
+  meetingDirFor,
+  readMeeting,
+  meetingFor,
+  withoutMeeting,
+  startMeeting,
+  endMeeting,
+  closeMeeting,
+  meetingLeftovers,
+  MEETING_LEFTOVERS_KEY,
+  meetingNotice,
+  // Owner runs (`081`): the marker that keeps a post-meeting owner run out of workflow routing.
+  OWNER_RUNS_KEY,
+  OWNER_RUN_LEFTOVERS_KEY,
+  readOwnerRuns,
+  ownerRunFor,
+  startOwnerRuns,
+  endOwnerRuns,
+  closeOwnerRuns,
+  ownerRunLeftovers,
+  ownerRunNotice,
+} from "../meeting-mode.js";

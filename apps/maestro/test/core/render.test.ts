@@ -16,6 +16,7 @@ import { renderOrchestrator, handoffTable, successPath } from "../../src/core/re
 import { writeConfig, readConfig, serializeConfig, mergeSlice, blankConfig } from "../../src/core/config.js";
 import { allConfigs, defaultish } from "./fixtures/configs.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
+import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const LEGACY_DIR = path.join(here, "fixtures", "legacy");
@@ -71,6 +72,7 @@ function runLegacyRenderer(projectRoot: string): string {
   }
   execFileSync("node", [path.join(scriptDir, "maestro-render-orchestrator.cjs"), projectRoot], {
     encoding: "utf8",
+    env: pinnedEnv(tmp),
   });
   return fs.readFileSync(path.join(projectRoot, ".claude", "skills", "maestro", "SKILL.md"), "utf8");
 }

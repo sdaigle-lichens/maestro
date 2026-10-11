@@ -60,7 +60,19 @@ function conceptGapsChannelNote(subagent: string): string {
   );
 }
 
+// `083`: the report's verdict and the terminal HANDOFF line must agree. Appended to the reports
+// that carry a verdict (everything but scribe); the previous bodies are the V3 prior seeds below.
+const VERDICT_HANDOFF_NOTE =
+  'Your `"verdict"` and your final `HANDOFF:` line must agree. A real defect must end with the matching ' +
+  "condition-edge label when the workflow has one. A verdict of FAIL with `HANDOFF: success` is invalid, " +
+  "and so is ending with no `HANDOFF:` line — the orchestrator is told about both and never treats either as success.";
+
 function backendLikeReport(subagent: string): string {
+  return backendLikeV3(subagent) + "\n\n" + VERDICT_HANDOFF_NOTE;
+}
+
+// The body before `083` added the verdict/HANDOFF note.
+function backendLikeV3(subagent: string): string {
   return (
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +
@@ -100,7 +112,7 @@ const SCRIBE_REPORT =
   "`claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept " +
   "list moved without reading the whole summary.";
 
-const TEST_REPORT =
+const TEST_REPORT_V3 =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
   "```json\n" +
@@ -114,6 +126,8 @@ const TEST_REPORT =
   "```\n" +
   "\n" +
   conceptGapsChannelNote("test");
+
+const TEST_REPORT = TEST_REPORT_V3 + "\n\n" + VERDICT_HANDOFF_NOTE;
 
 /**
  * The exact bodies stripped from
@@ -245,12 +259,14 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     "\n" +
     conceptGapsFieldNoteV2;
 
+  // v3 (`083`): the current body before the verdict/HANDOFF agreement note was appended.
   return {
-    backend: [backendLikeV1("backend"), backendLikeV2("backend")],
-    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend")],
-    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile")],
+    backend: [backendLikeV1("backend"), backendLikeV2("backend"), backendLikeV3("backend")],
+    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend"), backendLikeV3("frontend")],
+    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile"), backendLikeV3("mobile")],
+    infra: [backendLikeV3("infra")],
     scribe: [scribeV1],
-    test: [testV1, testV2],
+    test: [testV1, testV2, TEST_REPORT_V3],
   };
 })();
 

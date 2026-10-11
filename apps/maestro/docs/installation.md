@@ -6,7 +6,7 @@ How to get Maestro running from source. For building a copy to actually use day-
 ## Prerequisites
 
 - **Node.js** — a recent LTS (20+).
-- **pnpm** — the repo pins `packageManager: pnpm@11.9.0` in the root `package.json`. With Corepack
+- **pnpm** — the repo pins `packageManager: pnpm@12.10.1` in the root `package.json`. With Corepack
   enabled (`corepack enable`), running `pnpm` in this repo picks up that version automatically.
 - **git**.
 - Optional, for the features that talk to Claude — the `claude` CLI, installed and logged into a

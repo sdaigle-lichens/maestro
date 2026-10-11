@@ -283,6 +283,8 @@ export {
   type SweepResult,
 } from "./handoff-channels.js";
 
+export { compareRuntimeVersions, runtimeNeedsRefresh, type RuntimeVersionVerdict } from "./runtime-version.js";
+
 export {
   installRuntime,
   installStatus,

@@ -16,6 +16,7 @@ import { readConfig, writeConfig } from "../../src/core/config.js";
 import { discoverProjectRules, discoverProjectTree } from "../../src/core/discovery.js";
 import { defaultish } from "./fixtures/configs.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
+import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 // Snapshotted as .cjs, not .js: this package is "type": "module", so node would otherwise
@@ -83,7 +84,7 @@ describe("applyRules", () => {
     }
 
     const summary = await applyRules(mine, rulesCfg);
-    execFileSync("node", [LEGACY_APPLY, theirs], { encoding: "utf8" });
+    execFileSync("node", [LEGACY_APPLY, theirs], { encoding: "utf8", env: pinnedEnv(tmp) });
 
     const listing = (root: string) =>
       [

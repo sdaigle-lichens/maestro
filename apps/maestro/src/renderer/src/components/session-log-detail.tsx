@@ -55,7 +55,7 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
                       Delivered from <span className="font-mono text-maestro-muted">@{stripNamespace(d.sender)}</span>
                     </span>
                     <span className="ml-auto text-[9.5px] font-mono uppercase tracking-wide text-maestro-muted">
-                      channel
+                      {d.via === "resume" ? "channel · resume" : "channel"}
                     </span>
                   </div>
                   <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0 p-2.5 rounded-md bg-(--sunken) border border-maestro">

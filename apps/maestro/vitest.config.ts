@@ -11,7 +11,15 @@ const dirname = fileURLToPath(new URL(".", import.meta.url));
 export default defineConfig({
   test: {
     projects: [
-      { test: { name: "unit", environment: "node", include: ["test/**/*.test.ts"] } },
+      {
+        test: {
+          name: "unit",
+          environment: "node",
+          include: ["test/**/*.test.ts"],
+          // Pin HOME to a temp dir before any module computes `os.homedir()`-based defaults.
+          setupFiles: ["test/setup-isolation.ts"],
+        },
+      },
       {
         extends: true,
         plugins: [tailwindcss(), storybookTest({ configDir: `${dirname}.storybook` })],

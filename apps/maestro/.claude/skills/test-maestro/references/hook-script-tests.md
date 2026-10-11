@@ -17,6 +17,13 @@ machine**:
 - **Pin or delete `CLAUDE_CODE_SESSION_ID` — never inherit it.** This is the sharp one, and it only
   exists since `064`.
 
+Since `082` two things enforce this for you: `test/setup-isolation.ts` (a vitest `setupFiles`
+entry) points `HOME`/`USERPROFILE` at a temp dir and deletes `CLAUDE_CODE_SESSION_ID` before any
+module computes an `os.homedir()` default, and `test/helpers/env.ts`'s `pinnedEnv(home, extra)`
+builds a spawned process's env the same way. Use `pinnedEnv` rather than spreading `process.env`.
+Without the setup file, the first-install seed in `installRuntime` read the developer's real
+`~/.claude` and 24 install/uninstall/discovery tests failed in the sandbox.
+
 ## The `CLAUDE_CODE_SESSION_ID` rule, because nothing about a green run reveals a violation
 
 That variable is set in the environment of a real Claude Code session, and a hook spawned with
