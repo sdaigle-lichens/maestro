@@ -779,7 +779,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.11.5",
+  "runtimeVersion": "0.11.6",
   "reports": {
     "backend": {
       "id": "backend",

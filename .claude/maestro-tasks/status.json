@@ -408,7 +408,7 @@
     ]
   },
   "085-let-maestro-manager-sessions-of-different-epics-notify-each-other.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md"
     ]
@@ -422,6 +422,10 @@
   },
   "087-stop-false-runtime-behind-warnings-and-flag-a-missing-handoff-payload.md": {
     "status": "done",
+    "blockedBy": []
+  },
+  "088-deliver-a-loop-back-payload-to-a-resumed-agent-and-flag-it-when-missing.md": {
+    "status": "ready",
     "blockedBy": []
   }
 }
