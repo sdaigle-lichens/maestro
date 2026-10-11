@@ -22,6 +22,14 @@ place the refresh procedure is written down.
    the plugin's `plugin.json` version into `maestro.json`'s `runtimeVersion` — the field the Step 0
    check compares against.
 
+   **It refuses a downgrade.** When `maestro.json`'s `runtimeVersion` is newer than this plugin's
+   version, the installer writes nothing, exits 1 and prints
+   `{"ok":false,"refused":"downgrade","projectRuntimeVersion":…,"pluginVersion":…,"reason":…}`.
+   Stop there and tell the user why, quoting both versions: the installed maestro plugin is older
+   than this project's runtime, so the fix is to update the plugin, not this project. Re-run with
+   `--allow-downgrade` appended **only if the user explicitly asks** to roll the project back to the
+   plugin's version.
+
    It also rewrites the plugin-owned regions of `.claude/skills/maestro/SKILL.md` (the list is
    `MANAGED_REGIONS` in `lib/maestro-skill-regions.cjs`) from `templates/maestro/SKILL.md`. Content
    **outside** those markers is the user's and is never touched; the rendered
@@ -39,7 +47,7 @@ place the refresh procedure is written down.
    placeholder, and this restores it from each workflow's derived success path:
 
    ```bash
-   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-render-orchestrator.cjs"
+   node .claude/scripts/maestro-render-orchestrator.cjs
    ```
 
    If it reports `maestro/SKILL.md not found`, the orchestrator was never installed. Stop and ask
@@ -49,7 +57,7 @@ place the refresh procedure is written down.
    one line per forked agent and names the ones that differ:
 
    ```bash
-   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-agent-forks.cjs" list
+   node .claude/scripts/maestro-agent-forks.cjs list
    ```
 
    If it names any, see `references/forked-agents.md` for showing the diff and applying the user's
@@ -61,6 +69,10 @@ place the refresh procedure is written down.
 
 ## Notes
 
+- Run each command exactly as written, one per call: sandbox exclude rules match the command text.
+- An `EPERM` on `.claude/skills/maestro/SKILL.md` is the sandbox. Don't retry; give the user the
+  exclude rules `node *maestro-install.js*` and `node *maestro-render-orchestrator.cjs*` (or a `!`
+  run of the failed command). Never edit sandbox settings yourself.
 - `maestro.json` is the source of truth. The `SubagentStart` hook reads it at runtime, so subagent
   skill injection is current even between updates — only the handoff table needs re-rendering.
 - If `/maestro` fails to start on a long-installed project, the cause is usually stale

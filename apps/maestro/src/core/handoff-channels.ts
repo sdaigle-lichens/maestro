@@ -67,6 +67,16 @@ export function laneFor(projectDir: string, sender: string, receiver: string): s
 
 const STAMP_RE = /^<!-- maestro:run_id=([^\s>]+) -->\n/;
 
+/**
+ * An unstamped channel file as it stood at one moment — enough to tell, later, whether it has been
+ * rewritten since. See `unstampedFilesOf` and `writeStamp`'s `skip`.
+ */
+export interface ChannelFileMark {
+  path: string;
+  mtimeMs: number;
+  size: number;
+}
+
 /** Prefix `body` with its run stamp. */
 export function formatStampedContent(body: string, runId: string): string {
   return `<!-- maestro:run_id=${runId} -->\n${body}`;
@@ -112,9 +122,24 @@ function listFiles(dir: string): string[] {
  * parallel subagents from stamping each other's writes. Already-stamped files are left untouched
  * (idempotent, and never overwrites a stamp a differently-timed run already wrote). Returns the
  * absolute paths it stamped.
+ *
+ * `skip` is the session's `meeting_leftovers` (see `meeting-mode.ts` `closeMeeting`): the
+ * unstamped lane files a team meeting's participants had left when the meeting ended (a Bash write
+ * the write guard cannot see), recorded by `unstampedFilesOf`. A file still exactly as it was then
+ * — same path, mtime and size — is left unstamped: the `run_id` lasts the whole session, and
+ * without this the sender's next workflow SubagentStop would adopt the leftover as a payload of the
+ * current run. A file a later run rewrote changes mtime or size and is stamped as usual. Comparing
+ * a snapshot, not a timestamp, keeps this independent of clock and mtime granularity. No `skip` =
+ * every unstamped file of `sender` is stamped, the behaviour outside meetings.
  */
-export function writeStamp(projectDir: string, sender: string, runId: string): string[] {
+export function writeStamp(
+  projectDir: string,
+  sender: string,
+  runId: string,
+  opts: { skip?: readonly ChannelFileMark[] | null } = {}
+): string[] {
   const stamped: string[] = [];
+  const skip = new Map((opts.skip ?? []).map((m) => [m.path, m]));
   for (const receiver of listDirs(channelsRoot(projectDir))) {
     const dir = channelDir(projectDir, receiver);
     for (const fileName of listFiles(dir)) {
@@ -122,6 +147,11 @@ export function writeStamp(projectDir: string, sender: string, runId: string): s
       const filePath = path.join(dir, fileName);
       let content: string;
       try {
+        const before = skip.get(filePath);
+        if (before) {
+          const st = fs.statSync(filePath);
+          if (st.mtimeMs === before.mtimeMs && st.size === before.size) continue;
+        }
         content = fs.readFileSync(filePath, "utf8");
       } catch {
         continue;
@@ -132,6 +162,30 @@ export function writeStamp(projectDir: string, sender: string, runId: string): s
     }
   }
   return stamped;
+}
+
+/**
+ * Every UNSTAMPED file under any receiver's lane whose sender segment is `sender`, as it stands
+ * now. Taken by `closeMeeting` for each participant when a team meeting ends; stored as the
+ * session's `meeting_leftovers`, which SubagentStop passes to `writeStamp` as `skip`.
+ */
+export function unstampedFilesOf(projectDir: string, sender: string): ChannelFileMark[] {
+  const out: ChannelFileMark[] = [];
+  for (const receiver of listDirs(channelsRoot(projectDir))) {
+    const dir = channelDir(projectDir, receiver);
+    for (const fileName of listFiles(dir)) {
+      if (senderOf(fileName) !== sender) continue;
+      const filePath = path.join(dir, fileName);
+      try {
+        const st = fs.statSync(filePath);
+        if (STAMP_RE.test(fs.readFileSync(filePath, "utf8"))) continue;
+        out.push({ path: filePath, mtimeMs: st.mtimeMs, size: st.size });
+      } catch {
+        // Gone or unreadable — nothing to protect.
+      }
+    }
+  }
+  return out;
 }
 
 /** One file sitting in a receiver's lane, whether or not it is deliverable this run. */

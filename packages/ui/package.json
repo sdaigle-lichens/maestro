@@ -4,7 +4,8 @@
   "private": true,
   "scripts": {
     "check": "prettier --check . --ignore-path ../../.prettierignore",
-    "format": "prettier --write . --ignore-path ../../.prettierignore"
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "lint": "eslint ."
   },
   "type": "module",
   "exports": {
@@ -27,9 +28,11 @@
     "@base-ui/react": "1.0.0"
   },
   "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/react": "19.2.0",
     "@types/react-dom": "19.2.0",
+    "eslint": "^9.39.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
     "typescript": "6.0.2"

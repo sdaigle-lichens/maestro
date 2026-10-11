@@ -5,4 +5,4 @@
 // (no fs, no node:sqlite, no node built-in of any kind), which is what makes it bundleable for a
 // script that runs under bare `node` in a project with no node_modules.
 
-export { applyWorkflowSpec, workflowToSpec } from "../workflow-spec.js";
+export { applyWorkflowSpec, workflowToSpec, deleteWorkflow } from "../workflow-spec.js";

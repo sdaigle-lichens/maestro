@@ -15,6 +15,7 @@
 // Omit `projectRoot` for the global row alone; pass it to overlay a project's own row on top of the
 // global one. NO MIGRATION: a pre-030 db is dropped and reseeded, not rewritten in place.
 
+import { mkdirSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { DatabaseSync } from "node:sqlite";
@@ -24,6 +25,8 @@ import { AVATAR_CATEGORIES, AVATAR_PARTS, HEX_COLOR_RE, type AvatarCategory, typ
 export const DEFAULT_AVATAR_DB_PATH = path.join(os.homedir(), ".claude", "maestro-avatars.sqlite");
 
 function openDb(dbPath: string): DatabaseSync {
+  // A machine that has never run Claude Code has no `~/.claude`, and sqlite will not create it.
+  mkdirSync(path.dirname(dbPath), { recursive: true });
   const db = new DatabaseSync(dbPath);
   dropLegacySchema(db);
   db.exec(`

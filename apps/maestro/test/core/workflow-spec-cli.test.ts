@@ -12,6 +12,7 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { createRequire } from "node:module";
+import { pinnedEnv } from "../helpers/env.js";
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -91,7 +92,7 @@ function writeSpecFile(spec: unknown): string {
 
 function runCli(args: string[]): { status: number; stdout: string; stderr: string } {
   try {
-    const stdout = execFileSync("node", [CLI, ...args, tmp], { encoding: "utf8" });
+    const stdout = execFileSync("node", [CLI, ...args, tmp], { encoding: "utf8", env: pinnedEnv(tmp) });
     return { status: 0, stdout, stderr: "" };
   } catch (err) {
     const e = err as { status: number; stdout: string; stderr: string };
@@ -202,9 +203,7 @@ describe("maestro-workflow-spec.cjs post-write consequences (acceptance criterio
     // Independently confirm the re-rendered table matches what the renderer itself would produce
     // right now (i.e. the same check the readiness hook's check-5 makes) — the table is not
     // merely present, it AGREES with the config on disk.
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { handoffTable } = require(path.join(REPO_ROOT, "plugins/maestro/scripts/maestro-render-orchestrator.cjs"));
-    // eslint-disable-next-line @typescript-eslint/no-var-requires
     const { extractRegion } = require(path.join(REPO_ROOT, "plugins/maestro/scripts/lib/maestro-skill-regions.cjs"));
     const cfgAfter = JSON.parse(fs.readFileSync(maestroJsonPath, "utf8"));
     const rendered = extractRegion(skillMd, "HANDOFFS");
@@ -240,7 +239,10 @@ describe("maestro-workflow-spec.cjs to-spec (read-only)", () => {
   it("prints the current spec for an existing workflow without writing anything", () => {
     makeProject(seedConfig());
     const before = fs.readFileSync(maestroJsonPath, "utf8");
-    const result = execFileSync("node", [CLI, "to-spec", "--name", "existing", tmp], { encoding: "utf8" });
+    const result = execFileSync("node", [CLI, "to-spec", "--name", "existing", tmp], {
+      encoding: "utf8",
+      env: pinnedEnv(tmp),
+    });
     const spec = JSON.parse(result);
     expect(spec).toEqual({ name: "existing", steps: ["backend"] });
     expect(fs.readFileSync(maestroJsonPath, "utf8")).toBe(before);

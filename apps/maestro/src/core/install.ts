@@ -35,6 +35,7 @@ import { execFileSync } from "node:child_process";
 import { syncManagedRegions } from "./skill-regions.js";
 import { orchestratorSkillPath } from "./render.js";
 import { maestroJsonPath, readConfig, readJsonSafe, writeConfig, writeRuntimeVersion } from "./config.js";
+import { compareRuntimeVersions, runtimeNeedsRefresh } from "./runtime-version.js";
 import { syncProjectReports } from "./report-sync.js";
 import { syncProjectHandoffs } from "./handoff-sync.js";
 import { duplicateAgentTypes } from "./config-validate.js";
@@ -196,6 +197,10 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // re-render shape as maestro-render-orchestrator.cjs above, hence the same project-copy
   // treatment. Invoked directly by those skills, not by a hook.
   { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
+  // The epics CLI (`084`): create an epic, link tasks, show it, and the report inbox. Invoked
+  // directly by the orchestrator's done step, `maestro-manager` and `to-maestro-tasks`, so it is a
+  // project copy for the same $CLAUDE_PROJECT_DIR reason as every orchestrator-invoked script above.
+  { src: "scripts/maestro-epic.cjs", dest: ".claude/scripts/maestro-epic.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
@@ -213,6 +218,8 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // Backs maestro-workflow-spec.cjs above (`applyWorkflowSpec`/`workflowToSpec`), generated from
   // apps/maestro/src/core/workflow-spec.ts.
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
+  // Backs maestro-epic.cjs above, generated from apps/maestro/src/core/epics.ts (`084`).
+  { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (`035`). Reports have no
   // seed tier at all, so without this file a project-local hook resolves NO output format for an
   // agent whose report is only global — the failure that motivated the slice. Handoffs do have a
@@ -501,6 +508,9 @@ const GITIGNORE_ENTRIES = [
   // maestro-tasks/ (user-authored, committed content) rather than directly under .claude/, so it
   // needs its own line here rather than reusing that directory's ignore rules.
   "**/.claude/maestro-tasks/claims/",
+  // `080`: the durable run-metrics directory. recordRun also writes a `*` .gitignore into it, which is
+  // the mechanism for a project installed before this line existed.
+  "**/.claude/maestro-metrics/",
 ];
 
 /** Append the missing entries under the Maestro header. Returns true if the file changed. */
@@ -610,8 +620,17 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
 
   const scriptsDir = fs.existsSync(path.join(projectRoot, ".claude", "scripts"));
   const installed = hasSkill && scriptsDir;
+  // `087`: the same semantic comparison `refreshStaleRuntime()` uses. A project stamped newer than
+  // this app's runtime differs from it by content too, but "update" would be a downgrade.
+  const stamped = readJsonSafe<MaestroConfigV3>(maestroJsonPath(projectRoot))?.runtimeVersion;
+  const shippedVersion = shippedRuntimeVersion(root);
+  const appBehind =
+    installed && typeof stamped === "string" && compareRuntimeVersions(stamped, shippedVersion) === "newer"
+      ? { projectVersion: stamped, shippedVersion }
+      : null;
   const stale =
     installed &&
+    !appBehind &&
     (scriptsMissing.length > 0 || scriptsOutOfDate.length > 0 || hooksMissing.length > 0 || skillOutOfDate);
 
   return {
@@ -631,6 +650,7 @@ export async function installStatus(projectRoot: string, pluginRoot?: string): P
       return fs.existsSync(dest) ? fs.readFileSync(dest) : null;
     }),
     stale,
+    appBehind,
     settingsUnreadable,
   };
 }
@@ -813,8 +833,9 @@ export async function installRuntime(
 }
 
 /**
- * Refresh an ALREADY-installed project's runtime iff its stamped `runtimeVersion` doesn't match
- * what the plugin currently ships — the cheap trigger task 027 exists to add, decoupled from the
+ * Refresh an ALREADY-installed project's runtime iff its stamped `runtimeVersion` is OLDER than
+ * what the plugin currently ships (`087`: compared semantically; an unstamped or unparseable stamp
+ * keeps the old any-difference rule, and a NEWER stamp is never refreshed down) — the cheap trigger task 027 exists to add, decoupled from the
  * content-hash comparison `installStatus()` does. A project already current costs one config read
  * and a version-string compare: zero file reads of the runtime assets themselves, zero writes.
  *
@@ -840,7 +861,10 @@ export async function refreshStaleRuntime(
   if (!parsed || parsed.version !== 3) return null;
   const cfg = parsed;
   const shipped = shippedRuntimeVersion(root);
-  if (cfg.runtimeVersion === shipped) return null;
+  // `087`: semantic, not `!==`. A project whose runtime is NEWER than what this app ships (an
+  // older app opening a project a newer plugin installed) must not be refreshed — that would copy
+  // the older runtime over the newer one. Same verdict as the Step 0 readiness check.
+  if (!runtimeNeedsRefresh(cfg.runtimeVersion, shipped)) return null;
   const status = await installStatus(projectRoot, root);
   if (!status.installed) return null;
   return installRuntime(projectRoot, root, reportsDbPath, projectTagsDbPath, handoffsDbPath);

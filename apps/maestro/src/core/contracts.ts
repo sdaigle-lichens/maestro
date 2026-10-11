@@ -480,7 +480,9 @@ export interface MaestroTask {
    * is `false` for exactly one read, the one that discovers the claim's session has gone idle or
    * away; the claim file is gone by the next read.
    */
-  claim: { sessionId: string; claimedAt: string; live: boolean } | null;
+  claim: { sessionId: string; claimedAt: string; live: boolean; sessionName?: string } | null;
+  /** The epic this task belongs to (`084`), from its tracker entry; absent when it belongs to none. */
+  epic?: string;
 }
 
 export interface SessionLogEntry {
@@ -509,6 +511,12 @@ export interface SessionLogEntry {
   receiver?: string;
   /** channel_delivery only: the payload, inlined verbatim */
   content?: string;
+  /**
+   * channel_delivery only (`088`): `"resume"` when the payload reached a RESUMED run by path and was
+   * retired at that run's SubagentStop — logged just before its handoff, not at a SubagentStart.
+   * Absent for the ordinary SubagentStart inlining.
+   */
+  via?: "resume";
   /** phase only: which pre-coding orchestration step this marks, e.g. "step1_gates". */
   phase?: string;
   /** Best-effort context-window fill percentage at write time. Absent means unknown, never 0. */
@@ -527,6 +535,8 @@ export interface ChannelDelivery {
   receiver: string;
   agent_id: string;
   content: string;
+  /** `"resume"` when delivered by path to a resumed run (`088`); absent for SubagentStart inlining. */
+  via?: "resume";
 }
 
 /**
@@ -667,6 +677,14 @@ export interface InstallStatus {
   installedRuntimeId: string;
   /** Installed, but something is missing or older than what the app ships. */
   stale: boolean;
+  /**
+   * `087`: the project's stamped `runtimeVersion` is NEWER than the runtime this app ships — a
+   * newer plugin installed it, and this app is the one behind. `stale` is forced false then:
+   * updating from here would copy the older runtime over the newer one, which is exactly what
+   * `refreshStaleRuntime()` and the Step 0 readiness check (`pluginBehind`) both refuse to do.
+   * `null` in every other case, including an unstamped or unparseable stamp.
+   */
+  appBehind: { projectVersion: string; shippedVersion: string } | null;
   /** `.claude/settings.json` exists but is not valid JSON — install would refuse to touch it. */
   settingsUnreadable: boolean;
 }

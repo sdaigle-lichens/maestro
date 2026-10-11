@@ -126,6 +126,14 @@ identical `forkAgent(...)` → `agent-forks.json` path — a renamed fork writes
 record and hashes the same way regardless of caller. See `agents-view` and `workflow-view` for what
 each does with the result.
 
+**A third entry point, the terminal (`081`).** `plugins/maestro/scripts/maestro-agent-fork.cjs` calls
+the same `forkAgent` (bundled as `lib/maestro-agent-fork.cjs`), passing the plugin's own `agents/`
+directory and `plugin.json` version where the app's main process passes its bundled ones. So a CLI
+fork of a `maestro`-tier agent records the same `sourceTier`, `sourcePlugin` and `pluginVersion` as an
+app fork and reaches the same `computeAgentSync` verdict. The `maestro-team-meeting` skill uses it to
+apply an approved `agent.fork` proposal. It is plugin-only and never added to the copied
+`maestro-agent-forks.cjs`.
+
 ## Traps
 
 - **`summary.diverged` is not `refreshed + staleCustomized`.** Because `stale-customized` is decided

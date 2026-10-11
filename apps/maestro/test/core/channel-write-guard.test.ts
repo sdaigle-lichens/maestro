@@ -9,6 +9,7 @@ import { spawnSync } from "node:child_process";
 
 import { checkChannelWrite } from "../../src/core/channel-write-guard.js";
 import { sendMessageHandoff, lastHandoffLabel } from "../../src/core/handoff-label.js";
+import { pinnedEnv } from "../helpers/env.js";
 
 let root: string;
 let outside: string;
@@ -103,6 +104,7 @@ describe("maestro-channel-write-guard.js (real script)", () => {
     spawnSync("node", [script], {
       input: JSON.stringify({ cwd: root, hook_event_name: "PreToolUse", ...payload }),
       encoding: "utf8",
+      env: pinnedEnv(root),
     });
 
   it("denies an out-of-lane write with a PreToolUse deny decision", () => {
@@ -154,7 +156,7 @@ describe("SendMessage hand-back recovery", () => {
     const tp = path.join(root, "agent.jsonl");
     fs.writeFileSync(tp, line("SendMessage", { message: "ok\nHANDOFF: success" }));
     const hook = path.resolve(__dirname, "../../../../plugins/maestro/scripts/maestro-subagent-log.js");
-    const childEnv: NodeJS.ProcessEnv = { ...process.env, HOME: root };
+    const childEnv: NodeJS.ProcessEnv = pinnedEnv(root);
     delete childEnv.CLAUDE_CODE_SESSION_ID;
     const r = spawnSync("node", [hook], {
       env: childEnv,

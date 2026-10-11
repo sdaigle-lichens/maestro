@@ -50,6 +50,13 @@ re-runs the install:
   fresh checkout as stale),
 - terminal → `/maestro-update`, which re-copies the scripts and then re-renders the orchestrator.
 
+**Neither path refreshes a project down (`087`).** A project stamped newer than the plugin or the
+app is reported as the *plugin/app* being behind (`pluginBehind` notice at Step 0, `appBehind` in
+the app), and `maestro-install.js` refuses with `refused:"downgrade"` unless re-run with
+`--allow-downgrade` on the user's explicit request. In this repo the project is often ahead of the
+installed plugin cache, so "update the plugin" is the usual fix. See `installing-maestro`'s
+staleness sub-concept.
+
 **Copied scripts are `.cjs`, never `.js`.** The plugin can run them as `.js` because its directory
 has no `package.json` declaring a module type; a project's does, and `"type": "module"` makes node
 parse their `require()` as ESM — the hook then fails on _every tool call_ with "require is not

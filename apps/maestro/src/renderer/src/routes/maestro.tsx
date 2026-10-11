@@ -1053,6 +1053,15 @@ function InstallPage() {
             </Note>
           )}
 
+          {status?.appBehind && (
+            <Note variant="warn">
+              This project&rsquo;s runtime (<span className="font-mono">{status.appBehind.projectVersion}</span>) is
+              newer than the one this app ships (<span className="font-mono">{status.appBehind.shippedVersion}</span>),
+              so the app is the one out of date. Update the Maestro app; reinstalling from here would replace the
+              project&rsquo;s runtime with the older one.
+            </Note>
+          )}
+
           {status && <StatusCard status={status} />}
 
           {agentSync && <ForkedAgentsCard summary={agentSync} />}
@@ -1082,7 +1091,7 @@ function InstallPage() {
               variant={action === "reinstall" ? "secondary" : "primary"}
               icon={action === "update" ? <RefreshCw size={14} /> : <Download size={14} />}
               loading={phase === "installing"}
-              disabled={!viewedRoot || busy}
+              disabled={!viewedRoot || busy || !!status?.appBehind}
               onClick={() => void run()}
             >
               {phase === "installing"
@@ -1096,7 +1105,7 @@ function InstallPage() {
             <Button variant="ghost" icon={<RefreshCw size={13} />} onClick={() => void refreshStatus()}>
               Re-check
             </Button>
-            {status && !status.stale && status.installed && (
+            {status && !status.stale && !status.appBehind && status.installed && (
               <span className="text-[12px] text-(--ink-3)">Up to date — nothing to do.</span>
             )}
           </div>

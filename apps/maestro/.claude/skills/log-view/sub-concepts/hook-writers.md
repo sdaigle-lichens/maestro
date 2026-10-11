@@ -9,6 +9,7 @@ Active Maestro session
   PreToolUse hook   → maestro-session-log.js          → tool-call entry       (ts, origin, log)
   SubagentStart     → maestro-subagent-log.js         → dispatch entry        (kind:"dispatch", agent, agent_id, input)
   SubagentStart     → maestro-inject-agent-context.js → channel_delivery entry (kind:"channel_delivery", sender, receiver, agent_id, content) — (`036`/`037`)
+  SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"resume", resumed run only, BEFORE its handoff) — (`088`)
   SubagentStop      → maestro-subagent-log.js         → handoff entry         (kind:"handoff", agent_id, status, label, output)
   SessionEnd        → maestro-session-cleanup.sh      → DELETE this session's directory only
 ```
@@ -84,6 +85,11 @@ what was inlined without a second hook reading the same channel file. `origin` i
 `"main_session"` on this entry, same as a `dispatch` entry — it is not written into the receiving
 agent's own segment, which is exactly why `buildInstances` correlates it by `agent_id` across the whole
 array rather than by which segment it landed in (see `instance-correlation.md`).
+
+**Exception — a resumed run (`088`).** Claude Code drops a resume's `additionalContext`, so the
+injector neither inlines nor logs there. The resumed run's own `SubagentStop`
+(`maestro-subagent-log.js`) retires the files it was handed by path and writes the `channel_delivery`
+entries with `via:"resume"`, just before that run's handoff entry.
 
 ## Hook registration (`hooks.json`)
 

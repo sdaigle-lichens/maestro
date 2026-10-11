@@ -67,6 +67,10 @@
 // app's installRuntime() applies, and same degrade-on-old-`node` discipline as the skill-tags read
 // above.
 //
+// `--allow-downgrade` (`087`, a bare flag): without it, a project whose maestro.json `runtimeVersion`
+// is NEWER than this plugin's version is refused before anything is written — JSON
+// `{ ok:false, refused:"downgrade", projectRuntimeVersion, pluginVersion, reason }`, exit 1.
+//
 // Prints a JSON summary to stdout.
 
 const fs = require("fs");
@@ -75,7 +79,7 @@ const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
 const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
-const { walkProjectSkillIds } = require("./lib/maestro-session.cjs");
+const { walkProjectSkillIds, compareRuntimeVersions } = require("./lib/maestro-session.cjs");
 
 /**
  * Project skill ids from EVERY `.claude/skills` in the tree — not only the root's, which in a
@@ -189,6 +193,8 @@ function ensureRepoRootGitignore(repoRoot) {
     // rules. `ensureClaimsDir()`'s own `*` .gitignore, written into the directory as it's created,
     // is the mechanism for a project installed before this line existed.
     "**/.claude/maestro-tasks/claims/",
+    // `080`: durable run metrics; recordRun also writes its own `*` .gitignore into the directory.
+    "**/.claude/maestro-metrics/",
   ]);
 }
 
@@ -363,12 +369,16 @@ const STATIC_ASSETS = [
   // STATIC_ASSETS for the full rationale; same read/mutate/write/re-render shape as
   // maestro-render-orchestrator.cjs above.
   { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
+  // The epics CLI (`084`) — see apps/maestro/src/core/install.ts's STATIC_ASSETS.
+  { src: "scripts/maestro-epic.cjs", dest: ".claude/scripts/maestro-epic.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
   { src: "scripts/lib/maestro-agent-sync.cjs", dest: ".claude/scripts/lib/maestro-agent-sync.cjs" },
   // Backs maestro-workflow-spec.cjs above, generated from apps/maestro/src/core/workflow-spec.ts.
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
+  // Backs maestro-epic.cjs above (`084`).
+  { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
   // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
   // silently, and why the handoff store is copied even though its seed would have covered it.
@@ -569,6 +579,32 @@ function syncProjectHandoffs(configPath, projectDir) {
 
 module.exports = { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, STATIC_ASSETS, runtimeAssets };
 
+// The refusal `main()` prints when the project's stamped runtime is NEWER than this plugin, or null.
+function downgradeRefusal(projectDir, pluginRoot) {
+  let projectRuntimeVersion = null;
+  let pluginVersion = null;
+  try {
+    projectRuntimeVersion = JSON.parse(
+      fs.readFileSync(path.join(projectDir, ".claude", "maestro.json"), "utf8")
+    ).runtimeVersion;
+    pluginVersion = JSON.parse(fs.readFileSync(path.join(pluginRoot, ".claude-plugin", "plugin.json"), "utf8")).version;
+  } catch {
+    return null;
+  }
+  if (typeof compareRuntimeVersions !== "function") return null;
+  if (compareRuntimeVersions(projectRuntimeVersion, pluginVersion) !== "newer") return null;
+  return {
+    ok: false,
+    refused: "downgrade",
+    projectRuntimeVersion,
+    pluginVersion,
+    reason:
+      `this project's runtime ${projectRuntimeVersion} is newer than this maestro plugin ${pluginVersion}; ` +
+      `installing would downgrade it. Update the maestro plugin instead, or re-run with --allow-downgrade ` +
+      `only if you really want to roll the project back to ${pluginVersion}.`,
+  };
+}
+
 function main() {
   // argv: [projectDir] [--impl-agents a,b] [--skill-map '{"agent":["skill"]}']
   // Parsed positionally-first so the long-standing `maestro-install.js <dir>` call still works.
@@ -576,12 +612,25 @@ function main() {
   const positional = [];
   const flags = {};
   for (let i = 0; i < argv.length; i++) {
-    if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
+    // `--allow-downgrade` is a bare boolean; every other flag takes the next argument as its value.
+    if (argv[i] === "--allow-downgrade") flags["allow-downgrade"] = true;
+    else if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
     else positional.push(argv[i]);
   }
 
   const projectDir = positional[0] || process.env.CLAUDE_PROJECT_DIR || process.cwd();
   const pluginRoot = path.resolve(__dirname, "..");
+
+  // `087`: refuse a DOWNGRADE before the first byte is written. A project whose stamped runtime is
+  // newer than this plugin got it from a newer app or plugin checkout; re-copying this plugin's
+  // scripts over it would silently roll the runtime back. Only an explicit `--allow-downgrade`
+  // (the user asked for it) proceeds. Unstamped/unparseable versions are not judged, as before.
+  const refusal = downgradeRefusal(projectDir, pluginRoot);
+  if (refusal && !flags["allow-downgrade"]) {
+    process.stdout.write(JSON.stringify(refusal) + "\n");
+    process.stderr.write(`maestro-install: ${refusal.reason}\n`);
+    process.exit(1);
+  }
 
   const implAgents = (flags["impl-agents"] || "")
     .split(",")

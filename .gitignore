@@ -80,3 +80,4 @@ vite.config.ts.timestamp-*
 **/.claude/channels/
 **/.claude/maestro_sessions/
 **/.claude/maestro-tasks/claims/
+**/.claude/maestro-metrics/

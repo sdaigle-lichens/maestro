@@ -36,6 +36,31 @@ export function readJson<T>(p: string): T | null {
 }
 
 /**
+ * Every JSON line of a hook-written log, best-effort: a null path (`064`: no session resolved) or
+ * an unreadable file is `[]`, and a malformed or partial line is skipped rather than fatal. Unlike
+ * session-log.ts's `parseLogLines` it keeps every entry, not only those with an `origin`.
+ */
+export function readLogLines(p: string | null | undefined): Record<string, unknown>[] {
+  if (!p) return [];
+  let text: string;
+  try {
+    text = fs.readFileSync(p, "utf8");
+  } catch {
+    return [];
+  }
+  const lines: Record<string, unknown>[] = [];
+  for (const raw of text.split("\n")) {
+    if (!raw.trim()) continue;
+    try {
+      lines.push(JSON.parse(raw));
+    } catch {
+      // A malformed line is skipped.
+    }
+  }
+  return lines;
+}
+
+/**
  * `p` is nullable so a caller whose session id didn't resolve can pass the miss straight through
  * and get the same blank session an unreadable file gives — the degradation every reader of this
  * state already had, rather than a second branch at every call site.

@@ -6,7 +6,7 @@ each with its own `.claude-plugin/plugin.json`.
 
 It is also a pnpm/Turborepo monorepo: `apps/maestro` is the Electron desktop app that authors a
 project's Maestro workflow graph, and `packages/*` are its shared libraries
-(`@repo/ui`, `@repo/styles`, `@repo/claude-fs`, `@repo/typescript-config`). The `maestro` plugin
+(`@repo/ui`, `@repo/styles`, `@repo/claude-fs`, `@repo/typescript-config`, `@repo/eslint-config`). The `maestro` plugin
 under `plugins/maestro/` is the runtime half — its `scripts/lib/*.cjs` files are generated from
 `apps/maestro/src/core/plugin-entries/*.ts` via `apps/maestro/scripts/build-plugin-libs.mjs`. Run
 that after editing a `plugin-entries/*.ts` source, or the plugin's hooks silently run stale code.
@@ -18,3 +18,7 @@ for the published install flows themselves.
 `plugins/` is published to end users and has its own invariants — see
 `.claude/rules/plugin-publishing.md` (auto-loaded), and `.claude/skills/concept-skills-system/` for
 which `.claude/skills/` a piece of developer documentation belongs in.
+
+Lint: `pnpm lint` runs each package's own `eslint.config.js` (presets from `@repo/eslint-config`:
+`react`, `node`, `cjs`) via turbo, then the root `eslint.config.mjs`, which covers only the plugin's
+hand-written `plugins/maestro/scripts/*`. `pnpm verify` runs lint first, then check/typecheck/test.

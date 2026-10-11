@@ -7,6 +7,7 @@
 #      `endSessionState` in lib/maestro-session.cjs (`077`: a resumable SessionEnd `reason` removes nothing) — the SAME function the project-local .cjs
 #      twin calls, so the two cannot disagree about what SessionEnd deletes. The source of truth
 #      (.claude/maestro.json) and the orchestrator skill are intentionally preserved.
+#      `080`: BEFORE removing it, the run is recorded into .claude/maestro-metrics/ (recordSessionRun).
 #   2. SWEEP `.claude/channels/` (`036`) — a channel file is no longer flushed at SessionEnd, since
 #      a lane the receiving agent hasn't run yet (an abandoned `human review` stop is the routine
 #      case) still has to survive it. Sweeping instead retires `.consumed/` outright and ages out
@@ -42,7 +43,9 @@ if [[ -n "$cwd" ]]; then
     const lib = require(process.argv[1]);
     const path = require("path");
     const [, , cwd, sessionId, reason] = process.argv;
-    lib.endSessionState(path.join(cwd, ".claude"), lib.resolveSessionId(sessionId ? { session_id: sessionId } : null), reason || null);
+    const sid = lib.resolveSessionId(sessionId ? { session_id: sessionId } : null);
+    try { lib.recordSessionRun(cwd, sid); } catch {}
+    lib.endSessionState(path.join(cwd, ".claude"), sid, reason || null);
     lib.sweep(cwd);
   ' "$script_dir/lib/maestro-session.cjs" "$cwd" "$session_id" "$reason" 2>/dev/null || true
 fi
