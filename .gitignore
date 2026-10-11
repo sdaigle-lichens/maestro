@@ -86,3 +86,4 @@ storybook-static
 
 # design plugin: saved sign-in for screen captures
 .design-screens/
+design/requests/

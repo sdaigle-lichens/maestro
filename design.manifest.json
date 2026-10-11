@@ -109,5 +109,28 @@
       "status": "wip",
       "lastImplementedHash": null
     }
+  ],
+  "screens": [
+    {
+      "name": "Home",
+      "storybook": "web",
+      "route": "/",
+      "url": "http://localhost:5173/",
+      "sources": [
+        "apps/maestro/src/renderer/src/routes/index.tsx",
+        "apps/maestro/src/renderer/src/components/hamburger-menu.tsx",
+        "apps/maestro/src/renderer/src/components/top-nav.tsx"
+      ],
+      "viewport": "1440x900",
+      "states": [
+        "Default"
+      ],
+      "mockupPath": "design/screens/home.html",
+      "proposalPath": "design/proposals/screens/home.html",
+      "status": "wip",
+      "lastImplementedHash": null,
+      "mockupHash": "443d869c05169779fb1b34f03115253ec0165c92f2109c0e70358115f099454b",
+      "sourceHash": "69e8d832a3941bd59abc7c6e6a3789dca4d13155405a3a48b0a418d15a0eaabf"
+    }
   ]
 }

@@ -21,6 +21,7 @@
     "ccusage": "^20.0.19"
   },
   "devDependencies": {
+    "@faker-js/faker": "10.6.0",
     "@hookform/resolvers": "^5.2.2",
     "@repo/claude-fs": "workspace:*",
     "@repo/styles": "workspace:*",

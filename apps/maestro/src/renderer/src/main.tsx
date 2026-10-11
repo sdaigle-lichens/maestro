@@ -4,6 +4,8 @@ import { RouterProvider, createRouter, createHashHistory } from "@tanstack/react
 import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 
+if (import.meta.env.DEV) await import("./dev-stub");
+
 // Hash history, not browser history: a packaged build loads the renderer over file://, where
 // pushState paths don't resolve to anything on reload.
 const router = createRouter({

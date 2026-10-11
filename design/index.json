@@ -103,6 +103,19 @@
       ],
       "sourceHash": "258bfb549d0e723564fc09355aeef20bd6285dcf9e67c45bcedf819915cc6507",
       "referenceHash": "72033c84fde63480a4ada7bf6ad1cbb4076f016ab169e1b1c5e689007a92fad6"
+    },
+    {
+      "kind": "screen",
+      "name": "home",
+      "title": "Home",
+      "reference": "screens/home.html",
+      "proposal": "proposals/screens/home.html",
+      "route": "/",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "69e8d832a3941bd59abc7c6e6a3789dca4d13155405a3a48b0a418d15a0eaabf",
+      "referenceHash": "443d869c05169779fb1b34f03115253ec0165c92f2109c0e70358115f099454b"
     }
   ]
 }
