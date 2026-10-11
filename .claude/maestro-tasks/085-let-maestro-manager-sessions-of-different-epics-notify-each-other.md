@@ -19,3 +19,12 @@ Build on the epic state and report inbox from the epics task: a manager can disc
 ## Blocked by
 
 - `084-group-tasks-into-epics-run-by-a-resumable-maestro-manager-session.md`
+
+## Post-Mortem
+
+- **Problem:** @reviewer failed the first pass: new code in `epics.ts` and `epics-cli.test.ts` was not Prettier-formatted (`pnpm --filter maestro check` failed), and `note --file -` read stdin before validating the epics, the same hang `report` had already been hardened against. @backend ran typecheck, tests and lint but not `check`.
+  **Fix:** none
+- **Problem:** @reviewer said it wrote `.claude/channels/backend/reviewer.1.md` for the loop-back, but the file did not exist when @backend was resumed, and `handoff-issues` reported nothing.
+  **Fix:** none
+- **Problem:** @scribe ended with no `HANDOFF:` line, and its two concept-skill stamps failed in the sandbox (EPERM under `.claude/skills/`), so the user had to run them by hand.
+  **Fix:** none

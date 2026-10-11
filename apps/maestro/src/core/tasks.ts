@@ -237,13 +237,20 @@ export function setTaskEpic(projectRoot: string, filenames: string[], epic: stri
 export interface TrackerEntry {
   status: TaskStatus | undefined;
   epic: string | undefined;
+  /** The task's `## Blocked by` references as the tracker recorded them (`085`: cross-epic edges). */
+  blockedBy: string[];
 }
 
-/** The tracker as the epic module needs it (status and epic per task filename), read fresh. */
+/** The tracker as the epic module needs it (status, epic and blockers per task filename), read fresh. */
 export function readTaskTracker(projectRoot: string): Record<string, TrackerEntry> {
   const map = readStatusMap(tasksDirFor(projectRoot));
   const out: Record<string, TrackerEntry> = {};
-  for (const [name, entry] of Object.entries(map)) out[name] = { status: entry?.status, epic: entry?.epic };
+  for (const [name, entry] of Object.entries(map))
+    out[name] = {
+      status: entry?.status,
+      epic: entry?.epic,
+      blockedBy: Array.isArray(entry?.blockedBy) ? entry.blockedBy : [],
+    };
   return out;
 }
 

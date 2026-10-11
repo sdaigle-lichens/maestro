@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the sixteen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.11"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "1.12"
+  last-update: f822fad1beba7cd0392f523526199eda185ad2d5
 ---
 
 # Core ↔ plugin parity
@@ -86,7 +86,8 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
 `maestro-agent-fork`, `maestro-rule-move` (`081`) and `maestro-epic` (`084`: epics, the report
-inbox; copied into projects, fs/path only, no `node:sqlite`).
+inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and
+`formatInboxEntry`; copied into projects, fs/path only, no `node:sqlite`).
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.

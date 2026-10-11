@@ -36,12 +36,15 @@ __export(maestro_epic_exports, {
   EPICS_DIR: () => EPICS_DIR,
   acknowledgeReport: () => acknowledgeReport,
   addWorker: () => addWorker,
+  checkNoteRoute: () => checkNoteRoute,
   createEpic: () => createEpic,
   epicDirFor: () => epicDirFor,
   epicOfTask: () => epicOfTask,
   formatEpic: () => formatEpic,
+  formatInboxEntry: () => formatInboxEntry,
   isValidEpicSlug: () => isValidEpicSlug,
   linkTasks: () => linkTasks,
+  listEpicSummaries: () => listEpicSummaries,
   listEpics: () => listEpics,
   readEpicState: () => readEpicState,
   removeWorker: () => removeWorker,
@@ -49,6 +52,7 @@ __export(maestro_epic_exports, {
   showEpic: () => showEpic,
   unacknowledgedReports: () => unacknowledgedReports,
   unlinkTasks: () => unlinkTasks,
+  writeNote: () => writeNote,
   writeReport: () => writeReport
 });
 module.exports = __toCommonJS(maestro_epic_exports);
@@ -292,7 +296,12 @@ function setTaskEpic(projectRoot, filenames, epic) {
 function readTaskTracker(projectRoot) {
   const map = readStatusMap(tasksDirFor(projectRoot));
   const out = {};
-  for (const [name, entry] of Object.entries(map)) out[name] = { status: entry?.status, epic: entry?.epic };
+  for (const [name, entry] of Object.entries(map))
+    out[name] = {
+      status: entry?.status,
+      epic: entry?.epic,
+      blockedBy: Array.isArray(entry?.blockedBy) ? entry.blockedBy : []
+    };
   return out;
 }
 
@@ -424,6 +433,13 @@ function listEpics(projectRoot) {
     return [];
   }
 }
+function listEpicSummaries(projectRoot) {
+  return listEpics(projectRoot).flatMap((slug) => {
+    const state = readEpicState(projectRoot, slug);
+    if (!state) return [];
+    return [{ slug, manager: state.manager?.name ?? null, unacknowledged: unacknowledgedReports(state).length }];
+  });
+}
 function setManager(projectRoot, slug, name) {
   updateState(projectRoot, slug, (s) => {
     s.manager = { name, set_at: now() };
@@ -454,6 +470,11 @@ function unlinkTasks(projectRoot, tasks) {
 function epicOfTask(projectRoot, filename) {
   return readTaskTracker(projectRoot)[import_node_path6.default.basename(filename)]?.epic ?? null;
 }
+var INBOX_PREFIX = { report: "r", note: "n" };
+function nextInboxId(state, kind) {
+  const used = state.log.filter((e) => e.kind === kind).map((e) => Number(e.id.slice(1)) || 0);
+  return `${INBOX_PREFIX[kind]}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
+}
 function writeReport(projectRoot, task, body, from) {
   const base = import_node_path6.default.basename(task);
   const slug = epicOfTask(projectRoot, base);
@@ -462,8 +483,7 @@ function writeReport(projectRoot, task, body, from) {
   if (!dir || !readEpicState(projectRoot, slug))
     throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   return updateState(projectRoot, slug, (s) => {
-    const used = s.log.filter((e) => e.kind === "report").map((e) => Number(e.id.slice(1)) || 0);
-    const id = `r${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
+    const id = nextInboxId(s, "report");
     const rel = import_node_path6.default.posix.join(INBOX_DIR, `${id}-${base.replace(/\.md$/, "")}.md`);
     const at = now();
     const header = `# Report ${id}: ${base}
@@ -480,9 +500,52 @@ ${from ? `- From session: ${from}
     return { epic: slug, id, file: import_node_path6.default.join(dir, rel), manager: s.manager?.name ?? null };
   });
 }
+function checkNoteRoute(projectRoot, toSlug, fromEpic) {
+  if (!readEpicState(projectRoot, toSlug)) throw new Error(`no epic "${toSlug}" to send a note to`);
+  if (!readEpicState(projectRoot, fromEpic)) throw new Error(`no epic "${fromEpic}" to send a note from`);
+  if (fromEpic === toSlug) throw new Error(`a note goes to ANOTHER epic; "${toSlug}" is the sender's own`);
+}
+function writeNote(projectRoot, toSlug, body, options) {
+  const { fromEpic, from } = options;
+  const subject = options.subject?.trim();
+  checkNoteRoute(projectRoot, toSlug, fromEpic);
+  const dir = epicDirFor(projectRoot, toSlug);
+  if (!dir) throw new Error(`no epic "${toSlug}" to send a note to`);
+  if (!body.trim()) throw new Error("the note is empty");
+  return updateState(projectRoot, toSlug, (s) => {
+    const id = nextInboxId(s, "note");
+    const rel = import_node_path6.default.posix.join(INBOX_DIR, `${id}-from-${fromEpic}.md`);
+    const at = now();
+    const header = `# Note ${id} from epic ${fromEpic}
+
+- From epic: ${fromEpic}
+${from ? `- From session: ${from}
+` : ""}${subject ? `- Subject: ${subject}
+` : ""}- Written: ${at}
+
+`;
+    import_node_fs8.default.mkdirSync(import_node_path6.default.join(dir, INBOX_DIR), { recursive: true });
+    import_node_fs8.default.writeFileSync(import_node_path6.default.join(dir, rel), `${header}${body.trim()}
+`);
+    s.log.push({
+      kind: "note",
+      id,
+      from_epic: fromEpic,
+      ...from ? { from } : {},
+      ...subject ? { subject } : {},
+      file: rel,
+      at
+    });
+    return { epic: toSlug, id, file: import_node_path6.default.join(dir, rel), manager: s.manager?.name ?? null };
+  });
+}
+function isInboxEntry(e) {
+  return e.kind === "report" || e.kind === "note";
+}
 function acknowledgeReport(projectRoot, slug, id, by) {
   return updateState(projectRoot, slug, (s) => {
-    if (!s.log.some((e) => e.kind === "report" && e.id === id)) throw new Error(`epic "${slug}" has no report "${id}"`);
+    if (!s.log.some((e) => isInboxEntry(e) && e.id === id))
+      throw new Error(`epic "${slug}" has no report or note "${id}"`);
     if (s.log.some((e) => e.kind === "ack" && e.id === id)) return "already";
     s.log.push({ kind: "ack", id, at: now(), ...by ? { by } : {} });
     return "acknowledged";
@@ -490,7 +553,24 @@ function acknowledgeReport(projectRoot, slug, id, by) {
 }
 function unacknowledgedReports(state) {
   const acked = new Set(state.log.filter((e) => e.kind === "ack").map((e) => e.id));
-  return state.log.filter((e) => e.kind === "report" && !acked.has(e.id));
+  return state.log.filter((e) => isInboxEntry(e) && !acked.has(e.id));
+}
+function crossEpicEdges(tracker, slug) {
+  const edges = [];
+  for (const task of Object.keys(tracker).sort((a, b) => a.localeCompare(b))) {
+    const taskEpic = tracker[task].epic ?? null;
+    for (const blocker of tracker[task].blockedBy) {
+      const other = tracker[blocker];
+      if (!other || other.status === "done") continue;
+      const blockerEpic = other.epic ?? null;
+      if (taskEpic === blockerEpic) continue;
+      if (taskEpic === slug)
+        edges.push({ task, blockedBy: blocker, otherEpic: blockerEpic, direction: "blocked-by-other" });
+      else if (blockerEpic === slug)
+        edges.push({ task, blockedBy: blocker, otherEpic: taskEpic, direction: "blocks-other" });
+    }
+  }
+  return edges;
 }
 function showEpic(projectRoot, slug) {
   const state = readEpicState(projectRoot, slug);
@@ -514,8 +594,18 @@ function showEpic(projectRoot, slug) {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state).map((r) => ({ ...r, path: import_node_path6.default.join(dir, r.file) }))
+    unacknowledged: unacknowledgedReports(state).map((r) => ({ ...r, path: import_node_path6.default.join(dir, r.file) })),
+    crossEpic: crossEpicEdges(tracker, slug)
   };
+}
+function formatInboxEntry(entry) {
+  if (entry.kind === "note")
+    return `${entry.id}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
+  return `${entry.id}  ${entry.task}  ${entry.path}`;
+}
+function formatCrossEpicEdge(edge) {
+  const other = edge.otherEpic ? `epic ${edge.otherEpic}` : "no epic";
+  return edge.direction === "blocked-by-other" ? `${edge.task}  blocked by ${edge.blockedBy} (${other})` : `${edge.blockedBy}  blocks ${edge.task} (${other})`;
 }
 function formatEpic(view) {
   const lines = [
@@ -529,8 +619,10 @@ function formatEpic(view) {
     const who = t.running ? ` \u2014 running in session ${t.running.sessionName ? `"${t.running.sessionName}"` : "(unnamed)"}` : "";
     lines.push(`    ${t.filename}  [${t.status}]${who}`);
   }
-  lines.push(`  unacknowledged reports (${view.unacknowledged.length}):`);
-  for (const r of view.unacknowledged) lines.push(`    ${r.id}  ${r.task}  ${r.path}`);
+  lines.push(`  unacknowledged reports and notes (${view.unacknowledged.length}):`);
+  for (const r of view.unacknowledged) lines.push(`    ${formatInboxEntry(r)}`);
+  lines.push(`  cross-epic dependencies (${view.crossEpic.length}):`);
+  for (const e of view.crossEpic) lines.push(`    ${formatCrossEpicEdge(e)}`);
   return lines.join("\n");
 }
 // Annotate the CommonJS export names for ESM import in node:
@@ -538,12 +630,15 @@ function formatEpic(view) {
   EPICS_DIR,
   acknowledgeReport,
   addWorker,
+  checkNoteRoute,
   createEpic,
   epicDirFor,
   epicOfTask,
   formatEpic,
+  formatInboxEntry,
   isValidEpicSlug,
   linkTasks,
+  listEpicSummaries,
   listEpics,
   readEpicState,
   removeWorker,
@@ -551,5 +646,6 @@ function formatEpic(view) {
   showEpic,
   unacknowledgedReports,
   unlinkTasks,
+  writeNote,
   writeReport
 });

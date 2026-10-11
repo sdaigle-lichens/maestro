@@ -312,6 +312,434 @@ describe("the report inbox", () => {
   }
 });
 
+// `085`: one epic's manager discovers the others and leaves a durable note in another epic's inbox.
+describe("cross-epic notes", () => {
+  const stateOf = (root: string, slug: string) =>
+    JSON.parse(fs.readFileSync(path.join(root, ".claude", "epics", slug, "state.json"), "utf8"));
+  const bodyFile = (text: string) => {
+    const f = path.join(tmp, `note-${Math.random().toString(36).slice(2)}.md`);
+    fs.writeFileSync(f, text);
+    return f;
+  };
+
+  it("list shows each epic's manager and inbox backlog, as text and --json", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing", "--manager", "boss-billing"]);
+    epic(root, ["create", "search"]);
+
+    const text = epic(root, ["list"]).stdout;
+    expect(text).toContain("billing  manager: boss-billing  unacknowledged: 0");
+    expect(text).toContain("search  manager: (none recorded)  unacknowledged: 0");
+    expect(JSON.parse(epic(root, ["list", "--json"]).stdout)).toEqual([
+      { slug: "billing", manager: "boss-billing", unacknowledged: 0 },
+      { slug: "search", manager: null, unacknowledged: 0 },
+    ]);
+  });
+
+  it("a note is on disk and logged when the command returns, and names the manager to message", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing", "--manager", "boss-billing"]);
+    epic(root, ["create", "search", "--manager", "boss-search"]);
+
+    const sent = epic(root, [
+      "note",
+      "search",
+      "--from-epic",
+      "billing",
+      "--from",
+      "boss-billing",
+      "--subject",
+      "shared schema",
+      "--file",
+      bodyFile("I changed db/schema.ts\n"),
+    ]);
+    expect(sent.code).toBe(0);
+    expect(sent.stdout).toContain("n001");
+    expect(sent.stdout).toContain('"boss-search"');
+
+    const file = path.join(root, ".claude", "epics", "search", "inbox", "n001-from-billing.md");
+    const content = fs.readFileSync(file, "utf8");
+    expect(sent.stdout).toContain(file);
+    expect(content).toContain("I changed db/schema.ts");
+    expect(content).toContain("From epic: billing");
+    expect(content).toContain("From session: boss-billing");
+    expect(content).toContain("Subject: shared schema");
+    expect(stateOf(root, "search").log).toEqual([
+      expect.objectContaining({
+        kind: "note",
+        id: "n001",
+        from_epic: "billing",
+        from: "boss-billing",
+        subject: "shared schema",
+        file: "inbox/n001-from-billing.md",
+      }),
+    ]);
+    expect(stateOf(root, "billing").log).toEqual([]); // the sender's own inbox is untouched
+
+    // Its own counter, separate from reports, and ids never repeat; stdin works with "-".
+    const second = epic(root, ["note", "search", "--from-epic", "billing", "--file", "-"], "again\n");
+    expect(second.stdout).toContain("n002");
+    expect(epic(root, ["list"]).stdout).toContain("search  manager: boss-search  unacknowledged: 2");
+  });
+
+  it("refuses an unknown receiver or sender, a note to its own epic, and an empty body, writing nothing", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search"]);
+    const body = bodyFile("hello\n");
+
+    const cases: Array<[string[], string]> = [
+      [["note", "nope", "--from-epic", "billing", "--file", body], "nope"],
+      [["note", "../escape", "--from-epic", "billing", "--file", body], "../escape"],
+      [["note", "search", "--from-epic", "ghost", "--file", body], "ghost"],
+      [["note", "search", "--from-epic", "search", "--file", body], "search"],
+      [["note", "search", "--from-epic", "billing", "--file", bodyFile("  \n")], "empty"],
+      [["note", "search", "--file", body], "Usage"],
+    ];
+    for (const [args, named] of cases) {
+      const r = epic(root, args);
+      expect(r.code, args.join(" ")).toBe(1);
+      expect(r.stderr).toContain(named);
+    }
+    expect(stateOf(root, "search").log).toEqual([]);
+    expect(fs.readdirSync(path.join(root, ".claude", "epics", "search", "inbox"))).toEqual([]);
+  });
+
+  // A stdin held OPEN and never written: a refusal checked only after reading the body would hang.
+  for (const [label, to, fromEpic] of [
+    ["unknown receiver", "nope", "billing"],
+    ["unknown sender", "search", "ghost"],
+    ["own epic", "search", "search"],
+  ]) {
+    it(`note --file - with stdin held open: ${label} exits 1 promptly`, async () => {
+      const root = await installed();
+      epic(root, ["create", "billing"]);
+      epic(root, ["create", "search"]);
+      const script = path.join(root, ".claude", "scripts", "maestro-epic.cjs");
+      const result = await new Promise<{ code: number | null; timedOut: boolean }>((resolve) => {
+        const child = spawn("node", [script, "note", to, "--from-epic", fromEpic, "--file", "-"], {
+          env: env(root, SESSION_A),
+          stdio: ["pipe", "pipe", "pipe"], // stdin stays open; never ended
+        });
+        const timer = setTimeout(() => {
+          child.kill("SIGKILL");
+          resolve({ code: null, timedOut: true });
+        }, 5000);
+        child.on("close", (code) => {
+          clearTimeout(timer);
+          resolve({ code, timedOut: false });
+        });
+      });
+      expect(result.timedOut).toBe(false);
+      expect(result.code).toBe(1);
+      expect(stateOf(root, "search").log).toEqual([]);
+    });
+  }
+
+  // The route check must not short-circuit a VALID note: stdin that arrives late, in pieces, is
+  // still read to EOF and written whole.
+  it("a valid note --file - waits for a stdin written late and in chunks, then writes the whole body", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search", "--manager", "boss-search"]);
+    const script = path.join(root, ".claude", "scripts", "maestro-epic.cjs");
+    const result = await new Promise<{ code: number | null; out: string; timedOut: boolean }>((resolve) => {
+      const child = spawn("node", [script, "note", "search", "--from-epic", "billing", "--file", "-"], {
+        env: env(root, SESSION_A),
+        stdio: ["pipe", "pipe", "pipe"],
+      });
+      let out = "";
+      child.stdout.on("data", (d) => (out += d));
+      const timer = setTimeout(() => {
+        child.kill("SIGKILL");
+        resolve({ code: null, out, timedOut: true });
+      }, 5000);
+      child.on("close", (code) => {
+        clearTimeout(timer);
+        resolve({ code, out, timedOut: false });
+      });
+      setTimeout(() => child.stdin.write("first part\n"), 200);
+      setTimeout(() => {
+        child.stdin.write("second part\n");
+        child.stdin.end();
+      }, 400);
+    });
+    expect(result.timedOut).toBe(false);
+    expect(result.code).toBe(0);
+    expect(result.out).toContain('"boss-search"');
+    const content = fs.readFileSync(
+      path.join(root, ".claude", "epics", "search", "inbox", "n001-from-billing.md"),
+      "utf8"
+    );
+    expect(content).toContain("first part\nsecond part");
+    expect(stateOf(root, "search").log).toEqual([expect.objectContaining({ kind: "note", id: "n001" })]);
+  });
+
+  it("note --file - with an empty stdin passes the route check, then is refused as empty, writing nothing", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search"]);
+    const r = epic(root, ["note", "search", "--from-epic", "billing", "--file", "-"], " \n");
+    expect(r.code).toBe(1);
+    expect(r.stderr).toContain("empty");
+    expect(stateOf(root, "search").log).toEqual([]);
+    expect(fs.readdirSync(path.join(root, ".claude", "epics", "search", "inbox"))).toEqual([]);
+  });
+
+  it("note --file <relative path> resolves against the caller's cwd", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search"]);
+    const cwd = path.join(tmp, "work");
+    fs.mkdirSync(cwd, { recursive: true });
+    fs.writeFileSync(path.join(cwd, "body.md"), "relative body\n");
+    const res = spawnSync(
+      "node",
+      [
+        path.join(root, ".claude", "scripts", "maestro-epic.cjs"),
+        "note",
+        "search",
+        "--from-epic",
+        "billing",
+        "--file",
+        "body.md",
+      ],
+      { encoding: "utf8", cwd, env: env(root, SESSION_A), input: "" }
+    );
+    expect(res.status, res.stderr).toBe(0);
+    const content = fs.readFileSync(
+      path.join(root, ".claude", "epics", "search", "inbox", "n001-from-billing.md"),
+      "utf8"
+    );
+    expect(content).toContain("relative body");
+  });
+
+  it("a note sent while the receiver has no manager waits unacknowledged for a resumed manager, then is acked once", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "billing", "--manager", "boss-billing"]);
+    epic(root, ["create", "search"]);
+    epic(root, ["link", "search", "001-a.md"]);
+    epic(root, ["report", "--task", "001-a.md"], "worker report\n");
+
+    const sent = epic(root, [
+      "note",
+      "search",
+      "--from-epic",
+      "billing",
+      "--from",
+      "boss-billing",
+      "--file",
+      bodyFile("heads up\n"),
+    ]);
+    expect(sent.code).toBe(0);
+    expect(sent.stdout).toContain("No manager session is recorded");
+
+    // The manager resumes later: the report and the note are both waiting, oldest first.
+    epic(root, ["set-manager", "search", "boss-search"]);
+    const shown = JSON.parse(epic(root, ["show", "search", "--json"]).stdout);
+    expect(shown.unacknowledged.map((e: { id: string }) => e.id)).toEqual(["r001", "n001"]);
+    expect(shown.unacknowledged[1]).toMatchObject({ kind: "note", from_epic: "billing" });
+    const noteLine = `n001  from epic billing (boss-billing)  ${path.join(root, ".claude", "epics", "search", "inbox", "n001-from-billing.md")}`;
+    expect(epic(root, ["show", "search"]).stdout).toContain(noteLine);
+    expect(epic(root, ["show", "search"]).stdout).toContain("r001  001-a.md");
+    const reports = epic(root, ["reports", "search"]).stdout;
+    expect(reports).toContain(noteLine);
+    expect(reports.indexOf("r001")).toBeLessThan(reports.indexOf("n001"));
+
+    expect(epic(root, ["ack", "search", "n001", "--by", "boss-search"]).stdout).toContain("acknowledged n001");
+    expect(epic(root, ["ack", "search", "n001"]).stdout).toContain("already acknowledged");
+    expect(epic(root, ["ack", "search", "n099"]).code).toBe(1);
+    const after = JSON.parse(epic(root, ["show", "search", "--json"]).stdout);
+    expect(after.unacknowledged.map((e: { id: string }) => e.id)).toEqual(["r001"]);
+    expect(epic(root, ["reports", "search"]).stdout).not.toContain("n001");
+    expect(stateOf(root, "search").log.filter((e: { kind: string }) => e.kind === "ack")).toHaveLength(1);
+  });
+
+  it("show lists the blockedBy edges that cross into another epic, in both directions", async () => {
+    const root = await installed();
+    const write = (name: string, blockers: string[]) => {
+      fs.mkdirSync(tasksDir(root), { recursive: true });
+      const refs = blockers.length ? blockers.map((b) => `- \`${b}\``).join("\n") : "None";
+      fs.writeFileSync(path.join(tasksDir(root), name), `# ${name}\n\n## Blocked by\n\n${refs}\n`);
+    };
+    write("001-schema.md", []);
+    write("002-api.md", ["001-schema.md"]); // billing waits on search
+    write("003-index.md", ["002-api.md"]); // search waits on billing
+    write("004-loose.md", ["002-api.md"]); // a task in no epic waits on billing
+    write("005-done.md", []);
+    write("006-uses-done.md", ["005-done.md"]); // blocker done: no live dependency
+    expect(status(root, ["sync"]).code).toBe(0);
+    expect(status(root, ["done", "005-done.md"]).code).toBe(0);
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search"]);
+    epic(root, ["link", "billing", "002-api.md", "006-uses-done.md"]);
+    epic(root, ["link", "search", "001-schema.md", "003-index.md", "005-done.md"]);
+
+    const shown = JSON.parse(epic(root, ["show", "billing", "--json"]).stdout);
+    expect(shown.crossEpic).toEqual([
+      { task: "002-api.md", blockedBy: "001-schema.md", otherEpic: "search", direction: "blocked-by-other" },
+      { task: "003-index.md", blockedBy: "002-api.md", otherEpic: "search", direction: "blocks-other" },
+      { task: "004-loose.md", blockedBy: "002-api.md", otherEpic: null, direction: "blocks-other" },
+    ]);
+    const text = epic(root, ["show", "billing"]).stdout;
+    expect(text).toContain("cross-epic dependencies (3):");
+    // The other side sees the same two epic-to-epic edges, mirrored; the epic-less 004 is not its edge.
+    expect(JSON.parse(epic(root, ["show", "search", "--json"]).stdout).crossEpic).toEqual([
+      { task: "002-api.md", blockedBy: "001-schema.md", otherEpic: "billing", direction: "blocks-other" },
+      { task: "003-index.md", blockedBy: "002-api.md", otherEpic: "billing", direction: "blocked-by-other" },
+    ]);
+    expect(text).toContain("002-api.md  blocked by 001-schema.md (epic search)");
+    expect(text).toContain("002-api.md  blocks 003-index.md (epic search)");
+    expect(text).toContain("002-api.md  blocks 004-loose.md (no epic)");
+  });
+
+  it("report and note ids keep separate counters that never collide, and acks never free an id for reuse", async () => {
+    const root = await withTasks("001-a.md", "002-b.md", "003-c.md");
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search", "--manager", "boss-search"]);
+    epic(root, ["link", "search", "001-a.md", "002-b.md", "003-c.md"]);
+    const note = (text: string) => epic(root, ["note", "search", "--from-epic", "billing", "--file", "-"], text);
+
+    // Interleaved: each kind counts on its own.
+    expect(epic(root, ["report", "--task", "001-a.md"], "one\n").stdout).toContain("r001");
+    expect(note("first\n").stdout).toContain("n001");
+    expect(epic(root, ["report", "--task", "002-b.md"], "two\n").stdout).toContain("r002");
+    expect(note("second\n").stdout).toContain("n002");
+
+    // Acking r001 acks only r001, never the note that shares its number; one call can mix both kinds.
+    epic(root, ["ack", "search", "r001"]);
+    expect(
+      stateOf(root, "search")
+        .log.filter((e: { kind: string }) => e.kind === "ack")
+        .map((e: { id: string }) => e.id)
+    ).toEqual(["r001"]);
+    const acked = epic(root, ["ack", "search", "n001", "n002", "r002"]);
+    expect(acked.code).toBe(0);
+    expect(JSON.parse(epic(root, ["show", "search", "--json"]).stdout).unacknowledged).toEqual([]);
+
+    // With everything acknowledged, the next ids still move forward rather than restarting.
+    expect(note("third\n").stdout).toContain("n003");
+    expect(epic(root, ["report", "--task", "003-c.md"], "three\n").stdout).toContain("r003");
+
+    const inbox = fs.readdirSync(path.join(root, ".claude", "epics", "search", "inbox")).sort();
+    expect(inbox).toEqual([
+      "n001-from-billing.md",
+      "n002-from-billing.md",
+      "n003-from-billing.md",
+      "r001-001-a.md",
+      "r002-002-b.md",
+      "r003-003-c.md",
+    ]);
+    // Every file is still its own: a later write never overwrote an earlier one.
+    const read = (f: string) => fs.readFileSync(path.join(root, ".claude", "epics", "search", "inbox", f), "utf8");
+    expect(read("n001-from-billing.md")).toContain("first");
+    expect(read("n003-from-billing.md")).toContain("third");
+    expect(read("r001-001-a.md")).toContain("one");
+    const ids = stateOf(root, "search")
+      .log.filter((e: { kind: string }) => e.kind !== "ack")
+      .map((e: { id: string }) => e.id);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("a note id belongs to the receiving epic only: the sender cannot acknowledge it", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search"]);
+    epic(root, ["note", "search", "--from-epic", "billing", "--file", "-"], "hi\n");
+    const r = epic(root, ["ack", "billing", "n001"]);
+    expect(r.code).toBe(1);
+    expect(r.stderr).toContain("n001");
+    expect(stateOf(root, "billing").log).toEqual([]);
+    expect(JSON.parse(epic(root, ["show", "search", "--json"]).stdout).unacknowledged).toHaveLength(1);
+  });
+
+  it("a refused note leaves the sender's epic untouched too, and an unreadable --file writes nothing", async () => {
+    const root = await installed();
+    epic(root, ["create", "billing"]);
+    epic(root, ["create", "search"]);
+    const snapshot = (slug: string) => fs.readFileSync(path.join(root, ".claude", "epics", slug, "state.json"), "utf8");
+    const before = { billing: snapshot("billing"), search: snapshot("search") };
+
+    for (const args of [
+      ["note", "search", "--from-epic", "search", "--file", bodyFile("x\n")],
+      ["note", "nope", "--from-epic", "billing", "--file", bodyFile("x\n")],
+      ["note", "search", "--from-epic", "billing", "--file", path.join(tmp, "does-not-exist.md")],
+      ["note", "search", "--from-epic", "billing", "--file"], // --file with no value: usage, not stdin
+    ]) {
+      const r = epic(root, args);
+      expect(r.code, args.join(" ")).toBe(1);
+    }
+    expect(snapshot("billing")).toBe(before.billing);
+    expect(snapshot("search")).toBe(before.search);
+    for (const slug of ["billing", "search"]) {
+      expect(fs.readdirSync(path.join(root, ".claude", "epics", slug, "inbox"))).toEqual([]);
+      expect(fs.readdirSync(path.join(root, ".claude", "epics", slug)).sort()).toEqual([
+        "EPIC.md",
+        "inbox",
+        "state.json",
+      ]);
+    }
+    expect(fs.existsSync(path.join(root, ".claude", "epics", "nope"))).toBe(false);
+  });
+
+  it("concurrent note and report writers to the same epic keep every entry and every file", async () => {
+    const tasks = Array.from({ length: 6 }, (_, i) => `${String(i + 1).padStart(3, "0")}-t${i + 1}.md`);
+    const root = await withTasks(...tasks);
+    for (const s of ["billing", "search", "infra"]) epic(root, ["create", s]);
+    epic(root, ["link", "search", ...tasks]);
+
+    // Real separate processes started together, all writing to search's state.json and inbox.
+    const script = path.join(root, ".claude", "scripts", "maestro-epic.cjs");
+    const launch = (args: string[], body: string) =>
+      new Promise<{ code: number | null; out: string; err: string }>((resolve) => {
+        const child = spawn("node", [script, ...args], { env: env(root, SESSION_A), stdio: ["pipe", "pipe", "pipe"] });
+        let out = "";
+        let err = "";
+        child.stdout.on("data", (d) => (out += d));
+        child.stderr.on("data", (d) => (err += d));
+        child.on("close", (code) => resolve({ code, out, err }));
+        child.stdin.end(body);
+      });
+    const jobs = [
+      ...tasks.map((t) => launch(["report", "--task", t], `report body ${t}\n`)),
+      ...Array.from({ length: 3 }, (_, i) =>
+        launch(["note", "search", "--from-epic", "billing", "--file", "-"], `billing note ${i}\n`)
+      ),
+      ...Array.from({ length: 3 }, (_, i) =>
+        launch(["note", "search", "--from-epic", "infra", "--file", "-"], `infra note ${i}\n`)
+      ),
+    ];
+    const results = await Promise.all(jobs);
+    for (const r of results) expect(r.code, r.err).toBe(0);
+
+    const log = stateOf(root, "search").log as Array<{ kind: string; id: string; file: string }>;
+    const reports = log
+      .filter((e) => e.kind === "report")
+      .map((e) => e.id)
+      .sort();
+    const notes = log
+      .filter((e) => e.kind === "note")
+      .map((e) => e.id)
+      .sort();
+    expect(reports).toEqual(["r001", "r002", "r003", "r004", "r005", "r006"]);
+    expect(notes).toEqual(["n001", "n002", "n003", "n004", "n005", "n006"]);
+
+    // Each log entry's file exists, and the twelve bodies are all present exactly once.
+    const dir = path.join(root, ".claude", "epics", "search");
+    const bodies = log.map((e) => fs.readFileSync(path.join(dir, e.file), "utf8"));
+    expect(fs.readdirSync(path.join(dir, "inbox"))).toHaveLength(12);
+    for (const t of tasks) expect(bodies.filter((b) => b.includes(`report body ${t}`))).toHaveLength(1);
+    for (const from of ["billing", "infra"])
+      for (let i = 0; i < 3; i++) expect(bodies.filter((b) => b.includes(`${from} note ${i}`))).toHaveLength(1);
+    expect(fs.existsSync(path.join(dir, ".lock"))).toBe(false);
+    expect(JSON.parse(epic(root, ["list", "--json"]).stdout)).toContainEqual({
+      slug: "search",
+      manager: null,
+      unacknowledged: 12,
+    });
+  });
+});
+
 describe("to-maestro-tasks linking", () => {
   const writer = (root: string, args: string[]) =>
     spawnSync("node", [path.join(PLUGIN_ROOT, "scripts", "maestro-write-tasks.cjs"), ...args], {

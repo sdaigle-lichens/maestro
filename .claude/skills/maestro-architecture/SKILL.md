@@ -3,8 +3,8 @@ name: maestro-architecture
 description: "Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract and the three-tier resolution (project file, global sqlite store, bundled seed) behind each route's handoff_details protocol, how a route's payload travels on an agent channel (`.claude/channels/<receiver>/<sender>.1.md`) rather than through the orchestrator's own context, the run_id stamp that guards a delivery's freshness, the orchestrator skill's managed regions and its optional config-driven Step 1 gates and Step 4 task-routing nudge (`046` — both injected dynamic context, the same third delivery channel beside hooks and template prose), the dual-registered hook that auto-enables that nudge on a session's first `/to-maestro-tasks` invocation (`047`), the separate always-on Step 4 prompt asking once about `/maestro-post-mortem` after a rough session (`049` — static template prose, not script-injected, not config-gated), and the config + session state on disk: maestro.json, plus the PER-SESSION directory <project>/.claude/maestro_sessions/<session_id>/{log.jsonl,session.json,tasks.json} (`064`) that replaced the three flat per-project files, and how a caller resolves which session it is (payload session_id -> CLAUDE_CODE_SESSION_ID -> null). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, where a route's handoff_details payload shape comes from and how to add or change one, why a channel payload wasn't delivered or was delivered late, why /maestro ran (or skipped) the confidence and design gates, why a condition-edge loop-back resumed an agent instead of spawning a fresh Task, why a resumed subagent's injected context is five blocks shorter than a first run's (`040`), why a hand-edited config's duplicate agent type is reported as a banner, a `/maestro-update` warning and an install-report line rather than repaired (`041`), why two concurrent Claude Code sessions in the same project no longer overwrite each other's log, active workflow, run_id or task coverage (`064`), how team-meeting mode changes what the hooks do for a participant (the session.json `meeting` flag, meeting_leftovers and the stamp skip), or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill."
 metadata:
   type: concept-skill
-  version: "1.20"
-  last-update: 05aadeb4cfc7371917375e0433c73c1c77722a76
+  version: "1.21"
+  last-update: f822fad1beba7cd0392f523526199eda185ad2d5
 ---
 
 # Maestro Runtime Architecture
@@ -160,9 +160,12 @@ inside a worker session, and only for a task that has an epic:
 - **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and
   the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the
   user in the worker's own session.
+- **Managers notify each other through notes (`085`).** A manager writes `maestro-epic.cjs note`
+  into another epic's inbox first, then sends one SendMessage line; the receiver acks it like a
+  report. Another manager's note is never the user's approval either.
 
-Everything else (the tracker's `epic` field, the inbox, the write discipline, why session names)
-is in `task-queue`'s `sub-concepts/epics.md`.
+Everything else (the tracker's `epic` field, the inbox, the write discipline, why session names,
+what counts as affecting another epic) is in `task-queue`'s `sub-concepts/epics.md`.
 
 ## Things that bite
 
