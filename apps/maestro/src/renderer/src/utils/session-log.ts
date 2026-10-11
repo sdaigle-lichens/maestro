@@ -62,7 +62,11 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
   for (let i = 0; i < entries.length; i++) {
     const entry = entries[i];
 
-    if (!current || entry.origin !== current.origin) {
+    // A `channel_delivery` never opens a segment of its own: its origin is always "main_session"
+    // whoever received it, and since `088` a resumed run's delivery is logged at its SubagentStop,
+    // between the run's own tool calls and its handoff — letting it segment would split that card
+    // into a status-less half and a lone handoff card. It attaches by agent_id in the second pass.
+    if (!current || (entry.origin !== current.origin && entry.kind !== "channel_delivery")) {
       current = {
         id: instances.length,
         origin: entry.origin,
@@ -128,6 +132,7 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
           receiver: entry.receiver ?? "",
           agent_id: entry.agent_id,
           content: entry.content ?? "",
+          ...(entry.via === "resume" ? { via: "resume" as const } : {}),
         },
       });
       deliveriesByAgentId.set(entry.agent_id, list);

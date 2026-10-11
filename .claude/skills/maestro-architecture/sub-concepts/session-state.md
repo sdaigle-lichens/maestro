@@ -88,7 +88,9 @@ A `dispatch` or `handoff` entry for a team-meeting participant also carries `mee
 keeps it out of resume targets and the post-mortem timeline (see `team-meeting.md`).
 
 `session.json` may also carry `meeting` (an active team meeting) and `meeting_leftovers` (lane files
-an ended meeting left unstamped), both from `meeting-mode.ts`. Every `session.json` writer spreads
+an ended meeting left unstamped), both from `meeting-mode.ts`, and `resume_deliveries`
+(`agent_id` → `{file, sender, run_id}[]`, lane files a resumed run was handed by path — written by
+`maestro-resume-target.cjs`, cleared at that run's `SubagentStop`, `088`, see `agent-resume.md`). Every `session.json` writer spreads
 the existing object; `maestro-set-session-workflow.cjs` is the only one that removes a key, ending
 the meeting through `closeMeeting`.
 

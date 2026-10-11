@@ -63,7 +63,8 @@ Route on each subagent's final `HANDOFF:` line:
   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" "<agent type>"
   ```
 
-  A printed `agent_id` means resume it with `SendMessage` to that `agent_id` (never by name), so it keeps its memory. Empty output or a refused `SendMessage` means a cold `Task`, silently.
+  A first line that is a bare `agent_id` means resume it with `SendMessage` to that `agent_id` (never by name), so it keeps its memory. A resumed agent gets no injected channel content, so name every `deliver: <file>` line's path in that `SendMessage` and tell it to Read each one first (never read them yourself). Empty output, a first line starting `missing:`, or a refused `SendMessage` means there is no agent to resume: start a cold `Task`, silently.
+  A `missing: <file> (from <sender>)` line means the payload this loop-back needs isn't there. Don't resume or start anyone yet: `SendMessage` the sender's `agent_id` to write that file, then run the command again and act on its new output.
 
 **After each subagent returns, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" handoff-issues`.** It prints and clears what the `SubagentStop` hook found:
 - a missing `HANDOFF:` line, or a FAIL verdict ending `HANDOFF: success` (invalid: a real defect takes its matching condition edge). Never default to `success`: pick the edge that matches the defect, or resume the agent for a corrected line, and say which.

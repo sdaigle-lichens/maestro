@@ -180,6 +180,20 @@ export {
   type PayloadRoute,
 } from "../handoff-payload.js";
 
+// A resumed loop-back target gets its lane by path through the orchestrator's SendMessage, since a
+// resume never receives SubagentStart's additionalContext (`088`). `fs`/`path` only.
+export {
+  pendingResumeDeliveries,
+  recordResumeDeliveries,
+  retireResumeDeliveries,
+  latestWorkflowHandoff,
+  expectedLoopbackPayloads,
+  missingLoopbackPayload,
+  dropResolvedMissingPayloads,
+  appendHandoffIssue,
+  type LatestHandoff,
+} from "../resume-delivery.js";
+
 // Project runtime vs plugin version, semantically (`087`) — the readiness check and
 // `maestro-install.js`'s downgrade refusal both ask it; the app's refreshStaleRuntime too. Pure.
 export { compareRuntimeVersions, runtimeNeedsRefresh, type RuntimeVersionVerdict } from "../runtime-version.js";

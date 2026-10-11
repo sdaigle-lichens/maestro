@@ -261,6 +261,13 @@ export interface MaestroSession {
    * Read-and-cleared by `maestro-task-status.cjs handoff-issues`.
    */
   handoff_issues?: HandoffIssueRecord[];
+  /**
+   * Channel files handed to a RESUMED agent by path (`088`), keyed by that agent's `agent_id`.
+   * Written by `maestro-resume-target.cjs` (which prints them as `deliver:` lines for the
+   * orchestrator's SendMessage), retired and removed by the resumed run's own SubagentStop. A resume
+   * never receives SubagentStart's `additionalContext`, so the file must survive until then.
+   */
+  resume_deliveries?: Record<string, ResumeDelivery[]>;
   /** The orchestrator's own success-path tracker, the fallback when TaskCreate is unavailable (`083`). */
   plan?: SessionPlan | null;
 }
@@ -276,10 +283,22 @@ export interface HandoffIssueRecord {
   ts: string;
   agent: string;
   agent_id: string;
-  kind: "missing" | "contradiction";
+  /** `missing_payload` (`087`/`088`): a route's channel file was not written, or a loop-back's expected file is absent. */
+  kind: "missing" | "contradiction" | "missing_payload";
   verdict: "SUCCESS" | "FAIL" | null;
   label: string | null;
   message: string;
+  /** Project-relative channel files a `missing_payload` issue is about. */
+  files?: string[];
+}
+
+/** One channel file handed to a resumed agent by path (`088`). */
+export interface ResumeDelivery {
+  /** Project-relative, e.g. `.claude/channels/backend/reviewer.1.md`. */
+  file: string;
+  sender: string;
+  /** The session `run_id` the file was stamped with when it was handed over. */
+  run_id: string;
 }
 
 export type PlanStepStatus = "pending" | "done";

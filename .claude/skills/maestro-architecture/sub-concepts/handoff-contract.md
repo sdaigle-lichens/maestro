@@ -101,11 +101,14 @@ LAST `kind:"dispatch"` log entry (`runStartedAt`, so a resume is measured from i
 checked only when `checkHandoff` found nothing, and travels the same way as the other two, plus
 `files[]` on the log entry and `session.json`. The orchestrator **resumes** the sender to write the
 named file, never skips it and never dispatches the receiver without it. Prevention side: the
-injected block (`payloadRequirement`) states the write as REQUIRED before the `HANDOFF:` line and
-reaches every pass, resumes included (see `agent-resume.md`).
+injected block (`payloadRequirement`) states the write as REQUIRED before the `HANDOFF:` line on
+every pass — but a resume never sees it, since Claude Code drops a resume's `additionalContext`
+(`088`, see `agent-resume.md`). Receiving side (`088`): `maestro-resume-target.cjs` records a
+`missing_payload` issue (and prints `missing:`) when a loop-back's expected payload is not in the
+target's lane, whether the target is then resumed or cold.
 
 **It never sees the payload (`036`).** The sender wrote it straight to the receiver's channel file,
-and the receiver's own `SubagentStart` inlines it — the orchestrator's job is routing only. The one
+and the receiver's own `SubagentStart` inlines it (a resumed receiver is instead handed the path, `088`) — the orchestrator's job is routing only. The one
 place the orchestrator still touches a channel file is a **skill step** in the success path: a skill
 node has no `SubagentStart` of its own, so if it needs the upstream payload the orchestrator reads
 `.claude/channels/<downstream receiver>/<upstream sender>.*.md` itself, **without retiring it** —

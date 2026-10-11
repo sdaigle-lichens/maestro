@@ -40,6 +40,7 @@ interface SessionLogEntry {
   sender?: string; // bare agent name that wrote the payload
   receiver?: string; // bare agent name it was delivered to
   content?: string; // the payload body, inlined verbatim (no stamp — that's stripped before logging)
+  via?: "resume"; // `088`: handed to a RESUMED run by path, logged at its SubagentStop (maestro-subagent-log.js), not SubagentStart
 }
 ```
 
@@ -76,7 +77,7 @@ interface Instance {
 }
 ```
 
-`ChannelDelivery` is `{ sender, receiver, agent_id, content }` — the shape the detail panel's
+`ChannelDelivery` is `{ sender, receiver, agent_id, content, via? }` — the shape the detail panel's
 "Delivered from @`<sender>`" block renders (`session-log-detail.tsx`). Always an array, even when
 empty, so a template never has to special-case "no deliveries" from "not yet computed".
 

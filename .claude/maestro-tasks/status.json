@@ -425,7 +425,7 @@
     "blockedBy": []
   },
   "088-deliver-a-loop-back-payload-to-a-resumed-agent-and-flag-it-when-missing.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   }
 }

@@ -22,10 +22,13 @@ the starting agent's BARE type in `.claude/channels/<bareAgentType>/`:
 - anything from a different or absent run is only **mentioned** (sender, age, path), never inlined.
 
 It is gated on nothing but the lane having files — a filesystem fact, not a workflow-routing one,
-which is what lets a gap reach `@scribe` on a run whose workflow never wired a route to it. It fires
-regardless of first-run/resumed, because a payload may be new since the agent's last run. The one
-exception is a team-meeting participant: no delivery at all, so nothing is inlined or retired (see
-`team-meeting.md`).
+which is what lets a gap reach `@scribe` on a run whose workflow never wired a route to it. Two
+exceptions: a team-meeting participant gets no delivery at all, so nothing is inlined or retired
+(see `team-meeting.md`); and a **resumed** run (`088`) is neither inlined nor retired, because
+Claude Code drops a resume's `additionalContext`. Its current-run files are handed over by path —
+`maestro-resume-target.cjs` prints them as `deliver:` lines for the orchestrator's `SendMessage` and
+records them in `session.json` `resume_deliveries` — and retired at that run's own `SubagentStop`,
+logged as `channel_delivery` with `via:"resume"` (see `agent-resume.md`).
 
 ## Stamping and lifecycle
 
@@ -62,8 +65,9 @@ about "too old".
   for the current one. If a delivery that should have inlined is only being *mentioned* instead,
   check the `run_id` in the file's first line against the live session's, not when the file was
   written.
-- **Retiring a channel file is `SubagentStart`'s job alone — never delete one by hand or from a
-  script.** `retire()` moves a delivered file to `.claude/channels/.consumed/<receiver>/`; it is
+- **Retiring a channel file is the hooks' job alone — `SubagentStart` on a cold start, the resumed
+  run's `SubagentStop` on a resume (`088`) — never delete one by hand or from a script.** Retiring
+  before the receiver has actually seen the file is the 085 bug. `retire()` moves a delivered file to `.claude/channels/.consumed/<receiver>/`; it is
   never removed outright until `SessionEnd`'s `sweep()` ages it out (14 days). A delivered-but-then-
   failed agent's payload is recoverable for that window rather than gone the moment it was read.
 - **The desktop app surfaces both halves of this mechanism read-only (`037`)**, and neither surface

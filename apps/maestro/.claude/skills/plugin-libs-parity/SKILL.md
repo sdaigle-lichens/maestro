@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the sixteen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.12"
-  last-update: f822fad1beba7cd0392f523526199eda185ad2d5
+  version: "1.13"
+  last-update: 9a92b6c620c588b8d59a298edf170345ddaa7593
 ---
 
 # Core ↔ plugin parity
@@ -151,6 +151,10 @@ only and every hook already requires this bundle" argument:
 - team meetings — all of `meeting-mode.ts` (`readMeeting`, `meetingFor`, `startMeeting`,
   `endMeeting`, `closeMeeting`, `meetingLeftovers`, `meetingNotice`, …) and `unstampedFilesOf`, read
   by the SubagentStart/Stop hooks, the write guard and `maestro-set-session-workflow.cjs`.
+- `088` — all of `resume-delivery.ts` (`pendingResumeDeliveries`, `recordResumeDeliveries`,
+  `retireResumeDeliveries`, `latestWorkflowHandoff`, `expectedLoopbackPayloads`,
+  `missingLoopbackPayload`, `appendHandoffIssue`), read by `maestro-resume-target.cjs` and the
+  SubagentStop hook. `fs`/`path` only; the grep is still `0`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

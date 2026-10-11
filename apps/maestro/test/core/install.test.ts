@@ -1437,7 +1437,7 @@ describe("the installed hooks actually run", () => {
       expect(resumed).toContain("`HANDOFF: success` → write `.claude/channels/test/backend.1.md`");
     });
 
-    it("still delivers a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
+    it("still names a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
       const root = makeProject("resume-warn");
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
@@ -1464,8 +1464,13 @@ describe("the installed hooks actually run", () => {
       );
       expect(resumed).toContain("⚠️ Maestro warning:");
       expect(resumed).toContain("not-a-real-workflow");
-      expect(resumed).toContain("Delivered to your channel");
-      expect(resumed).toContain("NEW SINCE THE FIRST RUN");
+      // `088`: a resume never receives this context, so the payload is named by path (the
+      // orchestrator's SendMessage carries it) — never inlined, and left in the lane, not retired.
+      expect(resumed).toContain("In your channel from this run");
+      expect(resumed).toContain("`.claude/channels/backend/test.1.md`");
+      expect(resumed).not.toContain("Delivered to your channel");
+      expect(resumed).not.toContain("NEW SINCE THE FIRST RUN");
+      expect(fs.existsSync(path.join(laneDir, "test.1.md"))).toBe(true);
     });
 
     it("classifies two agents running in parallel independently — one resuming does not make the other look resumed", async () => {

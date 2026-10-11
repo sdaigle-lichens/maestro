@@ -504,6 +504,114 @@ describe("buildInstances — resumed-agent correlation bounded by log position (
   });
 });
 
+describe("buildInstances — a resumed run's delivery logged at its SubagentStop (088)", () => {
+  const dispatch = (agent: string, id: string, input: string): SessionLogEntry => ({
+    ts,
+    origin: "main_session",
+    kind: "dispatch",
+    agent,
+    agent_id: id,
+    input,
+    log: `→ ${agent}`,
+  });
+  const handoff = (origin: string, id: string, status: "success" | "condition", label: string | null): SessionLogEntry => ({
+    ts,
+    origin,
+    kind: "handoff",
+    agent_id: id,
+    status,
+    label,
+    output: `HANDOFF: ${label ?? "success"}`,
+    log: `HANDOFF: ${label ?? "success"}`,
+  });
+  const delivery = (sender: string, receiver: string, id: string, content: string, via?: "resume"): SessionLogEntry => ({
+    ts,
+    origin: "main_session",
+    kind: "channel_delivery",
+    sender,
+    receiver,
+    agent_id: id,
+    content,
+    ...(via ? { via } : {}),
+    log: `channel: ${sender} → ${receiver}`,
+  });
+
+  it("keeps the resumed run ONE card with its status, and carries via:'resume' onto delivered", () => {
+    const entries: SessionLogEntry[] = [
+      dispatch("backend", "A", "first run"),
+      { ts, origin: "backend", log: "Edit(/a)" },
+      handoff("backend", "A", "success", null),
+      { ts, origin: "main_session", log: "Bash(resume-target)" },
+      dispatch("backend", "A", "resumed run"),
+      { ts, origin: "backend", log: "Read(.claude/channels/backend/reviewer.1.md)" },
+      { ts, origin: "backend", log: "Edit(/b)" },
+      delivery("reviewer", "backend", "A", "RESUME PAYLOAD", "resume"),
+      handoff("backend", "A", "condition", "needs review"),
+    ];
+
+    const backend = buildInstances(entries).filter((i) => i.origin === "backend");
+    expect(backend).toHaveLength(2);
+    const [first, resumed] = backend;
+
+    expect(first.delivered).toEqual([]);
+    expect(resumed.status).toBe("condition");
+    expect(resumed.label).toBe("needs review");
+    expect(resumed.input).toBe("resumed run");
+    expect(resumed.entries.map((e) => e.log)).toContain("Edit(/b)");
+    expect(resumed.entries.some((e) => e.kind === "handoff")).toBe(true);
+    expect(resumed.delivered).toEqual([
+      { sender: "reviewer", receiver: "backend", agent_id: "A", content: "RESUME PAYLOAD", via: "resume" },
+    ]);
+    // No status-less backend card split off by the delivery.
+    expect(buildInstances(entries).filter((i) => i.origin === "backend" && i.status === null)).toEqual([]);
+  });
+
+  it("an ordinary cold-start delivery still lands on the receiver, with no via key, and segmentation is unchanged", () => {
+    const entries: SessionLogEntry[] = [
+      dispatch("backend", "A", "build"),
+      handoff("backend", "A", "success", null),
+      { ts, origin: "main_session", log: "Bash(x)" },
+      delivery("backend", "test", "T", "COLD"),
+      dispatch("test", "T", "test it"),
+      { ts, origin: "test", log: "Bash(npm test)" },
+      handoff("test", "T", "success", null),
+    ];
+    const instances = buildInstances(entries);
+    expect(instances.map((i) => i.origin)).toEqual(["main_session", "backend", "main_session", "test"]);
+    const test = instances.find((i) => i.origin === "test")!;
+    expect(test.delivered).toEqual([{ sender: "backend", receiver: "test", agent_id: "T", content: "COLD" }]);
+    expect("via" in test.delivered[0]).toBe(false);
+    expect(instances.find((i) => i.origin === "backend")!.delivered).toEqual([]);
+  });
+
+  it("a channel_delivery as the very first entry still opens a Main Session segment", () => {
+    const instances = buildInstances([delivery("backend", "test", "T", "X"), dispatch("test", "T", "go")]);
+    expect(instances[0].origin).toBe("main_session");
+    expect(instances[0].displayName).toBe("Main Session");
+    expect(instances).toHaveLength(1);
+  });
+
+  it("a delivery logged while another agent's segment is current does not split it, and attaches only by agent_id", () => {
+    const entries: SessionLogEntry[] = [
+      dispatch("backend", "A", "a"),
+      dispatch("frontend", "F", "f"),
+      { ts, origin: "backend", log: "Edit(/a1)" },
+      delivery("reviewer", "frontend", "F", "FOR FRONTEND", "resume"),
+      { ts, origin: "backend", log: "Edit(/a2)" },
+      handoff("backend", "A", "success", null),
+      { ts, origin: "frontend", log: "Edit(/f)" },
+      handoff("frontend", "F", "success", null),
+    ];
+    const instances = buildInstances(entries);
+    const backend = instances.filter((i) => i.origin === "backend");
+    expect(backend).toHaveLength(1);
+    expect(backend[0].status).toBe("success");
+    expect(backend[0].delivered).toEqual([]);
+    const frontend = instances.find((i) => i.origin === "frontend")!;
+    expect(frontend.delivered.map((d) => d.content)).toEqual(["FOR FRONTEND"]);
+  });
+});
+
 describe("latestContextUsage", () => {
   const e = (origin: string, extra: Partial<SessionLogEntry> = {}): SessionLogEntry => ({
     ts,

@@ -409,7 +409,19 @@ function collectReportContext(cfg, projectDir, agentType) {
       const delivered = runId ? entries.filter((e) => e.runId === runId) : [];
       const waiting = runId ? entries.filter((e) => e.runId !== runId) : entries;
 
-      if (delivered.length > 0) {
+      // `088`: a RESUME is never handed this hook's additionalContext (Claude Code runs the hook on
+      // a SendMessage resume and drops its output — task 085's backend found its lane empty because
+      // this branch had inlined the reviewer's payload into the void and retired it). So a resumed
+      // run's current-run files stay in the lane: the orchestrator names them in its SendMessage
+      // (`maestro-resume-target.cjs` prints them as `deliver:` lines and records them), and this
+      // agent's own SubagentStop retires them (maestro-subagent-log.js). Mentioned here only in
+      // case a future Claude Code does deliver resume context.
+      if (isResume && delivered.length > 0) {
+        const lines = delivered.map((e) => `- from \`${e.sender}\`: \`.claude/channels/${bareAgent}/${e.fileName}\``);
+        parts.push(
+          `In your channel from this run — Read each file before you start (it is retired when this run ends):\n${lines.join("\n")}`
+        );
+      } else if (delivered.length > 0) {
         const blocks = delivered.map((e) => `From \`${e.sender}\` (\`${e.fileName}\`):\n\n${e.body.trim()}`);
         parts.push(
           `Delivered to your channel (\`.claude/channels/${bareAgent}/\`) — inlined verbatim, nothing to re-derive:\n\n` +

@@ -57,6 +57,7 @@ __export(maestro_session_exports, {
   SESSION_TASKS_NAME: () => SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME: () => SESSION_WORKTREE_NAME,
   agentRunsFromLog: () => agentRunsFromLog,
+  appendHandoffIssue: () => appendHandoffIssue,
   appendSessionLog: () => appendSessionLog,
   bareAgentName: () => bareAgentName,
   buildRunRecord: () => buildRunRecord,
@@ -70,6 +71,7 @@ __export(maestro_session_exports, {
   collectAgentSkills: () => collectAgentSkills,
   compactMetrics: () => compact,
   compareRuntimeVersions: () => compareRuntimeVersions,
+  dropResolvedMissingPayloads: () => dropResolvedMissingPayloads,
   duplicateAgentTypes: () => duplicateAgentTypes,
   endMeeting: () => endMeeting,
   endOwnerRuns: () => endOwnerRuns,
@@ -77,6 +79,7 @@ __export(maestro_session_exports, {
   ensureSessionPaths: () => ensureSessionPaths,
   ensureSessionRunId: () => ensureSessionRunId,
   ensureSessionsRoot: () => ensureSessionsRoot,
+  expectedLoopbackPayloads: () => expectedLoopbackPayloads,
   foldRun: () => foldRun,
   formatStampedContent: () => formatStampedContent,
   handbackHandoff: () => handbackHandoff,
@@ -93,6 +96,7 @@ __export(maestro_session_exports, {
   isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
   lastHandoffLabel: () => lastHandoffLabel,
+  latestWorkflowHandoff: () => latestWorkflowHandoff,
   listSessionIds: () => listSessionIds,
   mainCheckoutRoot: () => mainCheckoutRoot,
   meetingDirFor: () => meetingDirFor,
@@ -101,6 +105,7 @@ __export(maestro_session_exports, {
   meetingNotice: () => meetingNotice,
   metricsDirFor: () => metricsDirFor,
   metricsFileFor: () => metricsFileFor,
+  missingLoopbackPayload: () => missingLoopbackPayload,
   nodeLabel: () => nodeLabel,
   ownerRunFor: () => ownerRunFor,
   ownerRunLeftovers: () => ownerRunLeftovers,
@@ -109,6 +114,7 @@ __export(maestro_session_exports, {
   payloadRequirement: () => payloadRequirement,
   payloadRoutes: () => payloadRoutes,
   payloadWrittenSince: () => payloadWrittenSince,
+  pendingResumeDeliveries: () => pendingResumeDeliveries,
   projectOwnsHook: () => projectOwnsHook,
   readJson: () => readJson,
   readLane: () => readLane,
@@ -121,6 +127,7 @@ __export(maestro_session_exports, {
   readStdin: () => readStdin,
   readWorktreePointer: () => readWorktreePointer,
   recentRunsLimit: () => recentRunsLimit,
+  recordResumeDeliveries: () => recordResumeDeliveries,
   recordRun: () => recordRun,
   recordSessionRun: () => recordSessionRun,
   removeSessionState: () => removeSessionState,
@@ -134,6 +141,7 @@ __export(maestro_session_exports, {
   resolveWorkflowName: () => resolveWorkflowName,
   resumeTarget: () => resumeTarget,
   retire: () => retire,
+  retireResumeDeliveries: () => retireResumeDeliveries,
   routesFrom: () => routesFrom,
   runStartedAt: () => runStartedAt,
   runtimeNeedsRefresh: () => runtimeNeedsRefresh,
@@ -1378,6 +1386,87 @@ function payloadWrittenSince(projectDir, route, sinceMs) {
   return stat.mtimeMs >= sinceMs - MTIME_SLACK_MS;
 }
 
+// src/core/resume-delivery.ts
+function laneFileOf(receiver, fileName) {
+  return `.claude/channels/${receiver}/${fileName}`;
+}
+function pendingResumeDeliveries(projectDir, receiver, runId) {
+  if (!runId) return [];
+  const bare = bareAgentName(receiver);
+  return readLane(projectDir, bare).filter((e) => e.runId === runId).map((e) => ({ file: laneFileOf(bare, e.fileName), sender: e.sender, run_id: runId }));
+}
+function recordResumeDeliveries(session, agentId, deliveries) {
+  const all = { ...session.resume_deliveries ?? {} };
+  if (deliveries.length > 0) all[agentId] = deliveries;
+  else delete all[agentId];
+  const next = { ...session, resume_deliveries: all };
+  if (Object.keys(all).length === 0) delete next.resume_deliveries;
+  return next;
+}
+function retireResumeDeliveries(projectDir, session, agentId, receiver) {
+  const recorded = session.resume_deliveries?.[agentId];
+  if (!agentId || !recorded || recorded.length === 0) return { session, retired: [] };
+  const bare = bareAgentName(receiver);
+  const want = new Map(recorded.map((d) => [d.file, d.run_id]));
+  const retired = [];
+  for (const e of readLane(projectDir, bare)) {
+    const runId = want.get(laneFileOf(bare, e.fileName));
+    if (runId === void 0 || e.runId !== runId) continue;
+    try {
+      retire(projectDir, bare, e);
+      retired.push(e);
+    } catch {
+    }
+  }
+  return { session: recordResumeDeliveries(session, agentId, []), retired };
+}
+function latestWorkflowHandoff(lines) {
+  let latest = null;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const e = line;
+    if (e.kind !== "handoff" || e.meeting === true || e.owner_run === true) continue;
+    if (typeof e.origin !== "string" || !e.origin || typeof e.label !== "string" || !e.label) continue;
+    latest = { agentType: e.origin, agentId: typeof e.agent_id === "string" ? e.agent_id : "", label: e.label };
+  }
+  return latest;
+}
+function expectedLoopbackPayloads(latest, senderRoutes, target) {
+  if (!latest) return [];
+  const want = latest.label.toLowerCase();
+  const receiver = bareAgentName(target);
+  return senderRoutes.filter((r) => r.label.toLowerCase() === want && r.receiver === receiver);
+}
+function missingLoopbackPayload(latest, expected, deliveries, now = /* @__PURE__ */ new Date()) {
+  const present = new Set(deliveries.map((d) => d.file));
+  const missing = expected.filter((r) => !present.has(r.channelFile));
+  if (missing.length === 0) return null;
+  const files = missing.map((r) => r.channelFile);
+  const receivers = [...new Set(missing.map((r) => r.receiver))];
+  return {
+    ts: now.toISOString(),
+    agent: latest.agentType,
+    agent_id: latest.agentId,
+    kind: "missing_payload",
+    verdict: null,
+    label: latest.label,
+    files,
+    message: `The loop-back to ${receivers.join(", ")} expects ${files.join(", ")} from this run, and it is not in the channel. Do not dispatch or resume ${receivers.join(", ")} without it: resume this agent (SendMessage to its agent_id) and ask it to write that file, then route.`
+  };
+}
+function dropResolvedMissingPayloads(issues, present) {
+  const list = Array.isArray(issues) ? issues : [];
+  const files = new Set(present.map((d) => d.file));
+  return list.filter(
+    (i) => i.kind !== "missing_payload" || !i.files || i.files.length === 0 || !i.files.every((f) => files.has(f))
+  );
+}
+function appendHandoffIssue(issues, issue) {
+  const list = Array.isArray(issues) ? issues : [];
+  const key = (i) => `${i.kind}|${i.agent_id}|${(i.files ?? []).join(",")}`;
+  return list.some((i) => key(i) === key(issue)) ? list : [...list, issue];
+}
+
 // src/core/runtime-version.ts
 var VERSION_RE = /^v?(\d+)\.(\d+)\.(\d+)(?:-([0-9A-Za-z.-]+))?(?:\+[0-9A-Za-z.-]+)?$/;
 function parse(v) {
@@ -2023,6 +2112,7 @@ function meetingNotice(meeting, agentType) {
   SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME,
   agentRunsFromLog,
+  appendHandoffIssue,
   appendSessionLog,
   bareAgentName,
   buildRunRecord,
@@ -2036,6 +2126,7 @@ function meetingNotice(meeting, agentType) {
   collectAgentSkills,
   compactMetrics,
   compareRuntimeVersions,
+  dropResolvedMissingPayloads,
   duplicateAgentTypes,
   endMeeting,
   endOwnerRuns,
@@ -2043,6 +2134,7 @@ function meetingNotice(meeting, agentType) {
   ensureSessionPaths,
   ensureSessionRunId,
   ensureSessionsRoot,
+  expectedLoopbackPayloads,
   foldRun,
   formatStampedContent,
   handbackHandoff,
@@ -2059,6 +2151,7 @@ function meetingNotice(meeting, agentType) {
   isValidSessionId,
   laneFor,
   lastHandoffLabel,
+  latestWorkflowHandoff,
   listSessionIds,
   mainCheckoutRoot,
   meetingDirFor,
@@ -2067,6 +2160,7 @@ function meetingNotice(meeting, agentType) {
   meetingNotice,
   metricsDirFor,
   metricsFileFor,
+  missingLoopbackPayload,
   nodeLabel,
   ownerRunFor,
   ownerRunLeftovers,
@@ -2075,6 +2169,7 @@ function meetingNotice(meeting, agentType) {
   payloadRequirement,
   payloadRoutes,
   payloadWrittenSince,
+  pendingResumeDeliveries,
   projectOwnsHook,
   readJson,
   readLane,
@@ -2087,6 +2182,7 @@ function meetingNotice(meeting, agentType) {
   readStdin,
   readWorktreePointer,
   recentRunsLimit,
+  recordResumeDeliveries,
   recordRun,
   recordSessionRun,
   removeSessionState,
@@ -2100,6 +2196,7 @@ function meetingNotice(meeting, agentType) {
   resolveWorkflowName,
   resumeTarget,
   retire,
+  retireResumeDeliveries,
   routesFrom,
   runStartedAt,
   runtimeNeedsRefresh,

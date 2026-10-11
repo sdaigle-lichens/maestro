@@ -53,6 +53,7 @@ const {
   ownerRunFor,
   ownerRunLeftovers,
   readLogLines,
+  retireResumeDeliveries,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -225,6 +226,40 @@ function parseHandoff(msg) {
             } catch {
               // Best-effort — never fail the agent on a payload check.
             }
+          }
+        }
+        // `088`: a RESUMED run was handed its current-run channel files by path, in the
+        // orchestrator's SendMessage (`maestro-resume-target.cjs` recorded them), because a resume
+        // never receives SubagentStart's additionalContext. This run is over, so it was delivered:
+        // retire exactly those files now, logged as `channel_delivery` BEFORE this run's handoff
+        // entry so the session-log view attaches it to this run's card.
+        if (!inMeeting && !inOwnerRun && agentId) {
+          try {
+            const before = readSession(sess.state);
+            if (before.resume_deliveries && before.resume_deliveries[agentId]) {
+              const { session: after, retired } = retireResumeDeliveries(cwd, before, agentId, agentType);
+              writeSession(sess.state, after);
+              const receiver = bareAgentName(agentType);
+              for (const e of retired) {
+                appendSessionLog(
+                  claudeDir,
+                  {
+                    ts: new Date().toISOString(),
+                    origin: "main_session",
+                    kind: "channel_delivery",
+                    sender: e.sender,
+                    receiver,
+                    agent_id: agentId,
+                    via: "resume",
+                    content: e.body.trim(),
+                    log: `channel: ${e.sender} → ${receiver} (resume)`,
+                  },
+                  p
+                );
+              }
+            }
+          } catch {
+            // Best-effort — an unretired file is still delivered to a later cold start.
           }
         }
         // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
