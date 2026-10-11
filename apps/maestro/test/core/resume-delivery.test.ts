@@ -48,7 +48,14 @@ const cfg = {
         { from: "main-session", to: "backend", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
         { from: "backend", to: "test", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
         { from: "test", to: "scribe", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
-        { from: "test", to: "backend", kind: "condition", label: "tests failed", sourceHandle: "right", targetHandle: "top" },
+        {
+          from: "test",
+          to: "backend",
+          kind: "condition",
+          label: "tests failed",
+          sourceHandle: "right",
+          targetHandle: "top",
+        },
       ],
     },
   ],
@@ -186,7 +193,10 @@ describe("a loop-back payload is delivered to a RESUMED agent by path (088)", ()
     expect(fs.existsSync(consumed(root, "backend", "test.1.md"))).toBe(true);
 
     const log = readLog(root);
-    const lastHandoff = log.map((e, i) => ({ e, i })).filter(({ e }) => e.kind === "handoff" && e.agent_id === "b1").pop()!;
+    const lastHandoff = log
+      .map((e, i) => ({ e, i }))
+      .filter(({ e }) => e.kind === "handoff" && e.agent_id === "b1")
+      .pop()!;
     const prev = log[lastHandoff.i - 1];
     expect(prev).toMatchObject({
       origin: "main_session",

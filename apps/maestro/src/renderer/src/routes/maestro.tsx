@@ -1055,10 +1055,10 @@ function InstallPage() {
 
           {status?.appBehind && (
             <Note variant="warn">
-              This project&rsquo;s runtime (<span className="font-mono">{status.appBehind.projectVersion}</span>) is newer
-              than the one this app ships (<span className="font-mono">{status.appBehind.shippedVersion}</span>), so the
-              app is the one out of date. Update the Maestro app; reinstalling from here would replace the project&rsquo;s
-              runtime with the older one.
+              This project&rsquo;s runtime (<span className="font-mono">{status.appBehind.projectVersion}</span>) is
+              newer than the one this app ships (<span className="font-mono">{status.appBehind.shippedVersion}</span>),
+              so the app is the one out of date. Update the Maestro app; reinstalling from here would replace the
+              project&rsquo;s runtime with the older one.
             </Note>
           )}
 

@@ -514,7 +514,12 @@ describe("buildInstances — a resumed run's delivery logged at its SubagentStop
     input,
     log: `→ ${agent}`,
   });
-  const handoff = (origin: string, id: string, status: "success" | "condition", label: string | null): SessionLogEntry => ({
+  const handoff = (
+    origin: string,
+    id: string,
+    status: "success" | "condition",
+    label: string | null
+  ): SessionLogEntry => ({
     ts,
     origin,
     kind: "handoff",
@@ -524,7 +529,13 @@ describe("buildInstances — a resumed run's delivery logged at its SubagentStop
     output: `HANDOFF: ${label ?? "success"}`,
     log: `HANDOFF: ${label ?? "success"}`,
   });
-  const delivery = (sender: string, receiver: string, id: string, content: string, via?: "resume"): SessionLogEntry => ({
+  const delivery = (
+    sender: string,
+    receiver: string,
+    id: string,
+    content: string,
+    via?: "resume"
+  ): SessionLogEntry => ({
     ts,
     origin: "main_session",
     kind: "channel_delivery",
