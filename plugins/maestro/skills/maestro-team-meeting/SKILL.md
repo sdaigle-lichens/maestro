@@ -19,8 +19,7 @@ workflow steps:
 
 Bash cannot be confined. The notice each participant gets limits it to read-only checks.
 
-`TM` below means `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs"`. Every
-command prints one line of JSON.
+Every `maestro-team-meeting.cjs` command prints one line of JSON.
 
 ## Workflow
 
@@ -32,8 +31,8 @@ command prints one line of JSON.
 2. **Start, then write the brief.**
 
    ```bash
-   TM start --mode <review|post-mortem> "${CLAUDE_PROJECT_DIR:-.}"
-   TM brief "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" start --mode <review|post-mortem> "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" brief "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
    - If `start` returns `ok:false`, stop. Tell the user its `reason`. A stale runtime needs `/maestro-update` first: the project's hook copies must know about meetings.
@@ -45,9 +44,9 @@ command prints one line of JSON.
    - the focus areas (default: skills and placement, handoffs, agents and tools, rules, gates, workflows).
 
    Ask with `AskUserQuestion`: go ahead, add or drop participants, narrow or widen the focus, or cancel.
-   - Participant changes: run `TM start` again with the new `--participants` list, then `TM brief` again.
+   - Participant changes: run `maestro-team-meeting.cjs start` again with the new `--participants` list, then `maestro-team-meeting.cjs brief` again.
    - A narrowed or widened focus goes into the round-1 prompt as one extra line.
-   - Cancel: run `TM end "${CLAUDE_PROJECT_DIR:-.}"` (a cancelled meeting is still closed properly), tell the user nothing changed, and stop.
+   - Cancel: run `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end "${CLAUDE_PROJECT_DIR:-.}"` (a cancelled meeting is still closed properly), tell the user nothing changed, and stop.
 
 3. **Round 1: all participants in parallel**, in a single message.
    - **Review mode:** spawn each participant with the `Agent` tool, using its agent type. Plugin agents are namespaced, e.g. `maestro:backend`.
@@ -58,7 +57,7 @@ command prints one line of JSON.
    - Keep each agent's id for round 2.
 
    **Mid-meeting checkpoint (user checkpoint 2).** After round 1, read each participant's round file
-   with `TM conflicts` (its `filed` list) and the files themselves, and show the user one short line
+   with `maestro-team-meeting.cjs conflicts` (its `filed` list) and the files themselves, and show the user one short line
    per participant: how many proposals and what they are about. This happens in your context;
    participants never talk to the user. Ask with `AskUserQuestion`:
    - **Continue**: go to step 4.
@@ -66,12 +65,12 @@ command prints one line of JSON.
      guidance and the instruction to rewrite its own `round-1/<agent>.json` (the full list). It is one
      more turn, under the same meeting rules and notice, with the meeting still open. Then show the
      positions again.
-   - **Stop**: run `TM end "${CLAUDE_PROJECT_DIR:-.}"`, tell the user nothing was applied, and stop. Do not tally.
+   - **Stop**: run `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end "${CLAUDE_PROJECT_DIR:-.}"`, tell the user nothing was applied, and stop. Do not tally.
 
 4. **Find conflicts.**
 
    ```bash
-   TM conflicts "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" conflicts "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
    - If a participant has no file, or its file is in `errors`, `SendMessage` it once with the error. Do not retry beyond that.
@@ -84,11 +83,11 @@ command prints one line of JSON.
 6. **Tally.**
 
    ```bash
-   TM tally "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" tally "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
    It writes `decision.md` and `decision.json` and returns rows with a tier:
-   - `auto`: applied by `TM apply-placement` without asking (unless the user vetoes it).
+   - `auto`: applied by `maestro-team-meeting.cjs apply-placement` without asking (unless the user vetoes it).
    - `approval`: needs the user's approval.
    - `blocked`: report its `note` to the user. Examples: a plugin agent cannot be edited until forked (propose `agent.fork` first, then re-run the meeting); a rule listed in maestro.json cannot be deleted or folded into an agent (propose `rule.move`, or use the app's `/rules` view).
 
@@ -100,7 +99,7 @@ command prints one line of JSON.
 8. **End the meeting before applying anything:**
 
    ```bash
-   TM end "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
    This way any subagent spawned while applying changes runs normally.
@@ -108,7 +107,7 @@ command prints one line of JSON.
 9. **Apply the auto tier:**
 
    ```bash
-   TM apply-placement [--skip <vetoed ids>] "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" apply-placement [--skip <vetoed ids>] "${CLAUDE_PROJECT_DIR:-.}"
    ```
 
    It applies skill loaded/referenced moves and handoff-template edits from `decision.json`. It reads
@@ -117,12 +116,12 @@ command prints one line of JSON.
    (`skipped`, with reasons). Take the skipped rows to the user like approval rows.
 
 10. **Resolve every conflict first.** A target still in conflict is the user's choice: exactly one
-    of its proposals may be approved. Do this in the step 7 batch. `TM owner-runs` refuses otherwise.
+    of its proposals may be approved. Do this in the step 7 batch. `maestro-team-meeting.cjs owner-runs` refuses otherwise.
 
 11. **Apply the approved rows.** Ask the plan:
 
     ```bash
-    TM owner-runs --approved <approved ids> "${CLAUDE_PROJECT_DIR:-.}"
+    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs --approved <approved ids> "${CLAUDE_PROJECT_DIR:-.}"
     ```
 
     It refuses while the meeting flag is set, and returns `runs` (one per owning agent) and `main`.
@@ -135,7 +134,7 @@ command prints one line of JSON.
       When the last one has returned, clear the marker:
 
       ```bash
-      TM owner-runs-done "${CLAUDE_PROJECT_DIR:-.}"
+      node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs-done "${CLAUDE_PROJECT_DIR:-.}"
       ```
     - **`main`**: you apply these yourself with the table below. These are workflow changes, rule
       moves (`rule.move`, `rule.to-agent`), agent forks (`agent.fork`), gates, and creating or
@@ -152,13 +151,13 @@ command prints one line of JSON.
 Decision: the moderator dispatches them with the plain `Agent` tool, after `end`, **without starting
 a workflow** (starting one would only re-record session state and is not needed). An owner run is
 then an ordinary subagent run: if the session has a recorded workflow (a post-mortem after a run),
-the hooks would treat the run as a workflow step, so `TM owner-runs` writes an `owner_runs` marker
+the hooks would treat the run as a workflow step, so `maestro-team-meeting.cjs owner-runs` writes an `owner_runs` marker
 into `session.json` for the owning agents. While it is set, those agents get their skills and an
 owner-run notice, and nothing else workflow-shaped: no routing, no payload instructions, no channel
 delivery, no stamping of lane files, and their log entries carry `owner_run: true`, so they are never
 a resume target for a later loop-back. They are not write-confined: an owner run edits the files it
-owns. `TM owner-runs-done` clears the marker (so does starting a workflow) and records any lane file
-the owners left behind so it is never stamped later. A guard enforces the order: `TM owner-runs`
+owns. `maestro-team-meeting.cjs owner-runs-done` clears the marker (so does starting a workflow) and records any lane file
+the owners left behind so it is never stamped later. A guard enforces the order: `maestro-team-meeting.cjs owner-runs`
 exits with `ok:false` while the meeting flag is set.
 
 ## What does not change during the meeting

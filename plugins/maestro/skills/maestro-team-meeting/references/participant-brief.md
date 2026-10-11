@@ -1,6 +1,6 @@
 # Participant prompts
 
-Fill in `<…>` with the values from `TM start` and `TM brief`. Keep the prompts short: the brief
+Fill in `<…>` with the values from `maestro-team-meeting.cjs start` and `maestro-team-meeting.cjs brief`. Keep the prompts short: the brief
 files carry the content, and the hook injects the meeting rules on every turn.
 
 ## Round 1

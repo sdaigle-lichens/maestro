@@ -126,6 +126,10 @@ Then, for every skill you touched:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-id> --bump minor
 ```
 
+Run each `stamp` (and the `state-set` below) alone in its own Bash call, exactly as written: no
+`cd`, `;`, `&&`, pipe or redirect. A sandbox exclude rule only matches a call that is just that
+command, and the files it writes are often sandbox-protected.
+
 A skill you created in this run gets `--bump initial` instead. A skill you did not touch is not
 stamped — its `metadata.last-update` is a statement about when it was last checked against the code,
 and moving it forward for free is how a stale skill becomes invisible.
