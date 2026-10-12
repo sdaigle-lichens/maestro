@@ -784,15 +784,15 @@
     "backend": {
       "id": "backend",
       "syncedFrom": {
-        "version": 3,
-        "hash": "969f6afed8b4b15d29d894d333be67d0c4d7244ae41289386629db7c989c4cf9"
+        "version": 4,
+        "hash": "cbac5fc1c83242c90783d32f2402bbc994815ad2ac4744216ba707a43f37212c"
       }
     },
     "frontend": {
       "id": "frontend",
       "syncedFrom": {
-        "version": 3,
-        "hash": "657324cc950f6789d28bfd31d3eaf91691fc6b890617005c6c8e6d3ef2d221ca"
+        "version": 4,
+        "hash": "35df7aebc59d89f95d0f1103dc00fc92e93ce228ad68fc7dc62302336445327e"
       }
     },
     "scribe": {
@@ -805,8 +805,8 @@
     "test": {
       "id": "test",
       "syncedFrom": {
-        "version": 3,
-        "hash": "6dee3d513c6fdfd267baf4ef5e75b19abdd00511b06110c8064ea601a6a0895c"
+        "version": 4,
+        "hash": "7667e1b9e9369513674146c44872e2ae32bbfac0bc377828e7b9963c3987cc82"
       }
     }
   },
