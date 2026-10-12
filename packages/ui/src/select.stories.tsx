@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from "@storybook/react-vite";
-import { useState } from "react";
+import { useState, type ComponentProps } from "react";
 import Select from "./select";
 
 const options = [
@@ -16,15 +16,17 @@ const meta = {
 export default meta;
 type Story = StoryObj<typeof meta>;
 
+function Controlled(args: ComponentProps<typeof Select>) {
+  const [value, setValue] = useState(args.value);
+  return (
+    <div className="w-72">
+      <Select {...args} value={value} onChange={setValue} />
+    </div>
+  );
+}
+
 export const Default: Story = {
-  render: (args) => {
-    const [value, setValue] = useState(args.value);
-    return (
-      <div className="w-72">
-        <Select {...args} value={value} onChange={setValue} />
-      </div>
-    );
-  },
+  render: (args) => <Controlled {...args} />,
 };
 export const Placeholder: Story = {
   render: (args) => (

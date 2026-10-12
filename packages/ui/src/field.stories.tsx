@@ -17,6 +17,17 @@ function Controlled({ error, mono }: { error?: string | null; mono?: boolean }) 
   );
 }
 
+function ControlledTextarea() {
+  const [value, setValue] = useState("Reviews a diff for correctness and style.");
+  return (
+    <div className="w-80">
+      <Field id="desc" label="Description">
+        <Textarea id="desc" value={value} onChange={setValue} />
+      </Field>
+    </div>
+  );
+}
+
 export const Default: Story = { args: { label: "Name", children: null }, render: () => <Controlled /> };
 export const Mono: Story = { args: { label: "Name", children: null }, render: () => <Controlled mono /> };
 export const WithError: Story = {
@@ -25,14 +36,5 @@ export const WithError: Story = {
 };
 export const MultiLine: Story = {
   args: { label: "Description", children: null },
-  render: () => {
-    const [value, setValue] = useState("Reviews a diff for correctness and style.");
-    return (
-      <div className="w-80">
-        <Field id="desc" label="Description">
-          <Textarea id="desc" value={value} onChange={setValue} />
-        </Field>
-      </div>
-    );
-  },
+  render: () => <ControlledTextarea />,
 };
