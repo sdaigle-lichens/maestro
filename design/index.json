@@ -116,6 +116,32 @@
       ],
       "sourceHash": "69e8d832a3941bd59abc7c6e6a3789dca4d13155405a3a48b0a418d15a0eaabf",
       "referenceHash": "443d869c05169779fb1b34f03115253ec0165c92f2109c0e70358115f099454b"
+    },
+    {
+      "kind": "screen",
+      "name": "maestro-settings",
+      "title": "Maestro Settings",
+      "reference": "screens/maestro-settings.html",
+      "proposal": "proposals/screens/maestro-settings.html",
+      "route": "/maestro",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "0bd4ba710e87b0f5317e01ee8dc3f9fab2fa4683d641b923c31b05a12c6f9e4a",
+      "referenceHash": "ba6769be6d485843a032e838b6ea99b24ca5a4a5e94ac30a4c1a312ae996c273"
+    },
+    {
+      "kind": "screen",
+      "name": "session-log",
+      "title": "Session Log",
+      "reference": "screens/session-log.html",
+      "proposal": "proposals/screens/session-log.html",
+      "route": "/session-log",
+      "states": [
+        "Default"
+      ],
+      "sourceHash": "06682468fafc8ade75a0509e1330d601f320ce0e35d8a85fecffb750792518be",
+      "referenceHash": "1c98bb734f5607d542eb2a4075404780c4a6eb291ba2690a8c450fca9cf82ca5"
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "backend": "local",
   "reconcileRule": "canonical-wins",
-  "pluginVersion": "0.5.0",
+  "pluginVersion": "0.6.0",
   "studio": {
     "port": 3009
   },
@@ -122,15 +122,57 @@
         "apps/maestro/src/renderer/src/components/top-nav.tsx"
       ],
       "viewport": "1440x900",
-      "states": [
-        "Default"
-      ],
+      "states": ["Default"],
       "mockupPath": "design/screens/home.html",
       "proposalPath": "design/proposals/screens/home.html",
       "status": "wip",
       "lastImplementedHash": null,
       "mockupHash": "443d869c05169779fb1b34f03115253ec0165c92f2109c0e70358115f099454b",
       "sourceHash": "69e8d832a3941bd59abc7c6e6a3789dca4d13155405a3a48b0a418d15a0eaabf"
+    },
+    {
+      "name": "Maestro Settings",
+      "storybook": "web",
+      "route": "/maestro",
+      "url": "http://localhost:5173/?project=maestro#/maestro",
+      "sources": [
+        "apps/maestro/src/renderer/src/routes/maestro.tsx",
+        "apps/maestro/src/renderer/src/components/top-nav.tsx",
+        "apps/maestro/src/renderer/src/dev-stub.ts"
+      ],
+      "viewport": "1440x900",
+      "states": ["Default"],
+      "mockupPath": "design/screens/maestro-settings.html",
+      "proposalPath": "design/proposals/screens/maestro-settings.html",
+      "status": "wip",
+      "lastImplementedHash": null,
+      "mockupHash": "ba6769be6d485843a032e838b6ea99b24ca5a4a5e94ac30a4c1a312ae996c273",
+      "sourceHash": "0bd4ba710e87b0f5317e01ee8dc3f9fab2fa4683d641b923c31b05a12c6f9e4a"
+    },
+    {
+      "name": "Session Log",
+      "storybook": "web",
+      "route": "/session-log",
+      "url": "http://localhost:5173/?project=maestro#/session-log",
+      "sources": [
+        "apps/maestro/src/renderer/src/routes/session-log.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-panes.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-tabs.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-view.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-cards.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
+        "apps/maestro/src/renderer/src/components/worktree-tab-bar.tsx",
+        "apps/maestro/src/renderer/src/components/top-nav.tsx",
+        "apps/maestro/src/renderer/src/dev-stub.ts"
+      ],
+      "viewport": "1440x900",
+      "states": ["Default"],
+      "mockupPath": "design/screens/session-log.html",
+      "proposalPath": "design/proposals/screens/session-log.html",
+      "status": "approved",
+      "lastImplementedHash": "a4ea81052ec55a20aa277337de7dc716fd80400bbf03d9b79ae11fe434789947",
+      "mockupHash": "1c98bb734f5607d542eb2a4075404780c4a6eb291ba2690a8c450fca9cf82ca5",
+      "sourceHash": "06682468fafc8ade75a0509e1330d601f320ce0e35d8a85fecffb750792518be"
     }
   ]
 }

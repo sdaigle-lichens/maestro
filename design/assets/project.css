@@ -1609,7 +1609,7 @@ table th, table td { min-width: 8em; }
 #storybook-highlights-menu .menu-item { display: flex; }
 #storybook-highlights-menu .menu-item-content { display: flex; flex-direction: column; flex-grow: 1; }
 /* design-capture end */
-/* design-capture sheet 00076106f4e35108 owners=screen:home */
+/* design-capture sheet 00076106f4e35108 owners=screen:home,screen:maestro-settings,screen:session-log */
 @layer properties;
 @font-face { font-family: Inter; font-style: normal; font-weight: 300 700; font-display: swap; src: url("3100e775e8616cd2.woff2") format("woff2"); unicode-range: U+0-FF, U+131, U+152-153, U+2BB-2BC, U+2C6, U+2DA, U+2DC, U+304, U+308, U+329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD; }
 @font-face { font-family: Inter; font-style: normal; font-weight: 300 700; font-display: swap; src: url("34b9c504cab7a73e.woff2") format("woff2"); unicode-range: U+100-2BA, U+2BD-2C5, U+2C7-2CC, U+2CE-2D7, U+2DD-2FF, U+304, U+308, U+329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
