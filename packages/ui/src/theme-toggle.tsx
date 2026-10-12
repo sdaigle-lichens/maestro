@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { CircleHalfIcon } from "@phosphor-icons/react";
 
 type ThemeMode = "light" | "dark" | "auto";
 
@@ -54,9 +55,10 @@ export default function ThemeToggle() {
       onClick={toggleMode}
       aria-label={label}
       title={label}
-      className="rounded-md border border-maestro px-3 py-1.5 text-[12px] font-medium text-maestro-muted hover:border-maestro-strong hover:bg-maestro-soft hover:text-maestro"
+      className="relative flex items-center justify-center w-7 h-7 rounded-md border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
     >
-      {mode === "auto" ? "Auto" : mode === "dark" ? "Dark" : "Light"}
+      {/* One icon for every mode: the mode is in the tooltip. */}
+      <CircleHalfIcon size={13} />
     </button>
   );
 }

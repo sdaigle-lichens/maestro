@@ -292,6 +292,8 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
         )}
       </div>
 
+      <ThemeToggle />
+
       {/*
         Where the web app's Stop button lived. That existed to tell the /ai-tools dispatcher to
         stop listening and tear the container down; a desktop app has neither, so the slot now
@@ -348,7 +350,6 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
         <FolderOpenIcon size={13} className="shrink-0" />
         <span className="truncate">{current?.name ?? "Open project…"}</span>
       </button>
-      <ThemeToggle />
 
       {/* Delete-confirmation modal */}
       {pendingDelete !== null && workflowSelector && (

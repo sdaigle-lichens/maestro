@@ -19,6 +19,8 @@ interface SessionLogPanesProps {
   empty: React.ReactNode;
   /** Fallback path root for relativizing log paths when nothing is selected. */
   fallbackRoot?: string;
+  /** Passed to the tab bar's right end. */
+  tabActions?: React.ReactNode;
 }
 
 const NO_KEYS = new Set<string>();
@@ -38,6 +40,7 @@ export default function SessionLogPanes({
   onDelete,
   empty,
   fallbackRoot = "",
+  tabActions,
 }: SessionLogPanesProps) {
   const [selectedKey, setSelectedKey] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<number | null>(null);
@@ -92,6 +95,7 @@ export default function SessionLogPanes({
         deletable={deletable}
         titles={titles}
         onDelete={onDelete}
+        actions={tabActions}
       />
 
       {/* Three-pane layout — left & right panes are drag-resizable */}

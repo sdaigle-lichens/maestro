@@ -124,16 +124,14 @@ function SessionLogPage() {
         <span className="text-[8px]">{connected ? "●" : "○"}</span>
         {connected ? "live" : "connecting…"}
       </div>
+      {/* No tab strip without sessions, so the sweep is offered here. */}
+      <CleanSessionsButton />
     </div>
   );
 
   return (
     <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav />
-
-      <div className="shrink-0 flex items-center justify-end px-3 py-1.5 border-b border-maestro">
-        <CleanSessionsButton />
-      </div>
 
       {worktreeTabs.length > 0 && <WorktreeTabBar tabs={worktreeTabs} active={view} onSelect={setView} />}
 
@@ -155,6 +153,7 @@ function SessionLogPage() {
           onDelete={(root, id) => void handleDelete(root, id)}
           empty={mainEmpty}
           fallbackRoot={projectState.current?.root ?? ""}
+          tabActions={<CleanSessionsButton iconOnly />}
         />
       )}
     </div>
@@ -198,6 +197,7 @@ function WorktreeView({
       projectState={projectState}
       connected={connected}
       fallbackRoot={tab.path}
+      tabActions={<CleanSessionsButton iconOnly />}
       // Mostly the transient "pending" case: a tab only exists for a worktree that had a log, but
       // "no-log" is still reachable once every session of a tab has been dismissed or evicted.
       empty={
