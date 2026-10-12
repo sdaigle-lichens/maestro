@@ -9,7 +9,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, Sparkles } from "lucide-react";
+import { SparkleIcon, WarningIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
@@ -63,7 +63,7 @@ function SkillsPage() {
         <TopNav />
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10 max-w-lg">
-            <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+            <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
             <div>
               <p className="text-[13px] text-maestro m-0 mb-1">Skills could not be loaded.</p>
               <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
@@ -127,7 +127,7 @@ function SkillsPage() {
               <span title={data.projectRoot ? undefined : "Open a project to update its skills' tags."}>
                 <Button
                   variant="secondary"
-                  icon={<Sparkles size={14} />}
+                  icon={<SparkleIcon size={14} />}
                   loading={updating}
                   disabled={!data.projectRoot}
                   onClick={() => void handleUpdateSkillTags()}

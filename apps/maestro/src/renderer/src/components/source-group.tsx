@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { CaretDownIcon, CaretRightIcon } from "@phosphor-icons/react";
 
 /**
  * Groups a list of DiscoveredDefinition-shaped items by `source` ("project" = this repo's own
@@ -58,9 +58,9 @@ export function CollapsibleGroup({
         className="flex items-center gap-1 py-1 px-1 rounded hover:bg-maestro-elevated cursor-pointer text-left focus:outline-none"
       >
         {open ? (
-          <ChevronDown size={11} className="text-maestro-muted shrink-0" />
+          <CaretDownIcon size={11} className="text-maestro-muted shrink-0" />
         ) : (
-          <ChevronRight size={11} className="text-maestro-muted shrink-0" />
+          <CaretRightIcon size={11} className="text-maestro-muted shrink-0" />
         )}
         <span className="text-[10px] font-semibold text-maestro-muted uppercase tracking-wide truncate">{title}</span>
         <span className="ml-auto shrink-0 text-[10px] text-maestro-muted">{count}</span>

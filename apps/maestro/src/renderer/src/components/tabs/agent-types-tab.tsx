@@ -4,7 +4,7 @@
 // own dirty state and its own disabled-until-dirty Save button.
 
 import { useState } from "react";
-import { Save } from "lucide-react";
+import { FloppyDiskIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import Select from "@repo/ui/select";
 import { toast } from "@repo/ui/toast";
@@ -60,7 +60,7 @@ export default function AgentTypesTab({ initial }: { initial: Record<string, Age
               </div>
               <Button
                 variant="primary"
-                icon={saving === name ? undefined : <Save size={13} />}
+                icon={saving === name ? undefined : <FloppyDiskIcon size={13} />}
                 loading={saving === name}
                 disabled={!dirty}
                 onClick={() => void handleSave(name)}

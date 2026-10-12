@@ -1,4 +1,5 @@
 import { Select as BaseSelect } from "@base-ui/react/select";
+import { CaretDownIcon, CheckIcon } from "@phosphor-icons/react";
 
 export interface SelectOption {
   id: string;
@@ -25,19 +26,7 @@ export default function Select({ id, value, onChange, options, placeholder }: Se
         <span className={`flex-1 text-left text-sm ${current ? "text-maestro" : "text-maestro-faint"}`}>
           {current ? current.name : placeholder || "Choose…"}
         </span>
-        <svg
-          viewBox="0 0 24 24"
-          width={14}
-          height={14}
-          aria-hidden
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.6}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 9l6 6 6-6" />
-        </svg>
+        <CaretDownIcon size={14} aria-hidden />
       </BaseSelect.Trigger>
       <BaseSelect.Portal>
         <BaseSelect.Positioner sideOffset={4} alignItemWithTrigger={false} className="z-20 outline-none">
@@ -51,19 +40,7 @@ export default function Select({ id, value, onChange, options, placeholder }: Se
                 <div className="flex items-center gap-2 text-[13px] font-medium text-maestro">
                   <BaseSelect.ItemText>{opt.name}</BaseSelect.ItemText>
                   <BaseSelect.ItemIndicator>
-                    <svg
-                      viewBox="0 0 24 24"
-                      width={12}
-                      height={12}
-                      aria-hidden
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth={2.4}
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <path d="M5 12l4 4 10-10" />
-                    </svg>
+                    <CheckIcon size={12} weight="bold" aria-hidden />
                   </BaseSelect.ItemIndicator>
                 </div>
                 {opt.desc && <div className="text-[11px] text-maestro-muted mt-0.5">{opt.desc}</div>}

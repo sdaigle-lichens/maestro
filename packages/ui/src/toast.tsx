@@ -1,4 +1,5 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
+import { CheckIcon, WarningIcon, XIcon } from "@phosphor-icons/react";
 import type { ReactNode } from "react";
 import { createPortal } from "react-dom";
 
@@ -74,23 +75,13 @@ function ToastCard({ item }: { item: ToastItem }) {
               : "bg-maestro-primary-subtle text-maestro-primary"
         }`}
       >
-        <svg
-          viewBox="0 0 24 24"
-          width={13}
-          height={13}
-          aria-hidden
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={2.4}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          {isError && <path d="M6 6l12 12M18 6L6 18" />}
-          {isWarning && (
-            <path d="M12 9v4m0 3.5h.01M10.3 4.3 2.6 18a1.5 1.5 0 0 0 1.3 2.2h16.2a1.5 1.5 0 0 0 1.3-2.2L13.7 4.3a1.5 1.5 0 0 0-2.6 0Z" />
-          )}
-          {!isError && !isWarning && <path d="M5 12l5 5L20 7" />}
-        </svg>
+        {isError ? (
+          <XIcon size={13} weight="bold" aria-hidden />
+        ) : isWarning ? (
+          <WarningIcon size={13} weight="bold" aria-hidden />
+        ) : (
+          <CheckIcon size={13} weight="bold" aria-hidden />
+        )}
       </div>
       <p className="m-0 text-[13px] leading-snug text-maestro-muted flex-1">{item.message}</p>
       <button
@@ -99,19 +90,7 @@ function ToastCard({ item }: { item: ToastItem }) {
         onClick={() => dismiss(item.id)}
         className="shrink-0 p-0.5 -mr-1 rounded text-maestro-muted cursor-pointer hover:text-maestro focus:outline-none"
       >
-        <svg
-          viewBox="0 0 24 24"
-          width={13}
-          height={13}
-          aria-hidden
-          fill="none"
-          stroke="currentColor"
-          strokeWidth={1.8}
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        >
-          <path d="M6 6l12 12M18 6L6 18" />
-        </svg>
+        <XIcon size={13} aria-hidden />
       </button>
     </div>
   );

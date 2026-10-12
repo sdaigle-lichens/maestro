@@ -36,7 +36,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { AlertTriangle, Users } from "lucide-react";
+import { UsersIcon, WarningIcon } from "@phosphor-icons/react";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import AgentList, { type AgentListItem } from "../components/agents/agent-list";
@@ -536,7 +536,7 @@ function AgentsPage() {
         <TopNav />
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10 max-w-lg">
-            <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+            <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
             <div>
               <p className="text-[13px] text-maestro m-0 mb-1">Agents could not be loaded.</p>
               <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
@@ -604,7 +604,7 @@ function AgentsPage() {
                   data-count={diverged.length}
                   className="mx-6 mt-6 flex items-center gap-2 flex-wrap px-3 py-2 rounded-lg text-[12px] bg-amber-500/10"
                 >
-                  <AlertTriangle size={14} className="shrink-0 text-amber-500" />
+                  <WarningIcon size={14} className="shrink-0 text-amber-500" />
                   <span className="text-maestro-muted">
                     {diverged.length} forked agent{diverged.length === 1 ? "" : "s"} differ
                     {diverged.length === 1 ? "s" : ""} from {diverged.length === 1 ? "its" : "their"} template:
@@ -657,7 +657,7 @@ function AgentsPage() {
                 />
               ) : (
                 <div className="h-full flex flex-col items-center justify-center gap-2 text-center text-maestro-muted">
-                  <Users size={18} className="text-maestro-muted" />
+                  <UsersIcon size={18} className="text-maestro-muted" />
                   <p className="text-[12px] m-0">Select an agent on the left to see its card.</p>
                 </div>
               )}

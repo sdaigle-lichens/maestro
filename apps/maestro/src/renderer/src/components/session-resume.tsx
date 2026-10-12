@@ -12,7 +12,17 @@
 // came off `ResumableSession` / `ResumeDisclosure`, which main built from the CLI's own store.
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Check, Clock, FileText, GitBranch, History, Loader2, Play, X } from "lucide-react";
+import {
+  CheckIcon,
+  CircleNotchIcon,
+  ClockCounterClockwiseIcon,
+  ClockIcon,
+  FileTextIcon,
+  GitBranchIcon,
+  PlayIcon,
+  WarningIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import { useSession } from "../utils/session-context";
 import type { ResumableSession, ResumeDisclosure } from "../../../shared/ipc";
 
@@ -82,7 +92,7 @@ export default function ResumePicker({ onClose }: { onClose(): void }) {
           aria-label="Close the conversation picker"
           className="flex h-5 w-5 items-center justify-center rounded text-maestro-muted hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
         >
-          <X size={12} />
+          <XIcon size={12} />
         </button>
       </div>
 
@@ -127,15 +137,15 @@ export default function ResumePicker({ onClose }: { onClose(): void }) {
               )}
               <p className="m-0 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-maestro-muted">
                 <span className="inline-flex items-center gap-1">
-                  <Clock size={9} /> {ago(row.lastModified)}
+                  <ClockIcon size={9} /> {ago(row.lastModified)}
                 </span>
                 {row.branch && (
                   <span data-testid="session-resume-branch" className="inline-flex items-center gap-1">
-                    <GitBranch size={9} /> {row.branch}
+                    <GitBranchIcon size={9} /> {row.branch}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1">
-                  <FileText size={9} /> {bytes(row.sizeBytes)}
+                  <FileTextIcon size={9} /> {bytes(row.sizeBytes)}
                 </span>
               </p>
               <p
@@ -206,7 +216,7 @@ function Disclosure({
           data-testid="session-resume-detail-loading"
           className="m-0 flex items-center gap-1.5 text-[11px] text-maestro-muted"
         >
-          <Loader2 size={11} className="animate-spin" /> Reading the transcript…
+          <CircleNotchIcon size={11} className="animate-spin" /> Reading the transcript…
         </p>
       )}
 
@@ -234,9 +244,9 @@ function Disclosure({
                 }`}
               >
                 {read.inScope ? (
-                  <Check size={10} className="mt-px shrink-0" />
+                  <CheckIcon size={10} className="mt-px shrink-0" />
                 ) : (
-                  <AlertTriangle size={10} className="mt-px shrink-0" />
+                  <WarningIcon size={10} className="mt-px shrink-0" />
                 )}
                 <span>
                   {read.path} <span className="text-maestro-muted">· {read.tool}</span>
@@ -272,7 +282,7 @@ function Disclosure({
           onClick={onConfirm}
           className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Play size={11} /> {resuming ? "Resuming…" : "Resume a fork of this"}
+          <PlayIcon size={11} /> {resuming ? "Resuming…" : "Resume a fork of this"}
         </button>
         {/*
           DECLINING IS A BUTTON, not an X in a corner. `025` requires that the user can say no after
@@ -284,7 +294,7 @@ function Disclosure({
           onClick={onBack}
           className="inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
         >
-          <History size={11} /> Don&apos;t resume this
+          <ClockCounterClockwiseIcon size={11} /> Don&apos;t resume this
         </button>
       </div>
     </div>

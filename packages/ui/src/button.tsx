@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CircleNotchIcon } from "@phosphor-icons/react";
 
 type Variant = "primary" | "secondary" | "ghost";
 
@@ -20,12 +21,7 @@ const variantClasses: Record<Variant, string> = {
 };
 
 function Spinner({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0 animate-spin">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.25" />
-      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
-    </svg>
-  );
+  return <CircleNotchIcon size={size} weight="bold" className="shrink-0 animate-spin" />;
 }
 
 export default function Button({

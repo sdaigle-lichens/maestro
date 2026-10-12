@@ -9,7 +9,7 @@
 // this one is its own component rather than a forced NavMenu variant.
 
 import { Link } from "@tanstack/react-router";
-import { Menu, BookOpen, LayoutGrid, LayoutTemplate, Plus } from "lucide-react";
+import { BookOpenIcon, LayoutIcon, ListIcon, PlusIcon, SquaresFourIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useOutsideClose, MENU_ITEM } from "./top-nav";
 import { useProject } from "../utils/project-context";
@@ -30,7 +30,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
         title="Menu"
         className="relative flex items-center justify-center w-7 h-7 rounded-md text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
       >
-        <Menu size={15} />
+        <ListIcon size={15} />
         {badge !== "none" && (
           <span
             title={
@@ -53,7 +53,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
             activeProps={{ className: "text-maestro bg-maestro-elevated" }}
             className={MENU_ITEM}
           >
-            <BookOpen size={13} /> Docs
+            <BookOpenIcon size={13} /> Docs
           </Link>
           <Link
             to="/tools"
@@ -61,7 +61,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
             activeProps={{ className: "text-maestro bg-maestro-elevated" }}
             className={MENU_ITEM}
           >
-            <LayoutGrid size={13} /> Tools
+            <SquaresFourIcon size={13} /> Tools
           </Link>
           <Link
             to="/templates"
@@ -69,7 +69,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
             activeProps={{ className: "text-maestro bg-maestro-elevated" }}
             className={MENU_ITEM}
           >
-            <LayoutTemplate size={13} /> Templates
+            <LayoutIcon size={13} /> Templates
           </Link>
 
           <hr className="my-1 border-maestro" />
@@ -105,7 +105,7 @@ export default function HamburgerMenu({ badge }: { badge: "none" | "missing" | "
               }}
               className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
             >
-              <Plus size={13} /> Add project…
+              <PlusIcon size={13} /> Add project…
             </button>
           </div>
         </div>

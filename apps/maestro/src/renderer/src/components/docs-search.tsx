@@ -7,7 +7,7 @@
 
 import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Search, X } from "lucide-react";
+import { MagnifyingGlassIcon, XIcon } from "@phosphor-icons/react";
 import HighlightText from "./highlight-text";
 import { excerptAround, filterSections, type DocSection } from "../utils/docs";
 
@@ -59,7 +59,7 @@ export default function DocsSearch({
           query ? "border-maestro-primary-strong" : "border-maestro"
         }`}
       >
-        <Search size={12} className="shrink-0 text-maestro-muted" />
+        <MagnifyingGlassIcon size={12} className="shrink-0 text-maestro-muted" />
         <input
           type="search"
           autoFocus={autoFocus}
@@ -75,7 +75,7 @@ export default function DocsSearch({
             aria-label="Clear search"
             className="shrink-0 text-maestro-muted hover:text-maestro cursor-pointer bg-transparent border-0 p-0 focus:outline-none"
           >
-            <X size={12} />
+            <XIcon size={12} />
           </button>
         )}
       </div>

@@ -7,7 +7,7 @@
 // aren't a local corpus here — `maestro-help` answers those by fetching the official docs instead.
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, BookOpen, FileText, MessagesSquare } from "lucide-react";
+import { BookOpenIcon, ChatsCircleIcon, FileTextIcon, WarningIcon } from "@phosphor-icons/react";
 import TopNav from "../components/top-nav";
 import DocsSearch from "../components/docs-search";
 import { callMain } from "../utils/call-main";
@@ -32,7 +32,7 @@ function DocList({ group, docs }: { group: "app"; docs: DocMeta[] }) {
           search={{ q: "", at: "" }}
           className="flex items-start gap-2.5 rounded-lg border border-maestro bg-maestro-elevated px-3 py-2.5 hover:border-maestro-primary-strong"
         >
-          <FileText size={14} className="shrink-0 mt-0.5 text-maestro-muted" />
+          <FileTextIcon size={14} className="shrink-0 mt-0.5 text-maestro-muted" />
           <span className="min-w-0">
             <span className="block text-[13px] text-maestro truncate">{doc.title}</span>
             <span className="block font-mono text-[11px] text-maestro-muted truncate">{doc.slug}.md</span>
@@ -67,13 +67,13 @@ function GlobalDocsIndex() {
               className="shrink-0 flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
               title="Ask about these docs in the session pane"
             >
-              <MessagesSquare size={13} /> Discuss with Claude
+              <ChatsCircleIcon size={13} /> Discuss with Claude
             </button>
           </div>
 
           {!result.ok ? (
             <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10">
-              <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+              <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
               <div>
                 <p className="text-[13px] text-maestro m-0 mb-1">The docs could not be listed.</p>
                 <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
@@ -92,7 +92,7 @@ function GlobalDocsIndex() {
               </section>
 
               <p className="flex items-center gap-1.5 text-[12px] text-maestro-muted m-0">
-                <BookOpen size={12} /> {result.value.app.length} documents · {result.value.sections.length} sections
+                <BookOpenIcon size={12} /> {result.value.app.length} documents · {result.value.sections.length} sections
                 indexed
               </p>
             </>

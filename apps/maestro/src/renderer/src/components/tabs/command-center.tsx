@@ -7,7 +7,7 @@
 // ../highlight-text.tsx for the same call on `react-highlight-words`.
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import CopyableText from "@repo/ui/copyable-text";
 import CreateLink from "./create-link";
 import type { ClaudeCommand, InstalledPluginInfo } from "../../utils/tools";
@@ -108,7 +108,7 @@ export default function CommandCenter({
               filter ? "border-maestro-primary-strong" : "border-maestro"
             }`}
           >
-            <Search size={12} className="shrink-0 text-maestro-muted" />
+            <MagnifyingGlassIcon size={12} className="shrink-0 text-maestro-muted" />
             <input
               type="search"
               value={filter}

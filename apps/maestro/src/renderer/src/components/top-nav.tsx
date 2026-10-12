@@ -1,23 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import ThemeToggle from "@repo/ui/theme-toggle";
 import {
-  Workflow,
-  BookOpenCheck,
-  ScrollText,
-  ListChecks,
-  Plus,
-  X,
-  Pencil,
-  Check,
-  ChevronDown,
-  Trash2,
-  FolderOpen,
-  MessagesSquare,
-  BookOpen,
-  Sparkles,
-  Tags,
-  Users,
-} from "lucide-react";
+  BookBookmarkIcon,
+  BookOpenIcon,
+  CaretDownIcon,
+  ChatsCircleIcon,
+  CheckIcon,
+  FlowArrowIcon,
+  FolderOpenIcon,
+  ListChecksIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  ScrollIcon,
+  SparkleIcon,
+  TagIcon,
+  TrashIcon,
+  UsersIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "../utils/session-context";
 import { useSessionLog } from "../utils/session-log-context";
@@ -141,25 +141,25 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
       <span className="w-px h-4 bg-maestro-border mx-1.5 shrink-0" aria-hidden />
 
       <Link to="/maestro" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <Sparkles size={13} /> Maestro
+        <SparkleIcon size={13} /> Maestro
       </Link>
       <Link to="/skills" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <Tags size={13} /> Skills
+        <TagIcon size={13} /> Skills
       </Link>
       <Link to="/agents" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <Users size={13} /> Agents
+        <UsersIcon size={13} /> Agents
       </Link>
       <Link to="/project-docs" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <BookOpen size={13} /> Project Docs
+        <BookOpenIcon size={13} /> Project Docs
       </Link>
       <Link to="/workflows" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <Workflow size={13} /> Workflows
+        <FlowArrowIcon size={13} /> Workflows
       </Link>
       <Link to="/rules" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <BookOpenCheck size={13} /> Rules
+        <BookBookmarkIcon size={13} /> Rules
       </Link>
       <Link to="/session-log" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <ScrollText size={13} /> Session Log
+        <ScrollIcon size={13} /> Session Log
         <span
           title={connected ? "Live" : "Connecting…"}
           className={`text-[7px] leading-none ${connected ? "text-maestro-success" : "text-maestro-muted"}`}
@@ -168,7 +168,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
         </span>
       </Link>
       <Link to="/maestro-tasks" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-        <ListChecks size={13} /> Maestro Tasks
+        <ListChecksIcon size={13} /> Maestro Tasks
       </Link>
 
       {/* Centered workflow selector */}
@@ -194,7 +194,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                   title="Confirm"
                   className="w-7 h-7 rounded-md flex items-center justify-center bg-maestro-elevated border border-maestro text-maestro-primary hover:bg-maestro-primary-subtle cursor-pointer focus:outline-none"
                 >
-                  <Check size={13} />
+                  <CheckIcon size={13} />
                 </button>
                 <button
                   type="button"
@@ -202,7 +202,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                   title="Cancel"
                   className="w-7 h-7 rounded-md flex items-center justify-center bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                 >
-                  <X size={13} />
+                  <XIcon size={13} />
                 </button>
               </>
             ) : (
@@ -220,7 +220,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                         : workflowSelector.workflows[workflowSelector.activeIndex] ||
                           `Workflow ${workflowSelector.activeIndex + 1}`}
                     </span>
-                    <ChevronDown size={13} className="text-maestro-muted shrink-0" />
+                    <CaretDownIcon size={13} className="text-maestro-muted shrink-0" />
                   </button>
 
                   {menuOpen && (
@@ -242,7 +242,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                           >
                             <span className="flex items-center gap-1.5 truncate text-[13px]">
                               {i === workflowSelector.activeIndex && (
-                                <Check size={12} className="text-maestro-primary shrink-0" />
+                                <CheckIcon size={12} className="text-maestro-primary shrink-0" />
                               )}
                               <span className="truncate">{name || `Workflow ${i + 1}`}</span>
                             </span>
@@ -256,7 +256,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                               }}
                               className="w-6 h-6 rounded flex items-center justify-center text-maestro-muted hover:text-red-500 opacity-0 group-hover:opacity-100 cursor-pointer focus:outline-none shrink-0"
                             >
-                              <Trash2 size={12} />
+                              <TrashIcon size={12} />
                             </button>
                           </div>
                         ))}
@@ -270,7 +270,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                           }}
                           className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none"
                         >
-                          <Plus size={13} /> Add workflow
+                          <PlusIcon size={13} /> Add workflow
                         </button>
                       </div>
                     </div>
@@ -283,7 +283,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                     title="Rename workflow"
                     className="w-7 h-7 rounded-md flex items-center justify-center bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                   >
-                    <Pencil size={12} />
+                    <PencilSimpleIcon size={12} />
                   </button>
                 )}
               </>
@@ -316,7 +316,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
         }
         className="relative flex items-center justify-center w-7 h-7 rounded-md border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
       >
-        <MessagesSquare size={13} />
+        <ChatsCircleIcon size={13} />
         {/*
           A parked ask outranks a running turn on this badge, and is a different colour, because they
           mean opposite things: one is Claude working and the other is Claude waiting on the user.
@@ -345,7 +345,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
         title={current ? `Open project: ${current.root}` : "Choose a project folder"}
         className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none max-w-[220px]"
       >
-        <FolderOpen size={13} className="shrink-0" />
+        <FolderOpenIcon size={13} className="shrink-0" />
         <span className="truncate">{current?.name ?? "Open project…"}</span>
       </button>
       <ThemeToggle />

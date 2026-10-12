@@ -3,7 +3,7 @@
 // shape as every other field in this app's forms.
 
 import { useRef } from "react";
-import { Shuffle } from "lucide-react";
+import { ShuffleIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import Button from "@repo/ui/button";
 import {
@@ -164,7 +164,7 @@ export default function AvatarPicker({
           </div>
         ))}
         <div className="flex items-center gap-3">
-          <Button variant="secondary" icon={<Shuffle size={13} />} onClick={() => onChange(randomAvatarLayers())}>
+          <Button variant="secondary" icon={<ShuffleIcon size={13} />} onClick={() => onChange(randomAvatarLayers())}>
             Randomize
           </Button>
           <Link

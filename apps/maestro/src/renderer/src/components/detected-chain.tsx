@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Info, X } from "lucide-react";
+import { CheckIcon, InfoIcon, XIcon } from "@phosphor-icons/react";
 import type { RepoDetection } from "../utils/maestro";
 
 /**
@@ -59,7 +59,7 @@ export default function DetectedChain({
           title="Why these agents?"
           className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
         >
-          <Info size={12} />
+          <InfoIcon size={12} />
         </button>
       </div>
 
@@ -85,7 +85,7 @@ export default function DetectedChain({
                   : "border-maestro text-maestro-muted hover:text-maestro"
               }`}
             >
-              {on && <Check size={10} />}
+              {on && <CheckIcon size={10} />}
               {agent}
             </button>
           );
@@ -114,7 +114,7 @@ export default function DetectedChain({
                 title="Close"
                 className="flex items-center justify-center w-6 h-6 rounded text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
               >
-                <X size={13} />
+                <XIcon size={13} />
               </button>
             </div>
             {/*

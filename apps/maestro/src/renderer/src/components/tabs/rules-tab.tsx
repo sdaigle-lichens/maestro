@@ -4,7 +4,7 @@
 // says plainly that nothing wider exists, rather than inventing a global tier that isn't real.
 
 import { Link } from "@tanstack/react-router";
-import { AlertTriangle } from "lucide-react";
+import { WarningIcon } from "@phosphor-icons/react";
 import type { ProjectRule } from "../../utils/tools";
 
 const TH =
@@ -15,7 +15,7 @@ export default function RulesTab({ projectRules }: { projectRules: ProjectRule[]
   return (
     <div className="flex flex-col gap-6">
       <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-500/10 text-[12px]">
-        <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
+        <WarningIcon size={14} className="shrink-0 mt-px text-amber-500" />
         <span className="text-maestro-muted">
           There is no global rule tier yet — every rule below is local to this project. Assigning rules to directories
           happens in{" "}

@@ -1,4 +1,4 @@
-import { Check, FolderOpen, GitBranch, Terminal } from "lucide-react";
+import { CheckIcon, FolderOpenIcon, GitBranchIcon, TerminalWindowIcon } from "@phosphor-icons/react";
 import type { CreateOutcome } from "../utils/create-flow";
 
 /**
@@ -26,7 +26,7 @@ export default function CreateResult({
   return (
     <div className="mb-4 p-4 rounded-lg border border-maestro-success-strong bg-maestro-success-subtle flex flex-col gap-2">
       <div className="flex items-center gap-2 text-[13px] font-semibold text-maestro">
-        <Check size={14} className="text-maestro-success" />
+        <CheckIcon size={14} className="text-maestro-success" />
         Written to disk
       </div>
 
@@ -46,7 +46,10 @@ export default function CreateResult({
       */}
       {result.repo && (
         <div className="flex items-start gap-1.5 text-[12px] text-maestro-muted">
-          <GitBranch size={13} className={`mt-0.5 shrink-0 ${result.repo.initialized ? "text-maestro-success" : ""}`} />
+          <GitBranchIcon
+            size={13}
+            className={`mt-0.5 shrink-0 ${result.repo.initialized ? "text-maestro-success" : ""}`}
+          />
           <span>{result.repo.note}</span>
         </div>
       )}
@@ -59,7 +62,7 @@ export default function CreateResult({
           onClick={() => void window.maestro.shell.reveal(result.path)}
           className="inline-flex items-center gap-1.5 rounded-lg border border-maestro bg-maestro-elevated px-3 py-1.5 text-[12px] font-medium text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
         >
-          <FolderOpen size={13} /> Show in folder
+          <FolderOpenIcon size={13} /> Show in folder
         </button>
         <button
           type="button"
@@ -67,7 +70,7 @@ export default function CreateResult({
           onClick={onFinish}
           className="inline-flex items-center gap-1.5 rounded-lg border border-maestro-primary-strong bg-maestro-primary-subtle px-3 py-1.5 text-[12px] font-medium text-maestro hover:brightness-110 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer focus:outline-none"
         >
-          <Terminal size={13} /> Finish with Claude
+          <TerminalWindowIcon size={13} /> Finish with Claude
         </button>
       </div>
     </div>

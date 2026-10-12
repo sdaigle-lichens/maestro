@@ -7,7 +7,7 @@
 // to call `pick()` because there is no other way to add a project the app doesn't know about yet.
 // Modeled on `NavMenu`'s dropdown in top-nav.tsx.
 
-import { FolderOpen, ChevronDown, Check, Plus } from "lucide-react";
+import { CaretDownIcon, CheckIcon, FolderOpenIcon, PlusIcon } from "@phosphor-icons/react";
 import { useState } from "react";
 import { useOutsideClose } from "./top-nav";
 import { useProject } from "../utils/project-context";
@@ -51,9 +51,9 @@ export default function ProjectSelect({
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 h-8 px-3 rounded-md text-[13px] border bg-maestro-elevated border-maestro text-maestro cursor-pointer focus:outline-none hover:border-maestro-primary-strong max-w-[280px]"
       >
-        <FolderOpen size={13} className="shrink-0 text-maestro-muted" />
+        <FolderOpenIcon size={13} className="shrink-0 text-maestro-muted" />
         <span className="truncate">{label}</span>
-        <ChevronDown size={12} className="text-maestro-muted shrink-0" />
+        <CaretDownIcon size={12} className="text-maestro-muted shrink-0" />
       </button>
 
       {open && (
@@ -69,7 +69,7 @@ export default function ProjectSelect({
                 <span className="text-[11px] text-maestro-muted font-mono truncate">{current.root}</span>
               </span>
               <span className="flex items-center gap-1 shrink-0">
-                {value === current.root && <Check size={12} className="text-maestro-primary" />}
+                {value === current.root && <CheckIcon size={12} className="text-maestro-primary" />}
                 <span className="text-[10px] text-maestro-muted uppercase tracking-wide">Open</span>
               </span>
             </button>
@@ -89,7 +89,7 @@ export default function ProjectSelect({
                     <span className="text-[13px] text-maestro truncate">{r.name}</span>
                     <span className="text-[11px] text-maestro-muted font-mono truncate">{r.root}</span>
                   </span>
-                  {value === r.root && <Check size={12} className="text-maestro-primary shrink-0" />}
+                  {value === r.root && <CheckIcon size={12} className="text-maestro-primary shrink-0" />}
                 </button>
               ))}
             </>
@@ -101,7 +101,7 @@ export default function ProjectSelect({
               onClick={() => void addProject()}
               className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
             >
-              <Plus size={13} /> Open another project…
+              <PlusIcon size={13} /> Open another project…
             </button>
           </div>
         </div>

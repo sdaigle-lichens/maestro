@@ -16,7 +16,7 @@
 
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AlertTriangle } from "lucide-react";
+import { WarningIcon } from "@phosphor-icons/react";
 import TopNav from "../components/top-nav";
 import GlobalReportsTab from "../components/tabs/global-reports-tab";
 import GlobalHandoffsTab from "../components/tabs/global-handoffs-tab";
@@ -68,7 +68,7 @@ function TemplatesPage() {
         <TopNav />
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10 max-w-lg">
-            <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+            <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
             <div>
               <p className="text-[13px] text-maestro m-0 mb-1">Templates could not be loaded.</p>
               <p className="text-[12px] text-maestro-muted m-0">{failed.error}</p>

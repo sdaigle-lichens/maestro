@@ -8,16 +8,16 @@
 
 import { useRef } from "react";
 import {
-  Dices,
-  Eye,
-  Footprints,
-  HardHat,
-  PersonStanding,
-  Scissors,
-  Shirt,
-  Tally2,
-  type LucideIcon,
-} from "lucide-react";
+  DiceFiveIcon,
+  EqualsIcon,
+  EyeIcon,
+  FootprintsIcon,
+  HardHatIcon,
+  type Icon,
+  PersonIcon,
+  ScissorsIcon,
+  TShirtIcon,
+} from "@phosphor-icons/react";
 import AvatarCanvas from "../avatar/avatar-canvas";
 import {
   AVATAR_CATEGORIES,
@@ -88,14 +88,14 @@ function ColorControl({
   );
 }
 
-const CATEGORY_ICONS: Record<AvatarCategory, LucideIcon> = {
-  sex: PersonStanding,
-  eyes: Eye,
-  hair: Scissors,
-  torso: Shirt,
-  legs: Tally2,
-  feet: Footprints,
-  hat: HardHat,
+const CATEGORY_ICONS: Record<AvatarCategory, Icon> = {
+  sex: PersonIcon,
+  eyes: EyeIcon,
+  hair: ScissorsIcon,
+  torso: TShirtIcon,
+  legs: EqualsIcon,
+  feet: FootprintsIcon,
+  hat: HardHatIcon,
 };
 
 function partName(cat: AvatarCategory, id: string | null): string {
@@ -147,7 +147,7 @@ export default function AgentAvatarBlock({
       {editing && (
         <div className="flex items-center gap-1 flex-wrap">
           {AVATAR_CATEGORIES.map((cat) => {
-            const Icon = CATEGORY_ICONS[cat];
+            const CategoryIcon = CATEGORY_ICONS[cat];
             const active = cat === activeCat;
             return (
               <button
@@ -163,7 +163,10 @@ export default function AgentAvatarBlock({
                     className="absolute -inset-px rounded-md border border-maestro-primary-strong bg-maestro-primary-subtle pointer-events-none"
                   />
                 )}
-                <Icon size={14} className={`relative ${active ? "text-maestro-primary" : "text-maestro-muted"}`} />
+                <CategoryIcon
+                  size={14}
+                  className={`relative ${active ? "text-maestro-primary" : "text-maestro-muted"}`}
+                />
               </button>
             );
           })}
@@ -174,7 +177,7 @@ export default function AgentAvatarBlock({
             title="Randomize every part"
             className={`flex-none w-7 h-7 p-0 rounded-md text-maestro-muted ${ICON_BUTTON}`}
           >
-            <Dices size={14} />
+            <DiceFiveIcon size={14} />
           </button>
         </div>
       )}

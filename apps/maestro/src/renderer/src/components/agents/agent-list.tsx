@@ -4,7 +4,7 @@
 // avatar thumb and a per-row pencil, neither of which a skill has, and threading them through the
 // shared table would mean special-casing agents inside a component /skills also renders.
 
-import { PanelLeftClose, PanelLeftOpen, Pencil } from "lucide-react";
+import { CaretDoubleLeftIcon, CaretDoubleRightIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { Link } from "@tanstack/react-router";
 import AvatarCanvas from "../avatar/avatar-canvas";
 import { clampText, ICON_BUTTON, PENCIL_BUTTON, PRIMARY_CHIP } from "./agent-shared";
@@ -61,7 +61,7 @@ function AgentRow({
           }}
           className={PENCIL_BUTTON}
         >
-          <Pencil size={12} />
+          <PencilSimpleIcon size={12} />
         </button>
       </div>
       <div className="relative flex gap-[10px] items-start">
@@ -119,7 +119,7 @@ export default function AgentList({
           title={open ? "Collapse panel" : "Expand panel"}
           className={`w-6 h-6 flex-none ${ICON_BUTTON}`}
         >
-          {open ? <PanelLeftClose size={13} /> : <PanelLeftOpen size={13} />}
+          {open ? <CaretDoubleLeftIcon size={13} /> : <CaretDoubleRightIcon size={13} />}
         </button>
         <span className="text-[15px] font-semibold tracking-[-0.01em]">Agents</span>
       </div>

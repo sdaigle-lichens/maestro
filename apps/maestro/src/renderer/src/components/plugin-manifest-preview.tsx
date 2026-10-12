@@ -1,5 +1,4 @@
 import FilePreview from "@repo/ui/file-preview";
-import { FileJson } from "lucide-react";
 
 /**
  * The plugin.json as it will be written.
@@ -45,7 +44,6 @@ export default function PluginManifestPreview({
   return (
     <FilePreview
       filename="plugin.json"
-      fileIcon={<FileJson size={11} />}
       path={`${root.replace(/\/+$/, "")}/plugins/${displayName}/.claude-plugin/`}
       lines={lines}
     />

@@ -9,7 +9,7 @@
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowLeft, PanelLeft } from "lucide-react";
+import { ArrowLeftIcon, SidebarSimpleIcon, WarningIcon } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import TopNav from "../components/top-nav";
@@ -169,13 +169,13 @@ function GlobalDocPage() {
           onClick={() => setPanelOpen((v) => !v)}
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-maestro-muted hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
         >
-          <PanelLeft size={13} /> Maestro docs
+          <SidebarSimpleIcon size={13} /> Maestro docs
         </button>
         <Link
           to="/docs"
           className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-maestro-muted hover:text-maestro"
         >
-          <ArrowLeft size={13} /> Search
+          <ArrowLeftIcon size={13} /> Search
         </Link>
         <div className="flex-1" />
         <span className="font-mono text-[11px] text-maestro-muted truncate">
@@ -200,7 +200,7 @@ function GlobalDocPage() {
         {!doc.ok ? (
           <div className="mx-auto max-w-3xl px-6 py-10">
             <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10">
-              <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+              <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
               <div>
                 <p className="text-[13px] text-maestro m-0 mb-1">
                   Could not open{" "}

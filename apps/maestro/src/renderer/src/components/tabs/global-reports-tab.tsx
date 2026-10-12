@@ -9,7 +9,7 @@
 // adding one, but nothing on this page does it yet; see task.md.
 
 import { useEffect, useState } from "react";
-import { FileText, Save } from "lucide-react";
+import { FileTextIcon, FloppyDiskIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { Textarea } from "@repo/ui/field";
 import { toast } from "@repo/ui/toast";
@@ -86,7 +86,7 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
       <div className="flex flex-col p-4 gap-3">
         {!selected ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-maestro-muted">
-            <FileText size={18} className="text-maestro-muted" />
+            <FileTextIcon size={18} className="text-maestro-muted" />
             <p className="text-[12px] m-0">Select an agent on the left to edit its global default.</p>
           </div>
         ) : (
@@ -100,7 +100,7 @@ export default function GlobalReportsTab({ initial }: { initial: Record<string, 
               </div>
               <Button
                 variant="primary"
-                icon={phase === "saving" ? undefined : <Save size={13} />}
+                icon={phase === "saving" ? undefined : <FloppyDiskIcon size={13} />}
                 loading={phase === "saving"}
                 disabled={!dirty}
                 onClick={() => void handleSave()}

@@ -29,7 +29,7 @@ route:
   of the route file; the inferred type drives `useForm<T>`.
 - **UI primitives**: `@repo/ui` — `Button`, `Field`, `Input`, `Textarea`, `ChipInput`, `Select`,
   `ModePill`, `ThemeToggle`, `ShortcutsDialog`, `FilePreview`, `SyntaxLine`. Icons from
-  `lucide-react`.
+  `@phosphor-icons/react` (the `…Icon` names).
 - **Layout**: split pane — form left, live `FilePreview` right showing the file that will be
   generated. Per-route preview components compose `FilePreview` with their own `lines: string[]`.
 - **Submit feedback**: the window is long-lived and the user creates repeatedly, so a form is never

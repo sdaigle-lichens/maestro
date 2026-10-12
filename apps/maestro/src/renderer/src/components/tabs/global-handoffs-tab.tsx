@@ -27,7 +27,14 @@
 // `^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$` before any `path.join`, so a qualified name fails every call.
 
 import { useEffect, useState } from "react";
-import { ArrowRight, FileText, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import {
+  ArrowCounterClockwiseIcon,
+  ArrowRightIcon,
+  FileTextIcon,
+  FloppyDiskIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { Textarea } from "@repo/ui/field";
 import { toast } from "@repo/ui/toast";
@@ -229,7 +236,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
           <AgentPicker id="handoff-from" label="from" value={sender} onChange={setSender} options={agentOptions} />
           <AgentPicker id="handoff-to" label="to" value={receiver} onChange={setReceiver} options={agentOptions} />
           <Button
-            icon={<Plus size={13} />}
+            icon={<PlusIcon size={13} />}
             disabled={busy || noAgentsToPick || !sender || !receiver || sender === receiver}
             onClick={handleCreate}
           >
@@ -248,7 +255,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
       <div className="flex flex-col p-4 gap-3">
         {!selected ? (
           <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-maestro-muted">
-            <FileText size={18} className="text-maestro-muted" />
+            <FileTextIcon size={18} className="text-maestro-muted" />
             <p className="text-[12px] m-0">Select a route on the left to edit its global default.</p>
           </div>
         ) : (
@@ -264,7 +271,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
               </div>
               <Button
                 variant="primary"
-                icon={phase === "saving" ? undefined : <Save size={13} />}
+                icon={phase === "saving" ? undefined : <FloppyDiskIcon size={13} />}
                 loading={phase === "saving"}
                 disabled={!dirty || busy}
                 onClick={() => void saveDefault(selected, content, "save")}
@@ -292,7 +299,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
               */}
               {isSeeded ? (
                 <Button
-                  icon={<RotateCcw size={13} />}
+                  icon={<ArrowCounterClockwiseIcon size={13} />}
                   disabled={busy || content === seeded[selected]}
                   onClick={() => void saveDefault(selected, seeded[selected], "reset")}
                 >
@@ -300,7 +307,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
                 </Button>
               ) : (
                 <Button
-                  icon={phase === "deleting" ? undefined : <Trash2 size={13} />}
+                  icon={phase === "deleting" ? undefined : <TrashIcon size={13} />}
                   loading={phase === "deleting"}
                   disabled={busy}
                   onClick={() => void handleDelete()}
@@ -327,7 +334,7 @@ function HandoffName({ id }: { id: string }) {
   return (
     <span className="inline-flex items-center gap-1 font-mono text-maestro">
       {sender}
-      <ArrowRight size={11} className="text-maestro-muted" />
+      <ArrowRightIcon size={11} className="text-maestro-muted" />
       {receiver}
     </span>
   );

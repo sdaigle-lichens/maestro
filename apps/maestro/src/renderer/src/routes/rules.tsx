@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Button from "@repo/ui/button";
-import { Sparkles } from "lucide-react";
+import { SparkleIcon } from "@phosphor-icons/react";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import RuleTree from "../components/rule-tree";
@@ -233,7 +233,7 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
 
           <Button
             variant="primary"
-            icon={phase === "idle" ? <Sparkles size={14} /> : undefined}
+            icon={phase === "idle" ? <SparkleIcon size={14} /> : undefined}
             loading={phase === "saving"}
             onClick={() => void handleSubmit()}
           >

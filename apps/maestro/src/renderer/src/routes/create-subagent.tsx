@@ -7,7 +7,7 @@ import { Field, Input, Textarea } from "@repo/ui/field";
 import ChipInput from "@repo/ui/chip-input";
 import Select from "@repo/ui/select";
 import ModePill from "@repo/ui/mode-pill";
-import { Sparkles, Pencil, Store, Folder, Copy } from "lucide-react";
+import { CopyIcon, FolderIcon, PencilSimpleIcon, SparkleIcon, StorefrontIcon } from "@phosphor-icons/react";
 import CreateShell, { jumpToField, type ShortcutSection } from "../components/create-shell";
 import CreateResult from "../components/create-result";
 import SubagentTemplatePreview from "../components/subagent-template-preview";
@@ -176,8 +176,8 @@ function CreateSubagent() {
                   value={field.value}
                   onChange={field.onChange}
                   options={[
-                    { value: "auto", label: "Auto", icon: <Sparkles size={12} /> },
-                    { value: "manual", label: "Manual", icon: <Pencil size={12} /> },
+                    { value: "auto", label: "Auto", icon: <SparkleIcon size={12} /> },
+                    { value: "manual", label: "Manual", icon: <PencilSimpleIcon size={12} /> },
                   ]}
                 />
               )}
@@ -190,8 +190,8 @@ function CreateSubagent() {
                   value={field.value}
                   onChange={field.onChange}
                   options={[
-                    { value: "marketplace", label: "Marketplace", icon: <Store size={12} /> },
-                    { value: "project", label: "Project", icon: <Folder size={12} /> },
+                    { value: "marketplace", label: "Marketplace", icon: <StorefrontIcon size={12} /> },
+                    { value: "project", label: "Project", icon: <FolderIcon size={12} /> },
                   ]}
                 />
               )}
@@ -235,7 +235,7 @@ function CreateSubagent() {
         {target === "project" && agentTemplates.length > 0 && (
           <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-maestro-elevated border border-maestro rounded-lg text-[13px] text-maestro-muted">
             <div className="w-7 h-7 rounded-[7px] bg-maestro-primary-subtle text-maestro-primary flex items-center justify-center">
-              <Copy size={15} />
+              <CopyIcon size={15} />
             </div>
             <div className="flex-1 leading-normal">
               <strong className="text-maestro">Start from a template.</strong> Seeds the name and description from an
@@ -257,7 +257,7 @@ function CreateSubagent() {
 
         <div className="flex items-center gap-3 px-3.5 py-3 mb-1 bg-maestro-elevated border border-maestro rounded-lg text-[13px] text-maestro-muted">
           <div className="w-7 h-7 rounded-[7px] bg-maestro-primary-subtle text-maestro-primary flex items-center justify-center">
-            {mode === "auto" ? <Sparkles size={15} /> : <Pencil size={15} />}
+            {mode === "auto" ? <SparkleIcon size={15} /> : <PencilSimpleIcon size={15} />}
           </div>
           <div className="flex-1 leading-normal">
             {mode === "auto" ? (
@@ -411,7 +411,7 @@ function CreateSubagent() {
             hint="The subagent will be created at <project>/.claude/agents/<name>.md."
           >
             <div className="flex items-center gap-2 px-3 py-2 rounded-lg bg-maestro-faint border border-maestro font-mono text-[12px] text-maestro-muted">
-              <Folder size={13} className="text-maestro-muted" />
+              <FolderIcon size={13} className="text-maestro-muted" />
               {projectRoot || "No project is open — choose one from the top bar."}
             </div>
           </Field>

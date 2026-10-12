@@ -1,5 +1,4 @@
 import FilePreview from "@repo/ui/file-preview";
-import { FileJson } from "lucide-react";
 
 /**
  * The marketplace.json as it will be written.
@@ -47,12 +46,5 @@ export default function MarketplaceManifestPreview({
   ];
 
   const dir = (targetDir.trim() || "<target/dir>").replace(/\/+$/, "");
-  return (
-    <FilePreview
-      filename="marketplace.json"
-      fileIcon={<FileJson size={11} />}
-      path={`${dir}/.claude-plugin/`}
-      lines={lines}
-    />
-  );
+  return <FilePreview filename="marketplace.json" path={`${dir}/.claude-plugin/`} lines={lines} />;
 }

@@ -13,7 +13,7 @@
 // notice it if both are on screen.
 
 import { useState } from "react";
-import { AlertTriangle, Check, GitBranch, Unlink } from "lucide-react";
+import { CheckIcon, GitBranchIcon, LinkBreakIcon, WarningIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import type { AgentSyncAction, AgentSyncEntry } from "../../../../shared/ipc";
 
@@ -151,7 +151,7 @@ export default function AgentForkReview({
       className="mx-6 mb-6 flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated"
     >
       <div className="flex items-center gap-2">
-        <GitBranch size={13} className="text-maestro-muted" />
+        <GitBranchIcon size={13} className="text-maestro-muted" />
         <span className="text-[13px] font-semibold text-maestro">Forked from a template</span>
         <span className="ml-auto font-mono text-[11px] text-maestro-muted">
           {entry.templateFile ?? "template missing"}
@@ -170,9 +170,9 @@ export default function AgentForkReview({
         }`}
       >
         {verdict.tone === "warn" ? (
-          <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
+          <WarningIcon size={14} className="shrink-0 mt-px text-amber-500" />
         ) : (
-          <Check size={14} className="shrink-0 mt-px text-maestro-success" />
+          <CheckIcon size={14} className="shrink-0 mt-px text-maestro-success" />
         )}
         <span className="text-maestro-muted">{verdict.text}</span>
       </div>
@@ -208,7 +208,7 @@ export default function AgentForkReview({
           onClick={() => onAction("detach")}
           className="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-[13px] font-semibold border box-border transition-all duration-150 border-red-500/40 text-red-500 hover:bg-red-500/10 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          <Unlink size={13} /> Detach
+          <LinkBreakIcon size={13} /> Detach
         </button>
       </div>
       <p className="text-[12px] text-maestro-muted m-0">

@@ -7,12 +7,12 @@ them knows a tab bar exists above them. Clicking a step in any pane selects it i
 
 A thin (180px) vertical list of step names with status icons. Each row:
 
-- **Status icon** (from `lucide-react`):
-  - `"success"` → `CircleCheck` in `text-maestro-success`
-  - `"condition"` → `CircleX` in `text-maestro-danger`
-  - `"unknown"` → `AlertTriangle` in `text-maestro-warning`
-  - `"transition"` → hollow `Circle` in `text-maestro-muted` (neutral — a non-workflow boundary, not an error)
-  - Main Session (`status: null`) → `CircleCheck` in `text-maestro-success` (default)
+- **Status icon** (from `@phosphor-icons/react`):
+  - `"success"` → `CheckCircleIcon` in `text-maestro-success`
+  - `"condition"` → `XCircleIcon` in `text-maestro-danger`
+  - `"unknown"` → `WarningIcon` in `text-maestro-warning`
+  - `"transition"` → hollow `CircleIcon` in `text-maestro-muted` (neutral — a non-workflow boundary, not an error)
+  - Main Session (`status: null`) → `CheckCircleIcon` in `text-maestro-success` (default)
 - **Click** → `onSelect(id)` → `setActiveId(id)` + `scrollIntoView` on the matching center-pane section.
 - **Active step** → `font-medium` + a `border-b-2` underline colored by status (green/red/yellow).
 - **Skills badge** (right-aligned, only when `inst.skillsTriage` is set) → compact `<loaded>` in

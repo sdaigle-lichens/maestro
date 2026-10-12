@@ -10,7 +10,7 @@
 // routes/docs.index.tsx), and this reader moved here with its behavior otherwise unchanged.
 
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { AlertTriangle, BookOpen, FileText, FolderOpen } from "lucide-react";
+import { BookOpenIcon, FileTextIcon, FolderOpenIcon, WarningIcon } from "@phosphor-icons/react";
 import TopNav from "../components/top-nav";
 import DocsSearch from "../components/docs-search";
 import { callMain } from "../utils/call-main";
@@ -40,7 +40,7 @@ function DocsIndex() {
 
           {!result.ok ? (
             <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10">
-              <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+              <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
               <div>
                 <p className="text-[13px] text-maestro m-0 mb-1">The docs could not be listed.</p>
                 <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
@@ -52,7 +52,7 @@ function DocsIndex() {
 
               {result.value.docs.length === 0 ? (
                 <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-500/10 text-[12px]">
-                  <FolderOpen size={14} className="shrink-0 mt-px text-amber-500" />
+                  <FolderOpenIcon size={14} className="shrink-0 mt-px text-amber-500" />
                   <span className="text-maestro-muted">
                     {result.value.projectRoot ? (
                       <>
@@ -80,7 +80,7 @@ function DocsIndex() {
                       search={{ q: "", at: "" }}
                       className="flex items-start gap-2.5 rounded-lg border border-maestro bg-maestro-elevated px-3 py-2.5 hover:border-maestro-primary-strong"
                     >
-                      <FileText size={14} className="shrink-0 mt-0.5 text-maestro-muted" />
+                      <FileTextIcon size={14} className="shrink-0 mt-0.5 text-maestro-muted" />
                       <span className="min-w-0">
                         <span className="block text-[13px] text-maestro truncate">{doc.title}</span>
                         <span className="block font-mono text-[11px] text-maestro-muted truncate">
@@ -94,8 +94,8 @@ function DocsIndex() {
 
               {result.value.docs.length > 0 && (
                 <p className="flex items-center gap-1.5 text-[12px] text-maestro-muted m-0">
-                  <BookOpen size={12} /> {result.value.docs.length} documents · {result.value.sections.length} sections
-                  indexed
+                  <BookOpenIcon size={12} /> {result.value.docs.length} documents · {result.value.sections.length}{" "}
+                  sections indexed
                 </p>
               )}
             </>

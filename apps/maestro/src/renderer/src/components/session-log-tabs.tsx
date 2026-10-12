@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { XIcon } from "@phosphor-icons/react";
 import {
   orderSessions,
   pickSessionTitle,
@@ -111,7 +111,7 @@ export default function SessionLogTabs({
                 aria-label="Delete session"
                 title="Delete session"
               >
-                <X size={13} strokeWidth={2.5} />
+                <XIcon size={13} weight="bold" />
               </button>
             )}
           </div>

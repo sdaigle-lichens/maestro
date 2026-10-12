@@ -3,21 +3,21 @@ import { useCallback, useEffect, useState } from "react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
 import {
-  AlertTriangle,
-  Check,
-  Download,
-  FolderOpen,
-  GitBranch,
-  Inbox,
-  ListChecks,
-  PowerOff,
-  RefreshCw,
-  ShieldCheck,
-  Sparkles,
-  Tag as TagIcon,
-  Trash2,
-  X,
-} from "lucide-react";
+  ArrowsClockwiseIcon,
+  CheckIcon,
+  DownloadSimpleIcon,
+  FolderOpenIcon,
+  GitBranchIcon,
+  ListChecksIcon,
+  PowerIcon,
+  ShieldCheckIcon,
+  SparkleIcon,
+  TagIcon,
+  TrashIcon,
+  TrayIcon,
+  WarningIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
@@ -47,9 +47,9 @@ function Row({ ok, label, detail }: { ok: boolean; label: string; detail: React.
   return (
     <div className="flex items-start gap-2.5 py-2 border-b border-maestro last:border-b-0">
       {ok ? (
-        <Check size={14} className="shrink-0 mt-0.5 text-maestro-success" />
+        <CheckIcon size={14} className="shrink-0 mt-0.5 text-maestro-success" />
       ) : (
-        <X size={14} className="shrink-0 mt-0.5 text-amber-500" />
+        <XIcon size={14} className="shrink-0 mt-0.5 text-amber-500" />
       )}
       <div className="flex-1 min-w-0">
         <div className="text-[13px] text-maestro">{label}</div>
@@ -63,7 +63,7 @@ function Note({ variant, children }: { variant: "warn" | "error"; children: Reac
   const tone = variant === "error" ? "bg-red-500/10 text-red-500" : "bg-amber-500/10 text-amber-500";
   return (
     <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] ${tone}`}>
-      <AlertTriangle size={14} className="shrink-0 mt-px" />
+      <WarningIcon size={14} className="shrink-0 mt-px" />
       <span className="text-maestro-muted">{children}</span>
     </div>
   );
@@ -97,7 +97,7 @@ function ReportCard({ report }: { report: InstallReport }) {
                     onClick={() => void window.maestro.shell.reveal(skill.backup!)}
                     className="inline-flex items-center gap-1 text-maestro-primary underline cursor-pointer bg-transparent border-0 p-0 text-[12px]"
                   >
-                    <FolderOpen size={11} /> show the backup
+                    <FolderOpenIcon size={11} /> show the backup
                   </button>
                 </>
               )}
@@ -297,7 +297,7 @@ function PurgeDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 text-[13px] font-semibold text-maestro">
-          <Trash2 size={14} className="text-red-500" />
+          <TrashIcon size={14} className="text-red-500" />
           Delete Maestro from this project
         </div>
         <p className="text-[12px] text-maestro-muted m-0">
@@ -308,7 +308,7 @@ function PurgeDialog({
         </p>
         {plan.purgeRemovesConfig && (
           <div className="flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] bg-red-500/10 text-red-500">
-            <AlertTriangle size={14} className="shrink-0 mt-px" />
+            <WarningIcon size={14} className="shrink-0 mt-px" />
             <span className="text-maestro-muted">
               <span className="font-mono text-maestro">.claude/maestro.json</span> is included — your workflow graph and
               rule assignments go with it. Plain <b>Uninstall</b> keeps that file.
@@ -521,7 +521,7 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
   return (
     <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
       <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <Sparkles size={12} /> New categories detected
+        <SparkleIcon size={12} /> New categories detected
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         Detection found {tags.length === 1 ? "a category" : "categories"} this project&rsquo;s Project Tags catalog has
@@ -620,7 +620,7 @@ function GatesCard({ viewedRoot }: { viewedRoot: string }) {
   return (
     <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
       <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <ShieldCheck size={12} /> Step 1 gates
+        <ShieldCheckIcon size={12} /> Step 1 gates
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         Which gate skills the <span className="font-mono">/maestro</span> orchestrator runs before it classifies a
@@ -696,7 +696,7 @@ function TaskRoutingCard({ viewedRoot }: { viewedRoot: string }) {
   return (
     <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
       <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <ListChecks size={12} /> Task routing
+        <ListChecksIcon size={12} /> Task routing
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         Whether the <span className="font-mono">/maestro</span> orchestrator's Step 4 suggests running{" "}
@@ -765,7 +765,7 @@ function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
       className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated"
     >
       <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <Inbox size={12} /> Channels
+        <TrayIcon size={12} /> Channels
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         Payloads waiting in <span className="font-mono">.claude/channels/</span> for an agent that hasn&rsquo;t consumed
@@ -815,7 +815,7 @@ function ForkedAgentsCard({ summary }: { summary: AgentSyncSummary }) {
       className="flex flex-col gap-2 p-4 rounded-lg border border-maestro bg-maestro-elevated"
     >
       <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <GitBranch size={12} /> Forked agents
+        <GitBranchIcon size={12} /> Forked agents
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         <b>
@@ -1094,7 +1094,7 @@ function InstallPage() {
           <div className="flex items-center gap-2">
             <Button
               variant={action === "reinstall" ? "secondary" : "primary"}
-              icon={action === "update" ? <RefreshCw size={14} /> : <Download size={14} />}
+              icon={action === "update" ? <ArrowsClockwiseIcon size={14} /> : <DownloadSimpleIcon size={14} />}
               loading={phase === "installing"}
               disabled={!viewedRoot || busy || !!status?.appBehind}
               onClick={() => void run()}
@@ -1107,7 +1107,7 @@ function InstallPage() {
                     ? "Update runtime"
                     : "Reinstall"}
             </Button>
-            <Button variant="ghost" icon={<RefreshCw size={13} />} onClick={() => void refreshStatus()}>
+            <Button variant="ghost" icon={<ArrowsClockwiseIcon size={13} />} onClick={() => void refreshStatus()}>
               Re-check
             </Button>
             {status && !status.stale && !status.appBehind && status.installed && (
@@ -1131,7 +1131,7 @@ function InstallPage() {
               <div>
                 <Button
                   variant="secondary"
-                  icon={<PowerOff size={14} />}
+                  icon={<PowerIcon size={14} />}
                   loading={phase === "uninstalling"}
                   disabled={!viewedRoot || busy}
                   onClick={() => void runUninstall(false)}
@@ -1154,7 +1154,7 @@ function InstallPage() {
                   onClick={() => void openPurge()}
                   className="inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-[13px] font-semibold border box-border transition-all duration-150 border-red-500/40 text-red-500 hover:bg-red-500/10 cursor-pointer focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
                 >
-                  <Trash2 size={14} />
+                  <TrashIcon size={14} />
                   <span>{phase === "purging" ? "Deleting…" : "Delete everything…"}</span>
                 </button>
               </div>

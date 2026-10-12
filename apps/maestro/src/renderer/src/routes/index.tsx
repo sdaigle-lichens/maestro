@@ -1,5 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { BookOpen, FolderOpen, LayoutGrid, X } from "lucide-react";
+import { BookOpenIcon, FolderOpenIcon, SquaresFourIcon, XIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { useProject } from "../utils/project-context";
 import { installBadge, useInstall } from "../utils/install-context";
@@ -48,10 +48,10 @@ function Home() {
         <HamburgerMenu badge={badge} />
         <span className="w-px h-4 bg-maestro-border mx-1.5 shrink-0" aria-hidden />
         <Link to="/docs" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-          <BookOpen size={13} /> Docs
+          <BookOpenIcon size={13} /> Docs
         </Link>
         <Link to="/tools" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
-          <LayoutGrid size={13} /> Tools
+          <SquaresFourIcon size={13} /> Tools
         </Link>
       </nav>
 
@@ -69,7 +69,7 @@ function Home() {
           </p>
         </div>
 
-        <Button variant="primary" icon={<FolderOpen size={14} />} onClick={() => void pickAndGo()}>
+        <Button variant="primary" icon={<FolderOpenIcon size={14} />} onClick={() => void pickAndGo()}>
           {current ? "Switch project…" : "Open project…"}
         </Button>
 
@@ -93,7 +93,7 @@ function Home() {
                     title="Remove from recent"
                     className="w-7 h-7 rounded-md flex items-center justify-center text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                   >
-                    <X size={13} />
+                    <XIcon size={13} />
                   </button>
                 </li>
               ))}

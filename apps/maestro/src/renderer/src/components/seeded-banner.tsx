@@ -1,4 +1,4 @@
-import { FileWarning } from "lucide-react";
+import { FileXIcon } from "@phosphor-icons/react";
 
 /**
  * Shown when the loaded config came from nowhere on disk — the project has no
@@ -18,7 +18,7 @@ export default function SeededBanner({ children }: { children: React.ReactNode }
       role="status"
       className="flex items-start gap-2 px-4 py-2 border-b border-maestro bg-amber-500/10 text-[12px] text-maestro-muted"
     >
-      <FileWarning size={14} className="shrink-0 mt-px text-amber-500" />
+      <FileXIcon size={14} className="shrink-0 mt-px text-amber-500" />
       <span>
         This project has no <span className="font-mono text-maestro">.claude/maestro.json</span> yet. {children}
       </span>

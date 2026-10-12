@@ -1,23 +1,17 @@
 import type { ReactNode } from "react";
+import { FileCodeIcon, FileTextIcon } from "@phosphor-icons/react";
 import SyntaxLine from "./syntax-line";
 
 interface FilePreviewProps {
   label?: string;
   filename: string;
-  fileIcon?: ReactNode;
   path?: string;
   lines?: string[];
   children?: ReactNode;
 }
 
-export default function FilePreview({
-  label = "Template preview",
-  filename,
-  fileIcon,
-  path,
-  lines,
-  children,
-}: FilePreviewProps) {
+export default function FilePreview({ label = "Template preview", filename, path, lines, children }: FilePreviewProps) {
+  const FileIcon = filename.endsWith(".json") ? FileCodeIcon : FileTextIcon;
   return (
     <div className="h-full flex flex-col bg-maestro-faint gap-3 p-5">
       <div className="flex items-center gap-2">
@@ -33,7 +27,7 @@ export default function FilePreview({
             <span className="w-2.5 h-2.5 rounded-full bg-[#a8d59f]" />
           </div>
           <div className="flex items-center gap-1.5 font-mono text-[11px] text-maestro-muted px-2.5 py-1 mt-1.5 bg-maestro-elevated border border-maestro border-b-0 rounded-t-[4px]">
-            {fileIcon}
+            <FileIcon size={11} />
             {filename}
           </div>
         </div>

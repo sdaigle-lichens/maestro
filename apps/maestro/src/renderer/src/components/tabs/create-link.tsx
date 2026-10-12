@@ -4,7 +4,7 @@
 // tab now offers the one `create-*` route relevant to what it just showed.
 
 import { Link } from "@tanstack/react-router";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@phosphor-icons/react";
 
 export default function CreateLink({
   to,
@@ -19,7 +19,7 @@ export default function CreateLink({
         to={to}
         className="inline-flex items-center gap-1.5 h-8 px-3 rounded-md text-[12px] border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro hover:border-maestro-primary-strong no-underline"
       >
-        <Plus size={13} /> {label}
+        <PlusIcon size={13} /> {label}
       </Link>
     </div>
   );

@@ -1,5 +1,6 @@
 import { Dialog as BaseDialog } from "@base-ui/react/dialog";
 import type { ReactNode } from "react";
+import { XIcon } from "@phosphor-icons/react";
 
 interface DialogProps {
   open: boolean;
@@ -38,19 +39,7 @@ export default function Dialog({
                 aria-label="Close dialog"
                 className="p-1.5 rounded-md text-maestro-muted flex cursor-pointer focus:outline-none focus:shadow-none hover:bg-maestro-faint"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  width={14}
-                  height={14}
-                  aria-hidden
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.6}
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M6 6l12 12M18 6L6 18" />
-                </svg>
+                <XIcon size={14} aria-hidden />
               </BaseDialog.Close>
             </div>
           )}

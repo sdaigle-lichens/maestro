@@ -15,7 +15,7 @@
 // avatar, and Cancel discards all of it together.
 
 import { useEffect, useRef, useState } from "react";
-import { ArrowRight, PanelRightClose, PanelRightOpen, Pencil } from "lucide-react";
+import { ArrowRightIcon, CaretDoubleLeftIcon, CaretDoubleRightIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import { ICON_BUTTON, PENCIL_BUTTON, PRIMARY_CHIP, RIGHT_PANE_MAX, RIGHT_PANE_MIN } from "./agent-shared";
 import type { ResolvedHandoffRoute } from "../../../../shared/ipc";
 
@@ -125,7 +125,7 @@ export default function InteractionsPane({
           title={open ? "Collapse panel" : "Expand panel"}
           className={`w-6 h-6 flex-none ${ICON_BUTTON}`}
         >
-          {open ? <PanelRightClose size={13} /> : <PanelRightOpen size={13} />}
+          {open ? <CaretDoubleRightIcon size={13} /> : <CaretDoubleLeftIcon size={13} />}
         </button>
       </div>
 
@@ -159,7 +159,7 @@ export default function InteractionsPane({
           {!editing && contentEditable && (
             <div className="flex-none flex items-center justify-end">
               <button type="button" onClick={onStartEdit} title="Edit this agent's content" className={PENCIL_BUTTON}>
-                <Pencil size={12} />
+                <PencilSimpleIcon size={12} />
               </button>
             </div>
           )}
@@ -216,7 +216,7 @@ export default function InteractionsPane({
                 testId={id ?? undefined}
                 header={
                   <span className="inline-flex items-center gap-1 font-mono text-[11.5px] text-maestro-muted">
-                    <ArrowRight size={11} className="text-maestro-muted" />
+                    <ArrowRightIcon size={11} className="text-maestro-muted" />
                     {route.receiver ?? "nowhere"}
                     {route.label !== "success" && (
                       <span className="text-maestro-muted not-italic"> · {route.label}</span>
@@ -299,7 +299,7 @@ function Entry({
         <span className="flex-1" />
         {!editing && editable && (
           <button type="button" onClick={onStartEdit} title="Edit this interaction" className={PENCIL_BUTTON}>
-            <Pencil size={12} />
+            <PencilSimpleIcon size={12} />
           </button>
         )}
       </div>

@@ -20,28 +20,28 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
-  AlertTriangle,
-  Ban,
-  Check,
-  CircleHelp,
-  Eye,
-  FilePen,
-  FileText,
-  FolderOpen,
-  History,
-  Info,
-  MessagesSquare,
-  Play,
-  Send,
-  ShieldQuestion,
-  Square,
-  Terminal,
-  Trash2,
-  Undo2,
-  Wallet,
-  Wrench,
-  X,
-} from "lucide-react";
+  ArrowUUpLeftIcon,
+  ChatsCircleIcon,
+  CheckIcon,
+  ClockCounterClockwiseIcon,
+  EyeIcon,
+  FileTextIcon,
+  FolderOpenIcon,
+  InfoIcon,
+  NotePencilIcon,
+  PaperPlaneRightIcon,
+  PlayIcon,
+  ProhibitIcon,
+  QuestionIcon,
+  ShieldWarningIcon,
+  SquareIcon,
+  TerminalWindowIcon,
+  TrashIcon,
+  WalletIcon,
+  WarningIcon,
+  WrenchIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import QuestionCard from "./agent-question";
 import ReadScope from "./read-scope";
 import ResumePicker from "./session-resume";
@@ -129,7 +129,7 @@ export default function SessionPane() {
 
       <header className="flex items-center justify-between border-b border-maestro px-4 py-3 shrink-0">
         <div className="flex items-center gap-2.5 min-w-0">
-          <MessagesSquare size={16} className="text-maestro-primary shrink-0" />
+          <ChatsCircleIcon size={16} className="text-maestro-primary shrink-0" />
           <div className="min-w-0">
             <h2 className="text-[13px] font-semibold text-maestro m-0">Session</h2>
             <p data-testid="session-status" className="text-[10px] text-maestro-muted m-0 truncate">
@@ -158,7 +158,7 @@ export default function SessionPane() {
             title="Pick up a conversation recorded for this project"
             className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none disabled:opacity-40"
           >
-            <History size={14} />
+            <ClockCounterClockwiseIcon size={14} />
           </button>
           <button
             type="button"
@@ -167,7 +167,7 @@ export default function SessionPane() {
             title="What this session can read and write"
             className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
           >
-            <Eye size={14} />
+            <EyeIcon size={14} />
           </button>
           {session.entries.length > 0 && (
             <button
@@ -177,7 +177,7 @@ export default function SessionPane() {
               title="End this session and clear the transcript"
               className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
             >
-              <Trash2 size={14} />
+              <TrashIcon size={14} />
             </button>
           )}
           <button
@@ -186,7 +186,7 @@ export default function SessionPane() {
             aria-label="Close session pane"
             className="flex h-7 w-7 items-center justify-center rounded-md text-maestro-muted hover:bg-maestro-elevated hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
           >
-            <X size={14} />
+            <XIcon size={14} />
           </button>
         </div>
       </header>
@@ -242,7 +242,7 @@ export default function SessionPane() {
               onClick={() => void session.stop()}
               className="inline-flex items-center gap-1 rounded-md bg-red-500/10 border border-red-500/40 px-2 py-0.5 text-[10px] text-red-500 hover:bg-red-500/20 cursor-pointer focus:outline-none"
             >
-              <Square size={9} /> Stop
+              <SquareIcon size={9} /> Stop
             </button>
           </div>
         )}
@@ -251,7 +251,7 @@ export default function SessionPane() {
             data-testid="session-error"
             className="mb-3 flex items-start gap-1.5 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-[11px]"
           >
-            <AlertTriangle size={12} className="shrink-0 mt-px text-red-500" />
+            <WarningIcon size={12} className="shrink-0 mt-px text-red-500" />
             <span className="text-maestro-muted whitespace-pre-wrap break-words">{session.error}</span>
           </div>
         )}
@@ -333,7 +333,7 @@ export default function SessionPane() {
             aria-label="Send"
             className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-maestro-primary text-white transition hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none border-0"
           >
-            <Send size={15} />
+            <PaperPlaneRightIcon size={15} />
           </button>
         </div>
         <p className="mt-1.5 text-[10px] text-maestro-muted m-0">
@@ -469,7 +469,7 @@ function ContinueCard() {
     <div data-testid="session-continue-card" className="border-t border-maestro px-4 pt-3 shrink-0">
       <div className="mb-2 rounded-xl border border-maestro-primary bg-maestro-primary-subtle px-3 py-2.5">
         <div className="flex items-start gap-2">
-          <Wallet size={14} className="mt-0.5 shrink-0 text-maestro-primary" />
+          <WalletIcon size={14} className="mt-0.5 shrink-0 text-maestro-primary" />
           <div className="min-w-0 flex-1">
             <p className="m-0 text-[12px] font-semibold text-maestro">
               {turnCeiling
@@ -492,7 +492,7 @@ function ContinueCard() {
             onClick={() => void session.continueSession()}
             className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
           >
-            <Play size={11} /> {session.continuing ? "Continuing…" : "Continue"}
+            <PlayIcon size={11} /> {session.continuing ? "Continuing…" : "Continue"}
           </button>
           <button
             type="button"
@@ -500,7 +500,7 @@ function ContinueCard() {
             onClick={() => void session.end()}
             className="inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
           >
-            <Trash2 size={11} /> Discard
+            <TrashIcon size={11} /> Discard
           </button>
         </div>
       </div>
@@ -549,7 +549,7 @@ function GrantList({ grants, onRevoke }: { grants: SessionGrant[]; onRevoke(path
             title="Put this back out of scope"
             className="inline-flex shrink-0 items-center gap-1 rounded-md border border-maestro bg-maestro px-2 py-0.5 text-[10px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
           >
-            <Undo2 size={10} /> Revoke
+            <ArrowUUpLeftIcon size={10} /> Revoke
           </button>
         </div>
       ))}
@@ -591,7 +591,7 @@ function WriteScope({ writes }: { writes: SessionWrite[] }) {
           data-kind={write.kind}
           className="flex items-start gap-2 rounded-md border border-maestro bg-maestro px-2 py-1.5"
         >
-          <FilePen size={11} className="mt-0.5 shrink-0 text-maestro-primary" />
+          <NotePencilIcon size={11} className="mt-0.5 shrink-0 text-maestro-primary" />
           <div className="min-w-0 flex-1">
             <div className="font-mono text-[10px] text-maestro-muted break-all">{write.path}</div>
             <div className="text-[10px] text-maestro-muted">
@@ -659,7 +659,7 @@ function PermissionCard({
       className="mb-2 rounded-xl border border-amber-500/40 bg-amber-500/5 px-3 py-2.5"
     >
       <div className="flex items-start gap-2">
-        <ShieldQuestion size={14} className="mt-0.5 shrink-0 text-amber-500" />
+        <ShieldWarningIcon size={14} className="mt-0.5 shrink-0 text-amber-500" />
         <div className="min-w-0 flex-1">
           <p className="m-0 text-[12px] font-semibold text-maestro">
             {request.title ?? `Claude wants to use ${request.tool}`}
@@ -694,7 +694,7 @@ function PermissionCard({
           onClick={() => answer({ choice: "allow" })}
           className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Check size={11} /> Allow once
+          <CheckIcon size={11} /> Allow once
         </button>
         {/*
           THE OTHER HALF OF THE BOUNDARY. Allow once is correct and, on its own, is the state in
@@ -722,7 +722,7 @@ function PermissionCard({
                 : "border border-maestro-focus-ring bg-maestro-primary-subtle text-maestro-primary hover:brightness-110"
             }`}
           >
-            {option.broad ? <AlertTriangle size={11} /> : <FolderOpen size={11} />} {option.label}
+            {option.broad ? <WarningIcon size={11} /> : <FolderOpenIcon size={11} />} {option.label}
           </button>
         ))}
         <button
@@ -732,7 +732,7 @@ function PermissionCard({
           onClick={() => answer({ choice: "deny", reason: reasonOr(request.denyReason || DEFAULT_DENY_REASON) })}
           className="inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Ban size={11} /> Deny
+          <ProhibitIcon size={11} /> Deny
         </button>
         {/*
           STOP IS NOT DENY. A plain denial refuses the call and lets the model try something else —
@@ -747,7 +747,7 @@ function PermissionCard({
           title="Refuse this call and end the turn"
           className="inline-flex items-center gap-1 rounded-md border border-red-500/40 bg-red-500/10 px-2.5 py-1 text-[11px] text-red-500 hover:bg-red-500/20 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Square size={9} /> Stop turn
+          <SquareIcon size={9} /> Stop turn
         </button>
       </div>
 
@@ -909,7 +909,7 @@ function EmptyState({ noProject, live }: { noProject: boolean; live: boolean }) 
   return (
     <div className="flex h-full flex-col items-center justify-center gap-3 text-center">
       <div className="flex h-12 w-12 items-center justify-center rounded-full bg-maestro-primary-subtle">
-        <MessagesSquare size={20} className="text-maestro-primary" />
+        <ChatsCircleIcon size={20} className="text-maestro-primary" />
       </div>
       <div>
         <p className="m-0 mb-1 text-[13px] font-medium text-maestro">
@@ -926,7 +926,7 @@ function EmptyState({ noProject, live }: { noProject: boolean; live: boolean }) 
           Also available here
         </p>
         <code className="inline-flex items-center gap-1.5 rounded-md border border-maestro-focus-ring bg-maestro-primary-subtle px-2 py-1 font-mono text-[12px] text-maestro-primary">
-          <Terminal size={11} /> {HELP_SKILL}
+          <TerminalWindowIcon size={11} /> {HELP_SKILL}
         </code>
         <p className="m-0 mt-1.5 text-[11px] text-maestro-muted">
           The help skill the old chat panel ran, now a skill this session can reach by name.
@@ -1010,7 +1010,7 @@ function Entry({
         data-tool={entry.tool}
         className="mb-1.5 flex items-start gap-1.5 text-[11px] text-maestro-muted"
       >
-        <Wrench size={11} className="shrink-0 mt-0.5" />
+        <WrenchIcon size={11} className="shrink-0 mt-0.5" />
         <span className="break-all">{label}</span>
       </div>
     );
@@ -1025,7 +1025,7 @@ function Entry({
         data-decided-by={entry.decidedBy ?? ""}
         className="mb-3 flex items-start gap-1.5 rounded-lg bg-amber-500/10 px-2.5 py-1.5 text-[11px]"
       >
-        <Ban size={12} className="shrink-0 mt-px text-amber-500" />
+        <ProhibitIcon size={12} className="shrink-0 mt-px text-amber-500" />
         <span className="text-maestro-muted break-words">
           <span className="font-semibold">{entry.tool}</span>
           {entry.target && <span className="font-mono"> {entry.target}</span>} — {entry.reason}
@@ -1052,7 +1052,7 @@ function Entry({
         data-outcome={outcome ?? "pending"}
         className="mb-3 flex items-start gap-1.5 text-[11px] text-maestro-muted"
       >
-        <ShieldQuestion size={11} className="shrink-0 mt-0.5" />
+        <ShieldWarningIcon size={11} className="shrink-0 mt-0.5" />
         <span className="break-words">
           Asked about <span className="font-semibold text-maestro-muted">{entry.request.tool}</span>
           {entry.request.target && <span className="font-mono"> {entry.request.target}</span>} —{" "}
@@ -1073,7 +1073,7 @@ function Entry({
         data-outcome={outcome ?? "pending"}
         className="mb-3 flex items-start gap-1.5 text-[11px] text-maestro-muted"
       >
-        <CircleHelp size={11} className="shrink-0 mt-0.5" />
+        <QuestionIcon size={11} className="shrink-0 mt-0.5" />
         <span className="break-words">
           Asked you to decide:{" "}
           <span className="font-semibold text-maestro-muted">
@@ -1097,7 +1097,7 @@ function Entry({
         className="mb-3 rounded-lg border border-maestro bg-maestro-elevated px-2.5"
       >
         <summary className="cursor-pointer list-none py-1.5 text-[11px] text-maestro-muted flex items-start gap-1.5">
-          <FileText size={11} className="shrink-0 mt-0.5 text-maestro-primary" />
+          <FileTextIcon size={11} className="shrink-0 mt-0.5 text-maestro-primary" />
           <span className="break-words">
             {entry.title}
             <span className="text-maestro-muted"> — added without a turn, so nothing was spent</span>
@@ -1113,7 +1113,7 @@ function Entry({
   if (entry.kind === "notice") {
     return (
       <div data-testid="session-notice" className="mb-1.5 flex items-start gap-1.5 text-[11px] text-maestro-muted">
-        <Info size={11} className="shrink-0 mt-0.5" />
+        <InfoIcon size={11} className="shrink-0 mt-0.5" />
         <span className="whitespace-pre-wrap break-words">{entry.text}</span>
       </div>
     );
@@ -1123,7 +1123,7 @@ function Entry({
     if (entry.ok) return null;
     return (
       <div className="mb-3 flex items-start gap-1.5 rounded-lg bg-red-500/10 px-2.5 py-1.5 text-[11px]">
-        <AlertTriangle size={12} className="shrink-0 mt-px text-red-500" />
+        <WarningIcon size={12} className="shrink-0 mt-px text-red-500" />
         <span className="text-maestro-muted">{entry.error}</span>
       </div>
     );
@@ -1145,7 +1145,7 @@ function Entry({
       data-continuable={entry.canContinue ? "yes" : "no"}
       className="mb-3 flex items-center gap-1.5 text-[11px] text-maestro-muted"
     >
-      <Play size={11} className="shrink-0 rotate-90" />
+      <PlayIcon size={11} className="shrink-0 rotate-90" />
       <span>{ENDED[entry.reason]}</span>
     </div>
   );

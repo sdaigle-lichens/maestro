@@ -2,7 +2,7 @@ import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
 import { useStore } from "@tanstack/react-store";
 import Button from "@repo/ui/button";
-import { Plus, Sparkles } from "lucide-react";
+import { PlusIcon, SparkleIcon } from "@phosphor-icons/react";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import WorkflowCanvas from "../components/workflow-canvas";
@@ -323,7 +323,7 @@ function WorkflowsPage() {
                 }}
                 className="mt-1.5 flex items-center gap-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer py-0.5 px-1 rounded focus:outline-none"
               >
-                <Plus size={10} /> Agent
+                <PlusIcon size={10} /> Agent
               </button>
             </div>
 
@@ -374,7 +374,7 @@ function WorkflowsPage() {
                 }}
                 className="mt-1.5 flex items-center gap-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer py-0.5 px-1 rounded focus:outline-none"
               >
-                <Plus size={10} /> Skill
+                <PlusIcon size={10} /> Skill
               </button>
             </div>
           </div>
@@ -383,7 +383,7 @@ function WorkflowsPage() {
           <div className="shrink-0 border-t border-maestro p-4">
             <Button
               variant="primary"
-              icon={phase === "idle" ? <Sparkles size={14} /> : undefined}
+              icon={phase === "idle" ? <SparkleIcon size={14} /> : undefined}
               loading={phase === "saving"}
               onClick={() => void handleSubmit()}
             >
@@ -467,7 +467,7 @@ function WorkflowsPage() {
                 onClick={openCreateWorkflow}
                 className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-maestro-primary text-white text-[13px] font-medium cursor-pointer focus:outline-none hover:opacity-90"
               >
-                <Plus size={14} /> Add workflow
+                <PlusIcon size={14} /> Add workflow
               </button>
             </div>
           )}

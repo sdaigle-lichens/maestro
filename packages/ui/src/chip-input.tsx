@@ -1,4 +1,5 @@
 import { useRef, useState } from "react";
+import { XIcon } from "@phosphor-icons/react";
 
 interface ChipInputProps {
   id?: string;
@@ -56,19 +57,7 @@ export default function ChipInput({ id, values, onChange, placeholder }: ChipInp
             aria-label={`Remove ${v}`}
             className="p-0.5 rounded-[3px] flex items-center text-maestro-muted cursor-pointer focus:outline-none focus:shadow-none"
           >
-            <svg
-              viewBox="0 0 24 24"
-              width={10}
-              height={10}
-              aria-hidden
-              fill="none"
-              stroke="currentColor"
-              strokeWidth={2.4}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            >
-              <path d="M6 6l12 12M18 6L6 18" />
-            </svg>
+            <XIcon size={10} weight="bold" aria-hidden />
           </button>
         </span>
       ))}

@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { ScrollText } from "lucide-react";
+import { ScrollIcon } from "@phosphor-icons/react";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import CleanSessionsButton from "../components/clean-sessions-button";
@@ -110,7 +110,7 @@ function SessionLogPage() {
   const mainEmpty = (
     <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
       <div className="w-12 h-12 rounded-full bg-maestro-elevated border border-maestro flex items-center justify-center">
-        <ScrollText size={20} className="text-maestro-muted" />
+        <ScrollIcon size={20} className="text-maestro-muted" />
       </div>
       <div>
         <p className="text-[13px] font-medium text-maestro mb-1">No live sessions in any known project</p>
@@ -217,7 +217,7 @@ function Notice({ title, testId, children }: { title: string; testId: string; ch
   return (
     <div data-testid={testId} className="flex-1 flex flex-col items-center justify-center gap-3 text-center px-6">
       <div className="w-12 h-12 rounded-full bg-maestro-elevated border border-maestro flex items-center justify-center">
-        <ScrollText size={20} className="text-maestro-muted" />
+        <ScrollIcon size={20} className="text-maestro-muted" />
       </div>
       <p className="text-[13px] font-medium text-maestro">{title}</p>
       <div className="text-[12px] text-maestro-muted max-w-md flex flex-col items-center gap-1">{children}</div>

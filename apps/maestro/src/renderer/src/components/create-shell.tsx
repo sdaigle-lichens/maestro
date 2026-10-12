@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import ThemeToggle from "@repo/ui/theme-toggle";
 import ShortcutsDialog from "@repo/ui/shortcuts-dialog";
 import Button from "@repo/ui/button";
-import { Keyboard, Sparkles } from "lucide-react";
+import { SparkleIcon } from "@phosphor-icons/react";
 import TopNav from "./top-nav";
 import { useSession } from "../utils/session-context";
 
@@ -138,7 +138,7 @@ export default function CreateShell({
               <div className="flex-1" />
               <Button
                 variant="primary"
-                icon={busy ? undefined : <Sparkles size={14} />}
+                icon={busy ? undefined : <SparkleIcon size={14} />}
                 loading={busy}
                 onClick={onSubmit}
               >
@@ -153,12 +153,7 @@ export default function CreateShell({
         {!sessionOpen && <div className="border-l border-maestro overflow-y-auto flex flex-col">{preview}</div>}
       </div>
 
-      <ShortcutsDialog
-        open={helpOpen}
-        onOpenChange={onHelpOpenChange}
-        titleIcon={<Keyboard size={15} />}
-        sections={shortcuts}
-      />
+      <ShortcutsDialog open={helpOpen} onOpenChange={onHelpOpenChange} sections={shortcuts} />
     </div>
   );
 }

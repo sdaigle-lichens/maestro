@@ -1,17 +1,17 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import {
-  ListChecks,
-  Copy,
-  Check,
-  CircleCheck,
-  CircleDot,
-  CircleDashed,
-  CheckCheck,
-  Terminal,
-  Lock,
-  Trash2,
-} from "lucide-react";
+  CheckCircleIcon,
+  CheckIcon,
+  ChecksIcon,
+  CircleDashedIcon,
+  CopyIcon,
+  ListChecksIcon,
+  LockIcon,
+  RecordIcon,
+  TerminalWindowIcon,
+  TrashIcon,
+} from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import CopyableText from "@repo/ui/copyable-text";
@@ -48,10 +48,10 @@ function promptFor(task: MaestroTask): string {
 type Filter = "open" | "closed";
 const isOpen = (t: MaestroTask) => t.status !== "done";
 
-const STATUS_META: Record<TaskStatus, { Icon: typeof CircleCheck; cls: string; label: string }> = {
-  done: { Icon: CircleCheck, cls: "text-emerald-500", label: "Done" },
-  ready: { Icon: CircleDot, cls: "text-sky-500", label: "Ready" },
-  blocked: { Icon: CircleDashed, cls: "text-maestro-muted", label: "Blocked" },
+const STATUS_META: Record<TaskStatus, { Icon: typeof CheckCircleIcon; cls: string; label: string }> = {
+  done: { Icon: CheckCircleIcon, cls: "text-emerald-500", label: "Done" },
+  ready: { Icon: RecordIcon, cls: "text-sky-500", label: "Ready" },
+  blocked: { Icon: CircleDashedIcon, cls: "text-maestro-muted", label: "Blocked" },
 };
 
 function StatusBadge({ status }: { status: TaskStatus }) {
@@ -91,7 +91,7 @@ function ClaimBadge({ claim }: { claim: NonNullable<MaestroTask["claim"]> }) {
         className="inline-flex items-center gap-1 text-[10px] font-medium text-amber-500"
         title={`Claimed by session ${claim.sessionId}, ${ago(claim.claimedAt)}`}
       >
-        <Lock size={12} /> Claimed by {who}
+        <LockIcon size={12} /> Claimed by {who}
       </span>
     );
   }
@@ -100,7 +100,7 @@ function ClaimBadge({ claim }: { claim: NonNullable<MaestroTask["claim"]> }) {
       className="inline-flex items-center gap-1 text-[10px] font-medium text-maestro-muted opacity-60"
       title={`Claim by session ${claim.sessionId} is expiring, claimed ${ago(claim.claimedAt)} — about to be released`}
     >
-      <Lock size={12} /> Claim expiring · {who}
+      <LockIcon size={12} /> Claim expiring · {who}
     </span>
   );
 }
@@ -240,7 +240,7 @@ function MaestroTasksPage() {
       {isEmpty ? (
         <div className="flex-1 flex flex-col items-center justify-center gap-4 text-center px-6">
           <div className="w-12 h-12 rounded-full bg-maestro-elevated border border-maestro flex items-center justify-center">
-            <ListChecks size={20} className="text-maestro-muted" />
+            <ListChecksIcon size={20} className="text-maestro-muted" />
           </div>
           <div>
             <p className="text-[13px] font-medium text-maestro mb-1">No Maestro tasks found</p>
@@ -340,7 +340,7 @@ function MaestroTasksPage() {
                         disabled={previewing || preview !== null}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-maestro px-3 py-1.5 text-[12px] font-medium text-maestro-muted transition-colors hover:border-maestro-primary-strong hover:text-maestro disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        <Terminal size={13} /> Run with Claude
+                        <TerminalWindowIcon size={13} /> Run with Claude
                       </button>
                     )}
                     {active.status !== "done" && (
@@ -350,7 +350,7 @@ function MaestroTasksPage() {
                         disabled={closing}
                         className="inline-flex items-center gap-1.5 rounded-lg border border-maestro px-3 py-1.5 text-[12px] font-medium text-maestro-muted transition-colors hover:border-maestro-success-strong hover:text-maestro-success disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                       >
-                        <CheckCheck size={13} /> Close task
+                        <ChecksIcon size={13} /> Close task
                       </button>
                     )}
                     <button
@@ -359,7 +359,7 @@ function MaestroTasksPage() {
                       disabled={deleting}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-maestro px-3 py-1.5 text-[12px] font-medium text-maestro-muted transition-colors hover:border-red-500 hover:text-red-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
                     >
-                      <Trash2 size={13} /> Delete task
+                      <TrashIcon size={13} /> Delete task
                     </button>
                     <CopyableText
                       text={promptFor(active)}
@@ -370,11 +370,11 @@ function MaestroTasksPage() {
                       {(copied) =>
                         copied ? (
                           <>
-                            <Check size={13} /> Copied!
+                            <CheckIcon size={13} /> Copied!
                           </>
                         ) : (
                           <>
-                            <Copy size={13} /> Copy prompt
+                            <CopyIcon size={13} /> Copy prompt
                           </>
                         )
                       }

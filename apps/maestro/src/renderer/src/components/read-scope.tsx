@@ -1,4 +1,4 @@
-import { AlertTriangle, Eye } from "lucide-react";
+import { EyeIcon, WarningIcon } from "@phosphor-icons/react";
 import type { ClaudeReadScope, SettingsTier } from "../../../shared/ipc";
 
 /**
@@ -30,7 +30,7 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
       <div
         className={`flex items-center gap-1.5 ${compact ? "text-[10px]" : "text-[11px]"} font-semibold text-maestro-muted uppercase tracking-wide`}
       >
-        <Eye size={compact ? 11 : 12} /> What it can read
+        <EyeIcon size={compact ? 11 : 12} /> What it can read
       </div>
 
       <p data-testid="claude-read-summary" className={`m-0 ${text} text-maestro-muted`}>
@@ -57,7 +57,7 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
           data-testid="claude-read-unresolved"
           className={`flex items-start gap-2 px-2.5 py-2 rounded-lg ${text} bg-amber-500/10`}
         >
-          <AlertTriangle size={13} className="shrink-0 mt-px text-amber-500" />
+          <WarningIcon size={13} className="shrink-0 mt-px text-amber-500" />
           <span className="text-maestro-muted">{read.unresolved}</span>
         </div>
       )}

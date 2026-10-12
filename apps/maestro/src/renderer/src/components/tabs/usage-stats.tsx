@@ -12,7 +12,14 @@
 // a network graph afterwards.
 
 import { useCallback, useEffect, useState } from "react";
-import { AlertTriangle, Cloud, HardDrive, Loader2, Play, RotateCw } from "lucide-react";
+import {
+  ArrowClockwiseIcon,
+  CircleNotchIcon,
+  CloudIcon,
+  HardDriveIcon,
+  PlayIcon,
+  WarningIcon,
+} from "@phosphor-icons/react";
 import { callMain } from "../../utils/call-main";
 import { previewUsageStats, runUsageStats } from "../../utils/stats";
 import type { UsageStats, UsageStatsPreview, UsageStatsView, UsageTotals } from "../../utils/stats";
@@ -175,7 +182,7 @@ export default function UsageStatsTab() {
 
       {error && (
         <div className="flex items-start gap-2 px-3 py-2 rounded-lg bg-red-500/10 text-[12px]">
-          <AlertTriangle size={14} className="shrink-0 mt-px text-red-500" />
+          <WarningIcon size={14} className="shrink-0 mt-px text-red-500" />
           <span className="text-maestro-muted">{error}</span>
         </div>
       )}
@@ -230,7 +237,7 @@ function RunBar({
         data-testid="stats-unavailable"
         className="flex items-start gap-2 px-3 py-2.5 rounded-lg bg-amber-500/10 text-[12px]"
       >
-        <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
+        <WarningIcon size={14} className="shrink-0 mt-px text-amber-500" />
         <div className="text-maestro-muted">
           <div>{preview.unavailable}</div>
           <details className="mt-1">
@@ -260,9 +267,9 @@ function RunBar({
     >
       <div className="flex items-start gap-2">
         {network ? (
-          <Cloud size={14} className="shrink-0 mt-px text-amber-500" />
+          <CloudIcon size={14} className="shrink-0 mt-px text-amber-500" />
         ) : (
-          <HardDrive size={14} className="shrink-0 mt-px text-maestro-muted" />
+          <HardDriveIcon size={14} className="shrink-0 mt-px text-maestro-muted" />
         )}
         <div className="flex-1 text-[12px] text-maestro-muted">
           {network ? (
@@ -288,15 +295,15 @@ function RunBar({
         >
           {running ? (
             <>
-              <Loader2 size={12} className="animate-spin" /> Running…
+              <CircleNotchIcon size={12} className="animate-spin" /> Running…
             </>
           ) : hasStats ? (
             <>
-              <RotateCw size={12} /> Refresh
+              <ArrowClockwiseIcon size={12} /> Refresh
             </>
           ) : (
             <>
-              <Play size={12} /> Run
+              <PlayIcon size={12} /> Run
             </>
           )}
         </button>

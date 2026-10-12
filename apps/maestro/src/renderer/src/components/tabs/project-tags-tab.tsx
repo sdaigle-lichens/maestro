@@ -14,7 +14,7 @@
 // fixed constant — a tag added/removed above should be reflected in the dropdown immediately.
 
 import { useState } from "react";
-import { Plus, Save, Tag as TagIcon, X } from "lucide-react";
+import { FloppyDiskIcon, PlusIcon, TagIcon, XIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { Input } from "@repo/ui/field";
 import Select from "@repo/ui/select";
@@ -118,7 +118,7 @@ export default function ProjectTagsTab({
                   onClick={() => void handleRemove(tag)}
                   className="flex items-center justify-center w-4 h-4 rounded-full text-maestro-muted hover:text-maestro cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none bg-transparent border-0"
                 >
-                  <X size={11} />
+                  <XIcon size={11} />
                 </button>
               </span>
             ))
@@ -137,7 +137,7 @@ export default function ProjectTagsTab({
           />
           <Button
             variant="primary"
-            icon={<Plus size={13} />}
+            icon={<PlusIcon size={13} />}
             disabled={busy || !draft.trim()}
             onClick={() => void handleAdd()}
           >
@@ -172,7 +172,7 @@ export default function ProjectTagsTab({
                   </div>
                   <Button
                     variant="primary"
-                    icon={savingAgent === name ? undefined : <Save size={13} />}
+                    icon={savingAgent === name ? undefined : <FloppyDiskIcon size={13} />}
                     loading={savingAgent === name}
                     disabled={!dirty}
                     onClick={() => void handleSaveAgentTag(name)}

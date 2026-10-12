@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Brush } from "lucide-react";
+import { BroomIcon } from "@phosphor-icons/react";
 import { toast } from "@repo/ui/toast";
 import { callMain } from "../utils/call-main";
 
@@ -35,7 +35,7 @@ export default function CleanSessionsButton() {
       title="Remove session directories of Claude sessions that ended without cleaning up (idle over 24h)"
       className="inline-flex items-center gap-1.5 rounded-lg border border-maestro-strong px-3 py-1 text-[11px] font-medium text-maestro-muted transition-colors hover:border-maestro-primary-strong hover:text-maestro disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
     >
-      <Brush size={12} /> {cleaning ? "Cleaning..." : "Clean up sessions"}
+      <BroomIcon size={12} /> {cleaning ? "Cleaning..." : "Clean up sessions"}
     </button>
   );
 }

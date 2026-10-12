@@ -6,7 +6,7 @@ import InstancePicker, {
   type InstancePickerValue,
 } from "./instance-picker";
 import InstanceSkillPicker from "./instance-skill-picker";
-import { Check } from "lucide-react";
+import { CheckIcon } from "@phosphor-icons/react";
 
 import {
   ReactFlow,
@@ -1814,7 +1814,7 @@ export default function WorkflowCanvas({
                               : "bg-maestro border-orange-300 text-transparent hover:border-orange-500"
                           }`}
                         >
-                          <Check size={10} strokeWidth={3} />
+                          <CheckIcon size={10} weight="bold" />
                         </button>
                         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
                           <span className="text-[10px] font-mono text-maestro-muted truncate pl-[9px]">

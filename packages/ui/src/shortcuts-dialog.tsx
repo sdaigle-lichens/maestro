@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { KeyboardIcon } from "@phosphor-icons/react";
 import Dialog from "./dialog";
 
 export interface ShortcutSection {
@@ -10,7 +10,6 @@ interface ShortcutsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   title?: string;
-  titleIcon?: ReactNode;
   sections: ShortcutSection[];
 }
 
@@ -18,11 +17,10 @@ export default function ShortcutsDialog({
   open,
   onOpenChange,
   title = "Keyboard shortcuts",
-  titleIcon,
   sections,
 }: ShortcutsDialogProps) {
   return (
-    <Dialog open={open} onOpenChange={onOpenChange} title={title} titleIcon={titleIcon}>
+    <Dialog open={open} onOpenChange={onOpenChange} title={title} titleIcon={<KeyboardIcon size={15} />}>
       <div className="flex gap-7 px-5.5 py-4.5">
         {sections.map((s) => (
           <div key={s.title} className="flex-1">

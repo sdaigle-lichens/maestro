@@ -1,4 +1,4 @@
-import { GitBranch } from "lucide-react";
+import { GitBranchIcon } from "@phosphor-icons/react";
 import { worktreeLabel, type WorktreeTab } from "../utils/worktree-log-context";
 
 interface WorktreeTabBarProps {
@@ -42,7 +42,7 @@ export default function WorktreeTabBar({ tabs, active, onSelect }: WorktreeTabBa
             onClick={() => onSelect(t.path)}
             className={`${base} ${active === t.path ? on : off} ${removed ? "opacity-70" : ""}`}
           >
-            <GitBranch size={12} className="shrink-0" />
+            <GitBranchIcon size={12} className="shrink-0" />
             <span className="max-w-48 truncate">{worktreeLabel(t)}</span>
             <span className={`text-[8px] ${live ? "text-maestro-success" : "text-maestro-muted"}`}>●</span>
             {removed && <span className="text-[10px] font-normal text-maestro-muted">(removed)</span>}

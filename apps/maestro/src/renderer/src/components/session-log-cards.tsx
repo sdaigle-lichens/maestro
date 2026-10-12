@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX, AlertTriangle, Circle, Inbox } from "lucide-react";
+import { CheckCircleIcon, CircleIcon, TrayIcon, WarningIcon, XCircleIcon } from "@phosphor-icons/react";
 import { unaccountedSkills } from "../utils/session-log";
 import type { Instance } from "../utils/session-log";
 import { ContextUsageBadge } from "./context-usage";
@@ -10,11 +10,11 @@ interface SessionLogCardsProps {
 }
 
 function StatusIcon({ status }: { status: Instance["status"] }) {
-  if (status === "success") return <CircleCheck size={16} className="text-maestro-success shrink-0" />;
-  if (status === "condition") return <CircleX size={16} className="text-maestro-danger shrink-0" />;
-  if (status === "unknown") return <AlertTriangle size={16} className="text-maestro-warning shrink-0" />;
-  if (status === "transition") return <Circle size={16} className="text-maestro-muted shrink-0" />;
-  return <CircleCheck size={16} className="text-maestro-success shrink-0" />;
+  if (status === "success") return <CheckCircleIcon size={16} className="text-maestro-success shrink-0" />;
+  if (status === "condition") return <XCircleIcon size={16} className="text-maestro-danger shrink-0" />;
+  if (status === "unknown") return <WarningIcon size={16} className="text-maestro-warning shrink-0" />;
+  if (status === "transition") return <CircleIcon size={16} className="text-maestro-muted shrink-0" />;
+  return <CheckCircleIcon size={16} className="text-maestro-success shrink-0" />;
 }
 
 function underlineColor(status: Instance["status"]): string {
@@ -62,7 +62,7 @@ export default function SessionLogCards({ instances, activeId, onSelect }: Sessi
                   className="flex items-center gap-0.5 text-[10px] font-mono text-maestro-muted"
                   title={`${inst.delivered.length} channel deliveries`}
                 >
-                  <Inbox size={10} />
+                  <TrayIcon size={10} />
                   {inst.delivered.length}
                 </span>
               )}

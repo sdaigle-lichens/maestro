@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { AlertTriangle, X } from "lucide-react";
+import { WarningIcon, XIcon } from "@phosphor-icons/react";
 import type { WorkflowSlice } from "../store/workflow-store";
 
 /**
@@ -29,7 +29,7 @@ export default function ExternalChangeBanner({
       role="status"
       className="flex items-center gap-2 px-4 py-2 border-b border-maestro bg-amber-500/10 text-[12px] text-maestro-muted"
     >
-      <AlertTriangle size={14} className="shrink-0 text-amber-500" />
+      <WarningIcon size={14} className="shrink-0 text-amber-500" />
       <span className="flex-1">
         <span className="font-mono">.claude/maestro.json</span> changed outside the app while you have unsaved edits.
       </span>
@@ -45,7 +45,7 @@ export default function ExternalChangeBanner({
         aria-label="Dismiss"
         className="shrink-0 text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
       >
-        <X size={14} />
+        <XIcon size={14} />
       </button>
     </div>
   );

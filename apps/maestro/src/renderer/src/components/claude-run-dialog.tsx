@@ -1,5 +1,14 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
-import { AlertTriangle, Check, Copy, FilePen, MessagesSquare, Play, Square, Terminal } from "lucide-react";
+import {
+  ChatsCircleIcon,
+  CheckIcon,
+  CopyIcon,
+  NotePencilIcon,
+  PlayIcon,
+  SquareIcon,
+  TerminalWindowIcon,
+  WarningIcon,
+} from "@phosphor-icons/react";
 import CopyableText from "@repo/ui/copyable-text";
 import ReadScope from "./read-scope";
 import { callMain } from "../utils/call-main";
@@ -138,11 +147,11 @@ export default function ClaudeRunDialog({
       {(copied) =>
         copied ? (
           <>
-            <Check size={13} /> Copied!
+            <CheckIcon size={13} /> Copied!
           </>
         ) : (
           <>
-            <Copy size={13} /> Copy prompt
+            <CopyIcon size={13} /> Copy prompt
           </>
         )
       }
@@ -160,7 +169,7 @@ export default function ClaudeRunDialog({
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-2 text-[13px] font-semibold text-maestro">
-          <Terminal size={14} className="text-maestro-primary" />
+          <TerminalWindowIcon size={14} className="text-maestro-primary" />
           Run Claude on “{title}”
         </div>
 
@@ -225,7 +234,7 @@ export default function ClaudeRunDialog({
 
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-1.5 text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
-              <FilePen size={12} /> What it may write
+              <NotePencilIcon size={12} /> What it may write
             </div>
             <ul data-testid="claude-targets" className="list-none p-0 m-0 flex flex-col gap-0.5">
               {preview.targets.length === 0 && (
@@ -256,7 +265,7 @@ export default function ClaudeRunDialog({
           {preview.handoff && phase === "confirm" && (
             <div className="flex flex-col gap-1">
               <div className="flex items-center gap-1.5 text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
-                <MessagesSquare size={12} /> Or continue in the session pane
+                <ChatsCircleIcon size={12} /> Or continue in the session pane
               </div>
               <p className="m-0 text-[11px] text-maestro-muted">
                 The same work, as a conversation you steer. The session is told what the scaffold wrote and what is left
@@ -286,7 +295,7 @@ export default function ClaudeRunDialog({
               data-testid="claude-unavailable"
               className="flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] bg-amber-500/10"
             >
-              <AlertTriangle size={14} className="shrink-0 mt-px text-amber-500" />
+              <WarningIcon size={14} className="shrink-0 mt-px text-amber-500" />
               <div className="text-maestro-muted">
                 <div>{preview.unavailable}</div>
                 <details className="mt-1">
@@ -305,7 +314,7 @@ export default function ClaudeRunDialog({
 
           {refusal && (
             <div className="flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] bg-red-500/10">
-              <AlertTriangle size={14} className="shrink-0 mt-px text-red-500" />
+              <WarningIcon size={14} className="shrink-0 mt-px text-red-500" />
               <span className="text-maestro-muted">{refusal}</span>
             </div>
           )}
@@ -338,7 +347,7 @@ export default function ClaudeRunDialog({
               onClick={stop}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] rounded-lg bg-red-500/10 border border-red-500/40 text-red-500 hover:bg-red-500/20 cursor-pointer focus:outline-none"
             >
-              <Square size={12} /> Stop
+              <SquareIcon size={12} /> Stop
             </button>
           ) : (
             <button
@@ -360,7 +369,7 @@ export default function ClaudeRunDialog({
               onClick={() => void continueInPane()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-medium rounded-lg border border-maestro-focus-ring bg-maestro-primary-subtle text-maestro-primary cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <MessagesSquare size={12} /> {handingOff ? "Opening…" : "Continue in the pane"}
+              <ChatsCircleIcon size={12} /> {handingOff ? "Opening…" : "Continue in the pane"}
             </button>
           )}
           {/* Hidden outright when the CLI is missing: a disabled Run invites a click that can only
@@ -372,7 +381,7 @@ export default function ClaudeRunDialog({
               onClick={() => void start()}
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[12px] font-semibold rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:brightness-110 disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              <Play size={12} /> {running ? "Running…" : "Run"}
+              <PlayIcon size={12} /> {running ? "Running…" : "Run"}
             </button>
           )}
         </div>

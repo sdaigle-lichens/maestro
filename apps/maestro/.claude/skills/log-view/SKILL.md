@@ -127,7 +127,7 @@ Renderer paths are relative to `apps/maestro/`.
 | **`WorktreeLogProvider`** / `useWorktreeLog()` / pure `reduceWorktreeTabs` — worktree-tab state, separate from `SessionLogProvider` (`075`; tests `test/renderer/worktree-log-context.test.ts`) | `src/renderer/src/utils/worktree-log-context.tsx` |
 | **Worktree listing + viewing-root gate** — `parseWorktreeList`, `listWorktrees`, `linkedWorktrees`, `samePath`, `resolveWorktreeRoot` (`075`) | `worktree-list.ts` in `apps/maestro/src/core/` |
 | **Per-(window, tab) tail registry** — `createWorktreeTabs`, `describeWorktrees`, `worktreeHasLog`, removed/no-log/live state (`075`; tests `test/core/worktree-tabs.test.ts`, `worktree-isolation.test.ts`) | `worktree-tabs.ts` in `apps/maestro/src/core/` |
-| Left step list with status icons (CircleCheck/CircleX/AlertTriangle)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |
+| Left step list with status icons (CheckCircleIcon/XCircleIcon/WarningIcon)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |
 | **Context-usage badge + detail header line** (`ContextUsageBadge`, `ContextUsageLine`) | `src/renderer/src/components/context-usage.tsx` |
 | Center framed log pane, click-to-select, live indicator, per-section anchors                                                   | `src/renderer/src/components/session-log-view.tsx`                                    |
 | Right detail panel: Input/Process/Output sections                                                                              | `src/renderer/src/components/session-log-detail.tsx`                                  |

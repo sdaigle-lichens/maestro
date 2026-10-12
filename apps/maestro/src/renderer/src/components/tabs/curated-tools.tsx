@@ -5,7 +5,7 @@
 // why the library did not come across.
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import CopyableText from "@repo/ui/copyable-text";
 import type { CuratedPlugin } from "../../utils/tools";
 
@@ -58,7 +58,7 @@ export default function CuratedTools({ plugins }: { plugins: CuratedPlugin[] }) 
               search ? "border-maestro-primary-strong" : "border-maestro"
             }`}
           >
-            <Search size={11} className="shrink-0 text-maestro-muted" />
+            <MagnifyingGlassIcon size={11} className="shrink-0 text-maestro-muted" />
             <input
               type="search"
               value={search}

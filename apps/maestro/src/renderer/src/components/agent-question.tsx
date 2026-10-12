@@ -14,7 +14,7 @@
 // reading this source rather than by trusting the sentence.
 
 import { useState } from "react";
-import { CircleHelp, MessageSquareText, Send } from "lucide-react";
+import { ChatTextIcon, PaperPlaneRightIcon, QuestionIcon } from "@phosphor-icons/react";
 import type { AgentQuestion, QuestionChoice, QuestionPrompt } from "../../../shared/ipc";
 
 /** Picked labels, by question index. A set per question, because a multi-select holds several. */
@@ -72,7 +72,7 @@ export default function QuestionCard({
       className="mb-2 rounded-xl border border-maestro-primary bg-maestro-primary-subtle px-3 py-2.5"
     >
       <div className="flex items-start gap-2">
-        <CircleHelp size={14} className="mt-0.5 shrink-0 text-maestro-primary" />
+        <QuestionIcon size={14} className="mt-0.5 shrink-0 text-maestro-primary" />
         <div className="min-w-0 flex-1">
           <p className="m-0 text-[12px] font-semibold text-maestro">Claude is asking you to decide</p>
           {request.agentId && <p className="m-0 text-[10px] text-maestro-muted">Asked by subagent {request.agentId}</p>}
@@ -159,7 +159,7 @@ export default function QuestionCard({
           }
           className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Send size={11} /> Send answer
+          <PaperPlaneRightIcon size={11} /> Send answer
         </button>
         <span className="text-[10px] text-maestro-muted">
           {complete ? "" : `Pick an option for each question (${request.questions.length}).`}
@@ -175,7 +175,7 @@ export default function QuestionCard({
       */}
       <div className="mt-2 border-t border-maestro pt-2">
         <label className="flex items-center gap-1 text-[10px] text-maestro-muted">
-          <MessageSquareText size={10} /> None of these?
+          <ChatTextIcon size={10} /> None of these?
         </label>
         <textarea
           data-testid="session-question-reply-text"

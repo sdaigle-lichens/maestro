@@ -19,7 +19,7 @@
 
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, FolderOpen } from "lucide-react";
+import { FolderOpenIcon, WarningIcon } from "@phosphor-icons/react";
 import TopNav from "../components/top-nav";
 import ProjectSelect from "../components/project-select";
 import CommandCenter from "../components/tabs/command-center";
@@ -91,7 +91,7 @@ function ToolsPage() {
         <TopNav />
         <div className="flex-1 flex items-center justify-center px-6">
           <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10 max-w-lg">
-            <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+            <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
             <div>
               <p className="text-[13px] text-maestro m-0 mb-1">The dashboard could not be loaded.</p>
               <p className="text-[12px] text-maestro-muted m-0">{result.error}</p>
@@ -133,7 +133,7 @@ function ToolsPage() {
           */}
           {!data.projectRoot && (
             <div className="mb-6 flex items-start gap-2 px-3 py-2 rounded-lg bg-amber-500/10 text-[12px]">
-              <FolderOpen size={14} className="shrink-0 mt-px text-amber-500" />
+              <FolderOpenIcon size={14} className="shrink-0 mt-px text-amber-500" />
               <span className="text-maestro-muted">
                 No project is open, so the project&rsquo;s marketplace, rules, and command table are empty. Installed
                 and curated plugins, plus every registered marketplace, are read from{" "}

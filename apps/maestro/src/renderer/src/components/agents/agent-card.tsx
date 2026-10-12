@@ -6,7 +6,7 @@
 // taller than its content (which view mode always is, having no category row and no arrows) the
 // three groups spread instead of bunching at the top.
 
-import { Copy, Pencil } from "lucide-react";
+import { CopyIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import {
   AGENT_TYPES,
   GLOBAL_TAG,
@@ -338,11 +338,11 @@ export default function AgentCard({
               data-testid="agent-fork-button"
               className={FOOTER_BUTTON}
             >
-              <Copy size={13} />
+              <CopyIcon size={13} />
             </button>
           )}
           <button type="button" onClick={onStartEdit} title="Edit agent" className={FOOTER_BUTTON}>
-            <Pencil size={13} />
+            <PencilSimpleIcon size={13} />
           </button>
         </div>
       )}
