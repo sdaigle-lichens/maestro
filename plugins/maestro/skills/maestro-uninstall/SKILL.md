@@ -36,7 +36,8 @@ The ephemeral `.claude/maestro_sessions/` the script always deletes is none of t
    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" . --purge
    ```
 
-   It prints a JSON summary: `removedAgentSetting`, `removedHooks`, `removedSession`, `purged`, `maestroTasks`, `materializedReports`, `materializedHandoffs`, `keptConfig`. In `--purge` mode:
+   It prints a JSON summary: `removedAgentSetting`, `removedHooks`, `removedSession`, `purged`, `removedGitExclude`, `maestroTasks`, `materializedReports`, `materializedHandoffs`, `keptConfig`. In `--purge` mode:
+   - `removedGitExclude` is `true` when the script removed the `.claude/` line that `/maestro-install` added to the clone-local git exclude file (`.git/info/exclude`, found with `git rev-parse --git-path info/exclude`) for an "ignored" install. It removes only that line and its `# Maestro (added by maestro-install)` marker above it; a `.claude/` entry the user wrote themselves, or an exclude entry from an install that predates the marker, is left alone. It is always `false` without `--purge`, because a default uninstall keeps `maestro.json` and the orchestrator skill that the entry hides;
    - `maestroTasks` reports on the file-based queue — `{ dir, fileCount, files, hasStatusJson, deleted: false }`;
    - `materializedReports` and `materializedHandoffs` report on `.claude/reports/` and `.claude/handoffs/` — `{ dir, fileCount, files, deleted: false }` each.
 
@@ -65,7 +66,7 @@ The ephemeral `.claude/maestro_sessions/` the script always deletes is none of t
 
    In default (non-purge) mode, skip this entire step — deletion of any of the four (three directories plus the task list) is purge-only.
 
-4. **Report** to the user: confirm whether the Maestro hooks were removed from `settings.json`, whether session files were cleared, and (if `--purge`) which files were deleted, and — for each of the task queue, materialized reports and materialized handoffs — whether it was deleted, kept because the user declined, or never asked about because it was empty. Also report how many tasks (if any) were removed from Claude Code's task list. Without `--purge`, note that `maestro.json` and the orchestrator skill were kept, so they can re-enable Maestro any time by re-running `/maestro-install` (or `/maestro-update` if the skill is still present). With `--purge`, note that the config is gone too — re-enabling means re-authoring it via `/maestro-install`.
+4. **Report** to the user: confirm whether the Maestro hooks were removed from `settings.json`, whether session files were cleared, and (if `--purge`) which files were deleted, and — for each of the task queue, materialized reports and materialized handoffs — whether it was deleted, kept because the user declined, or never asked about because it was empty. Also report how many tasks (if any) were removed from Claude Code's task list. Without `--purge`, note that `maestro.json` and the orchestrator skill were kept, so they can re-enable Maestro any time by re-running `/maestro-install` (or `/maestro-update` if the skill is still present). With `--purge`, note that the config is gone too — re-enabling means re-authoring it via `/maestro-install`. After a `--purge` of an ignored install (`removedGitExclude` is `true`), tell the user that the kept `.claude/settings.json`, `reports/` and `handoffs/` now appear as untracked in `git status`, because the exclude line is gone.
 
 ## Notes
 

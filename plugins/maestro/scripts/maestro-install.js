@@ -67,6 +67,12 @@
 // app's installRuntime() applies, and same degrade-on-old-`node` discipline as the skill-tags read
 // above.
 //
+// `--ignore-mode committed|ignored` (default `committed`, today's behaviour): `ignored` records
+// `.claude/` in the clone-local git exclude file (`git rev-parse --git-path info/exclude`) instead of
+// writing the committed repo-root .gitignore `# Maestro` block. Idempotent; skipped if `.claude/` is
+// already ignored. Summary fields: ignoreMode, wroteGitExclude, gitExcludePath. Refusal:
+// `{ ok:false, refused:"ignore-mode", reason }`. The desktop app's installRuntime() has no equivalent.
+//
 // `--allow-downgrade` (`087`, a bare flag): without it, a project whose maestro.json `runtimeVersion`
 // is NEWER than this plugin's version is refused before anything is written — JSON
 // `{ ok:false, refused:"downgrade", projectRuntimeVersion, pluginVersion, reason }`, exit 1.
@@ -202,6 +208,56 @@ function ensureRepoRootGitignore(repoRoot) {
     // `080`: durable run metrics; recordRun also writes its own `*` .gitignore into the directory.
     "**/.claude/maestro-metrics/",
   ]);
+}
+
+// `--ignore-mode ignored`: Maestro is installed but kept out of version control for everyone but this
+// clone. The root `.claude` folder is recorded in the clone-local, never-committed git exclude file
+// (resolved with `git rev-parse --git-path info/exclude`, which is right for worktrees and
+// submodules too) and the committed repo-root `.gitignore` `# Maestro` block is NOT written.
+// The marker is written on the line directly above the entry so maestro-uninstall.js can tell an
+// entry THIS installer added from one the user wrote themselves, and remove only the former.
+const EXCLUDE_ENTRY = ".claude/";
+const EXCLUDE_MARKER = "# Maestro (added by maestro-install)";
+const IGNORE_MODES = ["committed", "ignored"];
+
+function gitOut(cwd, args) {
+  try {
+    return execSync(`git ${args}`, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return null;
+  }
+}
+
+// Is the project's `.claude/` already ignored by any git ignore source?
+function claudeDirIsIgnored(projectDir) {
+  try {
+    execSync("git check-ignore -q -- .claude/", { cwd: projectDir, stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Absolute path of this checkout's info/exclude, or null outside a git repo.
+function resolveGitExcludePath(projectDir) {
+  const p = gitOut(projectDir, "rev-parse --git-path info/exclude");
+  return p ? path.resolve(projectDir, p) : null;
+}
+
+// Record `.claude/` in the exclude file unless `.claude` is already ignored. Creates the file and
+// its directory if missing. Returns { wrote, excludePath }.
+function ensureGitExclude(projectDir, excludePath) {
+  if (claudeDirIsIgnored(projectDir)) return { wrote: false, excludePath };
+  const existed = fs.existsSync(excludePath);
+  const existing = existed ? fs.readFileSync(excludePath, "utf8") : "";
+  const present = new Set(existing.split(/\r?\n/).map((l) => l.trim()));
+  if (present.has(EXCLUDE_ENTRY) || present.has(".claude") || present.has("/.claude/") || present.has("/.claude")) {
+    return { wrote: false, excludePath };
+  }
+  ensureDir(path.dirname(excludePath));
+  const prefix = existed && existing && !existing.endsWith("\n") ? "\n" : "";
+  fs.appendFileSync(excludePath, `${prefix}${EXCLUDE_MARKER}\n${EXCLUDE_ENTRY}\n`);
+  return { wrote: true, excludePath };
 }
 
 const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
@@ -591,7 +647,15 @@ function syncProjectHandoffs(configPath, projectDir) {
 
 // ── the manifest is importable with no side effect; everything below runs the CLI only ──────────
 
-module.exports = { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, STATIC_ASSETS, runtimeAssets };
+module.exports = {
+  HOOK_REGISTRATIONS,
+  RETIRED_HOOK_SCRIPTS,
+  STATIC_ASSETS,
+  runtimeAssets,
+  EXCLUDE_ENTRY,
+  EXCLUDE_MARKER,
+  resolveGitExcludePath,
+};
 
 // The refusal `main()` prints when the project's stamped runtime is NEWER than this plugin, or null.
 function downgradeRefusal(projectDir, pluginRoot) {
@@ -675,6 +739,27 @@ function main() {
     process.exit(1);
   }
 
+  // Absent flag = today's behaviour ("committed"). An unknown value or "ignored" outside a git repo is
+  // refused before any write.
+  const ignoreMode = flags["ignore-mode"] === undefined ? "committed" : flags["ignore-mode"];
+  let gitExcludePath = null;
+  if (!IGNORE_MODES.includes(ignoreMode)) {
+    const reason = `--ignore-mode must be one of ${IGNORE_MODES.join(", ")} (got "${ignoreMode}")`;
+    process.stdout.write(JSON.stringify({ ok: false, refused: "ignore-mode", reason }) + "\n");
+    process.stderr.write(`maestro-install: ${reason}\n`);
+    process.exit(1);
+  }
+  if (ignoreMode === "ignored") {
+    gitExcludePath = resolveGitExcludePath(projectDir);
+    if (!gitExcludePath) {
+      const reason =
+        "--ignore-mode ignored needs a git repository to hold the exclude entry, and this project is not in one";
+      process.stdout.write(JSON.stringify({ ok: false, refused: "ignore-mode", reason }) + "\n");
+      process.stderr.write(`maestro-install: ${reason}\n`);
+      process.exit(1);
+    }
+  }
+
   const implAgents = (flags["impl-agents"] || "")
     .split(",")
     .map((s) => s.trim())
@@ -751,6 +836,9 @@ function main() {
   }
 
   try {
+    // First write of the run: the ignore entry lands before anything under .claude/ exists.
+    const gitExclude = ignoreMode === "ignored" ? ensureGitExclude(projectDir, gitExcludePath) : null;
+
     const claudeDir = path.join(projectDir, ".claude");
     const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
     const scriptsDir = path.join(claudeDir, "scripts");
@@ -790,7 +878,8 @@ function main() {
       fs.rmSync(abs, { force: true });
       retiredScriptsRemoved.push(rel);
     }
-    const wroteRepoGitignore = ensureRepoRootGitignore(findRepoRoot(projectDir));
+    // Ignored mode never touches the committed .gitignore.
+    const wroteRepoGitignore = ignoreMode === "ignored" ? false : ensureRepoRootGitignore(findRepoRoot(projectDir));
 
     // Seed maestro.json only when there isn't one. An existing config is the user's own graph —
     // re-seeding it would silently discard every workflow and rule assignment they authored.
@@ -855,6 +944,9 @@ function main() {
         hooksRemoved,
         retiredScriptsRemoved,
         wroteRepoGitignore,
+        ignoreMode,
+        wroteGitExclude: gitExclude ? gitExclude.wrote : false,
+        gitExcludePath: gitExclude ? gitExclude.excludePath : null,
         seededConfig,
         skillListsSeeded,
         implAgents: seededConfig ? implAgents : undefined,

@@ -23,7 +23,7 @@ is the fallback for the other:
 | For         | a machine with the desktop app                           | a machine without it                         |
 
 The manifests are mirrored by hand in both files — **if the two lists diverge, that is a bug in one
-of them**. A third rendering, `maestro-install/SKILL.md`'s step 1, restates `detect.ts`'s
+of them**. A third rendering, `maestro-install/SKILL.md`'s step 2 (step 1 is now the committed-or-ignored question), restates `detect.ts`'s
 classification rules in prose and has **no test at all** (`053`). See the two-implementations
 sub-concept for what each test pins and what nothing pins.
 
@@ -62,6 +62,15 @@ changed. A list already present, even empty, is left alone. `InstallReport.skill
 (`{start_skills, end_skills, gatesRemoved}` or `null`) and the `maestro-install.js` JSON summary
 carry it so the skill can tell the user what was seeded. `maestro-seed` is not in `STATIC_ASSETS`,
 so it needs no `.claude/scripts/lib` mirror.
+
+**Terminal-only: `--ignore-mode committed|ignored`.** `ignored` writes `.claude/` into the
+clone-local `git rev-parse --git-path info/exclude` (first write of the run) instead of the
+committed `.gitignore` `# Maestro` block. The app's `installRuntime()` has no ignore mode and always
+writes the block. The exclude line is preceded by a `# Maestro (added by maestro-install)` marker;
+`maestro-uninstall.js --purge` (only purge, since a plain uninstall keeps the `maestro.json` and
+orchestrator skill the line hides) removes that marker+line pair, never a user's own `.claude/`
+line. Uninstall never removes the `.gitignore` block. See the manifest, two-implementations and
+uninstall-and-purge sub-concepts.
 
 Ordering enforces a fourth: **everything that can refuse is checked before the first byte is
 written**, so a rejected install leaves the project exactly as it was. Past that point every step

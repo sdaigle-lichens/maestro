@@ -58,13 +58,20 @@ reports via `priorReportSeeds` from `lib/maestro-report-defaults.cjs`, handoffs 
   `.claude/skills/` and best-fit maps each project skill to a seeded agent, then asks for consent in
   a single `AskUserQuestion` before seeding. The app takes these from its own stores and its canvas
   instead.
+- **`--ignore-mode committed|ignored`**: `ignored` keeps Maestro out of version control for
+  teammates by writing `.claude/` to `.git/info/exclude` (via `git rev-parse --git-path`) instead of
+  the `.gitignore` block. The app's `installRuntime()` has **no ignore mode** and always writes the
+  block; no differential test covers the flag. The line sits under a
+  `# Maestro (added by maestro-install)` marker; `maestro-uninstall.js --purge` removes the
+  marker+line pair (`removedGitExclude`), a plain uninstall and the app's uninstall do not, and a
+  user's own `.claude/` line is never touched. Tests: `test/core/install-ignore-mode.test.ts`.
 - **Runs as two steps by contract**: scaffold, then `maestro-render-orchestrator.cjs`. The skill
   owns that sequencing; the script deliberately does not render.
 
 ## A third implementation: the skill's own prose (`053`)
 
 The two rows above are both **code** — a differential test can compare their output byte for byte.
-`maestro-install/SKILL.md`'s step 1 is a third rendering of `detect.ts`'s `detectImplAgents()`, and
+`maestro-install/SKILL.md`'s step 2 (steps were renumbered when a committed-or-ignored step 1 was added; the rest of this section says "step 1/3/4" for the old numbering, i.e. now 2/4/5) is a third rendering of `detect.ts`'s `detectImplAgents()`, and
 it is **prose**, read and applied by a live session with no test able to run it. It has to reach the
 same verdict as the other two for the same repository, and nothing enforces that but a human (or an
 agent) rereading both sides after a `detect.ts` change.
