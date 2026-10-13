@@ -17,6 +17,10 @@ proposals is fine — write the file with an empty list. Do not change anything 
 End with one line: how many proposals you wrote.
 ```
 
+When the focus includes context and flow, add: `Focus on the context and flow of reports and
+handoffs: cite report sizes or payload sizes from the digest, and propose concrete handoff or report
+edits.`
+
 In post-mortem mode, add: `You ran in this session's workflow — use what you saw in that run as
 your main evidence.`
 
