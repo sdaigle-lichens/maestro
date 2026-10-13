@@ -510,7 +510,7 @@
     "epic": "concept-skills-plugin"
   },
   "104-let-a-worktree-run-deliver-channel-payloads-without-a-stall.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
   }

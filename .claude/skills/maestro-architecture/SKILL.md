@@ -77,7 +77,9 @@ Orchestrator (.claude/skills/maestro/SKILL.md):
           recorded with `maestro-task-status.cjs plan` / `plan-step` in session.json, and Step 4's
           `done` refuses while a planned step (human review included) is unfinished. In a worktree
           run Step 4 offers a user-approved commit before ever mentioning merge, and every command
-          handed to the user carries absolute paths (the session's cwd IS the worktree).
+          handed to the user carries absolute paths (the session's cwd IS the worktree). Step 3
+          (`104`): a denied agent channel write is not retried by resuming — the orchestrator writes
+          the file from the agent's returned payload (see `sub-concepts/channels.md`).
   Step 4  mark the task done (the mark-task-done node), then the OPTIONAL task-routing nudge
           (`046`) and the always-on /maestro-post-mortem question (`049`)
         │

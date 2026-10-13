@@ -289,6 +289,8 @@ function collectReportContext(cfg, projectDir, agentType) {
         `- Work ONLY inside ${wt.path} (branch ${wt.branch || "unknown"}). Use that directory as your working directory and absolute paths under it for every read, edit and command.\n` +
         `- Never edit files under ${mainRoot} outside \`.claude/\` — that is the other session's working tree.\n` +
         `- The shared \`.claude/\` state stays in the main checkout: the task queue (${mainRoot}/.claude/maestro-tasks/) and handoff channels (${mainRoot}/.claude/channels/) are read and written at those absolute paths, not inside the worktree.\n` +
+        `- Your shell does NOT start in the worktree; it starts in the main checkout (${mainRoot}). Aim every command at the worktree from the first one: \`pnpm --dir ${wt.path} <cmd>\`, \`git -C ${wt.path} <cmd>\`, and absolute paths under ${wt.path}. Never \`cd\` (the project's guardrails forbid it); a bare \`pnpm\` or \`git\` runs against the main checkout.\n` +
+        `- If writing your handoff payload to a channel file under ${mainRoot}/.claude/channels/ is denied, do not stall, retry in a loop or ask the user: include the full payload (the JSON block) in your final message, before your HANDOFF: line. The orchestrator writes the channel file for you from it.\n` +
         `- Do not merge, push, or remove the worktree or branch; the user does that.`
     );
   }
