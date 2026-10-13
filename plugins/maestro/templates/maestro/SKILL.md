@@ -34,7 +34,7 @@ node .claude/scripts/maestro-set-session-workflow.cjs "<workflow name>" [--task 
 
    Then run `node .claude/scripts/maestro-task-status.cjs worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, put its absolute path in every Step 3 dispatch prompt ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay in the main checkout. Never merge, push or remove a worktree on your own initiative.
 
-   **A freeform request (no task file) goes through the same check:** after recording the workflow, run `node .claude/scripts/maestro-task-status.cjs freeform-check` and follow what it prints. If it names another active session, tell the user and work in the main checkout only if they agree; never edit it silently alongside that session.
+   **A freeform request (no task file) goes through the same check:** after recording the workflow, run `node .claude/scripts/maestro-task-status.cjs freeform-check` and follow what it prints. Same rule as a task: with no other live session you work in the main checkout; with another live session it creates a worktree named after your session (`freeform-<id>`), and you handle it exactly like a task worktree (absolute path in every Step 3 dispatch prompt, Step 8 to merge). Never edit the main checkout alongside that session.
 
    **While a worktree is active, your working directory is the worktree.** Any command you hand the user (`!`, `git`, `rm`, `node`) must use absolute paths or an explicit `cd` and name the checkout it targets. A relative `rm apps/...` runs in the worktree and deletes the committed copies there.
 
@@ -116,7 +116,7 @@ Runs after the success path is complete, whether or not `active_task` is set. If
 **If working in a worktree that is still unmerged**, ask the user whether to merge it. If yes:
 
 1. Offer to commit any pending work (with an approved message).
-2. run `node .claude/scripts/maestro-task-status.cjs merge "<NNN-filename.md>"` from the main checkout and relay its output verbatim. It merges and cleans up, refuses, or lists conflicts and leaves everything intact.
+2. run `node .claude/scripts/maestro-task-status.cjs merge "<NNN-filename.md>"` (for a freeform worktree, its branch name: `merge "freeform-<id>"`) from the main checkout and relay its output verbatim. It merges and cleans up, refuses, or lists conflicts and leaves everything intact.
 3. **On `SANDBOX-BLOCKED`**, or "unable to unlink ... Operation not permitted", don't retry: give the user the exact `! ...` command it printed. Never resolve a conflict, push or open a pull request unasked.
 <!-- Maestro:STEPS:END -->
 

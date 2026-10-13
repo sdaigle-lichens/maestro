@@ -146,6 +146,9 @@ export {
   taskNumber,
   worktreeBranchFor,
   worktreePathFor,
+  freeformBranchFor,
+  freeformWorktreePathFor,
+  isFreeformBranch,
   type WorktreePointer,
 } from "../worktree.js";
 

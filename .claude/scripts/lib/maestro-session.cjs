@@ -82,12 +82,15 @@ __export(maestro_session_exports, {
   expectedLoopbackPayloads: () => expectedLoopbackPayloads,
   foldRun: () => foldRun,
   formatStampedContent: () => formatStampedContent,
+  freeformBranchFor: () => freeformBranchFor,
+  freeformWorktreePathFor: () => freeformWorktreePathFor,
   handbackHandoff: () => handbackHandoff,
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
   isChannelOnlyAgent: () => isChannelOnlyAgent,
+  isFreeformBranch: () => isFreeformBranch,
   isLinkedWorktree: () => isLinkedWorktree,
   isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
@@ -1117,6 +1120,21 @@ function worktreePathFor(mainRoot, filename) {
   const n = taskNumber(filename);
   if (!n) return null;
   return import_node_path6.default.join(import_node_path6.default.dirname(mainRoot), `${import_node_path6.default.basename(mainRoot)}-task-${n}`);
+}
+function shortSessionId(sessionId) {
+  const s = sessionId.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
+  return s || null;
+}
+function freeformBranchFor(sessionId) {
+  const s = shortSessionId(sessionId);
+  return s ? `freeform-${s}` : null;
+}
+function isFreeformBranch(name) {
+  return /^freeform-[a-z0-9]{1,8}$/.test(name);
+}
+function freeformWorktreePathFor(mainRoot, sessionId) {
+  const branch = freeformBranchFor(sessionId);
+  return branch ? import_node_path6.default.join(import_node_path6.default.dirname(mainRoot), `${import_node_path6.default.basename(mainRoot)}-${branch}`) : null;
 }
 function mainCheckoutRoot(dir) {
   const gitEntry = import_node_path6.default.join(dir, ".git");
@@ -2150,12 +2168,15 @@ function meetingNotice(meeting, agentType) {
   expectedLoopbackPayloads,
   foldRun,
   formatStampedContent,
+  freeformBranchFor,
+  freeformWorktreePathFor,
   handbackHandoff,
   handoffId,
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
   isChannelOnlyAgent,
+  isFreeformBranch,
   isLinkedWorktree,
   isResumableEnd,
   isRootSkillPath,
