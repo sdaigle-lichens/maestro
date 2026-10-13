@@ -37,6 +37,11 @@ Four consequences, all load-bearing:
   `$CLAUDE_PROJECT_DIR` path: `maestro-step1-gates.cjs`, `maestro-end-skills.cjs` (`089`), `maestro-step4-gate.cjs` (`046`),
   `maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`) and answers `update` when one is
   absent. That nag is the only thing between a half-installed project and an aborted invocation.
+- **Body commands the orchestrator runs use the relative form** `node .claude/scripts/<script>`
+  (plugin `0.11.10`, `094`). Permission checks can't resolve `${CLAUDE_PROJECT_DIR:-.}`, so the
+  expanded form prompted. `!` lines and `allowed-tools` keep the `${CLAUDE_PROJECT_DIR:-.}` form
+  (the skill-shell expander and the frontmatter matcher both need it). Pinned by
+  `orchestrator-template-commands.test.ts`.
 
 If the harness has `disableSkillShellExecution: true`, the line is replaced with the literal
 `[shell command execution disabled by policy]`. **This is the one thing the script cannot speak

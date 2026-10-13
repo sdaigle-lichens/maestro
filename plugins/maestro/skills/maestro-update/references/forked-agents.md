@@ -5,7 +5,7 @@ project"). It goes stale when the template improves. For each agent `list` named
 what is at stake and let them decide — never decide for them:
 
 ```bash
-node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-agent-forks.cjs" diff <agent>
+node .claude/scripts/maestro-agent-forks.cjs diff <agent>
 ```
 
 That prints the fork's description beside the template's (they drift: a fork syncs its **body**

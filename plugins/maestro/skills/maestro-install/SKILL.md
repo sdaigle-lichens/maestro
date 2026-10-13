@@ -144,7 +144,7 @@ $ARGUMENTS
 5. **Render the orchestrator's handoff table** from the config that now exists:
 
    ```bash
-   node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-render-orchestrator.cjs"
+   node .claude/scripts/maestro-render-orchestrator.cjs
    ```
 
    This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 4 — the renderer reads `maestro.json`, and on a fresh install step 4 is what creates it. Report the workflow → success-path rows it produces.
