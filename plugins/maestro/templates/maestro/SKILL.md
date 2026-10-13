@@ -1,19 +1,19 @@
 ---
 name: maestro
-description: "Orchestrates Maestro workflows: classifies the user's request, runs the project's configured Step 1 gates, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
-allowed-tools: Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" *), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs")
+description: "Orchestrates Maestro workflows: classifies the user's request, runs the project's configured start skills, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
+allowed-tools: Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs"), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" *), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs")
 ---
 
 # Maestro Orchestrator
 
-You are this project's Maestro orchestrator: classify incoming work, clear the enabled Step 1 gates, then execute it by wiring the configured subagents along the matching workflow path.
+You are this project's Maestro orchestrator: classify incoming work, run the project's start skills, then execute it by wiring the configured subagents along the matching workflow path.
 
 > The regions between `<!-- Maestro:... -->` markers are **generated** (workflow table from `.claude/maestro.json`, steps and principles from the plugin template) and are overwritten by `/maestro-update` and by any save from the Maestro desktop app. Everything outside them is yours to customise.
 
 <!-- Maestro:STEPS:START -->
 ## How to orchestrate
 
-### Step 1 — Custom checks (optional gates)
+### Step 1 — Start skills
 
 If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, this project has no Step 1: go to Step 2.
 
@@ -72,23 +72,19 @@ Route on each subagent's final `HANDOFF:` line:
 
 If the hook didn't run and the line is missing or matches no condition, treat it the same way and tell the user about the ambiguity.
 
-### Step 4 — Mark the task done (the mark-task-done node)
+### Step 4 — Mark the task done
 
-Runs only at the **mark-task-done** task: `active_task` set and every prior step, review included, complete. Never after a partial run, an unresolved loop-back or a pending review. If `active_task` is empty, skip this step.
+Runs only at the **mark-task-done** task: `active_task` set and every prior step, review included, complete. Never after a partial run, an unresolved loop-back or a pending review. This step does not commit. If `active_task` is empty, skip this step.
 
 ```bash
 node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" done
 ```
 
-It reads `active_task` from session state (`done <file>` overrides), flips the task to `done` and recomputes `status.json` so dependents become `ready`. Then complete the mark-task-done task.
-
-**If the task ran in a worktree**, its work is uncommitted (no step commits it):
-1. Check `git -C "<worktree path>" status --short`, suggest a commit message, and give the branch and path ("Done on branch `task-NNN` in `/path/repo-task-NNN`. Commit with `<message>`? Approve or edit it").
-2. **Commit only after the user approves or edits it**: `git -C "<worktree path>" add -A` then `git -C "<worktree path>" commit -m "<message>"`. Then say it can be merged.
-3. **Only if they explicitly ask**, run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" merge "<NNN-filename.md>"` from the main checkout and relay its output verbatim. It merges and cleans up, or refuses (a dirty worktree prints the commit to suggest; colliding untracked files in the main checkout are listed as identical or different), or lists conflicts and leaves everything intact.
-4. **On `SANDBOX-BLOCKED`**, or "unable to unlink ... Operation not permitted" (the sandbox denies writes such as `.claude/skills` in the main checkout), don't retry: give the user the exact `! ...` command it printed. Never resolve a conflict, push or open a pull request unasked.
+Then complete the mark-task-done task.
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
+
+### Step 5 — Post Mortem
 
 If the session didn't go cleanly (a major review fix, a mid-task refactor, or the task didn't land on the first pass without heavy steering) and `active_task` is set, `Edit` the task file to append each problem (add bullets if the section exists from a loop-back). It is the raw record; `/maestro-post-mortem`, if run, fills in the `Fix:` lines. On a clean session, write nothing.
 
@@ -102,6 +98,20 @@ If the session didn't go cleanly (a major review fix, a mid-task refactor, or th
 **Report to the epic (only when `active_task` is set).** Run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-epic.cjs" report --task "<active_task>" --from "<your session name>" --file -` with the report on stdin: outcome, findings, the post-mortem notes, suggested ticket changes. Run it without checking first: a task in no epic is a no-op. If it prints a manager's session name, send that session ONE short `SendMessage` line naming the report and its file, never its contents.
 
 **Post-mortem question (only if you wrote a `## Post-Mortem` section).** If the report went to a manager, don't offer `/maestro-post-mortem` here: tell the user you reported the problems to manager `<name>` (report `<id>`) and to run `/maestro-post-mortem` from that session. Otherwise ask once whether to run `/maestro-post-mortem` now.
+
+### Step 6 — End skills
+
+Runs after the success path is complete, whether or not `active_task` is set. If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, there are none. If no end skill commits, offer to commit.
+
+!`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs"`
+
+### Step 7 (worktree only) — Merge the worktree
+
+**If working in a worktree that is still unmerged**, ask the user whether to merge it. If yes:
+
+1. Offer to commit any pending work (with an approved message).
+2. run `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-task-status.cjs" merge "<NNN-filename.md>"` from the main checkout and relay its output verbatim. It merges and cleans up, refuses, or lists conflicts and leaves everything intact.
+3. **On `SANDBOX-BLOCKED`**, or "unable to unlink ... Operation not permitted", don't retry: give the user the exact `! ...` command it printed. Never resolve a conflict, push or open a pull request unasked.
 <!-- Maestro:STEPS:END -->
 
 <!-- Maestro:PRINCIPLES:START -->

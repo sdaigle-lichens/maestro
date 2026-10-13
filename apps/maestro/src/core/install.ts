@@ -174,6 +174,9 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // exiting non-zero aborts the skill), which is why maestro-check-runtime.cjs checks for this
   // file by name.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // The orchestrator's end-skills line, injected the same way and under the same contract as
+  // maestro-step1-gates.cjs above (exit 0, no stderr, one line).
+  { src: "scripts/maestro-end-skills.cjs", dest: ".claude/scripts/maestro-end-skills.cjs" },
   // The orchestrator's Step 4 task-routing configuration (`046`), read at invocation time and
   // injected into the skill body by a !`command` line appended after Step 4's mark-task-done
   // prose. Same shape as maestro-step1-gates.cjs above — a project copy invoked by
@@ -220,6 +223,9 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // Backs maestro-epic.cjs above, generated from apps/maestro/src/core/epics.ts (`084`).
   { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
+  // Backs maestro-step1-gates.cjs and maestro-end-skills.cjs above: the one `resolveSkillLists`
+  // the desktop app also uses, generated from apps/maestro/src/core/skill-lists.ts.
+  { src: "scripts/lib/maestro-skill-lists.cjs", dest: ".claude/scripts/lib/maestro-skill-lists.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (`035`). Reports have no
   // seed tier at all, so without this file a project-local hook resolves NO output format for an
   // agent whose report is only global — the failure that motivated the slice. Handoffs do have a

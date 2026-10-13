@@ -9,6 +9,12 @@ That matters as of `0.4.1`, whose Step 1 needs an `allowed-tools:` grant for
 `maestro-step1-gates.cjs` — without it the injected command's permission check aborts the
 invocation before the model sees the skill.
 
+The same applies to the end-skills line: the template's `allowed-tools:` also grants
+`maestro-end-skills.cjs`, and a project whose frontmatter predates that grant aborts on the Step 5
+injected command. The start/end skill lists themselves (`start_skills` / `end_skills` in
+`maestro.json`) need no migration: a project with only the old `gates` field is read as the
+equivalent list.
+
 Diagnose by comparing the project's frontmatter against the plugin's `templates/maestro/SKILL.md`.
 The fix is to delete `.claude/skills/maestro/SKILL.md` and re-run step 1 of this skill, which
 re-copies it from the template. Alternatively the user can run `/maestro-uninstall --purge` then

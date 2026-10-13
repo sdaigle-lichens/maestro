@@ -43,3 +43,7 @@ Answer each question YES or NO:
 
 **Decision:** RUN code-architecture-design | SKIP code-architecture-design
 **Reasoning:** [1–2 sentences explaining which criteria were met or not]
+
+## When the decision is RUN
+
+Whoever invoked this check is not told what to do with its answer, so say it here: invoke the `code-architecture-design` skill now, in this same context, and carry its Design Brief into whatever you do next, before any work is committed to the request.

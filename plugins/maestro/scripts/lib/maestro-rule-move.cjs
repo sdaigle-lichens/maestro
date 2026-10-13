@@ -97,8 +97,10 @@ function mergeSlice(current, input) {
     next.rules = input.slice.rules;
   } else if (input.sliceType === "project-tags") {
     next.project_tags = input.slice.project_tags;
-  } else if (input.sliceType === "gates") {
-    next.gates = input.slice.gates;
+  } else if (input.sliceType === "skill-lists") {
+    next.start_skills = input.slice.start_skills;
+    next.end_skills = input.slice.end_skills;
+    delete next.gates;
   } else if (input.sliceType === "task-routing") {
     next.use_maestro_tasks = input.slice.use_maestro_tasks;
   }

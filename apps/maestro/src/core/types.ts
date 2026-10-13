@@ -109,17 +109,25 @@ export interface MaestroConfigV3 {
    */
   project_tags?: string[];
   /**
-   * Which of the orchestrator's Step 1 gates this project runs. Absent means BOTH are off and
-   * Step 1 is skipped entirely — the opt-in stance, not "preserve the historical behaviour". A
-   * partial or non-boolean value resolves the same way, per field; `resolveGates` in `config.ts`
-   * is the one reader, and `maestro-step1-gates.cjs` mirrors it for the runtime.
+   * The ordered skills the orchestrator (`maestro`) and `/to-maestro-tasks` (`to_maestro_tasks`)
+   * run at the START of a run, by skill id (project or plugin-namespaced, e.g.
+   * `concept-skills:use-code-architecture-design-check`). When this is a plain object it is
+   * authoritative — a missing key is an empty list. When absent, `resolveSkillLists` falls back to
+   * the legacy `gates` booleans. `resolveSkillLists` in `skill-lists.ts` is the one reader.
+   */
+  start_skills?: { maestro?: string[]; to_maestro_tasks?: string[] };
+  /** The ordered skills the orchestrator runs once the success path is complete. Absent = none. */
+  end_skills?: { maestro?: string[] };
+  /**
+   * LEGACY (pre-`start_skills`): the two Step 1 gate booleans. Never written any more — a save of
+   * the skill lists drops it. Read only by `resolveSkillLists` when `start_skills` is absent, so a
+   * project that still has it behaves exactly as before.
    */
   gates?: MaestroGates;
   /**
    * Whether the orchestrator's Step 4 should suggest running `/to-maestro-tasks` to queue up
-   * follow-up work. A SIBLING of `gates`, never nested inside it: `gates` is documented
-   * specifically as the orchestrator's Step 1 gates, and this is a Step 4 concern with its own
-   * write story. Absent means off — the same opt-in stance `gates` takes, resolved by
+   * follow-up work. A SIBLING of `start_skills`, never nested inside it: this is a Step 4 concern with its own
+   * write story. Absent means off, resolved by
    * `resolveUseMaestroTasks` in `config.ts`; `maestro-step4-gate.cjs` mirrors it for the runtime.
    */
   use_maestro_tasks?: boolean;
@@ -162,18 +170,18 @@ export interface MaestroProjectTagsSlice {
 }
 
 /**
- * The orchestrator's Step 1 gates, one flag each. All four combinations are valid and none is
- * nested under another: the design check runs on its own perfectly well, and both off means
- * Step 1 is skipped. Read at invocation time by `maestro-step1-gates.cjs`, whose single line of
- * output is injected into the orchestrator skill body.
+ * LEGACY Step 1 gates, one flag each. Kept only so an old `maestro.json` still type-checks and
+ * `resolveSkillLists` can read it as the equivalent skill list.
  */
 export interface MaestroGates {
   confidence_check: boolean;
   use_code_architecture_design_check: boolean;
 }
 
-export interface MaestroGatesSlice {
-  gates: MaestroGates;
+/** The three user-chosen ordered skill lists, as stored in `maestro.json`. */
+export interface MaestroSkillListsSlice {
+  start_skills: { maestro: string[]; to_maestro_tasks: string[] };
+  end_skills: { maestro: string[] };
 }
 
 export interface MaestroTaskRoutingSlice {

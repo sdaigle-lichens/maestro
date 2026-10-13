@@ -317,7 +317,7 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
   // skills_available = `use-code-architecture-design-check` + every skill assigned to an instance. It is seeded
   // because the Refactor workflow below leads with a `skill:use-code-architecture-design-check` NODE — a Step 3
   // inline skill step, not the Step 1 gate of the same name. The Step 1 gates are opt-in and live
-  // in `gates` below; nothing here makes either of them run. The infra-only profile has no Refactor
+  // in `start_skills` below; nothing here makes either of them run. The infra-only profile has no Refactor
   // workflow, but the gate skill is still offered — it stays independent of what got seeded.
   const skillsAvailable = Array.from(
     new Set([
@@ -352,8 +352,10 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     workflow_instances: instances,
     workflows,
     rules: [],
-    // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
-    // well-understood request should not pay for two skill invocations it never asked for.
-    gates: { confidence_check: false, use_code_architecture_design_check: false },
+    // Reproduces the pre-`start_skills` defaults: the orchestrator runs no start or end skill (opt
+    // in from the maestro page — a small request should not pay for skill invocations it never
+    // asked for), while to-maestro-tasks runs both gate skills as it always did.
+    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", "use-code-architecture-design-check"] },
+    end_skills: { maestro: [] },
   };
 }

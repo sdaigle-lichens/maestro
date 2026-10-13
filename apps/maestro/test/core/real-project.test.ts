@@ -140,8 +140,11 @@ describe("save against a really-installed project", () => {
     const seeded = defaultV3Config(["backend"]);
 
     await saveConfig(root, {
-      sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_code_architecture_design_check: true } },
+      sliceType: "skill-lists",
+      slice: {
+        start_skills: { maestro: ["confidence-check", "use-code-architecture-design-check"], to_maestro_tasks: [] },
+        end_skills: { maestro: [] },
+      },
     });
     await saveConfig(root, {
       sliceType: "workflows",

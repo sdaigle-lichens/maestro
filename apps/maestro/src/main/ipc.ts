@@ -13,8 +13,7 @@ import {
   composeAllowedRoots,
   listDeletableSessions,
   readConfig,
-  resolveGates,
-  DEFAULT_GATES,
+  resolveSkillLists,
   resolveUseMaestroTasks,
   blankConfig,
   defaultV3Config,
@@ -143,8 +142,8 @@ import type {
   AgentSyncApplyResult,
   AgentSyncSummary,
   ProjectTagsData,
-  GatesData,
-  MaestroGates,
+  SkillListsData,
+  MaestroSkillListsSlice,
   TaskRoutingData,
   RulesData,
   SaveInput,
@@ -609,13 +608,18 @@ export function registerIpc(): void {
     return { catalog, selected: readConfig(projectRoot)?.project_tags ?? [] };
   });
 
-  // `/maestro`'s Step 1 gates card. Never rejects: the card renders on a route that is reachable
-  // with no project open, and both-off is the honest answer there — the same answer an absent or
-  // corrupt `gates` block resolves to, via the same `resolveGates`.
-  ipcMain.handle(IPC.gatesData, (): GatesData => {
+  // `/maestro`'s skill pickers. Never rejects: the card renders on a route that is reachable with
+  // no project open, and the resolver's degenerate answer is honest there — the same answer an
+  // absent or corrupt config resolves to, via the same `resolveSkillLists`.
+  ipcMain.handle(IPC.skillListsData, (): SkillListsData => {
     const projectRoot = currentRoot();
-    if (!projectRoot) return { gates: { ...DEFAULT_GATES } };
-    return { gates: resolveGates(readConfig(projectRoot)) };
+    const r = resolveSkillLists(projectRoot ? readConfig(projectRoot) : null);
+    return {
+      skillLists: {
+        start_skills: { maestro: r.maestroStart, to_maestro_tasks: r.toMaestroTasksStart },
+        end_skills: { maestro: r.maestroEnd },
+      },
+    };
   });
 
   // `/maestro`'s Step 4 task-routing checkbox. Never rejects, same reasoning as `data:gates`: no
@@ -700,26 +704,34 @@ export function registerIpc(): void {
   // agent whose stored `agent-project-tags.ts` assignment newly matches one of the ADDED tags —
   // never on an unchecked one, so unchecking a tag can't silently rip an agent out of a graph the
   // user has already wired up; that stays a manual /workflows edit.
-  // `/maestro`'s Step 1 gates checkboxes. One slice write and nothing else — a gate flag says
-  // which skills the ORCHESTRATOR runs in its own context, which implies nothing about the
-  // project's agents or skills, so there is no cross-slice follow-up here of the kind
-  // `project:tags:set` below has to make.
-  ipcMain.handle(IPC.gatesSet, async (_e, gates: MaestroGates): Promise<MaestroGates> => {
+  // `/maestro`'s skill pickers. One slice write and nothing else — a start/end skill says which
+  // skills the ORCHESTRATOR runs in its own context, which implies nothing about the project's
+  // agents or skills, so there is no cross-slice follow-up here of the kind `project:tags:set`
+  // below has to make.
+  ipcMain.handle(IPC.skillListsSet, async (_e, lists: MaestroSkillListsSlice): Promise<MaestroSkillListsSlice> => {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");
-    // Resolved, not trusted: the renderer's shape is checked the same way the runtime script
-    // checks the file's, so a bad payload can only ever write two booleans.
-    const resolved = resolveGates({ gates } as MaestroConfigV3);
-    await saveConfig(projectRoot, { sliceType: "gates", slice: { gates: resolved } });
+    // Resolved, not trusted: the renderer's payload is cleaned by the same resolver the runtime
+    // scripts use, so a bad payload can only ever write lists of non-empty, unique string ids.
+    const r = resolveSkillLists({
+      version: 3,
+      start_skills: lists?.start_skills ?? {},
+      end_skills: lists?.end_skills ?? {},
+    });
+    const resolved: MaestroSkillListsSlice = {
+      start_skills: { maestro: r.maestroStart, to_maestro_tasks: r.toMaestroTasksStart },
+      end_skills: { maestro: r.maestroEnd },
+    };
+    await saveConfig(projectRoot, { sliceType: "skill-lists", slice: resolved });
     return resolved;
   });
 
   // `/maestro`'s Step 4 task-routing checkbox. One slice write and nothing else — same reasoning
-  // as `project:gates:set` above.
+  // as `project:skill-lists:set` above.
   ipcMain.handle(IPC.taskRoutingSet, async (_e, value: boolean): Promise<boolean> => {
     const projectRoot = currentRoot();
     if (!projectRoot) throw new Error("No project is open.");
-    // Resolved, not trusted: mirrors the gates handler's discipline of re-checking the renderer's
+    // Resolved, not trusted: mirrors the skill-lists handler's discipline of re-checking the renderer's
     // payload the same way the runtime script checks the file's.
     const resolved = resolveUseMaestroTasks({ version: 3, use_maestro_tasks: value } as MaestroConfigV3);
     await saveConfig(projectRoot, { sliceType: "task-routing", slice: { use_maestro_tasks: resolved } });

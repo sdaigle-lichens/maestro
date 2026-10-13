@@ -14,7 +14,9 @@ import { sessionLog } from "./session-log";
 
 const methods: Record<string, Record<string, unknown>> = {
   ...projects,
-  ...(openMaestro ? { ...maestroInstall, ...sessionLog } : {}),
+  ...(openMaestro
+    ? { ...maestroInstall, ...sessionLog, project: { ...projects.project, ...maestroInstall.project } }
+    : {}),
 };
 
 const namespace = (name: string) =>

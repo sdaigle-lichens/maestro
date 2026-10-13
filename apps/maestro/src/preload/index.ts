@@ -32,8 +32,8 @@ const api: MaestroApi = {
     tags: {
       set: (tags) => ipcRenderer.invoke(IPC.projectTagsSet, tags),
     },
-    gates: {
-      set: (gates) => ipcRenderer.invoke(IPC.gatesSet, gates),
+    skillLists: {
+      set: (lists) => ipcRenderer.invoke(IPC.skillListsSet, lists),
     },
     taskRouting: {
       set: (value) => ipcRenderer.invoke(IPC.taskRoutingSet, value),
@@ -56,7 +56,7 @@ const api: MaestroApi = {
     globalDocs: () => ipcRenderer.invoke(IPC.globalDocsData),
     globalDoc: (group, slug) => ipcRenderer.invoke(IPC.globalDocContent, group, slug),
     projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
-    gates: () => ipcRenderer.invoke(IPC.gatesData),
+    skillLists: () => ipcRenderer.invoke(IPC.skillListsData),
     taskRouting: () => ipcRenderer.invoke(IPC.taskRoutingData),
   },
   config: {

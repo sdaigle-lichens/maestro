@@ -356,6 +356,8 @@ const STATIC_ASSETS = [
   // Step 1's gate configuration (032) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for
   // why its absence is the one that breaks an invocation outright.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // The orchestrator's end-skills line — same shape as maestro-step1-gates.cjs above.
+  { src: "scripts/maestro-end-skills.cjs", dest: ".claude/scripts/maestro-end-skills.cjs" },
   // Step 4's task-routing configuration (046) — see apps/maestro/src/core/install.ts's
   // STATIC_ASSETS for the full rationale; same shape as maestro-step1-gates.cjs above.
   { src: "scripts/maestro-step4-gate.cjs", dest: ".claude/scripts/maestro-step4-gate.cjs" },
@@ -379,6 +381,8 @@ const STATIC_ASSETS = [
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // Backs maestro-epic.cjs above (`084`).
   { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
+  // Backs maestro-step1-gates.cjs and maestro-end-skills.cjs above.
+  { src: "scripts/lib/maestro-skill-lists.cjs", dest: ".claude/scripts/lib/maestro-skill-lists.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
   // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
   // silently, and why the handoff store is copied even though its seed would have covered it.

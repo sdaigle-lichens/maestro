@@ -22,7 +22,7 @@ export type {
   MaestroRulesSlice,
   MaestroProjectTagsSlice,
   MaestroGates,
-  MaestroGatesSlice,
+  MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroReportEntry,
   MaestroReportsSlice,

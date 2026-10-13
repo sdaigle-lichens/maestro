@@ -377,9 +377,11 @@ function defaultV3Config(implAgents, skillMap = {}) {
     workflow_instances: instances,
     workflows,
     rules: [],
-    // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
-    // well-understood request should not pay for two skill invocations it never asked for.
-    gates: { confidence_check: false, use_code_architecture_design_check: false }
+    // Reproduces the pre-`start_skills` defaults: the orchestrator runs no start or end skill (opt
+    // in from the maestro page — a small request should not pay for skill invocations it never
+    // asked for), while to-maestro-tasks runs both gate skills as it always did.
+    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", "use-code-architecture-design-check"] },
+    end_skills: { maestro: [] }
   };
 }
 // Annotate the CommonJS export names for ESM import in node:

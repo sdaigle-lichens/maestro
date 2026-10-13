@@ -3,12 +3,15 @@ import { useCallback, useEffect, useState } from "react";
 import Button from "@repo/ui/button";
 import { toast } from "@repo/ui/toast";
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   ArrowsClockwiseIcon,
   CheckIcon,
   DownloadSimpleIcon,
   FolderOpenIcon,
   GitBranchIcon,
   ListChecksIcon,
+  PlusIcon,
   PowerIcon,
   ShieldCheckIcon,
   SparkleIcon,
@@ -22,16 +25,18 @@ import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
 import { useInstall } from "../utils/install-context";
+import { getToolsData } from "../utils/tools";
 import type {
   AgentSyncSummary,
   InstallReport,
   InstallStatus,
-  GatesData,
   PendingLane,
   ProjectTagsData,
   TaskRoutingData,
   UninstallPlan,
   UninstallReport,
+  DiscoveredDefinition,
+  MaestroSkillListsSlice,
 } from "../../../shared/ipc";
 
 export const Route = createFileRoute("/maestro")({
@@ -564,98 +569,260 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
   );
 }
 
-/**
- * The post-install Step 1 gates section. Structurally `ProjectTagsCard` above — a checkbox card
- * that writes `maestro.json` on every click with no Save button — because it is the same kind of
- * thing, and the two should stay easy to read side by side.
- *
- * What it writes is read by nothing in this app: `maestro-step1-gates.cjs` reads `gates` at
- * `/maestro` invocation time and prints the one line the orchestrator's Step 1 injects. So a
- * change here shows up in the NEXT orchestration, not in anything on screen.
- */
-function GatesCard({ viewedRoot }: { viewedRoot: string }) {
-  const [data, setData] = useState<GatesData | null>(null);
-  const [busy, setBusy] = useState(false);
+type ListKey = "maestroStart" | "toMaestroTasksStart" | "maestroEnd";
 
-  useEffect(() => {
-    let cancelled = false;
-    void callMain(() => window.maestro.data.gates()).then((res) => {
-      if (!cancelled && res.ok) setData(res.value);
-    });
-    return () => {
-      cancelled = true;
-    };
-  }, [viewedRoot]);
+const SKILL_LISTS: { key: ListKey; label: string; blurb: React.ReactNode }[] = [
+  {
+    key: "maestroStart",
+    label: "Maestro start",
+    blurb: (
+      <>
+        Run in order at Step 1 of <span className="font-mono">/maestro</span>, before the request is classified. Empty
+        skips Step 1.
+      </>
+    ),
+  },
+  {
+    key: "toMaestroTasksStart",
+    label: "To-maestro-tasks start",
+    blurb: (
+      <>
+        Run in order at the start of <span className="font-mono">/to-maestro-tasks</span>, before it sizes the work.
+      </>
+    ),
+  },
+  {
+    key: "maestroEnd",
+    label: "Maestro end",
+    blurb: (
+      <>
+        Run in order once the success path of a <span className="font-mono">/maestro</span> run is complete.
+      </>
+    ),
+  },
+];
 
-  if (!data) return null;
+/** The id a list stores for a discovered skill: plugin skills are namespaced, project/user ones are bare. */
+function skillListId(s: { id: string; source: string }): string {
+  return s.source === "project" || s.source === "user" ? s.id : `${s.source}:${s.id}`;
+}
 
-  const toggle = async (key: keyof GatesData["gates"]) => {
-    const next = { ...data.gates, [key]: !data.gates[key] };
-    setBusy(true);
-    try {
-      const res = await callMain(() => window.maestro.project.gates.set(next));
-      if (!res.ok) {
-        toast(<>Could not save the Step 1 gates: {res.error}</>, { variant: "error" });
-        return;
-      }
-      setData({ gates: res.value });
-    } finally {
-      setBusy(false);
-    }
+/** `plugin:skill` and `skill` name the same skill for a list's purposes: compare on what follows the last colon. */
+function bareSkillName(id: string): string {
+  return id.slice(id.lastIndexOf(":") + 1);
+}
+
+function listsOf(lists: MaestroSkillListsSlice): Record<ListKey, string[]> {
+  return {
+    maestroStart: lists.start_skills.maestro,
+    toMaestroTasksStart: lists.start_skills.to_maestro_tasks,
+    maestroEnd: lists.end_skills.maestro,
   };
+}
 
-  const rows: { key: keyof GatesData["gates"]; skill: string; blurb: string }[] = [
-    {
-      key: "confidence_check",
-      skill: "/confidence-check",
-      blurb: "Score how well the request is understood before committing a workflow to it.",
-    },
-    {
-      key: "use_code_architecture_design_check",
-      skill: "/use-code-architecture-design-check",
-      blurb: "Decide whether the work needs a design pass first. Runs on its own if you leave the box above unchecked.",
-    },
-  ];
+function withList(lists: MaestroSkillListsSlice, key: ListKey, ids: string[]): MaestroSkillListsSlice {
+  switch (key) {
+    case "maestroStart":
+      return { ...lists, start_skills: { ...lists.start_skills, maestro: ids } };
+    case "toMaestroTasksStart":
+      return { ...lists, start_skills: { ...lists.start_skills, to_maestro_tasks: ids } };
+    case "maestroEnd":
+      return { ...lists, end_skills: { maestro: ids } };
+  }
+}
 
+/** One ordered picker: the chosen skills with reorder/remove, and a select of the rest to add. */
+function SkillListPicker({
+  testId,
+  label,
+  blurb,
+  ids,
+  available,
+  known,
+  busy,
+  onChange,
+}: {
+  testId: string;
+  label: string;
+  blurb: React.ReactNode;
+  ids: string[];
+  available: string[];
+  known: Set<string>;
+  busy: boolean;
+  onChange: (next: string[]) => void;
+}) {
+  const [pick, setPick] = useState("");
+  const chosen = new Set(ids.map(bareSkillName));
+  const choices = available.filter((a) => !chosen.has(bareSkillName(a)));
+  const move = (i: number, by: -1 | 1) => {
+    const next = [...ids];
+    [next[i], next[i + by]] = [next[i + by], next[i]];
+    onChange(next);
+  };
+  const btn =
+    "inline-flex items-center justify-center w-6 h-6 rounded border border-maestro text-maestro-muted hover:text-maestro cursor-pointer bg-transparent disabled:opacity-40 disabled:cursor-not-allowed";
   return (
-    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
-      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <ShieldCheckIcon size={12} /> Step 1 gates
-      </div>
-      <p className="text-[12px] text-maestro-muted m-0">
-        Which gate skills the <span className="font-mono">/maestro</span> orchestrator runs before it classifies a
-        request. Both start off — uncheck both and Step 1 is skipped entirely, and the run goes straight to matching a
-        workflow. Saved to <span className="font-mono">.claude/maestro.json</span> on every click and read at the start
-        of the next orchestration.
-      </p>
-      <div className="flex flex-col gap-2">
-        {rows.map((row) => (
-          <label
-            key={row.key}
-            className={`flex items-start gap-2 text-[12px] text-maestro-muted ${
-              busy ? "opacity-60 cursor-not-allowed" : "cursor-pointer"
-            }`}
-          >
-            <input
-              type="checkbox"
-              checked={data.gates[row.key]}
-              disabled={busy}
-              onChange={() => void toggle(row.key)}
-              className="mt-0.5 accent-maestro-primary cursor-pointer"
-            />
-            <span>
-              Run <span className="font-mono">{row.skill}</span>
-              <span className="block text-maestro-muted">{row.blurb}</span>
-            </span>
-          </label>
-        ))}
+    <div data-testid={testId} className="flex flex-col gap-1.5">
+      <div className="text-[12px] font-semibold text-maestro">{label}</div>
+      <p className="text-[12px] text-maestro-muted m-0">{blurb}</p>
+      {ids.length === 0 ? (
+        <p className="text-[12px] text-maestro-muted m-0 italic">No skills — nothing runs here.</p>
+      ) : (
+        <ol className="list-none p-0 m-0 flex flex-col gap-1">
+          {ids.map((id, i) => (
+            <li
+              key={id}
+              data-testid={`${testId}-item`}
+              className="flex items-center gap-2 px-2 py-1 rounded-lg border border-maestro bg-maestro"
+            >
+              <span className="text-[11px] text-maestro-muted w-4">{i + 1}.</span>
+              <span className="font-mono text-[12px] text-maestro flex-1 min-w-0 truncate">{id}</span>
+              {!known.has(id) && <span className="text-[11px] text-amber-500">not found</span>}
+              <button
+                type="button"
+                aria-label={`Move ${id} up`}
+                disabled={busy || i === 0}
+                onClick={() => move(i, -1)}
+                className={btn}
+              >
+                <ArrowUpIcon size={12} />
+              </button>
+              <button
+                type="button"
+                aria-label={`Move ${id} down`}
+                disabled={busy || i === ids.length - 1}
+                onClick={() => move(i, 1)}
+                className={btn}
+              >
+                <ArrowDownIcon size={12} />
+              </button>
+              <button
+                type="button"
+                aria-label={`Remove ${id}`}
+                disabled={busy}
+                onClick={() => onChange(ids.filter((x) => x !== id))}
+                className={btn}
+              >
+                <XIcon size={12} />
+              </button>
+            </li>
+          ))}
+        </ol>
+      )}
+      <div className="flex items-center gap-2">
+        <select
+          aria-label={`Add a skill to ${label}`}
+          value={pick}
+          disabled={busy || choices.length === 0}
+          onChange={(e) => setPick(e.target.value)}
+          className="flex-1 min-w-0 h-7 px-2 rounded-lg border border-maestro bg-maestro text-[12px] font-mono text-maestro"
+        >
+          <option value="">{choices.length === 0 ? "No more skills to add" : "Choose a skill…"}</option>
+          {choices.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+        <Button
+          variant="secondary"
+          icon={<PlusIcon size={12} />}
+          disabled={busy || !pick}
+          onClick={() => {
+            onChange([...ids, pick]);
+            setPick("");
+          }}
+        >
+          Add
+        </Button>
       </div>
     </div>
   );
 }
 
 /**
- * The post-install Step 4 task-routing section. Structurally `GatesCard` above — a single checkbox
+ * The post-install start/end skills section: three ordered pickers over the discovered skills.
+ * Structurally `ProjectTagsCard` above — it writes `maestro.json` on every change with no Save
+ * button.
+ *
+ * What it writes is read by nothing in this app: `maestro-step1-gates.cjs` and
+ * `maestro-end-skills.cjs` read the lists at `/maestro` invocation time (and `/to-maestro-tasks`
+ * through the plugin's own copy) and print the one line the skill injects. So a change here shows up
+ * in the NEXT run, not in anything on screen.
+ */
+function SkillListsCard({ viewedRoot }: { viewedRoot: string }) {
+  const [lists, setLists] = useState<MaestroSkillListsSlice | null>(null);
+  const [skills, setSkills] = useState<DiscoveredDefinition[]>([]);
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.skillLists()).then((res) => {
+      if (!cancelled && res.ok) setLists(res.value.skillLists);
+    });
+    void callMain(() => getToolsData(viewedRoot)).then((res) => {
+      if (!cancelled && res.ok) setSkills(res.value.skills);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (!lists) return null;
+
+  // The bare `maestro` skill is the orchestrator these lists run inside; offering it would loop.
+  const available = skills.map(skillListId).filter((id) => id !== "maestro");
+  // A bare id also resolves for a plugin skill, so it is not flagged as missing.
+  const known = new Set([...available, ...skills.map((s) => s.id)]);
+
+  const change = async (key: ListKey, ids: string[]) => {
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.skillLists.set(withList(lists, key, ids)));
+      if (!res.ok) {
+        toast(<>Could not save the start and end skills: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setLists(res.value);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const current = listsOf(lists);
+  return (
+    <div
+      data-testid="maestro-skill-lists"
+      data-skills={skills.length}
+      className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated"
+    >
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
+        <ShieldCheckIcon size={12} /> Start and end skills
+      </div>
+      <p className="text-[12px] text-maestro-muted m-0">
+        Which skills run at the start and end of an orchestration, in the order listed. Any project, user or plugin
+        skill works; plugin skills are saved as <span className="font-mono">plugin:skill</span>. Saved to{" "}
+        <span className="font-mono">.claude/maestro.json</span> on every change and read at the start of the next run.
+      </p>
+      {SKILL_LISTS.map((row) => (
+        <SkillListPicker
+          key={row.key}
+          testId={`skill-list-${row.key}`}
+          label={row.label}
+          blurb={row.blurb}
+          ids={current[row.key]}
+          available={available}
+          known={known}
+          busy={busy}
+          onChange={(ids) => void change(row.key, ids)}
+        />
+      ))}
+    </div>
+  );
+}
+
+/**
+ * The post-install Step 4 task-routing section. Structurally `SkillListsCard` above — a single checkbox
  * that writes `maestro.json` on every click with no Save button — for the same reason: it is the
  * same kind of thing (`046`, `048`).
  *
@@ -1087,7 +1254,7 @@ function InstallPage() {
             <ProjectTagsCard key={`${viewedRoot}-${tagsRefreshKey}`} viewedRoot={viewedRoot} />
           )}
 
-          {status?.installed && viewedRoot && <GatesCard key={viewedRoot} viewedRoot={viewedRoot} />}
+          {status?.installed && viewedRoot && <SkillListsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           {status?.installed && viewedRoot && <TaskRoutingCard key={viewedRoot} viewedRoot={viewedRoot} />}
 

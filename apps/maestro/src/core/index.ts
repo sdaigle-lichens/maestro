@@ -53,11 +53,10 @@ export {
   serializeConfig,
   writeConfig,
   mergeSlice,
-  resolveGates,
-  DEFAULT_GATES,
   resolveUseMaestroTasks,
   type ConfigSlice,
 } from "./config.js";
+export { resolveSkillLists, type ResolvedSkillLists } from "./skill-lists.js";
 
 // Only consumer besides the concept-skills CLI's own entry point: the /templates Handoffs tab's
 // project picker, which needs the same "what agents does this project actually have" read the

@@ -1,6 +1,6 @@
 ---
 name: maestro-team-meeting
-description: "Holds a team meeting of this project's configured Maestro subagents: each one reviews the setup from its own role and proposes improvements to workflows, skills and skill placement, agents and their tools, rules, handoff templates, reports and gates. You moderate: one parallel proposal round, a second round only for agents whose proposals conflict, then a single batch of approvals before anything changes. Review mode looks at the setup as a whole; post-mortem mode resumes the agents that just ran a workflow so they can propose fixes from what actually happened. Use when the user asks for a team meeting, wants the agents to review or improve the Maestro setup, or wants an agent-driven retro after a run."
+description: "Holds a team meeting of this project's configured Maestro subagents: each one reviews the setup from its own role and proposes improvements to workflows, skills and skill placement, agents and their tools, rules, handoff templates, reports and start/end skill lists. You moderate: one parallel proposal round, a second round only for agents whose proposals conflict, then a single batch of approvals before anything changes. Review mode looks at the setup as a whole; post-mortem mode resumes the agents that just ran a workflow so they can propose fixes from what actually happened. Use when the user asks for a team meeting, wants the agents to review or improve the Maestro setup, or wants an agent-driven retro after a run."
 ---
 
 # Maestro Team Meeting
@@ -41,7 +41,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
    **Agenda confirmation (user checkpoint 1).** Before round 1, show the user, in your own context:
    - the participants (`meeting.participants`);
    - a short summary of the evidence (the `evidence` counts from `brief`, plus what the digest covers);
-   - the focus areas (default: skills and placement, handoffs, agents and tools, rules, gates, workflows).
+   - the focus areas (default: skills and placement, handoffs, agents and tools, rules, start/end skills, workflows).
 
    Ask with `AskUserQuestion`: go ahead, add or drop participants, narrow or widen the focus, or cancel.
    - Participant changes: run `maestro-team-meeting.cjs start` again with the new `--participants` list, then `maestro-team-meeting.cjs brief` again.
@@ -137,7 +137,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
       node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs-done "${CLAUDE_PROJECT_DIR:-.}"
       ```
     - **`main`**: you apply these yourself with the table below. These are workflow changes, rule
-      moves (`rule.move`, `rule.to-agent`), agent forks (`agent.fork`), gates, and creating or
+      moves (`rule.move`, `rule.to-agent`), agent forks (`agent.fork`), start/end skill lists, and creating or
       deleting agents and skills.
     - When you apply by hand: read `.claude/maestro.json` right before each write, change only the
       slice concerned, keep every other key, and write it without a trailing newline.
@@ -185,7 +185,7 @@ to read-only checks. The checkpoints run in your context only; participants neve
 | `rule.to-agent` | add the rule's content to the named project agent's file under `## Project rules`, then delete the rule file |
 | `handoff.edit` | edit `.claude/handoffs/<sender>/<receiver>.md` |
 | `report.edit` | edit `.claude/reports/<id>.md`; if `reports` has no entry for the agent, add `{ "id": "<agent>" }` |
-| `gate.change` | set `gates.confidence_check`, `gates.use_code_architecture_design_check` or `use_maestro_tasks` |
+| `gate.change` | set `start_skills.maestro`, `start_skills.to_maestro_tasks`, `end_skills.maestro` (ordered skill ids) or `use_maestro_tasks` |
 
 The proposal file format and the kinds are in
 [references/proposal-schema.md](references/proposal-schema.md).

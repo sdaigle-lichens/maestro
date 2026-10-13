@@ -1,6 +1,6 @@
 ---
 name: plugin-libs-parity
-description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the sixteen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
+description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
   version: "1.13"
@@ -58,7 +58,6 @@ Three recorded instances of this one failure, each worse than the last:
   only because @reviewer ran the suite against the committed diff rather than the implementer's own
   green run. Fixed by rebuilding **and** mirroring the `.claude/scripts/lib/` copy by hand.
 
-
 ## The export surface is a superset, not an identity
 
 Each bundle's export list must stay a **superset** of what the hook scripts `require()` — adding an
@@ -79,13 +78,13 @@ Related, same task: `SESSION_LOG_FILE` is now an alias for `SESSION_LOG_NAME` wi
 callers** — retained solely because this rule forbids removing it. An export you find with no
 callers is probably load-bearing for exactly that reason; check before deleting it.
 
-## The sixteen generated entries
+## The seventeen generated entries
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed`, `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-concept-skills`, `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
-`maestro-agent-fork`, `maestro-rule-move` (`081`) and `maestro-epic` (`084`: epics, the report
+`maestro-agent-fork`, `maestro-rule-move` (`081`), `maestro-skill-lists` (`089`: `resolveSkillLists`, behind both Step-1/end-skills scripts) and `maestro-epic` (`084`: epics, the report
 inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and
 `formatInboxEntry`; copied into projects, fs/path only, no `node:sqlite`).
 
@@ -99,14 +98,14 @@ it imports is inlined into the bundle. Reaching into a module that touches Elect
 or a third-party dependency is how an entry stops being buildable — or worse, builds and fails at
 hook time in a project with no dependencies installed.
 
-**Seven of the sixteen are also COPIED into projects, which widens what a rename breaks (`035`).** A
-bundle runs from the marketplace cache *and*, if it is in `install.ts`'s `STATIC_ASSETS`, from
+**Eight of the seventeen are also COPIED into projects, which widens what a rename breaks (`035`).** A
+bundle runs from the marketplace cache _and_, if it is in `install.ts`'s `STATIC_ASSETS`, from
 `<project>/.claude/scripts/lib/` — where the copy is a snapshot that only a re-install refreshes.
 The copied set is `maestro-session`, `maestro-skill-regions`, `maestro-agent-sync`,
 `maestro-report-defaults` and `maestro-handoff-defaults` (since `035`), and — since `063` —
 `maestro-workflow-spec`, which backs the `maestro-workflow-spec.cjs` CLI the `create-workflow`/
 `update-workflow` skills invoke directly, and — since `084` — `maestro-epic`, behind the
-`maestro-epic.cjs` CLI (plus the hand-maintained `maestro-tasks.cjs`). So removing
+`maestro-epic.cjs` CLI, and — since `089` — `maestro-skill-lists` (plus the hand-maintained `maestro-tasks.cjs`). So removing
 or renaming an export from one of those breaks two populations with different clocks: the cache
 re-pulls on a `plugin.json` version bump, the project copies do not move until someone re-installs.
 See `installing-maestro`'s manifest sub-concept for the rule the copied list answers to, and why a
@@ -237,13 +236,13 @@ worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
 
 ## Files
 
-| File                                           | Role                                                    |
-| ---------------------------------------------- | ------------------------------------------------------- |
-| `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments. |
-| `apps/maestro/src/core/plugin-entries/*.ts`    | The sixteen entry points — thin re-exports of `src/core`. |
-| `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.          |
-| `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.       |
-| `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                             |
+| File                                           | Role                                                        |
+| ---------------------------------------------- | ----------------------------------------------------------- |
+| `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments.     |
+| `apps/maestro/src/core/plugin-entries/*.ts`    | The seventeen entry points — thin re-exports of `src/core`. |
+| `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.              |
+| `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.           |
+| `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                                 |
 
 ## Relationships
 

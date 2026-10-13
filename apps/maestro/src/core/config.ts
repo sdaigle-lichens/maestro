@@ -11,8 +11,7 @@ import fs from "node:fs";
 import path from "node:path";
 import type {
   MaestroConfigV3,
-  MaestroGates,
-  MaestroGatesSlice,
+  MaestroSkillListsSlice,
   MaestroProjectTagsSlice,
   MaestroRulesSlice,
   MaestroTaskRoutingSlice,
@@ -91,31 +90,11 @@ export type ConfigSlice =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
-  | { sliceType: "gates"; slice: MaestroGatesSlice }
+  | { sliceType: "skill-lists"; slice: MaestroSkillListsSlice }
   | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
 
-/** Both gates off — what an absent, partial or corrupt `gates` field resolves to, per field. */
-export const DEFAULT_GATES: MaestroGates = { confidence_check: false, use_code_architecture_design_check: false };
-
 /**
- * The one reader of `gates`. Every field is compared with a strict `=== true`, so an absent
- * block, a `gates` that isn't a plain object, and a gate whose value is a string, a number or
- * `null` all resolve to off rather than to something truthy.
- *
- * `maestro-step1-gates.cjs` reimplements this rule for the runtime (it can't import from
- * src/core), so a change here needs the same change there.
- */
-export function resolveGates(cfg: MaestroConfigV3 | null): MaestroGates {
-  const raw = cfg && typeof cfg.gates === "object" && cfg.gates !== null ? (cfg.gates as Partial<MaestroGates>) : null;
-  if (!raw) return { ...DEFAULT_GATES };
-  return {
-    confidence_check: raw.confidence_check === true,
-    use_code_architecture_design_check: raw.use_code_architecture_design_check === true,
-  };
-}
-
-/**
- * The one reader of `use_maestro_tasks`. Mirrors `resolveGates`'s strict `=== true` comparison: an
+ * The one reader of `use_maestro_tasks`. Strict `=== true` comparison: an
  * absent field, a corrupt/null config, a `version !== 3` config, and a non-boolean value (a
  * string, a number, `null`) all resolve to `false` rather than to something truthy.
  *
@@ -149,8 +128,12 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
     next.rules = input.slice.rules;
   } else if (input.sliceType === "project-tags") {
     next.project_tags = input.slice.project_tags;
-  } else if (input.sliceType === "gates") {
-    next.gates = input.slice.gates;
+  } else if (input.sliceType === "skill-lists") {
+    next.start_skills = input.slice.start_skills;
+    next.end_skills = input.slice.end_skills;
+    // The legacy booleans are superseded by `start_skills` (authoritative once present); drop them
+    // so the file carries one source of truth after a save.
+    delete next.gates;
   } else if (input.sliceType === "task-routing") {
     next.use_maestro_tasks = input.slice.use_maestro_tasks;
   }

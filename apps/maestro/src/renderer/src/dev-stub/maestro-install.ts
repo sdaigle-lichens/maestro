@@ -1,5 +1,5 @@
 // `/maestro` under `?project=maestro`: an installed, current runtime. The values mirror this repo's
-// own install: its hook ids, `project_tags` and `gates`.
+// own install: its hook ids, `project_tags` and start/end skill lists.
 import { maestroRoot } from "./projects";
 
 const hooks = [
@@ -16,6 +16,23 @@ const hooks = [
   "PostToolUse:maestro-validate-tasks.cjs",
   "SessionEnd:maestro-session-cleanup.cjs",
 ];
+
+// Mutable so the picker round-trips within a browser session, like a save to maestro.json would.
+let skillLists = {
+  start_skills: {
+    maestro: ["confidence-check"],
+    to_maestro_tasks: ["confidence-check", "use-code-architecture-design-check"],
+  },
+  end_skills: { maestro: [] as string[] },
+};
+
+const sampleSkill = (id: string, source: string) => ({
+  id,
+  description: "",
+  source,
+  projectTags: [] as string[],
+  agentTypes: [] as string[],
+});
 
 export const maestroInstall = {
   install: {
@@ -52,8 +69,27 @@ export const maestroInstall = {
       catalog: ["backend", "frontend", "mobile", "infra"],
       selected: ["backend", "frontend"],
     }),
-    gates: async () => ({ gates: { confidence_check: true, use_code_architecture_design_check: true } }),
+    skillLists: async () => ({ skillLists }),
+    tools: async () => ({
+      skills: [
+        sampleSkill("test-maestro", "project"),
+        sampleSkill("scribe", "project"),
+        sampleSkill("confidence-check", "maestro"),
+        sampleSkill("use-code-architecture-design-check", "maestro"),
+        sampleSkill("use-code-architecture-design-check", "concept-skills"),
+        sampleSkill("design-sketch", "design"),
+      ],
+    }),
     taskRouting: async () => ({ useMaestroTasks: true }),
+  },
+  // Merged into `project` by index.ts, which already holds `project.get`.
+  project: {
+    skillLists: {
+      set: async (next: typeof skillLists) => {
+        skillLists = next;
+        return skillLists;
+      },
+    },
   },
   channels: { pending: async () => [] },
 };

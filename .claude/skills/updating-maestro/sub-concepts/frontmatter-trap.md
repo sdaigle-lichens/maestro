@@ -25,6 +25,13 @@ The fix is one of:
   the template is copied whole, frontmatter included. This is the one to reach for: it costs only
   the customisations kept outside the managed regions in that file.
 
+**`089` repeats it with a second grant.** The template's `allowed-tools` gained
+`Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs")` for the new Step 6
+`!`-injected end-skills line. An existing project updated normally gets the script, the
+`lib/maestro-skill-lists.cjs` bundle and the new STEPS region, but **not** that grant, so the Step 6
+injection is not permitted and `/maestro` fails to start. Same remedy: delete
+`.claude/skills/maestro/SKILL.md` and re-install.
+
 Generalise it: **a template change outside a managed region is not deliverable by an update.** If
 the change must reach existing projects, either put it inside a region, or say plainly in the ship
 notes that it needs the file deleted first. `plugins/maestro/skills/maestro-update/` carries this in
