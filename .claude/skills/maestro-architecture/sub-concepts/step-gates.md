@@ -67,12 +67,14 @@ and is told to say so rather than invent one if a named skill isn't installed.
 `start_skills.to_maestro_tasks`. It is a plugin skill, so it must not depend on a project copy
 existing; with no `start_skills` it defaults to running both gate skills, as before.
 
-**Step 6 end skills (`089`).** `maestro-end-skills.cjs` (a project copy, `STATIC_ASSET`) prints the
+**Step 7 end skills (`089`; Step 6 until `100` inserted the epic report).** `maestro-end-skills.cjs` (a project copy, `STATIC_ASSET`) prints the
 `end_skills.maestro` list as one line, under the identical contract (exit 0, no stderr; empty prints
 a "none configured" line). It is injected the same way and is in `SKILL_INVOKED_SCRIPTS`, so its
 absence is likewise fatal rather than degrading. The rendered template's later steps are: **Step 4
-no longer commits**; Step 5 is the post-mortem question; Step 6 runs the end skills (offering a
-commit if none of them commits); Step 7 merges the worktree.
+no longer commits**; Step 5 is the post-mortem; Step 6 is the epic report (`100`: only when `done`
+printed an epic report command, and it is why the mark-task-done node's subject reads "...and report
+to the epic <slug>" and stays open until the report is written); Step 7 runs the end skills (offering
+a commit if none of them commits); Step 8 merges the worktree.
 
 **The design gate is a router, and what it routes to is a third bundled skill.**
 `use-code-architecture-design-check` only decides RUN/SKIP; the pass itself is

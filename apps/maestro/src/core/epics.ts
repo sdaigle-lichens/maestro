@@ -24,7 +24,7 @@ import path from "node:path";
 
 import { mainCheckoutRoot } from "./worktree.js";
 import { readTaskTracker, setTaskEpic, tasksDirFor, type SetEpicResult, type TrackerEntry } from "./tasks.js";
-import { readClaims } from "./claims.js";
+import { claimSessionName, readClaims } from "./claims.js";
 
 export const EPICS_DIR = path.join(".claude", "epics");
 const EPIC_FILE = "EPIC.md";
@@ -302,10 +302,14 @@ export interface WrittenReport {
  * as today" case. The file lands whether or not a manager is running, so nothing is lost while it
  * is down; the notification afterwards is only a pointer.
  */
-export function writeReport(projectRoot: string, task: string, body: string, from?: string): WrittenReport | null {
+export function writeReport(projectRoot: string, task: string, body: string, sender?: string): WrittenReport | null {
   const base = path.basename(task);
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
+  // No sender given: the name the session recorded when it claimed the task (`done` deletes the
+  // claim, so the command it prints carries --from; this covers a report written while it exists).
+  const root = mainCheckoutRoot(projectRoot);
+  const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || undefined;
   const dir = epicDirFor(projectRoot, slug);
   if (!dir || !readEpicState(projectRoot, slug))
     throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
@@ -319,6 +323,24 @@ export function writeReport(projectRoot: string, task: string, body: string, fro
     s.log.push({ kind: "report", id, task: base, file: rel, at, ...(from ? { from } : {}) });
     return { epic: slug, id, file: path.join(dir, rel), manager: s.manager?.name ?? null };
   });
+}
+
+/**
+ * What `maestro-task-status.cjs done` prints for a task in an epic: the exact report command to run
+ * next, naming the epic and its manager. Null for a task in no epic (nothing new is printed).
+ * `sessionName` is the claim's session name, read before `done` deletes the claim.
+ */
+export function reportCommandFor(projectRoot: string, task: string, sessionName?: string | null): string | null {
+  const base = path.basename(task);
+  const slug = epicOfTask(projectRoot, base);
+  if (!slug) return null;
+  const manager = readEpicState(projectRoot, slug)?.manager?.name;
+  const from = sessionName?.trim() ? ` --from "${sessionName.trim()}"` : "";
+  return (
+    `Maestro epic: "${base}" belongs to epic "${slug}" (manager: ${manager ? `"${manager}"` : "no manager recorded"}). ` +
+    `Your NEXT step is to report to the epic, then message the manager if one is recorded: pipe the report body to\n` +
+    `  node .claude/scripts/maestro-epic.cjs report --task "${base}"${from} --file -\n`
+  );
 }
 
 export interface NoteOptions {

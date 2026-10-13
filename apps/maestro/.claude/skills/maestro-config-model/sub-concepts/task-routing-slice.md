@@ -2,7 +2,7 @@
 
 `MaestroTaskRoutingSlice` is `{ use_maestro_tasks: boolean }` — one field, `use_maestro_tasks?:
 boolean`, added top-level to `MaestroConfigV3` (`046`). It is a SIBLING of the skill lists, never nested in
-them: those are the orchestrator's Step 1/6 skills, and this is a Step 4
+them: those are the orchestrator's Step 1/7 skills, and this is a Step 4
 concern with its own write story. Absent means **off**.
 
 ## `resolveUseMaestroTasks` mirrors the old `resolveGates`, with one deliberate difference

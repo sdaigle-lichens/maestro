@@ -838,6 +838,17 @@ function handoffIssuesCommand() {
   );
 }
 
+// The epic report command `done` prints for a task in an epic ("" for one in no epic). The epic
+// bundle is required lazily so a project without it still marks tasks done.
+function epicReportCommand(filename, sessionName) {
+  try {
+    const { reportCommandFor } = require("./lib/maestro-epic.cjs");
+    return reportCommandFor(projectDir, filename, sessionName) || "";
+  } catch {
+    return "";
+  }
+}
+
 function counts(map) {
   const c = { done: 0, ready: 0, blocked: 0 };
   for (const k of Object.keys(map)) {
@@ -886,8 +897,12 @@ try {
       );
       process.exit(1);
     }
+    // Read the claim's session name BEFORE deleting it: it is the report's sender.
+    const claimed = readClaimFile(claimPathFor(filename));
+    const claimedName = claimed && typeof claimed.session_name === "string" ? claimed.session_name : null;
     deleteClaimIfAny(filename); // `066`: a done task has nothing left for a claim to protect
     process.stdout.write(`Maestro tasks: marked "${filename}" done — ${summary(map)}\n`);
+    process.stdout.write(epicReportCommand(filename, claimedName));
     process.exit(0);
   }
 

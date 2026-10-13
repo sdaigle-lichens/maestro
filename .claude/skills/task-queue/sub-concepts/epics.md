@@ -10,8 +10,8 @@ resumable `maestro-manager` session. A task in no epic behaves exactly as before
 CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership and the report inbox.
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
-remove-worker | report --task | note | reports | ack` (`085` added `note` and `list`'s manager and
-backlog columns). Callers never see the lock, the file layout or the id
+remove-worker | of | report --task | note | reports | ack` (`085` added `note` and `list`'s manager and
+backlog columns; `100` added `of`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -38,6 +38,15 @@ scheme.
   the orchestrator template's PRINCIPLES.
 - **No epic, no cost.** `report` checks for an epic before reading stdin and exits 0 saying the task
   belongs to none.
+- **The report is a step, not a memory (`100`).** `maestro-task-status.cjs done` prints the exact
+  report command (`reportCommandFor`: epic slug, manager name or "no manager recorded",
+  `report --task <t> --from "<claim session name>" --file -`); nothing is printed for a task in no
+  epic. The orchestrator's Step 6 "Report to the epic" runs it (end skills is Step 7, worktree merge
+  Step 8). `done` deletes the claim, so the name is read first and baked into the printed `--from`.
+- **Sender fallback.** `report` without `--from` uses the claim's `session_name`
+  (`claimSessionName` in `claims.ts`), else leaves the sender unset.
+- **`of <NNN-task.md>`** prints the task's epic slug, or nothing when it is in none (`epicOfTask`);
+  a script's cheap "is this in an epic?" check.
 
 **Alternatives rejected:** a task list inside the epic file (second source of truth); storing session
 addresses (stale on restart); a hand-written CJS twin of `epics.ts` (a third parity pair; the lib is

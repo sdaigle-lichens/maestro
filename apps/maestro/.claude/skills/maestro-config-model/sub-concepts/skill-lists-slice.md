@@ -2,7 +2,7 @@
 
 `MaestroSkillListsSlice` is `{ start_skills: { maestro: string[]; to_maestro_tasks: string[] }; end_skills: { maestro: string[] } }`
 (`089`) — the ordered skills the orchestrator runs at **Step 1** (start), the ones `/to-maestro-tasks`
-runs before it sizes work, and the ones the orchestrator runs at **Step 6** (end). It replaced the
+runs before it sizes work, and the ones the orchestrator runs at **Step 7** (end). It replaced the
 `gates` slice and its two checkboxes (`032`); `sliceType` is `"skill-lists"`, the card is
 `SkillListsCard`, the channels are `data:skill-lists` / `project:skill-lists:set`.
 
@@ -34,7 +34,7 @@ through `resolveSkillLists` before saving, the same don't-trust-the-renderer dis
 ## Readers in the runtime
 
 `maestro-step1-gates.cjs` prints Step 1 (`--for to_maestro_tasks` selects that list instead) and
-`maestro-end-skills.cjs` prints Step 6 — both exit 0, no stderr, one line. See `maestro-architecture`.
+`maestro-end-skills.cjs` prints Step 7 — both exit 0, no stderr, one line. See `maestro-architecture`.
 
 ## The barrel rule bites here
 

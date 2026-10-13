@@ -26,9 +26,9 @@ The fix is one of:
   the customisations kept outside the managed regions in that file.
 
 **`089` repeats it with a second grant.** The template's `allowed-tools` gained
-`Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs")` for the new Step 6
+`Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs")` for the new Step 7
 `!`-injected end-skills line. An existing project updated normally gets the script, the
-`lib/maestro-skill-lists.cjs` bundle and the new STEPS region, but **not** that grant, so the Step 6
+`lib/maestro-skill-lists.cjs` bundle and the new STEPS region, but **not** that grant, so the Step 7
 injection is not permitted and `/maestro` fails to start. Same remedy: delete
 `.claude/skills/maestro/SKILL.md` and re-install.
 

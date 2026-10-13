@@ -53,7 +53,7 @@ node .claude/scripts/maestro-set-session-workflow.cjs "<workflow name>" [--task 
 
 Create a `TaskCreate` task per success-path step, wire dependencies with `TaskUpdate addBlockedBy`, and tag each with `metadata: { maestro_step: "<label>" }` using the exact label (`@<instance>`, `/<skill>`, `human review`) so the validation hook can check coverage.
 
-**If `active_task` is set**, add a last **mark-task-done** task (`subject: "Mark <active_task> done"`, `metadata: { maestro_step: "mark-task-done" }`) blocked by the last real step. Making it a node is what stops it being dropped; when it comes up, run Step 4.
+**If `active_task` is set**, add a last **mark-task-done** task (`subject: "Mark <active_task> done"`, `metadata: { maestro_step: "mark-task-done" }`) blocked by the last real step. Making it a node is what stops it being dropped; when it comes up, run Step 4. First run `node .claude/scripts/maestro-epic.cjs of "<active_task>"`: if it prints an epic slug, the subject is instead `"Mark <active_task> done and report to the epic <slug>"`, and the node is completed only after Step 6 (the report) is done too. If it prints nothing, nothing about the epic applies.
 
 **Without `TaskCreate`** (unavailable or failing), never track the path from memory. Record it with `node .claude/scripts/maestro-task-status.cjs plan "<step>" "<step>" ...` (exact labels in order, `human review` stops included), then `node .claude/scripts/maestro-task-status.cjs plan-step "<label>" done` after each step and each approved review. On a loop-back, `node .claude/scripts/maestro-task-status.cjs plan-step "<label looped back to>" pending` (resets every later step). `node .claude/scripts/maestro-task-status.cjs plan-show` prints the plan and the next step. Step 4's `done` refuses while a planned step is unfinished; never work around it.
 
@@ -89,7 +89,7 @@ Runs only at the **mark-task-done** task: `active_task` set and every prior step
 node .claude/scripts/maestro-task-status.cjs done
 ```
 
-Then complete the mark-task-done task.
+Then complete the mark-task-done task, unless `done` printed an epic report command: then the task stays open until Step 6 is finished.
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
 
@@ -104,17 +104,21 @@ If the session didn't go cleanly (a major review fix, a mid-task refactor, or th
   **Fix:** none
 ```
 
-**Report to the epic (only when `active_task` is set).** Run `node .claude/scripts/maestro-epic.cjs report --task "<active_task>" --from "<your session name>" --file -` with the report on stdin: outcome, findings, the post-mortem notes, suggested ticket changes. Run it without checking first: a task in no epic is a no-op. If it prints a manager's session name, send that session ONE short `SendMessage` line naming the report and its file, never its contents.
+**Post-mortem question (only if you wrote a `## Post-Mortem` section).** If `done` printed an epic report command naming a manager, don't offer `/maestro-post-mortem` here: tell the user you will report the problems to manager `<name>` and to run `/maestro-post-mortem` from that session. Otherwise ask once whether to run `/maestro-post-mortem` now.
 
-**Post-mortem question (only if you wrote a `## Post-Mortem` section).** If the report went to a manager, don't offer `/maestro-post-mortem` here: tell the user you reported the problems to manager `<name>` (report `<id>`) and to run `/maestro-post-mortem` from that session. Otherwise ask once whether to run `/maestro-post-mortem` now.
+### Step 6 — Report to the epic
 
-### Step 6 — End skills
+Runs only when `done` printed an epic report command, i.e. `active_task` is in an epic. It is not part of the post mortem: it runs on a clean session too, and a clean session still reports. Skip it when `done` printed no such command.
+
+Run the exact command `done` printed, with the report on stdin: outcome, findings, the post-mortem notes (if any), suggested ticket changes. If it then names a manager session, send that session ONE short `SendMessage` line naming the report and its file, never its contents. Then complete the mark-task-done task.
+
+### Step 7 — End skills
 
 Runs after the success path is complete, whether or not `active_task` is set. If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, there are none. If no end skill commits, offer to commit.
 
 !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs"`
 
-### Step 7 (worktree only) — Merge the worktree
+### Step 8 (worktree only) — Merge the worktree
 
 **If working in a worktree that is still unmerged**, ask the user whether to merge it. If yes:
 

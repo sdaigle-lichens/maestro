@@ -21,8 +21,13 @@
 //   node maestro-epic.cjs set-manager <slug> <session name>
 //   node maestro-epic.cjs add-worker <slug> <session name> [--task <NNN-task.md>]
 //   node maestro-epic.cjs remove-worker <slug> <session name>
+//   node maestro-epic.cjs of <NNN-task.md>
+//       Prints the slug of the epic the task belongs to, or nothing (exit 0) when it belongs to none.
+//       The orchestrator runs it once, when it builds the task list, to word the last node.
 //   node maestro-epic.cjs report --task <NNN-task.md> [--file <path>|-] [--from "<session name>"]
-//       The orchestrator's done step. Writes the report body (a file, or stdin when --file is "-" or
+//       The orchestrator's report step. `--from` defaults to the session name recorded on the task's
+//       claim, when that claim still exists (`done` deletes it, so the command it prints carries --from).
+//       Writes the report body (a file, or stdin when --file is "-" or
 //       omitted) into the inbox of the epic the task belongs to and logs it. Prints the report file
 //       path and, when the epic has a manager recorded, the name to message. A task that belongs
 //       to no epic prints a single line and exits 0: nothing else happens.
@@ -147,6 +152,11 @@ try {
         need(positional[1], "remove-worker <slug> <name>")
       );
       process.stdout.write(`Maestro epic: removed worker "${positional[1]}" from "${positional[0]}"\n`);
+      break;
+    }
+    case "of": {
+      const slug = epics.epicOfTask(projectDir, need(positional[0], "of <NNN-task.md>"));
+      process.stdout.write(slug ? `${slug}\n` : "");
       break;
     }
     case "report": {

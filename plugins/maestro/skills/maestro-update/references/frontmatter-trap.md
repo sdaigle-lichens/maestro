@@ -10,7 +10,7 @@ That matters as of `0.4.1`, whose Step 1 needs an `allowed-tools:` grant for
 invocation before the model sees the skill.
 
 The same applies to the end-skills line: the template's `allowed-tools:` also grants
-`maestro-end-skills.cjs`, and a project whose frontmatter predates that grant aborts on the Step 5
+`maestro-end-skills.cjs`, and a project whose frontmatter predates that grant aborts on the Step 7
 injected command. The start/end skill lists themselves (`start_skills` / `end_skills` in
 `maestro.json`) need no migration: a project without them simply runs no start or end skills.
 

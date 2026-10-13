@@ -99,6 +99,12 @@ function readClaimFile(filePath: string): ClaimFile | null {
   }
 }
 
+/** The session name recorded on `filename`'s claim, or null when there is no claim or it is unnamed. */
+export function claimSessionName(tasksDir: string, filename: string): string | null {
+  const claim = readClaimFile(claimPathFor(tasksDir, filename));
+  return claim && typeof claim.session_name === "string" && claim.session_name ? claim.session_name : null;
+}
+
 /**
  * Live iff the claiming session's directory still exists AND its `log.jsonl` was modified within
  * `CLAIM_IDLE_CAP_MS`. A missing session directory (clean `SessionEnd`) is dead immediately; a

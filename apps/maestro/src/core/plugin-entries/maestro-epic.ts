@@ -19,6 +19,7 @@ export {
   unlinkTasks,
   epicOfTask,
   writeReport,
+  reportCommandFor,
   checkNoteRoute,
   writeNote,
   acknowledgeReport,
