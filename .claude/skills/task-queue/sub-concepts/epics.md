@@ -23,7 +23,14 @@ scheme.
   writes nothing).
 - **Session names, never addresses.** `state.json` stores the manager and worker NAMES. An address
   belongs to one process and changes on restart; the manager rediscovers live sessions by name with
-  `ListAgents` each time it opens or resumes.
+  `ListAgents` each time it opens or resumes. A restarted session keeps its conversation but not its
+  name and never re-runs the skill's opening steps, so the manager also compares its own name with
+  `show`'s recorded manager on every report or note and runs `set-manager` when they differ, before
+  `ack` (`102`).
+- **A failed send is not a gone manager (`102`).** `report` and `note` print a `sendFailedHint` after
+  the "message the manager" line: on a failed `SendMessage`, run `ListAgents`; if exactly one session
+  plausibly matches, ask the user before messaging it; never conclude the manager is gone from one
+  failed send. The saved file is the delivery. Not printed when no manager is recorded.
 - **Durable inbox plus acknowledgement.** The done step's `report` writes
   `.claude/epics/<slug>/inbox/rNNN-<task>.md` and a `report` log entry. The manager acknowledges with
   `ack`; the entry is the only delivery proof (cross-session messages have none). A report written

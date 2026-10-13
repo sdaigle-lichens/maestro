@@ -307,6 +307,7 @@ describe("the report inbox", () => {
     );
     expect(written.code).toBe(0);
     expect(written.stdout).toContain("No manager session is recorded");
+    expect(written.stdout).not.toContain("SendMessage fails");
     const file = path.join(root, ".claude", "epics", "e1", "inbox", "r001-001-a.md");
     expect(fs.readFileSync(file, "utf8")).toContain("Outcome: shipped");
 
@@ -337,6 +338,15 @@ describe("the report inbox", () => {
     expect(first.stdout).toContain("r001");
     expect(second.stdout).toContain("r002"); // ids never repeat
     expect(JSON.parse(epic(root, ["show", "e1", "--json"]).stdout).unacknowledged).toHaveLength(2);
+
+    // A failed send is recoverable: the printed step says how, and that the file is the delivery.
+    for (const out of [first.stdout, second.stdout]) {
+      expect(out).toContain("If that SendMessage fails, run ListAgents");
+      expect(out).toContain("exactly one session plausibly matches");
+      expect(out).toContain("ask the user before messaging it");
+      expect(out).toContain("Never conclude the manager is gone from one failed send");
+      expect(out).toContain("saved report file is the real delivery");
+    }
   });
 
   it("an unknown report id cannot be acknowledged", async () => {
@@ -433,6 +443,10 @@ describe("cross-epic notes", () => {
     expect(sent.code).toBe(0);
     expect(sent.stdout).toContain("n001");
     expect(sent.stdout).toContain('"boss-search"');
+    expect(sent.stdout).toContain("If that SendMessage fails, run ListAgents");
+    expect(sent.stdout).toContain("ask the user before messaging it");
+    expect(sent.stdout).toContain("Never conclude the manager is gone from one failed send");
+    expect(sent.stdout).toContain("saved note file is the real delivery");
 
     const file = path.join(root, ".claude", "epics", "search", "inbox", "n001-from-billing.md");
     const content = fs.readFileSync(file, "utf8");
@@ -610,6 +624,7 @@ describe("cross-epic notes", () => {
     ]);
     expect(sent.code).toBe(0);
     expect(sent.stdout).toContain("No manager session is recorded");
+    expect(sent.stdout).not.toContain("SendMessage fails");
 
     // The manager resumes later: the report and the note are both waiting, oldest first.
     epic(root, ["set-manager", "search", "boss-search"]);
