@@ -58,7 +58,14 @@
 //       queue (status.json, claims/) stays in the main checkout either way. A worktree path or branch
 //       that already exists is reported, never reused or overwritten. Never merges, pushes or removes.
 //
-//   node maestro-task-status.cjs merge <filename|NNN>
+//   node maestro-task-status.cjs freeform-check
+//       The same decision for a freeform /maestro run (no task file) (`098`, `103`). Another live session
+//       (a task claim, or a freeform run) means THIS session gets its own worktree
+//       <parent>/<repo>-freeform-<short session id> on branch freeform-<short session id>, created exactly
+//       like a task worktree; nobody else live means "no worktree needed". Writes nothing to claims/ or
+//       status.json, so a freeform worktree never shows up as a task.
+//
+//   node maestro-task-status.cjs merge <filename|NNN|freeform-<id>>
 //       FINISH a worktree task (`076`) — ONLY ever run because the user explicitly asked for it. Merges
 //       branch task-NNN into the main checkout's current branch (`git merge --no-ff`), then removes the
 //       worktree and deletes the branch. Refuses, changing nothing, when the task is not `done`, the
@@ -88,6 +95,9 @@ const {
   ensureSessionsRoot,
   worktreeBranchFor,
   worktreePathFor,
+  freeformBranchFor,
+  freeformWorktreePathFor,
+  isFreeformBranch,
   SESSION_WORKTREE_NAME,
   CLAIM_IDLE_CAP_MS,
 } = require("./lib/maestro-session.cjs");
@@ -305,10 +315,18 @@ function liveFreeformSession(sessionId, now) {
   return null;
 }
 
-// `freeform-check`: the worktree decision for a run with no task file. There is no task number to
-// name a worktree after, so it can only name the active session; working in the main checkout then
-// needs the user's agreement.
+// `freeform-check`: the worktree decision for a run with no task file (`098`, `103`). There is no task
+// number to name a worktree after, so the name comes from the session id (freeform-<short id>). The
+// rule is the same as for a task session: nobody else live means the main checkout; another live
+// session means THIS (second) session works in its own worktree. The first session never moves.
 function freeformCheck(sessionId) {
+  const existing = readWorktreePointer(path.join(projectDir, ".claude"), sessionId);
+  if (existing) {
+    process.stdout.write(
+      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n`
+    );
+    return;
+  }
   const foreign = liveForeignClaim(sessionId, Date.now());
   if (!foreign) {
     process.stdout.write(
@@ -316,10 +334,23 @@ function freeformCheck(sessionId) {
     );
     return;
   }
-  const what = foreign.file ? `working on "${foreign.file}"` : "running a freeform /maestro workflow";
-  process.stdout.write(
-    `Maestro tasks: another session (${foreign.sessionId}) is active, ${what}. A freeform run has no task number, so no worktree can be named — tell the user and work in the main checkout only if they agree\n`
-  );
+  const branch = freeformBranchFor(sessionId);
+  const wtPath = freeformWorktreePathFor(projectDir, sessionId);
+  if (!branch || !wtPath) {
+    process.stdout.write(
+      `Maestro tasks: another session (${foreign.sessionId}) is active but this session id has no usable characters to name a worktree — tell the user and work in the main checkout only if they agree\n`
+    );
+    return;
+  }
+  provisionWorktree({
+    sessionId,
+    foreign,
+    branch,
+    wtPath,
+    subject: "this freeform run",
+    pointerTask: branch,
+    freeform: true,
+  });
 }
 
 function git(cwd, args) {
@@ -371,6 +402,22 @@ function setupWorktree(filename, sessionId) {
     );
     return;
   }
+  provisionWorktree({
+    sessionId,
+    foreign,
+    branch,
+    wtPath,
+    subject: `"${filename}"`,
+    pointerTask: filename,
+    freeform: false,
+  });
+}
+
+// Create `wtPath` on `branch` and move this session's state into it. Shared by a task session
+// (`worktree`) and a freeform run (`freeform-check`, `103`): same git commands, same pointer, same
+// refusals. `subject` is how the messages name the work.
+function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointerTask, freeform }) {
+  const claudeDir = path.join(projectDir, ".claude");
   const pathTaken = fs.existsSync(wtPath);
   const branchTaken = branchExists(branch);
   if (pathTaken || branchTaken) {
@@ -378,8 +425,8 @@ function setupWorktree(filename, sessionId) {
       .filter(Boolean)
       .join(" and ");
     process.stdout.write(
-      `Maestro tasks: another session (${foreign.sessionId}) is active, so "${filename}" should run in its own worktree, but ${what} already exists. ` +
-        "It was NOT reused or overwritten. Tell the user, and ask them to merge/remove the old worktree or branch (or choose another task) before continuing. Do not start the task in the main checkout.\n"
+      `Maestro tasks: another session (${foreign.sessionId}) is active, so ${subject} should run in its own worktree, but ${what} already exists. ` +
+        `It was NOT reused or overwritten. Tell the user, and ask them to merge/remove the old worktree or branch ${freeform ? "" : "(or choose another task) "}before continuing. Do not start the work in the main checkout.\n`
     );
     return;
   }
@@ -392,7 +439,7 @@ function setupWorktree(filename, sessionId) {
       .split("\n")
       .pop();
     process.stdout.write(
-      `Maestro tasks: could not create worktree ${wtPath} on branch ${branch} (${detail}). Tell the user; do not start the task in the main checkout while another session is active.\n`
+      `Maestro tasks: could not create worktree ${wtPath} on branch ${branch} (${detail}). Tell the user; do not start the work in the main checkout while another session is active.\n`
     );
     return;
   }
@@ -426,13 +473,20 @@ function setupWorktree(filename, sessionId) {
   fs.rmSync(mainSessionDir, { recursive: true, force: true });
   fs.mkdirSync(mainSessionDir, { recursive: true });
   ensureSessionsRoot(claudeDir);
-  const pointer = { path: wtPath, branch, task: filename, main_root: projectDir, created_at: new Date().toISOString() };
+  const pointer = {
+    path: wtPath,
+    branch,
+    task: pointerTask,
+    main_root: projectDir,
+    created_at: new Date().toISOString(),
+  };
+  if (freeform) pointer.freeform = true;
   fs.writeFileSync(path.join(mainSessionDir, SESSION_WORKTREE_NAME), `${JSON.stringify(pointer, null, 2)}\n`);
 
   process.stdout.write(
-    `Maestro tasks: another live session (${foreign.sessionId}) holds a claim, so "${filename}" runs in its own worktree.\n` +
+    `Maestro tasks: another live session (${foreign.sessionId}) is active, so ${subject} runs in its own worktree.\n` +
       `  worktree: ${wtPath}\n  branch:   ${branch}\n` +
-      "Do ALL of this task's work there: tell every subagent to use that directory as its working directory and absolute paths under it, " +
+      "Do ALL of this session's work there: tell every subagent to use that directory as its working directory and absolute paths under it, " +
       `and never edit the main checkout (${projectDir}). The task queue and .claude/ channels stay in the main checkout (${projectDir}/.claude/...). ` +
       "If edits there are denied, ask the user to allow the worktree directory (/add-dir).\n"
   );
@@ -503,8 +557,8 @@ function taskTitle(filename) {
 }
 
 function commitSuggestion(filename, branch, wtPath, excludeMaestroJson) {
-  const num = (/^(\d+)-/.exec(filename) || [])[1] || branch;
-  const message = `${taskTitle(filename)} (task ${num})`;
+  const num = (/^(\d+)-/.exec(filename || "") || [])[1] || branch;
+  const message = filename ? `${taskTitle(filename)} (task ${num})` : `Freeform run (${branch})`;
   const pathspec = excludeMaestroJson ? ` -- . ${shellQuote(":!.claude/maestro.json")}` : "";
   return (
     `Suggested commit (run it only once the user has approved the message):\n` +
@@ -579,8 +633,11 @@ function generatedLibResolution(conflicts) {
 }
 
 function mergeWorktreeTask(arg) {
-  const { filename, status } = resolveTaskName(arg);
-  const branch = worktreeBranchFor(filename);
+  // `103`: a freeform run's worktree has no task file or queue entry; it is named by its branch
+  // (freeform-<short id>) and merged by exactly the same steps below, minus the "task is done" check.
+  const freeform = isFreeformBranch(path.basename(arg));
+  const { filename, status } = freeform ? { filename: path.basename(arg), status: "done" } : resolveTaskName(arg);
+  const branch = freeform ? filename : worktreeBranchFor(filename);
   if (!branch) refuse(`"${filename}" has no task number, so it has no task branch`);
   if (status !== "done") {
     refuse(
@@ -601,7 +658,12 @@ function mergeWorktreeTask(arg) {
   if (dirtyLines.length) {
     refuse(
       `worktree ${wtPath} has uncommitted changes (${dirtyLines.length} path(s), e.g. ${dirtyLines[0].trim()}) — commit or discard them first`,
-      commitSuggestion(filename, branch, wtPath, dirty.out.split("\n").includes("?? .claude/maestro.json"))
+      commitSuggestion(
+        freeform ? null : filename,
+        branch,
+        wtPath,
+        dirty.out.split("\n").includes("?? .claude/maestro.json")
+      )
     );
   }
 
@@ -626,7 +688,13 @@ function mergeWorktreeTask(arg) {
     );
   }
 
-  const merged = gitTry(projectDir, ["merge", "--no-ff", "-m", `Merge ${branch} (${filename})`, branch]);
+  const merged = gitTry(projectDir, [
+    "merge",
+    "--no-ff",
+    "-m",
+    freeform ? `Merge ${branch} (freeform run)` : `Merge ${branch} (${filename})`,
+    branch,
+  ]);
   if (!merged.ok) {
     if (SANDBOX_DENIAL.test(`${merged.err}\n${merged.out}`)) {
       if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok)
