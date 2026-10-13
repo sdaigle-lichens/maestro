@@ -870,6 +870,13 @@ export interface InstallReport {
    * write path for "yes, add it". Always `[]` when `configSeeded` is `null`.
    */
   configSeeded: { implAgents: string[]; projectTags: string[]; uncatalogedProjectTags: string[] } | null;
+  /**
+   * Set when a re-install into an EXISTING config filled in a missing `start_skills` / `end_skills`
+   * with the fresh-seed defaults, or removed a leftover `gates` key (`092`). Each flag says what
+   * this run did; `null` when the config already had both lists (never touched) or this run
+   * seeded a whole new config (`configSeeded`). The user changes the lists on the app's /maestro page.
+   */
+  skillListsSeeded: { start_skills: boolean; end_skills: boolean; gatesRemoved: boolean } | null;
   /** True when the run found nothing to do — the idempotent second run. */
   unchanged: boolean;
   warnings: string[];

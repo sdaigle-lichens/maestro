@@ -7,7 +7,14 @@
 
 import { placeConditionLabels } from "./label-layout.js";
 import type { SeedSkills } from "./skill-availability.js";
-import type { MaestroConfigV3, MaestroEdgeV3, MaestroInstanceV3, MaestroNodeV3, MaestroWorkflowV3 } from "./types.js";
+import type {
+  MaestroConfigV3,
+  MaestroSkillListsSlice,
+  MaestroEdgeV3,
+  MaestroInstanceV3,
+  MaestroNodeV3,
+  MaestroWorkflowV3,
+} from "./types.js";
 
 // The non-implementation agents every seeded workflow shares.
 const CORE_INSTANCES: MaestroInstanceV3[] = [
@@ -356,11 +363,63 @@ export function defaultV3Config(
     workflow_instances: instances,
     workflows,
     rules: [],
-    // Reproduces the pre-`start_skills` defaults: the orchestrator runs no start or end skill (opt
-    // in from the maestro page — a small request should not pay for skill invocations it never
-    // asked for), while to-maestro-tasks runs its gate skills as it always did — the design check
-    // only when the project has one.
+    ...defaultSkillLists(seedSkills),
+  };
+}
+
+/**
+ * The start/end skill lists a fresh seed writes. Reproduces the pre-`start_skills` defaults: the
+ * orchestrator runs no start or end skill (opt in from the maestro page — a small request should
+ * not pay for skill invocations it never asked for), while to-maestro-tasks runs its gate skills
+ * as it always did — the design check only when the project has one. Shared by `defaultV3Config`
+ * and `seedMissingSkillLists` so a re-install fills in exactly what a first install would.
+ */
+export function defaultSkillLists(seedSkills: SeedSkills = {}): MaestroSkillListsSlice {
+  const designCheck = seedSkills.designCheck;
+  return {
     start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...(designCheck ? [designCheck] : [])] },
     end_skills: { maestro: [] },
+  };
+}
+
+/** What `seedMissingSkillLists` filled in or dropped. All false = the config was already complete. */
+export interface SkillListsSeeded {
+  start_skills: boolean;
+  end_skills: boolean;
+  /** A leftover pre-`089` `gates` key was removed (nothing reads it any more). */
+  gatesRemoved: boolean;
+}
+
+const isPresent = (v: unknown): boolean => typeof v === "object" && v !== null && !Array.isArray(v);
+
+/**
+ * Install/update-time repair for a project whose `maestro.json` predates `start_skills` /
+ * `end_skills`: fill in whichever is missing with the fresh-seed defaults and drop a leftover
+ * `gates` key. A list that is present — even an empty one the user chose — is never touched, and
+ * nothing at runtime reads `gates`; this is a one-time write. Pure: returns a new config, or the
+ * same object when nothing changed.
+ */
+export function seedMissingSkillLists(
+  cfg: MaestroConfigV3,
+  seedSkills: SeedSkills = {}
+): { config: MaestroConfigV3; seeded: SkillListsSeeded; changed: boolean } {
+  const defaults = defaultSkillLists(seedSkills);
+  const seeded: SkillListsSeeded = {
+    start_skills: !isPresent(cfg.start_skills),
+    end_skills: !isPresent(cfg.end_skills),
+    gatesRemoved: Object.prototype.hasOwnProperty.call(cfg, "gates"),
+  };
+  const changed = seeded.start_skills || seeded.end_skills || seeded.gatesRemoved;
+  if (!changed) return { config: cfg, seeded, changed };
+  const rest: MaestroConfigV3 & { gates?: unknown } = { ...cfg };
+  delete rest.gates;
+  return {
+    config: {
+      ...rest,
+      ...(seeded.start_skills ? { start_skills: defaults.start_skills } : {}),
+      ...(seeded.end_skills ? { end_skills: defaults.end_skills } : {}),
+    },
+    seeded,
+    changed,
   };
 }

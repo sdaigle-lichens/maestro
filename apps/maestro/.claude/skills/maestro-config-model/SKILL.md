@@ -29,7 +29,7 @@ entry point the IPC layer calls.
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                                                                                    |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                                                                                         |
 | `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks}`, `end_skills.{maestro}`. Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |
-| `gates?`                                | **Legacy, read-only.** The pre-`089` two Step 1 booleans; still read as a fallback when `start_skills` is absent, and dropped by the next `skill-lists` save.                       |
+| `gates?`                                | **Legacy, no longer read** (`092`). The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |
 | `use_maestro_tasks?`                    | A SIBLING of the skill lists, not nested in them (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**.                               |
 
 ## Slice merges are the load-bearing rule

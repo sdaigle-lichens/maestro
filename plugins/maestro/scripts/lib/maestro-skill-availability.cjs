@@ -246,6 +246,13 @@ function pluginSuggestions(projectRoot, sources) {
     "This project keeps a concept-skill list (.claude/concept-skills.json) but the concept-skills plugin is not enabled. Install it with `claude plugin install concept-skills@maestro`, then run /concept-skills-install."
   ];
 }
+function missingListsSuggestions(cfg) {
+  if (!isObject(cfg) || !Array.isArray(cfg.workflows) || cfg.workflows.length === 0) return [];
+  if (isObject(cfg.start_skills)) return [];
+  return [
+    "This project's maestro.json has no start_skills, so /maestro and /to-maestro-tasks run no start skills. Re-install Maestro (/maestro-install, or Update on the app's /maestro page) to write the defaults, then adjust them on the /maestro page."
+  ];
+}
 function findStaleSkillRefs(projectRoot, cfg, homeDir) {
   const sources = readSkillSources(projectRoot, homeDir);
   const dangling = [];
@@ -266,7 +273,10 @@ function findStaleSkillRefs(projectRoot, cfg, homeDir) {
         return `"${d.id}" (${used}) is not a project, user or installed-plugin skill. Remove the reference in the Maestro app, or add the skill.`;
     }
   });
-  return { dangling, suggestions: [...suggestions, ...pluginSuggestions(projectRoot, sources)] };
+  return {
+    dangling,
+    suggestions: [...suggestions, ...missingListsSuggestions(cfg), ...pluginSuggestions(projectRoot, sources)]
+  };
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {

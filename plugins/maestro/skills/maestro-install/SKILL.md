@@ -135,9 +135,10 @@ $ARGUMENTS
    - merges the Maestro hooks into `.claude/settings.json`, preserving other keys, and removes the retired `bash-validation.sh` hook and script an earlier release installed (`hooksRemoved`, `retiredScriptsRemoved`);
    - adds a `# Maestro` section to the repo-root `.gitignore` (`git rev-parse --show-toplevel`) with `**/.claude/maestro_session*` and `**/.claude/maestro_sessions/` globs, which match at any depth — so there is no per-project `.gitignore` to write;
    - seeds `.claude/maestro.json` **only when absent**, and the shape of the seed is chain-dependent: an application chain (anything other than `infra` alone) gets the full six-workflow profile (`default`, `tdd`, `Refactor`, `Documentation`, `Review`, `Tests`) wired around the `--impl-agents` chain; a chain that is **exactly** `infra` gets a simpler three-workflow profile (`default`, `Documentation`, `Review`) with no `test`/`refactor` step at all — the infra agent runs its own format/validate/lint/plan-diff in place of a separate test pass, so there is nothing for `@test`/`@refactor` to do. Either way the skill map is attached as `referenced_skills` and the catalog-intersected tags stamped onto `project_tags`. An existing config is never re-seeded;
-   - stamps `runtimeVersion` with the plugin's current version — the ONE field it writes into an already-existing config.
+   - into an **existing** config, fills in only what is missing: a config without `start_skills` gets the fresh-seed defaults (`to_maestro_tasks`: `confidence-check` plus the design check when the project can invoke it), one without `end_skills` gets the empty default, and a leftover `gates` key is removed. A list that is already there — even an empty one — is never touched;
+   - stamps `runtimeVersion` with the plugin's current version — the one other field it writes into an already-existing config.
 
-   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `seededConfig`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 5.
+   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 5.
 
    `orchestratorSkill.action` says what happened to `SKILL.md`: `installed` (copied whole), `synced` (managed regions refreshed; `.regions` lists which), `unchanged`, or `migrated` — the installed skill predated the region markers, so it was backed up to `SKILL.md.bak` (path in `.backup`) and replaced. On `migrated`, **tell the user** and offer to re-apply any custom prose from the `.bak` file *outside* the managed regions before deleting it.
 
@@ -152,6 +153,7 @@ $ARGUMENTS
 6. **Confirm the install.** Summarise:
    - what happened to the orchestrator skill (`orchestratorSkill.action`, including a `migrated` backup) and whether any retired hook was removed (`hooksRemoved`);
    - whether `maestro.json` was seeded (`seededConfig`) and with which implementation chain, or was left alone;
+   - when `skillListsSeeded` is not `null`, **say what it seeded** (`start_skills`, `end_skills` and/or removed `gates`) and that the lists can be changed on the Maestro desktop app's `/maestro` page, so the user is not surprised that `/to-maestro-tasks` now runs `confidence-check`;
    - the recorded project tags, **plural** — report the whole list (e.g. "tagged as `backend, frontend`"), never just one — or that none were recorded, editable afterward from `/maestro`;
    - the rendered success paths from step 5;
    - that they invoke the orchestrator by running `/maestro`;

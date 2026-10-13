@@ -176,6 +176,21 @@ function ReportCard({ report }: { report: InstallReport }) {
               <span className="font-mono text-maestro-muted">{report.handoffsSync.staleCustomized.join(", ")}</span>
             </li>
           )}
+          {report.skillListsSeeded && (
+            <li>
+              Skill lists seeded with the defaults:{" "}
+              <span className="font-mono text-maestro-muted">
+                {[
+                  report.skillListsSeeded.start_skills && "start_skills",
+                  report.skillListsSeeded.end_skills && "end_skills",
+                ]
+                  .filter(Boolean)
+                  .join(", ") || "none"}
+              </span>
+              {report.skillListsSeeded.gatesRemoved && " (a leftover gates key was removed)"}. Change them in the skill
+              lists card on this page.
+            </li>
+          )}
         </ul>
       )}
       {/*

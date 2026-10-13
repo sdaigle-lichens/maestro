@@ -221,6 +221,20 @@ function pluginSuggestions(projectRoot: string, sources: SkillSources): string[]
 }
 
 /**
+ * An authored config (it has workflows) with no `start_skills` was upgraded by copying files alone:
+ * nothing reads the old `gates`, so Step 1 silently runs no skills. A re-install writes the defaults.
+ * An empty or blank config is not "upgraded", so it is not flagged.
+ */
+function missingListsSuggestions(cfg: unknown): string[] {
+  if (!isObject(cfg) || !Array.isArray(cfg.workflows) || cfg.workflows.length === 0) return [];
+  if (isObject(cfg.start_skills)) return [];
+  return [
+    "This project's maestro.json has no start_skills, so /maestro and /to-maestro-tasks run no start skills. " +
+      "Re-install Maestro (/maestro-install, or Update on the app's /maestro page) to write the defaults, then adjust them on the /maestro page.",
+  ];
+}
+
+/**
  * Report skill ids in `cfg` that do not resolve, plus plugin suggestions. Advisory only: a bare id
  * is flagged only when NOTHING installed ships it, so a skill from a plugin that is installed but
  * not switched on is not called dangling.
@@ -245,5 +259,8 @@ export function findStaleSkillRefs(projectRoot: string, cfg: unknown, homeDir?: 
         return `"${d.id}" (${used}) is not a project, user or installed-plugin skill. Remove the reference in the Maestro app, or add the skill.`;
     }
   });
-  return { dangling, suggestions: [...suggestions, ...pluginSuggestions(projectRoot, sources)] };
+  return {
+    dangling,
+    suggestions: [...suggestions, ...missingListsSuggestions(cfg), ...pluginSuggestions(projectRoot, sources)],
+  };
 }

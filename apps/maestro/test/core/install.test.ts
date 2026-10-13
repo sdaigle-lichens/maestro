@@ -708,13 +708,18 @@ describe("runtimeVersion (task 027)", () => {
       // The authored graph is provably unchanged by the refresh — runtimeVersion differs,
       // `reports` gains entries for every agent in `agents_available` that has a global default
       // and `handoffs` one per wired route (each sync step's own materialize-if-absent behavior),
-      // never touching anything else.
+      // never touching anything else. (`defaultish` has no start/end skill lists, so `092`'s seed
+      // fills them in; that is covered by install-seed-skill-lists.test.ts, not compared here.)
       expect({
         ...readConfig(root)!,
         runtimeVersion: undefined,
         reports: undefined,
         handoffs: undefined,
+        start_skills: undefined,
+        end_skills: undefined,
       }).toEqual({
+        start_skills: undefined,
+        end_skills: undefined,
         ...defaultish,
         runtimeVersion: undefined,
         reports: undefined,

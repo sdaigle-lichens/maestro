@@ -197,3 +197,7 @@ bumped.**
 - `[[maestro-architecture]]` — what those hooks and scripts do at runtime once they are present.
 - `/maestro-update` refreshes the project copies from the **currently installed plugin** — so if the
   plugin cache itself is stale, it faithfully propagates the stale copy. Fix the cache first.
+- Config repair rides along with a re-install (`092`): a missing `start_skills`/`end_skills` is
+  seeded once and `gates` removed. The stale-refs report suggests `/maestro-install` when authored
+  config lacks `start_skills`; `/maestro-update` relays that suggestion and tells the user to adjust
+  the seeded lists on the app's `/maestro` page.

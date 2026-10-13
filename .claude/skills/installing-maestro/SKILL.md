@@ -55,6 +55,14 @@ writes `~/.claude`, it just no longer needs to ask the user to. See the hook-arb
    `settingsRegisterScript` in `hook-arbitration.ts` so this test and the runtime guard can never
    disagree about what "registered" means.
 
+**Re-install repairs an old config once (`092`).** `seedMissingSkillLists` (`seed.ts`) parses
+`maestro.json` raw (not `readConfig`), fills a missing `start_skills`/`end_skills` with the
+fresh-install defaults, removes a leftover `gates` key, and rewrites the file only if something
+changed. A list already present, even empty, is left alone. `InstallReport.skillListsSeeded`
+(`{start_skills, end_skills, gatesRemoved}` or `null`) and the `maestro-install.js` JSON summary
+carry it so the skill can tell the user what was seeded. `maestro-seed` is not in `STATIC_ASSETS`,
+so it needs no `.claude/scripts/lib` mirror.
+
 Ordering enforces a fourth: **everything that can refuse is checked before the first byte is
 written**, so a rejected install leaves the project exactly as it was. Past that point every step
 is a copy or an append that re-running completes.
