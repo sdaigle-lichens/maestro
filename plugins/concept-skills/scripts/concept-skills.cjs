@@ -1,35 +1,43 @@
 #!/usr/bin/env node
-// Maestro concept-skill index. The deterministic half of /create-concept-skills,
+// Concept-skill index. The deterministic half of /create-concept-skills,
 // /update-concept-skills and /update-single-concept-skill: finding the skills,
 // doing the version arithmetic, rewriting the frontmatter markers, and stamping
 // <cwd>/.claude/concept-skills.json. The skills spend their tokens on judgement;
 // this spends none on arithmetic.
 //
-//   node maestro-concept-skills.cjs list [--json]
+//   node concept-skills.cjs list [--json]
 //       Every concept skill under the project root — from EVERY .claude/skills in
 //       the tree, not just the root's, so a monorepo's per-app skills are found.
 //       Reports id, path, version, last-update, and the sub-concept / agent-note
 //       file counts. --json for one line of machine-readable output.
 //
-//   node maestro-concept-skills.cjs agents
-//       The project's `agents_available` from maestro.json, as a JSON array — the
-//       list /update-single-concept-skill writes agents/<agent>.md notes for. `[]`
-//       when the project has no maestro.json, which means "write none". The one
-//       command here that still reads Maestro's config, because nothing else knows
-//       what agents a project runs.
+//   node concept-skills.cjs agents
+//       The `agents` list from <root>/.claude/concept-skills.json, as a JSON array —
+//       the agents /update-single-concept-skill writes agents/<agent>.md notes for.
+//       `[]` when the file or the key is absent, which means "write none".
 //
-//   node maestro-concept-skills.cjs state
+//   node concept-skills.cjs agents-discover
+//       The agents the project has — .claude/agents/*.md plus, when present, the
+//       `agents_available` of .claude/maestro.json — as a JSON array. Read-only: it
+//       is what /concept-skills-install seeds the list from and what
+//       /update-concept-skills compares the list against.
+//
+//   node concept-skills.cjs agents-set <name>...
+//       Replace the `agents` list (no names empties it). Other keys in the file are
+//       kept. Reports written:false when the list is already that.
+//
+//   node concept-skills.cjs state
 //       <root>/.claude/concept-skills.json, or {"present": false} when no list has
 //       been created yet. This is what /create-concept-skills reads to decide
 //       whether to run at all. Its OWN file, not a block on maestro.json: concept
 //       skills are a plain .claude/skills convention and a repo can keep a
 //       reconciled list of them without Maestro installed.
 //
-//   node maestro-concept-skills.cjs stamp <id-or-dir> --bump minor|major [--sha <sha>]
+//   node concept-skills.cjs stamp <id-or-dir> --bump minor|major [--sha <sha>]
 //       Rewrite one skill's three marker lines. --bump initial sets 1.0 for a
 //       skill being marked for the first time. --sha defaults to HEAD.
 //
-//   node maestro-concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]
+//   node concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]
 //       The same, for the repo-level record in concept-skills.json. Creates the
 //       file (and .claude/) when absent; reports written:false only when the value
 //       is already what it would write, so a re-stamp shows no diff.
@@ -39,16 +47,17 @@
 // same `projectRoot`-as-an-argument shape every module under apps/maestro/src/core
 // uses. Default: $CLAUDE_PROJECT_DIR, then the process's cwd.
 //
-// All logic lives in lib/maestro-concept-skills.cjs, generated from
-// apps/maestro/src/core/concept-skills.ts, so the app and these skills share one
-// implementation. Unlike the hook scripts this is NOT copied into a project — the
-// skills call it at ${CLAUDE_PLUGIN_ROOT}/scripts/.
+// All logic lives in lib/concept-skills.cjs, generated from
+// packages/concept-skills/src by `pnpm --filter @repo/concept-skills build:plugin-lib`.
+// This is NOT copied into a project — the skills call it at ${CLAUDE_PLUGIN_ROOT}/scripts/.
 
 const { execFileSync } = require("child_process");
 const path = require("path");
 const {
   INITIAL_VERSION,
-  readAgentsAvailable,
+  readAgentsList,
+  writeAgentsList,
+  discoverProjectAgents,
   bumpMinor,
   bumpMajor,
   discoverConceptSkills,
@@ -57,7 +66,7 @@ const {
   stampConceptSkill,
   readConceptSkillsState,
   writeConceptSkillsState,
-} = require("./lib/maestro-concept-skills.cjs");
+} = require("./lib/concept-skills.cjs");
 
 const argv = process.argv.slice(2);
 const command = argv[0];
@@ -98,7 +107,7 @@ function nextVersion(current, bump) {
 }
 
 function die(msg) {
-  process.stderr.write(`maestro-concept-skills: ${msg}\n`);
+  process.stderr.write(`concept-skills: ${msg}\n`);
   process.exit(1);
 }
 
@@ -163,7 +172,23 @@ function die(msg) {
   }
 
   if (command === "agents") {
-    process.stdout.write(JSON.stringify(readAgentsAvailable(projectDir)) + "\n");
+    process.stdout.write(JSON.stringify(readAgentsList(projectDir)) + "\n");
+    process.exit(0);
+  }
+
+  if (command === "agents-discover") {
+    process.stdout.write(JSON.stringify(discoverProjectAgents(projectDir)) + "\n");
+    process.exit(0);
+  }
+
+  if (command === "agents-set") {
+    const names = [];
+    for (let i = 1; i < argv.length; i++) {
+      if (argv[i] === "--root") i++;
+      else if (!argv[i].startsWith("--")) names.push(argv[i]);
+    }
+    const written = writeAgentsList(projectDir, names);
+    process.stdout.write(JSON.stringify({ written, agents: readAgentsList(projectDir) }) + "\n");
     process.exit(0);
   }
 
@@ -179,17 +204,19 @@ function die(msg) {
   }
 
   process.stderr.write(
-    "maestro-concept-skills: unknown command. Usage:\n" +
-      "  maestro-concept-skills.cjs list [--json]\n" +
-      "  maestro-concept-skills.cjs state\n" +
-      "  maestro-concept-skills.cjs agents\n" +
-      "  maestro-concept-skills.cjs stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]\n" +
-      "  maestro-concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]\n" +
+    "concept-skills: unknown command. Usage:\n" +
+      "  concept-skills.cjs list [--json]\n" +
+      "  concept-skills.cjs state\n" +
+      "  concept-skills.cjs agents\n" +
+      "  concept-skills.cjs agents-discover\n" +
+      "  concept-skills.cjs agents-set <name>...\n" +
+      "  concept-skills.cjs stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]\n" +
+      "  concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]\n" +
       "\n" +
       "Every command also takes --root <dir> (default: $CLAUDE_PROJECT_DIR, then cwd).\n"
   );
   process.exit(1);
 })().catch((err) => {
-  process.stderr.write(`maestro-concept-skills: ${err.message}\n`);
+  process.stderr.write(`concept-skills: ${err.message}\n`);
   process.exit(1);
 });

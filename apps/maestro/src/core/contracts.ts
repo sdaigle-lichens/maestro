@@ -21,7 +21,6 @@ export type {
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
   MaestroProjectTagsSlice,
-  MaestroGates,
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroReportEntry,

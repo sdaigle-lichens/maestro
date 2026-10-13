@@ -29,14 +29,14 @@ import {
   parseVersion,
   resolveSkillPath,
   conceptSkillsJsonPath,
-  readAgentsAvailable,
+  discoverProjectAgents,
+  readAgentsList,
   readConceptSkillsState,
   stampConceptSkill,
+  writeAgentsList,
   writeConceptSkillsState,
-} from "../../src/core/concept-skills.js";
+} from "../src/index.js";
 import { parseFrontmatter, parseFrontmatterMetadata } from "@repo/claude-fs";
-import { maestroJsonPath, writeConfig } from "../../src/core/config.js";
-import { defaultish } from "./fixtures/configs.js";
 
 let tmp: string;
 
@@ -273,19 +273,55 @@ describe("stampConceptSkill", () => {
   });
 });
 
-// The list /update-single-concept-skill writes agent notes for. It used to be read by an inline
-// `node -e` in the SKILL.md whose only source for the project root was CLAUDE_PROJECT_DIR with no
-// fallback — unset, it read `undefined/.claude/…`, caught its own error and reported no agents, so
-// the step silently wrote nothing. An empty answer has to mean "this project has no agents", never
-// "the root wasn't resolved".
-describe("readAgentsAvailable", () => {
-  it("reads agents_available from maestro.json", () => {
-    writeConfig(tmp, { ...structuredClone(defaultish), agents_available: ["backend", "test"] });
-    expect(readAgentsAvailable(tmp)).toEqual(["backend", "test"]);
+// The list /update-single-concept-skill writes agent notes for, now a key of concept-skills.json.
+// It used to be read by an inline `node -e` in the SKILL.md whose only source for the project root
+// was CLAUDE_PROJECT_DIR with no fallback — unset, it read `undefined/.claude/…`, caught its own
+// error and reported no agents, so the step silently wrote nothing. An empty answer has to mean
+// "this project has no agents", never "the root wasn't resolved".
+describe("the agents list", () => {
+  it("reads the agents key of concept-skills.json", () => {
+    writeAgentsList(tmp, ["backend", "test"]);
+    expect(readAgentsList(tmp)).toEqual(["backend", "test"]);
   });
 
-  it("is empty with no maestro.json — which means 'write no agent notes'", () => {
-    expect(readAgentsAvailable(tmp)).toEqual([]);
+  it("is empty with no file or no key — which means 'write no agent notes'", () => {
+    expect(readAgentsList(tmp)).toEqual([]);
+    writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc" });
+    expect(readAgentsList(tmp)).toEqual([]);
+  });
+
+  it("trims and de-duplicates, and ignores non-strings", () => {
+    fs.mkdirSync(path.join(tmp, ".claude"), { recursive: true });
+    fs.writeFileSync(conceptSkillsJsonPath(tmp), JSON.stringify({ agents: [" a ", "a", 3, "", "b"] }));
+    expect(readAgentsList(tmp)).toEqual(["a", "b"]);
+  });
+
+  it("is preserved by a state write, and preserves the state on an agents write", () => {
+    writeAgentsList(tmp, ["backend"]);
+    writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc" });
+    expect(readAgentsList(tmp)).toEqual(["backend"]);
+
+    writeAgentsList(tmp, ["backend", "test"]);
+    expect(readConceptSkillsState(tmp)).toEqual({ version: "1.0", last_update: "abc" });
+  });
+
+  it("a file holding only agents reads as 'no list recorded'", () => {
+    writeAgentsList(tmp, ["backend"]);
+    expect(readConceptSkillsState(tmp)).toBeNull();
+  });
+
+  it("writes nothing when the list is unchanged", () => {
+    expect(writeAgentsList(tmp, ["a"])).toBe(true);
+    expect(writeAgentsList(tmp, ["a"])).toBe(false);
+  });
+
+  it("discovers .claude/agents files and maestro.json agents_available, sorted", () => {
+    expect(discoverProjectAgents(tmp)).toEqual([]);
+    fs.mkdirSync(path.join(tmp, ".claude", "agents", "dir-agent"), { recursive: true });
+    fs.writeFileSync(path.join(tmp, ".claude", "agents", "dir-agent", "AGENTS.md"), "x");
+    fs.writeFileSync(path.join(tmp, ".claude", "agents", "zed.md"), "x");
+    fs.writeFileSync(path.join(tmp, ".claude", "maestro.json"), JSON.stringify({ agents_available: ["backend"] }));
+    expect(discoverProjectAgents(tmp)).toEqual(["backend", "dir-agent", "zed"]);
   });
 });
 
@@ -312,12 +348,13 @@ describe("the concept-skills state file", () => {
   });
 
   it("leaves maestro.json untouched", () => {
-    writeConfig(tmp, structuredClone(defaultish));
-    const before = fs.readFileSync(maestroJsonPath(tmp), "utf8");
+    fs.mkdirSync(path.join(tmp, ".claude"), { recursive: true });
+    const mj = path.join(tmp, ".claude", "maestro.json");
+    fs.writeFileSync(mj, '{"version":3}');
 
     writeConceptSkillsState(tmp, { version: "1.0", last_update: "abc123" });
 
-    expect(fs.readFileSync(maestroJsonPath(tmp), "utf8")).toBe(before);
+    expect(fs.readFileSync(mj, "utf8")).toBe('{"version":3}');
   });
 
   it("writes nothing when the value is already what it would write", () => {

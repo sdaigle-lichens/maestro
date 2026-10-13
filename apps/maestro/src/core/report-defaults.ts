@@ -43,6 +43,20 @@ export type { ReportDefault };
 /** `~/.claude/maestro-report-defaults.sqlite` — one store, every project on this machine. */
 export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude", "maestro-report-defaults.sqlite");
 
+// `090`: the gap note is generic. Maestro names no particular kind of skill — any skill an agent
+// loaded can have been missing something — and the scribe channel it lands on is read by whatever
+// the project has wired to handle it (the opt-in `concept-skills` plugin's scribe skill, for one).
+// The previous, concept-skill-specific text lives on below as `conceptGapsChannelNote`, kept
+// verbatim because the superseded bodies in `PRIOR_SEEDS` are rebuilt from it.
+function skillGapsChannelNote(subagent: string): string {
+  return (
+    "If a skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
+    '`{ "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file."
+  );
+}
+
 // `036`: a concept-skill gap no longer travels as a `conceptSkillGaps` field in the JSON report —
 // it goes on the scribe's own channel, unconditionally, whether or not this run's workflow wires a
 // route to `@scribe` at all. That is what makes a gap reachable even from an agent with no scribe
@@ -68,11 +82,20 @@ const VERDICT_HANDOFF_NOTE =
   "and so is ending with no `HANDOFF:` line — the orchestrator is told about both and never treats either as success.";
 
 function backendLikeReport(subagent: string): string {
-  return backendLikeV3(subagent) + "\n\n" + VERDICT_HANDOFF_NOTE;
+  return backendLikeBody(subagent, skillGapsChannelNote(subagent)) + "\n\n" + VERDICT_HANDOFF_NOTE;
 }
 
 // The body before `083` added the verdict/HANDOFF note.
 function backendLikeV3(subagent: string): string {
+  return backendLikeBody(subagent, conceptGapsChannelNote(subagent));
+}
+
+// The body before `090` made the gap note generic: V3 plus the verdict/HANDOFF note.
+function backendLikeV4(subagent: string): string {
+  return backendLikeV3(subagent) + "\n\n" + VERDICT_HANDOFF_NOTE;
+}
+
+function backendLikeBody(subagent: string, gapsNote: string): string {
   return (
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +
@@ -85,11 +108,12 @@ function backendLikeV3(subagent: string): string {
     "}\n" +
     "```\n" +
     "\n" +
-    conceptGapsChannelNote(subagent)
+    gapsNote
   );
 }
 
-const SCRIBE_REPORT =
+// The body before `090` dropped `conceptSkillsUpdated`.
+const SCRIBE_REPORT_V2 =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
   "```json\n" +
@@ -112,22 +136,51 @@ const SCRIBE_REPORT =
   "`claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept " +
   "list moved without reading the whole summary.";
 
-const TEST_REPORT_V3 =
+// `090`: Maestro no longer knows about concept skills, so the scribe's report does not count them
+// separately — they are part of `claudeFilesUpdated` like any other `.claude/skills` file. This is
+// character-for-character the pre-concept-skills (V1) body.
+const SCRIBE_REPORT =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
   "```json\n" +
   "{\n" +
-  '  "subagent": "test",\n' +
-  '  "verdict": "SUCCESS | FAIL",\n' +
+  '  "subagent": "scribe",\n' +
   '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
-  '  "testResult": "<N passed, N failed>",\n' +
-  '  "description": "<summary of what was tested>"\n' +
+  '  "agentsMdUpdated": 0,\n' +
+  '  "docsUpdated": 0,\n' +
+  '  "claudeFilesUpdated": 0,\n' +
+  '  "changelogUpdated": false,\n' +
+  '  "description": "<summary of what was updated>"\n' +
   "}\n" +
   "```\n" +
   "\n" +
-  conceptGapsChannelNote("test");
+  '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
+  "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
 
-const TEST_REPORT = TEST_REPORT_V3 + "\n\n" + VERDICT_HANDOFF_NOTE;
+function testReportBody(gapsNote: string): string {
+  return (
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "test",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "testResult": "<N passed, N failed>",\n' +
+    '  "description": "<summary of what was tested>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    gapsNote
+  );
+}
+
+const TEST_REPORT_V3 = testReportBody(conceptGapsChannelNote("test"));
+
+// The body before `090` made the gap note generic: V3 plus the verdict/HANDOFF note.
+const TEST_REPORT_V4 = TEST_REPORT_V3 + "\n\n" + VERDICT_HANDOFF_NOTE;
+
+const TEST_REPORT = testReportBody(skillGapsChannelNote("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
 
 /**
  * The exact bodies stripped from
@@ -170,7 +223,7 @@ const SEED_REPORTS: Record<string, string> = {
  * changed without being recorded here simply stops propagating — silently.
  */
 const PRIOR_SEEDS: Record<string, string[]> = (() => {
-  // v1: before `conceptSkillGaps` / `conceptSkillsUpdated` (the concept-skills feature).
+  // v1: before `conceptSkillGaps` (the concept-skills feature).
   const backendLikeV1 = (subagent: string): string =>
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +
@@ -183,24 +236,6 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     '  "description": "<summary of what was implemented>"\n' +
     "}\n" +
     "```";
-
-  const scribeV1 =
-    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
-    "\n" +
-    "```json\n" +
-    "{\n" +
-    '  "subagent": "scribe",\n' +
-    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
-    '  "agentsMdUpdated": 0,\n' +
-    '  "docsUpdated": 0,\n' +
-    '  "claudeFilesUpdated": 0,\n' +
-    '  "changelogUpdated": false,\n' +
-    '  "description": "<summary of what was updated>"\n' +
-    "}\n" +
-    "```\n" +
-    "\n" +
-    '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
-    "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
 
   const testV1 =
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
@@ -259,14 +294,22 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     "\n" +
     conceptGapsFieldNoteV2;
 
-  // v3 (`083`): the current body before the verdict/HANDOFF agreement note was appended.
+  // v3 (`083`): the body before the verdict/HANDOFF agreement note was appended. v4 (`090`): the
+  // body with that note but the concept-skill-specific gap note, before the gap note went generic.
+  // The V1 scribe body is deliberately absent: it IS the current scribe body now, and a prior that
+  // equals the current one would be "refreshed" (version bumped) on every open.
   return {
-    backend: [backendLikeV1("backend"), backendLikeV2("backend"), backendLikeV3("backend")],
-    frontend: [backendLikeV1("frontend"), backendLikeV2("frontend"), backendLikeV3("frontend")],
-    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile"), backendLikeV3("mobile")],
-    infra: [backendLikeV3("infra")],
-    scribe: [scribeV1],
-    test: [testV1, testV2, TEST_REPORT_V3],
+    backend: [backendLikeV1("backend"), backendLikeV2("backend"), backendLikeV3("backend"), backendLikeV4("backend")],
+    frontend: [
+      backendLikeV1("frontend"),
+      backendLikeV2("frontend"),
+      backendLikeV3("frontend"),
+      backendLikeV4("frontend"),
+    ],
+    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile"), backendLikeV3("mobile"), backendLikeV4("mobile")],
+    infra: [backendLikeV3("infra"), backendLikeV4("infra")],
+    scribe: [SCRIBE_REPORT_V2],
+    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4],
   };
 })();
 

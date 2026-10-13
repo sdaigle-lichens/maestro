@@ -1,6 +1,6 @@
 ---
 name: update-workflow
-description: "Changes an existing workflow in this project's .claude/maestro.json from a compact declarative spec, instead of hand-editing graph JSON. Reads the workflow's CURRENT spec first so the user's request reads as a diff — e.g. 'remove the testing step', 'add a human review before the reviewer', 'route reviewer failures to refactor instead'. Handles a concrete request by editing the spec directly, and a vague need ('a workflow for when no testing steps are needed') by grounding the change in the project's actual concept skills and agents before proposing it. Use when the user asks to change, edit, add a step to, remove a step from, or rewire an existing Maestro workflow."
+description: "Changes an existing workflow in this project's .claude/maestro.json from a compact declarative spec, instead of hand-editing graph JSON. Reads the workflow's CURRENT spec first so the user's request reads as a diff — e.g. 'remove the testing step', 'add a human review before the reviewer', 'route reviewer failures to refactor instead'. Handles a concrete request by editing the spec directly, and a vague need ('a workflow for when no testing steps are needed') by grounding the change in the project's actual agents and skills before proposing it. Use when the user asks to change, edit, add a step to, remove a step from, or rewire an existing Maestro workflow."
 ---
 
 # Update Workflow
@@ -31,10 +31,10 @@ side column.
    - **Concrete** — the user named the change ("remove the testing step", "route reviewer failures
      to `@refactor` instead of `@backend`"). Apply it to the current spec, show the diff as a brief
      sanity check, and on their go-ahead go to step 4.
-   - **Vague** — the user described a situation ("no testing steps needed"). Invoke
-     `explore-concept-skills` via the `Skill` tool to find which concept skills and agents bear on
-     it, then propose the change against the current spec — e.g. remove `@test` and re-point any
-     condition that routed to it. **Wait for explicit confirmation before writing.**
+   - **Vague** — the user described a situation ("no testing steps needed"). Work out from the
+     current spec, the project's agents and `agents_available` which steps bear on it, then propose
+     the change against the current spec — e.g. remove `@test` and re-point any condition that
+     routed to it. **Wait for explicit confirmation before writing.**
 
 4. **Write the new spec to a scratch file** and run:
 

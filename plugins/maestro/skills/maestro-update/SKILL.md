@@ -63,9 +63,23 @@ place the refresh procedure is written down.
    If it names any, see `references/forked-agents.md` for showing the diff and applying the user's
    `update` / `keep` / `detach` decision.
 
-4. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+4. **Check for skill references that no longer resolve.** `maestro.json` names skills by id, and an id
+   can dangle when the plugin that supplied it is uninstalled or not enabled for this project, or
+   when the skill was deleted. This writes nothing and always exits 0:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-stale-refs.cjs" "${CLAUDE_PROJECT_DIR:-.}"
+   ```
+
+   It prints `{"checked", "dangling": [{"id","reason","where"}], "suggestions": [...]}`. When
+   `dangling` or `suggestions` is non-empty, show each suggestion to the user as it is written. Do
+   not edit `maestro.json` to remove a reference yourself: the references are the user's graph, and
+   removing one is a decision for the Maestro app's workflow view. When both are empty, say nothing
+   about it beyond "no dangling skill references".
+
+5. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged).
+   none had diverged), and any dangling skill references step 4 found.
 
 ## Notes
 

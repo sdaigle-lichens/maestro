@@ -6,7 +6,10 @@ each with its own `.claude-plugin/plugin.json`.
 
 It is also a pnpm/Turborepo monorepo: `apps/maestro` is the Electron desktop app that authors a
 project's Maestro workflow graph, and `packages/*` are its shared libraries
-(`@repo/ui`, `@repo/styles`, `@repo/claude-fs`, `@repo/typescript-config`, `@repo/eslint-config`). The `maestro` plugin
+(`@repo/ui`, `@repo/styles`, `@repo/claude-fs`, `@repo/concept-skills`, `@repo/typescript-config`, `@repo/eslint-config`).
+The opt-in `concept-skills` plugin (`plugins/concept-skills/`) is the concept-skill machinery; its
+`scripts/lib/concept-skills.cjs` is generated from `packages/concept-skills` by
+`pnpm --filter @repo/concept-skills build:plugin-lib`. The `maestro` plugin
 under `plugins/maestro/` is the runtime half — its `scripts/lib/*.cjs` files are generated from
 `apps/maestro/src/core/plugin-entries/*.ts` via `apps/maestro/scripts/build-plugin-libs.mjs`. Run
 that after editing a `plugin-entries/*.ts` source, or the plugin's hooks silently run stale code.

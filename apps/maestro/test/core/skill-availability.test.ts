@@ -1,0 +1,263 @@
+// `090`: which skills a project can invoke. `seedSkillsFor` decides whether the seed names the
+// design check; `findStaleSkillRefs` reports ids already dangling in an existing config. Both read
+// the same sources, so they are tested against the same scratch home + project.
+//
+// `homeDir` is always passed explicitly: nothing here reads the developer's real ~/.claude.
+
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import fs from "node:fs";
+import os from "node:os";
+import path from "node:path";
+
+import {
+  seedSkillsFor,
+  findStaleSkillRefs,
+  whyUnavailable,
+  collectSkillRefs,
+  readEnabledPlugins,
+  readSkillSources,
+  firstAvailableSkill,
+} from "../../src/core/skill-availability.js";
+
+const DESIGN = "concept-skills:use-code-architecture-design-check";
+
+let tmp: string;
+let home: string;
+let project: string;
+
+beforeEach(() => {
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "skill-availability-"));
+  home = path.join(tmp, "home");
+  project = path.join(tmp, "project");
+  fs.mkdirSync(path.join(home, ".claude"), { recursive: true });
+  fs.mkdirSync(path.join(project, ".claude"), { recursive: true });
+});
+
+afterEach(() => fs.rmSync(tmp, { recursive: true, force: true }));
+
+function writeJson(file: string, body: unknown): void {
+  fs.mkdirSync(path.dirname(file), { recursive: true });
+  fs.writeFileSync(file, typeof body === "string" ? body : JSON.stringify(body));
+}
+
+/** An installed plugin on disk, listed in installed_plugins.json, shipping `skills`. */
+function installPlugin(name: string, skills: string[]): void {
+  const installPath = path.join(home, ".claude", "plugins", "cache", name);
+  for (const s of skills) writeJson(path.join(installPath, "skills", s, "SKILL.md"), `---\nname: ${s}\n---\n`);
+  const file = path.join(home, ".claude", "plugins", "installed_plugins.json");
+  let existing: { plugins: Record<string, unknown[]> } = { plugins: {} };
+  try {
+    existing = JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    // first plugin
+  }
+  existing.plugins[`${name}@maestro`] = [{ installPath }];
+  writeJson(file, existing);
+}
+
+const enableInProject = (name: string, on = true, file = "settings.json") =>
+  writeJson(path.join(project, ".claude", file), { enabledPlugins: { [`${name}@maestro`]: on } });
+
+describe("readEnabledPlugins", () => {
+  it("is empty with no settings files", () => {
+    expect(readEnabledPlugins(project, home)).toEqual([]);
+  });
+
+  it("strips the @marketplace and keeps only true values", () => {
+    writeJson(path.join(project, ".claude", "settings.json"), {
+      enabledPlugins: { "concept-skills@maestro": true, "other@maestro": false, bare: true },
+    });
+    expect(readEnabledPlugins(project, home).sort()).toEqual(["bare", "concept-skills"]);
+  });
+
+  it("a later file overrides an earlier one: project can switch off what the user switched on", () => {
+    writeJson(path.join(home, ".claude", "settings.json"), { enabledPlugins: { "concept-skills@maestro": true } });
+    expect(readEnabledPlugins(project, home)).toEqual(["concept-skills"]);
+    enableInProject("concept-skills", false);
+    expect(readEnabledPlugins(project, home)).toEqual([]);
+    enableInProject("concept-skills", true, "settings.local.json");
+    expect(readEnabledPlugins(project, home)).toEqual(["concept-skills"]);
+  });
+
+  it("tolerates a corrupt or wrongly-shaped settings file", () => {
+    writeJson(path.join(project, ".claude", "settings.json"), "{ not json");
+    writeJson(path.join(project, ".claude", "settings.local.json"), { enabledPlugins: ["x"] });
+    expect(readEnabledPlugins(project, home)).toEqual([]);
+  });
+});
+
+describe("whyUnavailable", () => {
+  it("namespaced id: not installed, not enabled, wrong skill, ok", () => {
+    const base = () => readSkillSources(project, home);
+    expect(whyUnavailable(base(), DESIGN)).toBe("plugin-not-installed");
+
+    installPlugin("concept-skills", ["use-code-architecture-design-check", "scribe"]);
+    expect(whyUnavailable(base(), DESIGN)).toBe("plugin-not-enabled");
+
+    enableInProject("concept-skills");
+    expect(whyUnavailable(base(), DESIGN)).toBeNull();
+    expect(whyUnavailable(base(), "concept-skills:nope")).toBe("skill-not-in-plugin");
+  });
+
+  it("enabled but the installed list is unreadable: enabled is taken as enough", () => {
+    enableInProject("concept-skills");
+    expect(whyUnavailable(readSkillSources(project, home), "concept-skills:anything")).toBeNull();
+  });
+
+  it("bare id resolves from a project skill, a user skill, or any installed plugin (enabled or not)", () => {
+    writeJson(path.join(project, ".claude", "skills", "mine", "SKILL.md"), "---\nname: mine\n---\n");
+    writeJson(path.join(home, ".claude", "skills", "yours", "SKILL.md"), "x");
+    installPlugin("design", ["design-sketch"]);
+    const s = readSkillSources(project, home);
+    expect(whyUnavailable(s, "mine")).toBeNull();
+    expect(whyUnavailable(s, "yours")).toBeNull();
+    expect(whyUnavailable(s, "design-sketch")).toBeNull();
+    expect(whyUnavailable(s, "ghost")).toBe("not-found");
+  });
+
+  it("firstAvailableSkill takes the first candidate that resolves", () => {
+    installPlugin("concept-skills", ["b"]);
+    enableInProject("concept-skills");
+    const s = readSkillSources(project, home);
+    expect(firstAvailableSkill(s, ["concept-skills:a", "concept-skills:b"])).toBe("concept-skills:b");
+    expect(firstAvailableSkill(s, ["x:y"])).toBeNull();
+  });
+});
+
+describe("seedSkillsFor", () => {
+  it("plugin not installed: no design check", () => {
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("plugin installed but not enabled for this project: no design check", () => {
+    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("plugin enabled in the project: the namespaced design check seeds", () => {
+    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
+    enableInProject("concept-skills");
+    expect(seedSkillsFor(project, home)).toEqual({ designCheck: DESIGN });
+  });
+
+  it("plugin enabled by the user's settings only: seeds too", () => {
+    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
+    writeJson(path.join(home, ".claude", "settings.json"), { enabledPlugins: { "concept-skills@maestro": true } });
+    expect(seedSkillsFor(project, home)).toEqual({ designCheck: DESIGN });
+  });
+
+  it("plugin enabled but shipping no such skill: no design check", () => {
+    installPlugin("concept-skills", ["scribe"]);
+    enableInProject("concept-skills");
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("a bare project skill of the same name does not count: only the namespaced id seeds", () => {
+    writeJson(
+      path.join(project, ".claude", "skills", "use-code-architecture-design-check", "SKILL.md"),
+      "---\nname: use-code-architecture-design-check\n---\n"
+    );
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("an empty project root yields nothing and does not throw", () => {
+    expect(seedSkillsFor("", home)).toEqual({});
+    expect(seedSkillsFor(path.join(tmp, "missing"), home)).toEqual({});
+  });
+});
+
+describe("collectSkillRefs", () => {
+  it("collects every place a config names a skill, with where", () => {
+    const refs = collectSkillRefs({
+      skills_available: ["a", " b "],
+      workflow_instances: [{ name: "backend", loaded_skills: ["a"], referenced_skills: ["c"] }, "junk"],
+      start_skills: { maestro: ["s1"], to_maestro_tasks: ["s2"] },
+      end_skills: { maestro: ["e1"] },
+      workflows: [
+        { name: "Refactor", nodes: [{ type: "skill", skill: "d" }, { type: "agent" }, { type: "skill", skill: "" }] },
+      ],
+    });
+    expect(refs.get("a")).toEqual(["skills_available", "instance backend loaded_skills"]);
+    expect(refs.get("b")).toEqual(["skills_available"]);
+    expect(refs.get("c")).toEqual(["instance backend referenced_skills"]);
+    expect(refs.get("s1")).toEqual(["start_skills.maestro"]);
+    expect(refs.get("s2")).toEqual(["start_skills.to_maestro_tasks"]);
+    expect(refs.get("e1")).toEqual(["end_skills.maestro"]);
+    expect(refs.get("d")).toEqual(["workflow Refactor skill node"]);
+    expect(refs.size).toBe(7);
+  });
+
+  it.each([null, undefined, 3, "x", [], {}])("tolerates a non-config input %j", (input) => {
+    expect(collectSkillRefs(input).size).toBe(0);
+  });
+});
+
+describe("findStaleSkillRefs", () => {
+  const cfg = {
+    skills_available: [DESIGN, "ghost"],
+    workflow_instances: [{ name: "scribe", loaded_skills: ["concept-skills:scribe"], referenced_skills: [] }],
+    start_skills: { maestro: [], to_maestro_tasks: [DESIGN] },
+    workflows: [{ name: "Refactor", nodes: [{ type: "skill", skill: DESIGN }] }],
+  };
+
+  it("plugin not installed: namespaced ids dangle, with every location, and a bare unknown id too", () => {
+    const report = findStaleSkillRefs(project, cfg, home);
+    const byId = Object.fromEntries(report.dangling.map((d) => [d.id, d]));
+    expect(byId[DESIGN].reason).toBe("plugin-not-installed");
+    expect(byId[DESIGN].where).toEqual([
+      "skills_available",
+      "start_skills.to_maestro_tasks",
+      "workflow Refactor skill node",
+    ]);
+    expect(byId["concept-skills:scribe"].reason).toBe("plugin-not-installed");
+    expect(byId["ghost"].reason).toBe("not-found");
+    expect(report.suggestions.some((s) => s.includes("not installed"))).toBe(true);
+  });
+
+  it("plugin installed but disabled: reason plugin-not-enabled, suggestion says enable", () => {
+    installPlugin("concept-skills", ["use-code-architecture-design-check", "scribe"]);
+    const report = findStaleSkillRefs(project, cfg, home);
+    expect(report.dangling.find((d) => d.id === DESIGN)!.reason).toBe("plugin-not-enabled");
+    expect(report.suggestions.join("\n")).toContain("installed but not enabled");
+  });
+
+  it("plugin enabled: only the genuinely missing id is left", () => {
+    installPlugin("concept-skills", ["use-code-architecture-design-check", "scribe"]);
+    enableInProject("concept-skills");
+    const report = findStaleSkillRefs(project, cfg, home);
+    expect(report.dangling.map((d) => d.id)).toEqual(["ghost"]);
+  });
+
+  it("enabled plugin that lacks a skill: skill-not-in-plugin", () => {
+    installPlugin("concept-skills", ["scribe"]);
+    enableInProject("concept-skills");
+    const report = findStaleSkillRefs(project, cfg, home);
+    expect(report.dangling.find((d) => d.id === DESIGN)!.reason).toBe("skill-not-in-plugin");
+  });
+
+  it("a bare skill from an installed-but-disabled plugin is NOT called dangling", () => {
+    installPlugin("design", ["design-sketch"]);
+    expect(findStaleSkillRefs(project, { skills_available: ["design-sketch"] }, home).dangling).toEqual([]);
+  });
+
+  it("suggests /concept-skills-install when concept-skills.json exists but the plugin is not enabled", () => {
+    writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
+    const report = findStaleSkillRefs(project, {}, home);
+    expect(report.dangling).toEqual([]);
+    expect(report.suggestions).toHaveLength(1);
+    expect(report.suggestions[0]).toContain("/concept-skills-install");
+
+    enableInProject("concept-skills");
+    expect(findStaleSkillRefs(project, {}, home).suggestions).toEqual([]);
+  });
+
+  it("no concept-skills.json and nothing dangling: clean", () => {
+    expect(findStaleSkillRefs(project, { skills_available: [] }, home)).toEqual({ dangling: [], suggestions: [] });
+  });
+
+  it("never throws on a garbage config", () => {
+    for (const bad of [null, undefined, 7, "x", [], { workflows: "x", workflow_instances: [null, 1] }]) {
+      expect(() => findStaleSkillRefs(project, bad, home)).not.toThrow();
+    }
+  });
+});

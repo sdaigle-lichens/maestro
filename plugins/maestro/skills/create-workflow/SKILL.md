@@ -1,6 +1,6 @@
 ---
 name: create-workflow
-description: "Adds a new workflow to this project's .claude/maestro.json from a compact declarative spec, instead of hand-authoring graph JSON. Handles a concrete request ('a workflow using only the backend and review agents', 'a workflow that goes backend then human review then reviewer') by building the spec directly, and a vague need ('a workflow for when no testing steps are needed', 'a workflow for small doc-only changes') by grounding the choice of steps in the project's actual concept skills and agents before proposing a spec. Use when the user asks to add, create, or design a new Maestro workflow, wants a workflow for a specific kind of task the existing ones don't cover, or the orchestrator itself offers this when no workflow clearly matches a request."
+description: "Adds a new workflow to this project's .claude/maestro.json from a compact declarative spec, instead of hand-authoring graph JSON. Handles a concrete request ('a workflow using only the backend and review agents', 'a workflow that goes backend then human review then reviewer') by building the spec directly, and a vague need ('a workflow for when no testing steps are needed', 'a workflow for small doc-only changes') by grounding the choice of steps in the project's actual agents and skills before proposing a spec. Use when the user asks to add, create, or design a new Maestro workflow, wants a workflow for a specific kind of task the existing ones don't cover, or the orchestrator itself offers this when no workflow clearly matches a request."
 ---
 
 # Create Workflow
@@ -30,8 +30,8 @@ A **spec** is `{ name, steps, conditions? }`:
      onto tokens and conditions, show the spec as a brief sanity check, and on their go-ahead go to
      step 3.
    - **Vague** — the user described a situation ("a workflow for when no testing steps are
-     needed"). Invoke `explore-concept-skills` via the `Skill` tool (it isn't user-invocable) to find
-     which concept skills and agents bear on it, then propose a spec grounded in what it reports —
+     needed"). Work out from the project's agents (`agents_available`) and the existing workflows
+     which steps bear on it, then propose a spec grounded in what you found —
      e.g. "no testing" → omit `@test` and point the reviewer's FAIL routes at the implementation
      agent. **Wait for explicit confirmation before writing** — these steps were inferred, not
      stated.

@@ -107,6 +107,17 @@ export function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean {
 }
 
 /**
+ * The project's `agents_available` from `maestro.json`, or `[]` when it has no `maestro.json`.
+ *
+ * The /templates Handoffs tab's project picker reads this to learn what agents a project actually
+ * has (`template:agents-available` in main/ipc.ts). An empty answer means "none known", which is the
+ * right answer for a project without Maestro.
+ */
+export function readAgentsAvailable(projectRoot: string): string[] {
+  return readConfig(projectRoot)?.agents_available ?? [];
+}
+
+/**
  * Merge one slice into a config, leaving the other slices untouched.
  *
  * This separation is the reason /workflows saves can't clobber /rules assignments and vice
@@ -131,9 +142,6 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
   } else if (input.sliceType === "skill-lists") {
     next.start_skills = input.slice.start_skills;
     next.end_skills = input.slice.end_skills;
-    // The legacy booleans are superseded by `start_skills` (authoritative once present); drop them
-    // so the file carries one source of truth after a save.
-    delete next.gates;
   } else if (input.sliceType === "task-routing") {
     next.use_maestro_tasks = input.slice.use_maestro_tasks;
   }

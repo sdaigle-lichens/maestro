@@ -1,6 +1,6 @@
 # Metadata markers
 
-The whole contract lives in `apps/maestro/src/core/concept-skills.ts` as exported constants:
+The whole contract lives in `packages/concept-skills/src/concept-skills.ts` as exported constants:
 `TYPE_KEY` (`type`), `CONCEPT_TYPE` (`concept-skill`), `VERSION_KEY` (`version`), `LAST_UPDATE_KEY`
 (`last-update`), `INITIAL_VERSION` (`1.0`), `SUB_CONCEPTS_DIR`, `AGENT_NOTES_DIR`.
 
@@ -13,6 +13,6 @@ the repo.
 returns only skills carrying `type: concept-skill`. `stampConceptSkill` rewrites the frontmatter in
 place, preserving the rest of the file.
 
-Repo-level state is `MaestroConceptSkillsState` (`version`, `last_update`) in
+Repo-level state is `ConceptSkillsState` (`version`, `last_update`) in
 `<root>/.claude/concept-skills.json`, read and written by `readConceptSkillsState` /
 `writeConceptSkillsState`.

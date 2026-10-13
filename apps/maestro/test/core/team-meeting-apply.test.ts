@@ -42,7 +42,7 @@ const CFG = {
   ],
   workflows: [],
   rules: [{ id: "r1", paths: [] }],
-  gates: { confidence_check: true },
+  start_skills: { maestro: ["confidence-check"], to_maestro_tasks: [] },
   use_maestro_tasks: true,
   project_tags: ["x"],
 } as unknown as MaestroConfigV3;
@@ -234,12 +234,12 @@ describe("maestro-team-meeting.cjs apply-placement", () => {
   it("reads maestro.json at apply time, so an edit made after the tally survives", () => {
     const root = project(record, false);
     const cfg = JSON.parse(readCfg(root));
-    cfg.gates = { confidence_check: false, use_code_architecture_design_check: true };
+    cfg.start_skills = { maestro: ["added-later-skill"], to_maestro_tasks: [] };
     cfg.rules = [{ id: "added-later", paths: [] }];
     fs.writeFileSync(path.join(root, ".claude", "maestro.json"), JSON.stringify(cfg, null, 2));
     expect(cli(root, ["apply-placement"]).code).toBe(0);
     const after = JSON.parse(readCfg(root));
-    expect(after.gates).toEqual(cfg.gates);
+    expect(after.start_skills).toEqual(cfg.start_skills);
     expect(after.rules).toEqual(cfg.rules);
   });
 

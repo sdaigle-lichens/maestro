@@ -11,7 +11,7 @@ Diff-driven: given a code-change report it can skip re-exploring the code the se
 
 **`update-single-concept-skill`** takes one skill from skeleton to something worth loading:
 researches the concept, deepens `SKILL.md` and `sub-concepts/`, and writes the per-agent `agents/`
-notes for the agents the project actually uses (`maestro-concept-skills.cjs agents`). Deep on one
+notes for the agents the project actually uses (`concept-skills.cjs agents`). Deep on one
 concept, still not exhaustive.
 
 **`scribe`** is the placement rule rather than a lifecycle step: concept skills are for agents,

@@ -1,7 +1,7 @@
 // The real Step 1 / end-skills scripts, spawned from the PLUGIN's own copy (the one
 // /to-maestro-tasks runs through ${CLAUDE_PLUGIN_ROOT}) against temp projects. Pins, on properties
 // not wording: exit 0, empty stderr, exactly one line, the configured skills named in order, the
-// legacy `gates` fallback for every combination, and that no degenerate input escapes as an error.
+// old `gates` booleans never read, and that no degenerate input escapes as an error.
 
 import { describe, it, expect, beforeAll, afterAll } from "vitest";
 import fs from "node:fs";
@@ -15,9 +15,6 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_SCRIPTS = path.resolve(here, "../../../../plugins/maestro/scripts");
 const STEP1 = path.join(PLUGIN_SCRIPTS, "maestro-step1-gates.cjs");
 const END = path.join(PLUGIN_SCRIPTS, "maestro-end-skills.cjs");
-
-const CONF = "confidence-check";
-const DESIGN = "use-code-architecture-design-check";
 
 let tmp: string;
 let n = 0;
@@ -67,27 +64,22 @@ function expectOrdered(line: string, ids: string[], label: string): void {
 const v3 = (extra: Record<string, unknown>) => ({ version: 3, ...extra });
 
 describe("plugin copy of maestro-step1-gates.cjs", () => {
-  it("legacy gates, all four combinations, for both targets", () => {
-    for (const c of [false, true]) {
-      for (const d of [false, true]) {
-        const root = project(v3({ gates: { confidence_check: c, use_code_architecture_design_check: d } }));
-        const label = `c=${c} d=${d}`;
-        const m = run(STEP1, root);
-        expectContract(m, `maestro ${label}`);
-        expect(m.stdout.includes("/" + CONF), label).toBe(c);
-        expect(m.stdout.includes("/" + DESIGN), label).toBe(d);
-        // /to-maestro-tasks keeps the old default of both, whatever gates says.
-        const t = run(STEP1, root, ["--for", "to_maestro_tasks"]);
-        expectContract(t, `tasks ${label}`);
-        expectOrdered(t.stdout, [CONF, DESIGN], `tasks ${label}`);
-      }
+  it("old gates booleans are not read: no start_skills is the same line as empty lists, per target", () => {
+    for (const args of [[], ["--for", "to_maestro_tasks"]]) {
+      const empty = run(STEP1, project(v3({ start_skills: { maestro: [], to_maestro_tasks: [] } })), args);
+      const old = run(
+        STEP1,
+        project(v3({ gates: { confidence_check: true, use_code_architecture_design_check: true } })),
+        args
+      );
+      expectContract(old, "gates " + args.join(" "));
+      expect(old.stdout).toBe(empty.stdout);
     }
   });
 
-  it("new shape: names the configured lists in order, namespaced ids intact, targets independent", () => {
+  it("names the configured lists in order, namespaced ids intact, targets independent", () => {
     const root = project(
       v3({
-        gates: { confidence_check: true, use_code_architecture_design_check: true },
         start_skills: {
           maestro: ["concept-skills:use-code-architecture-design-check", "zeta", "alpha"],
           to_maestro_tasks: ["beta", "alpha"],
@@ -98,7 +90,6 @@ describe("plugin copy of maestro-step1-gates.cjs", () => {
     expectContract(m, "maestro");
     expectOrdered(m.stdout, ["concept-skills:use-code-architecture-design-check", "zeta", "alpha"], "maestro");
     expect(m.stdout).not.toContain("beta");
-    expect(m.stdout).not.toContain("/" + CONF); // gates ignored once start_skills exists
     const t = run(STEP1, root, ["--for", "to_maestro_tasks"]);
     expectContract(t, "tasks");
     expectOrdered(t.stdout, ["beta", "alpha"], "tasks");
@@ -129,13 +120,7 @@ describe("plugin copy of maestro-step1-gates.cjs", () => {
       for (const [label, body] of degenerate) {
         const res = run(STEP1, project(body), args);
         expectContract(res, `${label} ${args.join(" ")}`);
-        if (args.length === 0) {
-          expect(res.stdout, label).toBe(empty.stdout);
-        } else {
-          // /to-maestro-tasks degenerate input is the legacy default (both), never an error.
-          expect(res.stdout, label).toContain("/" + CONF);
-          expect(res.stdout, label).toContain("/" + DESIGN);
-        }
+        expect(res.stdout, label).toBe(empty.stdout);
       }
     }
   });
@@ -197,14 +182,10 @@ describe("plugin copy of maestro-end-skills.cjs", () => {
     expectOrdered(res.stdout, ids, "end");
   });
 
-  it("ignores start_skills and legacy gates", () => {
-    const res = run(
-      END,
-      project(v3({ gates: { confidence_check: true }, start_skills: { maestro: ["s"], to_maestro_tasks: ["t"] } }))
-    );
+  it("ignores start_skills", () => {
+    const res = run(END, project(v3({ start_skills: { maestro: ["s"], to_maestro_tasks: ["t"] } })));
     expectContract(res, "end ignores start");
     expect(res.stdout).not.toContain("/s");
-    expect(res.stdout).not.toContain("/" + CONF);
   });
 
   it("every degenerate input resolves to the same neutral line as an empty list", () => {

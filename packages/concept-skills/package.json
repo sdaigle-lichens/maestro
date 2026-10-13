@@ -1,0 +1,30 @@
+{
+  "name": "@repo/concept-skills",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build:plugin-lib": "node scripts/build-plugin-lib.mjs",
+    "check": "prettier --check . --ignore-path ../../.prettierignore",
+    "format": "prettier --write . --ignore-path ../../.prettierignore",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit -p tsconfig.json"
+  },
+  "dependencies": {
+    "@repo/claude-fs": "workspace:*"
+  },
+  "devDependencies": {
+    "@repo/eslint-config": "workspace:*",
+    "@repo/typescript-config": "workspace:*",
+    "@types/node": "22.10.2",
+    "esbuild": "^0.25.0",
+    "eslint": "^9.39.0",
+    "typescript": "6.0.2",
+    "vitest": "4.1.5"
+  }
+}

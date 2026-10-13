@@ -79,6 +79,7 @@ const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
 const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
+const { seedSkillsFor } = require("./lib/maestro-skill-availability.cjs");
 const { walkProjectSkillIds, compareRuntimeVersions } = require("./lib/maestro-session.cjs");
 
 /**
@@ -760,7 +761,7 @@ function main() {
     const configPath = path.join(claudeDir, "maestro.json");
     let seededConfig = false;
     if (!fs.existsSync(configPath)) {
-      const seeded = { ...defaultV3Config(implAgents, skillMap), project_tags: projectTags };
+      const seeded = { ...defaultV3Config(implAgents, skillMap, seedSkillsFor(projectDir)), project_tags: projectTags };
       fs.writeFileSync(configPath, JSON.stringify(seeded, null, 2));
       seededConfig = true;
     }

@@ -24,7 +24,6 @@ import type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
-  MaestroGates,
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
@@ -157,7 +156,6 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
-  MaestroGates,
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
@@ -363,7 +361,7 @@ export interface ProjectTagsData {
  * time through the SAME `resolveSkillLists`.
  */
 export interface SkillListsData {
-  /** Resolved, never raw: a project with only legacy `gates` reads back as the equivalent lists. */
+  /** Resolved, never raw: a project with no `start_skills` reads back as empty lists. */
   skillLists: MaestroSkillListsSlice;
 }
 
@@ -413,7 +411,7 @@ export const IPC = {
   projectTagsSet: "project:tags:set",
 
   // `/maestro`'s three skill pickers (Maestro start, To-maestro-tasks start, Maestro end).
-  // `data:skill-lists` reads the project's resolved lists (the empty/legacy-default lists when no
+  // `data:skill-lists` reads the project's resolved lists (the empty lists when no
   // project is open, so the card can render on a route reachable in that state);
   // `project:skill-lists:set` saves the `skill-lists` slice and returns what was saved. No second
   // cross-slice write: a start/end skill implies nothing about which agents the project has.
@@ -463,8 +461,7 @@ export const IPC = {
 
   // The Handoffs tab's own project picker (`043`): a LOCAL "which project am I viewing" the tab
   // added for itself, distinct from every other channel on this page, which stays global. Reads
-  // the same `agents_available` `readAgentsAvailable` already gives the concept-skills CLI — no
-  // new store. `projectRoot` is validated the same way `data:tools`'s is: it must name the current
+  // the project's `agents_available` (`readAgentsAvailable`) — no new store. `projectRoot` is validated the same way `data:tools`'s is: it must name the current
   // or a recent project, or the call falls back to the open project (or `[]` with none open).
   templateAgentsAvailable: "template:agents-available",
 
@@ -808,8 +805,8 @@ export interface MaestroApi {
     projectTags(): Promise<ProjectTagsData>;
     /**
      * `/maestro`'s skill pickers: the open project's RESOLVED lists. Never rejects — no project
-     * open, or an absent/corrupt config, reads back as empty maestro lists and the legacy
-     * to-maestro-tasks default, exactly what the runtime scripts resolve them to as well.
+     * open, or an absent/corrupt config, reads back as empty lists,
+     * exactly what the runtime scripts resolve them to as well.
      */
     skillLists(): Promise<SkillListsData>;
     /**

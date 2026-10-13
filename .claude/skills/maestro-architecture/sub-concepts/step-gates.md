@@ -52,11 +52,9 @@ time by `maestro-step1-gates.cjs` through `resolveSkillLists` (bundled as
 and its one-line, exit-0 contract; only the data changed from two booleans to a list. An empty list,
 **every** degenerate case — no config, corrupt JSON, `version !== 3`, a non-array — and any throw
 resolve to the continue-to-Step-2 line, quietly. The pickers live on the desktop app's `/maestro`
-page. **A project with no `start_skills` falls back to the legacy `gates` booleans** (`confidence_check`
--> `confidence-check`, `use_code_architecture_design_check` -> `use-code-architecture-design-check`,
-strict `=== true`), so a pre-`089` project keeps its old behaviour until its first `skill-lists` save,
-which writes the lists and deletes `gates`. `/confidence-check` and `/use-code-architecture-design-check`
-are still bundled (`plugins/maestro/skills/`), but the orchestrator runs what the injected line names
+page. **A project with no `start_skills` runs no start skills**: the old `gates` booleans are no longer
+read (`090`), so re-install the project to get the seeded lists. `/confidence-check` is bundled
+(`plugins/maestro/skills/`); the design check ships in the opt-in `concept-skills` plugin. But the orchestrator runs what the injected line names
 and is told to say so rather than invent one if a named skill isn't installed.
 
 **`/to-maestro-tasks` runs the same script from the plugin's own copy**: its SKILL.md injects
@@ -77,7 +75,7 @@ commit if none of them commits); Step 7 merges the worktree.
 the model invokes with the Skill tool. Two consequences worth knowing: the check is
 `user-invocable: false` and the design skill is **not**, so a user can reach the pass directly
 without the gate; and both inject the project's concept list with a `!`-prefixed
-`maestro-concept-skills.cjs list` at expansion time, which is why each carries that exact command in
+the concept-skills plugin's `concept-skills.cjs list` at expansion time, which is why each carries that exact command in
 `allowed-tools`. **`code-architecture-design` is not `/design`** — that name resolves to the Claude
 Design canvas skill (visual mockups), which is the collision the rename exists to end.
 

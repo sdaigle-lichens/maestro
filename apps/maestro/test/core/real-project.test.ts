@@ -68,10 +68,10 @@ describe("save against a really-installed project", () => {
       workflow: "tdd",
       successPath: "@test → human review → @backend → @reviewer → @scribe",
     });
-    // The Refactor workflow leads with an inline skill step.
+    // The design check is seeded only when its plugin is enabled, which this fixture does not do.
     expect(res.render.rows).toContainEqual({
       workflow: "Refactor",
-      successPath: "/use-code-architecture-design-check → human review → @refactor",
+      successPath: "human review → @refactor",
     });
 
     const table = extractRegion(fs.readFileSync(orchestratorSkillPath(root), "utf8"), "HANDOFFS");

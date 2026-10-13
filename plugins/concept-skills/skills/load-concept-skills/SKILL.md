@@ -1,7 +1,7 @@
 ---
 name: load-concept-skills
-description: "Loads the project's concept-skill list via the maestro-concept-skills CLI and reports whether one exists. A building block another skill calls from its own step — not invoked directly by the user."
-allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)
+description: "Loads the project's concept-skill list via the concept-skills CLI and reports whether one exists. A building block another skill calls from its own step — not invoked directly by the user."
+allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list)
 user-invocable: false
 ---
 
@@ -14,7 +14,7 @@ disagree: some fall back to reasoning from the codebase, others stop and point t
 
 ## Load the list
 
-!`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list`
+!`node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list`
 
 ## Report back to the caller
 

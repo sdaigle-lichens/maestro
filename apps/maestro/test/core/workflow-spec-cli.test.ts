@@ -66,7 +66,7 @@ function seedConfig() {
     handoffs: { "backend/reviewer": { kind: "seeded-fixture" } },
     runtimeVersion: "0.7.2",
     project_tags: ["fixture-tag"],
-    gates: { confidence_check: true, use_code_architecture_design_check: false },
+    start_skills: { maestro: ["confidence-check"], to_maestro_tasks: [] },
     use_maestro_tasks: true,
   };
 }
@@ -124,10 +124,10 @@ describe("maestro-workflow-spec.cjs write discipline (acceptance criterion 8)", 
     const after = JSON.parse(fs.readFileSync(maestroJsonPath, "utf8"));
     // The workflow slice IS expected to change.
     expect(after.workflows.some((w: { name: string }) => w.name === "brand-new")).toBe(true);
-    // Everything else must be untouched — rules, gates, reports, handoffs, runtimeVersion,
+    // Everything else must be untouched — rules, start_skills, reports, handoffs, runtimeVersion,
     // project_tags, use_maestro_tasks.
     expect(after.rules).toEqual(seeded.rules);
-    expect(after.gates).toEqual(seeded.gates);
+    expect(after.start_skills).toEqual(seeded.start_skills);
     expect(after.reports).toEqual(seeded.reports);
     expect(after.handoffs).toEqual(seeded.handoffs);
     expect(after.runtimeVersion).toEqual(seeded.runtimeVersion);

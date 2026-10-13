@@ -23,15 +23,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-skill-lists.ts
 var maestro_skill_lists_exports = {};
 __export(maestro_skill_lists_exports, {
-  LEGACY_CONFIDENCE_SKILL: () => LEGACY_CONFIDENCE_SKILL,
-  LEGACY_DESIGN_SKILL: () => LEGACY_DESIGN_SKILL,
   resolveSkillLists: () => resolveSkillLists
 });
 module.exports = __toCommonJS(maestro_skill_lists_exports);
 
 // src/core/skill-lists.ts
-var LEGACY_CONFIDENCE_SKILL = "confidence-check";
-var LEGACY_DESIGN_SKILL = "use-code-architecture-design-check";
 function isPlainObject(v) {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
@@ -46,27 +42,14 @@ function ids(v) {
   return out;
 }
 function resolveSkillLists(cfg) {
-  const legacyBoth = [LEGACY_CONFIDENCE_SKILL, LEGACY_DESIGN_SKILL];
   if (!isPlainObject(cfg) || cfg.version !== 3) {
-    return { maestroStart: [], toMaestroTasksStart: legacyBoth, maestroEnd: [] };
+    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
   }
   const maestroEnd = isPlainObject(cfg.end_skills) ? ids(cfg.end_skills.maestro) : [];
-  if (isPlainObject(cfg.start_skills)) {
-    return {
-      maestroStart: ids(cfg.start_skills.maestro),
-      toMaestroTasksStart: ids(cfg.start_skills.to_maestro_tasks),
-      maestroEnd
-    };
-  }
-  const gates = isPlainObject(cfg.gates) ? cfg.gates : {};
-  const maestroStart = [];
-  if (gates.confidence_check === true) maestroStart.push(LEGACY_CONFIDENCE_SKILL);
-  if (gates.use_code_architecture_design_check === true) maestroStart.push(LEGACY_DESIGN_SKILL);
-  return { maestroStart, toMaestroTasksStart: legacyBoth, maestroEnd };
+  const start = isPlainObject(cfg.start_skills) ? cfg.start_skills : {};
+  return { maestroStart: ids(start.maestro), toMaestroTasksStart: ids(start.to_maestro_tasks), maestroEnd };
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
-  LEGACY_CONFIDENCE_SKILL,
-  LEGACY_DESIGN_SKILL,
   resolveSkillLists
 });

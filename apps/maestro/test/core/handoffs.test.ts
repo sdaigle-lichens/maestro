@@ -206,6 +206,86 @@ describe("the global store", () => {
     }
   });
 
+  // `090`: the scribe-bound reports switched from `concept_skill_gaps` to a generic `skill_gaps`. The
+  // pre-090 bodies (verbatim here, NOT imported from the source) must be recorded as superseded, or a
+  // machine that already opened the store keeps telling agents to write the old field forever.
+  const REFACTOR_TO_SCRIBE_PRE_090 =
+    "```json\n" +
+    "{\n" +
+    '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n' +
+    '  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
+    "}\n" +
+    "```";
+  const REVIEWER_TO_SCRIBE_PRE_090 =
+    "```json\n" +
+    "{\n" +
+    '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+    '  "justfile_commands_changed": ["<old → new description, or \'none\'>"],\n' +
+    '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or \'none\'>"],\n' +
+    '  "schema_changes": ["<new tables, columns, or constraints, or \'none\'>"],\n' +
+    '  "workflow_or_process_changes": ["<changed agent handoff, new convention, or \'none\'>"],\n' +
+    '  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
+    "}\n" +
+    "```";
+
+  it.each([
+    ["refactor/scribe", REFACTOR_TO_SCRIBE_PRE_090],
+    ["reviewer/scribe", REVIEWER_TO_SCRIBE_PRE_090],
+  ])("%s: the pre-090 concept_skill_gaps body is a recorded prior seed", (id, old) => {
+    expect(PRIOR_SEEDS[id]).toContain(old);
+    expect(SEED_HANDOFFS[id]).not.toBe(old);
+    expect(SEED_HANDOFFS[id]).toContain('"skill_gaps"');
+    expect(SEED_HANDOFFS[id]).not.toContain("concept_skill_gaps");
+    // The current body is never its own prior, or every open would bump the version.
+    expect(PRIOR_SEEDS[id]).not.toContain(SEED_HANDOFFS[id]);
+  });
+
+  it.each([
+    ["refactor/scribe", REFACTOR_TO_SCRIBE_PRE_090],
+    ["reviewer/scribe", REVIEWER_TO_SCRIBE_PRE_090],
+  ])("%s: a stored pre-090 row upgrades to the generic skill_gaps body, once", (id, old) => {
+    writeHandoffDefault(id, old, dbPath); // 1 seeded -> 2 written
+    const upgraded = readHandoffDefault(id, dbPath)!;
+    expect(upgraded.content).toBe(SEED_HANDOFFS[id]);
+    expect(upgraded.content).toContain('"skill_gaps"');
+    expect(upgraded.version).toBe(3);
+    expect(readHandoffDefault(id, dbPath)!.version).toBe(3); // idempotent
+  });
+
+  it("a hand-edited refactor/scribe row that extends the pre-090 body is left alone", () => {
+    writeHandoffDefault("refactor/scribe", REFACTOR_TO_SCRIBE_PRE_090 + "\nplus my own rule", dbPath);
+    const row = readHandoffDefault("refactor/scribe", dbPath)!;
+    expect(row.content).toContain("plus my own rule");
+    expect(row.version).toBe(2);
+  });
+
+  it("an untracked project file holding the pre-090 body is adopted and brought to current", () => {
+    // defaultish has no reviewer -> scribe route, and the sync only materializes routes the graph has.
+    writeConfig(projectRoot, {
+      ...defaultish,
+      workflows: [
+        ...defaultish.workflows,
+        {
+          name: "Review",
+          nodes: [
+            { id: "reviewer", type: "agent", instance: "reviewer" },
+            { id: "scribe", type: "agent", instance: "scribe" },
+          ],
+          edges: [
+            { from: "main-session", to: "reviewer", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
+            { from: "reviewer", to: "scribe", kind: "success", sourceHandle: "bottom", targetHandle: "top" },
+          ],
+        },
+      ],
+    });
+    const file = path.join(projectRoot, ".claude", "handoffs", "reviewer", "scribe.md");
+    fs.mkdirSync(path.dirname(file), { recursive: true });
+    fs.writeFileSync(file, REVIEWER_TO_SCRIBE_PRE_090);
+    const summary = syncProjectHandoffs(projectRoot, dbPath);
+    expect(summary.adopted).toContain("reviewer/scribe");
+    expect(read("reviewer/scribe")).toBe(SEED_HANDOFFS["reviewer/scribe"]);
+  });
+
   it("delete removes an override, and a seeded pair comes back on the next open", () => {
     writeHandoffDefault("backend/test", "mine", dbPath);
     expect(deleteHandoffDefault("backend/test", dbPath)).toBe(true);

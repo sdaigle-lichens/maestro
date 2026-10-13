@@ -162,12 +162,7 @@ var CORE_INSTANCES = [
   { name: "test", agent: "test", loaded_skills: [], referenced_skills: [] },
   { name: "reviewer", agent: "reviewer", loaded_skills: [], referenced_skills: [] },
   { name: "refactor", agent: "refactor", loaded_skills: [], referenced_skills: [] },
-  // The scribe alone gets a seeded `loaded_skills`: `/scribe` is the routing rule for what belongs
-  // in a concept skill versus in `docs/`, and it has to be in context BEFORE the agent starts
-  // writing, not offered as one option among the project's own skills. Bare name, not
-  // `maestro:scribe` — `skills_available` already lists the bundled `use-code-architecture-design-check` unqualified
-  // (see `defaultV3Config`), and the two have to agree.
-  { name: "scribe", agent: "scribe", loaded_skills: ["scribe"], referenced_skills: [] }
+  { name: "scribe", agent: "scribe", loaded_skills: [], referenced_skills: [] }
 ];
 var succ = (from, to) => ({
   from,
@@ -337,7 +332,7 @@ function buildInfraWorkflow(impl, skillCount = () => 0) {
   );
   return placeConditionLabels({ name: "default", nodes, edges }, skillCount);
 }
-function defaultV3Config(implAgents, skillMap = {}) {
+function defaultV3Config(implAgents, skillMap = {}, seedSkills = {}) {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
   const infraOnly = isInfraOnlyChain(impl);
   const skillsFor = (agent) => Array.from(new Set(skillMap[agent] ?? [])).filter(Boolean);
@@ -347,9 +342,10 @@ function defaultV3Config(implAgents, skillMap = {}) {
     ...coreInstances.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) }))
   ];
   const agentsAvailable = seededAgentNames(impl);
+  const designCheck = seedSkills.designCheck;
   const skillsAvailable = Array.from(
     /* @__PURE__ */ new Set([
-      "use-code-architecture-design-check",
+      ...designCheck ? [designCheck] : [],
       ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])
     ])
   );
@@ -363,7 +359,7 @@ function defaultV3Config(implAgents, skillMap = {}) {
     buildWorkflow("tdd", "tdd", impl, skillCount),
     linearWorkflow(
       "Refactor",
-      ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+      [...designCheck ? [`skill:${designCheck}`] : [], "human_review-1", "refactor"],
       skillCount
     ),
     linearWorkflow("Documentation", ["scribe"], skillCount),
@@ -379,8 +375,9 @@ function defaultV3Config(implAgents, skillMap = {}) {
     rules: [],
     // Reproduces the pre-`start_skills` defaults: the orchestrator runs no start or end skill (opt
     // in from the maestro page — a small request should not pay for skill invocations it never
-    // asked for), while to-maestro-tasks runs both gate skills as it always did.
-    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", "use-code-architecture-design-check"] },
+    // asked for), while to-maestro-tasks runs its gate skills as it always did — the design check
+    // only when the project has one.
+    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...designCheck ? [designCheck] : []] },
     end_skills: { maestro: [] }
   };
 }

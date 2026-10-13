@@ -16,21 +16,18 @@ toMaestroTasksStart, maestroEnd }`. The same function runs in the app and (bundl
 | Input                             | Result                                                                                                                                      |
 | --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
 | `start_skills` a plain object     | Authoritative. A missing key is an empty list.                                                                                              |
-| no `start_skills`, legacy `gates` | `maestroStart` = `confidence-check` if `gates.confidence_check === true`, then `use-code-architecture-design-check` if its flag `=== true`. |
-| no `start_skills` (any)           | `toMaestroTasksStart` = **both** gate skills, `/to-maestro-tasks`'s pre-`089` behaviour.                                                    |
-| `end_skills.maestro`              | Read the same way; no legacy form, absent is empty.                                                                                         |
-| absent, corrupt, `version !== 3`  | Empty maestro lists, the both-gates `/to-maestro-tasks` default.                                                                            |
+| no `start_skills`                 | All three start lists empty. The pre-`089` `gates` booleans are no longer read (`090`).                                                     |
+| `end_skills.maestro`              | Read the same way; absent is empty.                                                                                                         |
+| absent, corrupt, `version !== 3`  | Empty lists.                                                                                                                                |
 
 List entries are kept only if they are non-empty strings with no internal whitespace (it would break
-the scripts' one-line output); trimmed and de-duplicated in first-seen order. The old
-`use_design_check` key rename is still unmigrated: the legacy path reads only the current key.
+the scripts' one-line output); trimmed and de-duplicated in first-seen order.
 
-## Saving drops `gates`
+## Saving
 
-`mergeSlice`'s `skill-lists` arm writes `start_skills` and `end_skills` and **deletes `gates`**, so
-the file has one source of truth after the first save. Until then a project keeps resolving through
-the legacy booleans. There is no second cross-slice write — a start/end skill implies nothing about
-the project's agents. The read handler returns the _resolved_ lists (the legacy-default lists when no
+`mergeSlice`'s `skill-lists` arm writes `start_skills` and `end_skills`. There is no second
+cross-slice write — a start/end skill implies nothing about
+the project's agents. The read handler returns the _resolved_ lists (the empty lists when no
 project is open, so the route stays renderable); the set handler re-resolves the renderer's lists
 through `resolveSkillLists` before saving, the same don't-trust-the-renderer discipline as before.
 

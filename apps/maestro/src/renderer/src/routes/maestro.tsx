@@ -936,8 +936,8 @@ function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         Payloads waiting in <span className="font-mono">.claude/channels/</span> for an agent that hasn&rsquo;t consumed
-        them yet. A route with no workflow to it — like the scribe&rsquo;s concept-skill gaps — simply queues here until
-        that agent is next invoked, which can be a later run.
+        them yet. A route with no workflow to it — like the scribe&rsquo;s skill gaps — simply queues here until that
+        agent is next invoked, which can be a later run.
       </p>
       <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
         {lanes.map((lane) => (

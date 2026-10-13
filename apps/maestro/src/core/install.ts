@@ -43,6 +43,7 @@ import { detectImplAgents } from "./detect.js";
 import { discoverSkills, discoverProjectSkillsTree, type SkillIdCollision } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
 import { defaultV3Config, seededAgentNames } from "./seed.js";
+import { seedSkillsFor } from "./skill-availability.js";
 import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
 import { readAllProjectTags, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
 import { readAllAgentTypes } from "./agent-types.js";
@@ -766,7 +767,10 @@ export async function installRuntime(
     const catalog = readAllProjectTags(projectTagsDbPath ?? DEFAULT_PROJECT_TAGS_DB_PATH);
     const projectTags = detection.implAgents.filter((t) => catalog.includes(t));
     const uncatalogedProjectTags = detection.implAgents.filter((t) => !catalog.includes(t));
-    const seeded: MaestroConfigV3 = { ...defaultV3Config(detection.implAgents, skillMap), project_tags: projectTags };
+    const seeded: MaestroConfigV3 = {
+      ...defaultV3Config(detection.implAgents, skillMap, seedSkillsFor(projectRoot)),
+      project_tags: projectTags,
+    };
     writeConfig(projectRoot, seeded);
     configSeeded = { implAgents: detection.implAgents, projectTags, uncatalogedProjectTags };
   }

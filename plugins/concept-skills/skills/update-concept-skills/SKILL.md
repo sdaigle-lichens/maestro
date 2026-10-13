@@ -41,7 +41,7 @@ expected, and harmless.)
 ### 1. Confirm a list exists
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state
 ```
 
 Run the `load-concept-skills` skill for the list itself.
@@ -82,15 +82,21 @@ looking for a concept the report didn't mention, not re-deriving what it already
 
 ### 4. Decide what changes
 
-Work through all four, in order, and write down the answer to each even when it is "nothing":
+Work through all five, in order, and write down the answer to each even when it is "nothing":
 
 1. **Concepts to add** — new code that is core and belongs to no existing skill.
 2. **Concepts to delete** — a skill whose subject no longer exists. A concept that merely shrank is
    not deleted; it is revised.
 3. **Skills to revise** — the `SKILL.md`, a `sub-concepts/*.md`, or both. Most changes land here.
-4. **`agents/` notes to revise** — only for agents named in `.claude/maestro.json`'s
-   `agents_available`. An agent that was removed loses its notes; an agent that was added gets none
+4. **`agents/` notes to revise** — only for agents named in `.claude/concept-skills.json`'s
+   `agents` list (`concept-skills.cjs agents`). An agent that was removed loses its notes; an agent that was added gets none
    from this skill (that is `/update-single-concept-skill`'s job, when it next runs).
+5. **The `agents` list itself** — compare `concept-skills.cjs agents` with
+   `concept-skills.cjs agents-discover` (the project's `.claude/agents/*.md` plus Maestro's
+   `agents_available`, when it has one). An agent the project has that the list lacks is a proposed
+   **addition**; a listed agent that no longer exists is a proposed **removal**. Both go into step 5's
+   proposal, and the list is changed only after the user agrees, with
+   `concept-skills.cjs agents-set <name>...` (it replaces the whole list). Never change it on your own.
 
 ### 5. Confirm additions and deletions with the user
 
@@ -123,7 +129,7 @@ instead of half-doing a deep pass here.
 Then, for every skill you touched:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-id> --bump minor
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" stamp <concept-id> --bump minor
 ```
 
 Run each `stamp` (and the `state-set` below) alone in its own Bash call, exactly as written: no
@@ -138,7 +144,7 @@ Then the repo-level record — **always a minor bump**, whether this run only re
 added and deleted some:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump minor
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state-set --bump minor
 ```
 
 A reconciliation is a reconciliation. Adding a concept is the ordinary outcome of one — a feature

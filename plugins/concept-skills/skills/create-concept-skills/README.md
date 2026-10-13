@@ -81,30 +81,29 @@ how much work the next pass does.
 ## The script
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list [--json]
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" agents
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump minor|major|initial [--sha <sha>]
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list [--json]
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" agents
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state-set --bump minor|major|initial [--sha <sha>]
 ```
 
-`agents` prints the project's `agents_available` as a JSON array — the list
+`agents` prints the `agents` list from `.claude/concept-skills.json` as a JSON array — the list
 `update-single-concept-skill` writes `agents/<agent>.md` notes for, and `[]` (meaning "write none")
-for a project with no `maestro.json`. It is the one command here that reads Maestro's config,
-because nothing else knows what agents a project runs.
+when the file or the key is absent. `/concept-skills-install` seeds it from the agents the project
+has, and `/update-concept-skills` re-checks it against them and proposes additions.
 
 Every command also takes **`--root <dir>`**, naming the repository to act on. It defaults to
 `$CLAUDE_PROJECT_DIR` and then the process's cwd, so a skill running in a session never needs it;
-it exists so the script can be pointed at another repo, the same way every module under
-`apps/maestro/src/core/` takes a `projectRoot` argument. The root is resolved once, at the top of
+it exists so the script can be pointed at another repo. The root is resolved once, at the top of
 the script, and passed down — nothing re-derives it per command, and nothing reads
 `CLAUDE_PROJECT_DIR` without a fallback (an inline `node -e` that does reads `undefined/.claude/…`,
 swallows its own error, and reports an empty answer that looks like a real one).
 
 `list` walks **every** `.claude/skills` in the tree, not just the root's — in a monorepo a concept
 skill lives beside the code it explains. The logic lives in
-`plugins/maestro/scripts/lib/maestro-concept-skills.cjs`, generated from
-`apps/maestro/src/core/concept-skills.ts` by `pnpm --filter maestro build:plugin-libs`; the `.cjs`
+`plugins/concept-skills/scripts/lib/concept-skills.cjs`, generated from
+`packages/concept-skills/src` by `pnpm --filter @repo/concept-skills build:plugin-lib`; the `.cjs`
 under `lib/` is **generated and must not be hand-edited**.
 
 Version arithmetic, the `HEAD` lookup and the frontmatter rewrite live in the script rather than in
@@ -119,10 +118,9 @@ the times it doesn't are invisible.
   usually the root. Placement is by audience: a concept skill written into a published directory
   ships to that artifact's users, who are not who it was written for.
 - The repo-level record: `<root>/.claude/concept-skills.json`, `{"version", "last_update"}`.
-  Machine-owned and created on the first `state-set`. It is deliberately its **own** file rather
-  than a block on `maestro.json`: concept skills are a plain `.claude/skills` convention, and a repo
-  that keeps a reconciled list of them without Maestro installed must still be able to record how
-  fresh that list is. Commit it — `last_update` is a claim about the repo's history, so it has to
+  Machine-owned and created on the first `state-set` (or seeded by `/concept-skills-install`, which
+  also records an `agents` list there). Concept skills are a plain `.claude/skills` convention, so
+  the record needs nothing from any other tool's config. Commit it — `last_update` is a claim about the repo's history, so it has to
   mean the same thing on every clone.
 
 ## Related

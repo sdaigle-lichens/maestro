@@ -1,0 +1,16 @@
+{
+  "name": "concept-skills",
+  "version": "0.1.0",
+  "description": "Concept skills for a codebase: build and keep current a list of skills that explain the project's core concepts to agents (create-concept-skills, update-concept-skills, update-single-concept-skill), the scribe skill that decides where documentation goes, the load/explore helpers, and the code-architecture design checks. Works with or without Maestro. Set up with /concept-skills-install.",
+  "author": {
+    "name": "Samuel Daigle",
+    "email": "daigles@lichens.ai"
+  },
+  "keywords": [
+    "concept-skills",
+    "documentation",
+    "agents",
+    "skills",
+    "architecture"
+  ]
+}

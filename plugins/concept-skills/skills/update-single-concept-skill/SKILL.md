@@ -79,15 +79,15 @@ look thorough is how a skill becomes expensive to load and no more useful.
 ### 5. Write `agents/` notes — only where they earn their place
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" agents
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" agents
 ```
 
 Write `agents/<agent>.md` **only** for agents in that list, and **only** where an agent genuinely
 needs something the shared file shouldn't carry — how the backend agent should implement against this
 concept, how the test agent should test it, what the reviewer should look for.
 
-An empty list, or no `maestro.json`, means write no agent notes — `agents` is the one place these
-flows read Maestro's config, and a project without it correctly gets none. This step is optional by design: an
+An empty list means write no agent notes — it comes from `.claude/concept-skills.json`'s `agents`
+key, which `/concept-skills-install` seeds, and a project without one correctly gets none. This step is optional by design: an
 `agents/` directory full of files restating the `SKILL.md` costs every one of those agents context
 and tells them nothing.
 
@@ -103,7 +103,7 @@ you record reflects the file a session will actually load.
 ### 7. Stamp it
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-id> --bump major
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" stamp <concept-id> --bump major
 ```
 
 Run it alone in its own Bash call, exactly as written: no `cd`, `;`, `&&`, pipe or redirect. A

@@ -12,8 +12,7 @@ invocation before the model sees the skill.
 The same applies to the end-skills line: the template's `allowed-tools:` also grants
 `maestro-end-skills.cjs`, and a project whose frontmatter predates that grant aborts on the Step 5
 injected command. The start/end skill lists themselves (`start_skills` / `end_skills` in
-`maestro.json`) need no migration: a project with only the old `gates` field is read as the
-equivalent list.
+`maestro.json`) need no migration: a project without them simply runs no start or end skills.
 
 Diagnose by comparing the project's frontmatter against the plugin's `templates/maestro/SKILL.md`.
 The fix is to delete `.claude/skills/maestro/SKILL.md` and re-run step 1 of this skill, which

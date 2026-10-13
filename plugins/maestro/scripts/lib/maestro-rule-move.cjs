@@ -100,7 +100,6 @@ function mergeSlice(current, input) {
   } else if (input.sliceType === "skill-lists") {
     next.start_skills = input.slice.start_skills;
     next.end_skills = input.slice.end_skills;
-    delete next.gates;
   } else if (input.sliceType === "task-routing") {
     next.use_maestro_tasks = input.slice.use_maestro_tasks;
   }

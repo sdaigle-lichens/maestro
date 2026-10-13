@@ -1,5 +1,7 @@
 # Concept Skills
 
+> Shipped as the opt-in `concept-skills` plugin (`plugins/concept-skills/`), not part of `maestro`. Its state lives in `.claude/concept-skills.json`, not `.claude/maestro.json`: read every `maestro.json` mention below as that file. Install with `/concept-skills-install`.
+
 I need to cleanup this project concepts/documentations skills. This is a recurring problem in many of my repositories so I want to create skills that will help my scribe agent generate and maintain relevant and up to date concepts/documentations skills. The skills will be: create-concept-skills, update-concept-skills and update-single-concept-skill.
 
 A concept skill is a skill that explain a "core concept" of the project. A "core concept" is a concept that is deemed to be central in the project's implementation. It can be a large feature or an important logic/runtime section. Defining a core concept is not an exact science though. The criterias will depend from one user to another.

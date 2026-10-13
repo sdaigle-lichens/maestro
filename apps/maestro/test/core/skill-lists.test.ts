@@ -1,56 +1,20 @@
 // resolveSkillLists — the one reader of start_skills / end_skills, shared by the app and the
-// runtime scripts. Pins the legacy `gates` fallback (every combination), the authoritative
-// start_skills object, id cleaning and ordering, and that no input can make it throw.
+// runtime scripts. Pins the authoritative start_skills object, id cleaning and ordering, and that
+// no input can make it throw.
 
 import { describe, it, expect } from "vitest";
 import { resolveSkillLists } from "../../src/core/skill-lists.js";
 
-const CONF = "confidence-check";
-const DESIGN = "use-code-architecture-design-check";
-const LEGACY_TASKS = [CONF, DESIGN];
-
 const v3 = (extra: Record<string, unknown>) => ({ version: 3, ...extra });
 
-describe("resolveSkillLists — legacy gates fallback", () => {
-  const cases: [boolean, boolean, string[]][] = [
-    [false, false, []],
-    [true, false, [CONF]],
-    [false, true, [DESIGN]],
-    [true, true, [CONF, DESIGN]],
-  ];
-  it.each(cases)("confidence=%s design=%s -> maestro start %j", (c, d, expected) => {
-    const r = resolveSkillLists(v3({ gates: { confidence_check: c, use_code_architecture_design_check: d } }));
-    expect(r.maestroStart).toEqual(expected);
-    // /to-maestro-tasks keeps its old behaviour of running both, whatever the gates say.
-    expect(r.toMaestroTasksStart).toEqual(LEGACY_TASKS);
-    expect(r.maestroEnd).toEqual([]);
-  });
+const EMPTY = { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
 
-  it("resolves a partial gates block per field", () => {
-    expect(resolveSkillLists(v3({ gates: { use_code_architecture_design_check: true } })).maestroStart).toEqual([
-      DESIGN,
-    ]);
-  });
-
-  it("treats every non-true value strictly as off", () => {
-    for (const bad of ["true", 1, {}, [], "yes", null]) {
-      const r = resolveSkillLists(v3({ gates: { confidence_check: bad, use_code_architecture_design_check: bad } }));
-      expect(r.maestroStart, JSON.stringify(bad)).toEqual([]);
-    }
-  });
-
-  it("ignores a gates field that is not a plain object", () => {
-    for (const bad of [[], "gates", 3, true, null]) {
-      expect(resolveSkillLists(v3({ gates: bad })).maestroStart).toEqual([]);
-    }
-  });
-
-  it("ignores gates entirely once start_skills is present", () => {
-    const r = resolveSkillLists(
-      v3({ gates: { confidence_check: true, use_code_architecture_design_check: true }, start_skills: {} })
-    );
-    expect(r.maestroStart).toEqual([]);
-    expect(r.toMaestroTasksStart).toEqual([]);
+describe("resolveSkillLists — no start_skills", () => {
+  it("is empty everywhere, and the old gates booleans are never read", () => {
+    expect(resolveSkillLists(v3({}))).toEqual(EMPTY);
+    expect(
+      resolveSkillLists(v3({ gates: { confidence_check: true, use_code_architecture_design_check: true } }))
+    ).toEqual(EMPTY);
   });
 });
 
@@ -95,11 +59,11 @@ describe("resolveSkillLists — start_skills / end_skills", () => {
     expect(resolveSkillLists(v3({ end_skills: { maestro: "x" } })).maestroEnd).toEqual([]);
   });
 
-  it("falls back to legacy when start_skills is not a plain object", () => {
+  it("reads empty lists when start_skills is not a plain object", () => {
     for (const bad of [[], "a", 3, null, true]) {
-      const r = resolveSkillLists(v3({ start_skills: bad, gates: { confidence_check: true } }));
-      expect(r.maestroStart, JSON.stringify(bad)).toEqual([CONF]);
-      expect(r.toMaestroTasksStart).toEqual(LEGACY_TASKS);
+      const r = resolveSkillLists(v3({ start_skills: bad }));
+      expect(r.maestroStart, JSON.stringify(bad)).toEqual([]);
+      expect(r.toMaestroTasksStart).toEqual([]);
     }
   });
 
@@ -112,7 +76,7 @@ describe("resolveSkillLists — start_skills / end_skills", () => {
   it("returns fresh arrays each call", () => {
     const a = resolveSkillLists(null);
     a.toMaestroTasksStart.push("mutated");
-    expect(resolveSkillLists(null).toMaestroTasksStart).toEqual(LEGACY_TASKS);
+    expect(resolveSkillLists(null).toMaestroTasksStart).toEqual([]);
   });
 });
 
@@ -127,7 +91,7 @@ describe("resolveSkillLists — degenerate input", () => {
     ["no version", { start_skills: { maestro: ["a"] } }],
     ["version as a string", { version: "3", start_skills: { maestro: ["a"] } }],
   ];
-  it.each(degenerate)("%s -> empty maestro lists, legacy to_maestro_tasks default, no throw", (_l, input) => {
-    expect(resolveSkillLists(input)).toEqual({ maestroStart: [], toMaestroTasksStart: LEGACY_TASKS, maestroEnd: [] });
+  it.each(degenerate)("%s -> empty lists, no throw", (_l, input) => {
+    expect(resolveSkillLists(input)).toEqual(EMPTY);
   });
 });

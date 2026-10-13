@@ -67,14 +67,37 @@ wrong extension.
 | `/update-concept-skills` | The list exists and the code moved. Reconciles it, wide and shallow. |
 | `/update-single-concept-skill` | One concept skill is thin or an agent reported a gap. Deep and narrow. |
 
+## Running the flows
+
+When you are the scribe agent and the project's concept skills need creating, reconciling or
+deepening, you run the flows yourself:
+
+1. **Pick the flow** from the table above: no list yet, `create`; the code moved, `update`; one skill
+   thin or reported as a gap, `update-single`.
+2. **Pass on what you were given.** A caller's code-change report lets the update flow skip
+   rediscovering what already changed; a gap delivered on your channel lane names the skill and the
+   gap outright.
+3. **Expect a proposal step to end your turn.** `create-concept-skills` and `update-concept-skills`
+   settle their concept list with the user before writing, and no subagent has `AskUserQuestion`. At
+   that step, emit the numbered proposal as your report and stop without writing any file. The caller
+   settles it and invokes you again with the approved list. That is a completed turn, not a failure.
+4. **Confirm.** Report which flow ran, which concept skills changed, and their new versions.
+
+These flows call `concept-skills.cjs` with `Bash` and read widely with `Agent`. The `Bash` you were
+given is for that script and read-only `git` (`diff`, `log`, `show`, `rev-parse`) only; never a
+build, test run, install or anything that writes outside `.claude/` and `docs/`.
+
+Never hand-edit a concept skill's `metadata.version` or `metadata.last-update`. The flows write them,
+and a hand-set version silently changes how much work the next pass does.
+
 ## Reporting a gap
 
-Working agents write concept-skill gaps to your own channel lane — `.claude/channels/scribe/` —
-rather than into a caller's report: the concept skill they loaded and what it failed to tell them.
-That arrives inlined in your context, labelled by sender, the next time you're invoked, whether or
-not this run's workflow wired a route to you at all. It is the signal to run
-`/update-single-concept-skill` on that skill, and it is worth more than any audit you could run
-yourself: it names a gap someone actually hit.
+Working agents write skill gaps to your own channel lane — `.claude/channels/scribe/` — rather than
+into a caller's report: the skill they loaded and what it failed to tell them. That arrives inlined
+in your context, labelled by sender, the next time you're invoked, whether or not this run's
+workflow wired a route to you at all. For a concept skill it is the signal to run
+`/update-single-concept-skill` on it, and it is worth more than any audit you could run yourself: it
+names a gap someone actually hit.
 
 ## Also true of the other files
 

@@ -84,7 +84,7 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
   only as `LEGACY_SESSION_FILES`. Path resolution belongs to `src/core/session-paths.ts`; see
   `maestro-architecture` (repo root `.claude/skills/`) for "Which session am I".
 - **Concept-skill state is not here either.** As of `ff24b37` it lives in its own
-  `<root>/.claude/concept-skills.json` (`MaestroConceptSkillsState`), because concept skills are a
+  `<root>/.claude/concept-skills.json` (`ConceptSkillsState` in `packages/concept-skills`), because concept skills are a
   plain `.claude/skills` convention and a repo can keep a reconciled list without Maestro installed.
   Older docs that say `maestro.json` holds `concept-skills-last-update` are stale.
 
@@ -116,7 +116,7 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
   the third tier that `reports` does not have.
 - [Project tags slice](sub-concepts/project-tags-slice.md) — catalog membership.
 - [Skill-lists slice](sub-concepts/skill-lists-slice.md) — the configurable start/end skill lists,
-  `resolveSkillLists`, and the legacy `gates` fallback.
+  and `resolveSkillLists`.
 - [Task-routing slice](sub-concepts/task-routing-slice.md) — the `use_maestro_tasks` sibling of
   the skill lists, its two writers and Step 4's reader.
 - [Config validation](sub-concepts/config-validation.md) — what a hand-edited config can break, and

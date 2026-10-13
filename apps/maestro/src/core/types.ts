@@ -111,19 +111,12 @@ export interface MaestroConfigV3 {
   /**
    * The ordered skills the orchestrator (`maestro`) and `/to-maestro-tasks` (`to_maestro_tasks`)
    * run at the START of a run, by skill id (project or plugin-namespaced, e.g.
-   * `concept-skills:use-code-architecture-design-check`). When this is a plain object it is
-   * authoritative — a missing key is an empty list. When absent, `resolveSkillLists` falls back to
-   * the legacy `gates` booleans. `resolveSkillLists` in `skill-lists.ts` is the one reader.
+   * `some-plugin:some-skill`). A missing key is an empty
+   * list. `resolveSkillLists` in `skill-lists.ts` is the one reader.
    */
   start_skills?: { maestro?: string[]; to_maestro_tasks?: string[] };
   /** The ordered skills the orchestrator runs once the success path is complete. Absent = none. */
   end_skills?: { maestro?: string[] };
-  /**
-   * LEGACY (pre-`start_skills`): the two Step 1 gate booleans. Never written any more — a save of
-   * the skill lists drops it. Read only by `resolveSkillLists` when `start_skills` is absent, so a
-   * project that still has it behaves exactly as before.
-   */
-  gates?: MaestroGates;
   /**
    * Whether the orchestrator's Step 4 should suggest running `/to-maestro-tasks` to queue up
    * follow-up work. A SIBLING of `start_skills`, never nested inside it: this is a Step 4 concern with its own
@@ -139,21 +132,6 @@ export interface MaestroConfigV3 {
   metrics?: { recent_runs?: number };
 }
 
-/**
- * State of a repo's concept-skill list — the skills whose frontmatter `metadata.type` is
- * `concept-skill`, which explain the project's core concepts.
- *
- * It lives in its OWN file, `<root>/.claude/concept-skills.json`, not on `maestro.json`: concept
- * skills are a plain `.claude/skills` convention and a repo can keep a reconciled list of them
- * without Maestro installed. See `concept-skills.ts`. `version` is `major.minor` — see `bumpMinor`;
- * `last_update` is the commit the list was last reconciled against, so `/update-concept-skills`
- * can diff forward from it instead of re-reading the whole repo.
- */
-export interface MaestroConceptSkillsState {
-  version: string;
-  last_update: string;
-}
-
 export interface MaestroWorkflowsSlice {
   agents_available: string[];
   skills_available: string[];
@@ -167,15 +145,6 @@ export interface MaestroRulesSlice {
 
 export interface MaestroProjectTagsSlice {
   project_tags: string[];
-}
-
-/**
- * LEGACY Step 1 gates, one flag each. Kept only so an old `maestro.json` still type-checks and
- * `resolveSkillLists` can read it as the equivalent skill list.
- */
-export interface MaestroGates {
-  confidence_check: boolean;
-  use_code_architecture_design_check: boolean;
 }
 
 /** The three user-chosen ordered skill lists, as stored in `maestro.json`. */

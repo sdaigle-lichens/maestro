@@ -21,7 +21,7 @@ const hooks = [
 let skillLists = {
   start_skills: {
     maestro: ["confidence-check"],
-    to_maestro_tasks: ["confidence-check", "use-code-architecture-design-check"],
+    to_maestro_tasks: ["confidence-check"],
   },
   end_skills: { maestro: [] as string[] },
 };
@@ -75,8 +75,8 @@ export const maestroInstall = {
         sampleSkill("test-maestro", "project"),
         sampleSkill("scribe", "project"),
         sampleSkill("confidence-check", "maestro"),
-        sampleSkill("use-code-architecture-design-check", "maestro"),
-        sampleSkill("use-code-architecture-design-check", "concept-skills"),
+        sampleSkill("concept-skills:scribe", "concept-skills"),
+        sampleSkill("concept-skills:use-code-architecture-design-check", "concept-skills"),
         sampleSkill("design-sketch", "design"),
       ],
     }),

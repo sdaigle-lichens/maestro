@@ -434,7 +434,7 @@
     "epic": "concept-skills-plugin"
   },
   "090-move-the-concept-skills-into-an-opt-in-concept-skills-plugin.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md"
     ],

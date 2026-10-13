@@ -5,8 +5,8 @@
 //   !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"`
 //   !`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs" --for to_maestro_tasks`
 //
-// Reads `start_skills` from <projectDir>/.claude/maestro.json (falling back to the legacy `gates`
-// booleans when it is absent — all of that lives in `resolveSkillLists`, the SAME function the
+// Reads `start_skills` from <projectDir>/.claude/maestro.json (an absent one is an empty
+// list — all of that lives in `resolveSkillLists`, the SAME function the
 // desktop app uses, bundled into lib/maestro-skill-lists.cjs) and prints THE WHOLE OF Step 1 for
 // this project: it names the configured skills in order and says nothing about any one of them.
 // Each skill states its own stop rule in its own output; the line only says to honour it.

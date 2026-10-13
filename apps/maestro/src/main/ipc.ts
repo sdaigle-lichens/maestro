@@ -17,6 +17,7 @@ import {
   resolveUseMaestroTasks,
   blankConfig,
   defaultV3Config,
+  seedSkillsFor,
   seededAgentNames,
   detectImplAgents,
   saveConfig,
@@ -555,7 +556,11 @@ export function registerIpc(): void {
     const detection = detectImplAgents(projectRoot);
     return {
       projectRoot,
-      config: defaultV3Config(detection.implAgents, skillMapForSeed(detection.implAgents, skills)),
+      config: defaultV3Config(
+        detection.implAgents,
+        skillMapForSeed(detection.implAgents, skills),
+        seedSkillsFor(projectRoot)
+      ),
       seeded: true,
       detection,
       agents,
@@ -570,7 +575,7 @@ export function registerIpc(): void {
     const clean = (Array.isArray(implAgents) ? implAgents : []).map((a) => String(a).trim()).filter(Boolean);
     const projectRoot = currentRoot();
     const skills = projectRoot ? await discoverSkills(projectRoot) : [];
-    return defaultV3Config(clean, skillMapForSeed(clean, skills));
+    return defaultV3Config(clean, skillMapForSeed(clean, skills), projectRoot ? seedSkillsFor(projectRoot) : {});
   });
 
   ipcMain.handle(IPC.rulesData, async (): Promise<RulesData> => {

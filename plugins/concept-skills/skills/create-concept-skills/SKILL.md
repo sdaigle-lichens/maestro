@@ -46,8 +46,8 @@ Wire each to the previous with `TaskUpdate addBlockedBy`.
 ### 1. Stop if a list already exists
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list
 ```
 
 `state` reports `{"present": true, ...}` when `.claude/concept-skills.json` already records a
@@ -157,18 +157,17 @@ Write the frontmatter with `name` and `description` only — the next step adds 
 For each skill written:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" stamp <concept-id> --bump initial
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" stamp <concept-id> --bump initial
 ```
 
 Then the repo-level record:
 
 ```bash
-node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" state-set --bump initial
+node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state-set --bump initial
 ```
 
 Both default the commit to `HEAD`. `state-set` writes `.claude/concept-skills.json`, creating it if
-it isn't there — the record does **not** live on `maestro.json`, so a repo without Maestro installed
-gets one too. It reports `written:false` only when the value is already what it would write.
+it isn't there — the record lives in this plugin's own file, so any repo gets one. It reports `written:false` only when the value is already what it would write.
 
 Never hand-edit `metadata.version` or `metadata.last-update`. The script owns them so that a version
 can't quietly drift, and a version stuck at `1.0` makes `/update-single-concept-skill` re-research a

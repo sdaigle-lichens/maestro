@@ -98,13 +98,6 @@ describe("mergeSlice — skill-lists", () => {
     expect(off.end_skills).toEqual({ maestro: [] });
   });
 
-  it("drops the legacy gates field, so the file carries one source of truth", () => {
-    const legacy = { ...defaultish, gates: { confidence_check: true, use_code_architecture_design_check: true } };
-    const next = mergeSlice(legacy, { sliceType: "skill-lists", slice: LISTS });
-    expect(next.gates).toBeUndefined();
-    expect("gates" in next).toBe(false);
-  });
-
   it("starts absent on a blank config until a skill-lists slice is saved", () => {
     expect(blankConfig().start_skills).toBeUndefined();
     expect(blankConfig().end_skills).toBeUndefined();

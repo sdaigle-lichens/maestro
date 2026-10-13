@@ -16,10 +16,11 @@ of the user.
 
 ## 1. Which kind of skill this is
 
-Check the `SKILL.md` frontmatter for `metadata: { type: concept-skill }` (see e.g.
-`apps/maestro/.claude/skills/agents-view/SKILL.md`). If present, it's a **concept skill** and split
-content goes to `sub-concepts/*.md`. If absent, it's a **normal (published) skill** and split content
-goes to `references/*.md`.
+Check the `SKILL.md` frontmatter for a `metadata.type` marking it as a project-internal explainer,
+or an existing `sub-concepts/` directory beside it
+(see e.g. `apps/maestro/.claude/skills/agents-view/SKILL.md`). If either is present, it's an
+**explainer skill** and split content goes to `sub-concepts/*.md`. If neither is, it's a **normal
+(published) skill** and split content goes to `references/*.md`.
 
 ## 2. Cut bloat and repetition
 
@@ -47,7 +48,7 @@ A section is a candidate to move out when it:
 - Or, for a normal skill, covers a specific case, a variant path, or an edge case that most
   invocations of the skill never hit.
 
-**Concept skill** → extract to `sub-concepts/<name>.md`; replace the section in `SKILL.md` with one
+**Explainer skill** → extract to `sub-concepts/<name>.md`; replace the section in `SKILL.md` with one
 line and a link. Apply the rule in reverse too: if the extracted file would be thinner than the
 one-line link replacing it, inline it instead — a sub-concept file only earns its place when it is
 substantial on its own.

@@ -17,25 +17,28 @@ Without the desktop app you can still set a project up entirely from a session: 
 scaffolds the orchestrator, seeds `maestro.json` and renders the handoff table; `/maestro-update`
 refreshes it; `/maestro-uninstall` removes it.
 
-This repository is also a **plugin marketplace** — a catalog of Claude Code plugins, currently just
-`maestro` itself, published for anyone to install.
+This repository is also a **plugin marketplace** — a catalog of Claude Code plugins, currently
+`maestro` and the opt-in `concept-skills`, published for anyone to install.
 
 ## Concept skills
 
-The plugin also gives the `@scribe` agent a way to build and maintain a project's **concept
+The opt-in `concept-skills` plugin (`/concept-skills-install` enables it per project) gives the `@scribe` agent a way to build and maintain a project's **concept
 skills** — one `.claude/skills/<id>/SKILL.md` per core concept of the project, written for agents
 rather than for humans, so a subagent can get oriented in a concept without rediscovering its shape
 every session. `/create-concept-skills` builds the list, `/update-concept-skills` reconciles it
 against what the code did since, and `/update-single-concept-skill` takes one of them from skeleton
 to something worth loading. `/scribe` is the rule for what belongs in a concept skill versus in
 `docs/`. See
-[`plugins/maestro/skills/create-concept-skills/README.md`](./plugins/maestro/skills/create-concept-skills/README.md).
+[`plugins/concept-skills/skills/create-concept-skills/README.md`](./plugins/concept-skills/skills/create-concept-skills/README.md).
+Maestro names none of it; to give the scribe the placement rule, add `concept-skills:scribe` to
+its loaded skills in the app's workflow view.
 
 ## Installing the Maestro plugin
 
 ```bash
 claude plugin marketplace add sdaigle-lichens/maestro
 claude plugin install maestro@maestro
+claude plugin install concept-skills@maestro   # optional
 ```
 
 Then run `/maestro-install` inside the project you want Maestro to orchestrate.

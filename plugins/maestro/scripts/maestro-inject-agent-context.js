@@ -118,8 +118,8 @@ function nestedSkillNote(nested) {
     `${nested.length === 1 ? "One of these" : "Some of these"} ${nested.length === 1 ? "lives" : "live"} outside this ` +
     `project's root \`.claude/skills\`, so the Skill tool will answer "Unknown skill" for it instead of finding it:\n` +
     `${lines.join("\n")}\n\n` +
-    `Reading the file gets you its content, not the Skill tool's own resource handling — for a concept skill (prose, ` +
-    `no bundled scripts or resources) that is the whole of it, so this is not a lesser substitute here.`
+    `Reading the file gets you its content, not the Skill tool's own resource handling — for a prose-only skill with ` +
+    `no bundled scripts or resources that is the whole of it, so this is not a lesser substitute here.`
   );
 }
 

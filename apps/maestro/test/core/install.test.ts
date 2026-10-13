@@ -1797,30 +1797,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
     expect(stdout).not.toContain("use-code-architecture-design-check");
   });
 
-  // Backward compatibility: a project with only the old `gates` booleans behaves as before.
-  it("reads the legacy gates booleans as the equivalent list when start_skills is absent", async () => {
-    const root = await installed("legacy");
-    for (const confidence_check of [false, true]) {
-      for (const use_code_architecture_design_check of [false, true]) {
-        const label = `confidence=${confidence_check} design=${use_code_architecture_design_check}`;
-        writeConfig(root, { ...defaultish, gates: { confidence_check, use_code_architecture_design_check } });
-        const res = runGates(root);
-        expectContract(res, label);
-        expect(res.stdout.includes("/confidence-check"), label).toBe(confidence_check);
-        expect(res.stdout.includes("/use-code-architecture-design-check"), label).toBe(
-          use_code_architecture_design_check
-        );
-        if (confidence_check && use_code_architecture_design_check) {
-          expect(res.stdout.indexOf("/confidence-check")).toBeLessThan(
-            res.stdout.indexOf("/use-code-architecture-design-check")
-          );
-        }
-        if (!confidence_check && !use_code_architecture_design_check) expect(res.stdout).toBe(skipLine(root));
-      }
-    }
-  });
-
-  it("--for to_maestro_tasks names that list, and defaults to both legacy gates when start_skills is absent", async () => {
+  it("--for to_maestro_tasks names that list, and names nothing when start_skills is absent", async () => {
     const root = await installed("for-tasks");
     writeConfig(root, { ...defaultish, start_skills: { maestro: ["only-maestro"], to_maestro_tasks: ["t1", "t2"] } });
     const res = runGates(root, HOOK_SESSION, ["--for", "to_maestro_tasks"]);
@@ -1829,13 +1806,11 @@ describe("maestro-step1-gates.cjs (032)", () => {
     expect(res.stdout.indexOf("/t2")).toBeGreaterThan(res.stdout.indexOf("/t1"));
     expect(res.stdout).not.toContain("only-maestro");
 
-    writeConfig(root, { ...defaultish, gates: undefined, start_skills: undefined });
-    const legacy = runGates(root, HOOK_SESSION, ["--for", "to_maestro_tasks"]);
-    expectContract(legacy, "legacy default");
-    expect(legacy.stdout.indexOf("/confidence-check")).toBeGreaterThanOrEqual(0);
-    expect(legacy.stdout.indexOf("/use-code-architecture-design-check")).toBeGreaterThan(
-      legacy.stdout.indexOf("/confidence-check")
-    );
+    writeConfig(root, { ...defaultish, start_skills: undefined });
+    const none = runGates(root, HOOK_SESSION, ["--for", "to_maestro_tasks"]);
+    expectContract(none, "no start_skills");
+    expect(none.stdout).not.toContain("/confidence-check");
+    expect(none.stdout).not.toContain("/use-code-architecture-design-check");
   });
 
   it("the plugin's own copy runs without a project runtime", () => {
@@ -1845,8 +1820,9 @@ describe("maestro-step1-gates.cjs (032)", () => {
       { encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: path.join(tmp, "no-such-project") } }
     );
     expectContract({ code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr }, "no project");
-    // No maestro.json at all: the legacy to_maestro_tasks default of both.
-    expect(res.stdout).toContain("/confidence-check");
+    // No maestro.json at all: no start skills, so nothing is named.
+    expect(res.stdout).not.toContain("/confidence-check");
+    expect(res.stdout).toMatch(/No start skills/);
   });
 
   // Every one of these is a case where a script that "reported the problem" would take the whole
@@ -1867,29 +1843,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
             JSON.stringify({ version: 2, start_skills: { maestro: ["a"] }, gates: { confidence_check: true } })
           ),
       ],
-      ["gates absent", () => writeConfig(root, { ...defaultish, gates: undefined })],
-      ["gates is an array", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: [true, true] }))],
-      ["gates is a string", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: "both" }))],
-      ["gates is null", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: null }))],
-      [
-        "gate values are strings",
-        () =>
-          writeRawConfig(
-            root,
-            JSON.stringify({
-              version: 3,
-              gates: { confidence_check: "true", use_code_architecture_design_check: "true" },
-            })
-          ),
-      ],
-      [
-        "gate values are numbers",
-        () =>
-          writeRawConfig(
-            root,
-            JSON.stringify({ version: 3, gates: { confidence_check: 1, use_code_architecture_design_check: 1 } })
-          ),
-      ],
+      ["start_skills absent", () => writeConfig(root, { ...defaultish, start_skills: undefined })],
       [
         "start_skills lists are not arrays",
         () => writeRawConfig(root, JSON.stringify({ version: 3, start_skills: { maestro: "a" } })),

@@ -11,10 +11,6 @@ export interface ResolvedSkillLists {
   maestroEnd: string[];
 }
 
-/** The two bundled gate skills — what a pre-`start_skills` project's `gates` booleans stand for. */
-export const LEGACY_CONFIDENCE_SKILL = "confidence-check";
-export const LEGACY_DESIGN_SKILL = "use-code-architecture-design-check";
-
 function isPlainObject(v: unknown): v is Record<string, unknown> {
   return typeof v === "object" && v !== null && !Array.isArray(v);
 }
@@ -39,31 +35,15 @@ function ids(v: unknown): string[] {
  * Resolve the three skill lists.
  *
  *  - `start_skills` a plain object: authoritative, a missing key is an empty list.
- *  - otherwise the legacy `gates` booleans (strict `=== true`) give the maestro start list, and
- *    `/to-maestro-tasks` keeps its old behaviour of running both gate skills.
- *  - `end_skills.maestro` is read the same way (no legacy form: absent is empty).
- *  - Every degenerate input (absent, corrupt, `version !== 3`, wrong types) gives empty maestro
- *    lists and the legacy `/to-maestro-tasks` default of both.
+ *  - `end_skills.maestro` is read the same way; absent is empty.
+ *  - Every degenerate input (absent, corrupt, `version !== 3`, wrong types, no `start_skills`)
+ *    gives empty lists.
  */
 export function resolveSkillLists(cfg: unknown): ResolvedSkillLists {
-  const legacyBoth = [LEGACY_CONFIDENCE_SKILL, LEGACY_DESIGN_SKILL];
   if (!isPlainObject(cfg) || cfg.version !== 3) {
-    return { maestroStart: [], toMaestroTasksStart: legacyBoth, maestroEnd: [] };
+    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
   }
-
   const maestroEnd = isPlainObject(cfg.end_skills) ? ids(cfg.end_skills.maestro) : [];
-
-  if (isPlainObject(cfg.start_skills)) {
-    return {
-      maestroStart: ids(cfg.start_skills.maestro),
-      toMaestroTasksStart: ids(cfg.start_skills.to_maestro_tasks),
-      maestroEnd,
-    };
-  }
-
-  const gates = isPlainObject(cfg.gates) ? cfg.gates : {};
-  const maestroStart: string[] = [];
-  if (gates.confidence_check === true) maestroStart.push(LEGACY_CONFIDENCE_SKILL);
-  if (gates.use_code_architecture_design_check === true) maestroStart.push(LEGACY_DESIGN_SKILL);
-  return { maestroStart, toMaestroTasksStart: legacyBoth, maestroEnd };
+  const start = isPlainObject(cfg.start_skills) ? cfg.start_skills : {};
+  return { maestroStart: ids(start.maestro), toMaestroTasksStart: ids(start.to_maestro_tasks), maestroEnd };
 }

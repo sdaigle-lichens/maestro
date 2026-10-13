@@ -36,9 +36,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { parseFrontmatterMetadata, readSkillEntriesFromDir } from "@repo/claude-fs";
-import { readConfig } from "./config.js";
 import { skillSearchDirs } from "./fs-scan.js";
-import type { MaestroConceptSkillsState } from "./types.js";
 
 /** The `metadata:` keys. `TYPE_KEY` must equal `CONCEPT_TYPE` for a skill to count as one. */
 export const TYPE_KEY = "type";
@@ -268,75 +266,152 @@ export function stampConceptSkill(skillPath: string, next: { version: string; la
 // The repo-level state: <root>/.claude/concept-skills.json
 // ---------------------------------------------------------------------------
 //
-// Its own file, deliberately NOT a block on `maestro.json`. Concept skills are an ordinary
-// `.claude/skills` convention — a repo can have them, and keep them reconciled, with Maestro
-// nowhere in sight. Hanging their state off Maestro's config meant `state-set` reported
-// `written:false` for exactly those repos and the list's freshness went unrecorded, which is the
-// one thing `/update-concept-skills` needs in order to diff forward instead of re-reading
-// everything.
+// Its own file in the project, owned by this plugin alone. Concept skills are an ordinary
+// `.claude/skills` convention — a repo can have them, and keep them reconciled, with no other
+// tooling in sight — so their bookkeeping hangs off nothing else's config.
 //
-// Machine-owned, like `runtimeVersion`: written only by `maestro-concept-skills.cjs` on behalf of
-// the create/update flows. Committed, not ignored — `last_update` is a statement about the repo's
+// Two things live in it:
+//   - `version` / `last_update`: the freshness record of the list. Present only once a list has been
+//     created; `/update-concept-skills` diffs forward from `last_update` instead of re-reading
+//     everything. Written only by `concept-skills.cjs` on behalf of the create/update flows.
+//   - `agents`: the agent names `/update-single-concept-skill` may write `agents/<agent>.md` notes
+//     for. Seeded by `/concept-skills-install` and re-checked by `/update-concept-skills`.
+//
+// A file that holds only `agents` (what install seeds before any list exists) reads as "no list
+// recorded" — `readConceptSkillsState` needs both freshness fields — and a write of either half
+// preserves the other. Committed, not ignored: `last_update` is a statement about the repo's
 // history, so it has to mean the same thing on every clone.
 //
-// Unlike `maestro.json` this file has no legacy on-disk format to preserve, so it is written with
-// a trailing newline.
+// This file has no legacy on-disk format to preserve, so it is written with a trailing newline.
+
+/** The freshness record of a repo's concept-skill list. `version` is `major.minor` (see `bumpMinor`). */
+export interface ConceptSkillsState {
+  version: string;
+  /** The commit the list was last reconciled against. */
+  last_update: string;
+}
 
 /** `<root>/.claude/concept-skills.json`. */
 export function conceptSkillsJsonPath(projectRoot: string): string {
   return path.join(projectRoot, ".claude", "concept-skills.json");
 }
 
-/**
- * The recorded state, or null when no list has been created yet.
- *
- * A missing, unreadable or malformed file all read as null — "no list recorded". That is the same
- * answer the create flow acts on, and it is the safe one: the worst case is that
- * `/update-concept-skills` has to ask for its diff window instead of reading it.
- */
-export function readConceptSkillsState(projectRoot: string): MaestroConceptSkillsState | null {
+/** The whole file as a plain object; `{}` when missing, unreadable, or not an object. */
+function readStateFile(projectRoot: string): Record<string, unknown> {
   const p = conceptSkillsJsonPath(projectRoot);
-  if (!fs.existsSync(p)) return null;
-  let parsed: unknown;
+  if (!fs.existsSync(p)) return {};
   try {
-    parsed = JSON.parse(fs.readFileSync(p, "utf8"));
+    const parsed: unknown = JSON.parse(fs.readFileSync(p, "utf8"));
+    return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? (parsed as Record<string, unknown>) : {};
   } catch {
-    return null;
+    return {};
   }
-  if (!parsed || typeof parsed !== "object") return null;
-  const { version, last_update } = parsed as Partial<MaestroConceptSkillsState>;
+}
+
+/** Write the file only when its serialised form would change. Returns whether it wrote. */
+function writeStateFile(projectRoot: string, next: Record<string, unknown>): boolean {
+  const text = JSON.stringify(next, null, 2) + "\n";
+  const p = conceptSkillsJsonPath(projectRoot);
+  try {
+    if (fs.readFileSync(p, "utf8") === text) return false;
+  } catch {
+    // Missing: fall through and create it.
+  }
+  const claudeDir = path.join(projectRoot, ".claude");
+  if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
+  fs.writeFileSync(p, text);
+  return true;
+}
+
+/**
+ * The recorded freshness state, or null when no list has been created yet.
+ *
+ * A missing, unreadable or malformed file, or one holding only `agents`, all read as null — "no list
+ * recorded". That is the same answer the create flow acts on, and it is the safe one: the worst case
+ * is that `/update-concept-skills` has to ask for its diff window instead of reading it.
+ */
+export function readConceptSkillsState(projectRoot: string): ConceptSkillsState | null {
+  const { version, last_update } = readStateFile(projectRoot);
   if (typeof version !== "string" || typeof last_update !== "string") return null;
   return { version, last_update };
 }
 
 /**
- * The project's `agents_available` from `maestro.json`, or `[]` when it has no `maestro.json`.
+ * Write the freshness state, creating `.claude/` and the file itself if they are absent. Any other
+ * key already in the file (the `agents` list) is kept.
  *
- * This is the one place the concept-skill flows still read Maestro's config, because there is no
- * other source for the list of agents a project runs. It degrades to the right answer:
+ * Returns false and writes nothing only when the value is already what it would write, so a
+ * re-stamp of an unchanged list costs one read and zero writes — and shows no diff.
+ */
+export function writeConceptSkillsState(projectRoot: string, next: ConceptSkillsState): boolean {
+  return writeStateFile(projectRoot, {
+    ...readStateFile(projectRoot),
+    version: next.version,
+    last_update: next.last_update,
+  });
+}
+
+// ---------------------------------------------------------------------------
+// The agents list
+// ---------------------------------------------------------------------------
+
+function cleanNames(v: unknown): string[] {
+  if (!Array.isArray(v)) return [];
+  const out: string[] = [];
+  for (const item of v) {
+    if (typeof item !== "string") continue;
+    const name = item.trim();
+    if (name && !out.includes(name)) out.push(name);
+  }
+  return out;
+}
+
+/**
+ * The `agents` list from `concept-skills.json`, or `[]` when the file or the key is absent.
+ *
  * `/update-single-concept-skill` writes an `agents/<agent>.md` note only for an agent in this list,
- * so an empty answer means "write none", which is exactly right for a project without Maestro.
+ * so an empty answer means "write none" — exactly right for a project that never recorded any.
  *
  * It lives here rather than as an inline `node -e` in the skill so that the project root is
  * resolved ONCE, by the caller that already knows how (env, `--root`, then cwd); an inline script
  * reaching for `process.env.CLAUDE_PROJECT_DIR` alone reads `undefined/.claude/…` when the variable
  * is unset, catches its own error, and reports no agents rather than failing.
  */
-export function readAgentsAvailable(projectRoot: string): string[] {
-  return readConfig(projectRoot)?.agents_available ?? [];
+export function readAgentsList(projectRoot: string): string[] {
+  return cleanNames(readStateFile(projectRoot).agents);
+}
+
+/** Replace the `agents` list (de-duplicated, trimmed, first-seen order), keeping every other key. Returns whether it wrote. */
+export function writeAgentsList(projectRoot: string, agents: string[]): boolean {
+  return writeStateFile(projectRoot, { ...readStateFile(projectRoot), agents: cleanNames(agents) });
 }
 
 /**
- * Write the state file, creating `.claude/` and the file itself if they are absent.
- *
- * Returns false and writes nothing only when the value is already what it would write, so a
- * re-stamp of an unchanged list costs one read and zero writes — and shows no diff.
+ * The agents this project has, for seeding or re-checking the `agents` list: every
+ * `.claude/agents/<name>.md` and `.claude/agents/<name>/AGENTS.md` at the root (the subagent files
+ * Claude Code itself loads), plus the `agents_available` of `.claude/maestro.json` when one exists
+ * and lists any. Sorted; `[]` when the project has neither. Read-only and never throws — a project
+ * without either source simply has no agents to write notes for.
  */
-export function writeConceptSkillsState(projectRoot: string, next: MaestroConceptSkillsState): boolean {
-  const cur = readConceptSkillsState(projectRoot);
-  if (cur && cur.version === next.version && cur.last_update === next.last_update) return false;
-  const claudeDir = path.join(projectRoot, ".claude");
-  if (!fs.existsSync(claudeDir)) fs.mkdirSync(claudeDir, { recursive: true });
-  fs.writeFileSync(conceptSkillsJsonPath(projectRoot), JSON.stringify(next, null, 2) + "\n");
-  return true;
+export function discoverProjectAgents(projectRoot: string): string[] {
+  const names = new Set<string>();
+  const agentsDir = path.join(projectRoot, ".claude", "agents");
+  try {
+    for (const entry of fs.readdirSync(agentsDir, { withFileTypes: true })) {
+      if (entry.isFile() && entry.name.endsWith(".md")) names.add(entry.name.slice(0, -3));
+      else if (entry.isDirectory() && fs.existsSync(path.join(agentsDir, entry.name, "AGENTS.md")))
+        names.add(entry.name);
+    }
+  } catch {
+    // No agents directory.
+  }
+  try {
+    const cfg: unknown = JSON.parse(fs.readFileSync(path.join(projectRoot, ".claude", "maestro.json"), "utf8"));
+    if (cfg && typeof cfg === "object") {
+      for (const name of cleanNames((cfg as { agents_available?: unknown }).agents_available)) names.add(name);
+    }
+  } catch {
+    // No maestro.json, or one that does not parse.
+  }
+  return Array.from(names).sort();
 }

@@ -6,6 +6,7 @@
 // ["backend"] default with repo detection).
 
 import { placeConditionLabels } from "./label-layout.js";
+import type { SeedSkills } from "./skill-availability.js";
 import type { MaestroConfigV3, MaestroEdgeV3, MaestroInstanceV3, MaestroNodeV3, MaestroWorkflowV3 } from "./types.js";
 
 // The non-implementation agents every seeded workflow shares.
@@ -13,12 +14,7 @@ const CORE_INSTANCES: MaestroInstanceV3[] = [
   { name: "test", agent: "test", loaded_skills: [], referenced_skills: [] },
   { name: "reviewer", agent: "reviewer", loaded_skills: [], referenced_skills: [] },
   { name: "refactor", agent: "refactor", loaded_skills: [], referenced_skills: [] },
-  // The scribe alone gets a seeded `loaded_skills`: `/scribe` is the routing rule for what belongs
-  // in a concept skill versus in `docs/`, and it has to be in context BEFORE the agent starts
-  // writing, not offered as one option among the project's own skills. Bare name, not
-  // `maestro:scribe` — `skills_available` already lists the bundled `use-code-architecture-design-check` unqualified
-  // (see `defaultV3Config`), and the two have to agree.
-  { name: "scribe", agent: "scribe", loaded_skills: ["scribe"], referenced_skills: [] },
+  { name: "scribe", agent: "scribe", loaded_skills: [], referenced_skills: [] },
 ];
 
 const succ = (from: string, to: string): MaestroEdgeV3 => ({
@@ -295,12 +291,18 @@ function buildInfraWorkflow(impl: string[], skillCount: SkillCount = () => 0): M
 // instances and wires them into ready-to-use workflows so the canvas isn't empty. `implAgents` is
 // the repo-detected implementation agent chain in the happy path; falls back to ["backend"].
 // `skillMap` attaches the install-time discovered project skills to their best-fit instance.
+// `seedSkills` carries the optional skills the project can actually invoke (`skill-availability.ts`):
+// the seed names one only when it is there, so a fresh config never starts with a dangling skill id.
 //
 // A chain that is exactly the infra agent seeds the simple three-workflow profile (`default` +
 // `Review` + `Documentation`, no test/refactor anywhere); any other chain seeds the full six.
 // Both branches read `isInfraOnlyChain` — the same private decision `seededAgentNames` reads —
 // so the instances built here always match the agent names that function reports.
-export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): MaestroConfigV3 {
+export function defaultV3Config(
+  implAgents: string[],
+  skillMap: SkillMap = {},
+  seedSkills: SeedSkills = {}
+): MaestroConfigV3 {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
   const infraOnly = isInfraOnlyChain(impl);
   // Defensive: only attach skills to instances that actually exist in this seed.
@@ -314,14 +316,16 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     ...coreInstances.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) })),
   ];
   const agentsAvailable = seededAgentNames(impl);
-  // skills_available = `use-code-architecture-design-check` + every skill assigned to an instance. It is seeded
-  // because the Refactor workflow below leads with a `skill:use-code-architecture-design-check` NODE — a Step 3
-  // inline skill step, not the Step 1 gate of the same name. The Step 1 gates are opt-in and live
-  // in `start_skills` below; nothing here makes either of them run. The infra-only profile has no Refactor
-  // workflow, but the gate skill is still offered — it stays independent of what got seeded.
+  // skills_available = the design-check skill (when the project has one) + every skill assigned to an
+  // instance. The design check is seeded because the Refactor workflow below leads with a
+  // `skill:<id>` NODE for it — a Step 3 inline skill step, not a Step 1 start skill. The start
+  // skills are opt-in and live in `start_skills` below; nothing here makes them run. The infra-only
+  // profile has no Refactor workflow, but the skill is still offered — it stays independent of what
+  // got seeded.
+  const designCheck = seedSkills.designCheck;
   const skillsAvailable = Array.from(
     new Set([
-      "use-code-architecture-design-check",
+      ...(designCheck ? [designCheck] : []),
       ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills]),
     ])
   );
@@ -338,7 +342,7 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
         buildWorkflow("tdd", "tdd", impl, skillCount),
         linearWorkflow(
           "Refactor",
-          ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+          [...(designCheck ? [`skill:${designCheck}`] : []), "human_review-1", "refactor"],
           skillCount
         ),
         linearWorkflow("Documentation", ["scribe"], skillCount),
@@ -354,8 +358,9 @@ export function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}): 
     rules: [],
     // Reproduces the pre-`start_skills` defaults: the orchestrator runs no start or end skill (opt
     // in from the maestro page — a small request should not pay for skill invocations it never
-    // asked for), while to-maestro-tasks runs both gate skills as it always did.
-    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", "use-code-architecture-design-check"] },
+    // asked for), while to-maestro-tasks runs its gate skills as it always did — the design check
+    // only when the project has one.
+    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...(designCheck ? [designCheck] : [])] },
     end_skills: { maestro: [] },
   };
 }
