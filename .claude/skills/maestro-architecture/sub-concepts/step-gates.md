@@ -38,9 +38,10 @@ Four consequences, all load-bearing:
   `maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`) and answers `update` when one is
   absent. That nag is the only thing between a half-installed project and an aborted invocation.
 - **Body commands the orchestrator runs use the relative form** `node .claude/scripts/<script>`
-  (plugin `0.11.10`, `094`). Permission checks can't resolve `${CLAUDE_PROJECT_DIR:-.}`, so the
-  expanded form prompted. `!` lines and `allowed-tools` keep the `${CLAUDE_PROJECT_DIR:-.}` form
-  (the skill-shell expander and the frontmatter matcher both need it). Pinned by
+  (plugin `0.11.10`, `094`). Permission checks can't resolve a braced `CLAUDE_PROJECT_DIR`
+  variable, so the expanded form prompted. `101` moved the `!` lines and the `allowed-tools`
+  grants to the same plain form (`node .claude/scripts/<script>`): a grant did not stop the prompt.
+  Only the frontmatter change needs a purge and reinstall to reach an existing project. Pinned by
   `orchestrator-template-commands.test.ts`.
 
 If the harness has `disableSkillShellExecution: true`, the line is replaced with the literal

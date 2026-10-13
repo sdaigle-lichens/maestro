@@ -40,7 +40,7 @@ A **spec** is `{ name, steps, conditions? }`:
    run:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" create --spec-file <path-to-spec.json> "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" create --spec-file <path-to-spec.json> .
    ```
 
    It re-reads `maestro.json` immediately before writing, then writes the config and re-renders the

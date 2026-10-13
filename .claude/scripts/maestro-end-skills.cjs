@@ -2,7 +2,7 @@
 // Prints this project's END skills as ONE directive line, for injection into the orchestrator
 // skill body through Claude Code's !`command` dynamic-context syntax:
 //
-//   !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs"`
+//   !`node .claude/scripts/maestro-end-skills.cjs`
 //
 // Reads `end_skills.maestro` from <projectDir>/.claude/maestro.json through `resolveSkillLists`
 // (the same function the desktop app uses, bundled into lib/maestro-skill-lists.cjs). The line

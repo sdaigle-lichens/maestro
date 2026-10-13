@@ -1,7 +1,7 @@
 // 094: the orchestrator template's body commands call project-copy scripts by the plain relative
 // path (`node .claude/scripts/<script>`), because a permission check cannot resolve a
-// `${CLAUDE_PROJECT_DIR}` expansion and would prompt. The `!` injection lines and the
-// `allowed-tools` frontmatter keep the CLAUDE_PROJECT_DIR form (pre-approved, never prompt).
+// `${CLAUDE_PROJECT_DIR}` expansion and would prompt. 101: the `!` injection lines and the
+// `allowed-tools` frontmatter use the same plain relative form (a grant does not stop the prompt).
 // Reads the real published template and this repo's rendered copy; nothing is mocked.
 
 import { describe, it, expect } from "vitest";
@@ -61,12 +61,13 @@ describe("orchestrator template script commands (094)", () => {
     }
   });
 
-  it("leaves the ! injection lines and allowed-tools grants on the CLAUDE_PROJECT_DIR form", () => {
+  it("puts the ! injection lines and allowed-tools grants on the relative form", () => {
     const bang = TEMPLATE.split("\n").filter((l) => l.startsWith("!`"));
     expect(bang.length).toBeGreaterThanOrEqual(3);
-    for (const l of bang) expect(l).toContain('node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/');
+    for (const l of bang) expect(l).toContain("node .claude/scripts/");
     const allowed = TEMPLATE.split("\n").find((l) => l.startsWith("allowed-tools:")) ?? "";
-    expect(allowed).toContain('Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs")');
+    expect(allowed).toContain("Bash(node .claude/scripts/maestro-step1-gates.cjs)");
+    expect(TEMPLATE).not.toContain("CLAUDE_PROJECT_DIR");
   });
 
   it("this repo's rendered orchestrator steps region matches the template", () => {
