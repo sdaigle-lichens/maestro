@@ -493,11 +493,23 @@
     "epic": "concept-skills-plugin"
   },
   "101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
   },
   "102-keep-the-epic-s-manager-name-current-and-make-a-failed-report-message-recoverable.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "103-give-a-freeform-maestro-run-its-own-worktree-when-another-session-is-already-working.md": {
+    "status": "done",
+    "blockedBy": [
+      "101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md"
+    ],
+    "epic": "concept-skills-plugin"
+  },
+  "104-let-a-worktree-run-deliver-channel-payloads-without-a-stall.md": {
     "status": "ready",
     "blockedBy": [],
     "epic": "concept-skills-plugin"

@@ -19,3 +19,8 @@ Two changes. In the maestro-manager skill's loop: each time the manager handles 
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Problem:** The task ran in its own worktree because another session held a claim. Three subagents (backend, test, reviewer) had their channel-file writes into the main checkout's `.claude/channels/` denied by the auto-mode classifier ("Modify Shared Resources", "Irreversible Local Destruction"). Each handoff showed NO PAYLOAD and the route stalled until the user approved a manual write by the orchestrator, three times.
+  **Fix:** none (follow-up task 104)

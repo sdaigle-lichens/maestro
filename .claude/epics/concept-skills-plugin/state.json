@@ -70,6 +70,21 @@
       "name": "maestro-c3",
       "task": "100-make-the-epic-report-a-step-a-maestro-session-cannot-skip.md",
       "added_at": "2026-10-13T20:52:18.672Z"
+    },
+    {
+      "name": "maestro-1c",
+      "task": "101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md",
+      "added_at": "2026-10-13T21:22:51.543Z"
+    },
+    {
+      "name": "maestro-82",
+      "task": "102-keep-the-epic-s-manager-name-current-and-make-a-failed-report-message-recoverable.md",
+      "added_at": "2026-10-13T21:44:11.084Z"
+    },
+    {
+      "name": "maestro-71",
+      "task": "103-give-a-freeform-maestro-run-its-own-worktree-when-another-session-is-already-working.md",
+      "added_at": "2026-10-13T21:44:17.771Z"
     }
   ],
   "log": [
@@ -254,6 +269,48 @@
       "id": "r013",
       "at": "2026-10-13T20:51:57.094Z",
       "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r014",
+      "task": "101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md",
+      "file": "inbox/r014-101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md",
+      "at": "2026-10-13T21:22:42.798Z",
+      "from": "maestro-1c"
+    },
+    {
+      "kind": "ack",
+      "id": "r014",
+      "at": "2026-10-13T21:22:51.114Z",
+      "by": "maestro-e1"
+    },
+    {
+      "kind": "report",
+      "id": "r015",
+      "task": "102-keep-the-epic-s-manager-name-current-and-make-a-failed-report-message-recoverable.md",
+      "file": "inbox/r015-102-keep-the-epic-s-manager-name-current-and-make-a-failed-report-message-recoverable.md",
+      "at": "2026-10-13T21:44:00.866Z",
+      "from": "maestro-82"
+    },
+    {
+      "kind": "ack",
+      "id": "r015",
+      "at": "2026-10-13T21:44:10.831Z",
+      "by": "maestro-e1"
+    },
+    {
+      "kind": "report",
+      "id": "r016",
+      "task": "103-give-a-freeform-maestro-run-its-own-worktree-when-another-session-is-already-working.md",
+      "file": "inbox/r016-103-give-a-freeform-maestro-run-its-own-worktree-when-another-session-is-already-working.md",
+      "at": "2026-10-13T21:45:44.709Z",
+      "from": "maestro-71"
+    },
+    {
+      "kind": "ack",
+      "id": "r016",
+      "at": "2026-10-13T21:45:49.583Z",
+      "by": "maestro-e1"
     }
   ]
 }
