@@ -1,4 +1,12 @@
 {
   "version": "1.28",
-  "last_update": "0ebccda448b85ccba2da3e292cc874043a19b431"
+  "last_update": "0ebccda448b85ccba2da3e292cc874043a19b431",
+  "agents": [
+    "backend",
+    "frontend",
+    "refactor",
+    "reviewer",
+    "scribe",
+    "test"
+  ]
 }

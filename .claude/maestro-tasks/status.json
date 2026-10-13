@@ -439,5 +439,15 @@
       "089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md"
     ],
     "epic": "concept-skills-plugin"
+  },
+  "091-show-dangling-skill-references-in-the-maestro-app.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "092-seed-start-and-end-skills-when-re-installing-maestro-into-an-existing-project.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
   }
 }
