@@ -27,13 +27,13 @@ The ephemeral `.claude/maestro_sessions/` the script always deletes is none of t
 2. **Run the uninstaller** from the project root:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" .
    ```
 
    Add `--purge` as a trailing argument if the user asked to fully remove it:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" "${CLAUDE_PROJECT_DIR:-.}" --purge
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" . --purge
    ```
 
    It prints a JSON summary: `removedAgentSetting`, `removedHooks`, `removedSession`, `purged`, `maestroTasks`, `materializedReports`, `materializedHandoffs`, `keptConfig`. In `--purge` mode:
@@ -51,7 +51,7 @@ The ephemeral `.claude/maestro_sessions/` the script always deletes is none of t
    Collect the answers, then re-run the script **once** with `--purge` plus one `--delete-*` flag per directory the user agreed to:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" "${CLAUDE_PROJECT_DIR:-.}" --purge \
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-uninstall.js" . --purge \
      --delete-maestro-tasks --delete-materialized-reports --delete-materialized-handoffs
    ```
 

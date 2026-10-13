@@ -15,7 +15,7 @@ place the refresh procedure is written down.
    (idempotent — skips settings and gitignore if already present):
 
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js" "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js" .
    ```
 
    This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
@@ -73,7 +73,7 @@ place the refresh procedure is written down.
    when the skill was deleted. This writes nothing and always exits 0:
 
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-stale-refs.cjs" "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-stale-refs.cjs" .
    ```
 
    It prints `{"checked", "dangling": [{"id","reason","where"}], "suggestions": [...]}`. When

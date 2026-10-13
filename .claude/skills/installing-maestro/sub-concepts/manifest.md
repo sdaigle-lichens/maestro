@@ -156,7 +156,7 @@ check answers anything but `allow` aborts the invocation), and put it in the orc
 **template's frontmatter** instead:
 
 ```
-allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")
+allowed-tools: Bash(node .claude/scripts/maestro-step1-gates.cjs)
 ```
 
 `allowed-tools` is a **grant, not a restriction** (`disallowed-tools` is the restriction field), so

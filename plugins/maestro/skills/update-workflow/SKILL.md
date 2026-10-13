@@ -20,7 +20,7 @@ side column.
 2. **Read its CURRENT spec**, so the request reads as a diff:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" to-spec --name "<workflow name>" "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" to-spec --name "<workflow name>" .
    ```
 
    On a name mismatch it lists the workflows that DO exist — maybe they meant `/create-workflow`.
@@ -39,7 +39,7 @@ side column.
 4. **Write the new spec to a scratch file** and run:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" update --spec-file <path-to-spec.json> "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" update --spec-file <path-to-spec.json> .
    ```
 
    It re-reads `maestro.json` immediately before writing, then writes the config and re-renders the

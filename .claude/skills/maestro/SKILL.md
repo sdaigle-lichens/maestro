@@ -1,7 +1,7 @@
 ---
 name: maestro
 description: "Orchestrates Maestro workflows: classifies the user's request, runs the project's configured Step 1 gates, matches it to a workflow's success path, and manages the task graph. Invoke manually to drive a multi-agent workflow."
-allowed-tools: Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" *), Bash(node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs")
+allowed-tools: Bash(node .claude/scripts/maestro-step1-gates.cjs), Bash(node .claude/scripts/maestro-end-skills.cjs), Bash(node .claude/scripts/maestro-resume-target.cjs *), Bash(node .claude/scripts/maestro-step4-gate.cjs)
 ---
 
 # Maestro Orchestrator
@@ -17,7 +17,7 @@ You are the Maestro orchestrator for this project. Your role is to classify inco
 
 If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, this project has no Step 1: go to Step 2.
 
-!`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"`
+!`node .claude/scripts/maestro-step1-gates.cjs`
 
 ### Step 2 — Match to workflow
 
@@ -91,7 +91,7 @@ node .claude/scripts/maestro-task-status.cjs done
 
 Then complete the mark-task-done task, unless `done` printed an epic report command: then the task stays open until Step 6 is finished.
 
-!`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step4-gate.cjs"`
+!`node .claude/scripts/maestro-step4-gate.cjs`
 
 ### Step 5 — Post Mortem
 
@@ -116,7 +116,7 @@ Run the exact command `done` printed, with the report on stdin: outcome, finding
 
 Runs after the success path is complete, whether or not `active_task` is set. If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, there are none. If no end skill commits, offer to commit.
 
-!`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-end-skills.cjs"`
+!`node .claude/scripts/maestro-end-skills.cjs`
 
 ### Step 8 (worktree only) — Merge the worktree
 

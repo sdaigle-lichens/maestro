@@ -31,8 +31,8 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
 2. **Start, then write the brief.**
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" start --mode <review|post-mortem> "${CLAUDE_PROJECT_DIR:-.}"
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" brief "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" start --mode <review|post-mortem> .
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" brief .
    ```
 
    - If `start` returns `ok:false`, stop. Tell the user its `reason`. A stale runtime needs `/maestro-update` first: the project's hook copies must know about meetings.
@@ -46,7 +46,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
    Ask with `AskUserQuestion`: go ahead, add or drop participants, narrow or widen the focus, or cancel.
    - Participant changes: run `maestro-team-meeting.cjs start` again with the new `--participants` list, then `maestro-team-meeting.cjs brief` again.
    - A narrowed or widened focus goes into the round-1 prompt as one extra line. If the focus includes context and flow, also add the optional line from the reference (see "Focus: context and flow").
-   - Cancel: run `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end "${CLAUDE_PROJECT_DIR:-.}"` (a cancelled meeting is still closed properly), tell the user nothing changed, and stop.
+   - Cancel: run `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end .` (a cancelled meeting is still closed properly), tell the user nothing changed, and stop.
 
 3. **Round 1: all participants in parallel**, in a single message.
    - **Review mode:** spawn each participant with the `Agent` tool, using its agent type. Plugin agents are namespaced, e.g. `maestro:backend`.
@@ -65,12 +65,12 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
      guidance and the instruction to rewrite its own `round-1/<agent>.json` (the full list). It is one
      more turn, under the same meeting rules and notice, with the meeting still open. Then show the
      positions again.
-   - **Stop**: run `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end "${CLAUDE_PROJECT_DIR:-.}"`, tell the user nothing was applied, and stop. Do not tally.
+   - **Stop**: run `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end .`, tell the user nothing was applied, and stop. Do not tally.
 
 4. **Find conflicts.**
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" conflicts "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" conflicts .
    ```
 
    - If a participant has no file, or its file is in `errors`, `SendMessage` it once with the error. Do not retry beyond that.
@@ -83,7 +83,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
 6. **Tally.**
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" tally "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" tally .
    ```
 
    It writes `decision.md` and `decision.json` and returns rows with a tier:
@@ -99,7 +99,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
 8. **End the meeting before applying anything:**
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" end .
    ```
 
    This way any subagent spawned while applying changes runs normally.
@@ -107,7 +107,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
 9. **Apply the auto tier:**
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" apply-placement [--skip <vetoed ids>] "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" apply-placement [--skip <vetoed ids>] .
    ```
 
    It applies skill loaded/referenced moves and handoff-template edits from `decision.json`. It reads
@@ -121,7 +121,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
 11. **Apply the approved rows.** Ask the plan:
 
     ```bash
-    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs --approved <approved ids> "${CLAUDE_PROJECT_DIR:-.}"
+    node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs --approved <approved ids> .
     ```
 
     It refuses while the meeting flag is set, and returns `runs` (one per owning agent) and `main`.
@@ -134,7 +134,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
       When the last one has returned, clear the marker:
 
       ```bash
-      node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs-done "${CLAUDE_PROJECT_DIR:-.}"
+      node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-team-meeting.cjs" owner-runs-done .
       ```
     - **`main`**: you apply these yourself, per [references/apply-kinds.md](references/apply-kinds.md). These are workflow changes, rule
       moves (`rule.move`, `rule.to-agent`), agent forks (`agent.fork`), start/end skill lists, and creating or

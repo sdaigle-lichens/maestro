@@ -192,7 +192,7 @@ Each sub-concept carries the traps specific to it. These cut across all of them:
   once per project.
 - **A task's own `Skills to use` name can name a skill outside the repository root's
   `.claude/skills`, and the Skill tool won't find it (`061`).** The orchestrator template's Step 3
-  falls back to `node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resolve-skill-path.cjs" "<name>"`
+  falls back to `node .claude/scripts/maestro-resolve-skill-path.cjs "<name>"`
   when the Skill tool answers "Unknown skill" — it prints the `SKILL.md` path when the id is a
   project skill living elsewhere in the tree, or nothing when it isn't a project skill at all (a
   typo, a plugin skill), and the orchestrator is told to `Read` a printed path directly rather than

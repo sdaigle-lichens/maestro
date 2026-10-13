@@ -16,7 +16,7 @@ This is read-and-reason first; it never changes anything until the user opts in.
 2. **Generate the digest.** The log embeds full subagent input/output, so don't read it raw — run the helper, which condenses it:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-post-mortem.js" "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-post-mortem.js" .
    ```
 
    It digests **the session you are in** by default. If it reports **no session log found**, tell the user the post-mortem must run **during an active Maestro session** — the log is ephemeral and is wiped at `SessionEnd` — then stop. If instead it **lists the available sessions**, it could not tell which session it was invoked from; show the user the list and re-run with `--session <id>` once they pick one. (The digest also accepts `--json` if you'd rather parse it.)

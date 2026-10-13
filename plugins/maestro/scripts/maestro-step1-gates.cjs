@@ -2,7 +2,7 @@
 // Prints this project's START skills as ONE directive line, for injection into a skill body
 // through Claude Code's !`command` dynamic-context syntax:
 //
-//   !`node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-step1-gates.cjs"`
+//   !`node .claude/scripts/maestro-step1-gates.cjs`
 //   !`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs" --for to_maestro_tasks`
 //
 // Reads `start_skills` from <projectDir>/.claude/maestro.json (an absent one is an empty

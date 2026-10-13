@@ -35,7 +35,7 @@ $ARGUMENTS
 
 2. **Confirm the project tags.** A project can carry several, so this is a multi-select decision throughout, never a pick-one. These are the categories the desktop app's `/templates` → Project Tags tab edits, and what auto-adds a matching bundled agent later.
 
-   **Skip this step entirely on a re-install** (`${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists) — the seed only applies to a fresh install, and an existing config's `project_tags` is the user's own.
+   **Skip this step entirely on a re-install** (`.claude/maestro.json` already exists) — the seed only applies to a fresh install, and an existing config's `project_tags` is the user's own.
 
    On a fresh install:
 
@@ -75,14 +75,14 @@ $ARGUMENTS
 
      `confirmedTags` = exactly what the user checked (or, in the >4 branch, the detected set they accepted or the list they typed), as a comma-separated list. It is intersected against the live catalog *again* inside `maestro-install.js`, so an invented name in a freeform reply is dropped rather than recorded.
 
-3. **Offer to attach the repo's local skills to the seeded agents.** This pre-populates the seeded instances so the user doesn't have to hunt. **Skip this step entirely** if `${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` already exists — the existing config owns the user's skill assignments.
+3. **Offer to attach the repo's local skills to the seeded agents.** This pre-populates the seeded instances so the user doesn't have to hunt. **Skip this step entirely** if `.claude/maestro.json` already exists — the existing config owns the user's skill assignments.
 
    On a fresh install:
 
    - **Discover project skills across the whole tree, not just the root.** A skill is any directory containing a `SKILL.md` under some `.claude/skills/`, and in a monorepo most of them live beside the code they describe (`apps/<app>/.claude/skills/`), not at the repository root. Reading only the root's is how an agent ends up seeded with no skills at all. `maestro-install.js` walks the whole tree for `skills_available`; match it here so the best-fit map covers the same set:
 
      ```bash
-     find "${CLAUDE_PROJECT_DIR:-.}" \
+     find . \
        \( -name node_modules -o -name .git -o -name dist -o -name out -o -name build \) -prune -o \
        -path "*/.claude/skills/*/SKILL.md" -print 2>/dev/null
      ```
@@ -121,7 +121,7 @@ $ARGUMENTS
 4. **Scaffold and seed.**
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-install.js" "${CLAUDE_PROJECT_DIR:-.}" \
+   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-install.js" . \
      --impl-agents "backend,frontend" \
      --project-tags "backend,frontend" \
      --skill-map '{"frontend":["react"],"test":["react-testing-library"]}'
