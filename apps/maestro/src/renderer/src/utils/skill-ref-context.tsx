@@ -8,12 +8,18 @@ interface SkillRefContextValue {
   find(id: string): DanglingSkillRef | undefined;
   /** Re-read the report from the on-disk config. Resolves once the new report is in place. */
   refresh(): Promise<void>;
+  /** True while a `recheck()` is in flight. Shared, so every Recheck button reflects any one's click. */
+  checking: boolean;
+  /** The user-triggered recheck: `refresh()` with `checking` held true until it settles. */
+  recheck(): void;
 }
 
 const SkillRefContext = createContext<SkillRefContextValue>({
   report: EMPTY_SKILL_REF_REPORT,
   find: () => undefined,
   refresh: async () => {},
+  checking: false,
+  recheck: () => {},
 });
 
 /**
@@ -41,6 +47,18 @@ export function SkillRefProvider({ children }: { children: React.ReactNode }) {
     const next = await getSkillRefReport();
     if (rootRef.current === asked) setReport(next);
   }, []);
+
+  const [checking, setChecking] = useState(false);
+  const checkingRef = useRef(false);
+  const recheck = useCallback(() => {
+    if (checkingRef.current) return;
+    checkingRef.current = true;
+    setChecking(true);
+    void refresh().finally(() => {
+      checkingRef.current = false;
+      setChecking(false);
+    });
+  }, [refresh]);
 
   useEffect(() => {
     // Drop the previous project's marks immediately rather than showing them until the answer lands.
@@ -70,8 +88,8 @@ export function SkillRefProvider({ children }: { children: React.ReactNode }) {
 
   const value = useMemo<SkillRefContextValue>(() => {
     const byId = new Map(report.dangling.map((d) => [d.id, d]));
-    return { report, find: (id) => byId.get(id), refresh };
-  }, [report, refresh]);
+    return { report, find: (id) => byId.get(id), refresh, checking, recheck };
+  }, [report, refresh, checking, recheck]);
 
   return <SkillRefContext.Provider value={value}>{children}</SkillRefContext.Provider>;
 }

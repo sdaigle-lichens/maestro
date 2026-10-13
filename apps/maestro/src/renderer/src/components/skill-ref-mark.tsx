@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { ArrowsClockwiseIcon, WarningIcon, XIcon } from "@phosphor-icons/react";
 import { useSkillRefs } from "../utils/skill-ref-context";
+import { summarizeGroupDangling } from "../utils/group-dangling";
 import type { UnavailableReason } from "../utils/maestro";
 
 /** Human wording for why a referenced skill does not resolve (`091`). */
@@ -35,23 +36,44 @@ export default function SkillRefMark({ id, className = "" }: { id: string; class
 }
 
 /**
+ * Header indicator for a COLLAPSED plugin group: the count of dangling skills inside it, plus the
+ * reason when they all share one. Renders nothing when none are dangling. The group shows it only
+ * while closed — open, the per-skill `SkillRefMark`s take over.
+ */
+export function GroupDanglingIndicator({ ids }: { ids: readonly string[] }) {
+  const { find } = useSkillRefs();
+  const { count, reason } = summarizeGroupDangling(ids, find);
+  if (count === 0) return null;
+  const label = reason ? SKILL_REF_REASON_LABEL[reason] : undefined;
+  return (
+    <span
+      data-testid="skill-group-dangling"
+      data-count={count}
+      data-reason={reason}
+      title={`${count} skill${count === 1 ? "" : "s"} in this group can't be resolved${label ? `: ${label}` : ""}`}
+      className="inline-flex items-center gap-0.5 shrink-0 text-[10px] font-sans normal-case font-normal tracking-normal text-amber-600"
+    >
+      <WarningIcon size={10} weight="fill" />
+      {count}
+      {label ? ` ${label}` : ""}
+    </span>
+  );
+}
+
+/**
  * A small always-visible "Recheck skills" control, shown whether or not the report has anything in
  * it — once the report is clean the notice is gone, and without this nothing would let the user
  * ask again after changing a plugin outside the app.
  */
 export function SkillRefRecheck() {
-  const { refresh } = useSkillRefs();
-  const [checking, setChecking] = useState(false);
+  const { checking, recheck } = useSkillRefs();
   return (
     <button
       type="button"
       data-testid="skill-ref-recheck"
       disabled={checking}
       title="Re-read which skills and plugins are available"
-      onClick={() => {
-        setChecking(true);
-        void refresh().finally(() => setChecking(false));
-      }}
+      onClick={recheck}
       className="inline-flex items-center gap-1 text-[10px] normal-case font-normal tracking-normal text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none disabled:opacity-60 bg-transparent border-0 p-0"
     >
       <ArrowsClockwiseIcon size={10} /> Recheck skills
@@ -65,9 +87,8 @@ export function SkillRefRecheck() {
  * with fresh dismissal state, like `config-issue-banner.tsx`.
  */
 export function SkillRefNotice() {
-  const { report, refresh } = useSkillRefs();
+  const { report, checking, recheck } = useSkillRefs();
   const [dismissed, setDismissed] = useState(false);
-  const [checking, setChecking] = useState(false);
   if (report.suggestions.length === 0 || dismissed) return null;
 
   return (
@@ -85,10 +106,8 @@ export function SkillRefNotice() {
       <button
         type="button"
         disabled={checking}
-        onClick={() => {
-          setChecking(true);
-          void refresh().finally(() => setChecking(false));
-        }}
+        data-testid="skill-ref-notice-recheck"
+        onClick={recheck}
         className="shrink-0 inline-flex items-center gap-1 text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none disabled:opacity-60"
       >
         <ArrowsClockwiseIcon size={12} /> Recheck

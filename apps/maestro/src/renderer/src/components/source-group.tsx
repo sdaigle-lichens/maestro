@@ -42,11 +42,14 @@ export function CollapsibleGroup({
   title,
   count,
   defaultOpen,
+  closedIndicator,
   children,
 }: {
   title: string;
   count: number;
   defaultOpen: boolean;
+  /** Shown in the header only while the group is closed (e.g. a dangling-skill summary). */
+  closedIndicator?: ReactNode;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -63,6 +66,7 @@ export function CollapsibleGroup({
           <CaretRightIcon size={11} className="text-maestro-muted shrink-0" />
         )}
         <span className="text-[10px] font-semibold text-maestro-muted uppercase tracking-wide truncate">{title}</span>
+        {!open && closedIndicator && <span className="ml-1 min-w-0 truncate">{closedIndicator}</span>}
         <span className="ml-auto shrink-0 text-[10px] text-maestro-muted">{count}</span>
       </button>
       {open && <div className="flex flex-col gap-0.5 pl-1">{children}</div>}
