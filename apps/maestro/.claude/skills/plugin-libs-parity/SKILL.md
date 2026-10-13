@@ -80,7 +80,7 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 
 ## The seventeen generated entries
 
-`maestro-session`, `maestro-skill-regions`, `maestro-seed`, `maestro-skill-tags`,
+`maestro-session`, `maestro-skill-regions`, `maestro-seed` (also re-exports `maestroConfigRefusal` from `config-usable.ts`, `096` — rebuild after editing that file), `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check), `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,

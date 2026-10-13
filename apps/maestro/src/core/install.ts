@@ -42,6 +42,7 @@ import { duplicateAgentTypes } from "./config-validate.js";
 import { detectImplAgents } from "./detect.js";
 import { discoverSkills, discoverProjectSkillsTree, type SkillIdCollision } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
+import { maestroConfigRefusal, type ConfigRefusal } from "./config-usable.js";
 import { defaultV3Config, seededAgentNames, seedMissingSkillLists } from "./seed.js";
 import { seedSkillsFor } from "./skill-availability.js";
 import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
@@ -694,6 +695,15 @@ export async function installRuntime(
   const settingsPath = settingsPathFor(projectRoot);
   const settings = readSettings(settingsPath);
 
+  // Preflight, same rule as settings.json: an existing maestro.json that is not a parseable
+  // version-3 config is the user's authored graph and is neither blanked nor stamped over (`096`).
+  // Refuse before the first write, so the project is left exactly as it was.
+  const configFile = maestroJsonPath(projectRoot);
+  if (fs.existsSync(configFile)) {
+    const configRefusal = maestroConfigRefusal(fs.readFileSync(configFile, "utf8"));
+    if (configRefusal) return refusedReport(projectRoot, root, configRefusal);
+  }
+
   const assets = runtimeAssets(root);
 
   const orchestratorSkill = installOrchestratorSkill(
@@ -858,6 +868,31 @@ export async function installRuntime(
     reportsSync,
     handoffsSync,
     configIssues,
+    configRefusal: null,
+  };
+}
+
+/** The report for an install that refused on an unusable maestro.json: nothing was written. */
+async function refusedReport(projectRoot: string, root: string, refusal: ConfigRefusal): Promise<InstallReport> {
+  return {
+    projectRoot,
+    orchestratorSkill: { action: "unchanged", regions: [], backup: null },
+    scriptsWritten: [],
+    hooksAdded: [],
+    hooksRemoved: [],
+    retiredScriptsRemoved: [],
+    gitignoreUpdated: false,
+    runtimeVersion: shippedRuntimeVersion(root),
+    runtimeVersionUpdated: false,
+    configSeeded: null,
+    skillListsSeeded: null,
+    unchanged: false,
+    warnings: [],
+    status: await installStatus(projectRoot, root),
+    reportsSync: { materialized: [], refreshed: [], adopted: [], staleCustomized: [], unchanged: [] },
+    handoffsSync: { materialized: [], refreshed: [], adopted: [], staleCustomized: [], unchanged: [] },
+    configIssues: [],
+    configRefusal: refusal,
   };
 }
 

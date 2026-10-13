@@ -23,8 +23,10 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-seed.ts
 var maestro_seed_exports = {};
 __export(maestro_seed_exports, {
+  MAESTRO_CONFIG_FILE: () => MAESTRO_CONFIG_FILE,
   defaultSkillLists: () => defaultSkillLists,
   defaultV3Config: () => defaultV3Config,
+  maestroConfigRefusal: () => maestroConfigRefusal,
   seedMissingSkillLists: () => seedMissingSkillLists,
   seededAgentNames: () => seededAgentNames
 });
@@ -407,10 +409,44 @@ function seedMissingSkillLists(cfg, seedSkills = {}) {
     changed
   };
 }
+
+// src/core/config-usable.ts
+var MAESTRO_CONFIG_FILE = ".claude/maestro.json";
+var WHAT_TO_DO = "Nothing was installed or changed. Fix the file by hand, or move it aside to start fresh, then install again.";
+function describeVersion(v) {
+  if (v === void 0) return "no version";
+  const s = JSON.stringify(v);
+  return `version ${s === void 0 ? String(v) : s}`;
+}
+function maestroConfigRefusal(raw) {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    const problem = err instanceof Error ? err.message : String(err);
+    return {
+      kind: "unparseable",
+      file: MAESTRO_CONFIG_FILE,
+      problem,
+      message: `${MAESTRO_CONFIG_FILE} is not valid JSON (${problem}). ${WHAT_TO_DO}`
+    };
+  }
+  const version = typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed.version : void 0;
+  if (version === 3) return null;
+  const found = describeVersion(version);
+  return {
+    kind: "unsupported-version",
+    file: MAESTRO_CONFIG_FILE,
+    problem: `found ${found}, expected version 3`,
+    message: `${MAESTRO_CONFIG_FILE} is not a version 3 Maestro config (found ${found}). ${WHAT_TO_DO}`
+  };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  MAESTRO_CONFIG_FILE,
   defaultSkillLists,
   defaultV3Config,
+  maestroConfigRefusal,
   seedMissingSkillLists,
   seededAgentNames
 });

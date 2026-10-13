@@ -171,24 +171,6 @@ describe.each(Object.entries(INSTALLERS))("skill-list seeding via %s", (_name, i
   });
 });
 
-describe("installRuntime (app) leaves an unreadable or foreign config alone", () => {
-  // A raw parse backs the seed step, so a file readConfig() would treat as blank is not seeded by it.
-  // (The plugin script already crashes on a corrupt file — not covered.) Known, pre-existing and
-  // NOT asserted away here: the later runtimeVersion stamp (`writeRuntimeVersion`) and the
-  // reports/handoffs syncs read via readConfig() and so rewrite such a file as a blank v3 config.
-  it.each([
-    ["corrupt JSON", "{ not json"],
-    ["a non-v3 config", JSON.stringify({ version: 2, agents: [] })],
-  ])("the 092 seed step does not seed %s", async (_label, text) => {
-    const root = project(text);
-    const r = await INSTALLERS["installRuntime (app)"](root);
-    expect(r.seeded).toBeNull();
-    const written = JSON.parse(r.raw);
-    expect(written.start_skills).toBeUndefined();
-    expect(written.end_skills).toBeUndefined();
-  });
-});
-
 describe("seedMissingSkillLists", () => {
   it("returns the same object when nothing is missing", () => {
     const cfg = { ...BASE, start_skills: { maestro: [], to_maestro_tasks: [] }, end_skills: { maestro: [] } };

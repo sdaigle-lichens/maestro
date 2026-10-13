@@ -67,6 +67,22 @@ Ordering enforces a fourth: **everything that can refuse is checked before the f
 written**, so a rejected install leaves the project exactly as it was. Past that point every step
 is a copy or an append that re-running completes.
 
+**An unusable `maestro.json` is refused, never blanked or stamped over (`096`).** An existing file
+that is not parseable JSON, or not `version: 3`, is the user's authored graph. Both paths call
+`maestroConfigRefusal(raw)` from `apps/maestro/src/core/config-usable.ts` (pure, text in, verdict
+out; reaches the plugin through the `maestro-seed` bundle) — the single definition of "unusable" and
+of the wording. It returns `{kind: "unparseable" | "unsupported-version", file, problem, message}`
+or `null`; a missing file is not its business.
+
+| | App | Terminal |
+| --- | --- | --- |
+| Refusal | `installRuntime()` returns a report with `configRefusal` set (`InstallReport.configRefusal`, `null` otherwise); every other field is the empty/unchanged value | JSON `{ok:false, refused:"config", kind, file, problem, reason}`, exit 1 (a non-`ENOENT` read error gives `refused:"config"` with just `reason`) |
+| Shown by | `install-report-card.tsx` renders an alert instead of "What changed on disk"; `maestro.tsx` and `install-context.tsx` skip the tags offer and the auto-refresh follow-ups when it is set | the `maestro-install` skill relays `reason` |
+
+**Known edge:** an *unreadable* `maestro.json` (e.g. a directory at that path) makes the app's
+`installRuntime()` **throw** from `readFileSync` rather than return a refusal, while the plugin
+refuses cleanly. Both write nothing; only the shape differs.
+
 ## Files
 
 | File                                                         | Lines | What it owns                                                                                  |
@@ -87,11 +103,13 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`     | —     | `061`'s addition — a `STATIC_ASSET`, not a hook. See the skill-discovery sub-concept. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
-Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
-(`defaultV3Config`), `detect.ts`, `report-sync.ts`, and — since `033` — `handoff-sync.ts`
+Supporting: `config-usable.ts` (`maestroConfigRefusal`, `096`; re-exported by
+`plugin-entries/maestro-seed.ts`), `skill-regions.ts` (managed-region sync), `render.ts` (the
+HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, and — since `033` — `handoff-sync.ts`
 (`syncProjectHandoffs`, run right after `syncProjectReports`, and the **third** caller of
 `decideSync`). Test: `test/core/install.test.ts`, `test/core/uninstall.test.ts`,
-`test/core/hook-arbitration.test.ts`, `test/core/handoffs.test.ts`, `test/core/parity.test.ts`.
+`test/core/hook-arbitration.test.ts`, `test/core/handoffs.test.ts`, `test/core/parity.test.ts`,
+`test/core/install-unusable-config.test.ts` (both paths), `test/renderer/install-report-card.test.ts`.
 
 ## Things that bite
 
@@ -122,7 +140,8 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   `maestro-render-orchestrator.cjs` runs afterwards, and `/maestro-update` is just those two steps
   standalone.
 - **The seed is guarded on absence.** An existing `maestro.json` is the user's authored graph and is
-  never overwritten — by install, re-install, or refresh.
+  never overwritten — by install, re-install, or refresh. An existing but corrupt or non-v3 one is
+  *refused* (`096`), not treated as absent: do not "fix" that by falling back to the seed.
 - **A lib a copied script `require`s must be in `STATIC_ASSETS`, and forgetting one fails silently
   (`035`).** Every sqlite `require` sits inside a try/catch, so a missing lib is swallowed and the
   tier it backed stops existing — for projects on their own copy only, while the plugin's copy keeps
