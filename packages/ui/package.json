@@ -5,7 +5,8 @@
   "scripts": {
     "check": "prettier --check . --ignore-path ../../.prettierignore",
     "format": "prettier --write . --ignore-path ../../.prettierignore",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit"
   },
   "type": "module",
   "exports": {
@@ -31,12 +32,14 @@
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
+    "@storybook/react-vite": "10.6.1",
     "@types/react": "19.2.0",
     "@types/react-dom": "19.2.0",
     "eslint": "^9.39.0",
     "react": "19.2.0",
     "react-dom": "19.2.0",
-    "typescript": "6.0.2"
+    "typescript": "6.0.2",
+    "vite": "8.0.0"
   },
   "peerDependencies": {
     "react": "19.2.0",
