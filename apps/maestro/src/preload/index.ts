@@ -42,6 +42,7 @@ const api: MaestroApi = {
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
     reseed: (implAgents) => ipcRenderer.invoke(IPC.workflowsReseed, implAgents),
+    skillRefs: () => ipcRenderer.invoke(IPC.skillRefReport),
     rules: () => ipcRenderer.invoke(IPC.rulesData),
     // `projectRoot` is a VIEWING parameter, forwarded as-is; main validates it against the current
     // + recent project list and falls back to the open project on anything else, so this cannot be

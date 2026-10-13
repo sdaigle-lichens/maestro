@@ -19,6 +19,7 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { walkProjectSkillIds } from "./skill-resolve.js";
+import type { UnavailableReason, DanglingSkillRef, SkillRefReport } from "./contracts.js";
 
 /** Everything availability is decided from. Built once per question by `readSkillSources`. */
 export interface SkillSources {
@@ -105,8 +106,7 @@ export function readSkillSources(projectRoot: string, homeDir: string = os.homed
   };
 }
 
-/** Why an id does not resolve — what a person would have to do about it. */
-export type UnavailableReason = "plugin-not-installed" | "plugin-not-enabled" | "skill-not-in-plugin" | "not-found";
+export type { UnavailableReason };
 
 /**
  * `null` when `id` resolves, otherwise why not.
@@ -165,18 +165,8 @@ export function seedSkillsFor(projectRoot: string, homeDir?: string): SeedSkills
 // Dangling references in an existing config
 // ---------------------------------------------------------------------------
 
-export interface DanglingSkillRef {
-  id: string;
-  reason: UnavailableReason;
-  /** Every place the id is referenced, human-readable. */
-  where: string[];
-}
-
-export interface StaleRefsReport {
-  dangling: DanglingSkillRef[];
-  /** One sentence each, ready to show a user. */
-  suggestions: string[];
-}
+export type { DanglingSkillRef };
+export type StaleRefsReport = SkillRefReport;
 
 function strings(v: unknown): string[] {
   return Array.isArray(v)

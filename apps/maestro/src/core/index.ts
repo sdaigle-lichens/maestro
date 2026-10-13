@@ -68,6 +68,8 @@ export {
   type StaleRefsReport,
 } from "./skill-availability.js";
 
+export { skillRefReport } from "./skill-ref-report.js";
+
 export { orchestratorSkillPath, successPath, handoffTable, renderOrchestrator, type RenderResult } from "./render.js";
 
 export {

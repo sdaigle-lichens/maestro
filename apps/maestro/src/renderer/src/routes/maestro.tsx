@@ -25,6 +25,8 @@ import TopNav from "../components/top-nav";
 import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
 import { useInstall } from "../utils/install-context";
+import { useSkillRefs } from "../utils/skill-ref-context";
+import SkillRefMark, { SkillRefNotice, SkillRefRecheck } from "../components/skill-ref-mark";
 import { getToolsData } from "../utils/tools";
 import type {
   AgentSyncSummary,
@@ -652,6 +654,7 @@ function SkillListPicker({
   onChange: (next: string[]) => void;
 }) {
   const [pick, setPick] = useState("");
+  const { find } = useSkillRefs();
   const chosen = new Set(ids.map(bareSkillName));
   const choices = available.filter((a) => !chosen.has(bareSkillName(a)));
   const move = (i: number, by: -1 | 1) => {
@@ -677,7 +680,11 @@ function SkillListPicker({
             >
               <span className="text-[11px] text-maestro-muted w-4">{i + 1}.</span>
               <span className="font-mono text-[12px] text-maestro flex-1 min-w-0 truncate">{id}</span>
-              {!known.has(id) && <span className="text-[11px] text-amber-500">not found</span>}
+              {find(id) ? (
+                <SkillRefMark id={id} />
+              ) : (
+                !known.has(id) && <span className="text-[11px] text-amber-500">not found</span>
+              )}
               <button
                 type="button"
                 aria-label={`Move ${id} up`}
@@ -754,6 +761,7 @@ function SkillListsCard({ viewedRoot }: { viewedRoot: string }) {
   const [lists, setLists] = useState<MaestroSkillListsSlice | null>(null);
   const [skills, setSkills] = useState<DiscoveredDefinition[]>([]);
   const [busy, setBusy] = useState(false);
+  const { refresh: refreshSkillRefs } = useSkillRefs();
 
   useEffect(() => {
     let cancelled = false;
@@ -784,6 +792,8 @@ function SkillListsCard({ viewedRoot }: { viewedRoot: string }) {
         return;
       }
       setLists(res.value);
+      // The report reads the file just written; don't wait for the watcher's poll to clear marks.
+      void refreshSkillRefs();
     } finally {
       setBusy(false);
     }
@@ -798,6 +808,9 @@ function SkillListsCard({ viewedRoot }: { viewedRoot: string }) {
     >
       <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
         <ShieldCheckIcon size={12} /> Start and end skills
+        <span className="ml-auto">
+          <SkillRefRecheck />
+        </span>
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
         Which skills run at the start and end of an orchestration, in the order listed. Any project, user or plugin
@@ -1252,6 +1265,12 @@ function InstallPage() {
 
           {status?.installed && viewedRoot && (
             <ProjectTagsCard key={`${viewedRoot}-${tagsRefreshKey}`} viewedRoot={viewedRoot} />
+          )}
+
+          {status?.installed && viewedRoot && (
+            <div className="rounded-lg overflow-hidden">
+              <SkillRefNotice key={viewedRoot} />
+            </div>
           )}
 
           {status?.installed && viewedRoot && <SkillListsCard key={viewedRoot} viewedRoot={viewedRoot} />}

@@ -6,6 +6,7 @@ import InstancePicker, {
   type InstancePickerValue,
 } from "./instance-picker";
 import InstanceSkillPicker from "./instance-skill-picker";
+import SkillRefMark from "./skill-ref-mark";
 import { CheckIcon } from "@phosphor-icons/react";
 
 import {
@@ -345,7 +346,7 @@ function AgentNodeComponent({
             <div className="px-2.5 pb-2 flex flex-wrap gap-1">
               {inst.loaded_skills.map((s) => (
                 <span key={s} className={`px-1.5 py-0.5 rounded-full border text-[10px] font-mono ${chipClass}`}>
-                  {s}
+                  {s} <SkillRefMark id={s} />
                 </span>
               ))}
               {inst.referenced_skills.map((s) => (
@@ -354,7 +355,7 @@ function AgentNodeComponent({
                   title="Referenced — loaded only if the task needs it"
                   className={`px-1.5 py-0.5 rounded-full border border-dashed text-[10px] font-mono opacity-70 ${chipClass}`}
                 >
-                  {s}
+                  {s} <SkillRefMark id={s} />
                 </span>
               ))}
             </div>
@@ -534,6 +535,7 @@ function SkillNodeComponent({
             <span className="font-mono text-[12px] font-semibold truncate text-violet-800">
               /{maestro.skill ?? maestro.id}
             </span>
+            <SkillRefMark id={maestro.skill ?? maestro.id} className="ml-1" />
             <div className="relative ml-1 shrink-0" ref={menuRef}>
               <button
                 type="button"

@@ -15,6 +15,7 @@ import {
   type AvatarLayers,
 } from "../../../../shared/ipc";
 import AgentAvatarBlock from "./agent-avatar-block";
+import SkillRefMark from "../skill-ref-mark";
 import {
   CARD_MIN_HEIGHT,
   DASHED_ADD,
@@ -67,6 +68,7 @@ function SkillChip({
         </span>
       )}
       <span className={`relative ${active ? "text-maestro-muted" : "text-maestro-muted"}`}>{skill.id}</span>
+      <SkillRefMark id={skill.id} className="relative" />
       {/*
         The one control the design didn't draw. A Maestro instance keeps its skills in TWO lists —
         `loaded_skills`, which the SubagentStart hook injects before the agent starts, and

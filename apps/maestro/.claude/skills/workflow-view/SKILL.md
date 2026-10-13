@@ -101,6 +101,7 @@ Paths are relative to `apps/maestro/`.
 | The canvas (React Flow nodes/edges, all interactions)                  | `src/renderer/src/components/workflow-canvas.tsx`                                                             |
 | Reuse/create instance picker + skill pickers (shared by canvas modals) | `src/renderer/src/components/instance-picker.tsx`, `.../instance-skill-picker.tsx` (loaded/referenced toggle) |
 | Detected-chain banner + correction chips                               | `src/renderer/src/components/detected-chain.tsx`, `.../seeded-banner.tsx`                                     |
+| Dangling skill-ref marks + notice (`091`)                              | `src/core/skill-ref-report.ts`, `.../components/skill-ref-mark.tsx`, `.../utils/skill-ref-context.tsx`        |
 | Duplicate-agent-type banner (`041`)                                    | `src/renderer/src/components/config-issue-banner.tsx`, validator in `src/core/config-validate.ts`             |
 | Top bar — hamburger menu, direct links, workflow selector              | `src/renderer/src/components/top-nav.tsx`, `.../hamburger-menu.tsx`                                            |
 | Renderer-side loader + save wrappers over the IPC bridge               | `src/renderer/src/utils/maestro.ts`                                                                           |
@@ -169,8 +170,21 @@ At runtime the `SubagentStart` hook (`maestro-inject-agent-context.js`) reads th
 
 On load, `workflows.tsx` renders a dismissible `config-issue-banner.tsx` (own component, not an extension of `seeded-banner.tsx` — that banner has no dismiss affordance and covers an unrelated, independently-occurring condition) when `loaderData.configIssues` is non-empty — a hand-edited config with two placed instances on one bare agent, computed in main by `config-validate.ts`'s `duplicateAgentTypes` (see `maestro-config-model`). `key={projectRoot}` so a project switch remounts it with fresh dismissal state. It never blocks editing.
 
+## Dangling skill references (`091`)
+
+A config can name a skill that no longer resolves (plugin not installed / not enabled / skill not in plugin / not found). The report is advisory: it never blocks a save and never removes a reference.
+
+- **Core:** `src/core/skill-ref-report.ts` `skillRefReport(projectRoot)` reads the on-disk `maestro.json` and calls `findStaleSkillRefs` (`skill-availability.ts`, shared with `maestro-stale-refs.cjs`). Never throws: no project or a missing/corrupt config is an empty report. Not in the plugin-entries graph. `UnavailableReason` / `DanglingSkillRef` / `SkillRefReport` live in `core/contracts.ts` (re-exported by `skill-availability.ts` and `shared/ipc.ts`).
+- **IPC:** `IPC.skillRefReport` = `data:skill-refs`, `window.maestro.data.skillRefs()`, wrapped by `getSkillRefReport()` in `utils/maestro.ts`.
+- **Provider:** `SkillRefProvider` (`utils/skill-ref-context.tsx`, in `__root.tsx` **above** `InstallProvider`, inside `ConfigWatchProvider`) exposes `{ report, find(id), refresh() }` via `useSkillRefs()`. Refresh triggers: project switch (clears marks first), every `config:changed`, a debounced (300ms) window `focus`/`visibilitychange` (enable a plugin elsewhere, return to the app), and `refresh()` (the always-visible `SkillRefRecheck` "Recheck skills" control on `/workflows` and `/maestro`, plus the notice's button; `workflows.tsx` and `maestro.tsx` call it after their own save rather than wait for the ~1s poll). A late answer for a project since left is dropped.
+- **Marks:** `components/skill-ref-mark.tsx` `SkillRefMark id` (amber reason label, matched **by id**, so one entry marks every occurrence) and `SkillRefNotice` (one dismissible notice with the project-level suggestions plus Recheck; render it `key={projectRoot}`). Marks sit on: instance chips in `workflow-canvas.tsx` (loaded and referenced), the skill-node label there, `instance-skill-picker.tsx` rows, the shared skills list and instance rows in `workflows.tsx`, the start/end skill pickers in `maestro.tsx`, and `agents/agent-card.tsx`. The notice renders in `workflows.tsx` and `maestro.tsx`. `SkillRefRecheck` is always visible because the notice disappears when the report is clean, which made a notice-only Recheck unreachable.
+- **Known gap:** a dangling mark inside a collapsed plugin group is not surfaced on the group header (not implemented).
+
 ## Things that bite
 
+- **The skill-ref report reflects the saved file, not the canvas.** Unsaved edits are not in it; a mark clears only after a save (or an outside fix) and the next refresh.
+- **Renderer component tests are `.ts`, not `.tsx`.** vitest only includes `test/**/*.test.ts`, so `test/renderer/skill-ref-mark.test.ts` builds elements with `createElement`.
+- **The running-window check for `091` is verified:** a CDP probe against the launched app passed 11/11 checks. It needs the `chrome-sandbox` setuid bit (see `test-maestro`'s electron-sandbox-setup reference).
 - **`main-session` lives in edges but not nodes.** Code that consumes `workflows[].edges` must treat `"main-session"` as a valid `from` that has no matching entry in `nodes[]`. Filtering edges by "node exists" will silently drop the entry edge.
 - **Skills live on the instance, not the node.** A node only stores `instance` (+ id + position); the agent and skills come from the `workflow_instances` entry. Editing an instance updates every node that references it across all workflows.
 - **`success_path` is derived — never write it to `maestro.json`.** Persisting it would duplicate state that can drift from the edges.

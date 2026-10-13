@@ -30,6 +30,23 @@ export type {
 
 import type { MaestroConfigV3, MaestroWorkflowV3 } from "./types.js";
 
+/** Why a skill id does not resolve — what a person would have to do about it. */
+export type UnavailableReason = "plugin-not-installed" | "plugin-not-enabled" | "skill-not-in-plugin" | "not-found";
+
+export interface DanglingSkillRef {
+  id: string;
+  reason: UnavailableReason;
+  /** Every place the id is referenced, human-readable. */
+  where: string[];
+}
+
+/** Dangling skill references in a config, plus project-level suggestions (`090`, `091`). */
+export interface SkillRefReport {
+  dangling: DanglingSkillRef[];
+  /** One sentence each, ready to show a user. Includes the concept-skills plugin hint. */
+  suggestions: string[];
+}
+
 /**
  * The sentinel value on either of a skill's two tag dimensions (see `DiscoveredDefinition` below)
  * meaning "matches regardless of the agent's own value on that dimension" — the same convention

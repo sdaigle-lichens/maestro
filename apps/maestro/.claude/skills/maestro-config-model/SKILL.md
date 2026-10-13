@@ -98,6 +98,7 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
 | `src/core/save.ts`            | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                                                                                                                                          |
 | `src/core/render.ts`          | Renders the orchestrator's handoff table from the config.                                                                                                                                                      |
 | `src/core/success-path.ts`    | Derives the agent→skill success path a workflow describes.                                                                                                                                                     |
+| `src/core/skill-ref-report.ts` | `skillRefReport` — the IPC-facing dangling-skill report over `findStaleSkillRefs`; advisory, never repairs (see `workflow-view`).                                                                              |
 
 ## Relationships
 

@@ -18,6 +18,7 @@ import {
   blankConfig,
   defaultV3Config,
   seedSkillsFor,
+  skillRefReport,
   seededAgentNames,
   detectImplAgents,
   saveConfig,
@@ -152,6 +153,7 @@ import type {
   UsageStatsResult,
   UsageStatsView,
   WorkflowsData,
+  SkillRefReport,
 } from "../shared/ipc.js";
 import { bundledAgentsDir, bundledPluginDir, bundledPluginVersion, maestroAppDocsDirs } from "./bundled-assets.js";
 import {
@@ -568,6 +570,9 @@ export function registerIpc(): void {
       configIssues: [],
     };
   });
+
+  // Dangling skill references in the open project's config (`091`). Detection lives in core.
+  ipcMain.handle(IPC.skillRefReport, async (): Promise<SkillRefReport> => skillRefReport(currentRoot()));
 
   // The user amending the detection. Pure — nothing is written, so the chain can be corrected as
   // many times as it takes and the project stays unconfigured until Save.

@@ -42,6 +42,9 @@ import type {
   SaveResult,
   RepoDetection,
   ConfigIssue,
+  SkillRefReport,
+  DanglingSkillRef,
+  UnavailableReason,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
@@ -171,6 +174,9 @@ export type {
   SaveResult,
   RepoDetection,
   ConfigIssue,
+  SkillRefReport,
+  DanglingSkillRef,
+  UnavailableReason,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
@@ -390,6 +396,7 @@ export const IPC = {
 
   workflowsData: "data:workflows",
   workflowsReseed: "data:reseed",
+  skillRefReport: "data:skill-refs",
   rulesData: "data:rules",
   toolsData: "data:tools",
   docsData: "data:docs",
@@ -767,6 +774,13 @@ export interface MaestroApi {
      * as the user changes their mind, and the project stays unconfigured until they press Save.
      */
     reseed(implAgents: string[]): Promise<MaestroConfigV3>;
+    /**
+     * Skill ids the open project's maestro.json names that do not resolve (plugin not installed /
+     * not enabled / skill not in plugin / not found), each with where it is referenced, plus
+     * one-sentence project-level suggestions. Advisory and never rejects: no project, or a
+     * missing/corrupt config, is an empty report. Re-asked on save, project switch and on demand.
+     */
+    skillRefs(): Promise<SkillRefReport>;
     rules(): Promise<RulesData>;
     /**
      * The /tools dashboard's four tabs. Never rejects: an absent file is an empty section.

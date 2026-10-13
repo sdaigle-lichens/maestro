@@ -11,13 +11,20 @@ Expose that report to the renderer and show it where each reference is edited, s
 
 ## Acceptance criteria
 
-- [ ] A config naming an unavailable skill shows a mark with its reason (plugin not installed / not enabled / skill not in plugin / not found) at each place that reference is edited: instance skills and skill nodes in the workflow view, the shared skills list, and the start/end pickers on the /maestro page
-- [ ] The project-level suggestions, including the concept-skills plugin hint when concept-skills.json exists but the plugin is not enabled, appear in one non-blocking notice
-- [ ] Saving is never blocked and no reference is removed automatically; removing or fixing a reference clears its mark after save
-- [ ] The report refreshes on save, on project switch and on demand, so enabling a plugin outside the app clears the marks without restarting
-- [ ] The detection logic stays in core and is reached through a thin IPC adapter; core tests cover the IPC-facing shape, and the behaviour is checked in a running window
-- [ ] pnpm verify passes
+- [x] A config naming an unavailable skill shows a mark with its reason (plugin not installed / not enabled / skill not in plugin / not found) at each place that reference is edited: instance skills and skill nodes in the workflow view, the shared skills list, and the start/end pickers on the /maestro page
+- [x] The project-level suggestions, including the concept-skills plugin hint when concept-skills.json exists but the plugin is not enabled, appear in one non-blocking notice
+- [x] Saving is never blocked and no reference is removed automatically; removing or fixing a reference clears its mark after save
+- [x] The report refreshes on save, on project switch and on demand, so enabling a plugin outside the app clears the marks without restarting
+- [x] The detection logic stays in core and is reached through a thin IPC adapter; core tests cover the IPC-facing shape, and the behaviour is checked in a running window
+- [x] pnpm verify passes
 
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Problem:** The first pass shipped a notice-only Recheck, so once the report was clean there was no way to refresh on demand, and the gap went unnoticed until the running-window probe. Review and unit tests had passed it, because no test could drive a real window until the Electron chrome-sandbox setuid bit was fixed.
+  **Fix:** none
+- **Problem:** The chrome-sandbox setuid bit is lost again whenever Electron is re-extracted, which blocked the window check on the first attempt.
+  **Fix:** none

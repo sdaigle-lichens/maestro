@@ -9,6 +9,8 @@ import WorkflowCanvas from "../components/workflow-canvas";
 import SeededBanner from "../components/seeded-banner";
 import ConfigIssueBanner from "../components/config-issue-banner";
 import ExternalChangeBanner from "../components/external-change-banner";
+import SkillRefMark, { SkillRefNotice, SkillRefRecheck } from "../components/skill-ref-mark";
+import { useSkillRefs } from "../utils/skill-ref-context";
 import DetectedChain from "../components/detected-chain";
 import { groupBySource, sourceLabel, CollapsibleGroup } from "../components/source-group";
 import { callMain } from "../utils/call-main";
@@ -54,6 +56,7 @@ function WorkflowsPage() {
   const loaderData = Route.useLoaderData() as MaestroConfigResult;
   const { bundledAgents, projectSkills } = loaderData;
   const router = useRouter();
+  const { refresh: refreshSkillRefs } = useSkillRefs();
 
   // Seed the store from loader data. Re-renders within a project won't clobber in-memory edits;
   // a project switch replaces the config outright — see seedWorkflowStore.
@@ -165,6 +168,8 @@ function WorkflowsPage() {
       // Safe for the canvas: seedWorkflowStore keeps the in-memory config when projectRoot is
       // unchanged, so re-running the loader cannot discard unsaved edits.
       void router.invalidate();
+      // The report reads the file we just wrote; don't wait for the watcher's poll to clear marks.
+      void refreshSkillRefs();
 
       const result = res.value;
       if (result.warnings.length > 0) {
@@ -243,6 +248,8 @@ function WorkflowsPage() {
       )}
 
       <ConfigIssueBanner key={loaderData.projectRoot} issues={loaderData.configIssues} />
+
+      <SkillRefNotice key={`skill-refs-${loaderData.projectRoot}`} />
 
       <ExternalChangeBanner
         key={loaderData.projectRoot}
@@ -329,7 +336,10 @@ function WorkflowsPage() {
 
             {/* Skills — same grouping/collapse rule as Agents above. */}
             <div>
-              <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide mb-2">Skills</div>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">Skills</span>
+                <SkillRefRecheck />
+              </div>
               <div className="flex flex-col gap-1">
                 {groupBySource(allSkills).map((group) => (
                   <CollapsibleGroup
@@ -359,11 +369,32 @@ function WorkflowsPage() {
                             className="w-3.5 h-3.5 accent-maestro-primary cursor-pointer"
                           />
                           <span className="font-mono text-[13px] text-maestro truncate">{skill.id}</span>
+                          <SkillRefMark id={skill.id} />
                         </label>
                       );
                     })}
                   </CollapsibleGroup>
                 ))}
+                {/* Ids the config lists that discovery did not find (a plugin that is gone, a typo).
+                    Shown so they can be seen and unchecked; never removed automatically. */}
+                {config.skills_available
+                  .filter((id) => !allSkills.some((s) => s.id === id))
+                  .map((id) => (
+                    <label
+                      key={id}
+                      data-testid="skill-undiscovered"
+                      className="flex items-center gap-2 py-1 px-1 rounded hover:bg-maestro-elevated cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked
+                        onChange={() => storeSetSkillsAvailable(config.skills_available.filter((s) => s !== id))}
+                        className="w-3.5 h-3.5 accent-maestro-primary cursor-pointer"
+                      />
+                      <span className="font-mono text-[13px] text-maestro truncate">{id}</span>
+                      <SkillRefMark id={id} />
+                    </label>
+                  ))}
                 {allSkills.length === 0 && <p className="text-[12px] text-maestro-muted">No skills found.</p>}
               </div>
               <button

@@ -5,6 +5,8 @@
 // Used by the edit-instance modal and the new-instance picker. The main-session skill list
 // stays a plain SkillChecklist (those are always loaded).
 
+import SkillRefMark from "./skill-ref-mark";
+
 export type SkillMode = "loaded" | "referenced";
 
 export interface SkillSelection {
@@ -15,7 +17,7 @@ export interface SkillSelection {
 export const emptySelection = (): SkillSelection => ({ loaded: [], referenced: [] });
 
 export default function InstanceSkillPicker({
-  skills,
+  skills: availableSkills,
   value,
   onChange,
   maxHeight = "max-h-48",
@@ -31,6 +33,10 @@ export default function InstanceSkillPicker({
   // instead of nothing (so the Skills section never silently disappears).
   emptyHint?: string;
 }) {
+  // An id the instance holds but the shared list no longer offers (e.g. a dangling reference) must
+  // stay visible, or the user could neither see it nor uncheck it.
+  const held = [...value.loaded, ...value.referenced];
+  const skills = [...availableSkills, ...held.filter((s) => !availableSkills.includes(s))];
   if (skills.length === 0) {
     if (!emptyHint) return null;
     return (
@@ -85,6 +91,7 @@ export default function InstanceSkillPicker({
                   className={`${box} accent-maestro-primary cursor-pointer shrink-0`}
                 />
                 <span className={`font-mono ${text} text-maestro truncate`}>{s}</span>
+                <SkillRefMark id={s} />
               </label>
               {mode && (
                 <div className="flex rounded-md overflow-hidden border border-maestro shrink-0">
