@@ -11,4 +11,5 @@
 
 export { defaultV3Config, seededAgentNames } from "../seed.js";
 export { seedMissingSkillLists, defaultSkillLists } from "../seed.js";
+export { maestroConfigRefusal, MAESTRO_CONFIG_FILE } from "../config-usable.js";
 export type { SkillMap, SkillListsSeeded } from "../seed.js";

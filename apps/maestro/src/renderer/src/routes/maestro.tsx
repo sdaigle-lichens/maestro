@@ -8,7 +8,6 @@ import {
   ArrowsClockwiseIcon,
   CheckIcon,
   DownloadSimpleIcon,
-  FolderOpenIcon,
   GitBranchIcon,
   ListChecksIcon,
   PlusIcon,
@@ -26,6 +25,7 @@ import { callMain, type CallResult } from "../utils/call-main";
 import { useProject } from "../utils/project-context";
 import { useInstall } from "../utils/install-context";
 import { useSkillRefs } from "../utils/skill-ref-context";
+import InstallReportCard from "../components/install-report-card";
 import SkillRefMark, { SkillRefNotice, SkillRefRecheck } from "../components/skill-ref-mark";
 import { getToolsData } from "../utils/tools";
 import type {
@@ -72,142 +72,6 @@ function Note({ variant, children }: { variant: "warn" | "error"; children: Reac
     <div className={`flex items-start gap-2 px-3 py-2 rounded-lg text-[12px] ${tone}`}>
       <WarningIcon size={14} className="shrink-0 mt-px" />
       <span className="text-maestro-muted">{children}</span>
-    </div>
-  );
-}
-
-/** What the install did, listed file by file — the report the plan asks the action to produce. */
-function ReportCard({ report }: { report: InstallReport }) {
-  const { orchestratorSkill: skill, scriptsWritten, hooksAdded } = report;
-  return (
-    <div className="flex flex-col gap-2 p-4 rounded-lg border border-maestro bg-maestro-elevated">
-      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">What changed on disk</div>
-      {report.unchanged ? (
-        <p className="text-[12px] text-maestro-muted m-0">
-          Nothing — this project already has the runtime the app ships.
-        </p>
-      ) : (
-        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-maestro-muted">
-          {skill.action !== "unchanged" && (
-            <li>
-              Orchestrator skill:{" "}
-              <span className="text-maestro">
-                {skill.action === "installed" && "installed"}
-                {skill.action === "synced" && `re-synced (${skill.regions.join(", ")})`}
-                {skill.action === "migrated" && "replaced — it predates Maestro's managed regions"}
-              </span>
-              {skill.backup && (
-                <>
-                  {" "}
-                  <button
-                    type="button"
-                    onClick={() => void window.maestro.shell.reveal(skill.backup!)}
-                    className="inline-flex items-center gap-1 text-maestro-primary underline cursor-pointer bg-transparent border-0 p-0 text-[12px]"
-                  >
-                    <FolderOpenIcon size={11} /> show the backup
-                  </button>
-                </>
-              )}
-            </li>
-          )}
-          {scriptsWritten.length > 0 && (
-            <li>
-              {scriptsWritten.length} runtime file{scriptsWritten.length === 1 ? "" : "s"} written:{" "}
-              {/*
-                A first install writes ~35 files, most of them handoff-protocol templates. Listing
-                every one buries the two lines that matter (the skill, the hooks) under a wall of
-                paths, so the tail is summarised instead.
-              */}
-              <span className="font-mono text-maestro-muted">
-                {scriptsWritten.slice(0, 6).join(", ")}
-                {scriptsWritten.length > 6 && ` and ${scriptsWritten.length - 6} more`}
-              </span>
-            </li>
-          )}
-          {hooksAdded.length > 0 && (
-            <li>
-              {hooksAdded.length} hook{hooksAdded.length === 1 ? "" : "s"} registered in{" "}
-              <span className="font-mono text-maestro">.claude/settings.json</span>:{" "}
-              <span className="font-mono text-maestro-muted">{hooksAdded.join(", ")}</span>
-            </li>
-          )}
-          {report.gitignoreUpdated && <li>Session files added to the repo&rsquo;s .gitignore.</li>}
-          {report.reportsSync.materialized.length > 0 && (
-            <li>
-              Report{report.reportsSync.materialized.length === 1 ? "" : "s"} materialized from the global default:{" "}
-              <span className="font-mono text-maestro-muted">{report.reportsSync.materialized.join(", ")}</span>
-            </li>
-          )}
-          {report.reportsSync.refreshed.length > 0 && (
-            <li>
-              Report{report.reportsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global default:{" "}
-              <span className="font-mono text-maestro-muted">{report.reportsSync.refreshed.join(", ")}</span>
-            </li>
-          )}
-          {report.reportsSync.staleCustomized.length > 0 && (
-            <li>
-              Stale but customized — left alone since you edited{" "}
-              {report.reportsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
-              <span className="font-mono text-maestro-muted">{report.reportsSync.staleCustomized.join(", ")}</span>
-            </li>
-          )}
-          {/*
-            The same three lines one tier over (`033`/`034`). Entries are `"<sender>/<receiver>"`
-            handoff ids rather than agent names, and a wired route with no template at any tier
-            appears in NO bucket — nothing was written, so there is nothing to report.
-          */}
-          {report.handoffsSync.materialized.length > 0 && (
-            <li>
-              Handoff protocol{report.handoffsSync.materialized.length === 1 ? "" : "s"} materialized from the global
-              default:{" "}
-              <span className="font-mono text-maestro-muted">{report.handoffsSync.materialized.join(", ")}</span>
-            </li>
-          )}
-          {report.handoffsSync.refreshed.length > 0 && (
-            <li>
-              Handoff protocol{report.handoffsSync.refreshed.length === 1 ? "" : "s"} refreshed from a newer global
-              default: <span className="font-mono text-maestro-muted">{report.handoffsSync.refreshed.join(", ")}</span>
-            </li>
-          )}
-          {report.handoffsSync.staleCustomized.length > 0 && (
-            <li>
-              Handoff protocol{report.handoffsSync.staleCustomized.length === 1 ? "" : "s"} stale but customized — left
-              alone since you edited {report.handoffsSync.staleCustomized.length === 1 ? "it" : "them"}:{" "}
-              <span className="font-mono text-maestro-muted">{report.handoffsSync.staleCustomized.join(", ")}</span>
-            </li>
-          )}
-          {report.skillListsSeeded && (
-            <li>
-              Skill lists seeded with the defaults:{" "}
-              <span className="font-mono text-maestro-muted">
-                {[
-                  report.skillListsSeeded.start_skills && "start_skills",
-                  report.skillListsSeeded.end_skills && "end_skills",
-                ]
-                  .filter(Boolean)
-                  .join(", ") || "none"}
-              </span>
-              {report.skillListsSeeded.gatesRemoved && " (a leftover gates key was removed)"}. Change them in the skill
-              lists card on this page.
-            </li>
-          )}
-        </ul>
-      )}
-      {/*
-        Duplicate-agent-type collisions (`041`) — never auto-repaired, so this is a report, not a
-        change, and it must render even when nothing else did (`report.unchanged`): the runtime can
-        be current while a hand-edited config still carries the collision. Kept out of the `ul`
-        above and its `unchanged` gate for that reason.
-      */}
-      {report.configIssues.length > 0 && (
-        <ul className="list-none p-0 m-0 flex flex-col gap-1 text-[12px]">
-          {report.configIssues.map((issue, i) => (
-            <li key={i} className="text-amber-500">
-              {issue.detail}
-            </li>
-          ))}
-        </ul>
-      )}
     </div>
   );
 }
@@ -398,7 +262,7 @@ function PurgeDialog({
 /**
  * The post-install Project Tags section — only shown once `status.installed` is true (the
  * grilling answer this page follows: tags are shown/editable here only after install, never
- * before). Mirrors `ReportCard`/`RemovalCard`'s styling.
+ * before). Mirrors `InstallReportCard`/`RemovalCard`'s styling.
  */
 function ProjectTagsCard({ viewedRoot }: { viewedRoot: string }) {
   const [data, setData] = useState<ProjectTagsData | null>(null);
@@ -1153,6 +1017,9 @@ function InstallPage() {
       }
       setStatus(res.value.status);
       setOutcome({ kind: "install", report: res.value });
+      // A refused install wrote nothing; the card explains why, so skip the tags offer and the
+      // "installed and up to date" toast below.
+      if (res.value.configRefusal) return;
       // `058`: only on a first install that actually seeded a config, and only the categories the
       // catalog never held — `configSeeded` is null on every re-install, so this never re-offers.
       const uncataloged = res.value.configSeeded?.uncatalogedProjectTags ?? [];
@@ -1316,7 +1183,7 @@ function InstallPage() {
             )}
           </div>
 
-          {outcome?.kind === "install" && <ReportCard report={outcome.report} />}
+          {outcome?.kind === "install" && <InstallReportCard report={outcome.report} />}
           {outcome?.kind === "uninstall" && <RemovalCard report={outcome.report} />}
 
           {/*

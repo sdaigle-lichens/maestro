@@ -892,6 +892,15 @@ export interface InstallReport {
    * the canvas itself produced.
    */
   configIssues: ConfigIssue[];
+  /**
+   * Set when the install REFUSED (`096`) because the project's existing `.claude/maestro.json` is
+   * unusable: `kind` is `"unparseable"` (`problem` is the parser's message, which carries the
+   * position) or `"unsupported-version"` (`problem` names the version found). `file` is the
+   * project-relative path and `message` a complete sentence naming file, problem and remedy. When
+   * set, nothing was written: every other field is empty/false, `unchanged` is false, and `status`
+   * is the untouched project's. `null` on every install that ran.
+   */
+  configRefusal: { kind: "unparseable" | "unsupported-version"; file: string; problem: string; message: string } | null;
 }
 
 /**

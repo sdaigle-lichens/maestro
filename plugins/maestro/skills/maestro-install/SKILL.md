@@ -138,7 +138,9 @@ $ARGUMENTS
    - into an **existing** config, fills in only what is missing: a config without `start_skills` gets the fresh-seed defaults (`to_maestro_tasks`: `confidence-check` plus the design check when the project can invoke it), one without `end_skills` gets the empty default, and a leftover `gates` key is removed. A list that is already there — even an empty one — is never touched;
    - stamps `runtimeVersion` with the plugin's current version — the one other field it writes into an already-existing config.
 
-   It prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 5.
+   If the project's `.claude/maestro.json` is not valid JSON or not version 3, the script exits 1 with `{"ok": false, "refused": "config", "reason": ...}` and has written **nothing**. Relay `reason` to the user verbatim (they fix the file by hand or move it aside) and stop; do not retry or delete the file.
+
+   On success it prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 5.
 
    `orchestratorSkill.action` says what happened to `SKILL.md`: `installed` (copied whole), `synced` (managed regions refreshed; `.regions` lists which), `unchanged`, or `migrated` — the installed skill predated the region markers, so it was backed up to `SKILL.md.bak` (path in `.backup`) and replaced. On `migrated`, **tell the user** and offer to re-apply any custom prose from the `.bak` file *outside* the managed regions before deleting it.
 

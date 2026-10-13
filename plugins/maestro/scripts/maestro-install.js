@@ -78,7 +78,12 @@ const path = require("path");
 const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
-const { defaultV3Config, seededAgentNames, seedMissingSkillLists } = require("./lib/maestro-seed.cjs");
+const {
+  defaultV3Config,
+  seededAgentNames,
+  seedMissingSkillLists,
+  maestroConfigRefusal,
+} = require("./lib/maestro-seed.cjs");
 const { seedSkillsFor } = require("./lib/maestro-skill-availability.cjs");
 const { walkProjectSkillIds, compareRuntimeVersions } = require("./lib/maestro-session.cjs");
 
@@ -446,7 +451,11 @@ function syncProjectReports(configPath, projectDir) {
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
     const localHash = onDisk === null ? null : sha256(onDisk);
 
-    const tracking = entry ? (entry.syncedFrom ? { kind: "tracked", hash: entry.syncedFrom.hash } : { kind: "detached" }) : { kind: "untracked" };
+    const tracking = entry
+      ? entry.syncedFrom
+        ? { kind: "tracked", hash: entry.syncedFrom.hash }
+        : { kind: "detached" }
+      : { kind: "untracked" };
 
     // Known versions of this agent's report: the CURRENT global content, plus every body this
     // agent has ever been seeded with. Mirrors report-sync.ts's own known-hash set exactly.
@@ -634,6 +643,35 @@ function main() {
   if (refusal && !flags["allow-downgrade"]) {
     process.stdout.write(JSON.stringify(refusal) + "\n");
     process.stderr.write(`maestro-install: ${refusal.reason}\n`);
+    process.exit(1);
+  }
+
+  // `096`: an existing maestro.json that is unparseable or not version 3 is the user's authored
+  // graph. Refuse before the first write — same definition (maestroConfigRefusal) and wording as
+  // the app's installRuntime(), and never an unhandled exception.
+  let existingConfigText = null;
+  try {
+    existingConfigText = fs.readFileSync(path.join(projectDir, ".claude", "maestro.json"), "utf8");
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      process.stderr.write(`maestro-install: cannot read .claude/maestro.json: ${err.message}\n`);
+      process.stdout.write(JSON.stringify({ ok: false, refused: "config", reason: err.message }) + "\n");
+      process.exit(1);
+    }
+  }
+  const configRefusal = existingConfigText === null ? null : maestroConfigRefusal(existingConfigText);
+  if (configRefusal) {
+    process.stdout.write(
+      JSON.stringify({
+        ok: false,
+        refused: "config",
+        kind: configRefusal.kind,
+        file: configRefusal.file,
+        problem: configRefusal.problem,
+        reason: configRefusal.message,
+      }) + "\n"
+    );
+    process.stderr.write(`maestro-install: ${configRefusal.message}\n`);
     process.exit(1);
   }
 
