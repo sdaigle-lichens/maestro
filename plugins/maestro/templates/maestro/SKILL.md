@@ -34,6 +34,8 @@ node .claude/scripts/maestro-set-session-workflow.cjs "<workflow name>" [--task 
 
    Then run `node .claude/scripts/maestro-task-status.cjs worktree "<NNN-filename.md>"` and follow what it prints. If it created a worktree, put its absolute path in every Step 3 dispatch prompt ("work only in `<path>`; never edit the main checkout"). `.claude/maestro-tasks/` and `.claude/channels/` stay in the main checkout. Never merge, push or remove a worktree on your own initiative.
 
+   **A freeform request (no task file) goes through the same check:** after recording the workflow, run `node .claude/scripts/maestro-task-status.cjs freeform-check` and follow what it prints. If it names another active session, tell the user and work in the main checkout only if they agree; never edit it silently alongside that session.
+
    **While a worktree is active, your working directory is the worktree.** Any command you hand the user (`!`, `git`, `rm`, `node`) must use absolute paths or an explicit `cd` and name the checkout it targets. A relative `rm apps/...` runs in the worktree and deletes the committed copies there.
 
 <!-- Maestro:HANDOFFS:START -->

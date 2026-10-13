@@ -266,7 +266,8 @@ function liveForeignClaim(sessionId, now) {
   try {
     files = fs.readdirSync(claimsDir()).filter((f) => f.endsWith(".json"));
   } catch {
-    return null;
+    // No claims/ yet (nothing claimed): a freeform session can still be live.
+    return liveFreeformSession(sessionId, now);
   }
   for (const f of files) {
     const claim = readClaimFile(path.join(claimsDir(), f));
@@ -274,7 +275,51 @@ function liveForeignClaim(sessionId, now) {
       return { file: f.slice(0, -".json".length), sessionId: claim.session_id };
     }
   }
+  return liveFreeformSession(sessionId, now);
+}
+
+// `098`: a freeform /maestro run claims nothing, so its presence is its own session.json: a recorded
+// `workflow` and no `active_task` (a task session records `active_task` in the same call and is
+// found through its claim instead). It reads live by the same rule as a claim — SessionEnd removes
+// the session directory, and an idle log ages it out — and it writes nothing to claims/ or
+// status.json, so it can never show up as a task. Returns { file: null, sessionId } or null.
+function liveFreeformSession(sessionId, now) {
+  const claudeDir = path.join(projectDir, ".claude");
+  let ids;
+  try {
+    ids = fs.readdirSync(path.join(claudeDir, "maestro_sessions"));
+  } catch {
+    return null;
+  }
+  for (const id of ids) {
+    if (id === sessionId) continue;
+    const paths = sessionPathsFor(claudeDir, id);
+    if (!paths || !isSessionLive(id, now)) continue;
+    try {
+      const state = JSON.parse(fs.readFileSync(paths.state, "utf8"));
+      if (state && typeof state.workflow === "string" && !state.active_task) return { file: null, sessionId: id };
+    } catch {
+      // No readable state: not a session that recorded a workflow.
+    }
+  }
   return null;
+}
+
+// `freeform-check`: the worktree decision for a run with no task file. There is no task number to
+// name a worktree after, so it can only name the active session; working in the main checkout then
+// needs the user's agreement.
+function freeformCheck(sessionId) {
+  const foreign = liveForeignClaim(sessionId, Date.now());
+  if (!foreign) {
+    process.stdout.write(
+      "Maestro tasks: no other live session is working — no worktree needed, work in the main checkout\n"
+    );
+    return;
+  }
+  const what = foreign.file ? `working on "${foreign.file}"` : "running a freeform /maestro workflow";
+  process.stdout.write(
+    `Maestro tasks: another session (${foreign.sessionId}) is active, ${what}. A freeform run has no task number, so no worktree can be named — tell the user and work in the main checkout only if they agree\n`
+  );
 }
 
 function git(cwd, args) {
@@ -314,7 +359,7 @@ function setupWorktree(filename, sessionId) {
   const foreign = liveForeignClaim(sessionId, Date.now());
   if (!foreign) {
     process.stdout.write(
-      "Maestro tasks: no other live session holds a claim — no worktree needed, work in the main checkout\n"
+      "Maestro tasks: no other live session is working — no worktree needed, work in the main checkout\n"
     );
     return;
   }
@@ -894,6 +939,16 @@ try {
     process.stdout.write(
       `Maestro tasks: "${filename}" is already claimed by an active session (${holder}, since ${result.claim.claimedAt}) — take the next ready task instead\n`
     );
+    process.exit(0);
+  }
+
+  if (command === "freeform-check") {
+    const sessionId = ownSessionId();
+    if (!sessionId) {
+      process.stderr.write("maestro-task-status: no resolvable session id — cannot check for other sessions\n");
+      process.exit(1);
+    }
+    freeformCheck(sessionId);
     process.exit(0);
   }
 

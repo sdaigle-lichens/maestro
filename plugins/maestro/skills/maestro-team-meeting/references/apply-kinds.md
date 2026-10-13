@@ -5,7 +5,7 @@
 | `workflow.create` / `workflow.update` | `create-workflow` / `update-workflow` skill |
 | `workflow.delete` | `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-workflow-spec.cjs" delete --name "<wf>" "${CLAUDE_PROJECT_DIR:-.}"`. Kept instances are listed as `unplacedInstances`. |
 | `skill.create` | `create-skill` skill |
-| `skill.edit` | edit the SKILL.md, then run `cleanup-skill` if it grew |
+| `skill.edit` | edit the SKILL.md; if it grew, run `cleanup-skill` when that skill is in the session's skill list, otherwise do a short inline pass: drop repeated ideas and restated prose, keep every trap and invariant |
 | `skill.delete` | delete the skill directory and remove the id from `skills_available` and from every instance's skill lists |
 | `skill.placement` | move the id between `loaded_skills` and `referenced_skills` of that `workflow_instances` entry |
 | `agent.create` | `create-subagent` skill |

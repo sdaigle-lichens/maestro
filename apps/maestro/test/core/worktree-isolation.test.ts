@@ -378,6 +378,138 @@ describe("maestro-task-status.cjs worktree (074)", () => {
   });
 });
 
+// `098`: a freeform /maestro run (a workflow recorded, no active_task, no claim) is visible to the
+// same live-session check a task session uses, and never becomes a task.
+function makeFreeformSession(root: string, id: string) {
+  makeLiveSession(root, id);
+  fs.writeFileSync(path.join(sessionDir(root, id), "session.json"), JSON.stringify({ workflow: "feature" }));
+}
+
+describe("freeform /maestro session presence (098)", () => {
+  it("freeform first: a task session's `worktree` gets a worktree, not 'no worktree needed'", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeLiveSession(root, SESSION_B);
+    expect(cli(root, ["claim", "001-a.md"], SESSION_B).stdout).toContain("claimed");
+
+    const run = cli(root, ["worktree", "001-a.md"], SESSION_B);
+
+    const wt = wtPathFor(root, "001");
+    expect(run.code).toBe(0);
+    expect(run.stdout).not.toContain("no worktree needed");
+    expect(run.stdout).toContain(wt);
+    expect(git(wt, "rev-parse", "--abbrev-ref", "HEAD")).toBe("task-001");
+  });
+
+  it("task first: `freeform-check` names the active session and asks for the user's agreement", async () => {
+    const root = await installed();
+    makeLiveSession(root, SESSION_A);
+    expect(cli(root, ["claim", "001-a.md"], SESSION_A).stdout).toContain("claimed");
+    makeFreeformSession(root, SESSION_B);
+
+    const run = cli(root, ["freeform-check"], SESSION_B);
+
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain(SESSION_A);
+    expect(run.stdout).toContain("001-a.md");
+    expect(run.stdout).toContain("only if they agree");
+    expect(run.stdout).not.toContain("no worktree needed");
+    expect(fs.existsSync(wtPathFor(root, "001"))).toBe(false);
+  });
+
+  it("two freeform sessions see each other, and a lone one is told no worktree is needed", async () => {
+    const root = await installed();
+    fs.mkdirSync(path.join(tasksDir(root), "claims"), { recursive: true });
+    makeFreeformSession(root, SESSION_A);
+    expect(cli(root, ["freeform-check"], SESSION_A).stdout).toContain("no worktree needed");
+    makeFreeformSession(root, SESSION_B);
+
+    const run = cli(root, ["freeform-check"], SESSION_B);
+
+    expect(run.stdout).toContain(SESSION_A);
+    expect(run.stdout).toContain("freeform");
+    expect(run.stdout).toContain("only if they agree");
+  });
+
+  // liveForeignClaim must still reach liveFreeformSession when claims/ does not exist yet.
+  it("two freeform sessions see each other even before any task was ever claimed (no claims/ dir)", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeFreeformSession(root, SESSION_B);
+    expect(fs.existsSync(path.join(tasksDir(root), "claims"))).toBe(false);
+
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain(SESSION_A);
+  });
+
+  it("freeform-check with no other session says no worktree needed", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    const run = cli(root, ["freeform-check"], SESSION_A);
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain("no worktree needed");
+  });
+
+  it("a session that records a workflow AND an active_task is not a freeform session", async () => {
+    const root = await installed();
+    fs.mkdirSync(path.join(tasksDir(root), "claims"), { recursive: true });
+    makeLiveSession(root, SESSION_A);
+    fs.writeFileSync(
+      path.join(sessionDir(root, SESSION_A), "session.json"),
+      JSON.stringify({ workflow: "feature", active_task: "001-a.md" })
+    );
+    makeLiveSession(root, SESSION_B);
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain("no worktree needed");
+  });
+
+  it("stale presence is ignored: an idle log (20 min) or a removed session dir", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeLiveSession(root, SESSION_B);
+    const stale = new Date(Date.now() - 20 * 60 * 1000);
+    fs.utimesSync(path.join(sessionDir(root, SESSION_A), "log.jsonl"), stale, stale);
+
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain("no worktree needed");
+    cli(root, ["claim", "001-a.md"], SESSION_B);
+    expect(cli(root, ["worktree", "001-a.md"], SESSION_B).stdout).toContain("no worktree needed");
+    expect(fs.existsSync(wtPathFor(root, "001"))).toBe(false);
+
+    // Session end removes the directory: presence clears.
+    makeFreeformSession(root, SESSION_C);
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain(SESSION_C);
+    fs.rmSync(sessionDir(root, SESSION_C), { recursive: true, force: true });
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain("no worktree needed");
+  });
+
+  it("never appears in claims/, status.json, or maestro-epic show", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeLiveSession(root, SESSION_B);
+    cli(root, ["sync"], SESSION_B);
+    cli(root, ["claim", "001-a.md"], SESSION_B);
+    cli(root, ["worktree", "001-a.md"], SESSION_B);
+    cli(root, ["freeform-check"], SESSION_A);
+
+    const claims = fs.readdirSync(path.join(tasksDir(root), "claims")).filter((f) => f !== ".gitignore");
+    expect(claims).toEqual(["001-a.md.json"]);
+    const claimBody = fs.readFileSync(claimPath(root, "001-a.md"), "utf8");
+    expect(claimBody).toContain(SESSION_B);
+    expect(claimBody).not.toContain(SESSION_A);
+    const statusText = fs.readFileSync(path.join(tasksDir(root), "status.json"), "utf8");
+    expect(statusText).not.toContain(SESSION_A);
+    expect(Object.keys(JSON.parse(statusText)).every((k) => /^\d{3}-/.test(k))).toBe(true);
+
+    const epicScript = path.join(root, ".claude", "scripts", "maestro-epic.cjs");
+    const epic = (...args: string[]) =>
+      spawnSync("node", [epicScript, ...args], { encoding: "utf8", env: hookEnv(root, SESSION_B) });
+    expect(epic("create", "demo").status).toBe(0);
+    expect(epic("link", "demo", "001-a.md").status).toBe(0);
+    const show = epic("show", "demo", "--json");
+    expect(show.status).toBe(0);
+    expect(show.stdout).not.toContain(SESSION_A);
+    expect(show.stdout).toContain("001-a.md");
+  });
+});
+
 describe("agent context injection in a worktree session (074)", () => {
   it("tells subagents the worktree path and branch; a non-worktree session gets no such block", async () => {
     const root = await twoSessions();

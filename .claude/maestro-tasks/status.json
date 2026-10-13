@@ -451,7 +451,7 @@
     "epic": "concept-skills-plugin"
   },
   "093-make-the-electron-sandbox-setup-survive-reboots-and-reinstalls.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
   },
@@ -473,6 +473,23 @@
   "097-prettier-check-the-plugins-hand-written-code-in-pnpm-verify.md": {
     "status": "done",
     "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "099-move-cleanup-skill-into-the-concept-skills-plugin-and-make-the-team-meeting-s-use-of-it-optional.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "100-make-the-epic-report-a-step-a-maestro-session-cannot-skip.md": {
+    "status": "ready",
+    "blockedBy": [
+      "098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md"
+    ],
     "epic": "concept-skills-plugin"
   }
 }
