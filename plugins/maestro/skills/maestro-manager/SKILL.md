@@ -53,7 +53,7 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
    - **Tickets.** Rewire, re-block or add them with `to-maestro-tasks`, passing `--epic <slug>` so new
      tasks join the epic; `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" link <slug> <task.md>...` / `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" unlink <task.md>...` for existing
      ones. To re-block, edit the task file's `## Blocked by`, then run
-     `node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-task-status.cjs" sync` (it keeps `epic`).
+     `node .claude/scripts/maestro-task-status.cjs sync` (it keeps `epic`).
    - **Post-mortem notes.** The worker sent the user here for them: offer `/maestro-post-mortem`
      once, naming the report, and group reports that share a cause.
    - **A finding about several agents** (a skill gap, a bad handoff, a wrong tool): suggest a

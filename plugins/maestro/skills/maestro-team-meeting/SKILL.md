@@ -51,7 +51,7 @@ Every `maestro-team-meeting.cjs` command prints one line of JSON.
 3. **Round 1: all participants in parallel**, in a single message.
    - **Review mode:** spawn each participant with the `Agent` tool, using its agent type. Plugin agents are namespaced, e.g. `maestro:backend`.
    - **Post-mortem mode:** resume each agent that ran, so it keeps its memory of the run:
-     - get its id with `node "${CLAUDE_PROJECT_DIR:-.}/.claude/scripts/maestro-resume-target.cjs" "<agent type>"`, then `SendMessage` it;
+     - get its id with `node .claude/scripts/maestro-resume-target.cjs "<agent type>"`, then `SendMessage` it;
      - spawn the agent fresh when that prints nothing.
    - Prompt: [references/participant-brief.md](references/participant-brief.md), round 1.
    - Keep each agent's id for round 2.
