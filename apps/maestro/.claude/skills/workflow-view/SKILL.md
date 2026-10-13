@@ -184,7 +184,7 @@ A config can name a skill that no longer resolves (plugin not installed / not en
 
 - **The skill-ref report reflects the saved file, not the canvas.** Unsaved edits are not in it; a mark clears only after a save (or an outside fix) and the next refresh.
 - **Renderer component tests are `.ts`, not `.tsx`.** vitest only includes `test/**/*.test.ts`, so `test/renderer/skill-ref-mark.test.ts` builds elements with `createElement`.
-- **The running-window check for `091` is verified:** a CDP probe against the launched app passed 11/11 checks. It needs the `chrome-sandbox` setuid bit (see `test-maestro`'s electron-sandbox-setup reference).
+- **The running-window check for `091` is verified:** a CDP probe against the launched app passed 11/11 checks. It needs the Electron sandbox set up (an AppArmor profile or the `chrome-sandbox` setuid bit; see `test-maestro`'s electron-sandbox-setup reference).
 - **`main-session` lives in edges but not nodes.** Code that consumes `workflows[].edges` must treat `"main-session"` as a valid `from` that has no matching entry in `nodes[]`. Filtering edges by "node exists" will silently drop the entry edge.
 - **Skills live on the instance, not the node.** A node only stores `instance` (+ id + position); the agent and skills come from the `workflow_instances` entry. Editing an instance updates every node that references it across all workflows.
 - **`success_path` is derived — never write it to `maestro.json`.** Persisting it would duplicate state that can drift from the edges.

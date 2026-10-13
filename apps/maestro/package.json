@@ -5,7 +5,8 @@
   "type": "module",
   "main": "./out/main/index.js",
   "scripts": {
-    "dev": "electron-vite dev",
+    "check:sandbox": "node scripts/check-electron-sandbox.mjs",
+    "dev": "node scripts/check-electron-sandbox.mjs && electron-vite dev",
     "build": "electron-vite build",
     "start": "electron-vite preview",
     "typecheck": "tsc --noEmit -p tsconfig.node.json && tsc --noEmit -p tsconfig.web.json",

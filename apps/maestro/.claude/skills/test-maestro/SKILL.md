@@ -36,8 +36,9 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
    `file://` path that ships**. Bugs in asset resolution, CSP, and code-splitting appear only in
    the packaged load. Always launch `electron .` against `out/`, never `pnpm dev`.
 
-2. **The Electron sandbox needs its setuid bit.** Never work around a sandbox failure with
-   `--no-sandbox`. For the once-per-install fix, and why the flag is off limits, see
+2. **The Electron sandbox needs an AppArmor profile or the setuid bit.** Never work around a
+   sandbox failure with `--no-sandbox`. `dev` runs a preflight that prints the one-time root
+   command; for the cause, the fix, and why the flag is off limits, see
    `references/electron-sandbox-setup.md`.
 
 ## Quick start

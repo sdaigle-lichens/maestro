@@ -38,7 +38,13 @@ on Linux with:
 
 > The SUID sandbox helper binary was found, but is not configured correctly.
 
-Fix the store copy once after any install that re-extracts Electron (both
+`dev` now checks this first and prints the exact one-time command. The permanent fix is an
+AppArmor profile covering every `electron@*` store dir (survives reinstalls): run
+`node apps/maestro/scripts/check-electron-sandbox.mjs` and paste the `sudo install … && sudo
+apparmor_parser -r …` line it prints. See
+`apps/maestro/.claude/skills/test-maestro/references/electron-sandbox-setup.md`.
+
+The fallback is to fix the store copy after every install that re-resolves Electron (both
 `node_modules/electron` and `apps/maestro/node_modules/electron` symlink into it):
 
 ```bash
