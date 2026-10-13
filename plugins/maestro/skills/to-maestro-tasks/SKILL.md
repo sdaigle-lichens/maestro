@@ -99,6 +99,13 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-write-tasks.cjs" <path-to-json>
 
 Tell the user what was written — a single file, or the count and numeric range (e.g. `003–007`) — and that each is ready to paste into (or run from) a session where the `/maestro` skill is invoked.
 
+When the tasks were written with `--epic <slug>`, end the report with a suggestion (never start sessions or the manager yourself):
+
+- Keep **this** session open and invoke the `maestro-manager` skill for the epic, so it coordinates worker reports and rewires tickets.
+- Open a separate Claude session for each task of the epic that is `ready` right now (no unfinished blocker, per `.claude/maestro-tasks/status.json`) and run `/maestro` on its task file in each, so they run in parallel. Tasks still blocked wait.
+
+With no epic, add no suggestion.
+
 ## Notes
 
 - These files are designed to be classified by the Maestro orchestrator (`.claude/skills/maestro/SKILL.md`). Keeping each prompt workflow-agnostic is what lets the orchestrator pick the right workflow per task and stay correct as `maestro.json` evolves.

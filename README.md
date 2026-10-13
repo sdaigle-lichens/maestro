@@ -46,6 +46,13 @@ Then run `/maestro-install` inside the project you want Maestro to orchestrate.
 See [`docs/marketplace.md`](./docs/marketplace.md) for updating, removing, installing from a local
 checkout, auto-registering the marketplace for a team, and publishing a change to the plugin.
 
+## Suggested flow
+
+1. `/to-maestro-tasks` creates the epic's task files.
+2. Keep that planning session open and invoke `maestro-manager`; it coordinates the epic.
+3. Open one Claude session per ready task and run `/maestro` on its task file, in parallel.
+   Workers report back to the manager, which rewires tickets and unblocks the rest.
+
 ## Running the desktop app
 
 ```bash
