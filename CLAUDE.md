@@ -24,4 +24,5 @@ which `.claude/skills/` a piece of developer documentation belongs in.
 
 Lint: `pnpm lint` runs each package's own `eslint.config.js` (presets from `@repo/eslint-config`:
 `react`, `node`, `cjs`) via turbo, then the root `eslint.config.mjs`, which covers only the plugin's
-hand-written `plugins/maestro/scripts/*`. `pnpm verify` runs lint first, then check/typecheck/test.
+hand-written `plugins/maestro/scripts/*`. `pnpm verify` runs lint first, then check/typecheck/test. The root `check` (and `format`) also runs
+Prettier over `plugins/`'s hand-written code, but not its markdown or `scripts/lib/` bundles.

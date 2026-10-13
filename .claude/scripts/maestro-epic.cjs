@@ -84,7 +84,9 @@ try {
     case "create": {
       const slug = need(positional[0], "create <slug> [--goal <text>] [--manager <name>]");
       const { dir } = epics.createEpic(projectDir, slug, { goal: flags.goal, manager: flags.manager });
-      process.stdout.write(`Maestro epic: created "${slug}" at ${dir}\n  edit ${path.join(dir, "EPIC.md")} for the goal, scope and decisions\n`);
+      process.stdout.write(
+        `Maestro epic: created "${slug}" at ${dir}\n  edit ${path.join(dir, "EPIC.md")} for the goal, scope and decisions\n`
+      );
       break;
     }
     case "list": {
@@ -120,17 +122,30 @@ try {
       break;
     }
     case "set-manager": {
-      epics.setManager(projectDir, need(positional[0], "set-manager <slug> <name>"), need(positional[1], "set-manager <slug> <name>"));
+      epics.setManager(
+        projectDir,
+        need(positional[0], "set-manager <slug> <name>"),
+        need(positional[1], "set-manager <slug> <name>")
+      );
       process.stdout.write(`Maestro epic: manager of "${positional[0]}" is now "${positional[1]}"\n`);
       break;
     }
     case "add-worker": {
-      epics.addWorker(projectDir, need(positional[0], "add-worker <slug> <name>"), need(positional[1], "add-worker <slug> <name>"), flags.task);
+      epics.addWorker(
+        projectDir,
+        need(positional[0], "add-worker <slug> <name>"),
+        need(positional[1], "add-worker <slug> <name>"),
+        flags.task
+      );
       process.stdout.write(`Maestro epic: recorded worker "${positional[1]}" on "${positional[0]}"\n`);
       break;
     }
     case "remove-worker": {
-      epics.removeWorker(projectDir, need(positional[0], "remove-worker <slug> <name>"), need(positional[1], "remove-worker <slug> <name>"));
+      epics.removeWorker(
+        projectDir,
+        need(positional[0], "remove-worker <slug> <name>"),
+        need(positional[1], "remove-worker <slug> <name>")
+      );
       process.stdout.write(`Maestro epic: removed worker "${positional[1]}" from "${positional[0]}"\n`);
       break;
     }
@@ -185,7 +200,9 @@ try {
       need(ids[0], "ack <slug> <id>... [--by <name>]");
       for (const id of ids) {
         const outcome = epics.acknowledgeReport(projectDir, slug, id, flags.by);
-        process.stdout.write(`Maestro epic: ${outcome === "already" ? `${id} was already acknowledged` : `acknowledged ${id}`}\n`);
+        process.stdout.write(
+          `Maestro epic: ${outcome === "already" ? `${id} was already acknowledged` : `acknowledged ${id}`}\n`
+        );
       }
       break;
     }

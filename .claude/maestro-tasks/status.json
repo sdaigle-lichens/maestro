@@ -446,7 +446,7 @@
     "epic": "concept-skills-plugin"
   },
   "092-seed-start-and-end-skills-when-re-installing-maestro-into-an-existing-project.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
   },
@@ -456,12 +456,22 @@
     "epic": "concept-skills-plugin"
   },
   "094-call-project-scripts-by-relative-path-in-the-orchestrator-s-own-commands.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
   },
   "095-mark-collapsed-plugin-groups-that-hide-a-dangling-skill-reference.md": {
-    "status": "ready",
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "096-never-overwrite-or-crash-on-a-corrupt-or-unsupported-maestro-json-during-install.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "097-prettier-check-the-plugins-hand-written-code-in-pnpm-verify.md": {
+    "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
   }

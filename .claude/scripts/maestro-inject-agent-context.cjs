@@ -161,11 +161,11 @@ function collect(cfg, sessionPath, agentType) {
 
   // loaded = auto-load before working; referenced = available, load only if the
   // task needs it. collectAgentSkills owns the node-walk + dedup (loaded wins).
-  const { loaded: loadedList, referenced: referencedList, matchedInstances } = collectAgentSkills(
-    searchList,
-    instances,
-    agentType
-  );
+  const {
+    loaded: loadedList,
+    referenced: referencedList,
+    matchedInstances,
+  } = collectAgentSkills(searchList, instances, agentType);
 
   // The route walk USED TO LIVE HERE, inline. It is `handoffRoutes()` in
   // apps/maestro/src/core/handoff-routes.ts now, reached through the generated lib, because the
@@ -306,9 +306,7 @@ function collectReportContext(cfg, projectDir, agentType) {
   // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
   // `dispatch`, never session.json) is the right, race-proof signal. No session directory ⇒ no
   // lines ⇒ not a resume ⇒ full injection.
-  const isResume = payload.agent_id
-    ? hasCompletedRun(readLogLines(sess ? sess.log : null), payload.agent_id)
-    : false;
+  const isResume = payload.agent_id ? hasCompletedRun(readLogLines(sess ? sess.log : null), payload.agent_id) : false;
 
   if (result) {
     if (result.warning) {

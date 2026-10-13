@@ -35,9 +35,7 @@ function endLine(projectDir) {
   const list = resolveSkillLists(config).maestroEnd;
   if (list.length === 0) return NONE;
   return (
-    "End skills — run these now, in order, with the Skill tool: " +
-    list.map((id) => "/" + id).join(", then ") +
-    "."
+    "End skills — run these now, in order, with the Skill tool: " + list.map((id) => "/" + id).join(", then ") + "."
   );
 }
 

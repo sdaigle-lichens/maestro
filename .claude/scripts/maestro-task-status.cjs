@@ -313,7 +313,9 @@ function setupWorktree(filename, sessionId) {
   }
   const foreign = liveForeignClaim(sessionId, Date.now());
   if (!foreign) {
-    process.stdout.write("Maestro tasks: no other live session holds a claim — no worktree needed, work in the main checkout\n");
+    process.stdout.write(
+      "Maestro tasks: no other live session holds a claim — no worktree needed, work in the main checkout\n"
+    );
     return;
   }
   const branch = worktreeBranchFor(filename);
@@ -327,7 +329,9 @@ function setupWorktree(filename, sessionId) {
   const pathTaken = fs.existsSync(wtPath);
   const branchTaken = branchExists(branch);
   if (pathTaken || branchTaken) {
-    const what = [pathTaken ? `path ${wtPath}` : null, branchTaken ? `branch ${branch}` : null].filter(Boolean).join(" and ");
+    const what = [pathTaken ? `path ${wtPath}` : null, branchTaken ? `branch ${branch}` : null]
+      .filter(Boolean)
+      .join(" and ");
     process.stdout.write(
       `Maestro tasks: another session (${foreign.sessionId}) is active, so "${filename}" should run in its own worktree, but ${what} already exists. ` +
         "It was NOT reused or overwritten. Tell the user, and ask them to merge/remove the old worktree or branch (or choose another task) before continuing. Do not start the task in the main checkout.\n"
@@ -338,7 +342,10 @@ function setupWorktree(filename, sessionId) {
   try {
     git(projectDir, ["worktree", "add", "-b", branch, wtPath]);
   } catch (err) {
-    const detail = String(err.stderr || err.message || "").trim().split("\n").pop();
+    const detail = String(err.stderr || err.message || "")
+      .trim()
+      .split("\n")
+      .pop();
     process.stdout.write(
       `Maestro tasks: could not create worktree ${wtPath} on branch ${branch} (${detail}). Tell the user; do not start the task in the main checkout while another session is active.\n`
     );
@@ -497,7 +504,8 @@ function collidingUntracked(branch) {
 // the orchestrator runs can die mid-checkout. Recognisable output, and the exact command for the user.
 // Matches git's own "unable to unlink old '<path>': Operation not permitted" family, not any stray
 // "Operation not permitted" (a sandboxed git also prints one about its xcrun cache on a plain conflict).
-const SANDBOX_DENIAL = /unable to (?:unlink|create file|write|remove|create directory)[^\n]*(?:Operation not permitted|Permission denied|Read-only file system)/i;
+const SANDBOX_DENIAL =
+  /unable to (?:unlink|create file|write|remove|create directory)[^\n]*(?:Operation not permitted|Permission denied|Read-only file system)/i;
 
 // `082`: a conflict in a GENERATED plugin lib (plugins/maestro/scripts/lib/*.cjs, except the
 // hand-maintained maestro-tasks.cjs) or in this repo's tracked MIRROR of one
@@ -530,12 +538,15 @@ function mergeWorktreeTask(arg) {
   const branch = worktreeBranchFor(filename);
   if (!branch) refuse(`"${filename}" has no task number, so it has no task branch`);
   if (status !== "done") {
-    refuse(`"${filename}" is ${status ? `"${status}"` : "not in the queue"}, not "done" — finish the task (and mark it done) first`);
+    refuse(
+      `"${filename}" is ${status ? `"${status}"` : "not in the queue"}, not "done" — finish the task (and mark it done) first`
+    );
   }
   if (!branchExists(branch)) refuse(`branch ${branch} does not exist`);
   const wtPath = worktreeForBranch(branch);
   if (!wtPath) refuse(`branch ${branch} has no worktree checked out`);
-  if (path.resolve(wtPath) === path.resolve(projectDir)) refuse(`branch ${branch} is checked out in the main checkout itself`);
+  if (path.resolve(wtPath) === path.resolve(projectDir))
+    refuse(`branch ${branch} is checked out in the main checkout itself`);
 
   // Uncommitted work in the worktree would be thrown away by the removal. Untracked
   // .claude/maestro.json is the copy `worktree` made; everything else gitignored never shows here.
@@ -550,7 +561,8 @@ function mergeWorktreeTask(arg) {
   }
 
   const base = gitTry(projectDir, ["symbolic-ref", "--short", "-q", "HEAD"]);
-  if (!base.ok || !base.out) refuse(`the main checkout (${projectDir}) is on a detached HEAD — check out the base branch first`);
+  if (!base.ok || !base.out)
+    refuse(`the main checkout (${projectDir}) is on a detached HEAD — check out the base branch first`);
   if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok) {
     refuse(`the main checkout (${projectDir}) is in the middle of a merge — finish or abort it first`);
   }
@@ -572,7 +584,8 @@ function mergeWorktreeTask(arg) {
   const merged = gitTry(projectDir, ["merge", "--no-ff", "-m", `Merge ${branch} (${filename})`, branch]);
   if (!merged.ok) {
     if (SANDBOX_DENIAL.test(`${merged.err}\n${merged.out}`)) {
-      if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok) gitTry(projectDir, ["merge", "--abort"]);
+      if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok)
+        gitTry(projectDir, ["merge", "--abort"]);
       process.stdout.write(
         `Maestro tasks: merge SANDBOX-BLOCKED — git could not write into the main checkout (${merged.err.split("\n")[0] || "write denied"}). ` +
           `Do NOT retry it from this session. Check \`git -C ${shellQuote(projectDir)} status\` for a half-applied merge, then ask the user to run:\n` +
@@ -602,7 +615,8 @@ function mergeWorktreeTask(arg) {
   // branch (-d: only deletes a fully merged branch), and any session pointer aimed at the worktree.
   const notes = [];
   const rm = gitTry(projectDir, ["worktree", "remove", wtPath]);
-  if (!rm.ok) notes.push(`could not remove worktree ${wtPath} (${rm.err.split("\n")[0]}) — remove it yourself when sure`);
+  if (!rm.ok)
+    notes.push(`could not remove worktree ${wtPath} (${rm.err.split("\n")[0]}) — remove it yourself when sure`);
   else {
     const del = gitTry(projectDir, ["branch", "-d", branch]);
     if (!del.ok) notes.push(`could not delete branch ${branch} (${del.err.split("\n")[0]})`);
@@ -674,7 +688,9 @@ function readPlan() {
 
 function renderPlan(plan) {
   const next = plan.steps.findIndex((s) => s.status !== "done");
-  const lines = plan.steps.map((s, i) => `  ${i + 1}. [${s.status === "done" ? "x" : " "}] ${s.label}${i === next ? "   <- next" : ""}`);
+  const lines = plan.steps.map(
+    (s, i) => `  ${i + 1}. [${s.status === "done" ? "x" : " "}] ${s.label}${i === next ? "   <- next" : ""}`
+  );
   return (
     lines.join("\n") +
     "\n" +
@@ -695,7 +711,9 @@ function requireSessionFile(what) {
 
 function planCommand(labels) {
   if (!labels.length) {
-    process.stderr.write('maestro-task-status: "plan" needs the success-path step labels, in order (e.g. plan "@backend" "human review" "@scribe")\n');
+    process.stderr.write(
+      'maestro-task-status: "plan" needs the success-path step labels, in order (e.g. plan "@backend" "human review" "@scribe")\n'
+    );
     process.exit(1);
   }
   const file = requireSessionFile("record a plan");
@@ -744,7 +762,9 @@ function planStepCommand(label, status) {
 
 function planShowCommand() {
   const plan = readPlan();
-  process.stdout.write(plan ? `Maestro plan:\n${renderPlan(plan)}\n` : "Maestro plan: none recorded for this session.\n");
+  process.stdout.write(
+    plan ? `Maestro plan:\n${renderPlan(plan)}\n` : "Maestro plan: none recorded for this session.\n"
+  );
 }
 
 // Read-and-clear the handoff problems the SubagentStop hook recorded since the orchestrator last asked.
@@ -868,7 +888,9 @@ try {
       );
       process.exit(0);
     }
-    const holder = result.claim.sessionName ? `${result.claim.sessionId}, named "${result.claim.sessionName}"` : result.claim.sessionId;
+    const holder = result.claim.sessionName
+      ? `${result.claim.sessionId}, named "${result.claim.sessionName}"`
+      : result.claim.sessionId;
     process.stdout.write(
       `Maestro tasks: "${filename}" is already claimed by an active session (${holder}, since ${result.claim.claimedAt}) — take the next ready task instead\n`
     );
@@ -891,7 +913,9 @@ try {
 
   if (command === "merge") {
     if (!arg) {
-      process.stderr.write('maestro-task-status: "merge" needs a task filename or number (e.g. merge 002-add-login.md)\n');
+      process.stderr.write(
+        'maestro-task-status: "merge" needs a task filename or number (e.g. merge 002-add-login.md)\n'
+      );
       process.exit(1);
     }
     mergeWorktreeTask(arg);

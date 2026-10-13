@@ -56,8 +56,7 @@ function logPhase(projectDir) {
 
 const NAMES = (list) => list.map((id) => "/" + id).join(", then ");
 
-const HONOUR =
-  "If a start skill says to stop or asks the user something, do that before continuing.";
+const HONOUR = "If a start skill says to stop or asks the user something, do that before continuing.";
 
 const LINES = {
   maestro: (list) =>
@@ -74,8 +73,10 @@ const LINES = {
     " Then continue with the next step.",
   // Printed rather than staying silent on purpose: an explicit line says the script RAN and the
   // answer is deliberate. Silence is indistinguishable from a broken or missing script.
-  maestroNone: "Step 1 — no start skills are configured for this project. Do nothing here; continue straight to Step 2.",
-  to_maestro_tasksNone: "No start skills are configured for this project. Do nothing here; continue with the next step.",
+  maestroNone:
+    "Step 1 — no start skills are configured for this project. Do nothing here; continue straight to Step 2.",
+  to_maestro_tasksNone:
+    "No start skills are configured for this project. Do nothing here; continue with the next step.",
 };
 
 function startLine(projectDir, target) {

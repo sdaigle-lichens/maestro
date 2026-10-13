@@ -6,11 +6,11 @@
     "build": "turbo run build",
     "dev": "turbo run dev",
     "lint": "turbo run lint && eslint plugins/maestro/scripts",
-    "check": "turbo run check",
+    "check": "turbo run check && prettier --check plugins --ignore-path .prettierignore",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
-    "verify": "pnpm lint && turbo run check typecheck test",
-    "format": "turbo run format"
+    "verify": "pnpm lint && pnpm check && turbo run typecheck test",
+    "format": "turbo run format && prettier --write plugins --ignore-path .prettierignore"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
