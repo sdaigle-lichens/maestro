@@ -9,7 +9,7 @@ import WorkflowCanvas from "../components/workflow-canvas";
 import SeededBanner from "../components/seeded-banner";
 import ConfigIssueBanner from "../components/config-issue-banner";
 import ExternalChangeBanner from "../components/external-change-banner";
-import SkillRefMark, { SkillRefNotice, SkillRefRecheck } from "../components/skill-ref-mark";
+import SkillRefMark, { GroupDanglingIndicator, SkillRefNotice, SkillRefRecheck } from "../components/skill-ref-mark";
 import { useSkillRefs } from "../utils/skill-ref-context";
 import DetectedChain from "../components/detected-chain";
 import { groupBySource, sourceLabel, CollapsibleGroup } from "../components/source-group";
@@ -347,6 +347,7 @@ function WorkflowsPage() {
                     title={sourceLabel(group.source)}
                     count={group.items.length}
                     defaultOpen={group.source === "project"}
+                    closedIndicator={<GroupDanglingIndicator ids={group.items.map((s) => s.id)} />}
                   >
                     {group.items.map((skill) => {
                       const checked = config.skills_available.includes(skill.id);
