@@ -77,6 +77,14 @@ function need(value, usage) {
   return value;
 }
 
+// What to do when the SendMessage to the recorded manager fails. The saved file is the delivery.
+function sendFailedHint(kind) {
+  return (
+    `  If that SendMessage fails, run ListAgents. If exactly one session plausibly matches the manager, ask the user before messaging it. ` +
+    `Never conclude the manager is gone from one failed send: the saved ${kind} file is the real delivery, and the manager sees it as unacknowledged on its next check.\n`
+  );
+}
+
 function readBody(file) {
   if (file && file !== "-") return fs.readFileSync(path.resolve(file), "utf8");
   return fs.readFileSync(0, "utf8");
@@ -170,7 +178,8 @@ try {
       process.stdout.write(
         `Maestro epic: report ${r.id} for "${path.basename(task)}" written to ${r.file}\n` +
           (r.manager
-            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: report ${r.id} for ${path.basename(task)} is in ${r.file}. The file is the report; do not paste its contents.\n`
+            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: report ${r.id} for ${path.basename(task)} is in ${r.file}. The file is the report; do not paste its contents.\n` +
+              sendFailedHint("report")
             : `  No manager session is recorded for "${r.epic}", so there is nobody to message. The report is saved and a resumed manager will list it as unacknowledged.\n`)
       );
       break;
@@ -190,7 +199,8 @@ try {
       process.stdout.write(
         `Maestro epic: note ${r.id} from "${fromEpic}" to "${r.epic}" written to ${r.file}\n` +
           (r.manager
-            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: note ${r.id} from epic ${fromEpic} is in ${r.file}. The file is the note; do not paste its contents.\n`
+            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: note ${r.id} from epic ${fromEpic} is in ${r.file}. The file is the note; do not paste its contents.\n` +
+              sendFailedHint("note")
             : `  No manager session is recorded for "${r.epic}", so there is nobody to message. The note is saved and a resumed manager will list it as unacknowledged.\n`)
       );
       break;

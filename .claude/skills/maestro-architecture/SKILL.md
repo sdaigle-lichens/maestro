@@ -159,7 +159,10 @@ inside a worker session, and only for a task that has an epic:
   writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator
   sends ONE short SendMessage line. A task in no epic prints "belongs to no epic" and nothing else
   happens. A report written while no manager runs survives and is listed unacknowledged when a
-  manager resumes; the manager's `ack` is the only delivery proof.
+  manager resumes; the manager's `ack` is the only delivery proof. If that SendMessage fails, the
+  printed hint says to run ListAgents and ask the user before messaging a plausible match, never to
+  treat one failed send as the manager gone (`102`). The manager re-syncs its recorded name with
+  `set-manager` whenever it differs from its `ListAgents` name, before each ack.
 - **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and
   the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the
   user in the worker's own session.
