@@ -10,4 +10,5 @@
 // under bare `node` in a project with no node_modules.
 
 export { defaultV3Config, seededAgentNames } from "../seed.js";
-export type { SkillMap } from "../seed.js";
+export { seedMissingSkillLists, defaultSkillLists } from "../seed.js";
+export type { SkillMap, SkillListsSeeded } from "../seed.js";

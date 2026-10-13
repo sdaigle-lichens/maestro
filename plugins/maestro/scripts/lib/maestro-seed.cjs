@@ -23,7 +23,9 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-seed.ts
 var maestro_seed_exports = {};
 __export(maestro_seed_exports, {
+  defaultSkillLists: () => defaultSkillLists,
   defaultV3Config: () => defaultV3Config,
+  seedMissingSkillLists: () => seedMissingSkillLists,
   seededAgentNames: () => seededAgentNames
 });
 module.exports = __toCommonJS(maestro_seed_exports);
@@ -373,16 +375,42 @@ function defaultV3Config(implAgents, skillMap = {}, seedSkills = {}) {
     workflow_instances: instances,
     workflows,
     rules: [],
-    // Reproduces the pre-`start_skills` defaults: the orchestrator runs no start or end skill (opt
-    // in from the maestro page — a small request should not pay for skill invocations it never
-    // asked for), while to-maestro-tasks runs its gate skills as it always did — the design check
-    // only when the project has one.
+    ...defaultSkillLists(seedSkills)
+  };
+}
+function defaultSkillLists(seedSkills = {}) {
+  const designCheck = seedSkills.designCheck;
+  return {
     start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...designCheck ? [designCheck] : []] },
     end_skills: { maestro: [] }
   };
 }
+var isPresent = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function seedMissingSkillLists(cfg, seedSkills = {}) {
+  const defaults = defaultSkillLists(seedSkills);
+  const seeded = {
+    start_skills: !isPresent(cfg.start_skills),
+    end_skills: !isPresent(cfg.end_skills),
+    gatesRemoved: Object.prototype.hasOwnProperty.call(cfg, "gates")
+  };
+  const changed = seeded.start_skills || seeded.end_skills || seeded.gatesRemoved;
+  if (!changed) return { config: cfg, seeded, changed };
+  const rest = { ...cfg };
+  delete rest.gates;
+  return {
+    config: {
+      ...rest,
+      ...seeded.start_skills ? { start_skills: defaults.start_skills } : {},
+      ...seeded.end_skills ? { end_skills: defaults.end_skills } : {}
+    },
+    seeded,
+    changed
+  };
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  defaultSkillLists,
   defaultV3Config,
+  seedMissingSkillLists,
   seededAgentNames
 });

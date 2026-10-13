@@ -78,7 +78,7 @@ const path = require("path");
 const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
-const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
+const { defaultV3Config, seededAgentNames, seedMissingSkillLists } = require("./lib/maestro-seed.cjs");
 const { seedSkillsFor } = require("./lib/maestro-skill-availability.cjs");
 const { walkProjectSkillIds, compareRuntimeVersions } = require("./lib/maestro-session.cjs");
 
@@ -766,6 +766,27 @@ function main() {
       seededConfig = true;
     }
 
+    // Re-install into a config that predates start_skills / end_skills: fill in what is missing with
+    // the fresh-seed defaults and drop the dead `gates` key. Mirrors installRuntime() in
+    // apps/maestro/src/core/install.ts. A config that does not parse (or is not version 3) is left
+    // alone, present lists are never touched, and the file is rewritten only when something changed.
+    let skillListsSeeded = null;
+    if (!seededConfig) {
+      let existing = null;
+      try {
+        existing = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      } catch {
+        // Unparseable: not ours to repair.
+      }
+      if (existing && existing.version === 3) {
+        const fill = seedMissingSkillLists(existing, seedSkillsFor(projectDir));
+        if (fill.changed) {
+          fs.writeFileSync(configPath, JSON.stringify(fill.config, null, 2));
+          skillListsSeeded = fill.seeded;
+        }
+      }
+    }
+
     // Stamp runtimeVersion last, after every file it describes is current on disk. Mirrors
     // apps/maestro/src/core/install.ts's installRuntime() so both delivery paths produce the same
     // result — see that file's writeRuntimeVersion for why this no-ops when maestro.json is still
@@ -797,6 +818,7 @@ function main() {
         retiredScriptsRemoved,
         wroteRepoGitignore,
         seededConfig,
+        skillListsSeeded,
         implAgents: seededConfig ? implAgents : undefined,
         projectTags: seededConfig ? projectTags : undefined,
         runtimeVersion,

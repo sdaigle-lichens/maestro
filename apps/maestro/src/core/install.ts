@@ -42,7 +42,7 @@ import { duplicateAgentTypes } from "./config-validate.js";
 import { detectImplAgents } from "./detect.js";
 import { discoverSkills, discoverProjectSkillsTree, type SkillIdCollision } from "./discovery.js";
 import { readAllSkillTags, skillMapFromTags, type AgentAttrs } from "./skill-tags.js";
-import { defaultV3Config, seededAgentNames } from "./seed.js";
+import { defaultV3Config, seededAgentNames, seedMissingSkillLists } from "./seed.js";
 import { seedSkillsFor } from "./skill-availability.js";
 import { settingsRegisterScript, type Settings } from "./hook-arbitration.js";
 import { readAllProjectTags, DEFAULT_PROJECT_TAGS_DB_PATH } from "./project-tags.js";
@@ -775,6 +775,23 @@ export async function installRuntime(
     configSeeded = { implAgents: detection.implAgents, projectTags, uncatalogedProjectTags };
   }
 
+  // Re-install into a project whose config predates `start_skills` / `end_skills`: fill in what is
+  // missing with the fresh-seed defaults and drop the dead `gates` key (`092`). A raw parse, not
+  // readConfig(): a corrupt or foreign-version file reads as blank there, and writing back from a
+  // blank would destroy it. Present lists — even empty ones — are left byte-for-byte alone, and the
+  // file is rewritten only when something changed.
+  let skillListsSeeded: InstallReport["skillListsSeeded"] = null;
+  if (configSeeded === null) {
+    const existing = readJsonSafe<MaestroConfigV3>(maestroJsonPath(projectRoot));
+    if (existing && existing.version === 3) {
+      const fill = seedMissingSkillLists(existing, seedSkillsFor(projectRoot));
+      if (fill.changed) {
+        writeConfig(projectRoot, fill.config);
+        skillListsSeeded = fill.seeded;
+      }
+    }
+  }
+
   // Stamp last, after the files it describes are actually current on disk. The seed step above
   // guarantees maestro.json exists by this point on a first install, so this always finds one to
   // stamp now.
@@ -821,6 +838,7 @@ export async function installRuntime(
     runtimeVersion,
     runtimeVersionUpdated,
     configSeeded,
+    skillListsSeeded,
     unchanged:
       orchestratorSkill.action === "unchanged" &&
       scriptsWritten.length === 0 &&
@@ -830,6 +848,7 @@ export async function installRuntime(
       !gitignoreUpdated &&
       !runtimeVersionUpdated &&
       configSeeded === null &&
+      skillListsSeeded === null &&
       reportsSync.materialized.length === 0 &&
       reportsSync.refreshed.length === 0 &&
       handoffsSync.materialized.length === 0 &&

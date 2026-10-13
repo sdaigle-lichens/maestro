@@ -20,6 +20,7 @@ function describeRuntimeRefresh(report: InstallReport): string {
   const parts: string[] = [];
   if (report.scriptsWritten.length > 0) parts.push("hooks");
   if (report.orchestratorSkill.action !== "unchanged") parts.push("orchestrator skill");
+  if (report.skillListsSeeded) parts.push("skill lists");
   return parts.length > 0 ? parts.join(", ") : `runtime version → ${report.runtimeVersion}`;
 }
 

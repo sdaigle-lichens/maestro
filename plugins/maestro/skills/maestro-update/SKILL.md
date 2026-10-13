@@ -35,6 +35,11 @@ place the refresh procedure is written down.
    **outside** those markers is the user's and is never touched; the rendered
    `<!-- Maestro:HANDOFFS -->` table is carried across.
 
+   If the JSON summary's `skillListsSeeded` is not `null`, the project's `maestro.json` predated the
+   start/end skill lists and this run filled in the missing ones with the fresh-seed defaults (and
+   removed a leftover `gates` key). Tell the user which (`start_skills`, `end_skills`, `gates`) and that
+   they can change them on the Maestro desktop app's `/maestro` page. Lists already present are never touched.
+
    Report `orchestratorSkill.action` from the JSON summary:
    - `synced` — regions refreshed (`.regions` lists which). Mention if the steps changed.
    - `unchanged` — the body was already current.
@@ -74,7 +79,9 @@ place the refresh procedure is written down.
    It prints `{"checked", "dangling": [{"id","reason","where"}], "suggestions": [...]}`. When
    `dangling` or `suggestions` is non-empty, show each suggestion to the user as it is written. Do
    not edit `maestro.json` to remove a reference yourself: the references are the user's graph, and
-   removing one is a decision for the Maestro app's workflow view. When both are empty, say nothing
+   removing one is a decision for the Maestro app's workflow view. A suggestion saying `maestro.json`
+   has no `start_skills` means the project was upgraded by copying files alone: tell the user to run
+   `/maestro-install` (it is user-only) so the defaults are written. When both are empty, say nothing
    about it beyond "no dangling skill references".
 
 5. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
