@@ -1,0 +1,259 @@
+{
+  "slug": "concept-skills-plugin",
+  "created_at": "2026-10-12T19:08:13.136Z",
+  "manager": {
+    "name": "maestro-e1",
+    "set_at": "2026-10-13T20:57:14.836Z"
+  },
+  "workers": [
+    {
+      "name": "maestro-e6",
+      "task": "089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md",
+      "added_at": "2026-10-12T19:25:28.945Z"
+    },
+    {
+      "name": "maestro-9f",
+      "task": "090-move-the-concept-skills-into-an-opt-in-concept-skills-plugin.md",
+      "added_at": "2026-10-13T00:21:44.839Z"
+    },
+    {
+      "name": "maestro-09",
+      "task": "090-move-the-concept-skills-into-an-opt-in-concept-skills-plugin.md",
+      "added_at": "2026-10-13T13:13:03.069Z"
+    },
+    {
+      "name": "maestro-42",
+      "task": "091-show-dangling-skill-references-in-the-maestro-app.md",
+      "added_at": "2026-10-13T14:51:39.925Z"
+    },
+    {
+      "name": "maestro-37",
+      "task": "094-call-project-scripts-by-relative-path-in-the-orchestrator-s-own-commands.md",
+      "added_at": "2026-10-13T15:39:31.141Z"
+    },
+    {
+      "name": "maestro-85",
+      "task": "095-mark-collapsed-plugin-groups-that-hide-a-dangling-skill-reference.md",
+      "added_at": "2026-10-13T15:39:38.101Z"
+    },
+    {
+      "name": "maestro-06",
+      "task": "092-seed-start-and-end-skills-when-re-installing-maestro-into-an-existing-project.md",
+      "added_at": "2026-10-13T16:03:45.152Z"
+    },
+    {
+      "name": "maestro-a2",
+      "task": "096-never-overwrite-or-crash-on-a-corrupt-or-unsupported-maestro-json-during-install.md",
+      "added_at": "2026-10-13T16:17:59.883Z"
+    },
+    {
+      "name": "maestro-9c",
+      "task": "097-prettier-check-the-plugins-hand-written-code-in-pnpm-verify.md",
+      "added_at": "2026-10-13T17:06:46.432Z"
+    },
+    {
+      "name": "maestro-ad",
+      "task": "093-make-the-electron-sandbox-setup-survive-reboots-and-reinstalls.md",
+      "added_at": "2026-10-13T17:33:38.615Z"
+    },
+    {
+      "name": "maestro-43",
+      "task": "099-move-cleanup-skill-into-the-concept-skills-plugin-and-make-the-team-meeting-s-use-of-it-optional.md",
+      "added_at": "2026-10-13T17:41:58.988Z"
+    },
+    {
+      "name": "maestro-95",
+      "task": "098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md",
+      "added_at": "2026-10-13T17:48:45.701Z"
+    },
+    {
+      "name": "maestro-c3",
+      "task": "100-make-the-epic-report-a-step-a-maestro-session-cannot-skip.md",
+      "added_at": "2026-10-13T20:52:18.672Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md",
+      "file": "inbox/r001-089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md",
+      "at": "2026-10-12T22:21:24.395Z",
+      "from": "maestro-e6"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-10-12T22:21:38.735Z",
+      "by": "maestro-d8"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "090-move-the-concept-skills-into-an-opt-in-concept-skills-plugin.md",
+      "file": "inbox/r002-090-move-the-concept-skills-into-an-opt-in-concept-skills-plugin.md",
+      "at": "2026-10-13T13:15:23.528Z",
+      "from": "maestro-9f"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-10-13T13:15:30.753Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "091-show-dangling-skill-references-in-the-maestro-app.md",
+      "file": "inbox/r003-091-show-dangling-skill-references-in-the-maestro-app.md",
+      "at": "2026-10-13T14:51:15.298Z",
+      "from": "maestro-42"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "at": "2026-10-13T14:51:34.747Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "091-show-dangling-skill-references-in-the-maestro-app.md",
+      "file": "inbox/r004-091-show-dangling-skill-references-in-the-maestro-app.md",
+      "at": "2026-10-13T15:24:38.711Z",
+      "from": "maestro-42"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-10-13T15:24:59.459Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "094-call-project-scripts-by-relative-path-in-the-orchestrator-s-own-commands.md",
+      "file": "inbox/r005-094-call-project-scripts-by-relative-path-in-the-orchestrator-s-own-commands.md",
+      "at": "2026-10-13T15:39:21.500Z",
+      "from": "orchestrator"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-10-13T15:39:30.773Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r006",
+      "task": "092-seed-start-and-end-skills-when-re-installing-maestro-into-an-existing-project.md",
+      "file": "inbox/r006-092-seed-start-and-end-skills-when-re-installing-maestro-into-an-existing-project.md",
+      "at": "2026-10-13T16:03:35.657Z",
+      "from": "main"
+    },
+    {
+      "kind": "ack",
+      "id": "r006",
+      "at": "2026-10-13T16:03:44.743Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r007",
+      "task": "095-mark-collapsed-plugin-groups-that-hide-a-dangling-skill-reference.md",
+      "file": "inbox/r007-095-mark-collapsed-plugin-groups-that-hide-a-dangling-skill-reference.md",
+      "at": "2026-10-13T16:17:46.901Z",
+      "from": "maestro-85"
+    },
+    {
+      "kind": "ack",
+      "id": "r007",
+      "at": "2026-10-13T16:17:55.651Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "096-never-overwrite-or-crash-on-a-corrupt-or-unsupported-maestro-json-during-install.md",
+      "file": "inbox/r008-096-never-overwrite-or-crash-on-a-corrupt-or-unsupported-maestro-json-during-install.md",
+      "at": "2026-10-13T16:35:33.030Z",
+      "from": "maestro-a2"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "at": "2026-10-13T16:35:41.158Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r009",
+      "task": "097-prettier-check-the-plugins-hand-written-code-in-pnpm-verify.md",
+      "file": "inbox/r009-097-prettier-check-the-plugins-hand-written-code-in-pnpm-verify.md",
+      "at": "2026-10-13T17:06:29.730Z",
+      "from": "orchestrator"
+    },
+    {
+      "kind": "ack",
+      "id": "r009",
+      "at": "2026-10-13T17:06:46.020Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r010",
+      "task": "093-make-the-electron-sandbox-setup-survive-reboots-and-reinstalls.md",
+      "file": "inbox/r010-093-make-the-electron-sandbox-setup-survive-reboots-and-reinstalls.md",
+      "at": "2026-10-13T17:33:27.765Z",
+      "from": "a49b0c17"
+    },
+    {
+      "kind": "ack",
+      "id": "r010",
+      "at": "2026-10-13T17:33:38.176Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r011",
+      "task": "099-move-cleanup-skill-into-the-concept-skills-plugin-and-make-the-team-meeting-s-use-of-it-optional.md",
+      "file": "inbox/r011-099-move-cleanup-skill-into-the-concept-skills-plugin-and-make-the-team-meeting-s-use-of-it-optional.md",
+      "at": "2026-10-13T17:41:47.655Z",
+      "from": "maestro"
+    },
+    {
+      "kind": "ack",
+      "id": "r011",
+      "at": "2026-10-13T17:41:58.493Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r012",
+      "task": "098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md",
+      "file": "inbox/r012-098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md",
+      "at": "2026-10-13T17:48:37.635Z",
+      "from": "maestro-95"
+    },
+    {
+      "kind": "ack",
+      "id": "r012",
+      "at": "2026-10-13T17:48:45.291Z",
+      "by": "maestro-ea"
+    },
+    {
+      "kind": "report",
+      "id": "r013",
+      "task": "100-make-the-epic-report-a-step-a-maestro-session-cannot-skip.md",
+      "file": "inbox/r013-100-make-the-epic-report-a-step-a-maestro-session-cannot-skip.md",
+      "at": "2026-10-13T20:47:54.265Z",
+      "from": "maestro-c3"
+    },
+    {
+      "kind": "ack",
+      "id": "r013",
+      "at": "2026-10-13T20:51:57.094Z",
+      "by": "maestro-ea"
+    }
+  ]
+}

@@ -8,21 +8,15 @@ Not everyone who works on a project wants to use maestro. Could the maestro-inst
 
 - Clean skills
 - Reduce claude.md and rules files
-- Check if claude setup skills are user callable only
 - Reduce content of maestro, maestro-manager and to-maestro-tasks skills
 
 ## Fix agent models
 
 - Haiku:tests and scribe. Make a meeting to explore the idea. Also have backend and frontend agent use a new haiku subagent called implementor ?
 
-## Maestro meeting case
-
-- Maestro meeting can also look to optimise the context or flow of agents reports and hamdoff structure
-
 ## Maestro task and manager flow
 
-- make to-maestro-tasks suggest to keep the session open and call maestro-manager and open a new claude session for the different maestro tasks
-- Add to the readme the suggested flow
+/maestro use the documentation workflow for this task. I would like the to-maestro-tasks skill to suggest at the end to the user to keep the session open and call maestro-manager when an epic is created is created. It could also suggest the user to open a new claude session for the different maestro tasks of the epic that can be done right now in parallel. This flow of to-maetro-tasks -> maestro-manager -> maestro sessions can also be added to the root README.md as the suggested flow when using worflow !
 
 ## Other
 
