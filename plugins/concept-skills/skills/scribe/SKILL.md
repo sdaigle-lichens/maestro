@@ -73,7 +73,9 @@ When you are the scribe agent and the project's concept skills need creating, re
 deepening, you run the flows yourself:
 
 1. **Pick the flow** from the table above: no list yet, `create`; the code moved, `update`; one skill
-   thin or reported as a gap, `update-single`.
+   thin or reported as a gap, `update-single`. `node "${CLAUDE_SKILL_DIR}/../../scripts/concept-skills.cjs" state`
+   tells the first two apart: `{"present":false}` means `create`; a `last_update` other than
+   `git rev-parse HEAD` means `update`, and `git rev-list --count <last_update>..HEAD` is how far behind.
 2. **Pass on what you were given.** A caller's code-change report lets the update flow skip
    rediscovering what already changed; a gap delivered on your channel lane names the skill and the
    gap outright.

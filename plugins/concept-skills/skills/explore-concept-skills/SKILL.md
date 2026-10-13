@@ -16,21 +16,19 @@ before it starts.
 
 Run the `load-concept-skills` skill.
 
-If it reports **NO LIST**, this project has no concept-skill list — read the available-skills list
-first (a project skill may already document the pattern the task needs), then reason about concepts
-from the codebase itself. Report back **NONE** (see below) and stop.
+If it reports **NO LIST**, check the available-skills list instead — a project skill may already
+document the pattern the task needs. Load any that apply, report them as below (or **NONE**), and stop.
 
 ## 2. Decide which concepts the task touches
 
 For each entry in the list, judge from its `description` alone whether the current task is an
 instance of it, changes it, or is unrelated to it. Read source only when the description leaves it
-ambiguous — the description exists so this step doesn't require opening files for every candidate.
+ambiguous.
 
 ## 3. Load the ones that matter
 
 Read the `SKILL.md` (and, if the task needs the detail, the `sub-concepts/*.md`) of every concept
-the task touches. Skip the rest — loading a concept skill the task doesn't touch costs context for no
-benefit.
+the task touches, and skip the rest.
 
 ## Report back to the caller
 

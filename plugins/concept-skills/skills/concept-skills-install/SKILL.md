@@ -14,7 +14,7 @@ $ARGUMENTS
 
 ## Workflow
 
-1. **Enable the plugin for the project.** Read `${CLAUDE_PROJECT_DIR:-.}/.claude/settings.json` (treat a missing file as `{}`; if it exists and does not parse as JSON, stop and tell the user rather than overwriting it). Make sure `enabledPlugins` has `"concept-skills@maestro": true`, keeping every other key exactly as it is. Use the Edit tool for an existing file. If the marketplace the user installed this plugin from is not named `maestro`, use that name after the `@` instead.
+1. **Enable the plugin for the project.** Read `${CLAUDE_PROJECT_DIR:-.}/.claude/settings.json` (treat a missing file as `{}`; if it exists and does not parse as JSON, stop and tell the user rather than overwriting it). Make sure `enabledPlugins` has `"concept-skills@maestro": true`, keeping every other key exactly as it is. If the marketplace the user installed this plugin from is not named `maestro`, use that name after the `@` instead.
 
 2. **Find the agents.** Run:
 
@@ -32,7 +32,7 @@ $ARGUMENTS
 
    This creates `.claude/concept-skills.json` holding only `agents`; it does not claim a concept-skill list exists yet.
 
-4. **Maestro, only if it is there.** If `${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` exists, ask whether the scribe agent should load `concept-skills:scribe` so documentation placement follows the concept-skill rules. On yes, tell the user where: in the Maestro desktop app, open the workflow view, select the scribe instance and add `concept-skills:scribe` to its loaded skills. **Do not edit `maestro.json` yourself.** On no, or if the project has no `maestro.json`, say nothing more about Maestro.
+4. **Maestro, only if it is there.** If `${CLAUDE_PROJECT_DIR:-.}/.claude/maestro.json` exists, ask whether the scribe agent should load `concept-skills:scribe` so documentation placement follows the concept-skill rules. On yes, tell the user where: in the Maestro desktop app, open the workflow view, select the scribe instance and add `concept-skills:scribe` to its loaded skills. **Do not edit `maestro.json` yourself.** On no, drop the subject.
 
 5. **Offer the list.** Run `concept-skills.cjs state`. If it prints `{"present":false}`, offer to run `/create-concept-skills` now; if the user declines, say it can be run any time. If a list is already recorded, point at `/update-concept-skills` instead.
 

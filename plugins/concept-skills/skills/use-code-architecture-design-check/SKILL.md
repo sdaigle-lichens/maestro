@@ -7,7 +7,7 @@ user-invocable: false
 
 # Design Confidence Check
 
-Before starting any implementation, run this check to decide whether `code-architecture-design` must run first. Create a task per step below with `TaskCreate` before you start, so the sequence survives a long session.
+Before starting any implementation, run this check to decide whether `code-architecture-design` must run first.
 
 ## 1. Concept-skill list
 
@@ -25,19 +25,12 @@ Answer each question YES or NO:
 
 ## Decision Gate
 
-| New/removed concept | Concept-changing | Ambiguous architecture | Decision                        |
-| ------------------- | ---------------- | ---------------------- | ------------------------------- |
-| YES                 | any              | any                    | **RUN code-architecture-design**  |
-| NO                  | YES              | any                    | **RUN code-architecture-design**  |
-| NO                  | NO               | YES                    | **RUN code-architecture-design**  |
-| NO                  | NO               | NO                     | **SKIP code-architecture-design** |
+Any YES → **RUN** `code-architecture-design`. All NO → **SKIP**.
 
 **Always SKIP `code-architecture-design` when:**
 
 - The change is a straightforward instance of an existing concept (another route on an existing resource, another screen following an existing navigation pattern, another component following an existing design pattern, etc.)
 - A sibling file or an existing concept skill is a direct template for the change
-
-`code-architecture-design` is this plugin's architecture pass — invoke it with the Skill tool. It is **not** `/design`, the Claude Design canvas skill, which produces visual mockups and is not what this gate decides about.
 
 ## Mandatory Output Format
 
@@ -46,4 +39,5 @@ Answer each question YES or NO:
 
 ## When the decision is RUN
 
-Whoever invoked this check is not told what to do with its answer, so say it here: invoke the `code-architecture-design` skill now, in this same context, and carry its Design Brief into whatever you do next, before any work is committed to the request.
+Whoever invoked this check is not told what to do with its answer, so say it here: invoke the `code-architecture-design` skill with the Skill tool now, in this same context, and carry its Design Brief into whatever you do next, before any work is committed to the request. It is **not** `/design`, the Claude Design canvas skill,
+which produces visual mockups.

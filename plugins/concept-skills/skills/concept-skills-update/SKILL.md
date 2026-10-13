@@ -1,6 +1,6 @@
 ---
 name: concept-skills-update
-description: "Checks that this project's concept-skills setup is current: the concept-skills plugin is enabled, .claude/concept-skills.json is well-formed with an up-to-date agents list, and the concept-skill list itself is not behind HEAD. Repairs the setup and then points at /update-concept-skills for the content. Use when the user runs /concept-skills-update, after updating the concept-skills plugin, or when concept skills seem out of date or misconfigured."
+description: "Checks that this project's concept-skills setup is current: the concept-skills plugin is enabled, .claude/concept-skills.json is well-formed with an up-to-date agents list, and the concept-skill list itself is not behind HEAD. Repairs the setup and then points at /update-concept-skills for the content. Use when the user runs /concept-skills-update or after updating the concept-skills plugin."
 disable-model-invocation: true
 ---
 

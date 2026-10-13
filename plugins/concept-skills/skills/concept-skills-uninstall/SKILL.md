@@ -14,9 +14,9 @@ $ARGUMENTS
 
 ## Workflow
 
-1. **Disable the plugin.** Read `${CLAUDE_PROJECT_DIR:-.}/.claude/settings.json`. If it does not parse, stop and tell the user. Remove the `"concept-skills@maestro"` entry from `enabledPlugins` (or set it to `false` if the user prefers to keep a record), leaving every other key untouched, and drop `enabledPlugins` only if that leaves it empty. If the entry is not there, say the plugin was not enabled for this project.
+1. **Disable the plugin.** Read `${CLAUDE_PROJECT_DIR:-.}/.claude/settings.json`. If it does not parse, stop and tell the user. Remove the `"concept-skills@maestro"` entry (or `@` whatever marketplace it was installed from) from `enabledPlugins` (or set it to `false` if the user prefers to keep a record), leaving every other key untouched, and drop `enabledPlugins` only if that leaves it empty. If the entry is not there, say the plugin was not enabled for this project.
 
-2. **The state file.** If `${CLAUDE_PROJECT_DIR:-.}/.claude/concept-skills.json` exists, show its contents (`concept-skills.cjs state` and `concept-skills.cjs agents`) and ask whether to delete it. It holds the list's freshness record and the agents list; deleting it means a future `/create-concept-skills` starts from scratch. Delete it only on an explicit yes.
+2. **The state file.** If `${CLAUDE_PROJECT_DIR:-.}/.claude/concept-skills.json` exists, show its contents (`node "${CLAUDE_SKILL_DIR}/../../scripts/concept-skills.cjs" state`, then the same with `agents`) and ask whether to delete it. It holds the list's freshness record and the agents list; deleting it means a future `/create-concept-skills` starts from scratch. Delete it only on an explicit yes.
 
 3. **Leave the concept skills.** Every `.claude/skills/<id>/` that carries `metadata.type: concept-skill` is an ordinary skill and keeps working with the plugin off. Say so, and do not delete them. If the user wants them gone, tell them to delete those directories themselves.
 

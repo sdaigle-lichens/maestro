@@ -6,12 +6,8 @@ description: "Reconciles an existing concept-skill list against what changed sin
 # Update Concept Skills
 
 The list already exists; this skill keeps it true. It is the shallow, wide pass — it reconciles the
-whole list against a diff. `/update-single-concept-skill` is the deep, narrow one.
-
-The cheapest way to run this is with a **code-change report** in `$ARGUMENTS`: a summary of what a
-session just changed. With one, you can go straight from the report to the concept skills it
-implicates and skip re-discovering work that has already been described to you. Without one, you do
-the same job from a diff, which costs more.
+whole list against a diff. `/update-single-concept-skill` is the deep, narrow one. A **code-change
+report** in `$ARGUMENTS` (a summary of what a session just changed) makes it much cheaper.
 
 ## User's intention
 
@@ -29,7 +25,7 @@ it, and say in your report that you resumed from an approved proposal.
 | Signal | Mode | What changes |
 | --- | --- | --- |
 | `$ARGUMENTS` carries a report of code changes | **Report-driven** | Trust the report for *what* changed; do not re-scan for it. Diff only to check the report didn't miss a concept. |
-| An agent was added or removed | **Agent-scoped** | Only the `agents/` subdirectories are in scope. Skip steps 4.1–4.4 entirely. |
+| An agent was added or removed | **Agent-scoped** | Only the `agents/` subdirectories and the `agents` list are in scope. Skip steps 4.1–4.3 entirely. |
 | Neither | **Full** | Derive the changes from the diff yourself. |
 
 ## Workflow
@@ -77,9 +73,6 @@ Two passes, in this order, because they answer different questions:
    concepts that exist? Delegate this to a subagent if the diff is large — ask it for *which
    concepts are implicated*, never for the diff back.
 
-In report-driven mode, both passes are a check on the report rather than the primary source: you are
-looking for a concept the report didn't mention, not re-deriving what it already told you.
-
 ### 4. Decide what changes
 
 Work through all five, in order, and write down the answer to each even when it is "nothing":
@@ -117,8 +110,7 @@ them. Split the work rather than stopping outright:
    because an unrelated concept needed confirming helps nobody.
 2. Report the proposed additions and deletions as a numbered list, each with why, and say the list is
    unconfirmed. Re-invoking this skill with the approved list applies it.
-3. Do **not** create or delete a concept skill on your own judgement. A deletion especially is not
-   yours to make.
+3. Do **not** create or delete a concept skill on your own judgement.
 
 ### 6. Write and stamp
 
@@ -147,11 +139,9 @@ added and deleted some:
 node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state-set --bump minor
 ```
 
-A reconciliation is a reconciliation. Adding a concept is the ordinary outcome of one — a feature
-landed and it needed a home — not a different kind of event, and reserving a major for it made the
-repo-level number jump a whole version for a routine pass. The number is there to say "the list moved
-on since `last-update`", and `0.1` says that. A repo-level **major** is for a wholesale re-derivation
-of the list, which is `/create-concept-skills`' job, not this one's.
+Adding a concept is the ordinary outcome of a reconciliation, not a different kind of event. A
+repo-level **major** is for a wholesale re-derivation of the list, which is `/create-concept-skills`'
+job, not this one's.
 
 Pass `--sha <session-start-commit>` if the session has committed since it started, so the recorded
 window matches the one you actually read.

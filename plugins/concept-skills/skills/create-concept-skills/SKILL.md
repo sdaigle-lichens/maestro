@@ -13,10 +13,8 @@ explore the code itself, rather than rediscovering the same shape every session.
 What counts as "core" is not an exact science and differs from user to user. That is why step 5 of
 this skill is a conversation, not a heuristic.
 
-This skill builds the **skeleton** of the whole list. It deliberately does not go deep: the
-`/update-single-concept-skill` skill is where one concept gets researched properly. Your job here is
-breadth — enough understanding of the project to name its concepts correctly and file them in the
-right places.
+This skill builds the **skeleton** of the whole list — enough to name the concepts correctly and file
+them in the right places. `/update-single-concept-skill` is where one concept gets researched properly.
 
 > **Budget matters more than completeness here.** Do not read the project exhaustively. Delegate the
 > reading to cheap subagents (below), keep their findings as *lists of candidate concepts*, and stay
@@ -126,8 +124,7 @@ for a concept that lives in `apps/web` — with two rules that override that:
   practice the repo root, since published trees rarely sit under an app.
 - Anything genuinely repo-wide, or belonging to no one package, goes at the root as well.
 
-Placement follows **audience**, not the directory the code happens to sit in: a concept skill exists
-for whoever works on *this* repo. Where a `CLAUDE.md` states which directories hold developer
+Where a `CLAUDE.md` states which directories hold developer
 documentation, it settles the question over both rules above.
 
 ```
@@ -167,7 +164,7 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" state-set --bump initial
 ```
 
 Both default the commit to `HEAD`. `state-set` writes `.claude/concept-skills.json`, creating it if
-it isn't there — the record lives in this plugin's own file, so any repo gets one. It reports `written:false` only when the value is already what it would write.
+it isn't there, and reports `written:false` only when the value is already what it would write.
 
 Never hand-edit `metadata.version` or `metadata.last-update`. The script owns them so that a version
 can't quietly drift, and a version stuck at `1.0` makes `/update-single-concept-skill` re-research a

@@ -70,10 +70,7 @@ Cut as much as you add. A file that grew and got no clearer has gone the wrong w
 ### 4. Deepen the sub-concepts
 
 Each `sub-concepts/*.md` gets the same treatment at its own scale: the mechanism, its files, its own
-traps. A sub-concept file exists so the `SKILL.md` doesn't have to carry that detail — if a
-sub-concept's content would be better inline, delete the file and inline it.
-
-Add a sub-concept file only for a part the concept genuinely has. Splitting a concept into files to
+traps. Add a sub-concept file only for a part the concept genuinely has. Splitting a concept into files to
 look thorough is how a skill becomes expensive to load and no more useful.
 
 ### 5. Write `agents/` notes — only where they earn their place
@@ -86,18 +83,16 @@ Write `agents/<agent>.md` **only** for agents in that list, and **only** where a
 needs something the shared file shouldn't carry — how the backend agent should implement against this
 concept, how the test agent should test it, what the reviewer should look for.
 
-An empty list means write no agent notes — it comes from `.claude/concept-skills.json`'s `agents`
-key, which `/concept-skills-install` seeds, and a project without one correctly gets none. This step is optional by design: an
-`agents/` directory full of files restating the `SKILL.md` costs every one of those agents context
+An empty list means write no agent notes. This step is optional by design: an `agents/` directory full of files restating the `SKILL.md` costs every one of those agents context
 and tells them nothing.
 
 Reference each note from the `SKILL.md` so the agent knows it exists.
 
 ### 6. Clean it up
 
-Run the `cleanup-skill` skill, pointing it at this concept skill's directory and telling it this is
-a **concept skill**. It cuts bloat and repetition from what steps 3–5 just wrote, and moves anything
-that grew into its own sub-concept out to `sub-concepts/`. Do this before stamping, so the version
+Run the `cleanup-skill` skill on this concept skill's directory. It cuts bloat, repetition and
+speculative traps from what steps 3–5 just wrote, and settles what belongs in `sub-concepts/` versus
+inline. Do this before stamping, so the version
 you record reflects the file a session will actually load.
 
 ### 7. Stamp it
@@ -113,17 +108,6 @@ often sandbox-protected.
 A major bump, because this pass is the thing that distinguishes a researched skill from a skeleton —
 that is exactly what step 1 reads. The repo-level `concept-skills.json` record is **not** touched: the
 list itself did not change, only one skill's depth.
-
-## Keeping it lean
-
-The pressure on this skill is always toward more. Three checks before you finish:
-
-- Would an agent that read only this file be able to start work? If not, something essential is
-  missing. If it would have been able to a third shorter, cut.
-- Is anything here recoverable in ten seconds from the code itself? Cut it — the file map already
-  says where to look.
-- Does every trap describe something that actually happened, or that you can point at in the code?
-  A speculative warning is noise, and it teaches the reader to skim the section that matters most.
 
 ## Report
 

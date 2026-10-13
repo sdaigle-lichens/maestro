@@ -8,9 +8,7 @@ user-invocable: false
 # Load Concept Skills
 
 Runs the project's concept-skill list and hands the raw result back to whichever skill called this
-one. It does not decide what to do with an empty list — that stays with the caller, and callers
-disagree: some fall back to reasoning from the codebase, others stop and point the user at
-`/create-concept-skills`.
+one. What to do with an empty list is the caller's decision, not this skill's.
 
 ## Load the list
 

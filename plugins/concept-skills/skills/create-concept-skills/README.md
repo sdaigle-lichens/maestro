@@ -37,17 +37,8 @@ Optional subdirectories, both referenced from the `SKILL.md`:
 accepts it and deliberately does not act on its contents — the docs call it a *"free-form YAML map
 for your own key-value data … read by your own tooling from `SKILL.md`"*.
 
-Inventing a top-level key such as `concept-version:` instead is not merely unsanctioned. `metadata`
-is one of only **six** fields that survive the other distribution paths — claude.ai skill uploads,
-the Skills API, and packaging with `package_skill.py` (`allowed-tools`, `compatibility`,
-`description`, `license`, `metadata`, `name`) — and those paths reject an unknown key with a **hard
-error** rather than ignoring it. A skill with a custom top-level key loads perfectly well in Claude
-Code and fails to package, which is the worst place to discover it.
-
-One trap on the read side: `parseFrontmatter` in `packages/claude-fs` has no notion of depth, so a
-`metadata:` block does not fail — it **flattens** into top-level keys. It yields the right values by
-accident, which is exactly why nothing should rely on it; use `parseFrontmatterMetadata`, which
-parses the map properly and can tell `metadata.version` from a top-level `version`.
+A top-level key such as `concept-version:` would load in Claude Code but fail to package: claude.ai
+skill uploads, the Skills API and `package_skill.py` reject unknown top-level keys outright.
 
 A stamp edits an existing `metadata:` map in place and keeps any keys that are not ours — it is the
 user's map, and this feature is one tenant in it.
@@ -71,7 +62,7 @@ doesn't.
 |---|---|---|
 | `create-concept-skills` | `1.0` | `1.0` |
 | `update-concept-skills` revises a skill | minor | minor |
-| `update-concept-skills` adds/deletes a skill | new one at `1.0` | **major** |
+| `update-concept-skills` adds/deletes a skill | new one at `1.0` | minor |
 | `update-single-concept-skill` | **major** | untouched |
 
 A skill still at `x.0` has never had a deep pass, which is exactly what `update-single-concept-skill`
@@ -94,17 +85,10 @@ when the file or the key is absent. `/concept-skills-install` seeds it from the 
 has, and `/update-concept-skills` re-checks it against them and proposes additions.
 
 Every command also takes **`--root <dir>`**, naming the repository to act on. It defaults to
-`$CLAUDE_PROJECT_DIR` and then the process's cwd, so a skill running in a session never needs it;
-it exists so the script can be pointed at another repo. The root is resolved once, at the top of
-the script, and passed down — nothing re-derives it per command, and nothing reads
-`CLAUDE_PROJECT_DIR` without a fallback (an inline `node -e` that does reads `undefined/.claude/…`,
-swallows its own error, and reports an empty answer that looks like a real one).
+`$CLAUDE_PROJECT_DIR` and then the process's cwd, so a skill running in a session never needs it.
 
 `list` walks **every** `.claude/skills` in the tree, not just the root's — in a monorepo a concept
-skill lives beside the code it explains. The logic lives in
-`plugins/concept-skills/scripts/lib/concept-skills.cjs`, generated from
-`packages/concept-skills/src` by `pnpm --filter @repo/concept-skills build:plugin-lib`; the `.cjs`
-under `lib/` is **generated and must not be hand-edited**.
+skill lives beside the code it explains.
 
 Version arithmetic, the `HEAD` lookup and the frontmatter rewrite live in the script rather than in
 the skill prose because a model asked to "bump the minor version" gets it right most of the time, and

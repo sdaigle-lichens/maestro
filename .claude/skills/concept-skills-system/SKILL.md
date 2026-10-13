@@ -70,7 +70,10 @@ concept-skills.cjs stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]
 concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]
 ```
 
-Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd).
+Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd). The root is resolved
+once at the top of the CLI and passed down; never read `CLAUDE_PROJECT_DIR` without that fallback —
+an inline `node -e` that does reads `undefined/.claude/…`, swallows the error, and reports an empty
+answer that looks like a real one.
 
 **Never hand-edit `metadata.version` or `metadata.last-update`.** The script owns them so a version
 cannot quietly drift — and a version stuck at `1.0` makes `/update-single-concept-skill` re-research
@@ -83,14 +86,14 @@ byte equality rather than a structural comparison.
 
 ## `list` is a runtime contract, not just a maintenance command
 
-Two **published** plugin skills inject its stdout with Claude Code's `!`-prefixed command-injection
-syntax, each granting exactly
-`Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list)` in `allowed-tools`:
-`use-code-architecture-design-check` (to judge whether a task adds or reshapes a concept) and
-`code-architecture-design` (to load the concepts a new module sits next to). So changing `list`'s
-human output shape is a published-surface change, and both skills must keep the same fallback
-wording for the empty / `[shell command execution disabled by policy]` case. `--json` is the stable
-form for programmatic callers; leave it to them.
+The published `load-concept-skills` helper injects its stdout with Claude Code's `!`-prefixed
+command-injection syntax, granting exactly
+`Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list)` in `allowed-tools`, and maps
+empty output, `[shell command execution disabled by policy]` or a "none found" message to **NO LIST**.
+Other skills reach the list only through it (`use-code-architecture-design-check` directly,
+`code-architecture-design` via `explore-concept-skills`), so changing `list`'s human output shape is
+a published-surface change that must keep that NO LIST mapping true. `--json` is the stable form for
+programmatic callers; leave it to them.
 
 ## Traps
 

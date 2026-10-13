@@ -1,25 +1,23 @@
 ---
 name: cleanup-skill
-description: "Trims a skill down to what a session actually needs: cuts bloat and repetition from its SKILL.md, and splits growing content into sub-concepts/ or references/ files. Use after writing or deepening a skill, when a SKILL.md has grown long or repetitive, or when the user asks to clean up or trim a skill."
+description: "Trims a skill down to what a session actually needs: cuts bloat and repetition from its SKILL.md, and splits growing content into sub-concepts/ or references/ files. Use after writing or deepening a skill, when a SKILL.md has grown long or repetitive, or when asked to clean up a skill."
 ---
 
 # Cleanup Skill
 
-Make a skill leaner before anyone loads it again. A skill's body is not documentation for a human who can flip back a page — it is prompt context loaded into every session whose task matches its `description`, so every unnecessary line and every repeated idea is a cost every one of those sessions pays.
+A skill's body is not documentation for a human who can flip back a page — it is prompt context
+loaded into every session whose task matches its `description`, so every unnecessary line and every
+repeated idea is a cost every one of those sessions pays.
 
 ## Input
 
-`$ARGUMENTS` names the skill to clean: its directory path (step 1 determines the kind itself, from
-the file). If it's missing — a caller passed nothing, or a user asked to "clean up skills" in
-general — ask which skill, either of the calling skill or, if you're the one being invoked directly,
-of the user.
+`$ARGUMENTS` is the skill's directory path. If it's missing, ask the caller (or the user) which skill.
 
 ## 1. Which kind of skill this is
 
-Check the `SKILL.md` frontmatter for a `metadata.type` marking it as a project-internal explainer,
-or an existing `sub-concepts/` directory beside it
-(see e.g. `apps/maestro/.claude/skills/agents-view/SKILL.md`). If either is present, it's an
-**explainer skill** and split content goes to `sub-concepts/*.md`. If neither is, it's a **normal
+Check the `SKILL.md` frontmatter for a `metadata.type` marking it as a project-internal explainer
+(e.g. `type: concept-skill`), or an existing `sub-concepts/` directory beside it. If either is
+present, it's an **explainer skill** and split content goes to `sub-concepts/*.md`. If neither is, it's a **normal
 (published) skill** and split content goes to `references/*.md`.
 
 ## 2. Cut bloat and repetition
@@ -49,18 +47,16 @@ A section is a candidate to move out when it:
   invocations of the skill never hit.
 
 **Explainer skill** → extract to `sub-concepts/<name>.md`; replace the section in `SKILL.md` with one
-line and a link. Apply the rule in reverse too: if the extracted file would be thinner than the
-one-line link replacing it, inline it instead — a sub-concept file only earns its place when it is
-substantial on its own.
+line and a link.
 
 **Normal skill** → extract to `references/<name>.md`; replace the section with a pointer that names
 the case it covers ("for `<case>`, see `references/<name>.md`"), not a bare link — the reader of a
 published skill doesn't open every reference by default, so the trigger to open it has to be in the
 main file.
 
-Don't extract just to shorten the file. Splitting a section that isn't a genuine sub-part or a
-genuine edge case costs a future reader two loads (the main file, then the reference) for content
-that fit in one.
+Don't extract just to shorten the file. Splitting a section that isn't a genuine sub-part or edge
+case — or whose extracted file would be thinner than the link replacing it — costs a future reader
+two loads for content that fit in one. Inline it instead.
 
 ## 4. Re-read what's left
 

@@ -6,9 +6,9 @@ allowed-tools: Read, Grep, Glob
 
 # Code Architecture Design
 
-Design the shape of the code **before** any of it is written: what the module is, what its interface costs a caller, and where its seam sits. The output is a Design Brief the implementer follows — this skill reads and reasons, it does not edit code.
+Design the shape of the code **before** any of it is written: what the module is, what its interface costs a caller, and where its seam sits. The output is a Design Brief the implementer follows.
 
-Design **deep modules**: a lot of behaviour behind a small interface, placed at a clean seam, tested through that interface. The aim is leverage for callers, locality for maintainers, and testability for everyone. Use the vocabulary in §Glossary exactly — the terms are the point, and substituting "component", "service", "API" or "boundary" loses the distinction each one is carrying.
+The aim is leverage for callers, locality for maintainers, and testability for everyone. Use the vocabulary in §Glossary exactly — the terms are the point, and substituting "component", "service", "API" or "boundary" loses the distinction each one is carrying.
 
 ## 1. Load the project's concepts
 
@@ -29,7 +29,7 @@ Write down, in a few lines each:
 
 ## 3. Design the interface
 
-The interface is **everything a caller must know to use the module correctly** — the type signature, but also invariants, ordering constraints, error modes, required configuration, and performance characteristics. Design all of it, not just the types.
+Design the whole interface, not just the types: invariants, ordering constraints, error modes, required configuration, and performance characteristics are all part of it.
 
 ```
    Deep (aim for this)              Shallow (avoid)
@@ -53,7 +53,7 @@ Then apply the **deletion test**: imagine the module deleted. If complexity vani
 
 ## 4. Place the seam and classify the dependencies
 
-A **seam** is a place where behaviour can be altered without editing in that place. *Where* it goes is a separate decision from *what* sits behind it — make it deliberately.
+*Where* the seam goes is a separate decision from *what* sits behind it — make it deliberately.
 
 Classify each dependency; the category decides how the module is tested across the seam.
 
@@ -78,7 +78,7 @@ Your first interface is unlikely to be the best. Sketch **at least two radically
 - *Common-case first*: the default call is trivial, everything else is opt-in.
 - *Ports & adapters*: organised around the cross-seam dependency.
 
-Compare them on **depth** (leverage per unit of interface a caller learns), **locality** (where a future change concentrates), and **seam placement**. Then be opinionated: recommend one, or propose a hybrid, and say why. Present the alternatives to the user before committing — a rejected design recorded in the brief is what stops the next session re-litigating it.
+Compare them on **depth**, **locality** (where a future change concentrates), and **seam placement**. Then be opinionated: recommend one, or propose a hybrid, and say why. Present the alternatives to the user before committing — a rejected design recorded in the brief is what stops the next session re-litigating it.
 
 ## 6. Design for testability
 
@@ -133,16 +133,13 @@ constraints, error modes and configuration a caller must know>
 Use these terms exactly.
 
 - **Module** — anything with an interface and an implementation. Deliberately scale-agnostic: a function, class, package, or tier-spanning slice. *Avoid*: unit, component, service.
-- **Interface** — everything a caller must know to use the module correctly. *Avoid*: API, signature — both are too narrow, naming only the type-level surface.
+- **Interface** — everything a caller must know to use the module correctly. *Avoid*: API, signature, the TypeScript `interface` keyword, a class's public methods — all too narrow, naming only the type-level surface.
 - **Implementation** — what is inside the module. Distinct from **adapter**: a thing can be a small adapter with a large implementation (a Postgres repo) or a large adapter with a small one (an in-memory fake). Say "adapter" when the seam is the topic, "implementation" otherwise.
 - **Depth** — leverage at the interface: how much behaviour a caller or test can exercise per unit of interface it has to learn. **Deep** = much behaviour behind a small interface; **shallow** = interface nearly as complex as the implementation.
 - **Seam** *(Michael Feathers)* — a place where behaviour can be altered without editing in that place; the location at which a module's interface lives. *Avoid*: boundary — overloaded with DDD's bounded context.
 - **Adapter** — a concrete thing satisfying an interface at a seam. Describes *role* (which slot it fills), not substance (what is inside it).
-- **Leverage** — what callers get from depth: more capability per unit of interface learned. One implementation pays back across N call sites and M tests.
+- **Leverage** — what callers get from depth: one implementation pays back across N call sites and M tests.
 - **Locality** — what maintainers get from depth: change, bugs, knowledge and verification concentrate in one place. Fix once, fixed everywhere.
 
-**Framings deliberately rejected**, so they don't creep back in:
-
-- *Depth as the ratio of implementation lines to interface lines* (Ousterhout) — rewards padding the implementation. Depth here is leverage.
-- *"Interface" as the TypeScript `interface` keyword, or a class's public methods* — too narrow.
-- *"Boundary"* — say **seam** or **interface**.
+**Framing deliberately rejected**, so it doesn't creep back in: *depth as the ratio of implementation
+lines to interface lines* (Ousterhout) — it rewards padding the implementation. Depth here is leverage.
