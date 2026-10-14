@@ -4,6 +4,7 @@ import { SessionLogProvider } from "../utils/session-log-context";
 import { WorktreeLogProvider } from "../utils/worktree-log-context";
 import { ProjectProvider } from "../utils/project-context";
 import { ConfigWatchProvider } from "../utils/config-watch-context";
+import { SkillRefProvider } from "../utils/skill-ref-context";
 import { InstallProvider } from "../utils/install-context";
 import { SessionProvider } from "../utils/session-context";
 import SessionPane from "../components/session-pane";
@@ -20,17 +21,18 @@ function RootLayout() {
   return (
     <ProjectProvider>
       <ConfigWatchProvider>
-        <InstallProvider>
-          <SessionLogProvider>
-            <WorktreeLogProvider>
-              {/*
+        <SkillRefProvider>
+          <InstallProvider>
+            <SessionLogProvider>
+              <WorktreeLogProvider>
+                {/*
             Inside ProjectProvider, because a project switch ends the session — and above the
             Outlet, because TopNav (which carries the toggle) is mounted per ROUTE. Holding the
             transcript below this line would drop it on every navigation, along with the only
             handle on a turn still streaming.
           */}
-              <SessionProvider>
-                {/*
+                <SessionProvider>
+                  {/*
               THE PANE SHIFTS THE LAYOUT RATHER THAN COVERING IT. A flex row at the root, with the
               route in a `min-w-0` column and the pane as its sibling: the route genuinely narrows,
               which is what makes a conversation something you work beside rather than something
@@ -38,17 +40,18 @@ function RootLayout() {
               and that was the right shape for a panel you dismiss and the wrong one for a session
               you steer. Routes still own their own full-height shell inside that column.
             */}
-                <div className="flex h-screen w-full overflow-hidden">
-                  <div className="flex-1 min-w-0 overflow-hidden">
-                    <Outlet />
+                  <div className="flex h-screen w-full overflow-hidden">
+                    <div className="flex-1 min-w-0 overflow-hidden">
+                      <Outlet />
+                    </div>
+                    <SessionPane />
                   </div>
-                  <SessionPane />
-                </div>
-                <Toaster />
-              </SessionProvider>
-            </WorktreeLogProvider>
-          </SessionLogProvider>
-        </InstallProvider>
+                  <Toaster />
+                </SessionProvider>
+              </WorktreeLogProvider>
+            </SessionLogProvider>
+          </InstallProvider>
+        </SkillRefProvider>
       </ConfigWatchProvider>
     </ProjectProvider>
   );

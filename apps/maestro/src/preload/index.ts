@@ -32,8 +32,8 @@ const api: MaestroApi = {
     tags: {
       set: (tags) => ipcRenderer.invoke(IPC.projectTagsSet, tags),
     },
-    gates: {
-      set: (gates) => ipcRenderer.invoke(IPC.gatesSet, gates),
+    skillLists: {
+      set: (lists) => ipcRenderer.invoke(IPC.skillListsSet, lists),
     },
     taskRouting: {
       set: (value) => ipcRenderer.invoke(IPC.taskRoutingSet, value),
@@ -42,6 +42,7 @@ const api: MaestroApi = {
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
     reseed: (implAgents) => ipcRenderer.invoke(IPC.workflowsReseed, implAgents),
+    skillRefs: () => ipcRenderer.invoke(IPC.skillRefReport),
     rules: () => ipcRenderer.invoke(IPC.rulesData),
     // `projectRoot` is a VIEWING parameter, forwarded as-is; main validates it against the current
     // + recent project list and falls back to the open project on anything else, so this cannot be
@@ -56,7 +57,7 @@ const api: MaestroApi = {
     globalDocs: () => ipcRenderer.invoke(IPC.globalDocsData),
     globalDoc: (group, slug) => ipcRenderer.invoke(IPC.globalDocContent, group, slug),
     projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
-    gates: () => ipcRenderer.invoke(IPC.gatesData),
+    skillLists: () => ipcRenderer.invoke(IPC.skillListsData),
     taskRouting: () => ipcRenderer.invoke(IPC.taskRoutingData),
   },
   config: {

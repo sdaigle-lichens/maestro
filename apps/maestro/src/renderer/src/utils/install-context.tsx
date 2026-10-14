@@ -16,10 +16,11 @@ import type {
  * skill. Falls back to naming the version bump alone — a project stamped for the first time by
  * this feature, where nothing else needed a copy.
  */
-function describeRuntimeRefresh(report: InstallReport): string {
+export function describeRuntimeRefresh(report: InstallReport): string {
   const parts: string[] = [];
   if (report.scriptsWritten.length > 0) parts.push("hooks");
   if (report.orchestratorSkill.action !== "unchanged") parts.push("orchestrator skill");
+  if (report.skillListsSeeded) parts.push("skill lists");
   return parts.length > 0 ? parts.join(", ") : `runtime version → ${report.runtimeVersion}`;
 }
 
@@ -92,7 +93,7 @@ export function InstallProvider({ children }: { children: React.ReactNode }) {
     // and `callMain` would otherwise still leave `res.ok === false` fall through silently below —
     // stated explicitly because the auto-refresh is a courtesy, not something the badge depends on.
     const auto = await callMain(() => window.maestro.install.autoRefresh());
-    if (auto.ok && auto.value) {
+    if (auto.ok && auto.value && !auto.value.configRefusal) {
       toast(<>Maestro runtime updated: {describeRuntimeRefresh(auto.value)}</>);
     }
     const res = await callMain(() => window.maestro.install.status());

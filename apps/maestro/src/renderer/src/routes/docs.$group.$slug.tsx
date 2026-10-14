@@ -9,7 +9,7 @@
 
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
-import { AlertTriangle, ArrowLeft, PanelLeft } from "lucide-react";
+import { ArrowLeftIcon, SidebarSimpleIcon, WarningIcon } from "@phosphor-icons/react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import TopNav from "../components/top-nav";
@@ -70,7 +70,7 @@ function GroupDocsPanel({
 }) {
   return (
     <SlidePanel isOpen={isOpen} onClose={onClose} side="left" widthClass="w-80" toggleDataAttr="data-docs-toggle">
-      <div className="flex items-center border-b border-(--line) px-4 py-3">
+      <div className="flex items-center border-b border-maestro px-4 py-3">
         <span className="section-label">Maestro</span>
       </div>
       <nav className="flex-1 overflow-y-auto py-2">
@@ -82,10 +82,10 @@ function GroupDocsPanel({
                 params={{ group, slug: doc.slug }}
                 search={{ q: "", at: "" }}
                 onClick={onClose}
-                className="flex items-center gap-2 px-4 py-2 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink)"
+                className="flex items-center gap-2 px-4 py-2 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro"
                 activeProps={{
                   className:
-                    "flex items-center gap-2 px-4 py-2 text-[13px] text-primary bg-(--primary-dim) border-l-2 border-primary",
+                    "flex items-center gap-2 px-4 py-2 text-[13px] text-maestro-primary bg-maestro-primary-subtle border-l-2 border-maestro-primary-strong",
                 }}
               >
                 {doc.title}
@@ -159,26 +159,26 @@ function GlobalDocPage() {
   const groupDocs = list.ok ? list.value.app : [];
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) flex flex-col overflow-hidden">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro flex flex-col overflow-hidden">
       <TopNav />
 
-      <div className="flex items-center gap-2 px-4 py-2 border-b border-(--line) shrink-0">
+      <div className="flex items-center gap-2 px-4 py-2 border-b border-maestro shrink-0">
         <button
           type="button"
           data-docs-toggle
           onClick={() => setPanelOpen((v) => !v)}
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-(--ink-2) hover:text-(--ink) bg-transparent border-0 cursor-pointer focus:outline-none"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-maestro-muted hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
         >
-          <PanelLeft size={13} /> Maestro docs
+          <SidebarSimpleIcon size={13} /> Maestro docs
         </button>
         <Link
           to="/docs"
-          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-(--ink-2) hover:text-(--ink)"
+          className="flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[12px] text-maestro-muted hover:text-maestro"
         >
-          <ArrowLeft size={13} /> Search
+          <ArrowLeftIcon size={13} /> Search
         </Link>
         <div className="flex-1" />
-        <span className="font-mono text-[11px] text-(--ink-3) truncate">
+        <span className="font-mono text-[11px] text-maestro-muted truncate">
           {group}/{slug}.md
         </span>
         {q.trim() && (
@@ -187,7 +187,7 @@ function GlobalDocPage() {
             onClick={() =>
               void navigate({ to: "/docs/$group/$slug", params: { group, slug }, search: { q: "", at: "" } })
             }
-            className="px-2 py-0.5 rounded-md text-[11px] text-primary bg-(--primary-dim) border border-ring cursor-pointer focus:outline-none"
+            className="px-2 py-0.5 rounded-md text-[11px] text-maestro-primary bg-maestro-primary-subtle border border-maestro-focus-ring cursor-pointer focus:outline-none"
           >
             highlighting “{q.trim()}” — clear
           </button>
@@ -200,16 +200,16 @@ function GlobalDocPage() {
         {!doc.ok ? (
           <div className="mx-auto max-w-3xl px-6 py-10">
             <div className="flex items-start gap-2 px-4 py-3 rounded-lg bg-red-500/10">
-              <AlertTriangle size={16} className="shrink-0 mt-px text-red-500" />
+              <WarningIcon size={16} className="shrink-0 mt-px text-red-500" />
               <div>
-                <p className="text-[13px] text-(--ink) m-0 mb-1">
+                <p className="text-[13px] text-maestro m-0 mb-1">
                   Could not open{" "}
                   <span className="font-mono">
                     {group}/{slug}.md
                   </span>
                   .
                 </p>
-                <p className="text-[12px] text-(--ink-2) m-0">{doc.error}</p>
+                <p className="text-[12px] text-maestro-muted m-0">{doc.error}</p>
               </div>
             </div>
           </div>

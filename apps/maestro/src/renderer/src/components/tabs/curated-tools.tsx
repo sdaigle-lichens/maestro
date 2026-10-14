@@ -5,14 +5,14 @@
 // why the library did not come across.
 
 import { useMemo, useState } from "react";
-import { Search } from "lucide-react";
+import { MagnifyingGlassIcon } from "@phosphor-icons/react";
 import CopyableText from "@repo/ui/copyable-text";
 import type { CuratedPlugin } from "../../utils/tools";
 
 const TH =
-  "border-b border-(--line) px-4 py-2.5 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-(--ink-2)";
+  "border-b border-maestro px-4 py-2.5 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-maestro-muted";
 const SELECT =
-  "rounded-md border border-(--line) bg-(--bg-elev) px-3 py-1.5 text-[13px] text-(--ink) outline-none hover:border-border-strong cursor-pointer";
+  "rounded-md border border-maestro bg-maestro-elevated px-3 py-1.5 text-[13px] text-maestro outline-none hover:border-maestro-strong cursor-pointer";
 
 type StatusFilter = "all" | "installed" | "not-installed";
 
@@ -43,28 +43,28 @@ export default function CuratedTools({ plugins }: { plugins: CuratedPlugin[] }) 
         <div>
           <div className="flex items-center gap-3">
             <span className="section-label">Curated Plugins</span>
-            <span className="text-[10px] text-subtle">
+            <span className="text-[10px] text-maestro-muted">
               {visible.length} shown · {installedCount} installed
             </span>
           </div>
-          <p className="mt-1.5 text-[12px] text-subtle m-0">
+          <p className="mt-1.5 text-[12px] text-maestro-muted m-0">
             Plugins from marketplaces Claude Code has cached on this machine.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           <div
-            className={`flex w-full sm:w-56 shrink-0 items-center gap-2 rounded-md border bg-(--bg-elev) px-3 py-1.5 transition-colors ${
-              search ? "border-primary" : "border-(--line)"
+            className={`flex w-full sm:w-56 shrink-0 items-center gap-2 rounded-md border bg-maestro-elevated px-3 py-1.5 transition-colors ${
+              search ? "border-maestro-primary-strong" : "border-maestro"
             }`}
           >
-            <Search size={11} className="shrink-0 text-subtle" />
+            <MagnifyingGlassIcon size={11} className="shrink-0 text-maestro-muted" />
             <input
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search…"
-              className="w-full bg-transparent text-[13px] text-(--ink) placeholder-subtle outline-none"
+              className="w-full bg-transparent text-[13px] text-maestro placeholder-maestro-muted outline-none"
             />
           </div>
 
@@ -85,17 +85,17 @@ export default function CuratedTools({ plugins }: { plugins: CuratedPlugin[] }) 
       </div>
 
       {plugins.length === 0 ? (
-        <p className="text-[13px] text-subtle m-0">
+        <p className="text-[13px] text-maestro-muted m-0">
           No curated marketplace is cached on this machine yet. Adding one with{" "}
           <span className="font-mono">claude plugin marketplace add …</span> populates this list.
         </p>
       ) : visible.length === 0 ? (
-        <p className="text-[13px] text-subtle m-0">No plugins match the current filters.</p>
+        <p className="text-[13px] text-maestro-muted m-0">No plugins match the current filters.</p>
       ) : (
-        <div className="overflow-hidden rounded-lg border border-(--line)">
+        <div className="overflow-hidden rounded-lg border border-maestro">
           <table className="w-full border-collapse">
             <thead>
-              <tr className="bg-(--bg-elev)">
+              <tr className="bg-maestro-elevated">
                 <th className={TH}>Plugin</th>
                 <th className={TH}>Source</th>
                 <th className={TH}>Description</th>
@@ -108,16 +108,16 @@ export default function CuratedTools({ plugins }: { plugins: CuratedPlugin[] }) 
               {visible.map((plugin) => (
                 <tr
                   key={`${plugin.marketplace}/${plugin.name}`}
-                  className="border-b border-(--line) last:border-0 hover:bg-(--bg-elev) transition-colors"
+                  className="border-b border-maestro last:border-0 hover:bg-maestro-elevated transition-colors"
                 >
                   <td className="px-4 py-2.5 align-top">
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <span className="inline-block rounded-md border border-ring bg-(--primary-dim) px-2 py-0.5 font-mono text-[12px] text-primary">
+                      <span className="inline-block rounded-md border border-maestro-focus-ring bg-maestro-primary-subtle px-2 py-0.5 font-mono text-[12px] text-maestro-primary">
                         {plugin.name}
                       </span>
                       {plugin.isInstalled && (
-                        <span className="inline-flex items-center gap-1 rounded-md border border-(--green-dim) bg-(--green-dim) px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success">
-                          <span className="h-1.5 w-1.5 rounded-full bg-success" />
+                        <span className="inline-flex items-center gap-1 rounded-md border border-maestro-success bg-maestro-success-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-maestro-success">
+                          <span className="h-1.5 w-1.5 rounded-full bg-maestro-success" />
                           Installed
                         </span>
                       )}
@@ -127,24 +127,24 @@ export default function CuratedTools({ plugins }: { plugins: CuratedPlugin[] }) 
                     <span
                       className={`inline-block rounded-md border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider ${
                         plugin.marketplaceLabel.toLowerCase().includes("anthropic")
-                          ? "border-ring bg-(--primary-dim) text-primary"
-                          : "border-(--line) bg-(--bg-elev) text-subtle"
+                          ? "border-maestro-focus-ring bg-maestro-primary-subtle text-maestro-primary"
+                          : "border-maestro bg-maestro-elevated text-maestro-muted"
                       }`}
                     >
                       {plugin.marketplaceLabel}
                     </span>
                   </td>
-                  <td className="px-4 py-2.5 align-top text-[13px] text-(--ink-2)">{plugin.description}</td>
+                  <td className="px-4 py-2.5 align-top text-[13px] text-maestro-muted">{plugin.description}</td>
                   <td className="px-4 py-2.5 align-top" style={{ minWidth: "20em" }}>
                     {plugin.isInstalled ? (
-                      <span className="text-[13px] text-subtle">—</span>
+                      <span className="text-[13px] text-maestro-muted">—</span>
                     ) : (
                       <CopyableText
                         text={plugin.installCommand}
                         className="inline-block"
                         previewText="Click to copy install command"
                       >
-                        <code className="inline-block rounded-md border border-(--line) bg-(--bg) px-2.5 py-1.5 font-mono text-[12px] text-(--ink-2)">
+                        <code className="inline-block rounded-md border border-maestro bg-maestro px-2.5 py-1.5 font-mono text-[12px] text-maestro-muted">
                           {plugin.installCommand}
                         </code>
                       </CopyableText>

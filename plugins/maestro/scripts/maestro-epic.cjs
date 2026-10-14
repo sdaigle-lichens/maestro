@@ -21,8 +21,13 @@
 //   node maestro-epic.cjs set-manager <slug> <session name>
 //   node maestro-epic.cjs add-worker <slug> <session name> [--task <NNN-task.md>]
 //   node maestro-epic.cjs remove-worker <slug> <session name>
+//   node maestro-epic.cjs of <NNN-task.md>
+//       Prints the slug of the epic the task belongs to, or nothing (exit 0) when it belongs to none.
+//       The orchestrator runs it once, when it builds the task list, to word the last node.
 //   node maestro-epic.cjs report --task <NNN-task.md> [--file <path>|-] [--from "<session name>"]
-//       The orchestrator's done step. Writes the report body (a file, or stdin when --file is "-" or
+//       The orchestrator's report step. `--from` defaults to the session name recorded on the task's
+//       claim, when that claim still exists (`done` deletes it, so the command it prints carries --from).
+//       Writes the report body (a file, or stdin when --file is "-" or
 //       omitted) into the inbox of the epic the task belongs to and logs it. Prints the report file
 //       path and, when the epic has a manager recorded, the name to message. A task that belongs
 //       to no epic prints a single line and exits 0: nothing else happens.
@@ -72,6 +77,14 @@ function need(value, usage) {
   return value;
 }
 
+// What to do when the SendMessage to the recorded manager fails. The saved file is the delivery.
+function sendFailedHint(kind) {
+  return (
+    `  If that SendMessage fails, run ListAgents. If exactly one session plausibly matches the manager, ask the user before messaging it. ` +
+    `Never conclude the manager is gone from one failed send: the saved ${kind} file is the real delivery, and the manager sees it as unacknowledged on its next check.\n`
+  );
+}
+
 function readBody(file) {
   if (file && file !== "-") return fs.readFileSync(path.resolve(file), "utf8");
   return fs.readFileSync(0, "utf8");
@@ -84,7 +97,9 @@ try {
     case "create": {
       const slug = need(positional[0], "create <slug> [--goal <text>] [--manager <name>]");
       const { dir } = epics.createEpic(projectDir, slug, { goal: flags.goal, manager: flags.manager });
-      process.stdout.write(`Maestro epic: created "${slug}" at ${dir}\n  edit ${path.join(dir, "EPIC.md")} for the goal, scope and decisions\n`);
+      process.stdout.write(
+        `Maestro epic: created "${slug}" at ${dir}\n  edit ${path.join(dir, "EPIC.md")} for the goal, scope and decisions\n`
+      );
       break;
     }
     case "list": {
@@ -120,18 +135,36 @@ try {
       break;
     }
     case "set-manager": {
-      epics.setManager(projectDir, need(positional[0], "set-manager <slug> <name>"), need(positional[1], "set-manager <slug> <name>"));
+      epics.setManager(
+        projectDir,
+        need(positional[0], "set-manager <slug> <name>"),
+        need(positional[1], "set-manager <slug> <name>")
+      );
       process.stdout.write(`Maestro epic: manager of "${positional[0]}" is now "${positional[1]}"\n`);
       break;
     }
     case "add-worker": {
-      epics.addWorker(projectDir, need(positional[0], "add-worker <slug> <name>"), need(positional[1], "add-worker <slug> <name>"), flags.task);
+      epics.addWorker(
+        projectDir,
+        need(positional[0], "add-worker <slug> <name>"),
+        need(positional[1], "add-worker <slug> <name>"),
+        flags.task
+      );
       process.stdout.write(`Maestro epic: recorded worker "${positional[1]}" on "${positional[0]}"\n`);
       break;
     }
     case "remove-worker": {
-      epics.removeWorker(projectDir, need(positional[0], "remove-worker <slug> <name>"), need(positional[1], "remove-worker <slug> <name>"));
+      epics.removeWorker(
+        projectDir,
+        need(positional[0], "remove-worker <slug> <name>"),
+        need(positional[1], "remove-worker <slug> <name>")
+      );
       process.stdout.write(`Maestro epic: removed worker "${positional[1]}" from "${positional[0]}"\n`);
+      break;
+    }
+    case "of": {
+      const slug = epics.epicOfTask(projectDir, need(positional[0], "of <NNN-task.md>"));
+      process.stdout.write(slug ? `${slug}\n` : "");
       break;
     }
     case "report": {
@@ -145,7 +178,8 @@ try {
       process.stdout.write(
         `Maestro epic: report ${r.id} for "${path.basename(task)}" written to ${r.file}\n` +
           (r.manager
-            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: report ${r.id} for ${path.basename(task)} is in ${r.file}. The file is the report; do not paste its contents.\n`
+            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: report ${r.id} for ${path.basename(task)} is in ${r.file}. The file is the report; do not paste its contents.\n` +
+              sendFailedHint("report")
             : `  No manager session is recorded for "${r.epic}", so there is nobody to message. The report is saved and a resumed manager will list it as unacknowledged.\n`)
       );
       break;
@@ -165,7 +199,8 @@ try {
       process.stdout.write(
         `Maestro epic: note ${r.id} from "${fromEpic}" to "${r.epic}" written to ${r.file}\n` +
           (r.manager
-            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: note ${r.id} from epic ${fromEpic} is in ${r.file}. The file is the note; do not paste its contents.\n`
+            ? `  Now message the manager session "${r.manager}" (SendMessage) with ONE short line: note ${r.id} from epic ${fromEpic} is in ${r.file}. The file is the note; do not paste its contents.\n` +
+              sendFailedHint("note")
             : `  No manager session is recorded for "${r.epic}", so there is nobody to message. The note is saved and a resumed manager will list it as unacknowledged.\n`)
       );
       break;
@@ -185,7 +220,9 @@ try {
       need(ids[0], "ack <slug> <id>... [--by <name>]");
       for (const id of ids) {
         const outcome = epics.acknowledgeReport(projectDir, slug, id, flags.by);
-        process.stdout.write(`Maestro epic: ${outcome === "already" ? `${id} was already acknowledged` : `acknowledged ${id}`}\n`);
+        process.stdout.write(
+          `Maestro epic: ${outcome === "already" ? `${id} was already acknowledged` : `acknowledged ${id}`}\n`
+        );
       }
       break;
     }

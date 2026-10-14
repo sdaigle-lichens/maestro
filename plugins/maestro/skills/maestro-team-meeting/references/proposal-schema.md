@@ -43,7 +43,7 @@ bare agent name (`backend`, not `maestro:backend`).
 | `rule.edit` / `.delete` / `.to-agent` / `.move` | `rule:<id>` | approval; delete or to-agent of a rule listed in maestro.json is blocked (use `rule.move` or `/rules`) |
 | `handoff.edit` | `handoff:<sender>/<receiver>` | auto |
 | `report.edit` | `report:<agent>` | approval |
-| `gate.change` | `gates` | approval |
+| `gate.change` | `gates` | approval; the target stays the literal `gates` and covers the project's configured start/end skill lists |
 
 **Conflicts:** two or more agents propose on the same target with different changes. Matching
 kind and change text (ignoring case and whitespace) counts as agreement: the proposals merge into

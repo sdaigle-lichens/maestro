@@ -118,8 +118,8 @@ function nestedSkillNote(nested) {
     `${nested.length === 1 ? "One of these" : "Some of these"} ${nested.length === 1 ? "lives" : "live"} outside this ` +
     `project's root \`.claude/skills\`, so the Skill tool will answer "Unknown skill" for it instead of finding it:\n` +
     `${lines.join("\n")}\n\n` +
-    `Reading the file gets you its content, not the Skill tool's own resource handling — for a concept skill (prose, ` +
-    `no bundled scripts or resources) that is the whole of it, so this is not a lesser substitute here.`
+    `Reading the file gets you its content, not the Skill tool's own resource handling — for a prose-only skill with ` +
+    `no bundled scripts or resources that is the whole of it, so this is not a lesser substitute here.`
   );
 }
 
@@ -161,11 +161,11 @@ function collect(cfg, sessionPath, agentType) {
 
   // loaded = auto-load before working; referenced = available, load only if the
   // task needs it. collectAgentSkills owns the node-walk + dedup (loaded wins).
-  const { loaded: loadedList, referenced: referencedList, matchedInstances } = collectAgentSkills(
-    searchList,
-    instances,
-    agentType
-  );
+  const {
+    loaded: loadedList,
+    referenced: referencedList,
+    matchedInstances,
+  } = collectAgentSkills(searchList, instances, agentType);
 
   // The route walk USED TO LIVE HERE, inline. It is `handoffRoutes()` in
   // apps/maestro/src/core/handoff-routes.ts now, reached through the generated lib, because the
@@ -289,6 +289,8 @@ function collectReportContext(cfg, projectDir, agentType) {
         `- Work ONLY inside ${wt.path} (branch ${wt.branch || "unknown"}). Use that directory as your working directory and absolute paths under it for every read, edit and command.\n` +
         `- Never edit files under ${mainRoot} outside \`.claude/\` — that is the other session's working tree.\n` +
         `- The shared \`.claude/\` state stays in the main checkout: the task queue (${mainRoot}/.claude/maestro-tasks/) and handoff channels (${mainRoot}/.claude/channels/) are read and written at those absolute paths, not inside the worktree.\n` +
+        `- Your shell does NOT start in the worktree; it starts in the main checkout (${mainRoot}). Aim every command at the worktree from the first one: \`pnpm --dir ${wt.path} <cmd>\`, \`git -C ${wt.path} <cmd>\`, and absolute paths under ${wt.path}. Never \`cd\` (the project's guardrails forbid it); a bare \`pnpm\` or \`git\` runs against the main checkout.\n` +
+        `- If writing your handoff payload to a channel file under ${mainRoot}/.claude/channels/ is denied, do not stall, retry in a loop or ask the user: include the full payload (the JSON block) in your final message, before your HANDOFF: line. The orchestrator writes the channel file for you from it.\n` +
         `- Do not merge, push, or remove the worktree or branch; the user does that.`
     );
   }
@@ -306,9 +308,7 @@ function collectReportContext(cfg, projectDir, agentType) {
   // `040`: is THIS SubagentStart a resume? See the header comment above for why `handoff` (never
   // `dispatch`, never session.json) is the right, race-proof signal. No session directory ⇒ no
   // lines ⇒ not a resume ⇒ full injection.
-  const isResume = payload.agent_id
-    ? hasCompletedRun(readLogLines(sess ? sess.log : null), payload.agent_id)
-    : false;
+  const isResume = payload.agent_id ? hasCompletedRun(readLogLines(sess ? sess.log : null), payload.agent_id) : false;
 
   if (result) {
     if (result.warning) {

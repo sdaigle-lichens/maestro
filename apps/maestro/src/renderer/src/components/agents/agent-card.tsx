@@ -6,7 +6,7 @@
 // taller than its content (which view mode always is, having no category row and no arrows) the
 // three groups spread instead of bunching at the top.
 
-import { Copy, Pencil } from "lucide-react";
+import { CopyIcon, PencilSimpleIcon } from "@phosphor-icons/react";
 import {
   AGENT_TYPES,
   GLOBAL_TAG,
@@ -15,6 +15,7 @@ import {
   type AvatarLayers,
 } from "../../../../shared/ipc";
 import AgentAvatarBlock from "./agent-avatar-block";
+import SkillRefMark from "../skill-ref-mark";
 import {
   CARD_MIN_HEIGHT,
   DASHED_ADD,
@@ -51,22 +52,23 @@ function SkillChip({
             : "Referenced — surfaced as available; the agent loads it only if the task needs it"
           : "Not attached — unticked, and dropped from this instance when you save"
       }
-      className={`relative inline-flex items-center gap-[7px] font-mono text-[11.5px] border border-(--line-2) rounded-md px-[9px] py-1 text-(--ink-2) ${
+      className={`relative inline-flex items-center gap-[7px] font-mono text-[11.5px] border border-maestro-strong rounded-md px-[9px] py-1 text-maestro-muted ${
         editing ? "cursor-pointer" : "cursor-default"
       }`}
     >
       {active && (
         <span
           aria-hidden
-          className="absolute -inset-px rounded-md border border-(--primary-dim-2) bg-(--primary-dim) pointer-events-none"
+          className="absolute -inset-px rounded-md border border-maestro-primary bg-maestro-primary-subtle pointer-events-none"
         />
       )}
       {editing && (
-        <span className="relative w-3 h-3 grid place-items-center border border-(--line-2) rounded-[3px] text-[9px] text-(--primary)">
+        <span className="relative w-3 h-3 grid place-items-center border border-maestro-strong rounded-[3px] text-[9px] text-maestro-primary">
           {active ? "✓" : ""}
         </span>
       )}
-      <span className={`relative ${active ? "text-(--ink-2)" : "text-(--ink-3)"}`}>{skill.id}</span>
+      <span className={`relative ${active ? "text-maestro-muted" : "text-maestro-muted"}`}>{skill.id}</span>
+      <SkillRefMark id={skill.id} className="relative" />
       {/*
         The one control the design didn't draw. A Maestro instance keeps its skills in TWO lists —
         `loaded_skills`, which the SubagentStart hook injects before the agent starts, and
@@ -84,8 +86,10 @@ function SkillChip({
           }}
           title={editing ? "Switch between loaded and referenced" : undefined}
           className={`relative font-mono text-[9px] uppercase tracking-[0.08em] px-1 rounded-[3px] border ${
-            skill.mode === "loaded" ? "border-(--primary-dim-2) text-(--primary)" : "border-(--line-2) text-(--ink-3)"
-          } ${editing ? "cursor-pointer hover:border-(--primary) hover:text-(--primary)" : "cursor-default"}`}
+            skill.mode === "loaded"
+              ? "border-maestro-primary text-maestro-primary"
+              : "border-maestro-strong text-maestro-muted"
+          } ${editing ? "cursor-pointer hover:border-maestro-primary-strong hover:text-maestro-primary" : "cursor-default"}`}
         >
           {skill.mode === "loaded" ? "loaded" : "ref"}
         </button>
@@ -167,19 +171,19 @@ export default function AgentCard({
   return (
     <div className="max-w-[500px] mx-auto px-7 pt-7 pb-14">
       <section
-        className="flex flex-col rounded-[14px] border border-(--line) p-[22px] shadow-(--shadow-2)"
+        className="flex flex-col rounded-[14px] border border-maestro p-[22px] shadow-(--shadow-2)"
         style={{
           minHeight: CARD_MIN_HEIGHT,
-          background: "linear-gradient(180deg, var(--bg-elev), var(--bg-2))",
+          background: "linear-gradient(180deg, var(--bg-elevated), var(--bg-faint))",
         }}
       >
-        <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-(--line)">
+        <div className="flex items-center justify-between gap-4 flex-wrap pb-4 border-b border-maestro">
           <div className="flex items-baseline gap-2.5 min-w-0 flex-wrap">
-            <h1 className="m-0 text-[22px] font-semibold tracking-[-0.02em] text-(--ink)">{name}</h1>
+            <h1 className="m-0 text-[22px] font-semibold tracking-[-0.02em] text-maestro">{name}</h1>
             {/* Consistent with which of the left pane's two sections this agent is listed under. */}
             <span
               title={isProjectTier ? "Lives in this project's .claude/agents/" : `Resolved from the ${source} tier`}
-              className="flex-none font-mono text-[10px] uppercase tracking-[0.08em] border border-(--line-2) rounded pl-[9px] pr-[7px] pt-[2px] pb-[3px] text-(--ink-3)"
+              className="flex-none font-mono text-[10px] uppercase tracking-[0.08em] border border-maestro-strong rounded pl-[9px] pr-[7px] pt-[2px] pb-[3px] text-maestro-muted"
             >
               {isProjectTier ? "Project" : "Global"}
             </span>
@@ -212,7 +216,7 @@ export default function AgentCard({
             onChange={onLayers}
           />
 
-          <div className="w-full min-w-0 flex-1 flex flex-col justify-between gap-4 border-t border-(--line) pt-4">
+          <div className="w-full min-w-0 flex-1 flex flex-col justify-between gap-4 border-t border-maestro pt-4">
             <div>
               <div className="flex items-center gap-2 mb-[9px]">
                 <span className="section-label">Description</span>
@@ -222,17 +226,17 @@ export default function AgentCard({
                   value={description}
                   onChange={(e) => onDescription(e.target.value)}
                   rows={3}
-                  className="w-full resize-none overflow-y-auto px-[11px] py-[9px] rounded-lg bg-(--bg-2) border border-(--line-2) text-(--ink) text-[12.5px] leading-[1.55] outline-none focus:border-(--primary) focus:bg-(--bg-3)"
+                  className="w-full resize-none overflow-y-auto px-[11px] py-[9px] rounded-lg bg-maestro-faint border border-maestro-strong text-maestro text-[12.5px] leading-[1.55] outline-none focus:border-maestro-primary-strong focus:bg-maestro-soft"
                 />
               ) : (
-                <p className="m-0 text-[13px] leading-[1.6] text-(--ink-2) text-pretty">{description}</p>
+                <p className="m-0 text-[13px] leading-[1.6] text-maestro-muted text-pretty">{description}</p>
               )}
             </div>
 
             <div>
               <div className="flex items-center gap-2 mb-[9px]">
                 <span className="section-label">Skills</span>
-                <span className="font-mono text-[9.5px] text-(--ink-3)">
+                <span className="font-mono text-[9.5px] text-maestro-muted">
                   {activeCount(skills)} of {skills.length} active
                 </span>
               </div>
@@ -262,7 +266,7 @@ export default function AgentCard({
                   </button>
                 )}
                 {skills.length === 0 && !editing && (
-                  <span className="text-[12px] text-(--ink-3)">No skills attached.</span>
+                  <span className="text-[12px] text-maestro-muted">No skills attached.</span>
                 )}
               </div>
             </div>
@@ -294,7 +298,7 @@ export default function AgentCard({
                         ? "Matches a skill tagged for any project"
                         : `Matches skills tagged ${projectTag}`
                     }
-                    className="inline-flex items-center font-mono text-[11px] border border-(--line-2) bg-(--bg-3) rounded-md px-2 py-[3px] text-(--ink-2)"
+                    className="inline-flex items-center font-mono text-[11px] border border-maestro-strong bg-maestro-soft rounded-md px-2 py-[3px] text-maestro-muted"
                   >
                     {projectTag}
                   </span>
@@ -307,7 +311,7 @@ export default function AgentCard({
 
       {editing ? (
         <div className="flex items-center justify-end gap-2.5 mt-[18px]">
-          <span className="flex-1 text-[11.5px] leading-[1.4] text-(--ink-3)">{footerNote}</span>
+          <span className="flex-1 text-[11.5px] leading-[1.4] text-maestro-muted">{footerNote}</span>
           <button type="button" onClick={onCancel} disabled={saving} className={FOOTER_BUTTON}>
             Cancel
           </button>
@@ -315,7 +319,7 @@ export default function AgentCard({
             type="button"
             onClick={onSave}
             disabled={saving}
-            className="h-[34px] px-[18px] rounded-md border border-(--primary) bg-(--primary) text-[#1c1917] text-[12.5px] font-medium cursor-pointer transition-colors duration-[120ms] hover:bg-(--primary-2) hover:border-(--primary-2) disabled:cursor-not-allowed disabled:opacity-60"
+            className="h-[34px] px-[18px] rounded-md border border-maestro-primary-strong bg-maestro-primary text-[#1c1917] text-[12.5px] font-medium cursor-pointer transition-colors duration-[120ms] hover:bg-maestro-primary-hover hover:border-maestro-primary-strong disabled:cursor-not-allowed disabled:opacity-60"
           >
             {saving ? "Saving…" : "Save"}
           </button>
@@ -336,11 +340,11 @@ export default function AgentCard({
               data-testid="agent-fork-button"
               className={FOOTER_BUTTON}
             >
-              <Copy size={13} />
+              <CopyIcon size={13} />
             </button>
           )}
           <button type="button" onClick={onStartEdit} title="Edit agent" className={FOOTER_BUTTON}>
-            <Pencil size={13} />
+            <PencilSimpleIcon size={13} />
           </button>
         </div>
       )}

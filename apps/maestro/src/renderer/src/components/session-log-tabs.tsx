@@ -1,4 +1,5 @@
-import { X } from "lucide-react";
+import type { ReactNode } from "react";
+import { XIcon } from "@phosphor-icons/react";
 import {
   orderSessions,
   pickSessionTitle,
@@ -19,6 +20,8 @@ interface SessionLogTabsProps {
   onSelect: (key: string) => void;
   /** Omitted for views whose sessions cannot be deleted from here (worktree tabs). */
   onDelete?: (projectRoot: string, sessionId: string) => void;
+  /** Buttons pinned at the strip's right end, outside the scrolling tabs, as tall as a tab. */
+  actions?: ReactNode;
 }
 
 function projectName(root: string, projectState: ProjectState): string {
@@ -50,6 +53,7 @@ export default function SessionLogTabs({
   titles,
   onSelect,
   onDelete,
+  actions,
 }: SessionLogTabsProps) {
   const ordered = orderSessions(sessions, [
     ...(projectState.current ? [projectState.current.root] : []),
@@ -57,64 +61,69 @@ export default function SessionLogTabs({
   ]);
 
   return (
-    <div className="flex items-stretch gap-2 border-b border-(--line-2) px-3 py-2 overflow-x-auto shrink-0 bg-(--bg-2)">
-      {ordered.map((s) => {
-        const key = sessionKey(s);
-        const isActive = key === selectedKey;
-        const ended = s.status === "ended";
-        const canDelete = !!onDelete && (ended || deletable.has(key));
-        const name = projectName(s.projectRoot, projectState);
-        const when = formatWhen(s);
-        const title = pickSessionTitle(s, titles[key]);
-        const fullTitle = titles[key]?.trim() || title;
-        const tooltip = `${name}\n${when ? `${when.date} ${when.time}` : ""}\n${fullTitle}\nsession ${s.sessionId}`;
-        return (
-          <div
-            key={key}
-            title={tooltip}
-            className={`group shrink-0 flex items-stretch rounded-lg border transition-colors ${
-              isActive
-                ? "bg-(--primary-dim-2) border-primary shadow-sm"
-                : "bg-(--bg-elev) border-(--line-2) hover:border-primary"
-            } ${ended ? "opacity-70" : ""}`}
-          >
-            <button
-              type="button"
-              onClick={() => onSelect(key)}
-              className="flex flex-col items-start gap-0.5 px-3 py-1.5 min-w-0 max-w-64 text-left cursor-pointer"
+    <div className="shrink-0 flex items-stretch border-b border-maestro-strong bg-maestro-faint">
+      <div className="flex-1 min-w-0 flex items-stretch gap-2 px-3 py-2 overflow-x-auto">
+        {ordered.map((s) => {
+          const key = sessionKey(s);
+          const isActive = key === selectedKey;
+          const ended = s.status === "ended";
+          const canDelete = !!onDelete && (ended || deletable.has(key));
+          const name = projectName(s.projectRoot, projectState);
+          const when = formatWhen(s);
+          const title = pickSessionTitle(s, titles[key]);
+          const fullTitle = titles[key]?.trim() || title;
+          const tooltip = `${name}\n${when ? `${when.date} ${when.time}` : ""}\n${fullTitle}\nsession ${s.sessionId}`;
+          return (
+            <div
+              key={key}
+              title={tooltip}
+              className={`group shrink-0 flex items-stretch rounded-lg border transition-colors ${
+                isActive
+                  ? "bg-maestro-primary-soft border-maestro-primary-strong shadow-sm"
+                  : "bg-maestro-elevated border-maestro-strong hover:border-maestro-primary-strong"
+              } ${ended ? "opacity-70" : ""}`}
             >
-              <span className="flex items-center gap-1.5 max-w-full text-[10px] font-semibold uppercase tracking-wider text-(--ink-2)">
-                <span className={`text-[8px] shrink-0 ${ended ? "text-(--ink-3)" : "text-(--green)"}`}>●</span>
-                <span className="truncate">{name}</span>
-                {when && (
-                  <span className="shrink-0 normal-case font-normal tracking-normal text-(--ink-3)">
-                    {when.date} {when.time}
-                  </span>
-                )}
-                {ended && (
-                  <span className="shrink-0 normal-case font-normal tracking-normal text-(--ink-3)">(ended)</span>
-                )}
-              </span>
-              <span
-                className={`max-w-full truncate text-[12px] ${isActive ? "text-(--ink) font-semibold" : "text-(--ink-2)"}`}
-              >
-                {title}
-              </span>
-            </button>
-            {canDelete && (
               <button
                 type="button"
-                onClick={() => onDelete?.(s.projectRoot, s.sessionId)}
-                className="self-start m-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-(--line-2) bg-(--bg-2) text-(--ink) transition-colors hover:border-red-500 hover:bg-red-500/15 hover:text-red-500 cursor-pointer"
-                aria-label="Delete session"
-                title="Delete session"
+                onClick={() => onSelect(key)}
+                className="flex flex-col items-start gap-0.5 px-3 py-1.5 min-w-0 max-w-64 text-left cursor-pointer"
               >
-                <X size={13} strokeWidth={2.5} />
+                <span className="flex items-center gap-1.5 max-w-full text-[10px] font-semibold uppercase tracking-wider text-maestro-muted">
+                  <span className={`text-[8px] shrink-0 ${ended ? "text-maestro-muted" : "text-maestro-success"}`}>
+                    ●
+                  </span>
+                  <span className="truncate">{name}</span>
+                  {when && (
+                    <span className="shrink-0 normal-case font-normal tracking-normal text-maestro-muted">
+                      {when.date} {when.time}
+                    </span>
+                  )}
+                  {ended && (
+                    <span className="shrink-0 normal-case font-normal tracking-normal text-maestro-muted">(ended)</span>
+                  )}
+                </span>
+                <span
+                  className={`max-w-full truncate text-[12px] ${isActive ? "text-maestro font-semibold" : "text-maestro-muted"}`}
+                >
+                  {title}
+                </span>
               </button>
-            )}
-          </div>
-        );
-      })}
+              {canDelete && (
+                <button
+                  type="button"
+                  onClick={() => onDelete?.(s.projectRoot, s.sessionId)}
+                  className="self-start m-1 flex h-5 w-5 shrink-0 items-center justify-center rounded-md border border-maestro-strong bg-maestro-faint text-maestro transition-colors hover:border-red-500 hover:bg-red-500/15 hover:text-red-500 cursor-pointer"
+                  aria-label="Delete session"
+                  title="Delete session"
+                >
+                  <XIcon size={13} weight="bold" />
+                </button>
+              )}
+            </div>
+          );
+        })}
+      </div>
+      {actions && <div className="shrink-0 flex items-stretch px-3 py-2">{actions}</div>}
     </div>
   );
 }

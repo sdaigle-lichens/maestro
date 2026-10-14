@@ -260,10 +260,10 @@ function CreateMarketplace() {
                 type="checkbox"
                 checked={field.value}
                 onChange={(e) => field.onChange(e.target.checked)}
-                className="w-4 h-4 cursor-pointer accent-(--primary)"
+                className="w-4 h-4 cursor-pointer accent-maestro-primary"
               />
-              <span className="text-sm text-(--ink)">Private repository</span>
-              <span className="text-xs text-subtle">— adds token-based auth setup instructions</span>
+              <span className="text-sm text-maestro">Private repository</span>
+              <span className="text-xs text-maestro-muted">— adds token-based auth setup instructions</span>
             </label>
           )}
         />

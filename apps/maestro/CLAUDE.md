@@ -25,7 +25,8 @@ functions in core (e.g. `session-ipc.ts`); `ipc.ts` only supplies state and side
 ## Commands
 
 ```bash
-pnpm --filter maestro dev        # electron-vite dev, HMR on the renderer
+pnpm --filter maestro dev        # sandbox preflight, then electron-vite dev (HMR on the renderer)
+pnpm --filter maestro check:sandbox   # just the preflight; prints the one-time AppArmor fix (see docs/installation.md)
 pnpm --filter maestro build
 pnpm --filter maestro typecheck  # both tsconfig projects
 pnpm --filter maestro test       # test/ and test/core/ as one suite

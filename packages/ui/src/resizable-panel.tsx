@@ -100,7 +100,7 @@ export function PanelResizeHandle({ onResizeStart, className = "", style }: Pane
       onPointerDown={onResizeStart}
     >
       {/* visible hairline, thickens/tints on hover */}
-      <div className="mx-auto h-full w-px bg-transparent transition-colors group-hover:w-0.5 group-hover:bg-(--primary)" />
+      <div className="mx-auto h-full w-px bg-transparent transition-colors group-hover:w-0.5 group-hover:bg-maestro-primary" />
     </div>
   );
 }

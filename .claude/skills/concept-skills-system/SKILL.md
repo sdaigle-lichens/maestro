@@ -1,6 +1,6 @@
 ---
 name: concept-skills-system
-description: "Explains the concept-skill machinery the maestro plugin ships: what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the maestro-concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, deciding whether something belongs in a concept skill or in docs/, or deciding which .claude/skills directory a new concept skill belongs in (an app's, or the repo root's — the rule is by audience, and nothing developer-facing may live under plugins/)."
+description: "Explains the concept-skill machinery the opt-in concept-skills plugin ships (plugins/concept-skills, built from packages/concept-skills): what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and the agents list in concept-skills.json, the install/update/uninstall lifecycle skills, and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, deciding whether something belongs in a concept skill or in docs/, or deciding which .claude/skills directory a new concept skill belongs in (an app's, or the repo root's — the rule is by audience, and nothing developer-facing may live under plugins/)."
 metadata:
   type: concept-skill
   version: "1.4"
@@ -61,34 +61,39 @@ run gets `initial`, and the repo-level record moves only by `0.1`. See
 ## The CLI owns the versions
 
 ```
-maestro-concept-skills.cjs list [--json]
-maestro-concept-skills.cjs state
-maestro-concept-skills.cjs agents
-maestro-concept-skills.cjs stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]
-maestro-concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]
+concept-skills.cjs list [--json]
+concept-skills.cjs state
+concept-skills.cjs agents              # the "agents" list in concept-skills.json
+concept-skills.cjs agents-discover     # what agent files / maestro.json suggest
+concept-skills.cjs agents-set <name>...
+concept-skills.cjs stamp <id-or-dir> --bump minor|major|initial [--sha <sha>]
+concept-skills.cjs state-set --bump minor|major|initial [--sha <sha>]
 ```
 
-Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd).
+Every command takes `--root <dir>` (default `$CLAUDE_PROJECT_DIR`, then cwd). The root is resolved
+once at the top of the CLI and passed down; never read `CLAUDE_PROJECT_DIR` without that fallback —
+an inline `node -e` that does reads `undefined/.claude/…`, swallows the error, and reports an empty
+answer that looks like a real one.
 
 **Never hand-edit `metadata.version` or `metadata.last-update`.** The script owns them so a version
 cannot quietly drift — and a version stuck at `1.0` makes `/update-single-concept-skill` re-research
 a concept that was already done.
 
-A stamp rewrites only the two `metadata:` lines: `test/core/concept-skills.test.ts` asserts the rest
+A stamp rewrites only the two `metadata:` lines: `packages/concept-skills/test/concept-skills.test.ts` asserts the rest
 of the file comes back **byte-identical**, including a `description` with a colon in it. A
 frontmatter rewriter that reserialises what it parsed eventually loses something, so the test is
 byte equality rather than a structural comparison.
 
 ## `list` is a runtime contract, not just a maintenance command
 
-Two **published** plugin skills inject its stdout with Claude Code's `!`-prefixed command-injection
-syntax, each granting exactly
-`Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-concept-skills.cjs" list)` in `allowed-tools`:
-`use-code-architecture-design-check` (to judge whether a task adds or reshapes a concept) and
-`code-architecture-design` (to load the concepts a new module sits next to). So changing `list`'s
-human output shape is a published-surface change, and both skills must keep the same fallback
-wording for the empty / `[shell command execution disabled by policy]` case. `--json` is the stable
-form for programmatic callers; leave it to them.
+The published `load-concept-skills` helper injects its stdout with Claude Code's `!`-prefixed
+command-injection syntax, granting exactly
+`Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/concept-skills.cjs" list)` in `allowed-tools`, and maps
+empty output, `[shell command execution disabled by policy]` or a "none found" message to **NO LIST**.
+Other skills reach the list only through it (`use-code-architecture-design-check` directly,
+`code-architecture-design` via `explore-concept-skills`), so changing `list`'s human output shape is
+a published-surface change that must keep that NO LIST mapping true. `--json` is the stable form for
+programmatic callers; leave it to them.
 
 ## Traps
 
@@ -96,7 +101,7 @@ form for programmatic callers; leave it to them.
   hit exactly that: eight hand-written concept skills existed under `apps/maestro/.claude/skills`
   while `list` reported none.
 - **Repo-level state is not in `maestro.json`.** Since `ff24b37` it lives in its own
-  `<root>/.claude/concept-skills.json` (`MaestroConceptSkillsState`: `version`, `last_update`). Docs
+  `<root>/.claude/concept-skills.json` (`ConceptSkillsState`: `version`, `last_update`, plus the `agents` list). Docs
   or code referencing a `concept-skills-last-update` key on `maestro.json` are stale.
 - **`create-concept-skills` must not write `agents/`.** Those notes need an understanding it has
   deliberately not acquired.
@@ -105,17 +110,29 @@ form for programmatic callers; leave it to them.
 
 | File | Role |
 | --- | --- |
-| `plugins/maestro/scripts/maestro-concept-skills.cjs` | The CLI. |
-| `plugins/maestro/scripts/lib/maestro-concept-skills.cjs` | Generated bundle of the shared logic. |
-| `apps/maestro/src/core/concept-skills.ts` | The source: parsing, discovery, stamping, state. |
-| `apps/maestro/src/core/plugin-entries/maestro-concept-skills.ts` | Entry point for the bundle. |
-| `plugins/maestro/skills/{create,update}-concept-skills/`, `update-single-concept-skill/`, `scribe/` | The four skills. |
-| `apps/maestro/test/core/concept-skills.test.ts` | Tests. |
+| `plugins/concept-skills/scripts/concept-skills.cjs` | The CLI. |
+| `plugins/concept-skills/scripts/lib/concept-skills.cjs` | Generated bundle of the shared logic (never hand-edit). |
+| `packages/concept-skills/src/concept-skills.ts` | The source: parsing, discovery, stamping, state, the agents list. |
+| `packages/concept-skills/scripts/build-plugin-lib.mjs` | Builds the bundle: `pnpm --filter @repo/concept-skills build:plugin-lib`. |
+| `plugins/concept-skills/skills/{create,update}-concept-skills/`, `update-single-concept-skill/`, `scribe/` | The four skills. |
+| `plugins/concept-skills/skills/concept-skills-{install,update,uninstall}/` | Lifecycle: enable the plugin and seed `concept-skills.json` (with the `agents` list); disable it. They never edit `maestro.json`. |
+| `plugins/concept-skills/skills/{load,explore}-concept-skills/`, `use-code-architecture-design-check/`, `code-architecture-design/` | Helpers and the two design skills. |
+| `packages/concept-skills/test/concept-skills.test.ts` | Tests. |
+
+## Opt-in, and how Maestro relates
+
+The plugin is opt-in per project (Claude Code `enabledPlugins`). Maestro names none of it: the
+scribe agent has no concept-skill trigger, gaps are a generic `skill_gaps`, and the seeds name the
+design skill only when `seedSkillsFor()` (`apps/maestro/src/core/skill-availability.ts`) finds it
+resolvable. `maestro-update` runs `maestro-stale-refs.cjs` to flag skill ids in `maestro.json` that
+no longer resolve and to suggest installing `concept-skills` when `concept-skills.json` exists
+without the plugin enabled. `readAgentsAvailable` lives in Maestro's `config.ts`; the CLI's
+`agents` reads its own list instead.
 
 ## Relationships
 
 - [`task-queue`](../task-queue/SKILL.md) — the other plugin subsystem with a CJS/TS pair.
-- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — how `concept-skills.ts` reaches the CLI.
+- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — how the Maestro libs are built; the concept-skills lib has its own build in `packages/concept-skills`.
 - `maestro-architecture` — the runtime that dispatches the `@scribe` agent that maintains this list.
 
 ## Sub-concepts

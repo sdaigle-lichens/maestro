@@ -7,15 +7,15 @@
   font-size: 0.75rem;
   font-weight: 500;
   border-radius: 6px;
-  border: 1px solid var(--primary-dim-2);
-  background: var(--primary-dim);
+  border: 1px solid var(--primary-soft);
+  background: var(--primary-bg);
   color: var(--primary);
 }
 
 .chip-local {
-  border-color: var(--line-2);
-  background: var(--bg-3);
-  color: var(--ink-2);
+  border-color: var(--border-strong);
+  background: var(--bg-soft);
+  color: var(--text-muted);
 }
 
 .scope-badge {
@@ -32,12 +32,12 @@
 
 .scope-badge.user {
   color: var(--primary);
-  background: var(--primary-dim);
-  border: 1px solid var(--primary-dim-2);
+  background: var(--primary-bg);
+  border: 1px solid var(--primary-soft);
 }
 
 .scope-badge.local {
-  color: var(--ink-2);
-  background: var(--bg-3);
-  border: 1px solid var(--line-2);
+  color: var(--text-muted);
+  background: var(--bg-soft);
+  border: 1px solid var(--border-strong);
 }

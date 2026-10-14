@@ -67,6 +67,12 @@
 // app's installRuntime() applies, and same degrade-on-old-`node` discipline as the skill-tags read
 // above.
 //
+// `--ignore-mode committed|ignored` (default `committed`, today's behaviour): `ignored` records
+// `.claude/` in the clone-local git exclude file (`git rev-parse --git-path info/exclude`) instead of
+// writing the committed repo-root .gitignore `# Maestro` block. Idempotent; skipped if `.claude/` is
+// already ignored. Summary fields: ignoreMode, wroteGitExclude, gitExcludePath. Refusal:
+// `{ ok:false, refused:"ignore-mode", reason }`. The desktop app's installRuntime() has no equivalent.
+//
 // `--allow-downgrade` (`087`, a bare flag): without it, a project whose maestro.json `runtimeVersion`
 // is NEWER than this plugin's version is refused before anything is written — JSON
 // `{ ok:false, refused:"downgrade", projectRuntimeVersion, pluginVersion, reason }`, exit 1.
@@ -78,7 +84,13 @@ const path = require("path");
 const crypto = require("crypto");
 const { execSync } = require("child_process");
 const { syncManagedRegions } = require("./lib/maestro-skill-regions.cjs");
-const { defaultV3Config, seededAgentNames } = require("./lib/maestro-seed.cjs");
+const {
+  defaultV3Config,
+  seededAgentNames,
+  seedMissingSkillLists,
+  maestroConfigRefusal,
+} = require("./lib/maestro-seed.cjs");
+const { seedSkillsFor } = require("./lib/maestro-skill-availability.cjs");
 const { walkProjectSkillIds, compareRuntimeVersions } = require("./lib/maestro-session.cjs");
 
 /**
@@ -196,6 +208,56 @@ function ensureRepoRootGitignore(repoRoot) {
     // `080`: durable run metrics; recordRun also writes its own `*` .gitignore into the directory.
     "**/.claude/maestro-metrics/",
   ]);
+}
+
+// `--ignore-mode ignored`: Maestro is installed but kept out of version control for everyone but this
+// clone. The root `.claude` folder is recorded in the clone-local, never-committed git exclude file
+// (resolved with `git rev-parse --git-path info/exclude`, which is right for worktrees and
+// submodules too) and the committed repo-root `.gitignore` `# Maestro` block is NOT written.
+// The marker is written on the line directly above the entry so maestro-uninstall.js can tell an
+// entry THIS installer added from one the user wrote themselves, and remove only the former.
+const EXCLUDE_ENTRY = ".claude/";
+const EXCLUDE_MARKER = "# Maestro (added by maestro-install)";
+const IGNORE_MODES = ["committed", "ignored"];
+
+function gitOut(cwd, args) {
+  try {
+    return execSync(`git ${args}`, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] }).trim();
+  } catch {
+    return null;
+  }
+}
+
+// Is the project's `.claude/` already ignored by any git ignore source?
+function claudeDirIsIgnored(projectDir) {
+  try {
+    execSync("git check-ignore -q -- .claude/", { cwd: projectDir, stdio: "ignore" });
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// Absolute path of this checkout's info/exclude, or null outside a git repo.
+function resolveGitExcludePath(projectDir) {
+  const p = gitOut(projectDir, "rev-parse --git-path info/exclude");
+  return p ? path.resolve(projectDir, p) : null;
+}
+
+// Record `.claude/` in the exclude file unless `.claude` is already ignored. Creates the file and
+// its directory if missing. Returns { wrote, excludePath }.
+function ensureGitExclude(projectDir, excludePath) {
+  if (claudeDirIsIgnored(projectDir)) return { wrote: false, excludePath };
+  const existed = fs.existsSync(excludePath);
+  const existing = existed ? fs.readFileSync(excludePath, "utf8") : "";
+  const present = new Set(existing.split(/\r?\n/).map((l) => l.trim()));
+  if (present.has(EXCLUDE_ENTRY) || present.has(".claude") || present.has("/.claude/") || present.has("/.claude")) {
+    return { wrote: false, excludePath };
+  }
+  ensureDir(path.dirname(excludePath));
+  const prefix = existed && existing && !existing.endsWith("\n") ? "\n" : "";
+  fs.appendFileSync(excludePath, `${prefix}${EXCLUDE_MARKER}\n${EXCLUDE_ENTRY}\n`);
+  return { wrote: true, excludePath };
 }
 
 const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
@@ -356,6 +418,8 @@ const STATIC_ASSETS = [
   // Step 1's gate configuration (032) — see apps/maestro/src/core/install.ts's STATIC_ASSETS for
   // why its absence is the one that breaks an invocation outright.
   { src: "scripts/maestro-step1-gates.cjs", dest: ".claude/scripts/maestro-step1-gates.cjs" },
+  // The orchestrator's end-skills line — same shape as maestro-step1-gates.cjs above.
+  { src: "scripts/maestro-end-skills.cjs", dest: ".claude/scripts/maestro-end-skills.cjs" },
   // Step 4's task-routing configuration (046) — see apps/maestro/src/core/install.ts's
   // STATIC_ASSETS for the full rationale; same shape as maestro-step1-gates.cjs above.
   { src: "scripts/maestro-step4-gate.cjs", dest: ".claude/scripts/maestro-step4-gate.cjs" },
@@ -379,6 +443,8 @@ const STATIC_ASSETS = [
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // Backs maestro-epic.cjs above (`084`).
   { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
+  // Backs maestro-step1-gates.cjs and maestro-end-skills.cjs above.
+  { src: "scripts/lib/maestro-skill-lists.cjs", dest: ".claude/scripts/lib/maestro-skill-lists.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
   // apps/maestro/src/core/install.ts's STATIC_ASSETS for why a lib missing from this list fails
   // silently, and why the handoff store is copied even though its seed would have covered it.
@@ -441,7 +507,11 @@ function syncProjectReports(configPath, projectDir) {
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
     const localHash = onDisk === null ? null : sha256(onDisk);
 
-    const tracking = entry ? (entry.syncedFrom ? { kind: "tracked", hash: entry.syncedFrom.hash } : { kind: "detached" }) : { kind: "untracked" };
+    const tracking = entry
+      ? entry.syncedFrom
+        ? { kind: "tracked", hash: entry.syncedFrom.hash }
+        : { kind: "detached" }
+      : { kind: "untracked" };
 
     // Known versions of this agent's report: the CURRENT global content, plus every body this
     // agent has ever been seeded with. Mirrors report-sync.ts's own known-hash set exactly.
@@ -577,7 +647,15 @@ function syncProjectHandoffs(configPath, projectDir) {
 
 // ── the manifest is importable with no side effect; everything below runs the CLI only ──────────
 
-module.exports = { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, STATIC_ASSETS, runtimeAssets };
+module.exports = {
+  HOOK_REGISTRATIONS,
+  RETIRED_HOOK_SCRIPTS,
+  STATIC_ASSETS,
+  runtimeAssets,
+  EXCLUDE_ENTRY,
+  EXCLUDE_MARKER,
+  resolveGitExcludePath,
+};
 
 // The refusal `main()` prints when the project's stamped runtime is NEWER than this plugin, or null.
 function downgradeRefusal(projectDir, pluginRoot) {
@@ -630,6 +708,56 @@ function main() {
     process.stdout.write(JSON.stringify(refusal) + "\n");
     process.stderr.write(`maestro-install: ${refusal.reason}\n`);
     process.exit(1);
+  }
+
+  // `096`: an existing maestro.json that is unparseable or not version 3 is the user's authored
+  // graph. Refuse before the first write — same definition (maestroConfigRefusal) and wording as
+  // the app's installRuntime(), and never an unhandled exception.
+  let existingConfigText = null;
+  try {
+    existingConfigText = fs.readFileSync(path.join(projectDir, ".claude", "maestro.json"), "utf8");
+  } catch (err) {
+    if (err.code !== "ENOENT") {
+      process.stderr.write(`maestro-install: cannot read .claude/maestro.json: ${err.message}\n`);
+      process.stdout.write(JSON.stringify({ ok: false, refused: "config", reason: err.message }) + "\n");
+      process.exit(1);
+    }
+  }
+  const configRefusal = existingConfigText === null ? null : maestroConfigRefusal(existingConfigText);
+  if (configRefusal) {
+    process.stdout.write(
+      JSON.stringify({
+        ok: false,
+        refused: "config",
+        kind: configRefusal.kind,
+        file: configRefusal.file,
+        problem: configRefusal.problem,
+        reason: configRefusal.message,
+      }) + "\n"
+    );
+    process.stderr.write(`maestro-install: ${configRefusal.message}\n`);
+    process.exit(1);
+  }
+
+  // Absent flag = today's behaviour ("committed"). An unknown value or "ignored" outside a git repo is
+  // refused before any write.
+  const ignoreMode = flags["ignore-mode"] === undefined ? "committed" : flags["ignore-mode"];
+  let gitExcludePath = null;
+  if (!IGNORE_MODES.includes(ignoreMode)) {
+    const reason = `--ignore-mode must be one of ${IGNORE_MODES.join(", ")} (got "${ignoreMode}")`;
+    process.stdout.write(JSON.stringify({ ok: false, refused: "ignore-mode", reason }) + "\n");
+    process.stderr.write(`maestro-install: ${reason}\n`);
+    process.exit(1);
+  }
+  if (ignoreMode === "ignored") {
+    gitExcludePath = resolveGitExcludePath(projectDir);
+    if (!gitExcludePath) {
+      const reason =
+        "--ignore-mode ignored needs a git repository to hold the exclude entry, and this project is not in one";
+      process.stdout.write(JSON.stringify({ ok: false, refused: "ignore-mode", reason }) + "\n");
+      process.stderr.write(`maestro-install: ${reason}\n`);
+      process.exit(1);
+    }
   }
 
   const implAgents = (flags["impl-agents"] || "")
@@ -708,6 +836,9 @@ function main() {
   }
 
   try {
+    // First write of the run: the ignore entry lands before anything under .claude/ exists.
+    const gitExclude = ignoreMode === "ignored" ? ensureGitExclude(projectDir, gitExcludePath) : null;
+
     const claudeDir = path.join(projectDir, ".claude");
     const orchestratorSkillDir = path.join(claudeDir, "skills", "maestro");
     const scriptsDir = path.join(claudeDir, "scripts");
@@ -747,7 +878,8 @@ function main() {
       fs.rmSync(abs, { force: true });
       retiredScriptsRemoved.push(rel);
     }
-    const wroteRepoGitignore = ensureRepoRootGitignore(findRepoRoot(projectDir));
+    // Ignored mode never touches the committed .gitignore.
+    const wroteRepoGitignore = ignoreMode === "ignored" ? false : ensureRepoRootGitignore(findRepoRoot(projectDir));
 
     // Seed maestro.json only when there isn't one. An existing config is the user's own graph —
     // re-seeding it would silently discard every workflow and rule assignment they authored.
@@ -756,9 +888,30 @@ function main() {
     const configPath = path.join(claudeDir, "maestro.json");
     let seededConfig = false;
     if (!fs.existsSync(configPath)) {
-      const seeded = { ...defaultV3Config(implAgents, skillMap), project_tags: projectTags };
+      const seeded = { ...defaultV3Config(implAgents, skillMap, seedSkillsFor(projectDir)), project_tags: projectTags };
       fs.writeFileSync(configPath, JSON.stringify(seeded, null, 2));
       seededConfig = true;
+    }
+
+    // Re-install into a config that predates start_skills / end_skills: fill in what is missing with
+    // the fresh-seed defaults and drop the dead `gates` key. Mirrors installRuntime() in
+    // apps/maestro/src/core/install.ts. A config that does not parse (or is not version 3) is left
+    // alone, present lists are never touched, and the file is rewritten only when something changed.
+    let skillListsSeeded = null;
+    if (!seededConfig) {
+      let existing = null;
+      try {
+        existing = JSON.parse(fs.readFileSync(configPath, "utf8"));
+      } catch {
+        // Unparseable: not ours to repair.
+      }
+      if (existing && existing.version === 3) {
+        const fill = seedMissingSkillLists(existing, seedSkillsFor(projectDir));
+        if (fill.changed) {
+          fs.writeFileSync(configPath, JSON.stringify(fill.config, null, 2));
+          skillListsSeeded = fill.seeded;
+        }
+      }
     }
 
     // Stamp runtimeVersion last, after every file it describes is current on disk. Mirrors
@@ -791,7 +944,11 @@ function main() {
         hooksRemoved,
         retiredScriptsRemoved,
         wroteRepoGitignore,
+        ignoreMode,
+        wroteGitExclude: gitExclude ? gitExclude.wrote : false,
+        gitExcludePath: gitExclude ? gitExclude.excludePath : null,
         seededConfig,
+        skillListsSeeded,
         implAgents: seededConfig ? implAgents : undefined,
         projectTags: seededConfig ? projectTags : undefined,
         runtimeVersion,

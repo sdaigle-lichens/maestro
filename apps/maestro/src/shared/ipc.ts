@@ -24,8 +24,7 @@ import type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
-  MaestroGates,
-  MaestroGatesSlice,
+  MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
@@ -43,6 +42,9 @@ import type {
   SaveResult,
   RepoDetection,
   ConfigIssue,
+  SkillRefReport,
+  DanglingSkillRef,
+  UnavailableReason,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
@@ -157,8 +159,7 @@ export type {
   MaestroRuleV3,
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
-  MaestroGates,
-  MaestroGatesSlice,
+  MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
@@ -173,6 +174,9 @@ export type {
   SaveResult,
   RepoDetection,
   ConfigIssue,
+  SkillRefReport,
+  DanglingSkillRef,
+  UnavailableReason,
   InstallStatus,
   InstallReport,
   ReportSyncSummary,
@@ -357,19 +361,19 @@ export interface ProjectTagsData {
 }
 
 /**
- * What `/maestro`'s Step 1 gates card needs, and what it writes back. Half of the pair that drives
- * the orchestrator's injected Step 1: the app writes `maestro.json.gates` here, and
- * `maestro-step1-gates.cjs` reads it at invocation time and prints the one directive line the
- * skill body injects. Nothing else connects the two — there is no shared code path.
+ * What `/maestro`'s three skill pickers need, and what they write back: the ordered Maestro start,
+ * To-maestro-tasks start and Maestro end lists. The app writes `maestro.json.start_skills` /
+ * `end_skills` here; `maestro-step1-gates.cjs` and `maestro-end-skills.cjs` read them at invocation
+ * time through the SAME `resolveSkillLists`.
  */
-export interface GatesData {
-  /** Resolved, never raw: an absent, partial or corrupt `gates` block reads back as both false. */
-  gates: MaestroGates;
+export interface SkillListsData {
+  /** Resolved, never raw: a project with no `start_skills` reads back as empty lists. */
+  skillLists: MaestroSkillListsSlice;
 }
 
 /**
  * What `/maestro`'s Step 4 task-routing checkbox needs, and what it writes back. The sibling of
- * `GatesData` for `use_maestro_tasks` (`046`) — the app writes `maestro.json.use_maestro_tasks`
+ * `SkillListsData` for `use_maestro_tasks` (`046`) — the app writes `maestro.json.use_maestro_tasks`
  * here, and `maestro-step4-gate.cjs` reads it at invocation time to print the Step 4 directive.
  */
 export interface TaskRoutingData {
@@ -381,7 +385,7 @@ export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
-  | { sliceType: "gates"; slice: MaestroGatesSlice }
+  | { sliceType: "skill-lists"; slice: MaestroSkillListsSlice }
   | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
 
 export const IPC = {
@@ -392,6 +396,7 @@ export const IPC = {
 
   workflowsData: "data:workflows",
   workflowsReseed: "data:reseed",
+  skillRefReport: "data:skill-refs",
   rulesData: "data:rules",
   toolsData: "data:tools",
   docsData: "data:docs",
@@ -412,18 +417,18 @@ export const IPC = {
   projectTagsData: "data:project-tags",
   projectTagsSet: "project:tags:set",
 
-  // `/maestro`'s Step 1 gates checkboxes — the pair that drives the orchestrator's INJECTED Step 1.
-  // `data:gates` reads the project's resolved gates (both off when no project is open, so the card
-  // can render on a route reachable in that state); `project:gates:set` saves the `gates` slice and
-  // returns what was saved. Unlike `project:tags:set` there is no second cross-slice write: a gate
-  // flag implies nothing about which agents or skills the project has.
-  gatesData: "data:gates",
-  gatesSet: "project:gates:set",
+  // `/maestro`'s three skill pickers (Maestro start, To-maestro-tasks start, Maestro end).
+  // `data:skill-lists` reads the project's resolved lists (the empty lists when no
+  // project is open, so the card can render on a route reachable in that state);
+  // `project:skill-lists:set` saves the `skill-lists` slice and returns what was saved. No second
+  // cross-slice write: a start/end skill implies nothing about which agents the project has.
+  skillListsData: "data:skill-lists",
+  skillListsSet: "project:skill-lists:set",
 
   // `/maestro`'s Step 4 task-routing checkbox — the `use_maestro_tasks` sibling of the pair above
   // (`046`, `048`). `data:task-routing` reads the project's resolved value (false when no project
-  // is open, same fallback as `data:gates`); `project:task-routing:set` saves the `task-routing`
-  // slice and returns what was saved. Also no second cross-slice write, same reasoning as gates.
+  // is open, same fallback as `data:skill-lists`); `project:task-routing:set` saves the `task-routing`
+  // slice and returns what was saved. Also no second cross-slice write, same reasoning as the skill lists.
   taskRoutingData: "data:task-routing",
   taskRoutingSet: "project:task-routing:set",
 
@@ -463,8 +468,7 @@ export const IPC = {
 
   // The Handoffs tab's own project picker (`043`): a LOCAL "which project am I viewing" the tab
   // added for itself, distinct from every other channel on this page, which stays global. Reads
-  // the same `agents_available` `readAgentsAvailable` already gives the concept-skills CLI — no
-  // new store. `projectRoot` is validated the same way `data:tools`'s is: it must name the current
+  // the project's `agents_available` (`readAgentsAvailable`) — no new store. `projectRoot` is validated the same way `data:tools`'s is: it must name the current
   // or a recent project, or the call falls back to the open project (or `[]` with none open).
   templateAgentsAvailable: "template:agents-available",
 
@@ -734,13 +738,14 @@ export interface MaestroApi {
     open(root: string): Promise<ProjectState>;
     forget(root: string): Promise<ProjectState>;
     onChanged(cb: (state: ProjectState) => void): () => void;
-    gates: {
+    skillLists: {
       /**
-       * Set the OPEN project's Step 1 gates to exactly `gates` — `/maestro`'s Step 1 gates card
-       * calls this on EVERY checkbox change, with no Save button. Saves the `gates` slice and
-       * nothing else, and returns what was saved. Rejects when no project is open.
+       * Set the OPEN project's start / end skill lists to exactly `lists` — `/maestro`'s skill
+       * pickers call this on every change, with no Save button. Ids are cleaned (non-empty,
+       * de-duplicated) before saving; saves the `skill-lists` slice and nothing else, and returns
+       * what was saved. Rejects when no project is open.
        */
-      set(gates: MaestroGates): Promise<MaestroGates>;
+      set(lists: MaestroSkillListsSlice): Promise<MaestroSkillListsSlice>;
     };
     taskRouting: {
       /**
@@ -769,6 +774,13 @@ export interface MaestroApi {
      * as the user changes their mind, and the project stays unconfigured until they press Save.
      */
     reseed(implAgents: string[]): Promise<MaestroConfigV3>;
+    /**
+     * Skill ids the open project's maestro.json names that do not resolve (plugin not installed /
+     * not enabled / skill not in plugin / not found), each with where it is referenced, plus
+     * one-sentence project-level suggestions. Advisory and never rejects: no project, or a
+     * missing/corrupt config, is an empty report. Re-asked on save, project switch and on demand.
+     */
+    skillRefs(): Promise<SkillRefReport>;
     rules(): Promise<RulesData>;
     /**
      * The /tools dashboard's four tabs. Never rejects: an absent file is an empty section.
@@ -806,11 +818,11 @@ export interface MaestroApi {
      */
     projectTags(): Promise<ProjectTagsData>;
     /**
-     * `/maestro`'s Step 1 gates card: the open project's RESOLVED gates. Never rejects — no
-     * project open, or an absent/corrupt `gates` block, both read back as two falses, which is
-     * exactly what the runtime script resolves them to as well.
+     * `/maestro`'s skill pickers: the open project's RESOLVED lists. Never rejects — no project
+     * open, or an absent/corrupt config, reads back as empty lists,
+     * exactly what the runtime scripts resolve them to as well.
      */
-    gates(): Promise<GatesData>;
+    skillLists(): Promise<SkillListsData>;
     /**
      * `/maestro`'s Step 4 task-routing checkbox: the open project's RESOLVED `use_maestro_tasks`.
      * Never rejects — no project open, or an absent/non-boolean value, both read back as false,

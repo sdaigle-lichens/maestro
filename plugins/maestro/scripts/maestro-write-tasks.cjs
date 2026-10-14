@@ -172,9 +172,7 @@ const dir = tasksDir(projectDir);
 if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
 
 const existing = listTaskFiles(projectDir);
-const takenSlugs = new Set(
-  existing.map((f) => f.replace(/^\d{3}-/, "").replace(/\.md$/, ""))
-);
+const takenSlugs = new Set(existing.map((f) => f.replace(/^\d{3}-/, "").replace(/\.md$/, "")));
 let nextNumber =
   existing.reduce((max, f) => {
     const m = f.match(/^(\d{3})-/);
@@ -204,9 +202,7 @@ const filenames = slices.map((slice) => {
 });
 
 slices.forEach((slice, i) => {
-  const blockedByFilenames = (slice.blockedBy || []).map(
-    (b, j) => existingBlockers[i][j] || filenames[b]
-  );
+  const blockedByFilenames = (slice.blockedBy || []).map((b, j) => existingBlockers[i][j] || filenames[b]);
   const body = renderBody(slice, blockedByFilenames);
   fs.writeFileSync(path.join(dir, filenames[i]), body, { flag: "wx" });
 });
@@ -221,8 +217,7 @@ const counts = Object.values(map).reduce(
   { done: 0, ready: 0, blocked: 0 }
 );
 
-const range =
-  filenames.length === 1 ? filenames[0] : `${filenames[0]}–${filenames[filenames.length - 1]}`;
+const range = filenames.length === 1 ? filenames[0] : `${filenames[0]}–${filenames[filenames.length - 1]}`;
 process.stdout.write(
   `Maestro tasks: wrote ${range} — ` +
     `${Object.keys(map).length} task(s): ${counts.done} done, ${counts.ready} ready, ${counts.blocked} blocked` +

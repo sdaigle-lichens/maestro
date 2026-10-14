@@ -12,7 +12,7 @@ more to `STATIC_ASSETS` (and to `maestro-install.js`'s mirror), 27 now: `scripts
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
-| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-step4-gate` (`046`), `maestro-resume-target` (`039`), `maestro-resolve-skill-path` (`061`), `maestro-workflow-spec` (`063` — the `create-workflow`/`update-workflow` skills' CLI), `maestro-epic` (`084` — epics and the report inbox) |
+| Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-end-skills` (`089`), `maestro-step4-gate` (`046`), `maestro-resume-target` (`039`), `maestro-resolve-skill-path` (`061`), `maestro-workflow-spec` (`063` — the `create-workflow`/`update-workflow` skills' CLI), `maestro-epic` (`084` — epics and the report inbox) |
 | Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`), `maestro-epic` (`084`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
@@ -71,6 +71,12 @@ sub-concept.
 exit-0-unconditional, one-line-of-stdout contract, resolving `use_maestro_tasks` instead of `gates`
 and injected by Step 4 instead of Step 1. `maestro-check-runtime.cjs`'s `SKILL_INVOKED_SCRIPTS`
 gained it too, for the same fatal-if-missing reason.
+
+**`089` added a script + lib pair, both `STATIC_ASSET`s: `maestro-end-skills.cjs` and
+`lib/maestro-skill-lists.cjs`** (the lib backs it and `maestro-step1-gates.cjs`). The end-skills
+script is harness-invoked like the Step 1 one, so it is in `SKILL_INVOKED_SCRIPTS` and fatal if
+missing. The template's `allowed-tools` also gained its grant, which only a fresh copy delivers —
+see `updating-maestro`'s frontmatter trap.
 
 **`063` added a script + lib pair rather than a lone script: `maestro-workflow-spec.cjs` and
 `lib/maestro-workflow-spec.cjs`.** Backs the `create-workflow`/`update-workflow` skills, which invoke
@@ -150,7 +156,7 @@ check answers anything but `allow` aborts the invocation), and put it in the orc
 **template's frontmatter** instead:
 
 ```
-allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")
+allowed-tools: Bash(node .claude/scripts/maestro-step1-gates.cjs)
 ```
 
 `allowed-tools` is a **grant, not a restriction** (`disallowed-tools` is the restriction field), so
@@ -186,6 +192,18 @@ user-authored, committed content — rather than sitting flush under `.claude/`,
 `uninstall.ts`'s removal of it can't just be another `SESSION_FILES` entry; see the
 uninstall-and-purge sub-concept.
 
+**`--ignore-mode ignored` (terminal path only) replaces that block.** `maestro-install.js` skips
+`ensureRepoRootGitignore` and instead `ensureGitExclude()` appends `.claude/` to the file
+`git rev-parse --git-path info/exclude` names (right for worktrees and submodules; created if
+missing). It is the run's first write, and is skipped if `git check-ignore -q -- .claude/` already
+says yes or the line is present. Refusals happen before any write: an unknown value, or `ignored`
+outside a git repo, gives `{ok:false, refused:"ignore-mode", reason}`. Summary adds `ignoreMode`,
+`wroteGitExclude`, `gitExcludePath`. Absent flag = `committed`. The line is written under a
+`# Maestro (added by maestro-install)` marker. `maestro-uninstall.js --purge` (not a plain
+uninstall) removes that marker+line pair and reports `removedGitExclude`; a user's own `.claude/`
+line, or one with no marker above it, is never touched. The `.gitignore` block is never removed. The `maestro-install` skill's new step 1 asks the
+question (skipped when `.claude/` is already ignored, or outside git).
+
 The leading recursive wildcard matches `.claude/` at **any** depth including the root, so a
 monorepo needs no per-package `.gitignore`. Entries are appended only when missing, under a header
 added only when missing. The header itself changed wording in `036`, from "removed at SessionEnd"
@@ -200,8 +218,8 @@ catalog and derives the skill map from the global tag store; the terminal path t
 `--impl-agents`, `--skill-map` and `--project-tags` flags, which its skill fills in from a repo
 analysis. **All three flags only affect a fresh seed.**
 
-**`--project-tags` is no longer freely-picked (`055`).** The `maestro-install` skill's Step 2
-computes which of step 1's detected `implAgents` are already catalog entries and pre-selects
+**`--project-tags` is no longer freely-picked (`055`).** The `maestro-install` skill's Step 3
+(Step 2 before the committed-or-ignored step was added) computes which of step 2's detected `implAgents` are already catalog entries and pre-selects
 exactly those — the question only has to be answered to *remove* one, not to re-derive the set from
 scratch — and, when a detected category has no matching catalog entry at all, offers to add it via
 `addProjectTag` (a new export off `project-tags.ts`, alongside the pre-existing `readAllProjectTags`

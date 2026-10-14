@@ -1,7 +1,7 @@
 import { createFileRoute, useRouter } from "@tanstack/react-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Button from "@repo/ui/button";
-import { Sparkles } from "lucide-react";
+import { SparkleIcon } from "@phosphor-icons/react";
 import { toast } from "@repo/ui/toast";
 import TopNav from "../components/top-nav";
 import RuleTree from "../components/rule-tree";
@@ -151,7 +151,7 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
       }
       toast(
         <>
-          Rules saved to <span className="font-mono text-(--ink)">{result.configPath}</span>
+          Rules saved to <span className="font-mono text-maestro">{result.configPath}</span>
           {placed > 0 ? ` and ${placed} rule file${placed === 1 ? "" : "s"} placed.` : "."}
         </>
       );
@@ -161,7 +161,7 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
   };
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav />
 
       {loaderData.seeded && (
@@ -170,11 +170,13 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
 
       <div className="flex-1 grid overflow-hidden" style={{ gridTemplateColumns: "280px 1fr" }}>
         {/* Left pane */}
-        <div className="border-r border-(--line) overflow-y-auto flex flex-col p-4 gap-4">
+        <div className="border-r border-maestro overflow-y-auto flex flex-col p-4 gap-4">
           <div>
-            <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide mb-2">Available rules</div>
+            <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide mb-2">
+              Available rules
+            </div>
             {projectRuleIds.length === 0 ? (
-              <p className="text-[12px] text-subtle">
+              <p className="text-[12px] text-maestro-muted">
                 No rules found under{" "}
                 <span className="font-mono">{(projectRoot || "<project>").replace(/\/+$/, "")}/.claude/rules/</span>.
                 Create <span className="font-mono">.md</span> files there to see them here.
@@ -190,13 +192,13 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
           </div>
 
           <div>
-            <div className="text-[11px] font-semibold text-subtle uppercase tracking-wide mb-2">
+            <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide mb-2">
               Installable rules (vibe-rules)
             </div>
             {vibeOnlyIds.length === 0 ? (
               // "CLI missing" and "CLI present but empty" used to look identical — an empty list
               // either way. vibeRulesAvailable tells them apart.
-              <p className="text-[12px] text-subtle">
+              <p className="text-[12px] text-maestro-muted">
                 {vibeRulesAvailable ? (
                   <>
                     None found via <span className="font-mono">vibe-rules list</span>. These are installed into the
@@ -220,7 +222,7 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
           </div>
 
           {selectedRuleIds.length > 0 && (
-            <p className="text-[12px] text-subtle">
+            <p className="text-[12px] text-maestro-muted">
               Use the directory tree on the right to assign selected rules to paths. Each rule lives in one place —
               assigning it elsewhere moves it, unless you check &ldquo;scope only&rdquo;, which scopes the rule to that
               path without moving or installing its file there.
@@ -231,7 +233,7 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
 
           <Button
             variant="primary"
-            icon={phase === "idle" ? <Sparkles size={14} /> : undefined}
+            icon={phase === "idle" ? <SparkleIcon size={14} /> : undefined}
             loading={phase === "saving"}
             onClick={() => void handleSubmit()}
           >
@@ -242,7 +244,7 @@ function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }) {
         {/* Center — tree */}
         <div className="overflow-y-auto p-4">
           {selectedRuleIds.length === 0 ? (
-            <div className="flex items-center justify-center h-full text-(--ink-2) text-[13px]">
+            <div className="flex items-center justify-center h-full text-maestro-muted text-[13px]">
               Select rules on the left to assign them to paths.
             </div>
           ) : (

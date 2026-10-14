@@ -69,6 +69,29 @@ function workflowToSpec(wf, _instances) {
   return { name: wf.name, steps, conditions: conditions.length > 0 ? conditions : void 0 };
 }
 
+// src/core/skill-lists.ts
+function isPlainObject(v) {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+function ids(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const item of v) {
+    if (typeof item !== "string") continue;
+    const id = item.trim();
+    if (id && !/\s/.test(id) && !out.includes(id)) out.push(id);
+  }
+  return out;
+}
+function resolveSkillLists(cfg) {
+  if (!isPlainObject(cfg) || cfg.version !== 3) {
+    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
+  }
+  const maestroEnd = isPlainObject(cfg.end_skills) ? ids(cfg.end_skills.maestro) : [];
+  const start = isPlainObject(cfg.start_skills) ? cfg.start_skills : {};
+  return { maestroStart: ids(start.maestro), toMaestroTasksStart: ids(start.to_maestro_tasks), maestroEnd };
+}
+
 // src/core/team-meeting.ts
 var PROPOSAL_KINDS = {
   "workflow.create": "workflow:",
@@ -429,10 +452,11 @@ function buildCommonBrief(input) {
     L.push(`- **${spec.name}**: ${spec.steps.join(" \u2192 ") || "(no steps)"}`);
     for (const c of spec.conditions ?? []) L.push(`  - ${c.from} \u2014${c.label}\u2192 ${c.to}`);
   }
-  const g = cfg.gates;
+  const sl = resolveSkillLists(cfg);
+  const list = (a) => a.length ? a.join(", ") : "none";
   L.push(
     "",
-    `Step 1 gates: confidence_check=${g?.confidence_check === true}, design_check=${g?.use_code_architecture_design_check === true}. use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
+    `Start skills: maestro=[${list(sl.maestroStart)}], to_maestro_tasks=[${list(sl.toMaestroTasksStart)}]. End skills: maestro=[${list(sl.maestroEnd)}]. use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
     "",
     "## Agents",
     "",

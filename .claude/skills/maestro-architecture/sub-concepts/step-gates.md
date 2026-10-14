@@ -28,15 +28,21 @@ Four consequences, all load-bearing:
   continue-to-Step-2 line instead.
 - **Exactly one line, however long.** Each of the four is several sentences on a single
   newline-terminated line — it keeps the contract trivially assertable and lets the body say "the
-  line above". `install.test.ts` pins the *properties* (one line, only the enabled gates named, in
+  line above". `install.test.ts` pins the *properties* (one line, only the configured skills named, in
   order, always sending the orchestrator on to Step 2, four distinct answers) rather than the
   wording, which is prose and expected to be reworded.
 - **A missing script does not degrade — it kills `/maestro`.** The command is a single clause with
   no `|| true`, so `node` on an absent file exits 1. `maestro-check-runtime.cjs` therefore carries a
   presence check (`SKILL_INVOKED_SCRIPTS` — the scripts the orchestrator names by
-  `$CLAUDE_PROJECT_DIR` path: `maestro-step1-gates.cjs`, `maestro-step4-gate.cjs` (`046`),
+  `$CLAUDE_PROJECT_DIR` path: `maestro-step1-gates.cjs`, `maestro-end-skills.cjs` (`089`), `maestro-step4-gate.cjs` (`046`),
   `maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`) and answers `update` when one is
   absent. That nag is the only thing between a half-installed project and an aborted invocation.
+- **Body commands the orchestrator runs use the relative form** `node .claude/scripts/<script>`
+  (plugin `0.11.10`, `094`). Permission checks can't resolve a braced `CLAUDE_PROJECT_DIR`
+  variable, so the expanded form prompted. `101` moved the `!` lines and the `allowed-tools`
+  grants to the same plain form (`node .claude/scripts/<script>`): a grant did not stop the prompt.
+  Only the frontmatter change needs a purge and reinstall to reach an existing project. Pinned by
+  `orchestrator-template-commands.test.ts`.
 
 If the harness has `disableSkillShellExecution: true`, the line is replaced with the literal
 `[shell command execution disabled by policy]`. **This is the one thing the script cannot speak
@@ -44,18 +50,32 @@ to** — its own output never arrived — so it is the one thing the template mu
 itself: a missing, empty or policy-replaced line means this project has no Step 1, go to Step 2.
 Keep that sentence in the template however much else moves into the script.
 
-## Step 1's gates default to OFF (`032`)
+## Step 1's start skills are a configured list (`032`, reworked by `089`)
 
-`maestro.json`'s `gates: { confidence_check, use_code_architecture_design_check }` is resolved at
-invocation time by `maestro-step1-gates.cjs`. All four combinations are valid and none nests inside
-another. A seeded config has both `false`, and **every** degenerate case — no config, corrupt JSON,
-`version !== 3`, `gates` absent or not a plain object, a non-boolean value, any throw — resolves to
-the continue-to-Step-2 line, quietly, with exit 0. The checkboxes live on the desktop app's
-`/maestro` page; there is no migration, so a project installed before `032` simply has no `gates`
-field and skips. `/confidence-check` and `/use-code-architecture-design-check` are still bundled in
-this plugin (`plugins/maestro/skills/{confidence-check,use-code-architecture-design-check}`), but
-the orchestrator no longer references them "if available" — it runs what the injected line names,
-and is told to say so rather than invent one if a named gate isn't installed.
+`maestro.json`'s `start_skills.maestro` — an ordered list of skill ids — is resolved at invocation
+time by `maestro-step1-gates.cjs` through `resolveSkillLists` (bundled as
+`lib/maestro-skill-lists.cjs`, the same function the desktop app uses). The script keeps its name
+and its one-line, exit-0 contract; only the data changed from two booleans to a list. An empty list,
+**every** degenerate case — no config, corrupt JSON, `version !== 3`, a non-array — and any throw
+resolve to the continue-to-Step-2 line, quietly. The pickers live on the desktop app's `/maestro`
+page. **A project with no `start_skills` runs no start skills**: the old `gates` booleans are no longer
+read (`090`), so re-install the project to get the seeded lists. `/confidence-check` is bundled
+(`plugins/maestro/skills/`); the design check ships in the opt-in `concept-skills` plugin. But the orchestrator runs what the injected line names
+and is told to say so rather than invent one if a named skill isn't installed.
+
+**`/to-maestro-tasks` runs the same script from the plugin's own copy**: its SKILL.md injects
+`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs" --for to_maestro_tasks`, which selects
+`start_skills.to_maestro_tasks`. It is a plugin skill, so it must not depend on a project copy
+existing; with no `start_skills` it defaults to running both gate skills, as before.
+
+**Step 7 end skills (`089`; Step 6 until `100` inserted the epic report).** `maestro-end-skills.cjs` (a project copy, `STATIC_ASSET`) prints the
+`end_skills.maestro` list as one line, under the identical contract (exit 0, no stderr; empty prints
+a "none configured" line). It is injected the same way and is in `SKILL_INVOKED_SCRIPTS`, so its
+absence is likewise fatal rather than degrading. The rendered template's later steps are: **Step 4
+no longer commits**; Step 5 is the post-mortem; Step 6 is the epic report (`100`: only when `done`
+printed an epic report command, and it is why the mark-task-done node's subject reads "...and report
+to the epic <slug>" and stays open until the report is written); Step 7 runs the end skills (offering
+a commit if none of them commits); Step 8 merges the worktree.
 
 **The design gate is a router, and what it routes to is a third bundled skill.**
 `use-code-architecture-design-check` only decides RUN/SKIP; the pass itself is
@@ -63,26 +83,26 @@ and is told to say so rather than invent one if a named gate isn't installed.
 the model invokes with the Skill tool. Two consequences worth knowing: the check is
 `user-invocable: false` and the design skill is **not**, so a user can reach the pass directly
 without the gate; and both inject the project's concept list with a `!`-prefixed
-`maestro-concept-skills.cjs list` at expansion time, which is why each carries that exact command in
+the concept-skills plugin's `concept-skills.cjs list` at expansion time, which is why each carries that exact command in
 `allowed-tools`. **`code-architecture-design` is not `/design`** — that name resolves to the Claude
 Design canvas skill (visual mockups), which is the collision the rename exists to end.
 
 **`use-code-architecture-design-check` means two different things and only one of them is a gate.**
 The seeded **Refactor** workflow has a `skill:use-code-architecture-design-check` **node** in its
 success path — that is Step 3's inline-skill mechanism, driven by `workflows`, and it is untouched
-by the `gates` field. Turning both gates off does not remove it. `seed.ts` used to call it "the
+by `start_skills`/`gates`. Emptying the start list does not remove it. `seed.ts` used to call it "the
 always-present gate skill" in a comment; that was corrected in `032` because it invited exactly this
 confusion. **The rename from `use-design-check` was not migrated in either place.**
 `defaultV3Config` seeds the new name into `skills_available` and into the Refactor workflow's node,
 but an existing `maestro.json` keeps `skill:use-design-check` and a `gates.use_design_check` key — a
-node naming a skill the plugin no longer ships, and a gate flag `resolveGates` no longer reads, so a
+node naming a skill the plugin no longer ships, and a gate flag `resolveSkillLists` no longer reads, so a
 project that had the design gate **on** comes back silently off. Both are hand-edits (or a
 `/maestro` save) away, and nothing reports either.
 
 ## Step 4's task-routing nudge (`046`, `047`)
 
-`maestro.json`'s top-level `use_maestro_tasks?: boolean` — a SIBLING of `gates`, not nested in it —
-is resolved by `resolveUseMaestroTasks`, the same strict `=== true` discipline as `resolveGates`
+`maestro.json`'s top-level `use_maestro_tasks?: boolean` — a SIBLING of the skill lists, not nested in them —
+is resolved by `resolveUseMaestroTasks`, the same strict `=== true` discipline as the old `resolveGates`
 (absent, corrupt, `version !== 3`, or non-boolean all resolve to off). `maestro-step4-gate.cjs`
 mirrors `maestro-step1-gates.cjs`'s contract byte for byte: no arguments, exits 0 unconditionally,
 never writes stderr, prints exactly one line — naming `/to-maestro-tasks` when on, a neutral line

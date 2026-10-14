@@ -107,6 +107,11 @@ invalidation is harmless to `/workflows` (`reconcileWorkflowSlice` decides repla
 `/rules` adopts new loader rules only while its editor is clean. `/agents` fetches in an effect, so it
 depends on the loader result to refetch. See `workflow-view` for the reconcile flow.
 
+**`SkillRefProvider` (`091`, mounted just inside `ConfigWatchProvider`, above `InstallProvider`) is the
+non-router consumer of the same signal: it re-reads `data:skill-refs` on `config:changed`, on a
+project switch, on a debounced (300ms) window `focus`/`visibilitychange`, and on demand, because the report also depends on installed plugins that no file
+watch sees. See `workflow-view`.
+
 **A save does not refresh loader data on its own — invalidate after one, and only because of the
 keying above.** A save is neither a navigation nor a project switch, so the loader's computed values
 (most visibly `seeded`) stay pinned at load time — a successful `/rules` save that *moves rule files*

@@ -2,7 +2,7 @@ import { useEffect, type ReactNode } from "react";
 import ThemeToggle from "@repo/ui/theme-toggle";
 import ShortcutsDialog from "@repo/ui/shortcuts-dialog";
 import Button from "@repo/ui/button";
-import { Keyboard, Sparkles } from "lucide-react";
+import { SparkleIcon } from "@phosphor-icons/react";
 import TopNav from "./top-nav";
 import { useSession } from "../utils/session-context";
 
@@ -32,7 +32,7 @@ export function jumpToField(fieldIds: string[], rowIds: string[], n: number): vo
   document.getElementById(fieldIds[n - 1])?.focus();
   const row = document.getElementById(rowIds[n - 1]);
   if (!row) return;
-  row.style.boxShadow = "0 0 0 4px var(--primary-glow)";
+  row.style.boxShadow = "0 0 0 4px var(--primary-soft)";
   setTimeout(() => {
     row.style.boxShadow = "none";
   }, 600);
@@ -105,7 +105,7 @@ export default function CreateShell({
   const { open: sessionOpen } = useSession();
 
   return (
-    <div className="w-full h-screen bg-(--bg) font-sans text-(--ink) overflow-hidden flex flex-col">
+    <div className="w-full h-screen bg-maestro font-sans text-maestro overflow-hidden flex flex-col">
       <TopNav />
       <div
         className="flex-1 grid overflow-hidden"
@@ -115,7 +115,7 @@ export default function CreateShell({
         <div className="overflow-y-auto px-10 py-8">
           <div className="max-w-155 mx-auto">
             <div className="flex items-center gap-3 mb-1.5 flex-wrap">
-              <h1 className="m-0 text-2xl font-bold text-(--ink) tracking-[-0.5px]">{title}</h1>
+              <h1 className="m-0 text-2xl font-bold text-maestro tracking-[-0.5px]">{title}</h1>
               {pills}
               <div className="flex-1" />
               <ThemeToggle />
@@ -123,22 +123,22 @@ export default function CreateShell({
                 type="button"
                 onClick={() => onHelpOpenChange(true)}
                 title="Keyboard shortcuts (?)"
-                className="w-7.5 h-7.5 rounded-lg bg-(--bg-elev) border border-(--line) flex items-center justify-center text-subtle text-[13px] font-bold cursor-pointer focus:outline-none focus:shadow-none"
+                className="w-7.5 h-7.5 rounded-lg bg-maestro-elevated border border-maestro flex items-center justify-center text-maestro-muted text-[13px] font-bold cursor-pointer focus:outline-none focus:shadow-none"
               >
                 ?
               </button>
             </div>
-            <p className="m-0 mb-4.5 text-[13px] text-subtle">{subtitle}</p>
+            <p className="m-0 mb-4.5 text-[13px] text-maestro-muted">{subtitle}</p>
 
             {banner}
 
             {children}
 
-            <div className="mt-6 pt-4 border-t border-(--line) flex items-center gap-3">
+            <div className="mt-6 pt-4 border-t border-maestro flex items-center gap-3">
               <div className="flex-1" />
               <Button
                 variant="primary"
-                icon={busy ? undefined : <Sparkles size={14} />}
+                icon={busy ? undefined : <SparkleIcon size={14} />}
                 loading={busy}
                 onClick={onSubmit}
               >
@@ -150,15 +150,10 @@ export default function CreateShell({
 
         {/* Right — the file that will be written, as it will be written. Yielded to the session
             pane while one is open; see the note above the grid. */}
-        {!sessionOpen && <div className="border-l border-(--line) overflow-y-auto flex flex-col">{preview}</div>}
+        {!sessionOpen && <div className="border-l border-maestro overflow-y-auto flex flex-col">{preview}</div>}
       </div>
 
-      <ShortcutsDialog
-        open={helpOpen}
-        onOpenChange={onHelpOpenChange}
-        titleIcon={<Keyboard size={15} />}
-        sections={shortcuts}
-      />
+      <ShortcutsDialog open={helpOpen} onOpenChange={onHelpOpenChange} sections={shortcuts} />
     </div>
   );
 }

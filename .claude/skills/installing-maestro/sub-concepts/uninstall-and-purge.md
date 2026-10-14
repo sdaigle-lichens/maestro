@@ -66,6 +66,14 @@ still carries only `deleteMaestroTasks`, and the two directories remain exactly 
 above already said — never touched by the app, at either level. The app's confirmation dialog was
 not the gap this closed; the terminal report reading like a silent omission was.
 
+**`maestro-uninstall.js --purge` also removes the git-exclude line an `--ignore-mode ignored`
+install wrote (terminal-only; summary field `removedGitExclude`).** Only the
+`# Maestro (added by maestro-install)` marker and the `.claude/` line directly under it go; a user's
+own `.claude/` line, or an unmarked one, is left alone. Purge-only because a plain uninstall keeps
+`maestro.json` and the orchestrator skill, which that line hides. Consequence: after a purge the
+kept `.claude/settings.json`, `reports/` and `handoffs/` show as untracked in `git status`. The
+`.gitignore` block is still never removed.
+
 ## Remove only our own
 
 A hook command is Maestro's only if it points into `.claude/scripts/` **and** names a script the

@@ -14,7 +14,7 @@
 // reading this source rather than by trusting the sentence.
 
 import { useState } from "react";
-import { CircleHelp, MessageSquareText, Send } from "lucide-react";
+import { ChatTextIcon, PaperPlaneRightIcon, QuestionIcon } from "@phosphor-icons/react";
 import type { AgentQuestion, QuestionChoice, QuestionPrompt } from "../../../shared/ipc";
 
 /** Picked labels, by question index. A set per question, because a multi-select holds several. */
@@ -69,13 +69,13 @@ export default function QuestionCard({
       data-testid="session-question"
       data-request={request.requestId}
       data-questions={request.questions.length}
-      className="mb-2 rounded-xl border border-primary/40 bg-(--primary-dim) px-3 py-2.5"
+      className="mb-2 rounded-xl border border-maestro-primary bg-maestro-primary-subtle px-3 py-2.5"
     >
       <div className="flex items-start gap-2">
-        <CircleHelp size={14} className="mt-0.5 shrink-0 text-primary" />
+        <QuestionIcon size={14} className="mt-0.5 shrink-0 text-maestro-primary" />
         <div className="min-w-0 flex-1">
-          <p className="m-0 text-[12px] font-semibold text-(--ink)">Claude is asking you to decide</p>
-          {request.agentId && <p className="m-0 text-[10px] text-(--ink-3)">Asked by subagent {request.agentId}</p>}
+          <p className="m-0 text-[12px] font-semibold text-maestro">Claude is asking you to decide</p>
+          {request.agentId && <p className="m-0 text-[10px] text-maestro-muted">Asked by subagent {request.agentId}</p>}
         </div>
       </div>
 
@@ -88,7 +88,7 @@ export default function QuestionCard({
           className="mt-2.5"
         >
           <div className="flex items-baseline gap-1.5">
-            <span className="rounded-md bg-(--bg-elev) px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-(--ink-3)">
+            <span className="rounded-md bg-maestro-elevated px-1.5 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-maestro-muted">
               {question.header}
             </span>
             {/*
@@ -96,11 +96,11 @@ export default function QuestionCard({
               statement about the question it asked, and a user who does not know which kind they are
               looking at learns it by clicking and watching their first pick disappear.
             */}
-            <span data-testid="session-question-mode" className="text-[9px] text-(--ink-3)">
+            <span data-testid="session-question-mode" className="text-[9px] text-maestro-muted">
               {question.multiSelect ? "pick any" : "pick one"}
             </span>
           </div>
-          <p className="m-0 mt-1 text-[11px] text-(--ink)">{question.question}</p>
+          <p className="m-0 mt-1 text-[11px] text-maestro">{question.question}</p>
 
           <div className="mt-1.5 flex flex-col gap-1.5">
             {question.options.map((option) => {
@@ -117,13 +117,13 @@ export default function QuestionCard({
                   onClick={() => toggle(question, at, option.label)}
                   className={`w-full rounded-lg border px-2.5 py-1.5 text-left disabled:opacity-40 cursor-pointer focus:outline-none ${
                     on
-                      ? "border-primary bg-primary/10"
-                      : "border-(--line) bg-(--bg) hover:border-ring hover:bg-(--bg-elev)"
+                      ? "border-maestro-primary-strong bg-maestro-primary-subtle"
+                      : "border-maestro bg-maestro hover:border-maestro-focus-ring hover:bg-maestro-elevated"
                   }`}
                 >
-                  <span className="block text-[11px] font-semibold text-(--ink)">{option.label}</span>
+                  <span className="block text-[11px] font-semibold text-maestro">{option.label}</span>
                   {option.description && (
-                    <span className="mt-0.5 block text-[10px] text-(--ink-2)">{option.description}</span>
+                    <span className="mt-0.5 block text-[10px] text-maestro-muted">{option.description}</span>
                   )}
                   {/*
                     THE PREVIEW, in a monospace block and not as a document. An option preview is a
@@ -134,7 +134,7 @@ export default function QuestionCard({
                   {option.preview && (
                     <pre
                       data-testid="session-question-preview"
-                      className="m-0 mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-md bg-(--bg-elev) px-2 py-1 font-mono text-[10px] text-(--ink-2)"
+                      className="m-0 mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-words rounded-md bg-maestro-elevated px-2 py-1 font-mono text-[10px] text-maestro-muted"
                     >
                       {option.preview}
                     </pre>
@@ -157,11 +157,11 @@ export default function QuestionCard({
               selections: request.questions.map((_, at) => ({ question: at, labels: chosen(picked, at) })),
             })
           }
-          className="inline-flex items-center gap-1 rounded-md border-0 bg-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
+          className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Send size={11} /> Send answer
+          <PaperPlaneRightIcon size={11} /> Send answer
         </button>
-        <span className="text-[10px] text-(--ink-3)">
+        <span className="text-[10px] text-maestro-muted">
           {complete ? "" : `Pick an option for each question (${request.questions.length}).`}
         </span>
       </div>
@@ -173,9 +173,9 @@ export default function QuestionCard({
         these". Typed text is what this pane is already allowed to carry; it is what the composer
         carries on every turn.
       */}
-      <div className="mt-2 border-t border-(--line) pt-2">
-        <label className="flex items-center gap-1 text-[10px] text-(--ink-3)">
-          <MessageSquareText size={10} /> None of these?
+      <div className="mt-2 border-t border-maestro pt-2">
+        <label className="flex items-center gap-1 text-[10px] text-maestro-muted">
+          <ChatTextIcon size={10} /> None of these?
         </label>
         <textarea
           data-testid="session-question-reply-text"
@@ -183,14 +183,14 @@ export default function QuestionCard({
           onChange={(e) => setReply(e.target.value)}
           rows={2}
           placeholder="Say what you want instead…"
-          className="mt-1 w-full resize-none rounded-md border border-(--line) bg-(--bg) px-2 py-1.5 text-[11px] text-(--ink) placeholder-subtle outline-none focus:border-primary"
+          className="mt-1 w-full resize-none rounded-md border border-maestro bg-maestro px-2 py-1.5 text-[11px] text-maestro placeholder-maestro-muted outline-none focus:border-maestro-primary-strong"
         />
         <button
           type="button"
           data-testid="session-question-reply"
           disabled={sent || reply.trim() === ""}
           onClick={() => send({ choice: "reply", text: reply.trim() })}
-          className="mt-1 inline-flex items-center gap-1 rounded-md border border-(--line) bg-(--bg) px-2.5 py-1 text-[11px] text-(--ink-2) hover:text-(--ink) disabled:opacity-40 cursor-pointer focus:outline-none"
+          className="mt-1 inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro disabled:opacity-40 cursor-pointer focus:outline-none"
         >
           Send this instead
         </button>

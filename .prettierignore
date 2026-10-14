@@ -20,13 +20,19 @@ coverage/
 routeTree.gen.ts
 plugins/*/scripts/lib/
 
-# Prose that prettier does not own — documentation, task files and SKILL.md bodies: hand-formatted,
-# read as much in a GitHub blob and a Claude context window as in an editor, and reflowing them
-# would rewrite line breaks that were chosen.
+# Prose that prettier does not own — the markdown under the published plugin tree (SKILL.md bodies,
+# references, templates, READMEs): hand-formatted, read as much in a GitHub blob and a Claude
+# context window as in an editor, and reflowing them would rewrite line breaks that were chosen.
 #
-# ROOT-ANCHORED, and that is load-bearing rather than tidy: `/plugins/` is the published plugin
-# tree, and only the one at the repo root is that. A bare `plugins/` would match at any depth.
-/plugins/
+# Only the markdown is excluded, not the tree: the plugins' hand-written code (hook and CLI scripts
+# under plugins/*/scripts/, plugin JSON manifests, hooks config) IS checked, by the root `check`
+# script, because `plugins/` belongs to no workspace package and turbo would never reach it. The
+# generated plugins/*/scripts/lib/ bundles stay out via the "Generated code" entry above.
+#
+# ANCHORED to plugins/ at the repo root, and that is load-bearing rather than tidy: only that tree
+# is the published plugin tree. Do not widen the pattern to `**/plugins/**`, which would also match
+# unrelated `plugins/` directories at any depth.
+plugins/**/*.md
 
 # Concept-skill markdown is NOT in the enforced set, at any depth. This is a decision, not an
 # artifact of where the pattern happens to anchor.
@@ -61,3 +67,14 @@ plugins/*/scripts/lib/
 # skill. Prose is reviewed by reading it.
 CLAUDE.md
 docs/
+
+# design-palette: the generated tokens, and the vendored generator that must stay byte-identical
+# to the design plugin's copy
+packages/styles/generated/
+packages/styles/scripts/palette.ts
+
+# Storybook static build
+storybook-static/
+
+# design plugin: the captured references and index.json are written by capture.mjs and the studio
+design/

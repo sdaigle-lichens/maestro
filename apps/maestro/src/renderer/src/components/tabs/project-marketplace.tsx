@@ -9,18 +9,18 @@ import CopyableText from "@repo/ui/copyable-text";
 import type { MarketplacePluginInfo, RuleLibraryEntry } from "../../utils/tools";
 
 const TH =
-  "border-b border-(--line) px-4 py-2 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-(--ink-2)";
-const ROW = "border-b border-(--line) last:border-0 hover:bg-(--bg-elev) transition-colors";
+  "border-b border-maestro px-4 py-2 text-left text-[12px] font-semibold uppercase tracking-[0.08em] text-maestro-muted";
+const ROW = "border-b border-maestro last:border-0 hover:bg-maestro-elevated transition-colors";
 
 function InstalledDot({ installed }: { installed: boolean }) {
   return installed ? (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-(--green-dim) bg-(--green-dim) px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-success">
-      <span className="h-1.5 w-1.5 rounded-full bg-success" />
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-maestro-success bg-maestro-success-subtle px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-maestro-success">
+      <span className="h-1.5 w-1.5 rounded-full bg-maestro-success" />
       Installed
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1.5 rounded-md border border-(--line) bg-(--bg-elev) px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-subtle">
-      <span className="h-1.5 w-1.5 rounded-full bg-subtle" />
+    <span className="inline-flex items-center gap-1.5 rounded-md border border-maestro bg-maestro-elevated px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-maestro-muted">
+      <span className="h-1.5 w-1.5 rounded-full bg-maestro-text-muted" />
       Not installed
     </span>
   );
@@ -30,7 +30,9 @@ function TypeTag({ type }: { type: "skill" | "agent" }) {
   return (
     <span
       className={`inline-block rounded-md px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider border ${
-        type === "skill" ? "border-ring text-primary bg-(--primary-dim)" : "border-(--line) text-subtle bg-(--bg-elev)"
+        type === "skill"
+          ? "border-maestro-focus-ring text-maestro-primary bg-maestro-primary-subtle"
+          : "border-maestro text-maestro-muted bg-maestro-elevated"
       }`}
     >
       {type}
@@ -42,19 +44,19 @@ function PluginCard({ plugin }: { plugin: MarketplacePluginInfo }) {
   const hasContent = plugin.skills.length > 0 || plugin.agents.length > 0;
   return (
     <div>
-      <div className="flex flex-col gap-3 border-b border-(--line) bg-(--bg-elev) px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
+      <div className="flex flex-col gap-3 border-b border-maestro bg-maestro-elevated px-5 py-4 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex-1 min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="font-mono text-[14px] font-medium text-(--ink)">{plugin.name}</span>
-            {plugin.version && <span className="font-mono text-[12px] text-subtle">v{plugin.version}</span>}
+            <span className="font-mono text-[14px] font-medium text-maestro">{plugin.name}</span>
+            {plugin.version && <span className="font-mono text-[12px] text-maestro-muted">v{plugin.version}</span>}
             <InstalledDot installed={plugin.isInstalled} />
           </div>
-          {plugin.description && <p className="mt-1.5 text-[13px] text-(--ink-2) m-0">{plugin.description}</p>}
+          {plugin.description && <p className="mt-1.5 text-[13px] text-maestro-muted m-0">{plugin.description}</p>}
         </div>
         {!plugin.isInstalled && (
-          <div className="flex shrink-0 items-center gap-2 rounded-md border border-(--line) bg-(--bg-elev) px-3 py-1.5">
+          <div className="flex shrink-0 items-center gap-2 rounded-md border border-maestro bg-maestro-elevated px-3 py-1.5">
             <CopyableText text={plugin.installCommand}>
-              <code className="font-mono text-[12px] text-(--ink-2)">{plugin.installCommand}</code>
+              <code className="font-mono text-[12px] text-maestro-muted">{plugin.installCommand}</code>
             </CopyableText>
           </div>
         )}
@@ -63,7 +65,7 @@ function PluginCard({ plugin }: { plugin: MarketplacePluginInfo }) {
       {hasContent ? (
         <table className="w-full border-collapse">
           <thead>
-            <tr className="bg-(--bg-elev)">
+            <tr className="bg-maestro-elevated">
               <th className={TH}>Name</th>
               <th className={TH}>Type</th>
               <th className={TH}>Description</th>
@@ -73,33 +75,33 @@ function PluginCard({ plugin }: { plugin: MarketplacePluginInfo }) {
             {plugin.skills.map((skill) => (
               <tr key={`skill-${skill.name}`} className={ROW}>
                 <td className="px-4 py-2 align-top">
-                  <span className="inline-block rounded-md border border-ring bg-(--primary-dim) px-2 py-0.5 font-mono text-[12px] text-primary">
+                  <span className="inline-block rounded-md border border-maestro-focus-ring bg-maestro-primary-subtle px-2 py-0.5 font-mono text-[12px] text-maestro-primary">
                     {skill.name}
                   </span>
                 </td>
                 <td className="px-4 py-2 align-top">
                   <TypeTag type="skill" />
                 </td>
-                <td className="px-4 py-2 text-[13px] text-(--ink-2)">{skill.description}</td>
+                <td className="px-4 py-2 text-[13px] text-maestro-muted">{skill.description}</td>
               </tr>
             ))}
             {plugin.agents.map((agent) => (
               <tr key={`agent-${agent.name}`} className={ROW}>
                 <td className="px-4 py-2 align-top">
-                  <span className="inline-block rounded-md border border-(--line) bg-(--bg-elev) px-2 py-0.5 font-mono text-[12px] text-(--ink-2)">
+                  <span className="inline-block rounded-md border border-maestro bg-maestro-elevated px-2 py-0.5 font-mono text-[12px] text-maestro-muted">
                     {agent.name}
                   </span>
                 </td>
                 <td className="px-4 py-2 align-top">
                   <TypeTag type="agent" />
                 </td>
-                <td className="px-4 py-2 text-[13px] text-(--ink-2)">{agent.description}</td>
+                <td className="px-4 py-2 text-[13px] text-maestro-muted">{agent.description}</td>
               </tr>
             ))}
           </tbody>
         </table>
       ) : (
-        <p className="px-5 py-3 text-[12px] text-subtle m-0">No skills or agents found.</p>
+        <p className="px-5 py-3 text-[12px] text-maestro-muted m-0">No skills or agents found.</p>
       )}
     </div>
   );
@@ -117,19 +119,19 @@ export default function ProjectMarketplace({
       <section>
         <div className="mb-4 flex items-center gap-3">
           <span className="section-label">Project Marketplace</span>
-          <span className="rounded-full bg-(--bg-elev) px-2.5 py-0.5 text-[12px] font-medium text-subtle">
+          <span className="rounded-full bg-maestro-elevated px-2.5 py-0.5 text-[12px] font-medium text-maestro-muted">
             {plugins.length} plugins
           </span>
         </div>
         {plugins.length === 0 ? (
-          <p className="text-[13px] text-subtle m-0">
+          <p className="text-[13px] text-maestro-muted m-0">
             This project publishes no marketplace — there is no{" "}
             <span className="font-mono">.claude-plugin/marketplace.json</span> at its root.
           </p>
         ) : (
           <div className="flex flex-col gap-4">
             {plugins.map((plugin) => (
-              <div key={plugin.name} className="overflow-hidden rounded-lg border border-(--line)">
+              <div key={plugin.name} className="overflow-hidden rounded-lg border border-maestro">
                 <PluginCard plugin={plugin} />
               </div>
             ))}
@@ -140,7 +142,7 @@ export default function ProjectMarketplace({
       <section>
         <div className="mb-4 flex items-center gap-3">
           <span className="section-label">Rule Library</span>
-          <span className="rounded-full bg-(--bg-elev) px-2.5 py-0.5 text-[12px] font-medium text-subtle">
+          <span className="rounded-full bg-maestro-elevated px-2.5 py-0.5 text-[12px] font-medium text-maestro-muted">
             {ruleLibrary.length}
           </span>
         </div>
@@ -150,23 +152,23 @@ export default function ProjectMarketplace({
           to directories and moves them on save. Two questions, two views — see
           `discoverRuleLibrary` in src/core/discovery.ts for why they were not unified.
         */}
-        <p className="mb-4 text-[12px] text-subtle m-0">
+        <p className="mb-4 text-[12px] text-maestro-muted m-0">
           Rule files this project publishes, from <span className="font-mono">rules/</span>. Assigning them to
           directories happens in{" "}
-          <Link to="/rules" className="text-primary underline">
+          <Link to="/rules" className="text-maestro-primary underline">
             Rules
           </Link>
           .
         </p>
         {ruleLibrary.length === 0 ? (
-          <p className="text-[13px] text-subtle m-0">
+          <p className="text-[13px] text-maestro-muted m-0">
             No <span className="font-mono">rules/</span> directory in this project.
           </p>
         ) : (
-          <div className="overflow-hidden rounded-lg border border-(--line)">
+          <div className="overflow-hidden rounded-lg border border-maestro">
             <table className="w-full border-collapse">
               <thead>
-                <tr className="bg-(--bg-elev)">
+                <tr className="bg-maestro-elevated">
                   <th className={TH}>Rule</th>
                   <th className={TH}>File</th>
                   <th className={TH}>Applies to</th>
@@ -175,14 +177,14 @@ export default function ProjectMarketplace({
               <tbody>
                 {ruleLibrary.map((rule) => (
                   <tr key={rule.filename} className={ROW}>
-                    <td className="px-4 py-2.5 text-[13px] font-medium text-(--ink)">
+                    <td className="px-4 py-2.5 text-[13px] font-medium text-maestro">
                       {rule.title}
                       {rule.description && (
-                        <div className="text-[12px] text-subtle font-normal">{rule.description}</div>
+                        <div className="text-[12px] text-maestro-muted font-normal">{rule.description}</div>
                       )}
                     </td>
                     <td className="px-4 py-2.5">
-                      <span className="inline-block rounded-md border border-(--line) bg-(--bg-elev) px-2 py-0.5 font-mono text-[12px] text-(--ink-2)">
+                      <span className="inline-block rounded-md border border-maestro bg-maestro-elevated px-2 py-0.5 font-mono text-[12px] text-maestro-muted">
                         {rule.filename}
                       </span>
                     </td>
@@ -192,14 +194,14 @@ export default function ProjectMarketplace({
                           {rule.paths.map((p) => (
                             <span
                               key={p}
-                              className="inline-block rounded-md border border-(--line) bg-(--bg-elev) px-2 py-0.5 font-mono text-[12px] text-subtle"
+                              className="inline-block rounded-md border border-maestro bg-maestro-elevated px-2 py-0.5 font-mono text-[12px] text-maestro-muted"
                             >
                               {p}
                             </span>
                           ))}
                         </div>
                       ) : (
-                        <span className="text-[12px] text-subtle">All files</span>
+                        <span className="text-[12px] text-maestro-muted">All files</span>
                       )}
                     </td>
                   </tr>

@@ -21,8 +21,7 @@ export type {
   MaestroWorkflowsSlice,
   MaestroRulesSlice,
   MaestroProjectTagsSlice,
-  MaestroGates,
-  MaestroGatesSlice,
+  MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -30,6 +29,23 @@ export type {
 } from "./types.js";
 
 import type { MaestroConfigV3, MaestroWorkflowV3 } from "./types.js";
+
+/** Why a skill id does not resolve — what a person would have to do about it. */
+export type UnavailableReason = "plugin-not-installed" | "plugin-not-enabled" | "skill-not-in-plugin" | "not-found";
+
+export interface DanglingSkillRef {
+  id: string;
+  reason: UnavailableReason;
+  /** Every place the id is referenced, human-readable. */
+  where: string[];
+}
+
+/** Dangling skill references in a config, plus project-level suggestions (`090`, `091`). */
+export interface SkillRefReport {
+  dangling: DanglingSkillRef[];
+  /** One sentence each, ready to show a user. Includes the concept-skills plugin hint. */
+  suggestions: string[];
+}
 
 /**
  * The sentinel value on either of a skill's two tag dimensions (see `DiscoveredDefinition` below)
@@ -854,6 +870,13 @@ export interface InstallReport {
    * write path for "yes, add it". Always `[]` when `configSeeded` is `null`.
    */
   configSeeded: { implAgents: string[]; projectTags: string[]; uncatalogedProjectTags: string[] } | null;
+  /**
+   * Set when a re-install into an EXISTING config filled in a missing `start_skills` / `end_skills`
+   * with the fresh-seed defaults, or removed a leftover `gates` key (`092`). Each flag says what
+   * this run did; `null` when the config already had both lists (never touched) or this run
+   * seeded a whole new config (`configSeeded`). The user changes the lists on the app's /maestro page.
+   */
+  skillListsSeeded: { start_skills: boolean; end_skills: boolean; gatesRemoved: boolean } | null;
   /** True when the run found nothing to do — the idempotent second run. */
   unchanged: boolean;
   warnings: string[];
@@ -869,6 +892,15 @@ export interface InstallReport {
    * the canvas itself produced.
    */
   configIssues: ConfigIssue[];
+  /**
+   * Set when the install REFUSED (`096`) because the project's existing `.claude/maestro.json` is
+   * unusable: `kind` is `"unparseable"` (`problem` is the parser's message, which carries the
+   * position) or `"unsupported-version"` (`problem` names the version found). `file` is the
+   * project-relative path and `message` a complete sentence naming file, problem and remedy. When
+   * set, nothing was written: every other field is empty/false, `unchanged` is false, and `status`
+   * is the untouched project's. `null` on every install that ran.
+   */
+  configRefusal: { kind: "unparseable" | "unsupported-version"; file: string; problem: string; message: string } | null;
 }
 
 /**

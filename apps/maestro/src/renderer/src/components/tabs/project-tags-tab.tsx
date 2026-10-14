@@ -14,7 +14,7 @@
 // fixed constant — a tag added/removed above should be reflected in the dropdown immediately.
 
 import { useState } from "react";
-import { Plus, Save, Tag as TagIcon, X } from "lucide-react";
+import { FloppyDiskIcon, PlusIcon, TagIcon, XIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { Input } from "@repo/ui/field";
 import Select from "@repo/ui/select";
@@ -51,8 +51,8 @@ export default function ProjectTagsTab({
       setAgentTags((prev) => ({ ...prev, [agentName]: res.value }));
       toast(
         <>
-          Set <span className="font-mono text-(--ink)">{agentName}</span>&apos;s project tag to{" "}
-          <span className="font-mono text-(--ink)">{res.value}</span>.
+          Set <span className="font-mono text-maestro">{agentName}</span>&apos;s project tag to{" "}
+          <span className="font-mono text-maestro">{res.value}</span>.
         </>
       );
     } finally {
@@ -93,8 +93,8 @@ export default function ProjectTagsTab({
 
   return (
     <>
-      <div className="rounded-lg border border-(--line) p-4 mb-4">
-        <p className="text-[12px] text-(--ink-3) m-0 mb-4">
+      <div className="rounded-lg border border-maestro p-4 mb-4">
+        <p className="text-[12px] text-maestro-muted m-0 mb-4">
           The project-classification categories detection looks for evidence of on a repo's first open. A tag added
           beyond backend/frontend/mobile is catalogued here, but detection won&apos;t find evidence for it on its own —
           it's picked manually wherever a project's category is assigned.
@@ -102,23 +102,23 @@ export default function ProjectTagsTab({
 
         <div className="flex items-center gap-1.5 flex-wrap mb-4">
           {tags.length === 0 ? (
-            <p className="text-[13px] text-subtle m-0">No project tags yet.</p>
+            <p className="text-[13px] text-maestro-muted m-0">No project tags yet.</p>
           ) : (
             tags.map((tag) => (
               <span
                 key={tag}
-                className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1.5 rounded-full border border-(--line) font-mono text-[12px] text-(--ink)"
+                className="inline-flex items-center gap-1 h-7 pl-2.5 pr-1.5 rounded-full border border-maestro font-mono text-[12px] text-maestro"
               >
-                <TagIcon size={11} className="text-(--ink-3)" />
+                <TagIcon size={11} className="text-maestro-muted" />
                 {tag}
                 <button
                   type="button"
                   title={`Remove ${tag}`}
                   disabled={busy}
                   onClick={() => void handleRemove(tag)}
-                  className="flex items-center justify-center w-4 h-4 rounded-full text-(--ink-3) hover:text-(--ink) cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none bg-transparent border-0"
+                  className="flex items-center justify-center w-4 h-4 rounded-full text-maestro-muted hover:text-maestro cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none bg-transparent border-0"
                 >
-                  <X size={11} />
+                  <XIcon size={11} />
                 </button>
               </span>
             ))
@@ -137,7 +137,7 @@ export default function ProjectTagsTab({
           />
           <Button
             variant="primary"
-            icon={<Plus size={13} />}
+            icon={<PlusIcon size={13} />}
             disabled={busy || !draft.trim()}
             onClick={() => void handleAdd()}
           >
@@ -146,23 +146,23 @@ export default function ProjectTagsTab({
         </div>
       </div>
 
-      <div className="rounded-lg border border-(--line) overflow-hidden">
-        <p className="text-[12px] text-(--ink-3) m-0 p-4 pb-0">
+      <div className="rounded-lg border border-maestro overflow-hidden">
+        <p className="text-[12px] text-maestro-muted m-0 p-4 pb-0">
           Which of the tags above each agent belongs to — the <b>project tag</b>, distinct from the Agent Types
           tab&apos;s developer/planner/reviewer/annotator/tester classification. An agent tagged{" "}
-          <span className="font-mono text-(--ink-2)">global</span> applies to every project regardless of category
+          <span className="font-mono text-maestro-muted">global</span> applies to every project regardless of category
           (reviewer, scribe, test, refactor); the rest match the project&apos;s own selected tags on{" "}
-          <span className="font-mono text-(--ink-2)">/maestro</span>.
+          <span className="font-mono text-maestro-muted">/maestro</span>.
         </p>
         <div className="mt-3">
           {agentNames.length === 0 ? (
-            <p className="text-[13px] text-subtle m-0 p-4">No agent has a project tag yet.</p>
+            <p className="text-[13px] text-maestro-muted m-0 p-4">No agent has a project tag yet.</p>
           ) : (
             agentNames.map((name) => {
               const dirty = agentDrafts[name] !== agentTags[name];
               return (
-                <div key={name} className="flex items-center gap-3 px-4 py-3 border-b border-(--line) last:border-0">
-                  <div className="font-mono text-[13px] text-(--ink) w-28 shrink-0">{name}</div>
+                <div key={name} className="flex items-center gap-3 px-4 py-3 border-b border-maestro last:border-0">
+                  <div className="font-mono text-[13px] text-maestro w-28 shrink-0">{name}</div>
                   <div className="w-48">
                     <Select
                       value={agentDrafts[name]}
@@ -172,7 +172,7 @@ export default function ProjectTagsTab({
                   </div>
                   <Button
                     variant="primary"
-                    icon={savingAgent === name ? undefined : <Save size={13} />}
+                    icon={savingAgent === name ? undefined : <FloppyDiskIcon size={13} />}
                     loading={savingAgent === name}
                     disabled={!dirty}
                     onClick={() => void handleSaveAgentTag(name)}

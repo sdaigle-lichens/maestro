@@ -6,7 +6,7 @@ body,
 
 body {
   margin: 0;
-  color: var(--ink);
+  color: var(--text);
   font-family: var(--font-sans);
   background-color: var(--bg);
   background-image: var(--atmos);
@@ -25,14 +25,14 @@ footer.TanStackRouterDevtools {
 }
 
 ::selection {
-  background: var(--primary-dim-2);
-  color: var(--ink);
+  background: var(--primary-soft);
+  color: var(--text);
 }
 
 a {
   color: var(--primary);
   text-decoration: underline;
-  text-decoration-color: var(--primary-dim-2);
+  text-decoration-color: var(--primary-soft);
   text-underline-offset: 2px;
   transition: text-decoration-color 150ms ease;
 }
@@ -45,11 +45,11 @@ code,
 kbd {
   font-family: var(--font-mono);
   font-size: 0.85em;
-  background: var(--bg-3);
-  border: 1px solid var(--line);
+  background: var(--bg-soft);
+  border: 1px solid var(--border);
   padding: 1px 5px;
   border-radius: 4px;
-  color: var(--ink-2);
+  color: var(--text-muted);
 }
 
 pre code {
@@ -72,5 +72,5 @@ a {
 }
 
 .site-footer {
-  border-top: 1px solid var(--line);
+  border-top: 1px solid var(--border);
 }

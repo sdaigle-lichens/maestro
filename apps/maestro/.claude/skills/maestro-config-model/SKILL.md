@@ -17,24 +17,25 @@ entry point the IPC layer calls.
 
 ## The shape
 
-| Field                                   | Meaning                                                                                                               |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `version: 3`                            | Schema version. `mergeSlice` re-stamps it on every write.                                                             |
-| `agents_available` / `skills_available` | What the project has offered to the canvas.                                                                           |
-| `workflow_instances`                    | Reusable agent+skills pairings (`MaestroInstanceV3`) that nodes point at.                                             |
-| `workflows`                             | The graphs themselves — `MaestroWorkflowV3`, made of `MaestroNodeV3` and `MaestroEdgeV3`.                             |
-| `rules`                                 | `MaestroRuleV3[]` — rule files and the scopes they are assigned to.                                                   |
-| `reports?`                              | Per-agent report overrides. Absent means "no project-level opinion", and resolution falls through to the global tier. |
-| `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names, flat rather than nested. Same absence rule as `reports?`. |
-| `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                      |
-| `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                           |
-| `gates?`                                | The orchestrator's two optional Step 1 gates, `{ confidence_check, use_code_architecture_design_check }`. **Absent means both off** — resolved at read time, never migrated. |
-| `use_maestro_tasks?`                    | A SIBLING of `gates`, not nested in it (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**. |
+| Field                                   | Meaning                                                                                                                                                                             |
+| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `version: 3`                            | Schema version. `mergeSlice` re-stamps it on every write.                                                                                                                           |
+| `agents_available` / `skills_available` | What the project has offered to the canvas.                                                                                                                                         |
+| `workflow_instances`                    | Reusable agent+skills pairings (`MaestroInstanceV3`) that nodes point at.                                                                                                           |
+| `workflows`                             | The graphs themselves — `MaestroWorkflowV3`, made of `MaestroNodeV3` and `MaestroEdgeV3`.                                                                                           |
+| `rules`                                 | `MaestroRuleV3[]` — rule files and the scopes they are assigned to.                                                                                                                 |
+| `reports?`                              | Per-agent report overrides. Absent means "no project-level opinion", and resolution falls through to the global tier.                                                               |
+| `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names, flat rather than nested. Same absence rule as `reports?`.          |
+| `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                                                                                    |
+| `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                                                                                         |
+| `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks}`, `end_skills.{maestro}`. Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |
+| `gates?`                                | **Legacy, no longer read** (`092`). The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |
+| `use_maestro_tasks?`                    | A SIBLING of the skill lists, not nested in them (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**.                               |
 
 ## Slice merges are the load-bearing rule
 
 Saves never write the whole file. `ConfigSlice` is a union of exactly five shapes — `workflows`,
-`rules`, `project-tags`, `gates`, `task-routing` (`046`) — and `mergeSlice` copies only that slice's
+`rules`, `project-tags`, `skill-lists`, `task-routing` (`046`) — and `mergeSlice` copies only that slice's
 fields onto the current config. The comment on it is explicit about why: **this separation is the
 reason `/workflows` saves can't clobber `/rules` assignments and vice versa, and widening any branch
 to write another's fields reintroduces that bug.** Adding a field means deciding which slice owns
@@ -42,7 +43,7 @@ it, not appending to whichever save path is nearest.
 
 **`mergeSlice` has five explicit `sliceType` tests and no `else`, on purpose** (`032`, `046`). It
 used to end in a catch-all `else` that happened to mean `project-tags`; that is a latent instance of
-exactly the clobbering bug the function's own header warns about, because the *next* slice added
+exactly the clobbering bug the function's own header warns about, because the _next_ slice added
 would have silently inherited the previous one's write. `046`'s `task-routing` arm writes only
 `use_maestro_tasks`. A sixth slice must add a sixth test — being forgotten should be a no-op, never
 a wrong write.
@@ -57,7 +58,7 @@ already has a writer. `033` followed that precedent rather than reopening it.
 **A slice can have more than one writer, and then read-before-write is the rule.** The `workflows`
 slice now has three. Two go through the app's `mergeSlice`: `/workflows`, and `/agents` (which edits
 the selected instance's `loaded_skills` / `referenced_skills`). Because the merge replaces the
-*whole* block, a writer that saves a copy it loaded minutes ago reverts everything the other one did
+_whole_ block, a writer that saves a copy it loaded minutes ago reverts everything the other one did
 in between — so `/agents` re-reads via `data:workflows` immediately before calling `config:save`, and
 mutates only the one instance in that fresh config. The third never goes through IPC or `mergeSlice`
 at all: `plugins/maestro/scripts/maestro-workflow-spec.cjs` runs outside the app process, doing its
@@ -83,20 +84,22 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
   only as `LEGACY_SESSION_FILES`. Path resolution belongs to `src/core/session-paths.ts`; see
   `maestro-architecture` (repo root `.claude/skills/`) for "Which session am I".
 - **Concept-skill state is not here either.** As of `ff24b37` it lives in its own
-  `<root>/.claude/concept-skills.json` (`MaestroConceptSkillsState`), because concept skills are a
+  `<root>/.claude/concept-skills.json` (`ConceptSkillsState` in `packages/concept-skills`), because concept skills are a
   plain `.claude/skills` convention and a repo can keep a reconciled list without Maestro installed.
   Older docs that say `maestro.json` holds `concept-skills-last-update` are stale.
 
 ## Files
 
-| File                       | Role                                                                                                |
-| -------------------------- | --------------------------------------------------------------------------------------------------- |
-| `src/core/types.ts`        | The schema — every `MaestroConfigV3` type and slice.                                                |
-| `src/core/config.ts`       | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`, `resolveGates`/`DEFAULT_GATES`. |
-| `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — reports collisions across placed instances, never repairs. |
-| `src/core/save.ts`         | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                               |
-| `src/core/render.ts`       | Renders the orchestrator's handoff table from the config.                                           |
-| `src/core/success-path.ts` | Derives the agent→skill success path a workflow describes.                                          |
+| File                          | Role                                                                                                                                                                                                           |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/core/types.ts`           | The schema — every `MaestroConfigV3` type and slice.                                                                                                                                                           |
+| `src/core/config-usable.ts`   | `maestroConfigRefusal(raw)` (`096`) — the one "is this existing file installable over" check (unparseable or not `version: 3`), shared by `installRuntime()` and `maestro-install.js` via `maestro-seed`. Pure; `readConfig` is unrelated and still treats those files as a read failure. |
+| `src/core/config.ts`          | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`. (`resolveGates`/`DEFAULT_GATES` are gone; the reader is `resolveSkillLists` in `src/core/skill-lists.ts`.) |
+| `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — reports collisions across placed instances, never repairs.                                                                                                           |
+| `src/core/save.ts`            | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                                                                                                                                          |
+| `src/core/render.ts`          | Renders the orchestrator's handoff table from the config.                                                                                                                                                      |
+| `src/core/success-path.ts`    | Derives the agent→skill success path a workflow describes.                                                                                                                                                     |
+| `src/core/skill-ref-report.ts` | `skillRefReport` — the IPC-facing dangling-skill report over `findStaleSkillRefs`; advisory, never repairs (see `workflow-view`).                                                                              |
 
 ## Relationships
 
@@ -114,9 +117,9 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
 - [Handoffs slice](sub-concepts/handoffs-slice.md) — per-route overrides, the path-shaped key, and
   the third tier that `reports` does not have.
 - [Project tags slice](sub-concepts/project-tags-slice.md) — catalog membership.
-- [Gates slice](sub-concepts/gates-slice.md) — the orchestrator's optional Step 1 gates, and how an
-  absent or malformed value resolves.
+- [Skill-lists slice](sub-concepts/skill-lists-slice.md) — the configurable start/end skill lists,
+  and `resolveSkillLists`.
 - [Task-routing slice](sub-concepts/task-routing-slice.md) — the `use_maestro_tasks` sibling of
-  `gates`, its two writers and Step 4's reader.
+  the skill lists, its two writers and Step 4's reader.
 - [Config validation](sub-concepts/config-validation.md) — what a hand-edited config can break, and
   the validator that reports it without repairing.

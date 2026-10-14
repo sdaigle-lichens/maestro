@@ -1,7 +1,7 @@
 .tabs {
   display: flex;
   gap: 4px;
-  border-bottom: 1px solid var(--line);
+  border-bottom: 1px solid var(--border);
 }
 
 .tabs button {
@@ -9,7 +9,7 @@
   background: transparent;
   border: 0;
   padding: 0.875rem 1rem 0.8125rem;
-  color: var(--ink-3);
+  color: var(--text-muted);
   font: 500 0.875rem/1 var(--font-sans);
   cursor: pointer;
   position: relative;
@@ -19,11 +19,11 @@
 }
 
 .tabs button:hover {
-  color: var(--ink-2);
+  color: var(--text-muted);
 }
 
 .tabs button[aria-selected="true"] {
-  color: var(--ink);
+  color: var(--text);
 }
 
 .tabs button[aria-selected="true"]::after {

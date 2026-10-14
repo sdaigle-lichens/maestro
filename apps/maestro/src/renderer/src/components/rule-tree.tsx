@@ -72,12 +72,12 @@ function TreeRow({
 
   return (
     <div
-      className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-(--bg-elev) group"
+      className="flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-maestro-elevated group"
       style={{ paddingLeft: `${depth * 16 + 8}px` }}
     >
       {/* Dir icon */}
-      <span className="text-(--ink-4) text-[12px] shrink-0">{depth === 0 ? "⊟" : "▸"}</span>
-      <span className="text-[13px] text-(--ink) font-mono shrink-0 min-w-0 truncate">
+      <span className="text-maestro-faint text-[12px] shrink-0">{depth === 0 ? "⊟" : "▸"}</span>
+      <span className="text-[13px] text-maestro font-mono shrink-0 min-w-0 truncate">
         {isRoot ? "(project root)" : name}
       </span>
 
@@ -99,7 +99,7 @@ function TreeRow({
               } ${
                 isVibe
                   ? "bg-amber-100 border-amber-300 text-amber-700"
-                  : "bg-(--primary-dim) border-primary/30 text-primary"
+                  : "bg-maestro-primary-subtle border-maestro-primary text-maestro-primary"
               }`}
             >
               {isVibe && <span className="text-[8px] uppercase tracking-wide opacity-70">vibe</span>}
@@ -140,7 +140,7 @@ function TreeRow({
                 onBlur={() => {
                   if (!pickerValue) setPickerOpen(false);
                 }}
-                className="text-[11px] bg-(--bg) border border-(--line) rounded px-1.5 py-0.5 text-(--ink)"
+                className="text-[11px] bg-maestro border border-maestro rounded px-1.5 py-0.5 text-maestro"
               >
                 <option value="">Pick rule…</option>
                 {availableToAdd.map((id) => (
@@ -150,7 +150,7 @@ function TreeRow({
                 ))}
               </select>
               <label
-                className="flex items-center gap-1 text-[11px] text-(--ink-2) cursor-pointer select-none"
+                className="flex items-center gap-1 text-[11px] text-maestro-muted cursor-pointer select-none"
                 title="Assign the paths scope without moving or installing the file at this directory"
               >
                 <input
@@ -164,7 +164,7 @@ function TreeRow({
                 type="button"
                 onClick={handleAdd}
                 disabled={!pickerValue}
-                className="px-2 py-0.5 text-[11px] bg-primary text-white rounded cursor-pointer disabled:opacity-40"
+                className="px-2 py-0.5 text-[11px] bg-maestro-primary text-white rounded cursor-pointer disabled:opacity-40"
               >
                 Add
               </button>
@@ -174,7 +174,7 @@ function TreeRow({
                   setPickerScopeOnly(false);
                   setPickerOpen(false);
                 }}
-                className="px-1.5 py-0.5 text-[11px] bg-(--bg-elev) border border-(--line) rounded cursor-pointer text-(--ink-2)"
+                className="px-1.5 py-0.5 text-[11px] bg-maestro-elevated border border-maestro rounded cursor-pointer text-maestro-muted"
               >
                 ×
               </button>
@@ -184,7 +184,7 @@ function TreeRow({
               <button
                 type="button"
                 onClick={() => setPickerOpen(true)}
-                className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded-full border border-(--line) bg-(--bg-elev) flex items-center justify-center text-(--ink-2) text-[13px] cursor-pointer focus:outline-none transition-opacity"
+                className="opacity-0 group-hover:opacity-100 w-5 h-5 rounded-full border border-maestro bg-maestro-elevated flex items-center justify-center text-maestro-muted text-[13px] cursor-pointer focus:outline-none transition-opacity"
                 title="Assign rule to this path"
               >
                 +
@@ -234,7 +234,7 @@ export default function RuleTree({
           onUnassign={onUnassign}
         />
       ))}
-      {tree.length === 0 && <p className="text-[12px] text-subtle px-2 py-4">No subdirectories found.</p>}
+      {tree.length === 0 && <p className="text-[12px] text-maestro-muted px-2 py-4">No subdirectories found.</p>}
     </div>
   );
 }

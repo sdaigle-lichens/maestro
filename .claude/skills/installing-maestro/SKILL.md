@@ -23,7 +23,7 @@ is the fallback for the other:
 | For         | a machine with the desktop app                           | a machine without it                         |
 
 The manifests are mirrored by hand in both files — **if the two lists diverge, that is a bug in one
-of them**. A third rendering, `maestro-install/SKILL.md`'s step 1, restates `detect.ts`'s
+of them**. A third rendering, `maestro-install/SKILL.md`'s step 2 (step 1 is now the committed-or-ignored question), restates `detect.ts`'s
 classification rules in prose and has **no test at all** (`053`). See the two-implementations
 sub-concept for what each test pins and what nothing pins.
 
@@ -55,9 +55,42 @@ writes `~/.claude`, it just no longer needs to ask the user to. See the hook-arb
    `settingsRegisterScript` in `hook-arbitration.ts` so this test and the runtime guard can never
    disagree about what "registered" means.
 
+**Re-install repairs an old config once (`092`).** `seedMissingSkillLists` (`seed.ts`) parses
+`maestro.json` raw (not `readConfig`), fills a missing `start_skills`/`end_skills` with the
+fresh-install defaults, removes a leftover `gates` key, and rewrites the file only if something
+changed. A list already present, even empty, is left alone. `InstallReport.skillListsSeeded`
+(`{start_skills, end_skills, gatesRemoved}` or `null`) and the `maestro-install.js` JSON summary
+carry it so the skill can tell the user what was seeded. `maestro-seed` is not in `STATIC_ASSETS`,
+so it needs no `.claude/scripts/lib` mirror.
+
+**Terminal-only: `--ignore-mode committed|ignored`.** `ignored` writes `.claude/` into the
+clone-local `git rev-parse --git-path info/exclude` (first write of the run) instead of the
+committed `.gitignore` `# Maestro` block. The app's `installRuntime()` has no ignore mode and always
+writes the block. The exclude line is preceded by a `# Maestro (added by maestro-install)` marker;
+`maestro-uninstall.js --purge` (only purge, since a plain uninstall keeps the `maestro.json` and
+orchestrator skill the line hides) removes that marker+line pair, never a user's own `.claude/`
+line. Uninstall never removes the `.gitignore` block. See the manifest, two-implementations and
+uninstall-and-purge sub-concepts.
+
 Ordering enforces a fourth: **everything that can refuse is checked before the first byte is
 written**, so a rejected install leaves the project exactly as it was. Past that point every step
 is a copy or an append that re-running completes.
+
+**An unusable `maestro.json` is refused, never blanked or stamped over (`096`).** An existing file
+that is not parseable JSON, or not `version: 3`, is the user's authored graph. Both paths call
+`maestroConfigRefusal(raw)` from `apps/maestro/src/core/config-usable.ts` (pure, text in, verdict
+out; reaches the plugin through the `maestro-seed` bundle) — the single definition of "unusable" and
+of the wording. It returns `{kind: "unparseable" | "unsupported-version", file, problem, message}`
+or `null`; a missing file is not its business.
+
+| | App | Terminal |
+| --- | --- | --- |
+| Refusal | `installRuntime()` returns a report with `configRefusal` set (`InstallReport.configRefusal`, `null` otherwise); every other field is the empty/unchanged value | JSON `{ok:false, refused:"config", kind, file, problem, reason}`, exit 1 (a non-`ENOENT` read error gives `refused:"config"` with just `reason`) |
+| Shown by | `install-report-card.tsx` renders an alert instead of "What changed on disk"; `maestro.tsx` and `install-context.tsx` skip the tags offer and the auto-refresh follow-ups when it is set | the `maestro-install` skill relays `reason` |
+
+**Known edge:** an *unreadable* `maestro.json` (e.g. a directory at that path) makes the app's
+`installRuntime()` **throw** from `readFileSync` rather than return a refusal, while the plugin
+refuses cleanly. Both write nothing; only the shape differs.
 
 ## Files
 
@@ -72,17 +105,20 @@ is a copy or an append that re-running completes.
 | `plugins/maestro/scripts/maestro-step0.js`                   | 152   | The orchestrator's Step 0 as a hook (`UserPromptExpansion` on `maestro`, `PreToolUse` on `Skill`). Runs the readiness check and the agent-fork check (the two rows below) and answers in the shape each event accepts; `install` exits 2 and blocks the invocation. |
 | `plugins/maestro/scripts/maestro-enable-task-routing.js`     | —     | `047`'s addition, dual-registered the same way (`UserPromptExpansion` on `to-maestro-tasks`, `PreToolUse` on `Skill`, sharing that matcher's block with `maestro-step0.js`). Injects nothing — its only effect is flipping `maestro.json`'s `use_maestro_tasks` to `true` on the first `/to-maestro-tasks`. |
 | `plugins/maestro/scripts/maestro-check-runtime.cjs`          | 206   | The readiness check itself — `checkRuntime(projectDir)`, which the hook `require`s. Its `require.main` CLI prints the same JSON, for a **person** debugging by hand; nothing in the orchestrator runs it. |
-| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the first asset invoked by the *harness* rather than by a hook or the model: Step 1 injects it with `!`-prefixed command injection. Prints one line naming the gates to run; **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
+| `plugins/maestro/scripts/maestro-step1-gates.cjs`            | 69    | `032`'s addition, and the first asset invoked by the *harness* rather than by a hook or the model: Step 1 injects it with `!`-prefixed command injection. Prints one line naming the start skills to run (from `start_skills`; `--for to_maestro_tasks` selects the other list); **exits 0 and writes no stderr under every input**, because a non-zero exit aborts the invocation. |
+| `plugins/maestro/scripts/maestro-end-skills.cjs`              | —     | `089`'s addition — same harness-invoked, exit-0 contract, for Step 7: prints the `end_skills.maestro` list as one line. Requires `lib/maestro-skill-lists.cjs`, also a `STATIC_ASSET`. |
 | `plugins/maestro/scripts/maestro-step4-gate.cjs`              | —     | `046`'s addition — same harness-invoked, exit-0-unconditional contract, for Step 4: resolves `use_maestro_tasks` and prints a line naming `/to-maestro-tasks` when on, a neutral line when off. |
 | `plugins/maestro/scripts/maestro-agent-forks.cjs`            | 127   | Step 0's *second* check (`031`) — `list`/`diff`/`update`/`keep`/`detach` over forked agents. `list` and `diff` write nothing. The hook calls `computeAgentSync` directly; this CLI is the user-facing half. |
 | `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`     | —     | `061`'s addition — a `STATIC_ASSET`, not a hook. See the skill-discovery sub-concept. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 305   | The published skills that drive the terminal path.                                            |
 
-Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS table), `seed.ts`
-(`defaultV3Config`), `detect.ts`, `report-sync.ts`, and — since `033` — `handoff-sync.ts`
+Supporting: `config-usable.ts` (`maestroConfigRefusal`, `096`; re-exported by
+`plugin-entries/maestro-seed.ts`), `skill-regions.ts` (managed-region sync), `render.ts` (the
+HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, and — since `033` — `handoff-sync.ts`
 (`syncProjectHandoffs`, run right after `syncProjectReports`, and the **third** caller of
 `decideSync`). Test: `test/core/install.test.ts`, `test/core/uninstall.test.ts`,
-`test/core/hook-arbitration.test.ts`, `test/core/handoffs.test.ts`, `test/core/parity.test.ts`.
+`test/core/hook-arbitration.test.ts`, `test/core/handoffs.test.ts`, `test/core/parity.test.ts`,
+`test/core/install-unusable-config.test.ts` (both paths), `test/renderer/install-report-card.test.ts`.
 
 ## Things that bite
 
@@ -113,7 +149,8 @@ Supporting: `skill-regions.ts` (managed-region sync), `render.ts` (the HANDOFFS 
   `maestro-render-orchestrator.cjs` runs afterwards, and `/maestro-update` is just those two steps
   standalone.
 - **The seed is guarded on absence.** An existing `maestro.json` is the user's authored graph and is
-  never overwritten — by install, re-install, or refresh.
+  never overwritten — by install, re-install, or refresh. An existing but corrupt or non-v3 one is
+  *refused* (`096`), not treated as absent: do not "fix" that by falling back to the seed.
 - **A lib a copied script `require`s must be in `STATIC_ASSETS`, and forgetting one fails silently
   (`035`).** Every sqlite `require` sits inside a try/catch, so a missing lib is swallowed and the
   tier it backed stops existing — for projects on their own copy only, while the plugin's copy keeps

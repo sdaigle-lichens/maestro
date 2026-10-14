@@ -1,6 +1,7 @@
 ---
 name: to-maestro-tasks
-description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the confidence-check and use-code-architecture-design-check gates to sharpen intent and flag a needed code-architecture-design pass, sizes the work into as few tasks as it genuinely needs — often one — then writes a numbered, workflow-agnostic prompt file for each, for the Maestro orchestrator to classify and execute. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, or asks to convert a plan/spec/idea into runnable task files."
+description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the project's configured to-maestro-tasks start skills to sharpen intent before anything is written, sizes the work into as few tasks as it genuinely needs — often one — then writes a numbered, workflow-agnostic prompt file for each, for the Maestro orchestrator to classify and execute. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, or asks to convert a plan/spec/idea into runnable task files."
+allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs" *)
 ---
 
 # To Maestro Tasks
@@ -9,20 +10,19 @@ Convert a plan, spec, or rough idea into **ready-to-run prompt files** under the
 
 ## Process
 
-### 1. Confidence check
+### 1. Start skills
 
-Run the `confidence-check` skill to self-assess readiness to decompose the plan into task files.
-If you get a **Score >= 0.9:** proceed straight to Step 2. Otherwise, let the `confidence-check` go through refining the idea with the user until it gets a score of above 0.9.
+If the text below is missing, empty, or reads `[shell command execution disabled by policy]`, this project has no start skills: go to Step 2.
 
-### 2. Design check
+!`node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs" --for to_maestro_tasks`
 
-Run the `use-code-architecture-design-check` skill to decide whether the work needs a `code-architecture-design` pass before any task can be written. If it says RUN, invoke the `code-architecture-design` skill and carry its Design Brief into the tasks below.
+Whatever those skills produce (a clarified intent, a design brief) carries into the tasks below.
 
-### 3. Size the work
+### 2. Size the work
 
-Once you are confident about the intent, and if necessary went through the design phase with the user, decide **how many tasks this needs — starting from one.**
+Once you are confident about the intent, decide **how many tasks this needs — starting from one.**
 
-**A task file is not free.** Each one is a full orchestrator run: classification, the Step 1 gates, and a cold-spawned subagent per success-path step. The forward path always spawns cold by design, so every extra task re-derives the same project context from scratch, then re-runs review and documentation over it. Two tasks where one would do roughly doubles the tokens and adds a handoff that can lose intent.
+**A task file is not free.** Each one is a full orchestrator run: classification, the start skills, and a cold-spawned subagent per success-path step. The forward path always spawns cold by design, so every extra task re-derives the same project context from scratch, then re-runs review and documentation over it. Two tasks where one would do roughly doubles the tokens and adds a handoff that can lose intent.
 
 **Default to a single task.** Split only when a boundary meets one of these:
 
@@ -46,7 +46,7 @@ When it genuinely is more than one, each must still be a **tracer bullet**: a th
 
 </vertical-slice-rules>
 
-### 4. Quiz the user
+### 3. Quiz the user
 
 If you landed on a single task, say so and show the title and acceptance criteria — don't manufacture a breakdown to have something to present.
 
@@ -56,7 +56,7 @@ For more than one, present the proposed breakdown as a numbered list. For each t
 - **Blocked by**: which other tasks (if any) must complete first
 - **User stories covered**: which user stories this addresses (if the source material has them)
 
-**Name the split criterion each boundary meets** (from Step 3). A boundary you can't justify is one to merge. Then ask:
+**Name the split criterion each boundary meets** (from Step 2). A boundary you can't justify is one to merge. Then ask:
 
 - Is any boundary here not worth a separate run?
 - Are the dependency relationships correct?
@@ -64,9 +64,9 @@ For more than one, present the proposed breakdown as a numbered list. For each t
 
 Iterate until the user approves the breakdown.
 
-### 5. Write the task files and sync the tracker
+### 4. Write the task files and sync the tracker
 
-Once approved, prepare one object per approved task — **do not write the markdown files or `status.json` by hand.** Order tasks in the array exactly as the topological order from Step 4 (blockers before dependents; the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild` — choosing the workflow is the orchestrator's job (`maestro.md` Step 1), not the prompt's.
+Once approved, prepare one object per approved task — **do not write the markdown files or `status.json` by hand.** Order tasks in the array exactly as the topological order from Step 3 (blockers before dependents; the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild` — choosing the workflow is the orchestrator's job (`maestro.md` Step 1), not the prompt's.
 
 ```json
 [
@@ -95,9 +95,16 @@ node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-write-tasks.cjs" <path-to-json>
 
 **Epic (optional).** When the tasks belong to an epic — the user named one, or you are running for a `maestro-manager` — add `--epic <slug>` to that command; every task it writes is linked to the epic in the tracker (`epic` field), and the command refuses, writing nothing, when the epic does not exist (create it first with `node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-epic.cjs" create <slug>`). To link or unlink tasks that already exist, use `maestro-epic.cjs link <slug> <task.md>...` / `unlink <task.md>...`. Without an epic, nothing changes.
 
-### 6. Report
+### 5. Report
 
 Tell the user what was written — a single file, or the count and numeric range (e.g. `003–007`) — and that each is ready to paste into (or run from) a session where the `/maestro` skill is invoked.
+
+When the tasks were written with `--epic <slug>`, end the report with a suggestion (never start sessions or the manager yourself):
+
+- Keep **this** session open and invoke the `maestro-manager` skill for the epic, so it coordinates worker reports and rewires tickets.
+- Open a separate Claude session for each task of the epic that is `ready` right now (no unfinished blocker, per `.claude/maestro-tasks/status.json`) and run `/maestro` on its task file in each, so they run in parallel. Tasks still blocked wait.
+
+With no epic, add no suggestion.
 
 ## Notes
 

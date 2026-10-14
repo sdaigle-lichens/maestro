@@ -12,7 +12,17 @@
 // came off `ResumableSession` / `ResumeDisclosure`, which main built from the CLI's own store.
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, Check, Clock, FileText, GitBranch, History, Loader2, Play, X } from "lucide-react";
+import {
+  CheckIcon,
+  CircleNotchIcon,
+  ClockCounterClockwiseIcon,
+  ClockIcon,
+  FileTextIcon,
+  GitBranchIcon,
+  PlayIcon,
+  WarningIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import { useSession } from "../utils/session-context";
 import type { ResumableSession, ResumeDisclosure } from "../../../shared/ipc";
 
@@ -69,10 +79,10 @@ export default function ResumePicker({ onClose }: { onClose(): void }) {
   return (
     <div
       data-testid="session-resume"
-      className="border-b border-(--line) bg-(--bg-elev) px-4 py-3 flex flex-col gap-2 max-h-[60vh] overflow-y-auto"
+      className="border-b border-maestro bg-maestro-elevated px-4 py-3 flex flex-col gap-2 max-h-[60vh] overflow-y-auto"
     >
       <div className="flex items-center justify-between gap-2">
-        <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+        <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-maestro-muted">
           Pick up a conversation from this project
         </p>
         <button
@@ -80,20 +90,20 @@ export default function ResumePicker({ onClose }: { onClose(): void }) {
           data-testid="session-resume-close"
           onClick={onClose}
           aria-label="Close the conversation picker"
-          className="flex h-5 w-5 items-center justify-center rounded text-subtle hover:text-(--ink) bg-transparent border-0 cursor-pointer focus:outline-none"
+          className="flex h-5 w-5 items-center justify-center rounded text-maestro-muted hover:text-maestro bg-transparent border-0 cursor-pointer focus:outline-none"
         >
-          <X size={12} />
+          <XIcon size={12} />
         </button>
       </div>
 
       {session.loadingResumable && (
-        <p data-testid="session-resume-loading" className="m-0 text-[11px] text-(--ink-3)">
+        <p data-testid="session-resume-loading" className="m-0 text-[11px] text-maestro-muted">
           Reading Claude Code&apos;s session store…
         </p>
       )}
 
       {!session.loadingResumable && session.resumable.length === 0 && (
-        <p data-testid="session-resume-empty" className="m-0 text-[11px] text-(--ink-3)">
+        <p data-testid="session-resume-empty" className="m-0 text-[11px] text-maestro-muted">
           No recorded conversations for this project. Sessions you start in your terminal here — and the ones this pane
           runs — appear in this list.
         </p>
@@ -108,9 +118,9 @@ export default function ResumePicker({ onClose }: { onClose(): void }) {
               data-testid="session-resume-item"
               data-id={row.id}
               onClick={() => void select(row)}
-              className="w-full rounded-lg border border-(--line) bg-(--bg) px-2.5 py-2 text-left hover:border-primary/50 cursor-pointer focus:outline-none"
+              className="w-full rounded-lg border border-maestro bg-maestro px-2.5 py-2 text-left hover:border-maestro-primary cursor-pointer focus:outline-none"
             >
-              <p className="m-0 text-[12px] font-medium text-(--ink) truncate">{row.summary}</p>
+              <p className="m-0 text-[12px] font-medium text-maestro truncate">{row.summary}</p>
               {/*
                 THE FIRST PROMPT SITS BESIDE THE SUMMARY, not behind it. A summary is the model's
                 reading of a conversation; the sentence the person actually typed is the one they
@@ -118,26 +128,29 @@ export default function ResumePicker({ onClose }: { onClose(): void }) {
                 they think it is.
               */}
               {row.firstPrompt && (
-                <p data-testid="session-resume-first-prompt" className="m-0 mt-0.5 text-[10px] text-(--ink-3) truncate">
+                <p
+                  data-testid="session-resume-first-prompt"
+                  className="m-0 mt-0.5 text-[10px] text-maestro-muted truncate"
+                >
                   “{row.firstPrompt}”
                 </p>
               )}
-              <p className="m-0 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-subtle">
+              <p className="m-0 mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[10px] text-maestro-muted">
                 <span className="inline-flex items-center gap-1">
-                  <Clock size={9} /> {ago(row.lastModified)}
+                  <ClockIcon size={9} /> {ago(row.lastModified)}
                 </span>
                 {row.branch && (
                   <span data-testid="session-resume-branch" className="inline-flex items-center gap-1">
-                    <GitBranch size={9} /> {row.branch}
+                    <GitBranchIcon size={9} /> {row.branch}
                   </span>
                 )}
                 <span className="inline-flex items-center gap-1">
-                  <FileText size={9} /> {bytes(row.sizeBytes)}
+                  <FileTextIcon size={9} /> {bytes(row.sizeBytes)}
                 </span>
               </p>
               <p
                 data-testid="session-resume-cwd"
-                className="m-0 mt-0.5 font-mono text-[9px] text-(--ink-3) truncate"
+                className="m-0 mt-0.5 font-mono text-[9px] text-maestro-muted truncate"
                 title={row.cwd}
               >
                 {row.cwd}
@@ -189,10 +202,10 @@ function Disclosure({
 }) {
   return (
     <div data-testid="session-resume-disclosure" data-id={row.id} className="flex flex-col gap-2">
-      <div className="rounded-lg border border-(--line) bg-(--bg) px-2.5 py-2">
-        <p className="m-0 text-[12px] font-medium text-(--ink)">{row.summary}</p>
-        {row.firstPrompt && <p className="m-0 mt-0.5 text-[10px] text-(--ink-3)">“{row.firstPrompt}”</p>}
-        <p className="m-0 mt-1 font-mono text-[9px] text-(--ink-3) truncate" title={row.cwd}>
+      <div className="rounded-lg border border-maestro bg-maestro px-2.5 py-2">
+        <p className="m-0 text-[12px] font-medium text-maestro">{row.summary}</p>
+        {row.firstPrompt && <p className="m-0 mt-0.5 text-[10px] text-maestro-muted">“{row.firstPrompt}”</p>}
+        <p className="m-0 mt-1 font-mono text-[9px] text-maestro-muted truncate" title={row.cwd}>
           {row.cwd}
           {row.branch ? ` · ${row.branch}` : ""}
         </p>
@@ -201,9 +214,9 @@ function Disclosure({
       {loading && (
         <p
           data-testid="session-resume-detail-loading"
-          className="m-0 flex items-center gap-1.5 text-[11px] text-(--ink-3)"
+          className="m-0 flex items-center gap-1.5 text-[11px] text-maestro-muted"
         >
-          <Loader2 size={11} className="animate-spin" /> Reading the transcript…
+          <CircleNotchIcon size={11} className="animate-spin" /> Reading the transcript…
         </p>
       )}
 
@@ -215,11 +228,11 @@ function Disclosure({
             data-outside={disclosure.outside}
             className="flex flex-col gap-1"
           >
-            <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-subtle">
+            <p className="m-0 text-[10px] font-semibold uppercase tracking-wide text-maestro-muted">
               What this conversation already read
             </p>
             {disclosure.reads.length === 0 && (
-              <p className="m-0 text-[11px] text-(--ink-3)">Its own tool calls read no files.</p>
+              <p className="m-0 text-[11px] text-maestro-muted">Its own tool calls read no files.</p>
             )}
             {disclosure.reads.map((read) => (
               <p
@@ -227,23 +240,23 @@ function Disclosure({
                 data-testid="session-resume-read"
                 data-in-scope={read.inScope}
                 className={`m-0 flex items-start gap-1.5 font-mono text-[10px] break-all ${
-                  read.inScope ? "text-(--ink-2)" : "text-amber-500"
+                  read.inScope ? "text-maestro-muted" : "text-amber-500"
                 }`}
               >
                 {read.inScope ? (
-                  <Check size={10} className="mt-px shrink-0" />
+                  <CheckIcon size={10} className="mt-px shrink-0" />
                 ) : (
-                  <AlertTriangle size={10} className="mt-px shrink-0" />
+                  <WarningIcon size={10} className="mt-px shrink-0" />
                 )}
                 <span>
-                  {read.path} <span className="text-(--ink-3)">· {read.tool}</span>
+                  {read.path} <span className="text-maestro-muted">· {read.tool}</span>
                 </span>
               </p>
             ))}
             {disclosure.more > 0 && (
-              <p className="m-0 text-[10px] text-(--ink-3)">…and {disclosure.more} more, not listed.</p>
+              <p className="m-0 text-[10px] text-maestro-muted">…and {disclosure.more} more, not listed.</p>
             )}
-            <p data-testid="session-resume-read-note" className="m-0 mt-0.5 text-[10px] text-(--ink-3)">
+            <p data-testid="session-resume-read-note" className="m-0 mt-0.5 text-[10px] text-maestro-muted">
               {disclosure.readNote}
             </p>
           </div>
@@ -251,11 +264,11 @@ function Disclosure({
           <p
             data-testid="session-resume-replay"
             data-tokens={disclosure.replayTokens}
-            className="m-0 text-[10px] text-(--ink-2)"
+            className="m-0 text-[10px] text-maestro-muted"
           >
             {disclosure.replayNote}
           </p>
-          <p data-testid="session-resume-scope-note" className="m-0 text-[10px] text-(--ink-3)">
+          <p data-testid="session-resume-scope-note" className="m-0 text-[10px] text-maestro-muted">
             {disclosure.scopeNote}
           </p>
         </>
@@ -267,9 +280,9 @@ function Disclosure({
           data-testid="session-resume-confirm"
           disabled={resuming || loading}
           onClick={onConfirm}
-          className="inline-flex items-center gap-1 rounded-md border-0 bg-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
+          className="inline-flex items-center gap-1 rounded-md border-0 bg-maestro-primary px-2.5 py-1 text-[11px] text-white hover:brightness-110 disabled:opacity-40 cursor-pointer focus:outline-none"
         >
-          <Play size={11} /> {resuming ? "Resuming…" : "Resume a fork of this"}
+          <PlayIcon size={11} /> {resuming ? "Resuming…" : "Resume a fork of this"}
         </button>
         {/*
           DECLINING IS A BUTTON, not an X in a corner. `025` requires that the user can say no after
@@ -279,9 +292,9 @@ function Disclosure({
           type="button"
           data-testid="session-resume-decline"
           onClick={onBack}
-          className="inline-flex items-center gap-1 rounded-md border border-(--line) bg-(--bg) px-2.5 py-1 text-[11px] text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+          className="inline-flex items-center gap-1 rounded-md border border-maestro bg-maestro px-2.5 py-1 text-[11px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
         >
-          <History size={11} /> Don&apos;t resume this
+          <ClockCounterClockwiseIcon size={11} /> Don&apos;t resume this
         </button>
       </div>
     </div>

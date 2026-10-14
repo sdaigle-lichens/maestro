@@ -27,7 +27,14 @@
 // `^[A-Za-z0-9_-]+/[A-Za-z0-9_-]+$` before any `path.join`, so a qualified name fails every call.
 
 import { useEffect, useState } from "react";
-import { ArrowRight, FileText, Plus, RotateCcw, Save, Trash2 } from "lucide-react";
+import {
+  ArrowCounterClockwiseIcon,
+  ArrowRightIcon,
+  FileTextIcon,
+  FloppyDiskIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import { Textarea } from "@repo/ui/field";
 import { toast } from "@repo/ui/toast";
@@ -201,13 +208,13 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
 
   return (
     <div
-      className="grid overflow-hidden rounded-lg border border-(--line)"
+      className="grid overflow-hidden rounded-lg border border-maestro"
       style={{ gridTemplateColumns: "280px 1fr", minHeight: 520 }}
     >
-      <div className="border-r border-(--line) flex flex-col min-h-0">
+      <div className="border-r border-maestro flex flex-col min-h-0">
         <div className="flex-1 overflow-y-auto">
           {ids.length === 0 ? (
-            <p className="text-[13px] text-subtle m-0 p-4">No route has a global default yet.</p>
+            <p className="text-[13px] text-maestro-muted m-0 p-4">No route has a global default yet.</p>
           ) : (
             <>
               <Section label="Shipped by Maestro" ids={shipped} selected={selected} onSelect={setSelected} />
@@ -220,23 +227,23 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
           The create row is pinned to the bottom of the LIST, not floated over the editor: it adds
           a row to the thing above it, and the editor pane is about whichever row is selected.
         */}
-        <div className="flex-none border-t border-(--line) p-3 flex flex-col gap-2" data-testid="handoff-create">
-          <div className="text-[11px] text-(--ink-3) uppercase tracking-wide">New route</div>
+        <div className="flex-none border-t border-maestro p-3 flex flex-col gap-2" data-testid="handoff-create">
+          <div className="text-[11px] text-maestro-muted uppercase tracking-wide">New route</div>
           <div className="flex items-center justify-between gap-2">
-            <span className="text-[11.5px] text-(--ink-3)">agents from</span>
+            <span className="text-[11.5px] text-maestro-muted">agents from</span>
             <ProjectSelect value={viewedRoot} onChange={setViewedRoot} />
           </div>
           <AgentPicker id="handoff-from" label="from" value={sender} onChange={setSender} options={agentOptions} />
           <AgentPicker id="handoff-to" label="to" value={receiver} onChange={setReceiver} options={agentOptions} />
           <Button
-            icon={<Plus size={13} />}
+            icon={<PlusIcon size={13} />}
             disabled={busy || noAgentsToPick || !sender || !receiver || sender === receiver}
             onClick={handleCreate}
           >
             Create
           </Button>
           {noAgentsToPick && (
-            <p className="text-[11px] text-(--ink-3) m-0">
+            <p className="text-[11px] text-maestro-muted m-0">
               {viewedRoot
                 ? "This project has no configured agents to pick from."
                 : "Pick a project above to choose which agents can hand off to each other."}
@@ -247,8 +254,8 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
 
       <div className="flex flex-col p-4 gap-3">
         {!selected ? (
-          <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-(--ink-2)">
-            <FileText size={18} className="text-(--ink-3)" />
+          <div className="flex-1 flex flex-col items-center justify-center gap-2 text-center text-maestro-muted">
+            <FileTextIcon size={18} className="text-maestro-muted" />
             <p className="text-[12px] m-0">Select a route on the left to edit its global default.</p>
           </div>
         ) : (
@@ -258,13 +265,13 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
                 <div className="text-[13px]">
                   <HandoffName id={selected} />
                 </div>
-                <div className="text-[11px] text-(--ink-3)">
+                <div className="text-[11px] text-maestro-muted">
                   {isSeeded ? "Shipped by Maestro" : "Yours"} · version {rows[selected]?.version}
                 </div>
               </div>
               <Button
                 variant="primary"
-                icon={phase === "saving" ? undefined : <Save size={13} />}
+                icon={phase === "saving" ? undefined : <FloppyDiskIcon size={13} />}
                 loading={phase === "saving"}
                 disabled={!dirty || busy}
                 onClick={() => void saveDefault(selected, content, "save")}
@@ -292,7 +299,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
               */}
               {isSeeded ? (
                 <Button
-                  icon={<RotateCcw size={13} />}
+                  icon={<ArrowCounterClockwiseIcon size={13} />}
                   disabled={busy || content === seeded[selected]}
                   onClick={() => void saveDefault(selected, seeded[selected], "reset")}
                 >
@@ -300,7 +307,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
                 </Button>
               ) : (
                 <Button
-                  icon={phase === "deleting" ? undefined : <Trash2 size={13} />}
+                  icon={phase === "deleting" ? undefined : <TrashIcon size={13} />}
                   loading={phase === "deleting"}
                   disabled={busy}
                   onClick={() => void handleDelete()}
@@ -308,7 +315,7 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
                   Delete
                 </Button>
               )}
-              <p className="text-[11px] text-(--ink-3) m-0 text-right max-w-md">
+              <p className="text-[11px] text-maestro-muted m-0 text-right max-w-md">
                 {isSeeded
                   ? "Saving updates the machine-wide protocol every project without its own override receives for this route, and bumps its version — the next install or update in a project still on the old content refreshes it."
                   : "This route isn't one Maestro ships. Deleting it leaves any project that already materialized it with its own copy on disk; the project tier answers at the hook either way."}
@@ -325,9 +332,9 @@ export default function GlobalHandoffsTab({ initial }: { initial: HandoffDefault
 function HandoffName({ id }: { id: string }) {
   const [sender, receiver] = endsOf(id);
   return (
-    <span className="inline-flex items-center gap-1 font-mono text-(--ink)">
+    <span className="inline-flex items-center gap-1 font-mono text-maestro">
       {sender}
-      <ArrowRight size={11} className="text-(--ink-3)" />
+      <ArrowRightIcon size={11} className="text-maestro-muted" />
       {receiver}
     </span>
   );
@@ -347,14 +354,18 @@ function Section({
   if (ids.length === 0) return null;
   return (
     <>
-      <div className="px-4 pt-3 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-(--ink-3)">{label}</div>
+      <div className="px-4 pt-3 pb-1.5 text-[10.5px] font-semibold uppercase tracking-wide text-maestro-muted">
+        {label}
+      </div>
       {ids.map((id) => (
         <button
           key={id}
           type="button"
           onClick={() => onSelect(id)}
-          className={`w-full text-left px-4 py-2 border-b border-(--line) last:border-0 text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 ${
-            selected === id ? "bg-(--primary-dim) text-primary" : "text-(--ink) hover:bg-(--bg-elev)"
+          className={`w-full text-left px-4 py-2 border-b border-maestro last:border-0 text-[13px] cursor-pointer bg-transparent border-x-0 border-t-0 ${
+            selected === id
+              ? "bg-maestro-primary-subtle text-maestro-primary"
+              : "text-maestro hover:bg-maestro-elevated"
           }`}
         >
           <HandoffName id={id} />
@@ -382,14 +393,14 @@ function AgentPicker({
   options: string[];
 }) {
   return (
-    <label htmlFor={id} className="flex items-center gap-2 text-[11.5px] text-(--ink-3)">
+    <label htmlFor={id} className="flex items-center gap-2 text-[11.5px] text-maestro-muted">
       <span className="w-8 shrink-0">{label}</span>
       <select
         id={id}
         value={value}
         disabled={options.length === 0}
         onChange={(e) => onChange(e.target.value)}
-        className="flex-1 h-[28px] px-2 rounded-md bg-(--bg-2) border border-(--line-2) text-(--ink) font-mono text-[12px] outline-none focus:border-(--primary) cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+        className="flex-1 h-[28px] px-2 rounded-md bg-maestro-faint border border-maestro-strong text-maestro font-mono text-[12px] outline-none focus:border-maestro-primary-strong cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
       >
         {options.length === 0 && <option value="">—</option>}
         {options.map((name) => (

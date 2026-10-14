@@ -16,7 +16,7 @@ export default function ChipMultiSelect({
   return (
     <div className="flex flex-wrap gap-1.5">
       {options.length === 0 ? (
-        <span className="text-[12px] text-subtle">{emptyText}</span>
+        <span className="text-[12px] text-maestro-muted">{emptyText}</span>
       ) : (
         options.map((o) => {
           const selected = value.includes(o);
@@ -27,8 +27,8 @@ export default function ChipMultiSelect({
               onClick={() => toggle(o)}
               className={`px-2.5 py-1 rounded-full font-mono text-[12px] border cursor-pointer transition-colors focus:outline-none ${
                 selected
-                  ? "border-primary bg-(--primary-dim) text-(--ink)"
-                  : "border-(--line) bg-(--bg-elev) text-(--ink-2) hover:border-(--ink-4)"
+                  ? "border-maestro-primary-strong bg-maestro-primary-subtle text-maestro"
+                  : "border-maestro bg-maestro-elevated text-maestro-muted hover:border-maestro-text-faint"
               }`}
             >
               {o}

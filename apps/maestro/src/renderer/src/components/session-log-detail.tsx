@@ -11,8 +11,8 @@ interface SessionLogDetailProps {
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
     <div className="mb-4">
-      <div className="text-[12px] font-semibold text-(--ink) mb-2">{title}</div>
-      <div className="text-[12px] text-(--ink-2) leading-[1.7]">{children}</div>
+      <div className="text-[12px] font-semibold text-maestro mb-2">{title}</div>
+      <div className="text-[12px] text-maestro-muted leading-[1.7]">{children}</div>
     </div>
   );
 }
@@ -20,8 +20,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProps) {
   if (!instance) {
     return (
-      <div className="border-l border-(--line) flex items-center justify-center h-full">
-        <p className="text-[12px] text-(--ink-3)">Select a step to view details</p>
+      <div className="border-l border-maestro flex items-center justify-center h-full">
+        <p className="text-[12px] text-maestro-muted">Select a step to view details</p>
       </div>
     );
   }
@@ -31,10 +31,10 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
   const unaccounted = unaccountedSkills(instance);
 
   return (
-    <div className="border-l border-(--line) flex flex-col min-h-0 overflow-hidden">
+    <div className="border-l border-maestro flex flex-col min-h-0 overflow-hidden">
       {/* Header */}
-      <div className="px-4 py-3 border-b border-(--line) shrink-0">
-        <span className="text-[13px] font-medium text-(--ink)">Logs: {instance.displayName}</span>
+      <div className="px-4 py-3 border-b border-maestro shrink-0">
+        <span className="text-[13px] font-medium text-maestro">Logs: {instance.displayName}</span>
         <ContextUsageLine instance={instance} />
       </div>
 
@@ -44,21 +44,21 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
           {instance.input ? (
             <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0">{instance.input}</pre>
           ) : (
-            <span className="text-(--ink-3) italic">No input captured</span>
+            <span className="text-maestro-muted italic">No input captured</span>
           )}
           {instance.delivered.length > 0 && (
             <div className="mt-3 flex flex-col gap-2.5">
               {instance.delivered.map((d, i) => (
                 <div key={i}>
                   <div className="flex items-center gap-1.5 mb-1">
-                    <span className="text-[11px] text-(--ink-3)">
-                      Delivered from <span className="font-mono text-(--ink-2)">@{stripNamespace(d.sender)}</span>
+                    <span className="text-[11px] text-maestro-muted">
+                      Delivered from <span className="font-mono text-maestro-muted">@{stripNamespace(d.sender)}</span>
                     </span>
-                    <span className="ml-auto text-[9.5px] font-mono uppercase tracking-wide text-(--ink-3)">
+                    <span className="ml-auto text-[9.5px] font-mono uppercase tracking-wide text-maestro-muted">
                       {d.via === "resume" ? "channel · resume" : "channel"}
                     </span>
                   </div>
-                  <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0 p-2.5 rounded-md bg-(--sunken) border border-(--line)">
+                  <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0 p-2.5 rounded-md bg-(--sunken) border border-maestro">
                     {d.content}
                   </pre>
                 </div>
@@ -78,7 +78,7 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
               </div>
             ))
           ) : (
-            <span className="text-(--ink-3) italic">No tool calls recorded</span>
+            <span className="text-maestro-muted italic">No tool calls recorded</span>
           )}
         </Section>
 
@@ -86,12 +86,12 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
           <Section title="Skills Triage">
             {instance.skillsTriage.loaded.length > 0 && (
               <div className="mb-2">
-                <div className="text-[11px] text-(--ink-3) mb-1">Loaded</div>
+                <div className="text-[11px] text-maestro-muted mb-1">Loaded</div>
                 <div className="flex flex-wrap gap-1">
                   {instance.skillsTriage.loaded.map((id) => (
                     <span
                       key={id}
-                      className="inline-flex items-center rounded-full border border-[var(--green)] text-(--green) px-2 py-0.5 text-[11px] font-mono"
+                      className="inline-flex items-center rounded-full border border-maestro-success-strong text-maestro-success px-2 py-0.5 text-[11px] font-mono"
                     >
                       {stripNamespace(id)}
                     </span>
@@ -101,12 +101,12 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
             )}
             {unaccounted.length > 0 && (
               <div className="mb-2">
-                <div className="text-[11px] text-(--red) mb-1">Unaccounted — offered but not reported</div>
+                <div className="text-[11px] text-maestro-danger mb-1">Unaccounted — offered but not reported</div>
                 <div className="flex flex-wrap gap-1">
                   {unaccounted.map((id) => (
                     <span
                       key={id}
-                      className="inline-flex items-center rounded-full border border-[var(--red)] text-(--red) px-2 py-0.5 text-[11px] font-mono"
+                      className="inline-flex items-center rounded-full border border-maestro-danger-strong text-maestro-danger px-2 py-0.5 text-[11px] font-mono"
                     >
                       {stripNamespace(id)}
                     </span>
@@ -116,7 +116,7 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
             )}
             {instance.skillsTriage.skipped.length > 0 && (
               <div>
-                <div className="text-[11px] text-(--ink-3) mb-1">Skipped</div>
+                <div className="text-[11px] text-maestro-muted mb-1">Skipped</div>
                 <ul className="m-0 list-none p-0 flex flex-col gap-1">
                   {instance.skillsTriage.skipped.map((s) => {
                     // A hollow reason (empty or barely there) reads as a lazy skip —
@@ -124,8 +124,10 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
                     const hollow = s.reason.trim().length < 8;
                     return (
                       <li key={s.id} className="font-mono text-[11px]">
-                        <span className={hollow ? "text-(--yellow)" : "text-(--ink-2)"}>{stripNamespace(s.id)}</span>
-                        <span className="text-(--ink-3)"> — {s.reason.trim() || "no reason given"}</span>
+                        <span className={hollow ? "text-maestro-warning" : "text-maestro-muted"}>
+                          {stripNamespace(s.id)}
+                        </span>
+                        <span className="text-maestro-muted"> — {s.reason.trim() || "no reason given"}</span>
                       </li>
                     );
                   })}
@@ -139,7 +141,7 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
           {instance.output ? (
             <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0">{instance.output}</pre>
           ) : (
-            <span className="text-(--ink-3) italic">No output captured</span>
+            <span className="text-maestro-muted italic">No output captured</span>
           )}
         </Section>
       </div>

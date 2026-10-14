@@ -23,6 +23,9 @@ import {
   taskNumber,
   worktreeBranchFor,
   worktreePathFor,
+  freeformBranchFor,
+  freeformWorktreePathFor,
+  isFreeformBranch,
 } from "../../src/core/worktree.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -31,6 +34,7 @@ const PLUGIN_ROOT = findUpPluginRoot(here)!;
 const SESSION_A = "sess-aaa-111";
 const SESSION_B = "sess-bbb-222";
 const SESSION_C = "sess-ccc-333";
+const SESSION_D = "sess-ddd-444";
 
 let tmp: string;
 let REPORTS_DB: string;
@@ -74,7 +78,16 @@ async function installed(name = "repo"): Promise<string> {
 }
 
 function hookEnv(projectDir: string, sessionId: string | null): NodeJS.ProcessEnv {
-  const env: NodeJS.ProcessEnv = { ...process.env, CLAUDE_PROJECT_DIR: projectDir, HOME: tmp };
+  const env: NodeJS.ProcessEnv = {
+    ...process.env,
+    CLAUDE_PROJECT_DIR: projectDir,
+    HOME: tmp,
+    // `merge` creates a merge commit; HOME is pinned, so give git an identity.
+    GIT_AUTHOR_NAME: "t",
+    GIT_AUTHOR_EMAIL: "t@t",
+    GIT_COMMITTER_NAME: "t",
+    GIT_COMMITTER_EMAIL: "t@t",
+  };
   if (sessionId === null) delete env.CLAUDE_CODE_SESSION_ID;
   else env.CLAUDE_CODE_SESSION_ID = sessionId;
   return env;
@@ -112,6 +125,8 @@ async function twoSessions(): Promise<string> {
   return root;
 }
 
+const freeformBranch = (id: string) => freeformBranchFor(id)!;
+const freeformWtPath = (root: string, id: string) => freeformWorktreePathFor(root, id)!;
 const wtPathFor = (root: string, n: string) => path.join(path.dirname(root), `${path.basename(root)}-task-${n}`);
 
 describe("worktree naming and root resolution (pure)", () => {
@@ -121,6 +136,16 @@ describe("worktree naming and root resolution (pure)", () => {
     expect(worktreePathFor("/x/repo", "074-foo.md")).toBe("/x/repo-task-074");
     expect(worktreeBranchFor("notes.md")).toBeNull();
     expect(worktreePathFor("/x/repo", "notes.md")).toBeNull();
+  });
+
+  it("derives a freeform branch and sibling path from a short session id (103)", () => {
+    expect(freeformBranchFor("1A2b3c4d-9999-aaaa")).toBe("freeform-1a2b3c4d");
+    expect(freeformWorktreePathFor("/x/repo", "1a2b3c4d-9999")).toBe("/x/repo-freeform-1a2b3c4d");
+    expect(freeformBranchFor("---")).toBeNull();
+    expect(freeformWorktreePathFor("/x/repo", "---")).toBeNull();
+    expect(isFreeformBranch("freeform-1a2b3c4d")).toBe(true);
+    expect(isFreeformBranch("task-001")).toBe(false);
+    expect(isFreeformBranch("001-a.md")).toBe(false);
   });
 
   it("mainCheckoutRoot returns the dir for a main checkout / non-git dir, the main for a linked worktree", async () => {
@@ -375,6 +400,260 @@ describe("maestro-task-status.cjs worktree (074)", () => {
     // The worktree's state is gitignored there too, so it never shows up as a change to merge.
     expect(git(wt, "status", "--porcelain")).not.toContain("maestro_sessions");
     expect(git(root, "status", "--porcelain")).not.toContain("maestro_sessions");
+  });
+});
+
+// `098`: a freeform /maestro run (a workflow recorded, no active_task, no claim) is visible to the
+// same live-session check a task session uses, and never becomes a task.
+function makeFreeformSession(root: string, id: string) {
+  makeLiveSession(root, id);
+  fs.writeFileSync(path.join(sessionDir(root, id), "session.json"), JSON.stringify({ workflow: "feature" }));
+}
+
+describe("freeform /maestro session presence (098)", () => {
+  it("freeform first: a task session's `worktree` gets a worktree, not 'no worktree needed'", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeLiveSession(root, SESSION_B);
+    expect(cli(root, ["claim", "001-a.md"], SESSION_B).stdout).toContain("claimed");
+
+    const run = cli(root, ["worktree", "001-a.md"], SESSION_B);
+
+    const wt = wtPathFor(root, "001");
+    expect(run.code).toBe(0);
+    expect(run.stdout).not.toContain("no worktree needed");
+    expect(run.stdout).toContain(wt);
+    expect(git(wt, "rev-parse", "--abbrev-ref", "HEAD")).toBe("task-001");
+  });
+
+  it("freeform after a task: `freeform-check` gives the second (freeform) session its own worktree", async () => {
+    const root = await installed();
+    makeLiveSession(root, SESSION_A);
+    expect(cli(root, ["claim", "001-a.md"], SESSION_A).stdout).toContain("claimed");
+    makeFreeformSession(root, SESSION_B);
+
+    const run = cli(root, ["freeform-check"], SESSION_B);
+
+    const wt = freeformWtPath(root, SESSION_B);
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain(SESSION_A);
+    expect(run.stdout).toContain(wt);
+    expect(run.stdout).toContain(freeformBranch(SESSION_B));
+    expect(run.stdout).not.toContain("no worktree needed");
+    expect(path.dirname(wt)).toBe(path.dirname(root)); // sibling
+    expect(git(wt, "rev-parse", "--abbrev-ref", "HEAD")).toBe(freeformBranch(SESSION_B));
+    expect(fs.existsSync(path.join(wt, ".claude", "maestro.json"))).toBe(true);
+    // State moved into the worktree, a pointer stays in main; the first session never moves.
+    expect(JSON.parse(fs.readFileSync(path.join(sessionDir(wt, SESSION_B), "session.json"), "utf8")).workflow).toBe(
+      "feature"
+    );
+    expect(fs.readdirSync(sessionDir(root, SESSION_B))).toEqual(["worktree.json"]);
+    expect(readWorktreePointer(path.join(root, ".claude"), SESSION_B)).toMatchObject({
+      path: wt,
+      branch: freeformBranch(SESSION_B),
+      main_root: root,
+    });
+    expect(sessionPathsFor(path.join(root, ".claude"), SESSION_A)!.dir).toBe(sessionDir(root, SESSION_A));
+    expect(fs.existsSync(wtPathFor(root, "001"))).toBe(false);
+    // Idempotent.
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain("already works in worktree");
+  });
+
+  it("freeform after freeform: the second one gets a worktree, the first stays in the main checkout", async () => {
+    const root = await installed();
+    fs.mkdirSync(path.join(tasksDir(root), "claims"), { recursive: true });
+    makeFreeformSession(root, SESSION_A);
+    expect(cli(root, ["freeform-check"], SESSION_A).stdout).toContain("no worktree needed");
+    makeFreeformSession(root, SESSION_B);
+
+    const run = cli(root, ["freeform-check"], SESSION_B);
+
+    const wt = freeformWtPath(root, SESSION_B);
+    expect(run.stdout).toContain(SESSION_A);
+    expect(run.stdout).toContain(wt);
+    expect(git(wt, "rev-parse", "--abbrev-ref", "HEAD")).toBe(freeformBranch(SESSION_B));
+    expect(fs.existsSync(freeformWtPath(root, SESSION_A))).toBe(false);
+    expect(fs.existsSync(path.join(sessionDir(root, SESSION_A), "worktree.json"))).toBe(false);
+  });
+
+  // liveForeignClaim must still reach liveFreeformSession when claims/ does not exist yet.
+  it("two freeform sessions see each other even before any task was ever claimed (no claims/ dir)", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeFreeformSession(root, SESSION_B);
+    expect(fs.existsSync(path.join(tasksDir(root), "claims"))).toBe(false);
+
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain(SESSION_A);
+    expect(fs.existsSync(freeformWtPath(root, SESSION_B))).toBe(true);
+  });
+
+  it("alone: freeform-check says no worktree needed and creates nothing", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    const run = cli(root, ["freeform-check"], SESSION_A);
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain("no worktree needed");
+    expect(fs.existsSync(freeformWtPath(root, SESSION_A))).toBe(false);
+    expect(git(root, "branch", "--list", "freeform-*")).toBe("");
+    expect(fs.existsSync(path.join(sessionDir(root, SESSION_A), "worktree.json"))).toBe(false);
+  });
+
+  it("an existing freeform worktree path or branch is reported, never reused or overwritten", async () => {
+    const root = await installed();
+    makeLiveSession(root, SESSION_A);
+    cli(root, ["claim", "001-a.md"], SESSION_A);
+    makeFreeformSession(root, SESSION_B);
+    git(root, "branch", freeformBranch(SESSION_B));
+
+    const run = cli(root, ["freeform-check"], SESSION_B);
+
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain("already exists");
+    expect(run.stdout).toContain("NOT reused");
+    expect(fs.existsSync(freeformWtPath(root, SESSION_B))).toBe(false);
+    expect(fs.existsSync(path.join(sessionDir(root, SESSION_B), "worktree.json"))).toBe(false);
+  });
+
+  it("a session that records a workflow AND an active_task is not a freeform session", async () => {
+    const root = await installed();
+    fs.mkdirSync(path.join(tasksDir(root), "claims"), { recursive: true });
+    makeLiveSession(root, SESSION_A);
+    fs.writeFileSync(
+      path.join(sessionDir(root, SESSION_A), "session.json"),
+      JSON.stringify({ workflow: "feature", active_task: "001-a.md" })
+    );
+    makeLiveSession(root, SESSION_B);
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain("no worktree needed");
+  });
+
+  it("stale presence is ignored: an idle log (20 min) or a removed session dir", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_A);
+    makeLiveSession(root, SESSION_B);
+    const stale = new Date(Date.now() - 20 * 60 * 1000);
+    fs.utimesSync(path.join(sessionDir(root, SESSION_A), "log.jsonl"), stale, stale);
+
+    expect(cli(root, ["freeform-check"], SESSION_B).stdout).toContain("no worktree needed");
+    cli(root, ["claim", "001-a.md"], SESSION_B);
+    expect(cli(root, ["worktree", "001-a.md"], SESSION_B).stdout).toContain("no worktree needed");
+    expect(fs.existsSync(wtPathFor(root, "001"))).toBe(false);
+  });
+
+  it("a removed session dir (SessionEnd) clears the presence", async () => {
+    const root = await installed();
+    makeFreeformSession(root, SESSION_C);
+    makeFreeformSession(root, SESSION_D);
+    fs.rmSync(sessionDir(root, SESSION_C), { recursive: true, force: true });
+    expect(cli(root, ["freeform-check"], SESSION_D).stdout).toContain("no worktree needed");
+    expect(fs.existsSync(freeformWtPath(root, SESSION_D))).toBe(false);
+  });
+
+  it("never appears in claims/, status.json, the task list, or maestro-epic show", async () => {
+    const root = await installed();
+    makeLiveSession(root, SESSION_A);
+    cli(root, ["sync"], SESSION_A);
+    cli(root, ["claim", "001-a.md"], SESSION_A);
+    makeFreeformSession(root, SESSION_B);
+    cli(root, ["freeform-check"], SESSION_B);
+    const branch = freeformBranch(SESSION_B);
+    expect(fs.existsSync(freeformWtPath(root, SESSION_B))).toBe(true);
+
+    const claims = fs.readdirSync(path.join(tasksDir(root), "claims")).filter((f) => f !== ".gitignore");
+    expect(claims).toEqual(["001-a.md.json"]);
+    const claimBody = fs.readFileSync(claimPath(root, "001-a.md"), "utf8");
+    expect(claimBody).toContain(SESSION_A);
+    expect(claimBody).not.toContain(SESSION_B);
+    cli(root, ["sync"], SESSION_A);
+    const statusText = fs.readFileSync(path.join(tasksDir(root), "status.json"), "utf8");
+    expect(statusText).not.toContain(SESSION_B);
+    expect(statusText).not.toContain(branch);
+    expect(Object.keys(JSON.parse(statusText)).every((k) => /^\d{3}-/.test(k))).toBe(true);
+    expect(listTasks(root).map((t) => t.filename)).toEqual(["001-a.md", "002-b.md", "003-c.md"]);
+
+    const epicScript = path.join(root, ".claude", "scripts", "maestro-epic.cjs");
+    const epic = (...args: string[]) =>
+      spawnSync("node", [epicScript, ...args], { encoding: "utf8", env: hookEnv(root, SESSION_A) });
+    expect(epic("create", "demo").status).toBe(0);
+    expect(epic("link", "demo", "001-a.md").status).toBe(0);
+    const show = epic("show", "demo", "--json");
+    expect(show.status).toBe(0);
+    expect(show.stdout).not.toContain(SESSION_B);
+    expect(show.stdout).not.toContain(branch);
+    expect(show.stdout).toContain("001-a.md");
+  });
+});
+
+describe("merging a freeform worktree (103)", () => {
+  /** A task session A is live; freeform session B got a worktree. Returns repo + worktree. */
+  async function freeformWorktree() {
+    const root = await installed();
+    makeLiveSession(root, SESSION_A);
+    cli(root, ["claim", "001-a.md"], SESSION_A);
+    makeFreeformSession(root, SESSION_B);
+    cli(root, ["freeform-check"], SESSION_B);
+    return { root, wt: freeformWtPath(root, SESSION_B), branch: freeformBranch(SESSION_B) };
+  }
+
+  it("merges through the same command, removes the worktree and branch, drops the pointer", async () => {
+    const { root, wt, branch } = await freeformWorktree();
+    fs.writeFileSync(path.join(wt, "feature.txt"), "freeform work\n");
+    git(wt, "add", "feature.txt");
+    git(wt, "commit", "-q", "-m", "freeform work");
+
+    const run = cli(root, ["merge", branch], SESSION_A);
+
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain(`merged ${branch} into main`);
+    expect(fs.readFileSync(path.join(root, "feature.txt"), "utf8")).toBe("freeform work\n");
+    expect(fs.existsSync(wt)).toBe(false);
+    expect(git(root, "branch", "--list", branch)).toBe("");
+    expect(git(root, "log", "-1", "--format=%s")).toContain(branch);
+    expect(fs.existsSync(path.join(sessionDir(root, SESSION_B), "worktree.json"))).toBe(false);
+    expect(git(root, "worktree", "list")).not.toContain(wt);
+  });
+
+  it("refuses, changing nothing, while the worktree has uncommitted changes", async () => {
+    const { root, wt, branch } = await freeformWorktree();
+    fs.writeFileSync(path.join(wt, "dirty.txt"), "x\n");
+
+    const run = cli(root, ["merge", branch], SESSION_A);
+
+    expect(run.code).not.toBe(0);
+    expect(run.stdout).toContain("merge REFUSED");
+    expect(run.stdout).toContain("uncommitted changes");
+    expect(run.stdout).toContain("Freeform run");
+    expect(fs.existsSync(wt)).toBe(true);
+    expect(git(root, "branch", "--list", branch)).toContain(branch);
+    expect(fs.existsSync(path.join(root, "dirty.txt"))).toBe(false);
+  });
+
+  it("reports a conflict the same way: aborted, main unchanged, worktree and branch intact", async () => {
+    const { root, wt, branch } = await freeformWorktree();
+    fs.writeFileSync(path.join(wt, "app.txt"), "from freeform\n");
+    git(wt, "add", "app.txt");
+    git(wt, "commit", "-q", "-m", "wt change");
+    fs.writeFileSync(path.join(root, "app.txt"), "from main\n");
+    git(root, "add", "app.txt");
+    git(root, "commit", "-q", "-m", "main change");
+
+    const run = cli(root, ["merge", branch], SESSION_A);
+
+    expect(run.code).not.toBe(0);
+    expect(run.stdout).toContain("merge CONFLICT");
+    expect(run.stdout).toContain("app.txt");
+    expect(fs.readFileSync(path.join(root, "app.txt"), "utf8")).toBe("from main\n");
+    expect(fs.existsSync(wt)).toBe(true);
+    expect(git(root, "branch", "--list", branch)).toContain(branch);
+  });
+
+  it("refuses a freeform branch that has no worktree", async () => {
+    const root = await installed();
+
+    const run = cli(root, ["merge", "freeform-deadbeef"], SESSION_A);
+
+    expect(run.code).not.toBe(0);
+    expect(run.stdout).toContain("merge REFUSED");
+    expect(run.stdout).toContain("does not exist");
   });
 });
 

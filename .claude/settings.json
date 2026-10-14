@@ -1,5 +1,8 @@
 {
   "autoCompactWindow": 150000,
+  "enabledPlugins": {
+    "concept-skills@maestro": true
+  },
   "hooks": {
     "UserPromptExpansion": [
       {

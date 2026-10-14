@@ -51,6 +51,35 @@ export function worktreePathFor(mainRoot: string, filename: string): string | nu
   return path.join(path.dirname(mainRoot), `${path.basename(mainRoot)}-task-${n}`);
 }
 
+/** Eight lowercase alphanumerics taken from a session id, or `null` when it has none. */
+function shortSessionId(sessionId: string): string | null {
+  const s = sessionId
+    .toLowerCase()
+    .replace(/[^a-z0-9]/g, "")
+    .slice(0, 8);
+  return s || null;
+}
+
+/**
+ * `freeform-1a2b3c4d` (`103`) — the branch a freeform run's worktree is created on. A freeform run has
+ * no task number, so the name comes from its session id. `null` for an id with no usable characters.
+ */
+export function freeformBranchFor(sessionId: string): string | null {
+  const s = shortSessionId(sessionId);
+  return s ? `freeform-${s}` : null;
+}
+
+/** True iff `name` is a branch `freeformBranchFor` could have produced (what `merge` accepts for a freeform worktree). */
+export function isFreeformBranch(name: string): boolean {
+  return /^freeform-[a-z0-9]{1,8}$/.test(name);
+}
+
+/** `<parent>/<repo>-freeform-1a2b3c4d` — a SIBLING of the main checkout, like a task worktree. */
+export function freeformWorktreePathFor(mainRoot: string, sessionId: string): string | null {
+  const branch = freeformBranchFor(sessionId);
+  return branch ? path.join(path.dirname(mainRoot), `${path.basename(mainRoot)}-${branch}`) : null;
+}
+
 /**
  * The main checkout owning `dir`'s repository: `dir` itself unless it is a LINKED worktree (its
  * `.git` is a file pointing into `<main>/.git/worktrees/<name>`). Anything unreadable or unexpected

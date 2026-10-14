@@ -163,11 +163,7 @@ function parseHandoff(msg) {
           input: lastMsg,
           ...(offered ? { offered_skills: offered } : {}),
           ...meetingMark,
-          log: inMeeting
-            ? `→ ${agentType} (meeting)`
-            : inOwnerRun
-              ? `→ ${agentType} (owner run)`
-              : `→ ${agentType}`,
+          log: inMeeting ? `→ ${agentType} (meeting)` : inOwnerRun ? `→ ${agentType} (owner run)` : `→ ${agentType}`,
         },
         p
       );
@@ -318,7 +314,9 @@ function parseHandoff(msg) {
           }
           // Also visible to the person watching; the orchestrator reads it from session.json.
           process.stdout.write(
-            JSON.stringify({ systemMessage: `Maestro: ${agentType} handoff problem (${issue.kind}). ${issue.message}` }) + "\n"
+            JSON.stringify({
+              systemMessage: `Maestro: ${agentType} handoff problem (${issue.kind}). ${issue.message}`,
+            }) + "\n"
           );
         }
 

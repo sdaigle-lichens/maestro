@@ -1,11 +1,11 @@
 # Task-routing slice
 
 `MaestroTaskRoutingSlice` is `{ use_maestro_tasks: boolean }` — one field, `use_maestro_tasks?:
-boolean`, added top-level to `MaestroConfigV3` (`046`). It is a SIBLING of `gates`, never nested in
-it: `gates` is documented specifically as the orchestrator's Step 1 checks, and this is a Step 4
+boolean`, added top-level to `MaestroConfigV3` (`046`). It is a SIBLING of the skill lists, never nested in
+them: those are the orchestrator's Step 1/7 skills, and this is a Step 4
 concern with its own write story. Absent means **off**.
 
-## `resolveUseMaestroTasks` mirrors `resolveGates`, with one deliberate difference
+## `resolveUseMaestroTasks` mirrors the old `resolveGates`, with one deliberate difference
 
 ```ts
 export function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean {
@@ -14,10 +14,10 @@ export function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean {
 }
 ```
 
-Same strict `=== true` discipline as `resolveGates`: absent, corrupt config, a non-boolean value —
-all resolve to **off**. The difference is the explicit `cfg.version !== 3` check. `resolveGates`
-skips that check because `readConfig` already normalizes a non-v3 config to a blank one before
-`resolveGates` ever sees it; `resolveUseMaestroTasks`'s acceptance criteria specifically required a
+Same strict `=== true` discipline as the old `resolveGates` (since replaced by `resolveSkillLists`):
+absent, corrupt config, a non-boolean value — all resolve to **off**. The difference is the explicit
+`cfg.version !== 3` check. `resolveGates` skipped that check because `readConfig` already normalizes
+a non-v3 config to a blank one before it ever saw it; `resolveUseMaestroTasks`'s acceptance criteria specifically required a
 **raw, unnormalized** `cfg` with `version !== 3` to resolve to `false` on its own, so the check is
 inline rather than assumed from the caller.
 
@@ -45,17 +45,17 @@ no-op; otherwise it mutates only that one key and writes back with `JSON.stringi
 matching `writeConfig`'s serialization byte for byte.
 
 `TaskRoutingCard` (`048`), on the app's `/maestro` page, is the other — same
-write-on-every-click-no-Save-button pattern as `GatesCard`, same
-`status?.installed && viewedRoot` visibility guard, rendered directly below `GatesCard`. It DOES
+write-on-every-click-no-Save-button pattern as `SkillListsCard`, same
+`status?.installed && viewedRoot` visibility guard, rendered below `SkillListsCard`. It DOES
 build on `resolveUseMaestroTasks` and the `mergeSlice("task-routing", …)` arm, since it runs inside
 the app: `window.maestro.data.taskRouting()` reads `TaskRoutingData` (`{ useMaestroTasks: boolean
-}`, mirrors `GatesData`) on mount, and the checkbox's click handler calls
+}`, sibling of `SkillListsData`) on mount, and the checkbox's click handler calls
 `window.maestro.project.taskRouting.set(!data.useMaestroTasks)`. The main-process handlers are
 `IPC.taskRoutingData` (`resolveUseMaestroTasks(readConfig(projectRoot))`, falling back to `{
 useMaestroTasks: false }` with no project open — never rejects, same discipline as
-`IPC.gatesData`/`DEFAULT_GATES`) and `IPC.taskRoutingSet` (throws `"No project is open."` with no
+`IPC.skillListsData`) and `IPC.taskRoutingSet` (throws `"No project is open."` with no
 project, otherwise re-resolves the renderer's boolean through `resolveUseMaestroTasks` before
-writing — same "don't trust the renderer's shape" discipline `IPC.gatesSet` uses for `MaestroGates`
+writing — same "don't trust the renderer's shape" discipline `IPC.skillListsSet` uses
 — then `saveConfig(root, { sliceType: "task-routing", slice: { use_maestro_tasks: resolved } })`).
 
 **The two writers never race.** The hook only ever sets the field `true`; the card can set it either

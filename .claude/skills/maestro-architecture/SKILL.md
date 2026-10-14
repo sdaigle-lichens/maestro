@@ -77,7 +77,9 @@ Orchestrator (.claude/skills/maestro/SKILL.md):
           recorded with `maestro-task-status.cjs plan` / `plan-step` in session.json, and Step 4's
           `done` refuses while a planned step (human review included) is unfinished. In a worktree
           run Step 4 offers a user-approved commit before ever mentioning merge, and every command
-          handed to the user carries absolute paths (the session's cwd IS the worktree).
+          handed to the user carries absolute paths (the session's cwd IS the worktree). Step 3
+          (`104`): a denied agent channel write is not retried by resuming — the orchestrator writes
+          the file from the agent's returned payload (see `sub-concepts/channels.md`).
   Step 4  mark the task done (the mark-task-done node), then the OPTIONAL task-routing nudge
           (`046`) and the always-on /maestro-post-mortem question (`049`)
         │
@@ -134,6 +136,7 @@ SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
 | How do I change the orchestrator's behavior? | edit `.claude/skills/maestro/SKILL.md` **outside** the `Maestro:*` markers — the `STEPS`/`PRINCIPLES` regions are re-synced from the plugin template on every install/update; to change those for good, edit `templates/maestro/SKILL.md` in the plugin |
 | My edit to the orchestrator's steps disappeared | it was inside a managed region and got re-synced. Move it outside the markers, or change the template |
 | The handoff table is stale | run `/maestro-update` (re-renders from `maestro.json`) |
+| A `loaded_skills` / node / start-skill entry names a skill that no longer exists | `/maestro-update` step 4 runs `maestro-stale-refs.cjs` (backed by `lib/maestro-skill-availability.cjs`) and reports dangling ids; a concept list without the `concept-skills` plugin enabled gets a suggestion to run `/concept-skills-install`. Maestro itself names no concept-skill skill. |
 | How do I turn Maestro off? | `/maestro-uninstall` (removes the Maestro hooks + session files); `--purge` to also remove the orchestrator skill + scripts |
 | How did this session go / what could have gone better? | `/maestro-post-mortem` — `maestro-post-mortem.js` digests the invoking session's `log.jsonl` (read-only; `--session <id>` picks another, and with no id resolvable it lists the available sessions instead of digesting an arbitrary one) and the skill couples it with the main session's context to flag avoidable work, false checks, bad assumptions, and handoff issues, then proposes fixes. Run mid-session (the log is wiped at `SessionEnd`). |
 | Where's the install logic? | the `installing-maestro` skill — `installRuntime()`/`uninstallRuntime()` in `src/core` for the app, `plugins/maestro/scripts/maestro-{install,uninstall}.js` for the terminal path |
@@ -158,7 +161,10 @@ inside a worker session, and only for a task that has an epic:
   writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator
   sends ONE short SendMessage line. A task in no epic prints "belongs to no epic" and nothing else
   happens. A report written while no manager runs survives and is listed unacknowledged when a
-  manager resumes; the manager's `ack` is the only delivery proof.
+  manager resumes; the manager's `ack` is the only delivery proof. If that SendMessage fails, the
+  printed hint says to run ListAgents and ask the user before messaging a plausible match, never to
+  treat one failed send as the manager gone (`102`). The manager re-syncs its recorded name with
+  `set-manager` whenever it differs from its `ListAgents` name, before each ack.
 - **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and
   the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the
   user in the worker's own session.
@@ -191,7 +197,7 @@ Each sub-concept carries the traps specific to it. These cut across all of them:
   once per project.
 - **A task's own `Skills to use` name can name a skill outside the repository root's
   `.claude/skills`, and the Skill tool won't find it (`061`).** The orchestrator template's Step 3
-  falls back to `node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-resolve-skill-path.cjs" "<name>"`
+  falls back to `node .claude/scripts/maestro-resolve-skill-path.cjs "<name>"`
   when the Skill tool answers "Unknown skill" — it prints the `SKILL.md` path when the id is a
   project skill living elsewhere in the tree, or nothing when it isn't a project skill at all (a
   typo, a plugin skill), and the orchestrator is told to `Read` a printed path directly rather than

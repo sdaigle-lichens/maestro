@@ -4,6 +4,9 @@ import { RouterProvider, createRouter, createHashHistory } from "@tanstack/react
 import { routeTree } from "./routeTree.gen";
 import "./styles.css";
 
+// A plain browser has no preload bridge: stand one in (design captures). Electron never loads it.
+if (import.meta.env.DEV && !("maestro" in window)) await import("./dev-stub/index");
+
 // Hash history, not browser history: a packaged build loads the renderer over file://, where
 // pushState paths don't resolve to anything on reload.
 const router = createRouter({

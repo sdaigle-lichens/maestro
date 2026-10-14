@@ -45,6 +45,14 @@ all in `handoff-channels.ts`:
 | A team-meeting participant's `SubagentStop` doesn't stamp at all. | See `team-meeting.md`. |
 | A file written by an agent killed before its `SubagentStop` stays unstamped. | It is then treated like a foreign-run file: mentioned, never inlined. |
 
+**Worktree runs (`104`):** the auto-mode classifier denies an agent's channel write intermittently
+(the Maestro guard itself allows `.claude/channels/`). So in a worktree run the orchestrator does not
+resume the agent to retry; it writes the missing channel file itself from the payload in the agent's
+final message (the `handoff-issues` worktree note) and names the path in the receiver's prompt. A file
+written after the sender's `SubagentStop` is unstamped, so the receiver is told the path rather than
+having it inlined. The SubagentStart worktree block also tells worktree subagents their shell starts in
+the main checkout (use `pnpm --dir`, `git -C`, no `cd`). Test: `test/core/worktree-channel-delivery.test.ts`.
+
 A skipped leftover stays in its lane, is reported as unstamped (mentioned, not inlined) and is aged
 out by `sweep()` like any other file. `unstampedFilesOf(projectDir, sender)` is the snapshot
 `closeMeeting` takes to build `meeting_leftovers`.

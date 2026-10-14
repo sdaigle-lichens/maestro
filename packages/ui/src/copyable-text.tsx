@@ -58,7 +58,7 @@ export default function CopyableText({
         />
         <Tooltip.Portal>
           <Tooltip.Positioner side="bottom" sideOffset={6}>
-            <Tooltip.Popup className="rounded-md border border-border-strong bg-(--bg-3) px-2 py-1 text-[11px] font-medium text-(--ink-2) shadow-(--shadow-1) transition-opacity duration-150 data-[instant]:transition-none data-[open]:opacity-100 data-[closed]:opacity-0">
+            <Tooltip.Popup className="rounded-md border border-maestro-strong bg-maestro-soft px-2 py-1 text-[11px] font-medium text-maestro-muted shadow-(--shadow-1) transition-opacity duration-150 data-[instant]:transition-none data-[open]:opacity-100 data-[closed]:opacity-0">
               {copied ? copiedText : previewText}
             </Tooltip.Popup>
           </Tooltip.Positioner>

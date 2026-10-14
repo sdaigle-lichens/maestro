@@ -12,6 +12,7 @@
 
 import { bareAgentName } from "./success-path.js";
 import { workflowToSpec } from "./workflow-spec.js";
+import { resolveSkillLists } from "./skill-lists.js";
 import type { MaestroConfigV3, MaestroInstanceV3 } from "./types.js";
 
 // ── proposal schema ─────────────────────────────────────────────────────────
@@ -593,11 +594,12 @@ export function buildCommonBrief(input: BriefInput): string {
     L.push(`- **${spec.name}**: ${spec.steps.join(" → ") || "(no steps)"}`);
     for (const c of spec.conditions ?? []) L.push(`  - ${c.from} —${c.label}→ ${c.to}`);
   }
-  const g = cfg.gates;
+  const sl = resolveSkillLists(cfg);
+  const list = (a: string[]) => (a.length ? a.join(", ") : "none");
   L.push(
     "",
-    `Step 1 gates: confidence_check=${g?.confidence_check === true}, design_check=${g?.use_code_architecture_design_check === true}. ` +
-      `use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
+    `Start skills: maestro=[${list(sl.maestroStart)}], to_maestro_tasks=[${list(sl.toMaestroTasksStart)}]. ` +
+      `End skills: maestro=[${list(sl.maestroEnd)}]. use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
     "",
     "## Agents",
     "",

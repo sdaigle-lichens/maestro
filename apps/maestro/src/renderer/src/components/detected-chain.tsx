@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Check, Info, X } from "lucide-react";
+import { CheckIcon, InfoIcon, XIcon } from "@phosphor-icons/react";
 import type { RepoDetection } from "../utils/maestro";
 
 /**
@@ -49,7 +49,7 @@ export default function DetectedChain({
   return (
     <div data-testid="detected-chain" className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between gap-1">
-        <span className="text-[11px] font-semibold text-subtle uppercase tracking-wide">
+        <span className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide">
           {detection.fallback ? "Could not detect — starting with" : "Detected from this repo"}
         </span>
         <button
@@ -57,9 +57,9 @@ export default function DetectedChain({
           data-testid="detection-evidence-trigger"
           onClick={() => setShowEvidence(true)}
           title="Why these agents?"
-          className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-(--ink-3) hover:text-(--ink) cursor-pointer focus:outline-none bg-transparent border-0"
+          className="shrink-0 flex items-center justify-center w-5 h-5 rounded text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
         >
-          <Info size={12} />
+          <InfoIcon size={12} />
         </button>
       </div>
 
@@ -81,18 +81,18 @@ export default function DetectedChain({
               }
               className={`inline-flex items-center gap-1 h-6 px-2 rounded-full font-mono text-[11px] border cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed ${
                 on
-                  ? "border-primary/40 bg-primary/10 text-primary"
-                  : "border-(--line) text-(--ink-3) hover:text-(--ink)"
+                  ? "border-maestro-primary bg-maestro-primary-subtle text-maestro-primary"
+                  : "border-maestro text-maestro-muted hover:text-maestro"
               }`}
             >
-              {on && <Check size={10} />}
+              {on && <CheckIcon size={10} />}
               {agent}
             </button>
           );
         })}
       </div>
 
-      <span className="text-[11px] text-(--ink-3)">
+      <span className="text-[11px] text-maestro-muted">
         {busy ? "Re-seeding…" : "Change it and the starter workflows are rebuilt around it."}
       </span>
 
@@ -103,18 +103,18 @@ export default function DetectedChain({
         >
           <div
             data-testid="detection-evidence-dialog"
-            className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-96 max-h-[70vh] flex flex-col gap-3"
+            className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-96 max-h-[70vh] flex flex-col gap-3"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between gap-2">
-              <span className="text-[13px] font-semibold text-(--ink)">Why these agents?</span>
+              <span className="text-[13px] font-semibold text-maestro">Why these agents?</span>
               <button
                 type="button"
                 onClick={() => setShowEvidence(false)}
                 title="Close"
-                className="flex items-center justify-center w-6 h-6 rounded text-(--ink-3) hover:text-(--ink) cursor-pointer focus:outline-none bg-transparent border-0"
+                className="flex items-center justify-center w-6 h-6 rounded text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none bg-transparent border-0"
               >
-                <X size={13} />
+                <XIcon size={13} />
               </button>
             </div>
             {/*
@@ -124,7 +124,7 @@ export default function DetectedChain({
             */}
             <ul
               data-testid="detection-evidence"
-              className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-(--ink-2) font-mono overflow-y-auto"
+              className="list-none p-0 m-0 flex flex-col gap-1 text-[12px] text-maestro-muted font-mono overflow-y-auto"
             >
               {detection.evidence.map((line) => (
                 <li key={line} className="break-all">

@@ -8,14 +8,14 @@
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--line-2);
+  background: var(--border-strong);
   border-radius: 4px;
   border: 2px solid transparent;
   background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--ink-3);
+  background: var(--text-muted);
 }
 
 input:focus,
@@ -25,7 +25,7 @@ button:focus-visible {
   outline: none;
   box-shadow:
     0 0 0 2px var(--bg),
-    0 0 0 4px var(--primary-dim-2);
+    0 0 0 4px var(--primary-soft);
 }
 
 table th,
@@ -35,10 +35,10 @@ table td {
 
 @layer base {
   * {
-    @apply border-border;
+    @apply border-maestro;
   }
   body {
     background-color: var(--bg);
-    color: var(--ink);
+    color: var(--text);
   }
 }

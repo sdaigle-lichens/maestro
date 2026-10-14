@@ -55,7 +55,7 @@ export default function SlidePanel({
         <Dialog.Viewport className="pointer-events-none fixed inset-0 z-50">
           <Dialog.Popup
             ref={popupRef}
-            className={`pointer-events-auto fixed top-0 flex h-full flex-col border-(--line) bg-(--bg) shadow-(--shadow-2) pt-14 translate-x-0 transition-transform duration-200 ease-in-out ${widthClass} ${borderClass} ${animClass} ${className}`}
+            className={`pointer-events-auto fixed top-0 flex h-full flex-col border-maestro bg-maestro shadow-(--shadow-2) pt-14 translate-x-0 transition-transform duration-200 ease-in-out ${widthClass} ${borderClass} ${animClass} ${className}`}
           >
             {children}
           </Dialog.Popup>

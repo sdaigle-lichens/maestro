@@ -3,16 +3,16 @@ interface SyntaxLineProps {
 }
 
 export default function SyntaxLine({ raw }: SyntaxLineProps) {
-  if (raw === "---") return <span className="text-(--ink-4)">{raw}</span>;
+  if (raw === "---") return <span className="text-maestro-faint">{raw}</span>;
   const yaml = raw.match(/^([a-z_]+):\s?(.*)$/);
   if (yaml) {
     const [, k, v] = yaml;
     const isPlaceholder = v.includes("<");
     return (
       <>
-        <span className="text-(--primary)">{k}</span>
-        <span className="text-(--ink-3)">: </span>
-        <span className={isPlaceholder ? "text-(--ink-4) italic" : "text-(--ink-2)"}>{v}</span>
+        <span className="text-maestro-primary">{k}</span>
+        <span className="text-maestro-muted">: </span>
+        <span className={isPlaceholder ? "text-maestro-faint italic" : "text-maestro-muted"}>{v}</span>
       </>
     );
   }
@@ -23,15 +23,15 @@ export default function SyntaxLine({ raw }: SyntaxLineProps) {
     return (
       <>
         <span>{indent}</span>
-        <span className="text-(--ink-3)">"</span>
-        <span className="text-(--primary)">{k}</span>
-        <span className="text-(--ink-3)">": </span>
-        <span className={isPlaceholder ? "text-(--ink-4) italic" : "text-(--ink-2)"}>{v}</span>
+        <span className="text-maestro-muted">"</span>
+        <span className="text-maestro-primary">{k}</span>
+        <span className="text-maestro-muted">": </span>
+        <span className={isPlaceholder ? "text-maestro-faint italic" : "text-maestro-muted"}>{v}</span>
       </>
     );
   }
-  if (raw.startsWith("# ")) return <span className="text-(--ink) font-bold">{raw}</span>;
-  if (raw.startsWith("## ")) return <span className="text-(--primary) font-semibold">{raw}</span>;
-  if (raw.startsWith("<")) return <span className="text-(--ink-4) italic">{raw}</span>;
-  return <span className="text-(--ink-2)">{raw}</span>;
+  if (raw.startsWith("# ")) return <span className="text-maestro font-bold">{raw}</span>;
+  if (raw.startsWith("## ")) return <span className="text-maestro-primary font-semibold">{raw}</span>;
+  if (raw.startsWith("<")) return <span className="text-maestro-faint italic">{raw}</span>;
+  return <span className="text-maestro-muted">{raw}</span>;
 }

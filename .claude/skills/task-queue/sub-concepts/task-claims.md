@@ -51,7 +51,8 @@ no legacy CJS claims module being replaced.
 
 ## Worktree isolation (`074`)
 
-When `claim` succeeds but **another live session already holds a claim**, the orchestrator runs
+When `claim` succeeds but **another live session is active** (holds a claim, or is a live freeform
+session, below), the orchestrator runs
 `maestro-task-status.cjs worktree <filename>` (template Step 2), which creates a sibling git worktree
 `<parent>/<repo>-task-NNN` on branch `task-NNN` and moves the session's state into it
 (`apps/maestro/src/core/worktree.ts` holds the pure naming/pointer helpers; the CLI does the `git`).
@@ -60,11 +61,36 @@ When `claim` succeeds but **another live session already holds a claim**, the or
   when the code runs from inside a worktree — `mainCheckoutRoot(dir)` reads a linked worktree's
   `.git` file (`gitdir: <main>/.git/worktrees/<name>`) to find it. It exists twice, by hand:
   `worktree.ts` and `maestro-tasks.cjs` (which `tasksDirFor` goes through). Change one, change both.
-- The command is a no-op (prints "no worktree needed") when no other live session holds a claim, and
+- The command is a no-op (prints "no worktree needed") when no other live session is active, and
   **refuses, rather than reuses or overwrites,** a worktree path or branch that already exists —
   it tells the user and the orchestrator must not fall back to the main checkout.
 - A worktree and its branch are **never auto-removed or merged by themselves**; `done` just reports
   branch + path to the user.
+
+### Freeform session presence (`098`)
+
+A freeform `/maestro` run (no task file) claims nothing, so a task session could not see it and both
+would edit the main checkout. Its presence is its own `maestro_sessions/<id>/session.json`: a
+recorded `workflow` and **no `active_task`** (a task session records `active_task` in the same call
+and is found through its claim instead). `liveFreeformSession` in `maestro-task-status.cjs` reads it
+with the same `isLive` rule as a claim (directory exists, `log.jsonl` modified within the idle cap).
+Nothing is written to `claims/` or `status.json`, so a freeform run can never appear as a task.
+
+- `liveForeignClaim` (used by `worktree`) falls through to `liveFreeformSession` after the claims, so
+  a task session is told to isolate itself when a freeform session is live.
+- `maestro-task-status.cjs freeform-check` is the freeform side (template Step 2, run after recording
+  the workflow). With no other live session it prints "no worktree needed" (the first session never
+  moves). `103`: with another live session it creates a worktree of its own, named from the session id
+  instead of a task number: branch `freeform-<8 alnum chars of the id>`, path
+  `<parent>/<repo>-freeform-<id>` (`freeformBranchFor`/`freeformWorktreePathFor`/`isFreeformBranch` in
+  `worktree.ts`, exported through `maestro-session.cjs`). It shares `provisionWorktree` with the task
+  `worktree` command, so refusals (path or branch already exists), the state move and the
+  `worktree.json` pointer (`task` = the branch, plus `freeform: true`) are identical.
+- `merge freeform-<id>` is the same `mergeWorktreeTask` as for a task, minus the "task is done" check
+  (there is no queue entry); refusals and conflicts are reported the same way. A freeform worktree
+  writes nothing to `claims/` or `status.json`, so it never appears in the queue or `maestro-epic show`.
+- This logic is in the hand-written CJS only (no `claims.ts` twin); the hook-script change shipped as
+  plugin `maestro` 0.11.15, the freeform worktree as 0.11.20.
 
 ### Finishing a worktree task (`076`)
 

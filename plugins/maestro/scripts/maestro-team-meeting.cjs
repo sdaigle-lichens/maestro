@@ -91,7 +91,8 @@ function refuse(reason, extra = {}) {
 
 function loadConfig() {
   const cfg = readJson(path.join(claudeDir, "maestro.json"));
-  if (!cfg || cfg.version !== 3) refuse(`no valid .claude/maestro.json (v3) under ${projectDir} — run /maestro-install first.`);
+  if (!cfg || cfg.version !== 3)
+    refuse(`no valid .claude/maestro.json (v3) under ${projectDir} — run /maestro-install first.`);
   return cfg;
 }
 
@@ -132,7 +133,8 @@ function runtimeProblem() {
   try {
     const { checkRuntime } = require("./maestro-check-runtime.cjs");
     const answer = checkRuntime(projectDir);
-    if (answer.action !== "continue") return `${answer.reason || "the project runtime is not ready"} — ${answer.instruction}`;
+    if (answer.action !== "continue")
+      return `${answer.reason || "the project runtime is not ready"} — ${answer.instruction}`;
   } catch {
     // No checker beside this script: fall through to the direct check below.
   }
@@ -158,7 +160,10 @@ function runStart() {
   let participants;
   const given = flag("participants");
   if (given) {
-    participants = given.split(",").map((s) => bareAgentName(s.trim())).filter(Boolean);
+    participants = given
+      .split(",")
+      .map((s) => bareAgentName(s.trim()))
+      .filter(Boolean);
   } else if (mode === "post-mortem") {
     participants = [...new Set(agentRunsFromLog(readLogLines(sess.log)).map((r) => bareAgentName(r.agentType)))];
   } else {
@@ -200,8 +205,16 @@ function describeAgent(cfg, name) {
   const raw = (cfg.workflow_instances || []).map((i) => i.agent).find((a) => bareAgentName(a) === name) || name;
   const candidates = [];
   if (!raw.includes(":")) {
-    candidates.push({ tier: "project", file: path.join(claudeDir, "agents", `${name}.md`), shown: `.claude/agents/${name}.md` });
-    candidates.push({ tier: "user", file: path.join(os.homedir(), ".claude", "agents", `${name}.md`), shown: `~/.claude/agents/${name}.md` });
+    candidates.push({
+      tier: "project",
+      file: path.join(claudeDir, "agents", `${name}.md`),
+      shown: `.claude/agents/${name}.md`,
+    });
+    candidates.push({
+      tier: "user",
+      file: path.join(os.homedir(), ".claude", "agents", `${name}.md`),
+      shown: `~/.claude/agents/${name}.md`,
+    });
   }
   candidates.push({
     tier: "plugin",
@@ -227,7 +240,11 @@ function collectRules(cfg) {
   }
   for (const r of cfg.rules || []) {
     if (seen.has(r.id)) continue;
-    rules.push({ id: r.id, path: r.paths && r.paths.length ? `scoped to ${r.paths.join(", ")}` : "(assigned in maestro.json)", inConfig: true });
+    rules.push({
+      id: r.id,
+      path: r.paths && r.paths.length ? `scoped to ${r.paths.join(", ")}` : "(assigned in maestro.json)",
+      inConfig: true,
+    });
   }
   return rules;
 }
@@ -410,7 +427,12 @@ function runTally() {
 
 function csv(name) {
   const v = flag(name);
-  return v ? v.split(",").map((s) => s.trim()).filter(Boolean) : [];
+  return v
+    ? v
+        .split(",")
+        .map((s) => s.trim())
+        .filter(Boolean)
+    : [];
 }
 
 /** The persisted tally of THIS session's meeting, or a refusal. Works before and after `end`. */
@@ -424,7 +446,8 @@ function readDecision() {
   } catch {
     refuse("no tally for this session's meeting — run `tally` first.");
   }
-  if (!record || !Array.isArray(record.rows) || !Array.isArray(record.conflictTargets)) refuse("decision.json is malformed — run `tally` again.");
+  if (!record || !Array.isArray(record.rows) || !Array.isArray(record.conflictTargets))
+    refuse("decision.json is malformed — run `tally` again.");
   return { sess, dir, record };
 }
 

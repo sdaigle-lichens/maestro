@@ -214,7 +214,7 @@ describe("saveConfig", () => {
   // A gates save goes down the same saveConfig path as every other slice, so it re-renders the
   // orchestrator too. That is harmless and worth pinning: the render must refresh HANDOFFS and
   // leave STEPS — which is where the injected gate line lives — exactly as it found it.
-  it("a gates save re-renders HANDOFFS and disturbs nothing else in the skill", async () => {
+  it("a skill-lists save re-renders HANDOFFS and disturbs nothing else in the skill", async () => {
     const root = path.join(tmp, "p");
     makeProject(root, { withSkill: true });
 
@@ -231,14 +231,15 @@ describe("saveConfig", () => {
     const before = fs.readFileSync(skillPath, "utf8");
 
     const res = await saveConfig(root, {
-      sliceType: "gates",
-      slice: { gates: { confidence_check: true, use_code_architecture_design_check: false } },
+      sliceType: "skill-lists",
+      slice: { start_skills: { maestro: ["confidence-check"], to_maestro_tasks: [] }, end_skills: { maestro: [] } },
     });
 
     expect(res.render.ok).toBe(true);
     expect(res.warnings).toEqual([]);
     expect(fs.readFileSync(skillPath, "utf8")).toBe(before); // same config in, same table out
-    expect(readConfig(root)!.gates).toEqual({ confidence_check: true, use_code_architecture_design_check: false });
+    expect(readConfig(root)!.start_skills).toEqual({ maestro: ["confidence-check"], to_maestro_tasks: [] });
+    expect(readConfig(root)!.end_skills).toEqual({ maestro: [] });
     // …and the slices the user authored are untouched by it.
     expect(readConfig(root)!.workflows).toEqual(defaultish.workflows);
   });

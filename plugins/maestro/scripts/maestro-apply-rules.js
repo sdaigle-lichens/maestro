@@ -60,7 +60,10 @@ function ruleIdOf(filePath) {
       const i = line.indexOf(":");
       if (i === -1) continue;
       if (line.slice(0, i).trim() === "name") {
-        return line.slice(i + 1).trim().replace(/^["']|["']$/g, "");
+        return line
+          .slice(i + 1)
+          .trim()
+          .replace(/^["']|["']$/g, "");
       }
     }
   }

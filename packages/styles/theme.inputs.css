@@ -1,0 +1,37 @@
+/* design-palette inputs (canonical). -lm light mode, -dm dark mode.
+   Edit these values, then regenerate with `pnpm --filter @repo/styles palette`, which runs
+   scripts/palette.ts on this file (see the script in package.json for the output flags). */
+:root {
+  /* Brand: primary + secondary required, tertiary–quinary optional */
+  --primary-lm: #0369a1;
+  --primary-dm: #38bdf8;
+  --secondary-lm: #57534e;
+  --secondary-dm: #a8a29e;
+
+  /* Base */
+  --font-lm: #1c1917;
+  --font-dm: #fafaf7;
+  --font-inverted-lm: #fafaf7;
+  --font-inverted-dm: #28241f;
+  --background-lm: #fafaf7;
+  --background-dm: #28241f;
+  --border-lm: #e0ddd7;
+  --border-dm: #36322c;
+
+  /* Status */
+  --info-lm: #2f6fde;
+  --info-dm: #5b93f0;
+  --danger-lm: #dc2626;
+  --danger-dm: #fca5a5;
+  --success-lm: #15803d;
+  --success-dm: #5eead4;
+  --warning-lm: #ca8a04;
+  --warning-dm: #fde68a;
+}
+
+/* Token overrides (optional): re-point a semantic token of the theme to another token, the same in both modes.
+   Only the tokens that reference another one (--link, --text-muted, --primary-text, --text-on-primary…);
+   the value is var(--<token>). Delete a line to go back to the generated reference. */
+:root {
+  /* --link: var(--info-text); */
+}

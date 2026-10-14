@@ -147,11 +147,20 @@ const REFACTOR_TO_FRONTEND =
 const REFACTOR_TO_REVIEWER =
   "```json\n" + "{\n" + '  "summary": "<brief summary of what was delegated, for re-review>"\n' + "}\n" + "```";
 
-const REFACTOR_TO_SCRIBE =
+// Before `090` made the gap field generic.
+const REFACTOR_TO_SCRIBE_V2 =
   "```json\n" +
   "{\n" +
   '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n' +
   '  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
+  "}\n" +
+  "```";
+
+const REFACTOR_TO_SCRIBE =
+  "```json\n" +
+  "{\n" +
+  '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n' +
+  '  "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
   "}\n" +
   "```";
 
@@ -171,7 +180,8 @@ const REVIEWER_TO_REFACTOR =
   "}\n" +
   "```";
 
-const REVIEWER_TO_SCRIBE =
+// Before `090` made the gap field generic.
+const REVIEWER_TO_SCRIBE_V2 =
   "```json\n" +
   "{\n" +
   '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
@@ -180,6 +190,18 @@ const REVIEWER_TO_SCRIBE =
   '  "schema_changes": ["<new tables, columns, or constraints, or \'none\'>"],\n' +
   '  "workflow_or_process_changes": ["<changed agent handoff, new convention, or \'none\'>"],\n' +
   '  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
+  "}\n" +
+  "```";
+
+const REVIEWER_TO_SCRIBE =
+  "```json\n" +
+  "{\n" +
+  '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
+  '  "justfile_commands_changed": ["<old → new description, or \'none\'>"],\n' +
+  '  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or \'none\'>"],\n' +
+  '  "schema_changes": ["<new tables, columns, or constraints, or \'none\'>"],\n' +
+  '  "workflow_or_process_changes": ["<changed agent handoff, new convention, or \'none\'>"],\n' +
+  '  "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell the agent>" }]\n' +
   "}\n" +
   "```";
 
@@ -429,6 +451,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "refactor/scribe": [
+    REFACTOR_TO_SCRIBE_V2,
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +
@@ -475,6 +498,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "reviewer/scribe": [
+    REVIEWER_TO_SCRIBE_V2,
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +

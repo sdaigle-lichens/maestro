@@ -7,7 +7,7 @@
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-2);
+  color: var(--text-muted);
 }
 
 .section-label::before {
@@ -19,9 +19,9 @@
 
 .section-label .count {
   font-size: 0.65rem;
-  color: var(--ink-3);
+  color: var(--text-muted);
   padding: 2px 7px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: 999px;
   letter-spacing: 0.06em;
 }
@@ -46,11 +46,11 @@
   gap: 0.5rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
-  color: var(--ink-2);
+  color: var(--text-muted);
   padding: 4px 10px;
-  border: 1px solid var(--line);
+  border: 1px solid var(--border);
   border-radius: 999px;
-  background: var(--bg-2);
+  background: var(--bg-faint);
 }
 
 .stamp::before {
@@ -58,11 +58,11 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--ink-3);
+  background: var(--text-muted);
   flex-shrink: 0;
 }
 
 .stamp.live::before {
-  background: var(--green);
-  box-shadow: 0 0 0 3px var(--green-dim);
+  background: var(--success);
+  box-shadow: 0 0 0 3px var(--success-bg);
 }

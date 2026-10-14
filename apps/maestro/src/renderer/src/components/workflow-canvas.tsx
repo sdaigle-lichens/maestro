@@ -6,7 +6,8 @@ import InstancePicker, {
   type InstancePickerValue,
 } from "./instance-picker";
 import InstanceSkillPicker from "./instance-skill-picker";
-import { Check } from "lucide-react";
+import SkillRefMark from "./skill-ref-mark";
+import { CheckIcon } from "@phosphor-icons/react";
 
 import {
   ReactFlow,
@@ -345,7 +346,7 @@ function AgentNodeComponent({
             <div className="px-2.5 pb-2 flex flex-wrap gap-1">
               {inst.loaded_skills.map((s) => (
                 <span key={s} className={`px-1.5 py-0.5 rounded-full border text-[10px] font-mono ${chipClass}`}>
-                  {s}
+                  {s} <SkillRefMark id={s} />
                 </span>
               ))}
               {inst.referenced_skills.map((s) => (
@@ -354,7 +355,7 @@ function AgentNodeComponent({
                   title="Referenced — loaded only if the task needs it"
                   className={`px-1.5 py-0.5 rounded-full border border-dashed text-[10px] font-mono opacity-70 ${chipClass}`}
                 >
-                  {s}
+                  {s} <SkillRefMark id={s} />
                 </span>
               ))}
             </div>
@@ -466,10 +467,10 @@ function HumanStepNode({
             ⋮
           </button>
           {menuOpen && (
-            <div className="absolute right-0 top-6 z-50 w-40 bg-(--bg) border border-(--line) rounded-lg shadow-lg py-1">
+            <div className="absolute right-0 top-6 z-50 w-40 bg-maestro border border-maestro rounded-lg shadow-lg py-1">
               <button
                 type="button"
-                className="w-full text-left px-3 py-1.5 text-[12px] text-red-500 hover:bg-(--bg-elev) cursor-pointer"
+                className="w-full text-left px-3 py-1.5 text-[12px] text-red-500 hover:bg-maestro-elevated cursor-pointer"
                 onClick={() => {
                   data.onDelete?.(maestro.id);
                   setMenuOpen(false);
@@ -534,6 +535,7 @@ function SkillNodeComponent({
             <span className="font-mono text-[12px] font-semibold truncate text-violet-800">
               /{maestro.skill ?? maestro.id}
             </span>
+            <SkillRefMark id={maestro.skill ?? maestro.id} className="ml-1" />
             <div className="relative ml-1 shrink-0" ref={menuRef}>
               <button
                 type="button"
@@ -546,10 +548,10 @@ function SkillNodeComponent({
                 ⋮
               </button>
               {menuOpen && (
-                <div className="absolute right-0 top-6 z-50 w-40 bg-(--bg) border border-(--line) rounded-lg shadow-lg py-1">
+                <div className="absolute right-0 top-6 z-50 w-40 bg-maestro border border-maestro rounded-lg shadow-lg py-1">
                   <button
                     type="button"
-                    className="w-full text-left px-3 py-1.5 text-[12px] text-(--ink-2) hover:bg-(--bg-elev) cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 text-[12px] text-maestro-muted hover:bg-maestro-elevated cursor-pointer"
                     onClick={() => {
                       data.onChangeSkill?.(maestro.id);
                       setMenuOpen(false);
@@ -559,7 +561,7 @@ function SkillNodeComponent({
                   </button>
                   <button
                     type="button"
-                    className="w-full text-left px-3 py-1.5 text-[12px] text-red-500 hover:bg-(--bg-elev) cursor-pointer"
+                    className="w-full text-left px-3 py-1.5 text-[12px] text-red-500 hover:bg-maestro-elevated cursor-pointer"
                     onClick={() => {
                       data.onDelete?.(maestro.id);
                       setMenuOpen(false);
@@ -1508,14 +1510,14 @@ export default function WorkflowCanvas({
           onPaneClick={handlePaneClick}
           fitView
           fitViewOptions={{ padding: 0.4 }}
-          className="bg-(--bg)"
+          className="bg-maestro"
         >
           <Background />
           <Controls />
 
           {/* Bottom action bar */}
           <Panel position="bottom-center" style={{ marginBottom: 16 }}>
-            <div className="flex items-center gap-2 bg-(--bg) border border-(--line) rounded-xl px-3 py-2 shadow-lg">
+            <div className="flex items-center gap-2 bg-maestro border border-maestro rounded-xl px-3 py-2 shadow-lg">
               <button
                 type="button"
                 onClick={handleAddAgent}
@@ -1523,7 +1525,7 @@ export default function WorkflowCanvas({
               >
                 <span className="text-[14px] leading-none">+</span> Add Agent
               </button>
-              <div className="w-px h-4 bg-(--line)" />
+              <div className="w-px h-4 bg-maestro-border" />
               <button
                 type="button"
                 onClick={handleStartAddCondition}
@@ -1539,7 +1541,7 @@ export default function WorkflowCanvas({
                 <button
                   type="button"
                   onClick={resetConditionState}
-                  className="px-2 py-1 text-[12px] text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                  className="px-2 py-1 text-[12px] text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                 >
                   Cancel
                 </button>
@@ -1552,8 +1554,8 @@ export default function WorkflowCanvas({
       {/* Condition modal */}
       {conditionModalOpen && (
         <div className="absolute inset-0 bg-black/30 z-20 flex items-center justify-center">
-          <div className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-[40rem] flex flex-col gap-3">
-            <div className="text-[13px] font-semibold text-(--ink)">Add condition</div>
+          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-[40rem] flex flex-col gap-3">
+            <div className="text-[13px] font-semibold text-maestro">Add condition</div>
 
             <textarea
               placeholder="Condition label (e.g. needs revision)"
@@ -1564,14 +1566,14 @@ export default function WorkflowCanvas({
               onKeyDown={(e) => {
                 if (e.key === "Escape") resetConditionState();
               }}
-              className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary resize-none"
+              className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong resize-none"
             />
 
             {/* Target: existing node or new instance */}
             <select
               value={conditionTargetNodeId}
               onChange={(e) => setConditionTargetNodeId(e.target.value)}
-              className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+              className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
             >
               <option value="">New instance node…</option>
               {rfNodes
@@ -1609,14 +1611,14 @@ export default function WorkflowCanvas({
               <button
                 type="button"
                 onClick={resetConditionState}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmAddCondition}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
               >
                 Add
               </button>
@@ -1628,29 +1630,29 @@ export default function WorkflowCanvas({
       {/* Add step modal */}
       {addStepSourceId && (
         <div className="absolute inset-0 bg-black/30 z-20 flex items-center justify-center">
-          <div className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-80 flex flex-col gap-3">
-            <div className="text-[13px] font-semibold text-(--ink)">Add step</div>
+          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-80 flex flex-col gap-3">
+            <div className="text-[13px] font-semibold text-maestro">Add step</div>
 
             {/* Type picker */}
-            <div className="flex rounded-lg overflow-hidden border border-(--line)">
+            <div className="flex rounded-lg overflow-hidden border border-maestro">
               <button
                 type="button"
                 onClick={() => setAddStepType("agent")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "agent" ? "bg-primary text-white" : "bg-(--bg-elev) text-(--ink-2) hover:bg-(--bg)"}`}
+                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "agent" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
               >
                 Agent
               </button>
               <button
                 type="button"
                 onClick={() => setAddStepType("skill")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "skill" ? "bg-primary text-white" : "bg-(--bg-elev) text-(--ink-2) hover:bg-(--bg)"}`}
+                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "skill" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
               >
                 Skill
               </button>
               <button
                 type="button"
                 onClick={() => setAddStepType("human_review")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "human_review" ? "bg-primary text-white" : "bg-(--bg-elev) text-(--ink-2) hover:bg-(--bg)"}`}
+                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "human_review" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
               >
                 Human Review
               </button>
@@ -1676,16 +1678,16 @@ export default function WorkflowCanvas({
             {/* Skill picker (only for skill type) — runs inline in the main session */}
             {addStepType === "skill" && (
               <div className="flex flex-col gap-1.5">
-                <div className="text-[10px] text-subtle uppercase tracking-wide">Skill</div>
+                <div className="text-[10px] text-maestro-muted uppercase tracking-wide">Skill</div>
                 {availableSkills.length === 0 ? (
-                  <p className="text-[12px] text-subtle m-0">
+                  <p className="text-[12px] text-maestro-muted m-0">
                     No skills selected in the left panel. Add skills there first.
                   </p>
                 ) : (
                   <select
                     value={addStepSkill}
                     onChange={(e) => setAddStepSkill(e.target.value)}
-                    className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                    className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
                   >
                     {availableSkills.map((s) => (
                       <option key={s} value={s}>
@@ -1694,7 +1696,7 @@ export default function WorkflowCanvas({
                     ))}
                   </select>
                 )}
-                <p className="text-[11px] text-subtle m-0">
+                <p className="text-[11px] text-maestro-muted m-0">
                   The orchestrator runs this skill inline, between agent steps.
                 </p>
               </div>
@@ -1704,14 +1706,14 @@ export default function WorkflowCanvas({
               <button
                 type="button"
                 onClick={resetAddStep}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmAddStep}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
               >
                 Add
               </button>
@@ -1724,11 +1726,11 @@ export default function WorkflowCanvas({
           Edits apply live via updateSelectedInstance; there's no separate Save/Cancel because
           this is an inspector docked beside the canvas, not a confirmation dialog. */}
       {selectedInstance && (
-        <div className="absolute top-0 right-0 h-full w-80 bg-(--bg) border-l border-(--line) shadow-xl z-20 flex flex-col overflow-y-auto">
-          <div className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 border-b border-(--line)">
+        <div className="absolute top-0 right-0 h-full w-80 bg-maestro border-l border-maestro shadow-xl z-20 flex flex-col overflow-y-auto">
+          <div className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 border-b border-maestro">
             <div className="flex flex-col min-w-0">
-              <span className="font-mono text-[13px] font-semibold text-(--ink) truncate">{selectedInstance.name}</span>
-              <span className="text-[11px] text-subtle">Instance</span>
+              <span className="font-mono text-[13px] font-semibold text-maestro truncate">{selectedInstance.name}</span>
+              <span className="text-[11px] text-maestro-muted">Instance</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
@@ -1742,7 +1744,7 @@ export default function WorkflowCanvas({
               <button
                 type="button"
                 onClick={() => setSelectedInstanceId(null)}
-                className="w-6 h-6 flex items-center justify-center rounded text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink) cursor-pointer focus:outline-none"
+                className="w-6 h-6 flex items-center justify-center rounded text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none"
                 title="Close"
               >
                 ✕
@@ -1752,11 +1754,11 @@ export default function WorkflowCanvas({
 
           <div className="flex flex-col gap-3 p-4">
             <div>
-              <div className="text-[10px] text-subtle uppercase tracking-wide mb-1">Subagent</div>
+              <div className="text-[10px] text-maestro-muted uppercase tracking-wide mb-1">Subagent</div>
               <select
                 value={selectedInstance.agent}
                 onChange={(e) => updateSelectedInstance({ agent: e.target.value })}
-                className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
               >
                 {panelAvailableAgents.map((a) => (
                   <option key={a} value={a}>
@@ -1784,7 +1786,7 @@ export default function WorkflowCanvas({
             {relatedConditionEdges.length > 0 && (
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <div className="text-[10px] text-subtle uppercase tracking-wide">Conditions</div>
+                  <div className="text-[10px] text-maestro-muted uppercase tracking-wide">Conditions</div>
                   {/* A checklist + single delete button — check one or more conditions, then
                       delete them together. Replaces the old per-row ✕ button, which was too
                       easy to hit by accident while scrolling. */}
@@ -1811,13 +1813,13 @@ export default function WorkflowCanvas({
                           className={`mt-8 shrink-0 w-4 h-4 rounded-full border-2 flex items-center justify-center cursor-pointer focus:outline-none transition-colors ${
                             checked
                               ? "bg-orange-500 border-orange-500 text-white"
-                              : "bg-(--bg) border-orange-300 text-transparent hover:border-orange-500"
+                              : "bg-maestro border-orange-300 text-transparent hover:border-orange-500"
                           }`}
                         >
-                          <Check size={10} strokeWidth={3} />
+                          <CheckIcon size={10} weight="bold" />
                         </button>
                         <div className="flex-1 min-w-0 flex flex-col gap-0.5">
-                          <span className="text-[10px] font-mono text-subtle truncate pl-[9px]">
+                          <span className="text-[10px] font-mono text-maestro-muted truncate pl-[9px]">
                             <span className="font-semibold text-orange-600">{i + 1}.</span> {direction}
                           </span>
                           <textarea
@@ -1825,7 +1827,7 @@ export default function WorkflowCanvas({
                             onChange={(ev) => updateEdgeLabel(e.id, ev.target.value)}
                             placeholder="Condition label"
                             rows={2}
-                            className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1 text-(--ink) focus:outline-none focus:border-primary resize-none"
+                            className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1 text-maestro focus:outline-none focus:border-maestro-primary-strong resize-none"
                           />
                         </div>
                       </div>
@@ -1842,13 +1844,13 @@ export default function WorkflowCanvas({
           canvas (mutually exclusive with the instance panel above). Edits apply live, same as
           the instance panel — there's no separate edit-label modal any more. */}
       {!selectedInstance && selectedEdge && (
-        <div className="absolute top-0 right-0 h-full w-80 bg-(--bg) border-l border-(--line) shadow-xl z-20 flex flex-col overflow-y-auto">
-          <div className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 border-b border-(--line)">
+        <div className="absolute top-0 right-0 h-full w-80 bg-maestro border-l border-maestro shadow-xl z-20 flex flex-col overflow-y-auto">
+          <div className="shrink-0 flex items-center justify-between gap-2 px-4 py-3 border-b border-maestro">
             <div className="flex flex-col min-w-0">
-              <span className="font-mono text-[13px] font-semibold text-(--ink) truncate">
+              <span className="font-mono text-[13px] font-semibold text-maestro truncate">
                 {selectedEdge.source} → {selectedEdge.target}
               </span>
-              <span className="text-[11px] text-subtle">Condition</span>
+              <span className="text-[11px] text-maestro-muted">Condition</span>
             </div>
             <div className="flex items-center gap-1 shrink-0">
               <button
@@ -1862,7 +1864,7 @@ export default function WorkflowCanvas({
               <button
                 type="button"
                 onClick={() => setSelectedEdgeId(null)}
-                className="w-6 h-6 flex items-center justify-center rounded text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink) cursor-pointer focus:outline-none"
+                className="w-6 h-6 flex items-center justify-center rounded text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none"
                 title="Close"
               >
                 ✕
@@ -1872,13 +1874,13 @@ export default function WorkflowCanvas({
 
           <div className="flex flex-col gap-3 p-4">
             <div>
-              <div className="text-[10px] text-subtle uppercase tracking-wide mb-1">Label</div>
+              <div className="text-[10px] text-maestro-muted uppercase tracking-wide mb-1">Label</div>
               <textarea
                 value={typeof selectedEdge.label === "string" ? selectedEdge.label : ""}
                 onChange={(ev) => updateEdgeLabel(selectedEdge.id, ev.target.value)}
                 placeholder="Condition label (e.g. needs revision)"
                 rows={4}
-                className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary resize-none"
+                className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong resize-none"
               />
             </div>
           </div>
@@ -1888,10 +1890,10 @@ export default function WorkflowCanvas({
       {/* Change-skill modal (skill nodes) */}
       {changeSkillNodeId && (
         <div className="absolute inset-0 bg-black/30 z-20 flex items-center justify-center">
-          <div className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-72 flex flex-col gap-3">
-            <div className="text-[13px] font-semibold text-(--ink)">Change skill</div>
+          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-72 flex flex-col gap-3">
+            <div className="text-[13px] font-semibold text-maestro">Change skill</div>
             {availableSkills.length === 0 ? (
-              <p className="text-[12px] text-subtle m-0">No skills selected in the left panel.</p>
+              <p className="text-[12px] text-maestro-muted m-0">No skills selected in the left panel.</p>
             ) : (
               <select
                 value={changeSkillValue}
@@ -1901,7 +1903,7 @@ export default function WorkflowCanvas({
                   if (e.key === "Escape") setChangeSkillNodeId(null);
                   if (e.key === "Enter") confirmChangeSkill();
                 }}
-                className="w-full text-[12px] bg-(--bg-elev) border border-(--line) rounded px-2 py-1.5 text-(--ink) focus:outline-none focus:border-primary"
+                className="w-full text-[12px] bg-maestro-elevated border border-maestro rounded px-2 py-1.5 text-maestro focus:outline-none focus:border-maestro-primary-strong"
               >
                 {availableSkills.map((s) => (
                   <option key={s} value={s}>
@@ -1914,14 +1916,14 @@ export default function WorkflowCanvas({
               <button
                 type="button"
                 onClick={() => setChangeSkillNodeId(null)}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
               >
                 Cancel
               </button>
               <button
                 type="button"
                 onClick={confirmChangeSkill}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-primary text-white cursor-pointer focus:outline-none hover:opacity-90"
               >
                 Save
               </button>

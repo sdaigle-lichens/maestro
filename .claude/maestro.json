@@ -9,7 +9,7 @@
     "test"
   ],
   "skills_available": [
-    "use-code-architecture-design-check",
+    "concept-skills:use-code-architecture-design-check",
     "task-queue",
     "installing-maestro",
     "maestro-architecture",
@@ -26,7 +26,7 @@
     "agents-view",
     "log-view",
     "test-maestro-desktop",
-    "scribe"
+    "concept-skills:scribe"
   ],
   "workflow_instances": [
     {
@@ -55,8 +55,7 @@
         "workflow-view",
         "rule-view",
         "agents-view",
-        "log-view",
-        "react:react-flow-canvas-geometry"
+        "log-view"
       ]
     },
     {
@@ -83,7 +82,7 @@
       "name": "scribe",
       "agent": "scribe",
       "loaded_skills": [
-        "scribe"
+        "concept-skills:scribe"
       ],
       "referenced_skills": []
     }
@@ -521,7 +520,7 @@
         {
           "id": "use-code-architecture-design-check",
           "type": "skill",
-          "skill": "use-code-architecture-design-check",
+          "skill": "concept-skills:use-code-architecture-design-check",
           "position": {
             "x": 0,
             "y": 140
@@ -771,42 +770,51 @@
     }
   ],
   "rules": [],
-  "gates": {
-    "confidence_check": true,
-    "use_code_architecture_design_check": true
+  "start_skills": {
+    "maestro": [
+      "confidence-check",
+      "concept-skills:use-code-architecture-design-check"
+    ],
+    "to_maestro_tasks": [
+      "confidence-check",
+      "concept-skills:use-code-architecture-design-check"
+    ]
+  },
+  "end_skills": {
+    "maestro": []
   },
   "project_tags": [
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.11.7",
+  "runtimeVersion": "0.11.23",
   "reports": {
     "backend": {
       "id": "backend",
       "syncedFrom": {
-        "version": 3,
-        "hash": "969f6afed8b4b15d29d894d333be67d0c4d7244ae41289386629db7c989c4cf9"
+        "version": 5,
+        "hash": "25cf882445e686b0cc909add0c6a3527b1ff0812402d335e0e3b4b20ebc3f8a5"
       }
     },
     "frontend": {
       "id": "frontend",
       "syncedFrom": {
-        "version": 3,
-        "hash": "657324cc950f6789d28bfd31d3eaf91691fc6b890617005c6c8e6d3ef2d221ca"
+        "version": 5,
+        "hash": "aeddaedc9e51a6eeddd5de3a0dd10d3dc426758a50b402b465d553d14c722e61"
       }
     },
     "scribe": {
       "id": "scribe",
       "syncedFrom": {
-        "version": 2,
-        "hash": "524263f9a6413c3529a72a4e91471633d211b8f8fe23e92ae0d1f5f94c3cf40a"
+        "version": 3,
+        "hash": "b0c6dd1fae4e0499e4cb2866a4d76e617db4d58bb4b7f3cadc44144c9cf08fc3"
       }
     },
     "test": {
       "id": "test",
       "syncedFrom": {
-        "version": 3,
-        "hash": "6dee3d513c6fdfd267baf4ef5e75b19abdd00511b06110c8064ea601a6a0895c"
+        "version": 5,
+        "hash": "52ad831d85c50bdbc2f63044309e9fe045be7b05f0b9abb9e0a98634a3dfc272"
       }
     }
   },
@@ -835,8 +843,8 @@
     "reviewer/scribe": {
       "id": "reviewer/scribe",
       "syncedFrom": {
-        "version": 2,
-        "hash": "c05bbd04950a965c222c5d960670a60695dcef0fb1e83e41b3024f3e457e3fdf"
+        "version": 3,
+        "hash": "ebcb0a8976ab0381663644b629d4eaac8856705a990cec7222963b1774d486d9"
       }
     },
     "reviewer/refactor": {
@@ -870,8 +878,8 @@
     "refactor/scribe": {
       "id": "refactor/scribe",
       "syncedFrom": {
-        "version": 2,
-        "hash": "a66435395f8f1faefac4c03627a17045a384fa82541fed57707017e2e1f99a30"
+        "version": 3,
+        "hash": "c83ec99fe5ed8323826ab3cbdd658c624ae371083a511de15341008a617fa528"
       }
     },
     "refactor/backend": {

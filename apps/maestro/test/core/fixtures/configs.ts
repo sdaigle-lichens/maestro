@@ -49,12 +49,12 @@ export const defaultish: MaestroConfigV3 = {
 
 /**
  * Exercises skill nodes, a namespaced agent, and a workflow whose success path dead-ends. Also the
- * one fixture carrying a `gates` block — `defaultish` deliberately has none, so anything reading
- * gates across `allConfigs` walks both the present and the absent branch.
+ * one fixture carrying a `start_skills` block — `defaultish` deliberately has none, so anything
+ * reading the skill lists across `allConfigs` walks both the present and the absent branch.
  */
 export const withSkillNodes: MaestroConfigV3 = {
   version: 3,
-  gates: { confidence_check: true, use_code_architecture_design_check: false },
+  start_skills: { maestro: ["confidence-check"], to_maestro_tasks: [] },
   agents_available: ["frontend", "reviewer"],
   skills_available: ["react", "confidence-check"],
   workflow_instances: [

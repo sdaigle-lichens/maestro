@@ -15,7 +15,7 @@ place the refresh procedure is written down.
    (idempotent — skips settings and gitignore if already present):
 
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js" "${CLAUDE_PROJECT_DIR:-.}"
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js" .
    ```
 
    This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
@@ -34,6 +34,11 @@ place the refresh procedure is written down.
    `MANAGED_REGIONS` in `lib/maestro-skill-regions.cjs`) from `templates/maestro/SKILL.md`. Content
    **outside** those markers is the user's and is never touched; the rendered
    `<!-- Maestro:HANDOFFS -->` table is carried across.
+
+   If the JSON summary's `skillListsSeeded` is not `null`, the project's `maestro.json` predated the
+   start/end skill lists and this run filled in the missing ones with the fresh-seed defaults (and
+   removed a leftover `gates` key). Tell the user which (`start_skills`, `end_skills`, `gates`) and that
+   they can change them on the Maestro desktop app's `/maestro` page. Lists already present are never touched.
 
    Report `orchestratorSkill.action` from the JSON summary:
    - `synced` — regions refreshed (`.regions` lists which). Mention if the steps changed.
@@ -63,9 +68,25 @@ place the refresh procedure is written down.
    If it names any, see `references/forked-agents.md` for showing the diff and applying the user's
    `update` / `keep` / `detach` decision.
 
-4. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+4. **Check for skill references that no longer resolve.** `maestro.json` names skills by id, and an id
+   can dangle when the plugin that supplied it is uninstalled or not enabled for this project, or
+   when the skill was deleted. This writes nothing and always exits 0:
+
+   ```bash
+   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-stale-refs.cjs" .
+   ```
+
+   It prints `{"checked", "dangling": [{"id","reason","where"}], "suggestions": [...]}`. When
+   `dangling` or `suggestions` is non-empty, show each suggestion to the user as it is written. Do
+   not edit `maestro.json` to remove a reference yourself: the references are the user's graph, and
+   removing one is a decision for the Maestro app's workflow view. A suggestion saying `maestro.json`
+   has no `start_skills` means the project was upgraded by copying files alone: tell the user to run
+   `/maestro-install` (it is user-only) so the defaults are written. When both are empty, say nothing
+   about it beyond "no dangling skill references".
+
+5. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged).
+   none had diverged), and any dangling skill references step 4 found.
 
 ## Notes
 

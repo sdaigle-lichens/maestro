@@ -48,6 +48,7 @@ __export(maestro_epic_exports, {
   listEpics: () => listEpics,
   readEpicState: () => readEpicState,
   removeWorker: () => removeWorker,
+  reportCommandFor: () => reportCommandFor,
   setManager: () => setManager,
   showEpic: () => showEpic,
   unacknowledgedReports: () => unacknowledgedReports,
@@ -155,6 +156,9 @@ var CLAIMS_DIR_NAME = "claims";
 function claimsDirFor(tasksDir) {
   return import_node_path4.default.join(tasksDir, CLAIMS_DIR_NAME);
 }
+function claimPathFor(tasksDir, filename) {
+  return import_node_path4.default.join(claimsDirFor(tasksDir), `${import_node_path4.default.basename(filename)}.json`);
+}
 function nameOf(claim) {
   return typeof claim.session_name === "string" && claim.session_name ? { sessionName: claim.session_name } : {};
 }
@@ -168,6 +172,10 @@ function readClaimFile(filePath) {
   } catch {
     return null;
   }
+}
+function claimSessionName(tasksDir, filename) {
+  const claim = readClaimFile(claimPathFor(tasksDir, filename));
+  return claim && typeof claim.session_name === "string" && claim.session_name ? claim.session_name : null;
 }
 function isSessionLive(claudeDir, sessionId, now2 = Date.now()) {
   const paths = sessionPathsFor(claudeDir, sessionId);
@@ -475,10 +483,12 @@ function nextInboxId(state, kind) {
   const used = state.log.filter((e) => e.kind === kind).map((e) => Number(e.id.slice(1)) || 0);
   return `${INBOX_PREFIX[kind]}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
 }
-function writeReport(projectRoot, task, body, from) {
+function writeReport(projectRoot, task, body, sender) {
   const base = import_node_path6.default.basename(task);
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
+  const root = mainCheckoutRoot(projectRoot);
+  const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || void 0;
   const dir = epicDirFor(projectRoot, slug);
   if (!dir || !readEpicState(projectRoot, slug))
     throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
@@ -499,6 +509,16 @@ ${from ? `- From session: ${from}
     s.log.push({ kind: "report", id, task: base, file: rel, at, ...from ? { from } : {} });
     return { epic: slug, id, file: import_node_path6.default.join(dir, rel), manager: s.manager?.name ?? null };
   });
+}
+function reportCommandFor(projectRoot, task, sessionName) {
+  const base = import_node_path6.default.basename(task);
+  const slug = epicOfTask(projectRoot, base);
+  if (!slug) return null;
+  const manager = readEpicState(projectRoot, slug)?.manager?.name;
+  const from = sessionName?.trim() ? ` --from "${sessionName.trim()}"` : "";
+  return `Maestro epic: "${base}" belongs to epic "${slug}" (manager: ${manager ? `"${manager}"` : "no manager recorded"}). Your NEXT step is to report to the epic, then message the manager if one is recorded: pipe the report body to
+  node .claude/scripts/maestro-epic.cjs report --task "${base}"${from} --file -
+`;
 }
 function checkNoteRoute(projectRoot, toSlug, fromEpic) {
   if (!readEpicState(projectRoot, toSlug)) throw new Error(`no epic "${toSlug}" to send a note to`);
@@ -642,6 +662,7 @@ function formatEpic(view) {
   listEpics,
   readEpicState,
   removeWorker,
+  reportCommandFor,
   setManager,
   showEpic,
   unacknowledgedReports,

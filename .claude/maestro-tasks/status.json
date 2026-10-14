@@ -427,5 +427,91 @@
   "088-deliver-a-loop-back-payload-to-a-resumed-agent-and-flag-it-when-missing.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "090-move-the-concept-skills-into-an-opt-in-concept-skills-plugin.md": {
+    "status": "done",
+    "blockedBy": [
+      "089-configurable-start-and-end-skills-for-maestro-and-to-maestro-tasks.md"
+    ],
+    "epic": "concept-skills-plugin"
+  },
+  "091-show-dangling-skill-references-in-the-maestro-app.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "092-seed-start-and-end-skills-when-re-installing-maestro-into-an-existing-project.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "093-make-the-electron-sandbox-setup-survive-reboots-and-reinstalls.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "094-call-project-scripts-by-relative-path-in-the-orchestrator-s-own-commands.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "095-mark-collapsed-plugin-groups-that-hide-a-dangling-skill-reference.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "096-never-overwrite-or-crash-on-a-corrupt-or-unsupported-maestro-json-during-install.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "097-prettier-check-the-plugins-hand-written-code-in-pnpm-verify.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "099-move-cleanup-skill-into-the-concept-skills-plugin-and-make-the-team-meeting-s-use-of-it-optional.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "100-make-the-epic-report-a-step-a-maestro-session-cannot-skip.md": {
+    "status": "done",
+    "blockedBy": [
+      "098-keep-a-freeform-maestro-session-and-a-task-session-from-sharing-the-main-checkout-unknowingly.md"
+    ],
+    "epic": "concept-skills-plugin"
+  },
+  "101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "102-keep-the-epic-s-manager-name-current-and-make-a-failed-report-message-recoverable.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
+  },
+  "103-give-a-freeform-maestro-run-its-own-worktree-when-another-session-is-already-working.md": {
+    "status": "done",
+    "blockedBy": [
+      "101-remove-the-braced-project-dir-variable-from-every-command-the-maestro-skills-run.md"
+    ],
+    "epic": "concept-skills-plugin"
+  },
+  "104-let-a-worktree-run-deliver-channel-payloads-without-a-stall.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "concept-skills-plugin"
   }
 }

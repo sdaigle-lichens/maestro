@@ -81,3 +81,10 @@ vite.config.ts.timestamp-*
 **/.claude/maestro_sessions/
 **/.claude/maestro-tasks/claims/
 **/.claude/maestro-metrics/
+
+*storybook.log
+storybook-static
+
+# design plugin: saved sign-in for screen captures
+.design-screens/
+design/requests/

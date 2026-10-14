@@ -708,13 +708,18 @@ describe("runtimeVersion (task 027)", () => {
       // The authored graph is provably unchanged by the refresh — runtimeVersion differs,
       // `reports` gains entries for every agent in `agents_available` that has a global default
       // and `handoffs` one per wired route (each sync step's own materialize-if-absent behavior),
-      // never touching anything else.
+      // never touching anything else. (`defaultish` has no start/end skill lists, so `092`'s seed
+      // fills them in; that is covered by install-seed-skill-lists.test.ts, not compared here.)
       expect({
         ...readConfig(root)!,
         runtimeVersion: undefined,
         reports: undefined,
         handoffs: undefined,
+        start_skills: undefined,
+        end_skills: undefined,
       }).toEqual({
+        start_skills: undefined,
+        end_skills: undefined,
         ...defaultish,
         runtimeVersion: undefined,
         reports: undefined,
@@ -1709,7 +1714,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
    * Duplicating the sentence in the test would pin the wording and prove nothing about the rule.
    */
   function skipLine(root: string): string {
-    writeConfig(root, { ...defaultish, gates: { confidence_check: false, use_code_architecture_design_check: false } });
+    writeConfig(root, { ...defaultish, start_skills: { maestro: [], to_maestro_tasks: [] } });
     return runGates(root).stdout;
   }
 
@@ -1721,8 +1726,8 @@ describe("maestro-step1-gates.cjs (032)", () => {
    * would put that write in the developer's own session directory. `null` deletes it — the arm
    * where no id resolves and the marker is simply skipped.
    */
-  function runGates(root: string, sessionId: string | null = HOOK_SESSION) {
-    const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs")], {
+  function runGates(root: string, sessionId: string | null = HOOK_SESSION, args: string[] = []) {
+    const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-step1-gates.cjs"), ...args], {
       encoding: "utf8",
       env: hookEnv(root, sessionId, tmp),
     });
@@ -1748,48 +1753,86 @@ describe("maestro-step1-gates.cjs (032)", () => {
     expect(runtimeAssets(PLUGIN_ROOT).map((a) => a.dest)).toContain(".claude/scripts/maestro-step1-gates.cjs");
   });
 
+  /** One line, exit 0, empty stderr — the contract every state of the script keeps. */
+  function expectContract(res: { code: number; stdout: string; stderr: string }, label: string): void {
+    expect(res.code, `${label} must exit 0`).toBe(0);
+    expect(res.stderr, `${label} must say nothing on stderr`).toBe("");
+    expect(res.stdout.endsWith("\n"), `${label} must be newline-terminated`).toBe(true);
+    expect(res.stdout.trimEnd().split("\n"), `${label} must be exactly one line`).toHaveLength(1);
+  }
+
   // The script prints the WHOLE of Step 1, not a flag the skill body branches on, so what is
   // asserted is the contract rather than the prose: one line, exit 0, empty stderr, exactly the
-  // enabled gates named, in order, and an instruction to go on to Step 2. The wording is expected
-  // to change; every property below is not.
-  it("prints one line naming exactly the enabled gates, in order, for all four combinations", async () => {
-    const root = await installed("combos");
+  // configured start skills named, in order. The wording is expected to change; every property
+  // below is not.
+  it("prints one line naming exactly the configured start skills, in order", async () => {
+    const root = await installed("lists");
+    const lists = [
+      ["confidence-check"],
+      ["use-code-architecture-design-check"],
+      ["confidence-check", "use-code-architecture-design-check"],
+      ["use-code-architecture-design-check", "confidence-check"],
+      ["concept-skills:use-code-architecture-design-check", "alpha", "beta"],
+    ];
     const seen = new Set<string>();
-
-    for (const confidence_check of [false, true]) {
-      for (const use_code_architecture_design_check of [false, true]) {
-        const label = `confidence=${confidence_check} design=${use_code_architecture_design_check}`;
-        writeConfig(root, { ...defaultish, gates: { confidence_check, use_code_architecture_design_check } });
-        const { code, stdout, stderr } = runGates(root);
-
-        expect(code, `${label} must exit 0`).toBe(0);
-        expect(stderr, `${label} must say nothing on stderr`).toBe("");
-        expect(stdout.endsWith("\n"), `${label} must be newline-terminated`).toBe(true);
-        expect(stdout.trimEnd().split("\n"), `${label} must be exactly one line`).toHaveLength(1);
-
-        // Named iff enabled — this is the whole decision the script exists to make.
-        expect(stdout.includes("/confidence-check"), label).toBe(confidence_check);
-        expect(stdout.includes("/use-code-architecture-design-check"), label).toBe(use_code_architecture_design_check);
-        // Both on: confidence first. The order is part of the instruction, not incidental.
-        if (confidence_check && use_code_architecture_design_check) {
-          expect(stdout.indexOf("/confidence-check")).toBeLessThan(
-            stdout.indexOf("/use-code-architecture-design-check")
-          );
-        }
-        // Every state hands off to Step 2, including the one that does nothing else.
-        expect(stdout, `${label} must send the orchestrator on to Step 2`).toMatch(/Step 2/);
-
-        seen.add(stdout);
+    for (const maestro of lists) {
+      const label = JSON.stringify(maestro);
+      writeConfig(root, { ...defaultish, start_skills: { maestro, to_maestro_tasks: [] } });
+      const res = runGates(root);
+      expectContract(res, label);
+      // Named in order: each id appears, after the previous one.
+      let from = 0;
+      for (const id of maestro) {
+        const at = res.stdout.indexOf("/" + id, from);
+        expect(at, `${label}: ${id} must be named after the previous skill`).toBeGreaterThanOrEqual(from);
+        from = at + id.length;
       }
+      expect(res.stdout, `${label} must send the orchestrator on to Step 2`).toMatch(/Step 2/);
+      seen.add(res.stdout);
     }
+    // Distinct answers: a bug collapsing two states would otherwise pass everything above.
+    expect(seen.size).toBe(lists.length);
+  });
 
-    // Four distinct answers: a bug collapsing two states would otherwise pass everything above.
-    expect(seen.size).toBe(4);
+  it("names a skill only when configured — an unconfigured gate skill never appears", async () => {
+    const root = await installed("none-named");
+    writeConfig(root, { ...defaultish, start_skills: { maestro: ["alpha"], to_maestro_tasks: [] } });
+    const { stdout } = runGates(root);
+    expect(stdout).not.toContain("confidence-check");
+    expect(stdout).not.toContain("use-code-architecture-design-check");
+  });
+
+  it("--for to_maestro_tasks names that list, and names nothing when start_skills is absent", async () => {
+    const root = await installed("for-tasks");
+    writeConfig(root, { ...defaultish, start_skills: { maestro: ["only-maestro"], to_maestro_tasks: ["t1", "t2"] } });
+    const res = runGates(root, HOOK_SESSION, ["--for", "to_maestro_tasks"]);
+    expectContract(res, "to_maestro_tasks");
+    expect(res.stdout.indexOf("/t1")).toBeGreaterThanOrEqual(0);
+    expect(res.stdout.indexOf("/t2")).toBeGreaterThan(res.stdout.indexOf("/t1"));
+    expect(res.stdout).not.toContain("only-maestro");
+
+    writeConfig(root, { ...defaultish, start_skills: undefined });
+    const none = runGates(root, HOOK_SESSION, ["--for", "to_maestro_tasks"]);
+    expectContract(none, "no start_skills");
+    expect(none.stdout).not.toContain("/confidence-check");
+    expect(none.stdout).not.toContain("/use-code-architecture-design-check");
+  });
+
+  it("the plugin's own copy runs without a project runtime", () => {
+    const res = spawnSync(
+      "node",
+      [path.join(PLUGIN_ROOT, "scripts", "maestro-step1-gates.cjs"), "--for", "to_maestro_tasks"],
+      { encoding: "utf8", env: { ...process.env, CLAUDE_PROJECT_DIR: path.join(tmp, "no-such-project") } }
+    );
+    expectContract({ code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr }, "no project");
+    // No maestro.json at all: no start skills, so nothing is named.
+    expect(res.stdout).not.toContain("/confidence-check");
+    expect(res.stdout).toMatch(/No start skills/);
   });
 
   // Every one of these is a case where a script that "reported the problem" would take the whole
-  // /maestro invocation down with it. Skip, quietly, exit 0, is the only safe answer.
-  it("falls back to the both-off line — exit 0, empty stderr — on every degenerate input", async () => {
+  // /maestro invocation down with it. Quietly, exit 0, is the only safe answer.
+  it("falls back to the no-start-skills line — exit 0, empty stderr — on every degenerate input", async () => {
     const root = await installed("degenerate");
     const configPath = path.join(root, ".claude", "maestro.json");
 
@@ -1797,29 +1840,23 @@ describe("maestro-step1-gates.cjs (032)", () => {
       ["maestro.json missing", () => fs.rmSync(configPath)],
       ["corrupt JSON", () => writeRawConfig(root, "{ not json at all")],
       ["empty file", () => writeRawConfig(root, "")],
-      ["version 2", () => writeRawConfig(root, JSON.stringify({ version: 2, gates: { confidence_check: true } }))],
-      ["gates absent", () => writeConfig(root, { ...defaultish, gates: undefined })],
-      ["gates is an array", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: [true, true] }))],
-      ["gates is a string", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: "both" }))],
-      ["gates is null", () => writeRawConfig(root, JSON.stringify({ version: 3, gates: null }))],
       [
-        "gate values are strings",
+        "version 2",
         () =>
           writeRawConfig(
             root,
-            JSON.stringify({
-              version: 3,
-              gates: { confidence_check: "true", use_code_architecture_design_check: "true" },
-            })
+            JSON.stringify({ version: 2, start_skills: { maestro: ["a"] }, gates: { confidence_check: true } })
           ),
       ],
+      ["start_skills absent", () => writeConfig(root, { ...defaultish, start_skills: undefined })],
       [
-        "gate values are numbers",
-        () =>
-          writeRawConfig(
-            root,
-            JSON.stringify({ version: 3, gates: { confidence_check: 1, use_code_architecture_design_check: 1 } })
-          ),
+        "start_skills lists are not arrays",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, start_skills: { maestro: "a" } })),
+      ],
+      ["start_skills is an empty object", () => writeRawConfig(root, JSON.stringify({ version: 3, start_skills: {} }))],
+      [
+        "start_skills holds only junk ids",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, start_skills: { maestro: [1, "", null] } })),
       ],
       ["the whole file is an array", () => writeRawConfig(root, "[]")],
       [
@@ -1832,14 +1869,13 @@ describe("maestro-step1-gates.cjs (032)", () => {
     ];
 
     const skip = skipLine(root);
-    expect(skip, "the both-off line must not be empty").toMatch(/Step 2/);
+    expect(skip, "the no-start-skills line must not be empty").toMatch(/Step 2/);
 
     for (const [label, mutate] of cases) {
       mutate();
-      const { code, stdout, stderr } = runGates(root);
-      expect(code, `${label} must exit 0`).toBe(0);
-      expect(stderr, `${label} must say nothing on stderr`).toBe("");
-      expect(stdout, `${label} must resolve to exactly the both-off line`).toBe(skip);
+      const res = runGates(root);
+      expectContract(res, label);
+      expect(res.stdout, `${label} must resolve to exactly the no-start-skills line`).toBe(skip);
       fs.rmSync(configPath, { recursive: true, force: true });
     }
   });
@@ -1876,6 +1912,114 @@ describe("maestro-step1-gates.cjs (032)", () => {
     const after = check();
     expect(after.action).toBe("update");
     expect(after.reason).toContain("maestro-step1-gates.cjs");
+  });
+});
+
+describe("maestro-end-skills.cjs", () => {
+  function runEnd(root: string, sessionId: string | null = HOOK_SESSION) {
+    const res = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-end-skills.cjs")], {
+      encoding: "utf8",
+      env: hookEnv(root, sessionId, tmp),
+    });
+    return { code: res.status ?? -1, stdout: res.stdout, stderr: res.stderr };
+  }
+  function writeRawConfig(root: string, body: string): void {
+    fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "maestro.json"), body);
+  }
+  async function installed(name: string): Promise<string> {
+    const root = makeProject(name);
+    writeConfig(root, defaultish);
+    await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+    return root;
+  }
+  function expectContract(res: { code: number; stdout: string; stderr: string }, label: string): void {
+    expect(res.code, `${label} must exit 0`).toBe(0);
+    expect(res.stderr, `${label} must say nothing on stderr`).toBe("");
+    expect(res.stdout.endsWith("\n"), `${label} must be newline-terminated`).toBe(true);
+    expect(res.stdout.trimEnd().split("\n"), `${label} must be exactly one line`).toHaveLength(1);
+  }
+
+  it("is copied into the project, with the lib it needs, by installRuntime", async () => {
+    const root = await installed("copied-end");
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-end-skills.cjs"))).toBe(true);
+    expect(fs.existsSync(path.join(root, ".claude", "scripts", "lib", "maestro-skill-lists.cjs"))).toBe(true);
+    const dests = runtimeAssets(PLUGIN_ROOT).map((a) => a.dest);
+    expect(dests).toContain(".claude/scripts/maestro-end-skills.cjs");
+    expect(dests).toContain(".claude/scripts/lib/maestro-skill-lists.cjs");
+  });
+
+  it("prints one line naming exactly the configured end skills, in order", async () => {
+    const root = await installed("end-lists");
+    const lists = [["one"], ["one", "two"], ["two", "one"], ["concept-skills:x", "y", "z"]];
+    const seen = new Set<string>();
+    for (const end of lists) {
+      const label = JSON.stringify(end);
+      writeConfig(root, { ...defaultish, end_skills: { maestro: end } });
+      const res = runEnd(root);
+      expectContract(res, label);
+      let from = 0;
+      for (const id of end) {
+        const at = res.stdout.indexOf("/" + id, from);
+        expect(at, `${label}: ${id} must be named after the previous skill`).toBeGreaterThanOrEqual(from);
+        from = at + id.length;
+      }
+      seen.add(res.stdout);
+    }
+    expect(seen.size).toBe(lists.length);
+  });
+
+  it("prints the same neutral line for an empty list and every degenerate input", async () => {
+    const root = await installed("end-degenerate");
+    const configPath = path.join(root, ".claude", "maestro.json");
+    writeConfig(root, { ...defaultish, end_skills: { maestro: [] } });
+    const neutral = runEnd(root).stdout;
+    expect(neutral.trim().length).toBeGreaterThan(0);
+
+    const cases: [string, () => void][] = [
+      ["maestro.json missing", () => fs.rmSync(configPath)],
+      ["corrupt JSON", () => writeRawConfig(root, "{ nope")],
+      ["empty file", () => writeRawConfig(root, "")],
+      ["version 2", () => writeRawConfig(root, JSON.stringify({ version: 2, end_skills: { maestro: ["a"] } }))],
+      ["end_skills absent", () => writeConfig(root, { ...defaultish, end_skills: undefined })],
+      ["end_skills is a string", () => writeRawConfig(root, JSON.stringify({ version: 3, end_skills: "a" }))],
+      [
+        "end_skills.maestro is a string",
+        () => writeRawConfig(root, JSON.stringify({ version: 3, end_skills: { maestro: "a" } })),
+      ],
+      ["junk ids", () => writeRawConfig(root, JSON.stringify({ version: 3, end_skills: { maestro: [1, "", null] } }))],
+      ["the whole file is an array", () => writeRawConfig(root, "[]")],
+      [
+        ".claude/maestro.json is a directory",
+        () => {
+          fs.rmSync(configPath, { force: true });
+          fs.mkdirSync(configPath);
+        },
+      ],
+    ];
+    for (const [label, mutate] of cases) {
+      mutate();
+      const res = runEnd(root);
+      expectContract(res, label);
+      expect(res.stdout, `${label} must resolve to the neutral line`).toBe(neutral);
+      fs.rmSync(configPath, { recursive: true, force: true });
+    }
+  });
+
+  it("makes maestro-check-runtime say update when the script is gone", async () => {
+    const root = await installed("end-check");
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: pinnedEnv(tmp),
+    });
+    fs.rmSync(path.join(root, ".claude", "scripts", "maestro-end-skills.cjs"));
+    const out = JSON.parse(
+      execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-check-runtime.cjs")], {
+        encoding: "utf8",
+        env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: path.join(tmp, "home-end-check") },
+      })
+    );
+    expect(out.action).toBe("update");
+    expect(out.reason).toContain("maestro-end-skills.cjs");
   });
 });
 

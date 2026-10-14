@@ -5,7 +5,9 @@
  * `node scripts/vendor-fonts.mjs` rather than editing ./fonts.css by hand.
  */
 @import "./fonts.css";
-@import "tailwindcss";
+@import "./generated/tailwind.css";
+@import "./generated/theme.css";
+@import "./generated/scheme.css";
 @source '../ui/src/**/*.{tsx,ts}';
 @plugin '@tailwindcss/typography';
 @import "tw-animate-css";
@@ -24,29 +26,6 @@
    * anything, so display text has been falling back to Georgia since the var was written.
    */
   --font-serif: "Bodoni Moda", Georgia, serif;
-  --color-background: var(--bg);
-  --color-foreground: var(--ink);
-  --color-card: var(--bg-2);
-  --color-card-foreground: var(--ink);
-  --color-border: var(--line);
-  --color-border-strong: var(--line-2);
-  --color-muted: var(--bg-3);
-  --color-muted-foreground: var(--ink-2);
-  --color-subtle: var(--ink-3);
-  --color-primary: var(--primary);
-  --color-primary-foreground: var(--bg);
-  --color-secondary: var(--bg-3);
-  --color-secondary-foreground: var(--ink-2);
-  --color-destructive: var(--red);
-  --color-destructive-foreground: var(--ink);
-  --color-success: var(--green);
-  --color-ring: var(--primary-dim-2);
-  --color-input: var(--line);
-  --color-popover: var(--bg-2);
-  --color-popover-foreground: var(--ink);
-  --color-accent: var(--bg-3);
-  --color-accent-foreground: var(--ink);
-
   --radius: 8px;
   --radius-sm: 4px;
   --radius-md: 6px;

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CircleNotchIcon } from "@phosphor-icons/react";
 
 type Variant = "primary" | "secondary" | "ghost";
 
@@ -14,18 +15,13 @@ interface ButtonProps {
 }
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-(--primary) text-white border-(--primary) hover:brightness-95 shadow-(--shadow-1)",
-  secondary: "bg-(--bg-elev) text-(--ink) border-(--line) hover:bg-(--bg-2)",
-  ghost: "bg-transparent text-(--ink-2) border-transparent hover:bg-(--bg-2)",
+  primary: "bg-maestro-primary text-white border-maestro-primary-strong hover:brightness-95 shadow-(--shadow-1)",
+  secondary: "bg-maestro-elevated text-maestro border-maestro hover:bg-maestro-faint",
+  ghost: "bg-transparent text-maestro-muted border-transparent hover:bg-maestro-faint",
 };
 
 function Spinner({ size = 13 }: { size?: number }) {
-  return (
-    <svg width={size} height={size} viewBox="0 0 24 24" className="shrink-0 animate-spin">
-      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="3" fill="none" opacity="0.25" />
-      <path d="M21 12a9 9 0 0 0-9-9" stroke="currentColor" strokeWidth="3" strokeLinecap="round" fill="none" />
-    </svg>
-  );
+  return <CircleNotchIcon size={size} weight="bold" className="shrink-0 animate-spin" />;
 }
 
 export default function Button({
@@ -46,7 +42,7 @@ export default function Button({
       disabled={isDisabled}
       className={`inline-flex items-center gap-2 h-9 px-3.5 rounded-lg text-[13px] font-semibold border box-border transition-all duration-150 ${
         isDisabled
-          ? "bg-(--bg-2) text-(--ink-4) border-(--line) cursor-not-allowed opacity-60"
+          ? "bg-maestro-faint text-maestro-faint border-maestro cursor-not-allowed opacity-60"
           : `cursor-pointer ${variantClasses[variant]}`
       } ${className}`}
     >

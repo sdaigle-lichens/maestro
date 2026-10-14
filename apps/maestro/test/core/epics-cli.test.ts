@@ -217,6 +217,83 @@ describe("claim records the session name", () => {
   });
 });
 
+describe("done prints the epic report command (100)", () => {
+  it("a task in an epic: done prints the exact report command naming the epic, the manager and the claim's session name", async () => {
+    const root = await withTasks("001-a.md");
+    liveSession(root, SESSION_A);
+    epic(root, ["create", "e1", "--manager", "boss"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    status(root, ["claim", "001-a.md", "--name", "worker-one"], SESSION_A);
+
+    const done = status(root, ["done", "001-a.md"], SESSION_A);
+    expect(done.code).toBe(0);
+    expect(done.stdout).toContain('marked "001-a.md" done');
+    expect(done.stdout).toContain('epic "e1"');
+    expect(done.stdout).toContain('manager: "boss"');
+    expect(done.stdout).toContain(
+      'node .claude/scripts/maestro-epic.cjs report --task "001-a.md" --from "worker-one" --file -'
+    );
+    // `done` deleted the claim, yet the printed command still carries the sender.
+    expect(fs.existsSync(path.join(tasksDir(root), "claims", "001-a.md.json"))).toBe(false);
+  });
+
+  it("an epic with no manager says so, and an unnamed claim leaves --from off", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    const done = status(root, ["done", "001-a.md"], SESSION_A);
+    expect(done.stdout).toContain("no manager recorded");
+    expect(done.stdout).toContain('report --task "001-a.md" --file -');
+    expect(done.stdout).not.toContain("--from");
+  });
+
+  it("a task in no epic: done prints nothing new", async () => {
+    const root = await withTasks("001-a.md");
+    const done = status(root, ["done", "001-a.md"], SESSION_A);
+    expect(done.code).toBe(0);
+    expect(done.stdout).toMatch(/^Maestro tasks: marked "001-a.md" done — [^\n]*\n$/);
+  });
+
+  it("`of` prints the epic slug, or nothing for a task in no epic", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    expect(epic(root, ["of", "001-a.md"]).stdout).toBe("e1\n");
+    expect(epic(root, ["of", "002-b.md"]).stdout).toBe("");
+  });
+});
+
+describe("a report written without a sender (100)", () => {
+  it("uses the session name recorded on the task's claim", async () => {
+    const root = await withTasks("001-a.md");
+    liveSession(root, SESSION_A);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    status(root, ["claim", "001-a.md", "--name", "worker-one"], SESSION_A);
+
+    expect(epic(root, ["report", "--task", "001-a.md"], "body").code).toBe(0);
+    const state = JSON.parse(fs.readFileSync(path.join(root, ".claude", "epics", "e1", "state.json"), "utf8"));
+    expect(state.log[0].from).toBe("worker-one");
+    expect(fs.readFileSync(path.join(root, ".claude", "epics", "e1", state.log[0].file), "utf8")).toContain(
+      "From session: worker-one"
+    );
+  });
+
+  it("an explicit --from wins over the claim, and no claim means no sender", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    liveSession(root, SESSION_A);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    status(root, ["claim", "001-a.md", "--name", "worker-one"], SESSION_A);
+
+    epic(root, ["report", "--task", "001-a.md", "--from", "other"], "x");
+    epic(root, ["report", "--task", "002-b.md"], "y");
+    const log = JSON.parse(fs.readFileSync(path.join(root, ".claude", "epics", "e1", "state.json"), "utf8")).log;
+    expect(log[0].from).toBe("other");
+    expect(log[1].from).toBeUndefined();
+  });
+});
+
 describe("the report inbox", () => {
   it("a report written with no manager survives, is listed unacknowledged, and is acknowledged once", async () => {
     const root = await withTasks("001-a.md");
@@ -230,6 +307,7 @@ describe("the report inbox", () => {
     );
     expect(written.code).toBe(0);
     expect(written.stdout).toContain("No manager session is recorded");
+    expect(written.stdout).not.toContain("SendMessage fails");
     const file = path.join(root, ".claude", "epics", "e1", "inbox", "r001-001-a.md");
     expect(fs.readFileSync(file, "utf8")).toContain("Outcome: shipped");
 
@@ -260,6 +338,15 @@ describe("the report inbox", () => {
     expect(first.stdout).toContain("r001");
     expect(second.stdout).toContain("r002"); // ids never repeat
     expect(JSON.parse(epic(root, ["show", "e1", "--json"]).stdout).unacknowledged).toHaveLength(2);
+
+    // A failed send is recoverable: the printed step says how, and that the file is the delivery.
+    for (const out of [first.stdout, second.stdout]) {
+      expect(out).toContain("If that SendMessage fails, run ListAgents");
+      expect(out).toContain("exactly one session plausibly matches");
+      expect(out).toContain("ask the user before messaging it");
+      expect(out).toContain("Never conclude the manager is gone from one failed send");
+      expect(out).toContain("saved report file is the real delivery");
+    }
   });
 
   it("an unknown report id cannot be acknowledged", async () => {
@@ -356,6 +443,10 @@ describe("cross-epic notes", () => {
     expect(sent.code).toBe(0);
     expect(sent.stdout).toContain("n001");
     expect(sent.stdout).toContain('"boss-search"');
+    expect(sent.stdout).toContain("If that SendMessage fails, run ListAgents");
+    expect(sent.stdout).toContain("ask the user before messaging it");
+    expect(sent.stdout).toContain("Never conclude the manager is gone from one failed send");
+    expect(sent.stdout).toContain("saved note file is the real delivery");
 
     const file = path.join(root, ".claude", "epics", "search", "inbox", "n001-from-billing.md");
     const content = fs.readFileSync(file, "utf8");
@@ -533,6 +624,7 @@ describe("cross-epic notes", () => {
     ]);
     expect(sent.code).toBe(0);
     expect(sent.stdout).toContain("No manager session is recorded");
+    expect(sent.stdout).not.toContain("SendMessage fails");
 
     // The manager resumes later: the report and the note are both waiting, oldest first.
     epic(root, ["set-manager", "search", "boss-search"]);

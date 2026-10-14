@@ -1,23 +1,23 @@
 import { Link } from "@tanstack/react-router";
 import ThemeToggle from "@repo/ui/theme-toggle";
 import {
-  Workflow,
-  BookOpenCheck,
-  ScrollText,
-  ListChecks,
-  Plus,
-  X,
-  Pencil,
-  Check,
-  ChevronDown,
-  Trash2,
-  FolderOpen,
-  MessagesSquare,
-  BookOpen,
-  Sparkles,
-  Tags,
-  Users,
-} from "lucide-react";
+  BookBookmarkIcon,
+  BookOpenIcon,
+  CaretDownIcon,
+  ChatsCircleIcon,
+  CheckIcon,
+  FlowArrowIcon,
+  FolderOpenIcon,
+  ListChecksIcon,
+  PencilSimpleIcon,
+  PlusIcon,
+  ScrollIcon,
+  SparkleIcon,
+  TagIcon,
+  TrashIcon,
+  UsersIcon,
+  XIcon,
+} from "@phosphor-icons/react";
 import { useState, useRef, useEffect } from "react";
 import { useSession } from "../utils/session-context";
 import { useSessionLog } from "../utils/session-log-context";
@@ -43,9 +43,9 @@ import HamburgerMenu from "./hamburger-menu";
  * bottom of the Marketplace/Plugins/Agents/Skills tabs on /tools.
  */
 export const NAV_LINK =
-  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] text-(--ink-2) hover:text-(--ink)";
+  "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[13px] text-maestro-muted hover:text-maestro";
 export const MENU_ITEM =
-  "flex items-center gap-2 px-3 py-1.5 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink)";
+  "flex items-center gap-2 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro";
 
 /** Close on an outside click — shared by the workflow selector and the hamburger/project menus. */
 export function useOutsideClose(open: boolean, close: () => void) {
@@ -134,41 +134,41 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
   const cancelEdit = () => setEditing(false);
 
   return (
-    <nav className="h-11 border-b border-(--line) bg-(--bg) flex items-center px-4 gap-1 shrink-0">
+    <nav className="h-11 border-b border-maestro bg-maestro flex items-center px-4 gap-1 shrink-0">
       <HamburgerMenu badge={badge} />
 
       {/* Where the hamburger's app-wide items end and "what I'm editing in this project" begins. */}
-      <span className="w-px h-4 bg-(--line) mx-1.5 shrink-0" aria-hidden />
+      <span className="w-px h-4 bg-maestro-border mx-1.5 shrink-0" aria-hidden />
 
-      <Link to="/maestro" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <Sparkles size={13} /> Maestro
+      <Link to="/maestro" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <SparkleIcon size={13} /> Maestro
       </Link>
-      <Link to="/skills" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <Tags size={13} /> Skills
+      <Link to="/skills" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <TagIcon size={13} /> Skills
       </Link>
-      <Link to="/agents" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <Users size={13} /> Agents
+      <Link to="/agents" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <UsersIcon size={13} /> Agents
       </Link>
-      <Link to="/project-docs" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <BookOpen size={13} /> Project Docs
+      <Link to="/project-docs" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <BookOpenIcon size={13} /> Project Docs
       </Link>
-      <Link to="/workflows" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <Workflow size={13} /> Workflows
+      <Link to="/workflows" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <FlowArrowIcon size={13} /> Workflows
       </Link>
-      <Link to="/rules" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <BookOpenCheck size={13} /> Rules
+      <Link to="/rules" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <BookBookmarkIcon size={13} /> Rules
       </Link>
-      <Link to="/session-log" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <ScrollText size={13} /> Session Log
+      <Link to="/session-log" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <ScrollIcon size={13} /> Session Log
         <span
           title={connected ? "Live" : "Connecting…"}
-          className={`text-[7px] leading-none ${connected ? "text-(--green)" : "text-(--ink-3)"}`}
+          className={`text-[7px] leading-none ${connected ? "text-maestro-success" : "text-maestro-muted"}`}
         >
           ●
         </span>
       </Link>
-      <Link to="/maestro-tasks" activeProps={{ className: "text-(--ink) bg-(--bg-elev)" }} className={NAV_LINK}>
-        <ListChecks size={13} /> Maestro Tasks
+      <Link to="/maestro-tasks" activeProps={{ className: "text-maestro bg-maestro-elevated" }} className={NAV_LINK}>
+        <ListChecksIcon size={13} /> Maestro Tasks
       </Link>
 
       {/* Centered workflow selector */}
@@ -186,23 +186,23 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                     if (e.key === "Enter") confirmEdit();
                     if (e.key === "Escape") cancelEdit();
                   }}
-                  className="h-7 px-2.5 rounded-md text-[13px] bg-(--bg-elev) border border-primary text-(--ink) focus:outline-none w-44"
+                  className="h-7 px-2.5 rounded-md text-[13px] bg-maestro-elevated border border-maestro-primary-strong text-maestro focus:outline-none w-44"
                 />
                 <button
                   type="button"
                   onClick={confirmEdit}
                   title="Confirm"
-                  className="w-7 h-7 rounded-md flex items-center justify-center bg-(--bg-elev) border border-(--line) text-primary hover:bg-(--primary-dim) cursor-pointer focus:outline-none"
+                  className="w-7 h-7 rounded-md flex items-center justify-center bg-maestro-elevated border border-maestro text-maestro-primary hover:bg-maestro-primary-subtle cursor-pointer focus:outline-none"
                 >
-                  <Check size={13} />
+                  <CheckIcon size={13} />
                 </button>
                 <button
                   type="button"
                   onClick={cancelEdit}
                   title="Cancel"
-                  className="w-7 h-7 rounded-md flex items-center justify-center bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                  className="w-7 h-7 rounded-md flex items-center justify-center bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                 >
-                  <X size={13} />
+                  <XIcon size={13} />
                 </button>
               </>
             ) : (
@@ -212,7 +212,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                     type="button"
                     onClick={() => setMenuOpen((v) => !v)}
                     title="Switch workflow"
-                    className="h-7 pl-2.5 pr-2 min-w-[20em] rounded-md text-[13px] bg-(--bg-elev) border border-(--line) text-(--ink) cursor-pointer focus:outline-none hover:border-primary flex items-center justify-between gap-2"
+                    className="h-7 pl-2.5 pr-2 min-w-[20em] rounded-md text-[13px] bg-maestro-elevated border border-maestro text-maestro cursor-pointer focus:outline-none hover:border-maestro-primary-strong flex items-center justify-between gap-2"
                   >
                     <span className="truncate">
                       {workflowSelector.workflows.length === 0
@@ -220,14 +220,14 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                         : workflowSelector.workflows[workflowSelector.activeIndex] ||
                           `Workflow ${workflowSelector.activeIndex + 1}`}
                     </span>
-                    <ChevronDown size={13} className="text-(--ink-3) shrink-0" />
+                    <CaretDownIcon size={13} className="text-maestro-muted shrink-0" />
                   </button>
 
                   {menuOpen && (
-                    <div className="absolute left-0 top-9 z-50 w-full bg-(--bg) border border-(--line) rounded-lg shadow-lg py-1">
+                    <div className="absolute left-0 top-9 z-50 w-full bg-maestro border border-maestro rounded-lg shadow-lg py-1">
                       <div className="max-h-72 overflow-y-auto">
                         {workflowSelector.workflows.length === 0 && (
-                          <div className="px-3 py-1.5 text-[12px] text-subtle">No workflows yet</div>
+                          <div className="px-3 py-1.5 text-[12px] text-maestro-muted">No workflows yet</div>
                         )}
                         {workflowSelector.workflows.map((name, i) => (
                           <div
@@ -236,13 +236,13 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                               workflowSelector.onSelect(i);
                               setMenuOpen(false);
                             }}
-                            className={`group flex items-center justify-between gap-2 pl-3 pr-1.5 py-1.5 cursor-pointer hover:bg-(--bg-elev) ${
-                              i === workflowSelector.activeIndex ? "text-(--ink)" : "text-(--ink-2)"
+                            className={`group flex items-center justify-between gap-2 pl-3 pr-1.5 py-1.5 cursor-pointer hover:bg-maestro-elevated ${
+                              i === workflowSelector.activeIndex ? "text-maestro" : "text-maestro-muted"
                             }`}
                           >
                             <span className="flex items-center gap-1.5 truncate text-[13px]">
                               {i === workflowSelector.activeIndex && (
-                                <Check size={12} className="text-primary shrink-0" />
+                                <CheckIcon size={12} className="text-maestro-primary shrink-0" />
                               )}
                               <span className="truncate">{name || `Workflow ${i + 1}`}</span>
                             </span>
@@ -254,23 +254,23 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                                 setMenuOpen(false);
                                 setPendingDelete(i);
                               }}
-                              className="w-6 h-6 rounded flex items-center justify-center text-(--ink-3) hover:text-red-500 opacity-0 group-hover:opacity-100 cursor-pointer focus:outline-none shrink-0"
+                              className="w-6 h-6 rounded flex items-center justify-center text-maestro-muted hover:text-red-500 opacity-0 group-hover:opacity-100 cursor-pointer focus:outline-none shrink-0"
                             >
-                              <Trash2 size={12} />
+                              <TrashIcon size={12} />
                             </button>
                           </div>
                         ))}
                       </div>
-                      <div className="border-t border-(--line) mt-1 pt-1">
+                      <div className="border-t border-maestro mt-1 pt-1">
                         <button
                           type="button"
                           onClick={() => {
                             workflowSelector.onAdd();
                             setMenuOpen(false);
                           }}
-                          className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-(--ink-2) hover:bg-(--bg-elev) hover:text-(--ink) cursor-pointer focus:outline-none"
+                          className="w-full flex items-center gap-1.5 px-3 py-1.5 text-[13px] text-maestro-muted hover:bg-maestro-elevated hover:text-maestro cursor-pointer focus:outline-none"
                         >
-                          <Plus size={13} /> Add workflow
+                          <PlusIcon size={13} /> Add workflow
                         </button>
                       </div>
                     </div>
@@ -281,9 +281,9 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
                     type="button"
                     onClick={startEdit}
                     title="Rename workflow"
-                    className="w-7 h-7 rounded-md flex items-center justify-center bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                    className="w-7 h-7 rounded-md flex items-center justify-center bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
                   >
-                    <Pencil size={12} />
+                    <PencilSimpleIcon size={12} />
                   </button>
                 )}
               </>
@@ -291,6 +291,8 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
           </div>
         )}
       </div>
+
+      <ThemeToggle />
 
       {/*
         Where the web app's Stop button lived. That existed to tell the /ai-tools dispatcher to
@@ -314,9 +316,9 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
               ? "Session — a turn is in progress"
               : "Session"
         }
-        className="relative flex items-center justify-center w-7 h-7 rounded-md border bg-(--bg-elev) border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+        className="relative flex items-center justify-center w-7 h-7 rounded-md border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
       >
-        <MessagesSquare size={13} />
+        <ChatsCircleIcon size={13} />
         {/*
           A parked ask outranks a running turn on this badge, and is a different colour, because they
           mean opposite things: one is Claude working and the other is Claude waiting on the user.
@@ -333,7 +335,9 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
             ●
           </span>
         ) : (
-          session.busy && <span className="absolute -top-0.5 -right-0.5 text-[7px] leading-none text-(--green)">●</span>
+          session.busy && (
+            <span className="absolute -top-0.5 -right-0.5 text-[7px] leading-none text-maestro-success">●</span>
+          )
         )}
       </button>
 
@@ -341,12 +345,11 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
         type="button"
         onClick={() => void pick()}
         title={current ? `Open project: ${current.root}` : "Choose a project folder"}
-        className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] border bg-(--bg-elev) border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none max-w-[220px]"
+        className="flex items-center gap-1.5 h-7 px-2.5 rounded-md text-[12px] border bg-maestro-elevated border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none max-w-[220px]"
       >
-        <FolderOpen size={13} className="shrink-0" />
+        <FolderOpenIcon size={13} className="shrink-0" />
         <span className="truncate">{current?.name ?? "Open project…"}</span>
       </button>
-      <ThemeToggle />
 
       {/* Delete-confirmation modal */}
       {pendingDelete !== null && workflowSelector && (
@@ -355,13 +358,13 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
           onClick={() => setPendingDelete(null)}
         >
           <div
-            className="bg-(--bg) border border-(--line) rounded-xl p-5 shadow-xl w-80 flex flex-col gap-3"
+            className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-80 flex flex-col gap-3"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="text-[13px] font-semibold text-(--ink)">Delete workflow</div>
-            <p className="text-[12px] text-(--ink-2) m-0">
+            <div className="text-[13px] font-semibold text-maestro">Delete workflow</div>
+            <p className="text-[12px] text-maestro-muted m-0">
               Delete{" "}
-              <span className="font-mono text-(--ink)">
+              <span className="font-mono text-maestro">
                 {workflowSelector.workflows[pendingDelete] || `Workflow ${pendingDelete + 1}`}
               </span>
               ? This can&apos;t be undone.
@@ -370,7 +373,7 @@ export default function TopNav({ workflowSelector }: { workflowSelector?: Workfl
               <button
                 type="button"
                 onClick={() => setPendingDelete(null)}
-                className="px-3 py-1.5 text-[12px] rounded-lg bg-(--bg-elev) border border-(--line) text-(--ink-2) hover:text-(--ink) cursor-pointer focus:outline-none"
+                className="px-3 py-1.5 text-[12px] rounded-lg bg-maestro-elevated border border-maestro text-maestro-muted hover:text-maestro cursor-pointer focus:outline-none"
               >
                 Cancel
               </button>

@@ -1,0 +1,178 @@
+{
+  "backend": "local",
+  "reconcileRule": "canonical-wins",
+  "pluginVersion": "0.6.0",
+  "studio": {
+    "port": 3009
+  },
+  "palette": {
+    "localPath": "packages/styles/theme.inputs.css",
+    "outputs": {
+      "web": "packages/styles/generated/theme.css",
+      "scheme": "packages/styles/generated/scheme.css",
+      "mobile": "packages/styles/generated/tailwind.css",
+      "json": "packages/styles/generated/palette.json",
+      "sass": null
+    },
+    "script": "packages/styles/scripts/palette.ts",
+    "namespace": "maestro",
+    "designPath": null,
+    "status": "wip",
+    "lastImplementedHash": "c37aabcc7606a850cae15a814df09b43a6258c475ee20743e8db893bff821a5e"
+  },
+  "storybooks": {
+    "web": {
+      "dir": "apps/maestro",
+      "url": "http://localhost:6006",
+      "mcpServer": "storybook",
+      "runCommand": "pnpm --filter maestro storybook"
+    }
+  },
+  "components": [
+    {
+      "name": "Button",
+      "storybook": "web",
+      "localPath": "packages/ui/src/button.tsx",
+      "storyId": "ui-button--default",
+      "designPath": "design/components/button.html",
+      "proposalPath": "design/proposals/button.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "Field",
+      "storybook": "web",
+      "localPath": "packages/ui/src/field.tsx",
+      "storyId": "ui-field--default",
+      "designPath": "design/components/field.html",
+      "proposalPath": "design/proposals/field.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "ChipInput",
+      "storybook": "web",
+      "localPath": "packages/ui/src/chip-input.tsx",
+      "storyId": "ui-chipinput--default",
+      "designPath": "design/components/chip-input.html",
+      "proposalPath": "design/proposals/chip-input.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "Select",
+      "storybook": "web",
+      "localPath": "packages/ui/src/select.tsx",
+      "storyId": "ui-select--default",
+      "designPath": "design/components/select.html",
+      "proposalPath": "design/proposals/select.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "ModePill",
+      "storybook": "web",
+      "localPath": "packages/ui/src/mode-pill.tsx",
+      "storyId": "ui-modepill--default",
+      "designPath": "design/components/mode-pill.html",
+      "proposalPath": "design/proposals/mode-pill.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "SyntaxLine",
+      "storybook": "web",
+      "localPath": "packages/ui/src/syntax-line.tsx",
+      "storyId": "ui-syntaxline--yaml",
+      "designPath": "design/components/syntax-line.html",
+      "proposalPath": "design/proposals/syntax-line.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "FilePreview",
+      "storybook": "web",
+      "localPath": "packages/ui/src/file-preview.tsx",
+      "storyId": "ui-filepreview--default",
+      "designPath": "design/components/file-preview.html",
+      "proposalPath": "design/proposals/file-preview.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    },
+    {
+      "name": "CopyableText",
+      "storybook": "web",
+      "localPath": "packages/ui/src/copyable-text.tsx",
+      "storyId": "ui-copyabletext--default",
+      "designPath": "design/components/copyable-text.html",
+      "proposalPath": "design/proposals/copyable-text.html",
+      "status": "wip",
+      "lastImplementedHash": null
+    }
+  ],
+  "screens": [
+    {
+      "name": "Home",
+      "storybook": "web",
+      "route": "/",
+      "url": "http://localhost:5173/",
+      "sources": [
+        "apps/maestro/src/renderer/src/routes/index.tsx",
+        "apps/maestro/src/renderer/src/components/hamburger-menu.tsx",
+        "apps/maestro/src/renderer/src/components/top-nav.tsx"
+      ],
+      "viewport": "1440x900",
+      "states": ["Default"],
+      "mockupPath": "design/screens/home.html",
+      "proposalPath": "design/proposals/screens/home.html",
+      "status": "wip",
+      "lastImplementedHash": null,
+      "mockupHash": "443d869c05169779fb1b34f03115253ec0165c92f2109c0e70358115f099454b",
+      "sourceHash": "69e8d832a3941bd59abc7c6e6a3789dca4d13155405a3a48b0a418d15a0eaabf"
+    },
+    {
+      "name": "Maestro Settings",
+      "storybook": "web",
+      "route": "/maestro",
+      "url": "http://localhost:5173/?project=maestro#/maestro",
+      "sources": [
+        "apps/maestro/src/renderer/src/routes/maestro.tsx",
+        "apps/maestro/src/renderer/src/components/top-nav.tsx",
+        "apps/maestro/src/renderer/src/dev-stub.ts"
+      ],
+      "viewport": "1440x900",
+      "states": ["Default"],
+      "mockupPath": "design/screens/maestro-settings.html",
+      "proposalPath": "design/proposals/screens/maestro-settings.html",
+      "status": "wip",
+      "lastImplementedHash": null,
+      "mockupHash": "ba6769be6d485843a032e838b6ea99b24ca5a4a5e94ac30a4c1a312ae996c273",
+      "sourceHash": "0bd4ba710e87b0f5317e01ee8dc3f9fab2fa4683d641b923c31b05a12c6f9e4a"
+    },
+    {
+      "name": "Session Log",
+      "storybook": "web",
+      "route": "/session-log",
+      "url": "http://localhost:5173/?project=maestro#/session-log",
+      "sources": [
+        "apps/maestro/src/renderer/src/routes/session-log.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-panes.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-tabs.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-view.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-cards.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
+        "apps/maestro/src/renderer/src/components/worktree-tab-bar.tsx",
+        "apps/maestro/src/renderer/src/components/top-nav.tsx",
+        "apps/maestro/src/renderer/src/dev-stub.ts"
+      ],
+      "viewport": "1440x900",
+      "states": ["Default"],
+      "mockupPath": "design/screens/session-log.html",
+      "proposalPath": "design/proposals/screens/session-log.html",
+      "status": "approved",
+      "lastImplementedHash": "a4ea81052ec55a20aa277337de7dc716fd80400bbf03d9b79ae11fe434789947",
+      "mockupHash": "1c98bb734f5607d542eb2a4075404780c4a6eb291ba2690a8c450fca9cf82ca5",
+      "sourceHash": "06682468fafc8ade75a0509e1330d601f320ce0e35d8a85fecffb750792518be"
+    }
+  ]
+}

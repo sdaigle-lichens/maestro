@@ -1,5 +1,4 @@
 import FilePreview from "@repo/ui/file-preview";
-import { FileText } from "lucide-react";
 import { buildDesc, clip, titleFromName } from "../utils/text";
 
 /**
@@ -74,5 +73,5 @@ export default function SkillTemplatePreview({
       ? `${root.replace(/\/+$/, "")}/.claude/skills/${displayName}/`
       : `${root.replace(/\/+$/, "")}/plugins/${plugin || "<plugin>"}/skills/${displayName}/`;
 
-  return <FilePreview filename="SKILL.md" fileIcon={<FileText size={11} />} path={path} lines={lines} />;
+  return <FilePreview filename="SKILL.md" path={path} lines={lines} />;
 }

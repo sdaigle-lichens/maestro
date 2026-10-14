@@ -23,7 +23,11 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-seed.ts
 var maestro_seed_exports = {};
 __export(maestro_seed_exports, {
+  MAESTRO_CONFIG_FILE: () => MAESTRO_CONFIG_FILE,
+  defaultSkillLists: () => defaultSkillLists,
   defaultV3Config: () => defaultV3Config,
+  maestroConfigRefusal: () => maestroConfigRefusal,
+  seedMissingSkillLists: () => seedMissingSkillLists,
   seededAgentNames: () => seededAgentNames
 });
 module.exports = __toCommonJS(maestro_seed_exports);
@@ -162,12 +166,7 @@ var CORE_INSTANCES = [
   { name: "test", agent: "test", loaded_skills: [], referenced_skills: [] },
   { name: "reviewer", agent: "reviewer", loaded_skills: [], referenced_skills: [] },
   { name: "refactor", agent: "refactor", loaded_skills: [], referenced_skills: [] },
-  // The scribe alone gets a seeded `loaded_skills`: `/scribe` is the routing rule for what belongs
-  // in a concept skill versus in `docs/`, and it has to be in context BEFORE the agent starts
-  // writing, not offered as one option among the project's own skills. Bare name, not
-  // `maestro:scribe` — `skills_available` already lists the bundled `use-code-architecture-design-check` unqualified
-  // (see `defaultV3Config`), and the two have to agree.
-  { name: "scribe", agent: "scribe", loaded_skills: ["scribe"], referenced_skills: [] }
+  { name: "scribe", agent: "scribe", loaded_skills: [], referenced_skills: [] }
 ];
 var succ = (from, to) => ({
   from,
@@ -337,7 +336,7 @@ function buildInfraWorkflow(impl, skillCount = () => 0) {
   );
   return placeConditionLabels({ name: "default", nodes, edges }, skillCount);
 }
-function defaultV3Config(implAgents, skillMap = {}) {
+function defaultV3Config(implAgents, skillMap = {}, seedSkills = {}) {
   const impl = implAgents.length > 0 ? implAgents : ["backend"];
   const infraOnly = isInfraOnlyChain(impl);
   const skillsFor = (agent) => Array.from(new Set(skillMap[agent] ?? [])).filter(Boolean);
@@ -347,9 +346,10 @@ function defaultV3Config(implAgents, skillMap = {}) {
     ...coreInstances.map((i) => ({ ...i, referenced_skills: skillsFor(i.name) }))
   ];
   const agentsAvailable = seededAgentNames(impl);
+  const designCheck = seedSkills.designCheck;
   const skillsAvailable = Array.from(
     /* @__PURE__ */ new Set([
-      "use-code-architecture-design-check",
+      ...designCheck ? [designCheck] : [],
       ...instances.flatMap((i) => [...i.loaded_skills, ...i.referenced_skills])
     ])
   );
@@ -363,7 +363,7 @@ function defaultV3Config(implAgents, skillMap = {}) {
     buildWorkflow("tdd", "tdd", impl, skillCount),
     linearWorkflow(
       "Refactor",
-      ["skill:use-code-architecture-design-check", "human_review-1", "refactor"],
+      [...designCheck ? [`skill:${designCheck}`] : [], "human_review-1", "refactor"],
       skillCount
     ),
     linearWorkflow("Documentation", ["scribe"], skillCount),
@@ -377,13 +377,76 @@ function defaultV3Config(implAgents, skillMap = {}) {
     workflow_instances: instances,
     workflows,
     rules: [],
-    // Both Step 1 gates start OFF. Opt in from /maestro's Step 1 gates card, not out — a small or
-    // well-understood request should not pay for two skill invocations it never asked for.
-    gates: { confidence_check: false, use_code_architecture_design_check: false }
+    ...defaultSkillLists(seedSkills)
+  };
+}
+function defaultSkillLists(seedSkills = {}) {
+  const designCheck = seedSkills.designCheck;
+  return {
+    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...designCheck ? [designCheck] : []] },
+    end_skills: { maestro: [] }
+  };
+}
+var isPresent = (v) => typeof v === "object" && v !== null && !Array.isArray(v);
+function seedMissingSkillLists(cfg, seedSkills = {}) {
+  const defaults = defaultSkillLists(seedSkills);
+  const seeded = {
+    start_skills: !isPresent(cfg.start_skills),
+    end_skills: !isPresent(cfg.end_skills),
+    gatesRemoved: Object.prototype.hasOwnProperty.call(cfg, "gates")
+  };
+  const changed = seeded.start_skills || seeded.end_skills || seeded.gatesRemoved;
+  if (!changed) return { config: cfg, seeded, changed };
+  const rest = { ...cfg };
+  delete rest.gates;
+  return {
+    config: {
+      ...rest,
+      ...seeded.start_skills ? { start_skills: defaults.start_skills } : {},
+      ...seeded.end_skills ? { end_skills: defaults.end_skills } : {}
+    },
+    seeded,
+    changed
+  };
+}
+
+// src/core/config-usable.ts
+var MAESTRO_CONFIG_FILE = ".claude/maestro.json";
+var WHAT_TO_DO = "Nothing was installed or changed. Fix the file by hand, or move it aside to start fresh, then install again.";
+function describeVersion(v) {
+  if (v === void 0) return "no version";
+  const s = JSON.stringify(v);
+  return `version ${s === void 0 ? String(v) : s}`;
+}
+function maestroConfigRefusal(raw) {
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch (err) {
+    const problem = err instanceof Error ? err.message : String(err);
+    return {
+      kind: "unparseable",
+      file: MAESTRO_CONFIG_FILE,
+      problem,
+      message: `${MAESTRO_CONFIG_FILE} is not valid JSON (${problem}). ${WHAT_TO_DO}`
+    };
+  }
+  const version = typeof parsed === "object" && parsed !== null && !Array.isArray(parsed) ? parsed.version : void 0;
+  if (version === 3) return null;
+  const found = describeVersion(version);
+  return {
+    kind: "unsupported-version",
+    file: MAESTRO_CONFIG_FILE,
+    problem: `found ${found}, expected version 3`,
+    message: `${MAESTRO_CONFIG_FILE} is not a version 3 Maestro config (found ${found}). ${WHAT_TO_DO}`
   };
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  MAESTRO_CONFIG_FILE,
+  defaultSkillLists,
   defaultV3Config,
+  maestroConfigRefusal,
+  seedMissingSkillLists,
   seededAgentNames
 });

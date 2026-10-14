@@ -1,5 +1,4 @@
 import FilePreview from "@repo/ui/file-preview";
-import { FileText } from "lucide-react";
 import { buildDesc, clip, titleFromName } from "../utils/text";
 
 /**
@@ -88,12 +87,5 @@ export default function SubagentTemplatePreview({
     ? `${root.replace(/\/+$/, "")}/.claude/agents/`
     : `${root.replace(/\/+$/, "")}/plugins/${plugin || "<plugin>"}/agents/${displayName}/`;
 
-  return (
-    <FilePreview
-      filename={isProject ? `${displayName}.md` : "AGENTS.md"}
-      fileIcon={<FileText size={11} />}
-      path={path}
-      lines={lines}
-    />
-  );
+  return <FilePreview filename={isProject ? `${displayName}.md` : "AGENTS.md"} path={path} lines={lines} />;
 }

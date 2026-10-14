@@ -1,4 +1,4 @@
-import { AlertTriangle, Eye } from "lucide-react";
+import { EyeIcon, WarningIcon } from "@phosphor-icons/react";
 import type { ClaudeReadScope, SettingsTier } from "../../../shared/ipc";
 
 /**
@@ -28,22 +28,22 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
   return (
     <div className="flex flex-col gap-1">
       <div
-        className={`flex items-center gap-1.5 ${compact ? "text-[10px]" : "text-[11px]"} font-semibold text-subtle uppercase tracking-wide`}
+        className={`flex items-center gap-1.5 ${compact ? "text-[10px]" : "text-[11px]"} font-semibold text-maestro-muted uppercase tracking-wide`}
       >
-        <Eye size={compact ? 11 : 12} /> What it can read
+        <EyeIcon size={compact ? 11 : 12} /> What it can read
       </div>
 
-      <p data-testid="claude-read-summary" className={`m-0 ${text} text-(--ink-2)`}>
+      <p data-testid="claude-read-summary" className={`m-0 ${text} text-maestro-muted`}>
         {read.summary}
       </p>
 
       <ul data-testid="claude-read-dirs" className="list-none p-0 m-0 flex flex-col gap-0.5">
         {read.directories.map((d) => (
-          <li key={d.path} data-origin={d.origin} className={`${text} text-(--ink-3)`}>
+          <li key={d.path} data-origin={d.origin} className={`${text} text-maestro-muted`}>
             {/* The one origin a PERSON authored, marked as such. A grant that reads like the app's
                 own choice has lost the distinction it exists to make. */}
             {d.origin === "session" && <span className="mr-1 text-amber-500">●</span>}
-            <span className="font-mono text-(--ink-2) break-all">{d.path}</span>
+            <span className="font-mono text-maestro-muted break-all">{d.path}</span>
             <span> — {d.note}</span>
             {d.file && <span className="font-mono break-all"> ({d.file})</span>}
           </li>
@@ -57,8 +57,8 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
           data-testid="claude-read-unresolved"
           className={`flex items-start gap-2 px-2.5 py-2 rounded-lg ${text} bg-amber-500/10`}
         >
-          <AlertTriangle size={13} className="shrink-0 mt-px text-amber-500" />
-          <span className="text-(--ink-2)">{read.unresolved}</span>
+          <WarningIcon size={13} className="shrink-0 mt-px text-amber-500" />
+          <span className="text-maestro-muted">{read.unresolved}</span>
         </div>
       )}
 
@@ -66,18 +66,20 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
           and an expanded wall of allow-rules would bury the few lines above that people do read. */}
       {!read.unresolved && (
         <details className={text}>
-          <summary data-testid="claude-read-provenance" className="cursor-pointer text-(--ink-3)">
+          <summary data-testid="claude-read-provenance" className="cursor-pointer text-maestro-muted">
             Where this came from — {read.sources.length} settings {read.sources.length === 1 ? "file" : "files"}
             {fromSettings > 0 && `, ${fromSettings} added ${fromSettings === 1 ? "directory" : "directories"}`}
             {read.rules.length > 0 && `, ${read.rules.length + read.rulesOmitted} permission rules`}
           </summary>
 
           <div className="mt-1 max-h-40 overflow-y-auto flex flex-col gap-1.5">
-            {read.sources.length === 0 && <div className="text-(--ink-3)">No settings files applied to this run.</div>}
+            {read.sources.length === 0 && (
+              <div className="text-maestro-muted">No settings files applied to this run.</div>
+            )}
 
             {read.sources.map((s) => (
-              <div key={`${s.tier}:${s.path ?? ""}`} className="text-(--ink-3)">
-                <span className="text-(--ink-2)">{TIER_LABEL[s.tier]}</span>
+              <div key={`${s.tier}:${s.path ?? ""}`} className="text-maestro-muted">
+                <span className="text-maestro-muted">{TIER_LABEL[s.tier]}</span>
                 {s.path && <span className="font-mono break-all"> — {s.path}</span>}
                 <div className="font-mono text-[10px]">
                   {s.permissions.additionalDirectories.length} dir · {s.permissions.allow.length} allow ·{" "}
@@ -88,9 +90,9 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
             ))}
 
             {read.defaultMode && (
-              <div data-testid="claude-read-default-mode" className="text-(--ink-3)">
+              <div data-testid="claude-read-default-mode" className="text-maestro-muted">
                 Effective <span className="font-mono">permissions.defaultMode</span>:{" "}
-                <span className="font-mono text-(--ink-2)">{read.defaultMode.mode}</span>
+                <span className="font-mono text-maestro-muted">{read.defaultMode.mode}</span>
                 {read.defaultMode.tier && ` (from ${TIER_LABEL[read.defaultMode.tier]})`}. The
                 <span className="font-mono"> --permission-mode</span> flag in the command above takes precedence over
                 it.
@@ -100,14 +102,14 @@ export default function ReadScope({ read, compact = false }: { read: ClaudeReadS
             {read.rules.length > 0 && (
               <ul data-testid="claude-read-rules" className="list-none p-0 m-0 flex flex-col gap-0.5">
                 {read.rules.map((r) => (
-                  <li key={`${r.list}:${r.rule}:${r.tier ?? ""}`} className="text-(--ink-3)">
-                    <span className="font-mono text-(--ink-2)">
+                  <li key={`${r.list}:${r.rule}:${r.tier ?? ""}`} className="text-maestro-muted">
+                    <span className="font-mono text-maestro-muted">
                       {r.list}: {r.rule}
                     </span>
                     {r.tier && <span> — {TIER_LABEL[r.tier]}</span>}
                   </li>
                 ))}
-                {read.rulesOmitted > 0 && <li className="text-(--ink-3)">…and {read.rulesOmitted} more.</li>}
+                {read.rulesOmitted > 0 && <li className="text-maestro-muted">…and {read.rulesOmitted} more.</li>}
               </ul>
             )}
           </div>

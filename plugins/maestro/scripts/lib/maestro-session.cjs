@@ -82,12 +82,15 @@ __export(maestro_session_exports, {
   expectedLoopbackPayloads: () => expectedLoopbackPayloads,
   foldRun: () => foldRun,
   formatStampedContent: () => formatStampedContent,
+  freeformBranchFor: () => freeformBranchFor,
+  freeformWorktreePathFor: () => freeformWorktreePathFor,
   handbackHandoff: () => handbackHandoff,
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
   handoffRoutes: () => handoffRoutes,
   hasCompletedRun: () => hasCompletedRun,
   isChannelOnlyAgent: () => isChannelOnlyAgent,
+  isFreeformBranch: () => isFreeformBranch,
   isLinkedWorktree: () => isLinkedWorktree,
   isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
@@ -800,12 +803,13 @@ var MOBILE_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \
 var REFACTOR_TO_BACKEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REFACTOR_TO_FRONTEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REFACTOR_TO_REVIEWER = '```json\n{\n  "summary": "<brief summary of what was delegated, for re-review>"\n}\n```';
-var REFACTOR_TO_SCRIBE = '```json\n{\n  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n}\n```';
+var REFACTOR_TO_SCRIBE_V2 = '```json\n{\n  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n  "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n}\n```';
+var REFACTOR_TO_SCRIBE = '```json\n{\n  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n  "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell the agent>" }]\n}\n```';
 var REFACTOR_TO_TEST = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REVIEWER_TO_BACKEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REVIEWER_TO_FRONTEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REVIEWER_TO_REFACTOR = '```json\n{\n  "violations": ["<file:line \u2014 pattern violation, DRY issue, or code redundancy>"]\n}\n```';
-var REVIEWER_TO_SCRIBE = `\`\`\`json
+var REVIEWER_TO_SCRIBE_V2 = `\`\`\`json
 {
   "files_added_removed_renamed": ["<list, or 'none'>"],
   "justfile_commands_changed": ["<old \u2192 new description, or 'none'>"],
@@ -813,6 +817,16 @@ var REVIEWER_TO_SCRIBE = `\`\`\`json
   "schema_changes": ["<new tables, columns, or constraints, or 'none'>"],
   "workflow_or_process_changes": ["<changed agent handoff, new convention, or 'none'>"],
   "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]
+}
+\`\`\``;
+var REVIEWER_TO_SCRIBE = `\`\`\`json
+{
+  "files_added_removed_renamed": ["<list, or 'none'>"],
+  "justfile_commands_changed": ["<old \u2192 new description, or 'none'>"],
+  "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it, or 'none'>"],
+  "schema_changes": ["<new tables, columns, or constraints, or 'none'>"],
+  "workflow_or_process_changes": ["<changed agent handoff, new convention, or 'none'>"],
+  "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell the agent>" }]
 }
 \`\`\``;
 var REVIEWER_TO_TEST = '```json\n{\n  "failing_tests": ["<test name \u2014 failure reason>"],\n  "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n}\n```';
@@ -886,6 +900,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "summary": "<brief summary of what was delegated, for re-review>"\n  }\n}\n```'
   ],
   "refactor/scribe": [
+    REFACTOR_TO_SCRIBE_V2,
     '```json\n{\n  "handoff_details": {\n    "new_code_patterns_or_rules": ["<pattern and which agent/rule file should receive it>"],\n    "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell the agent>" }]\n  }\n}\n```'
   ],
   "refactor/test": [
@@ -901,6 +916,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "violations": ["<file:line \u2014 pattern violation, DRY issue, or code redundancy>"]\n  }\n}\n```'
   ],
   "reviewer/scribe": [
+    REVIEWER_TO_SCRIBE_V2,
     `\`\`\`json
 {
   "handoff_details": {
@@ -1104,6 +1120,21 @@ function worktreePathFor(mainRoot, filename) {
   const n = taskNumber(filename);
   if (!n) return null;
   return import_node_path6.default.join(import_node_path6.default.dirname(mainRoot), `${import_node_path6.default.basename(mainRoot)}-task-${n}`);
+}
+function shortSessionId(sessionId) {
+  const s = sessionId.toLowerCase().replace(/[^a-z0-9]/g, "").slice(0, 8);
+  return s || null;
+}
+function freeformBranchFor(sessionId) {
+  const s = shortSessionId(sessionId);
+  return s ? `freeform-${s}` : null;
+}
+function isFreeformBranch(name) {
+  return /^freeform-[a-z0-9]{1,8}$/.test(name);
+}
+function freeformWorktreePathFor(mainRoot, sessionId) {
+  const branch = freeformBranchFor(sessionId);
+  return branch ? import_node_path6.default.join(import_node_path6.default.dirname(mainRoot), `${import_node_path6.default.basename(mainRoot)}-${branch}`) : null;
 }
 function mainCheckoutRoot(dir) {
   const gitEntry = import_node_path6.default.join(dir, ".git");
@@ -2137,12 +2168,15 @@ function meetingNotice(meeting, agentType) {
   expectedLoopbackPayloads,
   foldRun,
   formatStampedContent,
+  freeformBranchFor,
+  freeformWorktreePathFor,
   handbackHandoff,
   handoffId,
   handoffPairs,
   handoffRoutes,
   hasCompletedRun,
   isChannelOnlyAgent,
+  isFreeformBranch,
   isLinkedWorktree,
   isResumableEnd,
   isRootSkillPath,

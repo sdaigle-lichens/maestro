@@ -36,8 +36,9 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
    `file://` path that ships**. Bugs in asset resolution, CSP, and code-splitting appear only in
    the packaged load. Always launch `electron .` against `out/`, never `pnpm dev`.
 
-2. **The Electron sandbox needs its setuid bit.** Never work around a sandbox failure with
-   `--no-sandbox`. For the once-per-install fix, and why the flag is off limits, see
+2. **The Electron sandbox needs an AppArmor profile or the setuid bit.** Never work around a
+   sandbox failure with `--no-sandbox`. `dev` runs a preflight that prints the one-time root
+   command; for the cause, the fix, and why the flag is off limits, see
    `references/electron-sandbox-setup.md`.
 
 ## Quick start
@@ -226,7 +227,7 @@ nodes and edges for the first, an empty project directory for the second. For ru
 ## The other harness: `test/core/` tests that drive the installed hooks
 
 A few files under `apps/maestro/test/core/` (`per-session-state.test.ts`, `install.test.ts`,
-`uninstall.test.ts`, `worktree-merge.test.ts`) `spawnSync` the real hook scripts the installer copies into a temp project —
+`uninstall.test.ts`, `worktree-merge.test.ts`, `worktree-channel-delivery.test.ts`) `spawnSync` the real hook scripts the installer copies into a temp project —
 no window, no CDP. For writing or changing one of those, and especially for the rule that `HOME`
 and `CLAUDE_CODE_SESSION_ID` must be pinned or deleted per spawn and never inherited (`064`), see
 `references/hook-script-tests.md`.

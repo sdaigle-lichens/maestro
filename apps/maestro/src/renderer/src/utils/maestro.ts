@@ -15,11 +15,15 @@ import type {
   DiscoveredDefinition,
   RepoDetection,
   ConfigIssue,
+  SkillRefReport,
+  DanglingSkillRef,
+  UnavailableReason,
   SaveResult,
   SaveInput,
   TreeNode,
   ProjectRule,
 } from "../../../shared/ipc";
+import { callMain } from "./call-main";
 
 export type {
   MaestroConfigV3,
@@ -30,6 +34,9 @@ export type {
   MaestroRuleV3,
   RepoDetection,
   ConfigIssue,
+  SkillRefReport,
+  DanglingSkillRef,
+  UnavailableReason,
   SaveResult,
 };
 
@@ -74,6 +81,18 @@ export async function getMaestroConfig(): Promise<MaestroConfigResult> {
  */
 export function reseedMaestroConfig(implAgents: string[]): Promise<MaestroConfigV3> {
   return window.maestro.data.reseed(implAgents);
+}
+
+/** An empty report: nothing dangles. Also what the wrapper returns when the call fails. */
+export const EMPTY_SKILL_REF_REPORT: SkillRefReport = { dangling: [], suggestions: [] };
+
+/**
+ * Skill ids the open project's config names that do not resolve, plus project-level suggestions
+ * (`091`). Advisory: never rejects — a failed call or a null from the dev stub is an empty report.
+ */
+export async function getSkillRefReport(): Promise<SkillRefReport> {
+  const res = await callMain(() => window.maestro.data.skillRefs());
+  return res.ok && res.value ? res.value : EMPTY_SKILL_REF_REPORT;
 }
 
 export interface MaestroRulesResult extends MaestroConfigResult {

@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "storybook": {
+      "type": "http",
+      "url": "http://localhost:6006/mcp"
+    },
+    "design-studio": {
+      "type": "http",
+      "url": "http://localhost:3009/mcp"
+    }
+  }
+}

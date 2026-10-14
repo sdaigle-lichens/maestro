@@ -4,7 +4,7 @@
 // own dirty state and its own disabled-until-dirty Save button.
 
 import { useState } from "react";
-import { Save } from "lucide-react";
+import { FloppyDiskIcon } from "@phosphor-icons/react";
 import Button from "@repo/ui/button";
 import Select from "@repo/ui/select";
 import { toast } from "@repo/ui/toast";
@@ -32,8 +32,8 @@ export default function AgentTypesTab({ initial }: { initial: Record<string, Age
       setTypes((prev) => ({ ...prev, [agentName]: res.value }));
       toast(
         <>
-          Set <span className="font-mono text-(--ink)">{agentName}</span>&apos;s type to{" "}
-          <span className="font-mono text-(--ink)">{res.value}</span>.
+          Set <span className="font-mono text-maestro">{agentName}</span>&apos;s type to{" "}
+          <span className="font-mono text-maestro">{res.value}</span>.
         </>
       );
     } finally {
@@ -42,15 +42,15 @@ export default function AgentTypesTab({ initial }: { initial: Record<string, Age
   }
 
   return (
-    <div className="rounded-lg border border-(--line) overflow-hidden">
+    <div className="rounded-lg border border-maestro overflow-hidden">
       {agentNames.length === 0 ? (
-        <p className="text-[13px] text-subtle m-0 p-4">No agent has a type yet.</p>
+        <p className="text-[13px] text-maestro-muted m-0 p-4">No agent has a type yet.</p>
       ) : (
         agentNames.map((name) => {
           const dirty = drafts[name] !== types[name];
           return (
-            <div key={name} className="flex items-center gap-3 px-4 py-3 border-b border-(--line) last:border-0">
-              <div className="font-mono text-[13px] text-(--ink) w-28 shrink-0">{name}</div>
+            <div key={name} className="flex items-center gap-3 px-4 py-3 border-b border-maestro last:border-0">
+              <div className="font-mono text-[13px] text-maestro w-28 shrink-0">{name}</div>
               <div className="w-48">
                 <Select
                   value={drafts[name]}
@@ -60,7 +60,7 @@ export default function AgentTypesTab({ initial }: { initial: Record<string, Age
               </div>
               <Button
                 variant="primary"
-                icon={saving === name ? undefined : <Save size={13} />}
+                icon={saving === name ? undefined : <FloppyDiskIcon size={13} />}
                 loading={saving === name}
                 disabled={!dirty}
                 onClick={() => void handleSave(name)}

@@ -89,6 +89,7 @@ try {
 // missing either script fails on EVERY /maestro invocation, not just one that reaches Step 4.
 const SKILL_INVOKED_SCRIPTS = [
   "maestro-step1-gates.cjs",
+  "maestro-end-skills.cjs",
   "maestro-step4-gate.cjs",
   "maestro-set-session-workflow.cjs",
   "maestro-task-status.cjs",

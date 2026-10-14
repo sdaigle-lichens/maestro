@@ -20,11 +20,6 @@ Read only the doc(s) the question needs:
 | Chat/session pane, the session log | `${CLAUDE_SKILL_DIR}/../../docs/app/session-and-log.md` |
 | Tools dashboard, Maestro Tasks, install/runtime, the Create flows | `${CLAUDE_SKILL_DIR}/../../docs/app/tools-tasks-runtime.md` |
 
-**Concept skills** ("how do I document this project for my agents?") are answered by
-`${CLAUDE_SKILL_DIR}/../create-concept-skills/README.md` — the marker, the version arithmetic, the
-script, and the `/create-concept-skills`, `/update-concept-skills`, `/update-single-concept-skill`
-and `/scribe` flows.
-
 ## Claude Code concepts
 
 `WebFetch` the official docs — there is no local copy:

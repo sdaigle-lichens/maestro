@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { ChevronRight, ChevronDown } from "lucide-react";
+import { CaretDownIcon, CaretRightIcon } from "@phosphor-icons/react";
 
 /**
  * Groups a list of DiscoveredDefinition-shaped items by `source` ("project" = this repo's own
@@ -42,11 +42,14 @@ export function CollapsibleGroup({
   title,
   count,
   defaultOpen,
+  closedIndicator,
   children,
 }: {
   title: string;
   count: number;
   defaultOpen: boolean;
+  /** Shown in the header only while the group is closed (e.g. a dangling-skill summary). */
+  closedIndicator?: ReactNode;
   children: ReactNode;
 }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -55,15 +58,16 @@ export function CollapsibleGroup({
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
-        className="flex items-center gap-1 py-1 px-1 rounded hover:bg-(--bg-elev) cursor-pointer text-left focus:outline-none"
+        className="flex items-center gap-1 py-1 px-1 rounded hover:bg-maestro-elevated cursor-pointer text-left focus:outline-none"
       >
         {open ? (
-          <ChevronDown size={11} className="text-subtle shrink-0" />
+          <CaretDownIcon size={11} className="text-maestro-muted shrink-0" />
         ) : (
-          <ChevronRight size={11} className="text-subtle shrink-0" />
+          <CaretRightIcon size={11} className="text-maestro-muted shrink-0" />
         )}
-        <span className="text-[10px] font-semibold text-subtle uppercase tracking-wide truncate">{title}</span>
-        <span className="ml-auto shrink-0 text-[10px] text-subtle">{count}</span>
+        <span className="text-[10px] font-semibold text-maestro-muted uppercase tracking-wide truncate">{title}</span>
+        {!open && closedIndicator && <span className="ml-1 min-w-0 truncate">{closedIndicator}</span>}
+        <span className="ml-auto shrink-0 text-[10px] text-maestro-muted">{count}</span>
       </button>
       {open && <div className="flex flex-col gap-0.5 pl-1">{children}</div>}
     </div>

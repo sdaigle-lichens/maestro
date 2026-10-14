@@ -6,7 +6,11 @@ import os from "node:os";
 import path from "node:path";
 
 import { DatabaseSync } from "node:sqlite";
-import { readAgentReportDefault, readAllAgentReportDefaults } from "../../src/core/report-defaults.js";
+import {
+  readAgentReportDefault,
+  readAllAgentReportDefaults,
+  priorReportSeeds,
+} from "../../src/core/report-defaults.js";
 import { resolveReport } from "../../src/core/report-resolution.js";
 import { syncProjectReports } from "../../src/core/report-sync.js";
 import { readConfig, writeConfig } from "../../src/core/config.js";
@@ -272,5 +276,154 @@ describe("superseded seed migration", () => {
     readAgentReportDefault("backend", dbPath);
     const row = readAgentReportDefault("backend", dbPath)!;
     expect(row.version).toBe(2);
+  });
+});
+
+// `090`: the gap note went generic (`skill_gaps`, no "concept skill" wording) and the scribe report
+// dropped `conceptSkillsUpdated`. A store already seeded with the pre-090 bodies must upgrade; the
+// bodies below are verbatim copies of what shipped before, NOT imported from the source.
+describe("superseded seed migration (090: generic skill_gaps)", () => {
+  const SHAPE = (subagent: string) =>
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    `  "subagent": "${subagent}",\n` +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n';
+  const IMPL_TAIL = '  "description": "<summary of what was implemented>"\n' + "}\n" + "```\n" + "\n";
+  const OLD_NOTE = (subagent: string) =>
+    "If a concept skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
+    '`{ "concept_skill_gaps": [{ "skill": "<concept-skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file.";
+  const HANDOFF_NOTE =
+    'Your `"verdict"` and your final `HANDOFF:` line must agree. A real defect must end with the matching ' +
+    "condition-edge label when the workflow has one. A verdict of FAIL with `HANDOFF: success` is invalid, " +
+    "and so is ending with no `HANDOFF:` line — the orchestrator is told about both and never treats either as success.";
+
+  // What the backend / frontend / mobile / infra rows held immediately before 090.
+  const preBackendLike = (subagent: string) => SHAPE(subagent) + IMPL_TAIL + OLD_NOTE(subagent) + "\n\n" + HANDOFF_NOTE;
+  const preTest = () =>
+    SHAPE("test") +
+    '  "testResult": "<N passed, N failed>",\n' +
+    '  "description": "<summary of what was tested>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    OLD_NOTE("test") +
+    "\n\n" +
+    HANDOFF_NOTE;
+  const preScribe =
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "scribe",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "agentsMdUpdated": 0,\n' +
+    '  "docsUpdated": 0,\n' +
+    '  "claudeFilesUpdated": 0,\n' +
+    '  "conceptSkillsUpdated": 0,\n' +
+    '  "changelogUpdated": false,\n' +
+    '  "description": "<summary of what was updated>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
+    "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.\n" +
+    "\n" +
+    "`conceptSkillsUpdated` counts concept skills you created or revised — it is a subset of " +
+    "`claudeFilesUpdated`, broken out because the caller usually wants to know whether the concept " +
+    "list moved without reading the whole summary.";
+
+  let dir: string;
+  let dbPath: string;
+
+  /** A store that already holds `rows` (agent -> content) at version 5, so seedIfEmpty will not fire. */
+  function storeWith(rows: Record<string, string>): void {
+    const db = new DatabaseSync(dbPath);
+    db.exec(
+      "CREATE TABLE reports (report_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL);" +
+        "CREATE TABLE agent_reports (agent_name TEXT PRIMARY KEY, report_id TEXT NOT NULL);"
+    );
+    for (const [agent, content] of Object.entries(rows)) {
+      db.prepare("INSERT INTO reports VALUES (?, ?, 5)").run(agent, content);
+      db.prepare("INSERT INTO agent_reports VALUES (?, ?)").run(agent, agent);
+    }
+    db.close();
+  }
+
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-seed-090-"));
+    dbPath = path.join(dir, "reports.sqlite");
+  });
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  it.each(["backend", "frontend", "mobile", "infra"])(
+    "%s: a stored pre-090 body upgrades to the generic skill_gaps note and bumps the version",
+    (agent) => {
+      storeWith({ [agent]: preBackendLike(agent) });
+      const row = readAgentReportDefault(agent, dbPath)!;
+      expect(row.version).toBe(6);
+      expect(row.content).toContain('"skill_gaps"');
+      expect(row.content).not.toContain("concept_skill_gaps");
+      expect(row.content).not.toContain("concept skill");
+      expect(row.content).toContain(`.claude/channels/scribe/${agent}.1.md`);
+      expect(row.content).toContain("`HANDOFF:` line must agree"); // the 083 note survives
+      expect(readAgentReportDefault(agent, dbPath)!.version).toBe(6); // idempotent
+    }
+  );
+
+  it("test: a stored pre-090 body upgrades too", () => {
+    storeWith({ test: preTest() });
+    const row = readAgentReportDefault("test", dbPath)!;
+    expect(row.version).toBe(6);
+    expect(row.content).toContain('"skill_gaps"');
+    expect(row.content).not.toContain("concept_skill_gaps");
+    expect(row.content).toContain("`HANDOFF:` line must agree");
+  });
+
+  it("scribe: a stored body that counts conceptSkillsUpdated upgrades to one that does not", () => {
+    storeWith({ scribe: preScribe });
+    const row = readAgentReportDefault("scribe", dbPath)!;
+    expect(row.version).toBe(6);
+    expect(row.content).not.toContain("conceptSkillsUpdated");
+    expect(row.content).not.toContain("concept");
+    expect(row.content).toContain('"claudeFilesUpdated"');
+    expect(readAgentReportDefault("scribe", dbPath)!.version).toBe(6);
+  });
+
+  it("scribe: the current body is not its own prior (no bump on every open)", () => {
+    const fresh = path.join(dir, "fresh.sqlite");
+    const first = readAgentReportDefault("scribe", fresh)!;
+    expect(readAgentReportDefault("scribe", fresh)!.version).toBe(first.version);
+    expect(priorReportSeeds("scribe")).not.toContain(first.content);
+    expect(priorReportSeeds("test")).not.toContain(readAgentReportDefault("test", fresh)!.content);
+  });
+
+  it("every seeded agent's pre-090 body is among its recorded priors", () => {
+    for (const a of ["backend", "frontend", "mobile", "infra"])
+      expect(priorReportSeeds(a)).toContain(preBackendLike(a));
+    expect(priorReportSeeds("test")).toContain(preTest());
+    expect(priorReportSeeds("scribe")).toContain(preScribe);
+  });
+
+  it("a hand-edited body that merely extends the pre-090 one is left alone", () => {
+    storeWith({ backend: preBackendLike("backend") + "\nMY EXTRA RULE" });
+    const row = readAgentReportDefault("backend", dbPath)!;
+    expect(row.version).toBe(5);
+    expect(row.content).toContain("MY EXTRA RULE");
+  });
+
+  it("a project file holding a pre-090 body is adopted and refreshed by the sync", () => {
+    const root = path.join(dir, "project");
+    fs.mkdirSync(path.join(root, ".claude", "reports"), { recursive: true });
+    writeConfig(root, defaultish);
+    const file = path.join(root, ".claude", "reports", "backend.md");
+    fs.writeFileSync(file, preBackendLike("backend"));
+    const summary = syncProjectReports(root, dbPath);
+    expect(JSON.stringify(summary)).toContain("backend");
+    expect(fs.readFileSync(file, "utf8")).toContain('"skill_gaps"');
   });
 });

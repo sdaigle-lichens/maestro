@@ -9,7 +9,7 @@ plain (non-purging) uninstall keeps `.claude/skills/maestro/SKILL.md`. So anythi
 `032` is the first change where that matters, because the thing outside the region is a **grant**:
 
 ```yaml
-allowed-tools: Bash(node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-step1-gates.cjs")
+allowed-tools: Bash(node .claude/scripts/maestro-step1-gates.cjs)
 ```
 
 An injected command whose permission check answers anything but `allow` **aborts the invocation**.
@@ -24,6 +24,13 @@ The fix is one of:
 - **delete `.claude/skills/maestro/SKILL.md` and re-install** — the file then counts as absent and
   the template is copied whole, frontmatter included. This is the one to reach for: it costs only
   the customisations kept outside the managed regions in that file.
+
+**`089` repeats it with a second grant.** The template's `allowed-tools` gained
+`Bash(node .claude/scripts/maestro-end-skills.cjs)` (originally a braced project-dir form; `101` made it relative) for the new Step 7
+`!`-injected end-skills line. An existing project updated normally gets the script, the
+`lib/maestro-skill-lists.cjs` bundle and the new STEPS region, but **not** that grant, so the Step 7
+injection is not permitted and `/maestro` fails to start. Same remedy: delete
+`.claude/skills/maestro/SKILL.md` and re-install.
 
 Generalise it: **a template change outside a managed region is not deliverable by an update.** If
 the change must reach existing projects, either put it inside a region, or say plainly in the ship

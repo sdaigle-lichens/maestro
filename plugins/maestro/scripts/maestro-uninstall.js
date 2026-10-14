@@ -37,6 +37,10 @@
 //   explicitly agreed to THAT directory — this script doesn't prompt; the calling
 //   skill owns that confirmation, one question per directory.
 //
+// --purge also removes the `.claude/` line (and the marker above it) that
+//   `maestro-install.js --ignore-mode ignored` added to the git exclude file, reported as
+//   `removedGitExclude`; a `.claude/` line without that marker is the user's and is kept.
+//
 // Default (no --purge): never touches maestro.json, maestro-tasks/, reports/ or
 // handoffs/ — those are user-authored and kept so a later /maestro-install can
 // restore things.
@@ -49,7 +53,14 @@ const { tasksDir, listTaskFiles, statusPath } = require("./lib/maestro-tasks.cjs
 // and the asset list this uninstall targets can never drift from what actually gets
 // installed (`060`). Requiring this file has no side effect: everything that reads or
 // writes a project inside it runs only under `require.main === module`.
-const { HOOK_REGISTRATIONS, RETIRED_HOOK_SCRIPTS, runtimeAssets } = require("./maestro-install.js");
+const {
+  HOOK_REGISTRATIONS,
+  RETIRED_HOOK_SCRIPTS,
+  runtimeAssets,
+  EXCLUDE_ENTRY,
+  EXCLUDE_MARKER,
+  resolveGitExcludePath,
+} = require("./maestro-install.js");
 
 const args = process.argv.slice(2);
 const purge = args.includes("--purge");
@@ -145,6 +156,29 @@ function cleanSettings(settingsPath) {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   }
   return { removedAgentSetting, removedHooks: removedHooks.length > 0 };
+}
+
+// Undo `maestro-install.js --ignore-mode ignored`: drop the marker line plus the `.claude/` line
+// directly under it from this checkout's git exclude file (resolved with `git rev-parse --git-path
+// info/exclude`, so worktrees and submodules work). Only that adjacent pair is removed, so a
+// `.claude/` entry the user wrote themselves is never touched. No-op outside git, with no file, or
+// with no marker pair; idempotent.
+function removeGitExclude() {
+  const excludePath = resolveGitExcludePath(projectDir);
+  if (!excludePath || !fs.existsSync(excludePath)) return false;
+  const lines = fs.readFileSync(excludePath, "utf8").split("\n");
+  const out = [];
+  let removed = false;
+  for (let i = 0; i < lines.length; i++) {
+    if (lines[i].trim() === EXCLUDE_MARKER && i + 1 < lines.length && lines[i + 1].trim() === EXCLUDE_ENTRY) {
+      removed = true;
+      i++;
+      continue;
+    }
+    out.push(lines[i]);
+  }
+  if (removed) fs.writeFileSync(excludePath, out.join("\n"));
+  return removed;
 }
 
 function removeIfPresent(p) {
@@ -249,6 +283,9 @@ try {
   const removedClaims = removeIfPresent(path.join(claudeDir, "maestro-tasks", "claims"));
 
   const purged = [];
+  // Purge only: a default uninstall keeps maestro.json and the orchestrator skill, which the
+  // exclude entry is hiding from git — dropping it there would surface them as untracked files.
+  const removedGitExclude = purge ? removeGitExclude() : false;
   if (purge) {
     for (const t of purgeTargets(claudeDir)) if (removeIfPresent(t)) purged.push(path.relative(projectDir, t));
   }
@@ -301,6 +338,7 @@ try {
       removedHooks,
       removedSession: removedSession || removedClaims,
       purged: purge ? purged : null,
+      removedGitExclude,
       maestroTasks,
       materializedReports,
       materializedHandoffs,

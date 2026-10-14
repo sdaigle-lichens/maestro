@@ -7,9 +7,9 @@ function pctLabel(pct: number): string {
 }
 
 function pctColor(pct: number): string {
-  if (pct >= 90) return "text-(--red)";
-  if (pct >= 75) return "text-(--yellow)";
-  return "text-(--ink-3)";
+  if (pct >= 90) return "text-maestro-danger";
+  if (pct >= 75) return "text-maestro-warning";
+  return "text-maestro-muted";
 }
 
 /** Small sidebar badge. Renders nothing when the instance has no stamped ctx_pct (never 0%). */
@@ -32,7 +32,7 @@ export function ContextUsageLine({ instance }: { instance: Instance }) {
   if (!usage) return null;
   return (
     <div
-      className="mt-0.5 text-[11px] text-(--ink-3)"
+      className="mt-0.5 text-[11px] text-maestro-muted"
       title="Estimated from the shared transcript; parallel subagents can skew it"
     >
       {instance.displayName} · <span className={pctColor(usage.pct)}>~{pctLabel(usage.pct)}</span> of{" "}
