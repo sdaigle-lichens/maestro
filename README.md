@@ -18,7 +18,8 @@ scaffolds the orchestrator, seeds `maestro.json` and renders the handoff table; 
 refreshes it; `/maestro-uninstall` removes it.
 
 This repository is also a **plugin marketplace** — a catalog of Claude Code plugins, currently
-`maestro` and the opt-in `concept-skills`, published for anyone to install.
+`maestro`, published for anyone to install. Concept skills come from the separate `code-graph`
+plugin (see below).
 
 ## Concept skills
 

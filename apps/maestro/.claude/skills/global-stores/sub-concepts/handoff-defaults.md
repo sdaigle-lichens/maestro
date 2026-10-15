@@ -98,8 +98,8 @@ tier below would answer for that route again. `deleteHandoffDefault`'s own re-se
 covers the empty-table case, not this one.
 
 **The pair roster in the Create row is a user-picked project's own `agents_available`** (`043`),
-read through a new `template:agents-available` channel (`readAgentsAvailable`, reused from the
-concept-skills CLI's own read). The tab holds the picked project as LOCAL state — `ProjectSelect`'s
+read through a new `template:agents-available` channel (`readAgentsAvailable`, kept in
+`config.ts`). The tab holds the picked project as LOCAL state — `ProjectSelect`'s
 caller-supplied-`onChange` pattern from `/tools` — never the app's globally-open project, so picking
 one here cannot end the live session or retarget any other route. With no project picked, or the
 picked one has no `agents_available`, the roster is empty and Create stays disabled; there is no

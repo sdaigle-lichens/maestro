@@ -177,7 +177,7 @@ export async function discoverSkills(projectRoot: string): Promise<DiscoveredDef
     ...project.map((s) => ({ id: s.name, description: s.description, source: "project" })),
     ...user.map((s) => ({ id: s.name, description: s.description, source: "user" })),
     // Maestro's own skills stay bare (the seeds name them that way); every other plugin's skills
-    // are offered plugin-qualified, so `concept-skills:scribe` is not hidden by a project `scribe`.
+    // are offered plugin-qualified, so `code-graph:scribe` is not hidden by a project `scribe`.
     ...plugins.map((s) => ({
       id: s.plugin === "maestro" ? s.name : `${s.plugin}:${s.name}`,
       description: s.description,

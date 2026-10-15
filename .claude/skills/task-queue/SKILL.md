@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: f822fad1beba7cd0392f523526199eda185ad2d5
+  version: "1.5"
+  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464
 ---
 
 # Task queue
@@ -67,8 +67,6 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 
 - `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook
   validates against.
-- [`concept-skills-system`](../concept-skills-system/SKILL.md) — the other plugin subsystem split
-  across a TS source and a CJS twin.
 - `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the
   documented exception to.
 - `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update

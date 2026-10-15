@@ -14,11 +14,6 @@
       "name": "maestro",
       "source": "./plugins/maestro",
       "description": "Maestro multi-agent orchestrator: install, update and run a project's workflow graph, plus the skills the Maestro desktop app hands off to."
-    },
-    {
-      "name": "concept-skills",
-      "source": "./plugins/concept-skills",
-      "description": "Opt-in concept skills: build and maintain the skills that explain a project's core concepts to agents, plus the scribe and code-architecture design skills. Works with or without Maestro."
     }
   ]
 }

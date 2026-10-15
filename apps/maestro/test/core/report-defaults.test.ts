@@ -188,7 +188,7 @@ describe("superseded seed migration", () => {
   let dir: string;
   let dbPath: string;
 
-  // The v1 backend body, verbatim — what a store seeded before the concept-skills feature holds.
+  // The v1 backend body, verbatim — what a store seeded before the concept-skill feature holds.
   const BACKEND_V1 =
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +
@@ -250,7 +250,7 @@ describe("superseded seed migration", () => {
     expect(row.version).toBe(2);
   });
 
-  // `036`: an ALREADY-SEEDED store (one that opened between the concept-skills feature and this
+  // `036`: an ALREADY-SEEDED store (one that opened between the concept-skill feature and this
   // slice) carries the v2 body — with `conceptSkillGaps` still a report field — and must be carried
   // forward too. This is the assertion `036`'s own acceptance criteria calls for: against a store
   // seeded with the OLD bodies, not a fresh one.

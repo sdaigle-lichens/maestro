@@ -9,8 +9,8 @@ the case law behind it: every bump the repo has argued about, and the reasoning 
 Read it when a change feels like it might be a minor.
 
 **A `feat:` commit is not automatically a minor.** The repo's own history is the guide: `0.2.0` was
-new skills, `0.3.0` was new script behaviour plus a new state file — but `0.3.1` (concept-skills
-system), `0.3.2` (agent page) and `0.2.1` (a bare re-pull trigger) are all patches, and two of the
+new skills, `0.3.0` was new script behaviour plus a new state file — but `0.3.1` (the concept-skill
+system, since moved to code-graph), `0.3.2` (agent page) and `0.2.1` (a bare re-pull trigger) are all patches, and two of the
 three landed under a `feat:` subject. The commit message describes the work; the version component
 describes what a *consumer* of the plugin sees change.
 

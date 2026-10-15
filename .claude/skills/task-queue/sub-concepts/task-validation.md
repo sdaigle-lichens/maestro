@@ -11,7 +11,7 @@ Two warnings:
   calls out).
 
 Both are **non-blocking**. The hook never fails a `TaskCreate` call; it annotates. Any work that
-legitimately sits outside the active workflow — running `/create-concept-skills`, for instance —
+legitimately sits outside the active workflow — running a code-graph skill such as `/code-graph:scribe`, for instance —
 will trip it, and that is expected rather than a bug to fix.
 
 State lives in `<cwd>/.claude/maestro_sessions/<session_id>/tasks.json` (`064`; the flat

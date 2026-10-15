@@ -1772,7 +1772,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
       ["use-code-architecture-design-check"],
       ["confidence-check", "use-code-architecture-design-check"],
       ["use-code-architecture-design-check", "confidence-check"],
-      ["concept-skills:use-code-architecture-design-check", "alpha", "beta"],
+      ["code-graph:use-code-architecture-design-check", "alpha", "beta"],
     ];
     const seen = new Set<string>();
     for (const maestro of lists) {
@@ -1951,7 +1951,7 @@ describe("maestro-end-skills.cjs", () => {
 
   it("prints one line naming exactly the configured end skills, in order", async () => {
     const root = await installed("end-lists");
-    const lists = [["one"], ["one", "two"], ["two", "one"], ["concept-skills:x", "y", "z"]];
+    const lists = [["one"], ["one", "two"], ["two", "one"], ["code-graph:x", "y", "z"]];
     const seen = new Set<string>();
     for (const end of lists) {
       const label = JSON.stringify(end);

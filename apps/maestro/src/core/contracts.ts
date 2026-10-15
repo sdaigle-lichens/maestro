@@ -43,7 +43,7 @@ export interface DanglingSkillRef {
 /** Dangling skill references in a config, plus project-level suggestions (`090`, `091`). */
 export interface SkillRefReport {
   dangling: DanglingSkillRef[];
-  /** One sentence each, ready to show a user. Includes the concept-skills plugin hint. */
+  /** One sentence each, ready to show a user. Includes the code-graph plugin hint. */
   suggestions: string[];
 }
 

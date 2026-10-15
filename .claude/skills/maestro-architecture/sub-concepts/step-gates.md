@@ -60,7 +60,8 @@ and its one-line, exit-0 contract; only the data changed from two booleans to a 
 resolve to the continue-to-Step-2 line, quietly. The pickers live on the desktop app's `/maestro`
 page. **A project with no `start_skills` runs no start skills**: the old `gates` booleans are no longer
 read (`090`), so re-install the project to get the seeded lists. `/confidence-check` is bundled
-(`plugins/maestro/skills/`); the design check ships in the opt-in `concept-skills` plugin. But the orchestrator runs what the injected line names
+(`plugins/maestro/skills/`); the design check ships in the opt-in `code-graph` plugin (its own
+marketplace, not this one). But the orchestrator runs what the injected line names
 and is told to say so rather than invent one if a named skill isn't installed.
 
 **`/to-maestro-tasks` runs the same script from the plugin's own copy**: its SKILL.md injects
@@ -79,12 +80,12 @@ a commit if none of them commits); Step 8 merges the worktree.
 
 **The design gate is a router, and what it routes to is a third bundled skill.**
 `use-code-architecture-design-check` only decides RUN/SKIP; the pass itself is
-`plugins/maestro/skills/code-architecture-design/` (deep modules, seams, the Design Brief), which
-the model invokes with the Skill tool. Two consequences worth knowing: the check is
-`user-invocable: false` and the design skill is **not**, so a user can reach the pass directly
-without the gate; and both inject the project's concept list with a `!`-prefixed
-the concept-skills plugin's `concept-skills.cjs list` at expansion time, which is why each carries that exact command in
-`allowed-tools`. **`code-architecture-design` is not `/design`** — that name resolves to the Claude
+`code-graph:code-architecture-design` (deep modules, seams, the Design Brief), which the model
+invokes with the Skill tool. Both skills ship in the `code-graph` plugin, **not** in the `maestro`
+plugin. Two consequences worth knowing: the check is `user-invocable: false` and the design skill is
+**not**, so a user can reach the pass directly without the gate; and both inject the project's
+concept list with a `!`-prefixed code-graph CLI command at expansion time, which is why each carries
+that exact command in `allowed-tools`. **`code-architecture-design` is not `/design`** — that name resolves to the Claude
 Design canvas skill (visual mockups), which is the collision the rename exists to end.
 
 **`use-code-architecture-design-check` means two different things and only one of them is a gate.**

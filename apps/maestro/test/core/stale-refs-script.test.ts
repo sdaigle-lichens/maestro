@@ -13,8 +13,8 @@ import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(here, "../../../../plugins/maestro/scripts/maestro-stale-refs.cjs");
-const DESIGN = "concept-skills:use-code-architecture-design-check";
-const CODE_GRAPH_DESIGN = "code-graph:use-code-architecture-design-check";
+const DESIGN = "code-graph:use-code-architecture-design-check";
+const CODE_GRAPH_DESIGN = DESIGN;
 
 let tmp: string;
 let home: string;
@@ -81,7 +81,7 @@ describe("maestro-stale-refs.cjs", () => {
   it("with the plugin enabled for the project, the namespaced id no longer dangles", () => {
     const root = project({
       "maestro.json": { version: 3, skills_available: [DESIGN] },
-      "settings.json": { enabledPlugins: { "concept-skills@maestro": true } },
+      "settings.json": { enabledPlugins: { "code-graph@code-graph": true } },
     });
     expect(parse(run([root])).dangling).toEqual([]);
   });

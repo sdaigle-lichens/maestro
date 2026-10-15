@@ -1,7 +1,7 @@
-// `090`: Maestro names no concept skill; the opt-in `concept-skills` plugin supplies them. Pinned here:
+// `090`: Maestro names no concept skill; the opt-in `code-graph` plugin supplies them. Pinned here:
 //   - the first-install seed with the plugin enabled vs not (design check, scribe loaded_skills);
 //   - the pure seed (`defaultV3Config`) given and not given a design check;
-//   - a `concept-skills:…` id in `loaded_skills` passing through the real SubagentStart hook, in both
+//   - a `code-graph:…` id in `loaded_skills` passing through the real SubagentStart hook, in both
 //     the project copy and the plugin's own copy;
 //   - the "grep finds nothing left" acceptance criterion, as a test that fails when one comes back.
 
@@ -22,9 +22,8 @@ import type { MaestroConfigV3 } from "../../src/core/types.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
-const DESIGN = "concept-skills:use-code-architecture-design-check";
-const CODE_GRAPH_DESIGN = "code-graph:use-code-architecture-design-check";
-const SESSION = "concept-skills-plugin-test";
+const DESIGN = "code-graph:use-code-architecture-design-check";
+const SESSION = "code-graph-plugin-test";
 
 let tmp: string;
 let REPORTS_DB: string;
@@ -32,12 +31,19 @@ let PROJECT_TAGS_DB: string;
 let HANDOFFS_DB: string;
 
 beforeEach(() => {
-  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-concept-plugin-"));
+  tmp = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-code-graph-plugin-"));
   REPORTS_DB = path.join(tmp, "report-defaults.sqlite");
   PROJECT_TAGS_DB = path.join(tmp, "project-tags.sqlite");
   HANDOFFS_DB = path.join(tmp, "handoff-defaults.sqlite");
+  // The seed reads the developer's real ~/.claude settings; point HOME at a scratch dir so a
+  // globally enabled plugin cannot change what these cases expect.
+  fs.mkdirSync(path.join(tmp, "home"), { recursive: true });
+  vi.stubEnv("HOME", path.join(tmp, "home"));
 });
-afterEach(() => fs.rmSync(tmp, { recursive: true, force: true }));
+afterEach(() => {
+  vi.unstubAllEnvs();
+  fs.rmSync(tmp, { recursive: true, force: true });
+});
 
 function makeProject(name: string, enablePlugin: boolean): string {
   const root = path.join(tmp, name);
@@ -47,7 +53,7 @@ function makeProject(name: string, enablePlugin: boolean): string {
     // settings.local.json: installRuntime owns settings.json's hooks, never this file.
     fs.writeFileSync(
       path.join(root, ".claude", "settings.local.json"),
-      JSON.stringify({ enabledPlugins: { "concept-skills@maestro": true } })
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
     );
   }
   return root;
@@ -63,7 +69,7 @@ describe("first-install seeding: plugin disabled vs enabled", () => {
     const root = makeProject("off", false);
     await install(root);
     const cfg = readConfig(root)!;
-    expect(JSON.stringify(cfg)).not.toContain("concept-skills");
+    expect(JSON.stringify(cfg)).not.toContain("code-graph");
     expect(JSON.stringify(cfg)).not.toContain("architecture-design");
     expect(skillNodes(cfg)).toEqual([]);
     const refactor = cfg.workflows.find((w) => w.name === "Refactor")!;
@@ -94,7 +100,7 @@ describe("first-install seeding: plugin disabled vs enabled", () => {
       const scribe = cfg.workflow_instances.find((i) => i.name === "scribe")!;
       expect(scribe.loaded_skills).toEqual([]);
       expect(cfg.skills_available).not.toContain("use-code-architecture-design-check");
-      expect(cfg.skills_available).not.toContain("concept-skills:scribe");
+      expect(cfg.skills_available).not.toContain("code-graph:scribe");
     }
   });
 
@@ -104,7 +110,7 @@ describe("first-install seeding: plugin disabled vs enabled", () => {
     const before = readConfig(root)!;
     fs.writeFileSync(
       path.join(root, ".claude", "settings.local.json"),
-      JSON.stringify({ enabledPlugins: { "concept-skills@maestro": true } })
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
     );
     await install(root);
     expect(readConfig(root)!.skills_available).toEqual(before.skills_available);
@@ -115,10 +121,22 @@ describe("first-install seeding: plugin disabled vs enabled", () => {
     const root = makeProject("explicit-off", false);
     fs.writeFileSync(
       path.join(root, ".claude", "settings.local.json"),
-      JSON.stringify({ enabledPlugins: { "concept-skills@maestro": false } })
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": false } })
     );
     await install(root);
     expect(skillNodes(readConfig(root)!)).toEqual([]);
+  });
+
+  it("a legacy concept-skills plugin enabled no longer seeds anything", async () => {
+    const root = makeProject("legacy", false);
+    fs.writeFileSync(
+      path.join(root, ".claude", "settings.local.json"),
+      JSON.stringify({ enabledPlugins: { "concept-skills@maestro": true } })
+    );
+    await install(root);
+    const cfg = readConfig(root)!;
+    expect(skillNodes(cfg)).toEqual([]);
+    expect(JSON.stringify(cfg)).not.toContain("architecture-design");
   });
 });
 
@@ -142,150 +160,7 @@ describe("defaultV3Config (the pure seed)", () => {
   });
 
   it("the default (no seedSkills argument) is the disabled seed", () => {
-    expect(JSON.stringify(defaultV3Config(["backend"]))).not.toContain("concept-skills");
-  });
-});
-
-describe("a concept-skills:… id in loaded_skills through the SubagentStart hook", () => {
-  const cfg: MaestroConfigV3 = {
-    version: 3,
-    agents_available: ["scribe"],
-    skills_available: ["concept-skills:scribe", "concept-skills:explore-concept-skills"],
-    workflow_instances: [
-      {
-        name: "scribe",
-        agent: "scribe",
-        loaded_skills: ["concept-skills:scribe"],
-        referenced_skills: ["concept-skills:explore-concept-skills"],
-      },
-    ],
-    workflows: [
-      {
-        name: "Documentation",
-        nodes: [{ id: "scribe", type: "agent", instance: "scribe" }],
-        edges: [{ from: "main-session", to: "scribe", kind: "success", sourceHandle: "bottom", targetHandle: "top" }],
-      },
-    ],
-    rules: [],
-  };
-
-  function contextOf(stdout: string): string {
-    return JSON.parse(stdout).hookSpecificOutput.additionalContext as string;
-  }
-
-  function hook(script: string, root: string): string {
-    return execFileSync("node", [script], {
-      input: JSON.stringify({ cwd: root, agent_type: "scribe" }),
-      encoding: "utf8",
-      env: pinnedEnv(tmp, { CLAUDE_PROJECT_DIR: root, CLAUDE_CODE_SESSION_ID: SESSION }),
-    });
-  }
-
-  it("project copy: the namespaced id survives unchanged into the injected skill list", async () => {
-    const root = makeProject("hook-project", true);
-    writeConfig(root, cfg);
-    await install(root);
-    const ctx = contextOf(hook(path.join(root, ".claude", "scripts", "maestro-inject-agent-context.cjs"), root));
-    expect(ctx).toContain("concept-skills:scribe");
-    expect(ctx).toContain("concept-skills:explore-concept-skills");
-    // It is passed through, not "resolved" into a project path or reported missing.
-    expect(ctx).not.toMatch(/concept-skills:scribe[^\n]*(not found|unresolved|missing)/i);
-    expect(ctx).not.toMatch(/\.claude\/skills\/concept-skills/);
-  });
-
-  it("plugin copy: the same", () => {
-    const root = makeProject("hook-plugin", true);
-    writeConfig(root, cfg);
-    const ctx = contextOf(hook(path.join(PLUGIN_ROOT, "scripts", "maestro-inject-agent-context.js"), root));
-    expect(ctx).toContain("concept-skills:scribe");
-    expect(ctx).not.toMatch(/\.claude\/skills\/concept-skills/);
-  });
-
-  it("a seeded scribe with the plugin disabled gets no concept-skill instructions injected", async () => {
-    const root = makeProject("hook-off", false);
-    await install(root);
-    const ctx = contextOf(hook(path.join(root, ".claude", "scripts", "maestro-inject-agent-context.cjs"), root));
-    expect(ctx).not.toMatch(/concept[- ]skill/i);
-    expect(ctx).not.toContain("concept-skills");
-  });
-});
-
-describe("first-install seeding with code-graph", () => {
-  // The seed reads the developer's real ~/.claude settings; point HOME at a scratch dir so a
-  // globally enabled plugin cannot change what these cases expect.
-  beforeEach(() => {
-    fs.mkdirSync(path.join(tmp, "home"), { recursive: true });
-    vi.stubEnv("HOME", path.join(tmp, "home"));
-  });
-  afterEach(() => vi.unstubAllEnvs());
-
-  function projectWith(name: string, plugins: Record<string, string>): string {
-    const root = makeProject(name, false);
-    fs.writeFileSync(
-      path.join(root, ".claude", "settings.local.json"),
-      JSON.stringify({
-        enabledPlugins: Object.fromEntries(Object.entries(plugins).map(([p, m]) => [`${p}@${m}`, true])),
-      })
-    );
-    return root;
-  }
-
-  function expectSeededWith(cfg: MaestroConfigV3, id: string, other: string) {
-    expect(cfg.skills_available).toContain(id);
-    expect(cfg.skills_available).not.toContain(other);
-    expect(skillNodes(cfg)).toEqual([id]);
-    const refactor = cfg.workflows.find((w) => w.name === "Refactor")!;
-    expect(refactor.nodes.map((n) => n.id)[0]).toBe(id);
-    expect(cfg.start_skills!.to_maestro_tasks).toEqual(["confidence-check", id]);
-    expect(cfg.start_skills!.maestro).toEqual([]);
-    expect(JSON.stringify(cfg)).not.toContain(other);
-  }
-
-  it("only code-graph enabled: the code-graph design check seeds into skills_available, to_maestro_tasks and the Refactor node", async () => {
-    const root = projectWith("cg-only", { "code-graph": "code-graph" });
-    await install(root);
-    expectSeededWith(readConfig(root)!, CODE_GRAPH_DESIGN, DESIGN);
-  });
-
-  it("only concept-skills enabled: the seed is unchanged from today", async () => {
-    const root = projectWith("cs-only", { "concept-skills": "maestro" });
-    await install(root);
-    expectSeededWith(readConfig(root)!, DESIGN, CODE_GRAPH_DESIGN);
-  });
-
-  it("neither enabled: no design-check node, no code-graph id, no error", async () => {
-    const root = projectWith("neither", {});
-    await install(root);
-    const cfg = readConfig(root)!;
-    expect(skillNodes(cfg)).toEqual([]);
-    expect(JSON.stringify(cfg)).not.toContain("code-graph");
-    expect(JSON.stringify(cfg)).not.toContain("concept-skills");
-    expect(cfg.start_skills!.to_maestro_tasks).toEqual(["confidence-check"]);
-    const refactor = cfg.workflows.find((w) => w.name === "Refactor")!;
-    expect(refactor.nodes.map((n) => n.id)).toEqual(["human_review-1", "refactor"]);
-  });
-
-  it("both enabled: code-graph wins, concept-skills is not named", async () => {
-    const root = projectWith("both", { "code-graph": "code-graph", "concept-skills": "maestro" });
-    await install(root);
-    expectSeededWith(readConfig(root)!, CODE_GRAPH_DESIGN, DESIGN);
-  });
-
-  it("code-graph installed but switched off in settings.local.json: not seeded", async () => {
-    const root = makeProject("cg-off", false);
-    fs.writeFileSync(
-      path.join(root, ".claude", "settings.local.json"),
-      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": false } })
-    );
-    await install(root);
-    expect(skillNodes(readConfig(root)!)).toEqual([]);
-  });
-
-  it("the pure seed names a code-graph design check in all three places", () => {
-    const cfg = defaultV3Config(["backend"], {}, { designCheck: CODE_GRAPH_DESIGN });
-    expect(skillNodes(cfg)).toEqual([CODE_GRAPH_DESIGN]);
-    expect(cfg.skills_available).toContain(CODE_GRAPH_DESIGN);
-    expect(cfg.start_skills!.to_maestro_tasks).toEqual(["confidence-check", CODE_GRAPH_DESIGN]);
+    expect(JSON.stringify(defaultV3Config(["backend"]))).not.toContain("code-graph");
   });
 });
 
@@ -293,12 +168,12 @@ describe("a code-graph:… id in loaded_skills through the SubagentStart hook", 
   const cfg: MaestroConfigV3 = {
     version: 3,
     agents_available: ["scribe"],
-    skills_available: ["code-graph:scribe", "code-graph:explore-concept-skills", CODE_GRAPH_DESIGN],
+    skills_available: ["code-graph:scribe", "code-graph:explore-concept-skills", DESIGN],
     workflow_instances: [
       {
         name: "scribe",
         agent: "scribe",
-        loaded_skills: ["code-graph:scribe", CODE_GRAPH_DESIGN],
+        loaded_skills: ["code-graph:scribe", DESIGN],
         referenced_skills: ["code-graph:explore-concept-skills"],
       },
     ],
@@ -324,22 +199,13 @@ describe("a code-graph:… id in loaded_skills through the SubagentStart hook", 
 
   function expectPassedThrough(ctx: string) {
     expect(ctx).toContain("code-graph:scribe");
-    expect(ctx).toContain(CODE_GRAPH_DESIGN);
+    expect(ctx).toContain(DESIGN);
     expect(ctx).not.toMatch(/code-graph:[^\n]*(not found|unresolved|missing)/i);
     expect(ctx).not.toMatch(/\.claude\/skills\/code-graph/);
   }
 
-  function codeGraphProject(name: string): string {
-    const root = makeProject(name, false);
-    fs.writeFileSync(
-      path.join(root, ".claude", "settings.local.json"),
-      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
-    );
-    return root;
-  }
-
   it("project copy: the id survives unchanged into the injected skill list, not unresolved", async () => {
-    const root = codeGraphProject("cg-hook-project");
+    const root = makeProject("cg-hook-project", true);
     writeConfig(root, cfg);
     await install(root);
     const ctx = contextOf(hook(path.join(root, ".claude", "scripts", "maestro-inject-agent-context.cjs"), root));
@@ -348,9 +214,17 @@ describe("a code-graph:… id in loaded_skills through the SubagentStart hook", 
   });
 
   it("plugin copy: the same", () => {
-    const root = codeGraphProject("cg-hook-plugin");
+    const root = makeProject("cg-hook-plugin", true);
     writeConfig(root, cfg);
     expectPassedThrough(contextOf(hook(path.join(PLUGIN_ROOT, "scripts", "maestro-inject-agent-context.js"), root)));
+  });
+
+  it("a seeded scribe with the plugin disabled gets no concept-skill instructions injected", async () => {
+    const root = makeProject("hook-off", false);
+    await install(root);
+    const ctx = contextOf(hook(path.join(root, ".claude", "scripts", "maestro-inject-agent-context.cjs"), root));
+    expect(ctx).not.toMatch(/concept[- ]skill/i);
+    expect(ctx).not.toContain("code-graph");
   });
 });
 
@@ -395,19 +269,14 @@ describe("Maestro names no concept skill (acceptance: grep finds nothing left)",
     expect(hits).toEqual([]);
   });
 
-  it("use-code-architecture-design-check appears only as the availability lib's namespaced candidates", () => {
+  it("use-code-architecture-design-check appears only as the availability lib's namespaced candidate", () => {
     const hits = files
       .filter((f) => fs.readFileSync(f, "utf8").includes("use-code-architecture-design-check"))
       .map((f) => path.relative(PLUGINS_MAESTRO, f));
     expect(hits).toEqual(["scripts/lib/maestro-skill-availability.cjs"]);
     const lib = fs.readFileSync(path.join(PLUGINS_MAESTRO, hits[0]), "utf8");
-    expect(lib).toContain(`"${CODE_GRAPH_DESIGN}"`);
     expect(lib).toContain(`"${DESIGN}"`);
-    // code-graph first: first-available-wins preference order.
-    expect(lib.indexOf(`"${CODE_GRAPH_DESIGN}"`)).toBeLessThan(lib.indexOf(`"${DESIGN}"`));
-    expect(lib.replace(`"${CODE_GRAPH_DESIGN}"`, "").replace(`"${DESIGN}"`, "")).not.toContain(
-      "use-code-architecture-design-check"
-    );
+    expect(lib.replace(`"${DESIGN}"`, "")).not.toContain("use-code-architecture-design-check");
   });
 
   it("code-graph is named only in the availability lib (its candidate id and plugin suggestions), nowhere else", () => {
@@ -420,7 +289,7 @@ describe("Maestro names no concept skill (acceptance: grep finds nothing left)",
   it("no code-graph skill other than the design-check candidate is named", () => {
     const lib = fs.readFileSync(path.join(PLUGINS_MAESTRO, "scripts/lib/maestro-skill-availability.cjs"), "utf8");
     const ids = new Set(lib.match(/code-graph:[a-z-]+/g) ?? []);
-    expect([...ids]).toEqual([CODE_GRAPH_DESIGN]);
+    expect([...ids]).toEqual([DESIGN]);
   });
 
   it("prose (skills, agents, templates, hooks, manifest) says nothing about concept skills, bar one named exception", () => {
@@ -457,20 +326,5 @@ describe("Maestro names no concept skill (acceptance: grep finds nothing left)",
     expect(scribe).not.toMatch(/trigger 5/i);
     const tpl = fs.readFileSync(path.join(PLUGINS_MAESTRO, "templates", "maestro", "SKILL.md"), "utf8");
     expect(tpl).not.toMatch(/explore-concept/i);
-  });
-
-  it("the sibling plugin is the only place the concept-skill machinery lives", () => {
-    const sibling = path.resolve(PLUGINS_MAESTRO, "../concept-skills");
-    for (const rel of [
-      "scripts/concept-skills.cjs",
-      "scripts/lib/concept-skills.cjs",
-      "skills/scribe/SKILL.md",
-      "skills/use-code-architecture-design-check/SKILL.md",
-      "skills/concept-skills-install/SKILL.md",
-      "skills/concept-skills-update/SKILL.md",
-      "skills/concept-skills-uninstall/SKILL.md",
-    ]) {
-      expect(fs.existsSync(path.join(sibling, rel)), rel).toBe(true);
-    }
   });
 });

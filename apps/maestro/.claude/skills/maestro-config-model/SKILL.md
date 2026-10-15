@@ -1,10 +1,10 @@
 ---
 name: maestro-config-model
-description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, concept-skills.json). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
+description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, code-graph's concept-skill state). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: d83231be731d77a77ad7bf6bfbc0b47c24647a08
+  version: "1.14"
+  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464
 ---
 
 # Maestro config model (v3)
@@ -83,10 +83,11 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
   a fixed path. The three flat `maestro_session*.json` names are the pre-`064` layout and survive
   only as `LEGACY_SESSION_FILES`. Path resolution belongs to `src/core/session-paths.ts`; see
   `maestro-architecture` (repo root `.claude/skills/`) for "Which session am I".
-- **Concept-skill state is not here either.** As of `ff24b37` it lives in its own
-  `<root>/.claude/concept-skills.json` (`ConceptSkillsState` in `packages/concept-skills`), because concept skills are a
-  plain `.claude/skills` convention and a repo can keep a reconciled list without Maestro installed.
-  Older docs that say `maestro.json` holds `concept-skills-last-update` are stale.
+- **Concept-skill state is not here either.** It belongs to the `code-graph` plugin (its own
+  marketplace): the `skills` block of `<root>/scribe.config.json`, or the legacy
+  `<root>/.claude/concept-skills.json`. Concept skills are a plain `.claude/skills` convention, so a
+  repo can keep a reconciled list without Maestro installed. Older docs that say `maestro.json`
+  holds `concept-skills-last-update` are stale.
 
 ## Files
 

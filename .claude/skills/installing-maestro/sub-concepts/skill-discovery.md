@@ -11,7 +11,7 @@ existing `maestro.json` is never re-derived.
 
 Until `056` both readers behind them saw only the repository root's `.claude/skills/`.
 `discoverSkills()` (app) and `discoverProjectSkillIds()` (terminal) now both walk **every**
-`.claude/skills` in the tree — the same bounded walk `concept-skills-system`'s `skillSearchDirs`
+`.claude/skills` in the tree — the same bounded walk code-graph's concept-skill discovery
 uses, via the new `discoverProjectSkillsTree`.
 
 On this repo that was the difference between seven `skills_available` entries and eighteen: the

@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.12"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "1.13"
+  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464
 ---
 
 # Global stores

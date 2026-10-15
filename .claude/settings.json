@@ -9,8 +9,7 @@
     }
   },
   "enabledPlugins": {
-    "code-graph@code-graph": true,
-    "concept-skills@maestro": false
+    "code-graph@code-graph": true
   },
   "hooks": {
     "UserPromptExpansion": [

@@ -19,8 +19,7 @@ import {
   firstAvailableSkill,
 } from "../../src/core/skill-availability.js";
 
-const DESIGN = "concept-skills:use-code-architecture-design-check";
-const CODE_GRAPH_DESIGN = "code-graph:use-code-architecture-design-check";
+const DESIGN = "code-graph:use-code-architecture-design-check";
 
 let tmp: string;
 let home: string;
@@ -66,18 +65,18 @@ describe("readEnabledPlugins", () => {
 
   it("strips the @marketplace and keeps only true values", () => {
     writeJson(path.join(project, ".claude", "settings.json"), {
-      enabledPlugins: { "concept-skills@maestro": true, "other@maestro": false, bare: true },
+      enabledPlugins: { "code-graph@maestro": true, "other@maestro": false, bare: true },
     });
-    expect(readEnabledPlugins(project, home).sort()).toEqual(["bare", "concept-skills"]);
+    expect(readEnabledPlugins(project, home).sort()).toEqual(["bare", "code-graph"]);
   });
 
   it("a later file overrides an earlier one: project can switch off what the user switched on", () => {
-    writeJson(path.join(home, ".claude", "settings.json"), { enabledPlugins: { "concept-skills@maestro": true } });
-    expect(readEnabledPlugins(project, home)).toEqual(["concept-skills"]);
-    enableInProject("concept-skills", false);
+    writeJson(path.join(home, ".claude", "settings.json"), { enabledPlugins: { "code-graph@maestro": true } });
+    expect(readEnabledPlugins(project, home)).toEqual(["code-graph"]);
+    enableInProject("code-graph", false);
     expect(readEnabledPlugins(project, home)).toEqual([]);
-    enableInProject("concept-skills", true, "settings.local.json");
-    expect(readEnabledPlugins(project, home)).toEqual(["concept-skills"]);
+    enableInProject("code-graph", true, "settings.local.json");
+    expect(readEnabledPlugins(project, home)).toEqual(["code-graph"]);
   });
 
   it("tolerates a corrupt or wrongly-shaped settings file", () => {
@@ -92,17 +91,17 @@ describe("whyUnavailable", () => {
     const base = () => readSkillSources(project, home);
     expect(whyUnavailable(base(), DESIGN)).toBe("plugin-not-installed");
 
-    installPlugin("concept-skills", ["use-code-architecture-design-check", "scribe"]);
+    installPlugin("code-graph", ["use-code-architecture-design-check", "scribe"]);
     expect(whyUnavailable(base(), DESIGN)).toBe("plugin-not-enabled");
 
-    enableInProject("concept-skills");
+    enableInProject("code-graph");
     expect(whyUnavailable(base(), DESIGN)).toBeNull();
-    expect(whyUnavailable(base(), "concept-skills:nope")).toBe("skill-not-in-plugin");
+    expect(whyUnavailable(base(), "code-graph:nope")).toBe("skill-not-in-plugin");
   });
 
   it("enabled but the installed list is unreadable: enabled is taken as enough", () => {
-    enableInProject("concept-skills");
-    expect(whyUnavailable(readSkillSources(project, home), "concept-skills:anything")).toBeNull();
+    enableInProject("code-graph");
+    expect(whyUnavailable(readSkillSources(project, home), "code-graph:anything")).toBeNull();
   });
 
   it("bare id resolves from a project skill, a user skill, or any installed plugin (enabled or not)", () => {
@@ -117,10 +116,10 @@ describe("whyUnavailable", () => {
   });
 
   it("firstAvailableSkill takes the first candidate that resolves", () => {
-    installPlugin("concept-skills", ["b"]);
-    enableInProject("concept-skills");
+    installPlugin("code-graph", ["b"]);
+    enableInProject("code-graph");
     const s = readSkillSources(project, home);
-    expect(firstAvailableSkill(s, ["concept-skills:a", "concept-skills:b"])).toBe("concept-skills:b");
+    expect(firstAvailableSkill(s, ["code-graph:a", "code-graph:b"])).toBe("code-graph:b");
     expect(firstAvailableSkill(s, ["x:y"])).toBeNull();
   });
 });
@@ -131,59 +130,36 @@ describe("seedSkillsFor", () => {
   });
 
   it("plugin installed but not enabled for this project: no design check", () => {
-    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
+    installPlugin("code-graph", ["use-code-architecture-design-check"]);
     expect(seedSkillsFor(project, home)).toEqual({});
   });
 
   it("plugin enabled in the project: the namespaced design check seeds", () => {
-    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
-    enableInProject("concept-skills");
+    installPlugin("code-graph", ["use-code-architecture-design-check"]);
+    enableInProject("code-graph");
     expect(seedSkillsFor(project, home)).toEqual({ designCheck: DESIGN });
   });
 
   it("plugin enabled by the user's settings only: seeds too", () => {
-    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
-    writeJson(path.join(home, ".claude", "settings.json"), { enabledPlugins: { "concept-skills@maestro": true } });
+    installPlugin("code-graph", ["use-code-architecture-design-check"]);
+    writeJson(path.join(home, ".claude", "settings.json"), { enabledPlugins: { "code-graph@maestro": true } });
     expect(seedSkillsFor(project, home)).toEqual({ designCheck: DESIGN });
   });
 
   it("plugin enabled but shipping no such skill: no design check", () => {
-    installPlugin("concept-skills", ["scribe"]);
+    installPlugin("code-graph", ["scribe"]);
+    enableInProject("code-graph");
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("the removed concept-skills plugin enabled: no design check", () => {
+    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
     enableInProject("concept-skills");
     expect(seedSkillsFor(project, home)).toEqual({});
   });
 
-  it("only code-graph enabled: the code-graph design check seeds", () => {
-    installPlugin("code-graph", ["use-code-architecture-design-check"]);
-    enableInProject("code-graph");
-    expect(seedSkillsFor(project, home)).toEqual({ designCheck: CODE_GRAPH_DESIGN });
-  });
-
-  it("code-graph installed but not enabled: no design check", () => {
-    installPlugin("code-graph", ["use-code-architecture-design-check"]);
+  it("no plugin: no design check and no error", () => {
     expect(seedSkillsFor(project, home)).toEqual({});
-  });
-
-  it("neither plugin: no design check and no error", () => {
-    expect(seedSkillsFor(project, home)).toEqual({});
-  });
-
-  it("both enabled: code-graph wins", () => {
-    installPlugin("code-graph", ["use-code-architecture-design-check"]);
-    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
-    writeJson(path.join(project, ".claude", "settings.json"), {
-      enabledPlugins: { "concept-skills@maestro": true, "code-graph@maestro": true },
-    });
-    expect(seedSkillsFor(project, home)).toEqual({ designCheck: CODE_GRAPH_DESIGN });
-  });
-
-  it("both enabled but code-graph ships no design check: falls back to concept-skills", () => {
-    installPlugin("code-graph", ["scribe"]);
-    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
-    writeJson(path.join(project, ".claude", "settings.json"), {
-      enabledPlugins: { "concept-skills@maestro": true, "code-graph@maestro": true },
-    });
-    expect(seedSkillsFor(project, home)).toEqual({ designCheck: DESIGN });
   });
 
   it("a bare project skill of the same name does not count: only the namespaced id seeds", () => {
@@ -229,7 +205,7 @@ describe("collectSkillRefs", () => {
 describe("findStaleSkillRefs", () => {
   const cfg = {
     skills_available: [DESIGN, "ghost"],
-    workflow_instances: [{ name: "scribe", loaded_skills: ["concept-skills:scribe"], referenced_skills: [] }],
+    workflow_instances: [{ name: "scribe", loaded_skills: ["code-graph:scribe"], referenced_skills: [] }],
     start_skills: { maestro: [], to_maestro_tasks: [DESIGN] },
     workflows: [{ name: "Refactor", nodes: [{ type: "skill", skill: DESIGN }] }],
   };
@@ -243,28 +219,28 @@ describe("findStaleSkillRefs", () => {
       "start_skills.to_maestro_tasks",
       "workflow Refactor skill node",
     ]);
-    expect(byId["concept-skills:scribe"].reason).toBe("plugin-not-installed");
+    expect(byId["code-graph:scribe"].reason).toBe("plugin-not-installed");
     expect(byId["ghost"].reason).toBe("not-found");
     expect(report.suggestions.some((s) => s.includes("not installed"))).toBe(true);
   });
 
   it("plugin installed but disabled: reason plugin-not-enabled, suggestion says enable", () => {
-    installPlugin("concept-skills", ["use-code-architecture-design-check", "scribe"]);
+    installPlugin("code-graph", ["use-code-architecture-design-check", "scribe"]);
     const report = findStaleSkillRefs(project, cfg, home);
     expect(report.dangling.find((d) => d.id === DESIGN)!.reason).toBe("plugin-not-enabled");
     expect(report.suggestions.join("\n")).toContain("installed but not enabled");
   });
 
   it("plugin enabled: only the genuinely missing id is left", () => {
-    installPlugin("concept-skills", ["use-code-architecture-design-check", "scribe"]);
-    enableInProject("concept-skills");
+    installPlugin("code-graph", ["use-code-architecture-design-check", "scribe"]);
+    enableInProject("code-graph");
     const report = findStaleSkillRefs(project, cfg, home);
     expect(report.dangling.map((d) => d.id)).toEqual(["ghost"]);
   });
 
   it("enabled plugin that lacks a skill: skill-not-in-plugin", () => {
-    installPlugin("concept-skills", ["scribe"]);
-    enableInProject("concept-skills");
+    installPlugin("code-graph", ["scribe"]);
+    enableInProject("code-graph");
     const report = findStaleSkillRefs(project, cfg, home);
     expect(report.dangling.find((d) => d.id === DESIGN)!.reason).toBe("skill-not-in-plugin");
   });
@@ -274,7 +250,7 @@ describe("findStaleSkillRefs", () => {
     expect(findStaleSkillRefs(project, { skills_available: ["design-sketch"] }, home).dangling).toEqual([]);
   });
 
-  it("legacy concept-skills.json with no concept-skill plugin enabled: suggests migrating to code-graph", () => {
+  it("legacy concept-skills.json with code-graph off: suggests migrating to code-graph", () => {
     writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
     const report = findStaleSkillRefs(project, {}, home);
     expect(report.dangling).toEqual([]);
@@ -284,15 +260,6 @@ describe("findStaleSkillRefs", () => {
     // code-graph is not in Maestro's marketplace: the hint must not tell anyone to install it from there.
     expect(report.suggestions[0]).not.toContain("@maestro");
     expect(report.suggestions[0]).toMatch(/not in Maestro's|its own marketplace/);
-  });
-
-  it("legacy concept-skills.json with concept-skills still enabled: still hints at the migration", () => {
-    writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
-    enableInProject("concept-skills");
-    const report = findStaleSkillRefs(project, {}, home);
-    expect(report.suggestions).toHaveLength(1);
-    expect(report.suggestions[0]).toContain("/code-graph-install");
-    expect(report.suggestions[0]).not.toContain("@maestro");
   });
 
   it("legacy concept-skills.json with code-graph enabled: no hint", () => {

@@ -527,7 +527,7 @@
     "epic": "code-graph-cutover"
   },
   "107-remove-the-concept-skills-plugin-and-package.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
     ],

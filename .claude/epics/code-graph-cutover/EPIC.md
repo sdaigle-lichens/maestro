@@ -58,5 +58,9 @@ gate is in its prompt.
   maestro's own hook, unchanged by this epic and plugin-independent, so no follow-up task.
 - code-graph task 008 fixes both 106 findings in 0.3.2 (plugin-owned deps via `code-graph deps install`,
   project install as fallback); 0.3.1 (007) is committed. 109's precondition now names 0.3.2.
+- 107 done (r003, maestro-50). Manager check: a fresh, uncached `pnpm --filter maestro test` passed
+  (1979/1979); the remaining `concept-skills` mentions are all legitimate: the legacy-state migrate
+  hint and its tests, code-graph's own skill names in the README, a historical design doc, and
+  dev-skill notes on the legacy file. Phase 17's removal is complete; only 109 remains (waits on code-graph 0.3.2).
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.

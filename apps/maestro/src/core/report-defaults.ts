@@ -45,7 +45,7 @@ export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude"
 
 // `090`: the gap note is generic. Maestro names no particular kind of skill — any skill an agent
 // loaded can have been missing something — and the scribe channel it lands on is read by whatever
-// the project has wired to handle it (the opt-in `concept-skills` plugin's scribe skill, for one).
+// the project has wired to handle it (the code-graph plugin's scribe skill, for one).
 // The previous, concept-skill-specific text lives on below as `conceptGapsChannelNote`, kept
 // verbatim because the superseded bodies in `PRIOR_SEEDS` are rebuilt from it.
 function skillGapsChannelNote(subagent: string): string {
@@ -138,7 +138,7 @@ const SCRIBE_REPORT_V2 =
 
 // `090`: Maestro no longer knows about concept skills, so the scribe's report does not count them
 // separately — they are part of `claudeFilesUpdated` like any other `.claude/skills` file. This is
-// character-for-character the pre-concept-skills (V1) body.
+// character-for-character the pre-concept-skill (V1) body.
 const SCRIBE_REPORT =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
@@ -223,7 +223,7 @@ const SEED_REPORTS: Record<string, string> = {
  * changed without being recorded here simply stops propagating — silently.
  */
 const PRIOR_SEEDS: Record<string, string[]> = (() => {
-  // v1: before `conceptSkillGaps` (the concept-skills feature).
+  // v1: before `conceptSkillGaps` (the concept-skill feature).
   const backendLikeV1 = (subagent: string): string =>
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +

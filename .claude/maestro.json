@@ -20,7 +20,6 @@
     "maestro-config-model",
     "create-skills-architecture",
     "global-stores",
-    "concept-skills-system",
     "workflow-view",
     "rule-view",
     "agents-view",
@@ -43,8 +42,7 @@
         "claude-session-bridge",
         "maestro-config-model",
         "create-skills-architecture",
-        "global-stores",
-        "concept-skills-system"
+        "global-stores"
       ]
     },
     {

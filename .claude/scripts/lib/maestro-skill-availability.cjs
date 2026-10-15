@@ -197,10 +197,7 @@ function whyUnavailable(sources, id) {
 function firstAvailableSkill(sources, candidates) {
   return candidates.find((id) => whyUnavailable(sources, id) === null) ?? null;
 }
-var DESIGN_CHECK_CANDIDATES = [
-  "code-graph:use-code-architecture-design-check",
-  "concept-skills:use-code-architecture-design-check"
-];
+var DESIGN_CHECK_CANDIDATES = ["code-graph:use-code-architecture-design-check"];
 function seedSkillsFor(projectRoot, homeDir) {
   if (!projectRoot) return {};
   const found = firstAvailableSkill(readSkillSources(projectRoot, homeDir), DESIGN_CHECK_CANDIDATES);
@@ -252,7 +249,7 @@ function pluginSuggestions(projectRoot, sources) {
   }
   if (!codeGraphOn && isObject(readJson(import_node_path3.default.join(projectRoot, ".claude", "concept-skills.json")))) {
     out.push(
-      sources.enabledPlugins.includes("concept-skills") ? "This project keeps a concept-skill list (.claude/concept-skills.json). The code-graph plugin supersedes concept-skills: install code-graph from its own marketplace and migrate via /code-graph-install." : "This project keeps a concept-skill list (.claude/concept-skills.json) but no concept-skill plugin is enabled. Install code-graph from its own marketplace (it is not in Maestro's), then migrate via /code-graph-install."
+      "This project keeps a concept-skill list (.claude/concept-skills.json) but the code-graph plugin is not enabled. Install code-graph from its own marketplace (it is not in Maestro's), then migrate via /code-graph-install."
     );
   }
   return out;
