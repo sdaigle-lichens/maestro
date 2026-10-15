@@ -20,6 +20,7 @@ import {
 } from "../../src/core/skill-availability.js";
 
 const DESIGN = "concept-skills:use-code-architecture-design-check";
+const CODE_GRAPH_DESIGN = "code-graph:use-code-architecture-design-check";
 
 let tmp: string;
 let home: string;
@@ -152,6 +153,39 @@ describe("seedSkillsFor", () => {
     expect(seedSkillsFor(project, home)).toEqual({});
   });
 
+  it("only code-graph enabled: the code-graph design check seeds", () => {
+    installPlugin("code-graph", ["use-code-architecture-design-check"]);
+    enableInProject("code-graph");
+    expect(seedSkillsFor(project, home)).toEqual({ designCheck: CODE_GRAPH_DESIGN });
+  });
+
+  it("code-graph installed but not enabled: no design check", () => {
+    installPlugin("code-graph", ["use-code-architecture-design-check"]);
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("neither plugin: no design check and no error", () => {
+    expect(seedSkillsFor(project, home)).toEqual({});
+  });
+
+  it("both enabled: code-graph wins", () => {
+    installPlugin("code-graph", ["use-code-architecture-design-check"]);
+    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
+    writeJson(path.join(project, ".claude", "settings.json"), {
+      enabledPlugins: { "concept-skills@maestro": true, "code-graph@maestro": true },
+    });
+    expect(seedSkillsFor(project, home)).toEqual({ designCheck: CODE_GRAPH_DESIGN });
+  });
+
+  it("both enabled but code-graph ships no design check: falls back to concept-skills", () => {
+    installPlugin("code-graph", ["scribe"]);
+    installPlugin("concept-skills", ["use-code-architecture-design-check"]);
+    writeJson(path.join(project, ".claude", "settings.json"), {
+      enabledPlugins: { "concept-skills@maestro": true, "code-graph@maestro": true },
+    });
+    expect(seedSkillsFor(project, home)).toEqual({ designCheck: DESIGN });
+  });
+
   it("a bare project skill of the same name does not count: only the namespaced id seeds", () => {
     writeJson(
       path.join(project, ".claude", "skills", "use-code-architecture-design-check", "SKILL.md"),
@@ -240,14 +274,65 @@ describe("findStaleSkillRefs", () => {
     expect(findStaleSkillRefs(project, { skills_available: ["design-sketch"] }, home).dangling).toEqual([]);
   });
 
-  it("suggests /concept-skills-install when concept-skills.json exists but the plugin is not enabled", () => {
+  it("legacy concept-skills.json with no concept-skill plugin enabled: suggests migrating to code-graph", () => {
     writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
     const report = findStaleSkillRefs(project, {}, home);
     expect(report.dangling).toEqual([]);
     expect(report.suggestions).toHaveLength(1);
-    expect(report.suggestions[0]).toContain("/concept-skills-install");
+    expect(report.suggestions[0]).toContain("/code-graph-install");
+    expect(report.suggestions[0]).toContain("code-graph");
+    // code-graph is not in Maestro's marketplace: the hint must not tell anyone to install it from there.
+    expect(report.suggestions[0]).not.toContain("@maestro");
+    expect(report.suggestions[0]).toMatch(/not in Maestro's|its own marketplace/);
+  });
 
+  it("legacy concept-skills.json with concept-skills still enabled: still hints at the migration", () => {
+    writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
     enableInProject("concept-skills");
+    const report = findStaleSkillRefs(project, {}, home);
+    expect(report.suggestions).toHaveLength(1);
+    expect(report.suggestions[0]).toContain("/code-graph-install");
+    expect(report.suggestions[0]).not.toContain("@maestro");
+  });
+
+  it("legacy concept-skills.json with code-graph enabled: no hint", () => {
+    writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
+    enableInProject("code-graph");
+    expect(findStaleSkillRefs(project, {}, home).suggestions).toEqual([]);
+  });
+
+  it("scribe.config.json without code-graph enabled: suggests enabling code-graph, no migrate hint", () => {
+    writeJson(path.join(project, "scribe.config.json"), {});
+    const report = findStaleSkillRefs(project, {}, home);
+    expect(report.dangling).toEqual([]);
+    expect(report.suggestions).toHaveLength(1);
+    expect(report.suggestions[0]).toContain("scribe.config.json");
+    expect(report.suggestions[0]).toContain("code-graph");
+    expect(report.suggestions[0]).not.toContain("/code-graph-install");
+    expect(report.suggestions[0]).not.toContain("@maestro");
+  });
+
+  it("scribe.config.json with code-graph enabled: the hint is absent", () => {
+    writeJson(path.join(project, "scribe.config.json"), {});
+    enableInProject("code-graph");
+    expect(findStaleSkillRefs(project, {}, home).suggestions).toEqual([]);
+  });
+
+  it("scribe.config.json that is not a JSON object is ignored", () => {
+    writeJson(path.join(project, "scribe.config.json"), "{ not json");
+    expect(findStaleSkillRefs(project, {}, home).suggestions).toEqual([]);
+  });
+
+  it("scribe.config.json plus legacy concept-skills.json, code-graph off: both suggestions, neither claiming maestro's marketplace", () => {
+    writeJson(path.join(project, "scribe.config.json"), {});
+    writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
+    const { suggestions } = findStaleSkillRefs(project, {}, home);
+    expect(suggestions).toHaveLength(2);
+    expect(suggestions.some((s) => s.includes("scribe.config.json"))).toBe(true);
+    expect(suggestions.some((s) => s.includes("/code-graph-install"))).toBe(true);
+    for (const s of suggestions) expect(s).not.toContain("@maestro");
+
+    enableInProject("code-graph");
     expect(findStaleSkillRefs(project, {}, home).suggestions).toEqual([]);
   });
 

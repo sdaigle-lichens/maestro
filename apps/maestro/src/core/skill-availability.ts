@@ -152,7 +152,11 @@ export interface SeedSkills {
   designCheck?: string;
 }
 
-const DESIGN_CHECK_CANDIDATES = ["concept-skills:use-code-architecture-design-check"];
+/** Preference order, first available wins: the code-graph plugin, then the legacy concept-skills one. */
+const DESIGN_CHECK_CANDIDATES = [
+  "code-graph:use-code-architecture-design-check",
+  "concept-skills:use-code-architecture-design-check",
+];
 
 /** Resolve the optional seed skills against what `projectRoot` can actually invoke. */
 export function seedSkillsFor(projectRoot: string, homeDir?: string): SeedSkills {
@@ -210,14 +214,31 @@ export function collectSkillRefs(cfg: unknown): Map<string, string[]> {
   return refs;
 }
 
-/** A project that keeps a concept-skill list (it has the state file) but cannot use the plugin that maintains it. */
+/**
+ * A project that keeps a concept-skill list but cannot use the plugin that maintains it:
+ *  - a root `scribe.config.json` is a code-graph project; suggest enabling the plugin if it is off.
+ *  - the legacy `.claude/concept-skills.json` with code-graph off suggests migrating to code-graph
+ *    (installed from its own marketplace, not maestro's), unless concept-skills is still enabled.
+ */
 function pluginSuggestions(projectRoot: string, sources: SkillSources): string[] {
-  const state = readJson(path.join(projectRoot, ".claude", "concept-skills.json"));
-  if (!isObject(state) || sources.enabledPlugins.includes("concept-skills")) return [];
-  return [
-    "This project keeps a concept-skill list (.claude/concept-skills.json) but the concept-skills plugin is not enabled. " +
-      "Install it with `claude plugin install concept-skills@maestro`, then run /concept-skills-install.",
-  ];
+  const codeGraphOn = sources.enabledPlugins.includes("code-graph");
+  const out: string[] = [];
+  if (!codeGraphOn && isObject(readJson(path.join(projectRoot, "scribe.config.json")))) {
+    out.push(
+      "This project has a scribe.config.json (a code-graph project) but the code-graph plugin is not enabled. " +
+        "Install it from the code-graph marketplace and enable it for this project."
+    );
+  }
+  if (!codeGraphOn && isObject(readJson(path.join(projectRoot, ".claude", "concept-skills.json")))) {
+    out.push(
+      sources.enabledPlugins.includes("concept-skills")
+        ? "This project keeps a concept-skill list (.claude/concept-skills.json). " +
+            "The code-graph plugin supersedes concept-skills: install code-graph from its own marketplace and migrate via /code-graph-install."
+        : "This project keeps a concept-skill list (.claude/concept-skills.json) but no concept-skill plugin is enabled. " +
+            "Install code-graph from its own marketplace (it is not in Maestro's), then migrate via /code-graph-install."
+    );
+  }
+  return out;
 }
 
 /**

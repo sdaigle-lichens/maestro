@@ -49,13 +49,18 @@ describe("skillRefReport lifecycle", () => {
     const root = makeProject(cfg(["concept-skills:scribe"]));
     const before = skillRefReport(root, home);
     expect(before.dangling.map((d) => [d.id, d.reason])).toEqual([["concept-skills:scribe", "plugin-not-enabled"]]);
-    expect(before.suggestions.some((s) => s.includes("concept-skills plugin is not enabled"))).toBe(true);
+    // The legacy state file is hinted toward code-graph (the plugin this skill id names is a separate matter).
+    expect(before.suggestions.some((s) => s.includes("/code-graph-install"))).toBe(true);
 
     fs.writeFileSync(
       path.join(root, ".claude", "settings.json"),
       JSON.stringify({ enabledPlugins: { "concept-skills@maestro": true } })
     );
-    expect(skillRefReport(root, home)).toEqual({ dangling: [], suggestions: [] });
+    // The mark clears; concept-skills still being on leaves only the migrate hint, never a dangling mark.
+    const after = skillRefReport(root, home);
+    expect(after.dangling).toEqual([]);
+    expect(after.suggestions).toHaveLength(1);
+    expect(after.suggestions[0]).toContain("/code-graph-install");
   });
 
   it("clears the mark after the reference is removed from the file", () => {

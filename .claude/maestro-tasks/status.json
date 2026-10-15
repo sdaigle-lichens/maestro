@@ -513,5 +513,24 @@
     "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
+  },
+  "105-accept-code-graph-s-design-check-alongside-concept-skills.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md": {
+    "status": "ready",
+    "blockedBy": [
+      "105-accept-code-graph-s-design-check-alongside-concept-skills.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "107-remove-the-concept-skills-plugin-and-package.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
+    ],
+    "epic": "code-graph-cutover"
   }
 }

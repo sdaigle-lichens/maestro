@@ -77,6 +77,8 @@ export const maestroInstall = {
         sampleSkill("confidence-check", "maestro"),
         sampleSkill("concept-skills:scribe", "concept-skills"),
         sampleSkill("concept-skills:use-code-architecture-design-check", "concept-skills"),
+        sampleSkill("code-graph:scribe", "code-graph"),
+        sampleSkill("code-graph:use-code-architecture-design-check", "code-graph"),
         sampleSkill("design-sketch", "design"),
       ],
     }),
