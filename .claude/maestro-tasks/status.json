@@ -520,14 +520,25 @@
     "epic": "code-graph-cutover"
   },
   "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "105-accept-code-graph-s-design-check-alongside-concept-skills.md"
     ],
     "epic": "code-graph-cutover"
   },
   "107-remove-the-concept-skills-plugin-and-package.md": {
-    "status": "blocked",
+    "status": "ready",
+    "blockedBy": [
+      "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "108-give-docs-only-work-a-route-when-it-turns-up-a-code-change.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md": {
+    "status": "ready",
     "blockedBy": [
       "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
     ],

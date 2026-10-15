@@ -1,0 +1,15 @@
+{
+  "project": "maestro",
+  "skills": {
+    "version": "1.29",
+    "last_update": "4d162ea",
+    "agents": [
+      "backend",
+      "frontend",
+      "refactor",
+      "reviewer",
+      "scribe",
+      "test"
+    ]
+  }
+}

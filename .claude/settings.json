@@ -1,7 +1,16 @@
 {
   "autoCompactWindow": 150000,
+  "extraKnownMarketplaces": {
+    "code-graph": {
+      "source": {
+        "source": "github",
+        "repo": "sdaigle-lichens/code-graph"
+      }
+    }
+  },
   "enabledPlugins": {
-    "concept-skills@maestro": true
+    "code-graph@code-graph": true,
+    "concept-skills@maestro": false
   },
   "hooks": {
     "UserPromptExpansion": [

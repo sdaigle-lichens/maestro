@@ -43,7 +43,7 @@ node .claude/scripts/maestro-set-session-workflow.cjs "<workflow name>" [--task 
 | --- | --- |
 | default | @backend → @frontend → human review → @test → @reviewer → @scribe |
 | tdd | @test → human review → @backend → @frontend → @reviewer → @scribe |
-| Refactor | /concept-skills:use-code-architecture-design-check → human review → @refactor |
+| Refactor | /code-graph:use-code-architecture-design-check → human review → @refactor |
 | Documentation | @scribe |
 | Review | @reviewer |
 | Tests | @test → @reviewer → @scribe |

@@ -3,8 +3,8 @@ name: concept-skills-system
 description: "Explains the concept-skill machinery the opt-in concept-skills plugin ships (plugins/concept-skills, built from packages/concept-skills): what marks a SKILL.md as a concept skill (frontmatter metadata.type/version/last-update), the sub-concepts/ and agents/ directory convention, the concept-skills.cjs CLI that owns versions and stamping, where the repo-level state lives (.claude/concept-skills.json, not maestro.json), and the agents list in concept-skills.json, the install/update/uninstall lifecycle skills, and how create/update/update-single/scribe divide the work. Use when working on any of the four concept-skill skills, adding a CLI subcommand, wondering why a skill isn't in the list, deciding whether something belongs in a concept skill or in docs/, or deciding which .claude/skills directory a new concept skill belongs in (an app's, or the repo root's — the rule is by audience, and nothing developer-facing may live under plugins/)."
 metadata:
   type: concept-skill
-  version: "1.4"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "1.6"
+  last-update: 62480e70bb0ff20ae35d470edc9d4dc093f296d0
 ---
 
 # Concept-skill system
@@ -100,9 +100,15 @@ programmatic callers; leave it to them.
 - **A skill without the markers is invisible to `list`,** however concept-shaped it reads. This repo
   hit exactly that: eight hand-written concept skills existed under `apps/maestro/.claude/skills`
   while `list` reported none.
-- **Repo-level state is not in `maestro.json`.** Since `ff24b37` it lives in its own
+- **Repo-level state is not in `maestro.json`.** Since `ff24b37` the `concept-skills` plugin keeps it in its own
   `<root>/.claude/concept-skills.json` (`ConceptSkillsState`: `version`, `last_update`, plus the `agents` list). Docs
   or code referencing a `concept-skills-last-update` key on `maestro.json` are stale.
+- **With code-graph, the state is in `scribe.config.json`.** This repo has switched: its
+  `{version, last_update, agents}` record is the `skills` block of `<root>/scribe.config.json`. The
+  `code-graph.cjs` CLI reads that block when it carries string `version` and `last_update`, and falls back to
+  `.claude/concept-skills.json` only otherwise; `agents` follows the block whenever the block has an `agents`
+  key. So `.claude/concept-skills.json` here is legacy: editing it changes nothing the code-graph CLI sees.
+  (Read from the bundled `code-graph.cjs`; the `concept-skills.cjs` CLI below still reads only the legacy file.)
 - **`create-concept-skills` must not write `agents/`.** Those notes need an understanding it has
   deliberately not acquired.
 
@@ -124,9 +130,13 @@ programmatic callers; leave it to them.
 The plugin is opt-in per project (Claude Code `enabledPlugins`). Maestro names none of it: the
 scribe agent has no concept-skill trigger, gaps are a generic `skill_gaps`, and the seeds name the
 design skill only when `seedSkillsFor()` (`apps/maestro/src/core/skill-availability.ts`) finds it
-resolvable. `maestro-update` runs `maestro-stale-refs.cjs` to flag skill ids in `maestro.json` that
-no longer resolve and to suggest installing `concept-skills` when `concept-skills.json` exists
-without the plugin enabled. `readAgentsAvailable` lives in Maestro's `config.ts`; the CLI's
+resolvable: `DESIGN_CHECK_CANDIDATES` is `code-graph:use-code-architecture-design-check`, then
+`concept-skills:…` (first available wins). `maestro-update` runs `maestro-stale-refs.cjs` to flag
+skill ids in `maestro.json` that no longer resolve, and its `pluginSuggestions()` suggests: enabling
+`code-graph` when a root `scribe.config.json` exists without it; installing code-graph from its own
+marketplace and migrating via `/code-graph-install` when the legacy `.claude/concept-skills.json`
+exists and code-graph is off (whether or not `concept-skills` is still enabled). It no longer
+suggests `concept-skills@maestro`. `readAgentsAvailable` lives in Maestro's `config.ts`; the CLI's
 `agents` reads its own list instead.
 
 ## Relationships

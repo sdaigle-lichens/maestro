@@ -22,26 +22,31 @@ This repository is also a **plugin marketplace** — a catalog of Claude Code pl
 
 ## Concept skills
 
-The opt-in `concept-skills` plugin (`/concept-skills-install` enables it per project) gives the `@scribe` agent a way to build and maintain a project's **concept
-skills** — one `.claude/skills/<id>/SKILL.md` per core concept of the project, written for agents
-rather than for humans, so a subagent can get oriented in a concept without rediscovering its shape
-every session. `/create-concept-skills` builds the list, `/update-concept-skills` reconciles it
-against what the code did since, and `/update-single-concept-skill` takes one of them from skeleton
-to something worth loading. `/scribe` is the rule for what belongs in a concept skill versus in
-`docs/`. See
-[`plugins/concept-skills/skills/create-concept-skills/README.md`](./plugins/concept-skills/skills/create-concept-skills/README.md).
-Maestro names none of it; to give the scribe the placement rule, add `concept-skills:scribe` to
-its loaded skills in the app's workflow view.
+The opt-in `code-graph` plugin, from its own marketplace (`/code-graph-install` enables it per
+project), gives the `@scribe` agent a way to build and maintain a project's **concept skills** — one
+`.claude/skills/<id>/SKILL.md` per core concept of the project, written for agents rather than for
+humans, so a subagent can get oriented in a concept without rediscovering its shape every session.
+`/create-concept-skills` builds the list, `/update-concept-skills` reconciles it against what the
+code did since, and `/update-single-concept-skill` takes one of them from skeleton to something
+worth loading. `/scribe` is the rule for what belongs in a concept skill versus in `docs/`.
+Maestro names none of it; to give the scribe the placement rule, add `code-graph:scribe` to its
+loaded skills in the app's workflow view.
 
 ## Installing the Maestro plugin
 
 ```bash
 claude plugin marketplace add sdaigle-lichens/maestro
 claude plugin install maestro@maestro
-claude plugin install concept-skills@maestro   # optional
 ```
 
 Then run `/maestro-install` inside the project you want Maestro to orchestrate.
+
+To also get concept skills, add the code-graph marketplace and install it (optional):
+
+```bash
+claude plugin marketplace add sdaigle-lichens/code-graph
+claude plugin install code-graph@code-graph
+```
 
 See [`docs/marketplace.md`](./docs/marketplace.md) for updating, removing, installing from a local
 checkout, auto-registering the marketplace for a team, and publishing a change to the plugin.

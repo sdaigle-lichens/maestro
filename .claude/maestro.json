@@ -9,7 +9,7 @@
     "test"
   ],
   "skills_available": [
-    "concept-skills:use-code-architecture-design-check",
+    "code-graph:use-code-architecture-design-check",
     "task-queue",
     "installing-maestro",
     "maestro-architecture",
@@ -26,7 +26,7 @@
     "agents-view",
     "log-view",
     "test-maestro-desktop",
-    "concept-skills:scribe"
+    "code-graph:scribe"
   ],
   "workflow_instances": [
     {
@@ -82,7 +82,7 @@
       "name": "scribe",
       "agent": "scribe",
       "loaded_skills": [
-        "concept-skills:scribe"
+        "code-graph:scribe"
       ],
       "referenced_skills": []
     }
@@ -520,7 +520,7 @@
         {
           "id": "use-code-architecture-design-check",
           "type": "skill",
-          "skill": "concept-skills:use-code-architecture-design-check",
+          "skill": "code-graph:use-code-architecture-design-check",
           "position": {
             "x": 0,
             "y": 140
@@ -773,11 +773,11 @@
   "start_skills": {
     "maestro": [
       "confidence-check",
-      "concept-skills:use-code-architecture-design-check"
+      "code-graph:use-code-architecture-design-check"
     ],
     "to_maestro_tasks": [
       "confidence-check",
-      "concept-skills:use-code-architecture-design-check"
+      "code-graph:use-code-architecture-design-check"
     ]
   },
   "end_skills": {
@@ -787,7 +787,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.11.23",
+  "runtimeVersion": "0.11.24",
   "reports": {
     "backend": {
       "id": "backend",
