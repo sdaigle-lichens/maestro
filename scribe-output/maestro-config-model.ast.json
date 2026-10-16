@@ -1,0 +1,3838 @@
+{
+  "concept": "maestro-config-model",
+  "vertices": [
+    {
+      "_key": "04ede77c2b6a57eef1d11e5d05a4d047",
+      "displayKey": "maestro-config-model::type-def::MarketplaceEntry",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MarketplaceEntry",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1011,
+      "end_line": 1025,
+      "signature": "export interface MarketplaceEntry {",
+      "contentHash": "e4d9393367c7ef7ad130c4073767edff4ffb72baa3ba34fc33c772a5180cc169",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "071fa51707b9b934c8ecba0e6f06cfb3",
+      "displayKey": "maestro-config-model::type-def::MaestroRuleV3",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroRuleV3",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 47,
+      "end_line": 70,
+      "signature": "export interface MaestroRuleV3 {",
+      "contentHash": "fca9032276142e085b4bea7d9b373c780a1baffcd79c2109bbd5740831f21ebc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "074b26b1d32c1d3faebae78328c4f01c",
+      "displayKey": "maestro-config-model::type-def::QuestionPrompt",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "QuestionPrompt",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2030,
+      "end_line": 2037,
+      "signature": "export interface QuestionPrompt {",
+      "contentHash": "b29322f21c5d439150f94f186843e5ae909db89b5ce4ac2f777764817dcb483c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "07a9b67f6726cdbd40868cde05a82dcc",
+      "displayKey": "maestro-config-model::component::ConfigIssueBanner",
+      "concept": "maestro-config-model",
+      "type": "component",
+      "name": "ConfigIssueBanner",
+      "filepath": "apps/maestro/src/renderer/src/components/config-issue-banner.tsx",
+      "start_line": 16,
+      "end_line": 41,
+      "signature": "function ConfigIssueBanner({ issues }: { issues: ConfigIssue[] }): import(\"react/jsx-runtime\").JSX.Element | null",
+      "contentHash": "984b5a6dbeae2fb756612ca82914efe2b77c8ede46fbc5c7e9fbe5310916b2c1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "09538524c5679c36760d52cf54a8d0f1",
+      "displayKey": "maestro-config-model::type-def::ApplyWorkflowSpecResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ApplyWorkflowSpecResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 656,
+      "end_line": 663,
+      "signature": "export interface ApplyWorkflowSpecResult {",
+      "contentHash": "03d89563b121056a79bbd9c028ba4621802282b47e8ad5f623460b4fe8061086",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0b571778470ae84f31cc8df6db86b7aa",
+      "displayKey": "maestro-config-model::type-def::MaestroTask",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroTask",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 485,
+      "end_line": 502,
+      "signature": "export interface MaestroTask {",
+      "contentHash": "9cd6d88050c97f8136295ee792f226e87be86d123f58def9ea4b9b5cecdeb4f6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0f7ef5f86e15284e637a7b7bb7138461",
+      "displayKey": "maestro-config-model::type-def::ScaffoldResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ScaffoldResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1116,
+      "end_line": 1143,
+      "signature": "export interface ScaffoldResult {",
+      "contentHash": "cc0f92e8eb32ebfefe01fc06327d4f92ecf7b93b5574b0b7905a9db59b021330",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "12b97be6976ca07f5fbeb38d4394c89e",
+      "displayKey": "maestro-config-model::type-def::MaestroNodeV3",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroNodeV3",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 21,
+      "end_line": 29,
+      "signature": "export interface MaestroNodeV3 {",
+      "contentHash": "07319a63280c54fd7019105bb20ace5e29df478e387f5fc78bbefd769b75febf",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1465fbfa053037ff1b8705c91f5c1fd7",
+      "displayKey": "maestro-config-model::type-def::ReportDefault",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ReportDefault",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 380,
+      "end_line": 384,
+      "signature": "export interface ReportDefault {",
+      "contentHash": "1b9fe99313e1637c27a71cd80353c6507de32dd52d018626b19252cbfe5ebad9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "157dae97bac45aff5af0de6805b11eb6",
+      "displayKey": "maestro-config-model::type-def::CreateSubagentRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CreateSubagentRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1066,
+      "end_line": 1077,
+      "signature": "export type CreateSubagentRequest = {",
+      "contentHash": "4bad7330a40be34e4be95793fd45469576cbf6abbdf3d054fe7f423a159f1722",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "158d1633107e775e5c88d4cbb1e1ecf1",
+      "displayKey": "maestro-config-model::type-def::MaestroHandoffEntry",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroHandoffEntry",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 190,
+      "end_line": 193,
+      "signature": "export interface MaestroHandoffEntry {",
+      "contentHash": "189c46d68494b839ea58693209c11631339958a27b6ed6b379036e7fc85958d1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1635360f35f859045be85686106259ef",
+      "displayKey": "maestro-config-model::type-def::ClaudeCommand",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeCommand",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2328,
+      "end_line": 2331,
+      "signature": "export interface ClaudeCommand {",
+      "contentHash": "d74db7437624cd8c79e298f5607c9a71894b0ef56771d4535f5713e176a0fd6a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1870549b4446797cf133807a4ed71333",
+      "displayKey": "maestro-config-model::type-def::PermissionAnswer",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionAnswer",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1681,
+      "end_line": 1697,
+      "signature": "export type PermissionAnswer =",
+      "contentHash": "4916034e9dcc6b40df75298336d44e4a368a335fcbd28d633627b2ad68c93ab0",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1a2d7486793fb19222b9c46be0100f36",
+      "displayKey": "maestro-config-model::type-def::ClaudePermissionRule",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudePermissionRule",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1327,
+      "end_line": 1334,
+      "signature": "export interface ClaudePermissionRule {",
+      "contentHash": "30925a420bcf093ac640773ec3cae77acf3793370d7d9498f2a66181c01f1b74",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1b14fff59895f23704423d7b5b43042e",
+      "displayKey": "maestro-config-model::function::blankConfig",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "blankConfig",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 25,
+      "end_line": 34,
+      "signature": "function blankConfig(): MaestroConfigV3",
+      "contentHash": "7c6ed85c2f3ae948f13051a6a59d7ae8f135569f123e7971d96691458e9330ad",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1ea3500aa560a18a1178b92dc2d0f5d3",
+      "displayKey": "maestro-config-model::type-def::PermissionDiff",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionDiff",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1909,
+      "end_line": 1915,
+      "signature": "export interface PermissionDiff {",
+      "contentHash": "4caddc17c546cb1b3613f63d4527c3f03b08e805ae202968f00d89c7b6d6d07c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1f2791a4862498572e011daec0a2c9dd",
+      "displayKey": "maestro-config-model::type-def::SessionSpend",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionSpend",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1793,
+      "end_line": 1807,
+      "signature": "export interface SessionSpend {",
+      "contentHash": "280ed15d6300ad2959da79a16ece437d0e3b366c888f0bcbf21fdd8068b6f4bb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1f2b6093d62e396b1444f37683d41330",
+      "displayKey": "maestro-config-model::type-def::ClaudePreview",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudePreview",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1374,
+      "end_line": 1418,
+      "signature": "export interface ClaudePreview {",
+      "contentHash": "658cecdae747649c9c1cfe347a1a748ba61ee56afab21cc0ab8d31752172962c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1f40d8e8a0f118d55a037c4320c177f1",
+      "displayKey": "maestro-config-model::function::saveConfig",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "saveConfig",
+      "filepath": "apps/maestro/src/core/save.ts",
+      "start_line": 21,
+      "end_line": 43,
+      "signature": "function saveConfig(projectRoot: string, input: ConfigSlice): Promise<SaveResult>",
+      "contentHash": "fae3fb19161b977ac81ce9bcef24dcf4100b9cfadbbb24ec41deecb28a955623",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "220c3a6ad58bc272efc85b23fa44c7d3",
+      "displayKey": "maestro-config-model::type-def::SessionEventBody",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionEventBody",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2072,
+      "end_line": 2072,
+      "signature": "export type SessionEventBody = SessionEvent extends infer T ? (T extends SessionEvent ? Omit<T, \"seq\"> : never) : never;",
+      "contentHash": "b4cb811872163707e5a3ebb78207c52dd236c52e7e47c25715b5951bfd55bbc7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "22361e4fdd4574f3ef23a3caa44033bb",
+      "displayKey": "maestro-config-model::function::mergeSlice",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "mergeSlice",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 131,
+      "end_line": 149,
+      "signature": "function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): MaestroConfigV3",
+      "contentHash": "8f36dc336b5ba24a65bc883e6ff099e629b752a78aa9dd52e5c7b569d341f25e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "22897377d1214057cae2e632b436f2f5",
+      "displayKey": "maestro-config-model::type-def::GitPort",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "GitPort",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1173,
+      "end_line": 1180,
+      "signature": "export interface GitPort {",
+      "contentHash": "d4c89865478ffcc6867842073e4cfadb9eb20cda3152e44f8716f91c63004982",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "244f3ef242140deda78e8d16e0a544e2",
+      "displayKey": "maestro-config-model::type-def::CreateOptions",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CreateOptions",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1028,
+      "end_line": 1040,
+      "signature": "export interface CreateOptions {",
+      "contentHash": "bde1da2925ca96a6089bfef52199c12c4d9b2328214956a8fa32cf581001ddea",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "267793193c9cbccc898939b3380a76fe",
+      "displayKey": "maestro-config-model::type-def::MarketplacePluginInfo",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MarketplacePluginInfo",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2286,
+      "end_line": 2295,
+      "signature": "export interface MarketplacePluginInfo {",
+      "contentHash": "f548bcbe3ee2d8546026878ee5a1bcc216cfe00761455fcfe8c8e0615bac44fe",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "286aa23220d91637e97d117be4c1f0b2",
+      "displayKey": "maestro-config-model::type-def::CreateRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CreateRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1099,
+      "end_line": 1099,
+      "signature": "export type CreateRequest = CreateSkillRequest | CreateSubagentRequest | CreatePluginRequest | CreateMarketplaceRequest;",
+      "contentHash": "b151d422426c70513126ed5b9db95a64a62270c531f9364d7555c68d3c474af3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2bff4e92c34a745f069b6a7e9b62c001",
+      "displayKey": "maestro-config-model::type-def::CcusageSource",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CcusageSource",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2399,
+      "end_line": 2399,
+      "signature": "export type CcusageSource = \"local\" | \"npx\" | \"none\";",
+      "contentHash": "4811e2bfe72e4b70cb7c1bb01ebcd6c4ff5d307b46754bd147260363f556c070",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2ebb9d769c2969e25ff3f8dea96b3f6c",
+      "displayKey": "maestro-config-model::type-def::CuratedPlugin",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CuratedPlugin",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2298,
+      "end_line": 2306,
+      "signature": "export interface CuratedPlugin {",
+      "contentHash": "d78bf269c3561de1bc3889a55c7741282f620e8264081a1d35f4af8789a98017",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2ffd23c89728d5ce79a0f4a823554b2a",
+      "displayKey": "maestro-config-model::type-def::SyncVerdictName",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SyncVerdictName",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 820,
+      "end_line": 821,
+      "signature": "export type SyncVerdictName =",
+      "contentHash": "99c8be1c7a89e6d7b0da18212a4d6b94d83b92e0fdad57b3c04038f8788760d9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "31ce76f38eb68a0effe7fa8739dc7c7e",
+      "displayKey": "maestro-config-model::type-def::QuestionSelection",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "QuestionSelection",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2046,
+      "end_line": 2051,
+      "signature": "export interface QuestionSelection {",
+      "contentHash": "43b04284dfd673bc12c642b9cc74c956f56c857925f9256918cc562c900efb9f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "320f8cc03c41db2b615dc2517fe63575",
+      "displayKey": "maestro-config-model::type-def::AgentSyncApplyResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentSyncApplyResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 827,
+      "end_line": 834,
+      "signature": "export interface AgentSyncApplyResult {",
+      "contentHash": "578e4c81255db38907e1d739e9ebabb08a19835f2191e9f717befcd1281e1521",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "32f7c73afff6bfe72fe991f3daaf324c",
+      "displayKey": "maestro-config-model::type-def::CreateSkillRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CreateSkillRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1052,
+      "end_line": 1064,
+      "signature": "export type CreateSkillRequest = {",
+      "contentHash": "c78134cedf923c8038824994a583f058d4cb5854c5efa7fb5b1b739229db16f6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "355540141237f8299409fb337ba2b267",
+      "displayKey": "maestro-config-model::type-def::AgentSyncEntry",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentSyncEntry",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 760,
+      "end_line": 790,
+      "signature": "export interface AgentSyncEntry {",
+      "contentHash": "da0d978bea6ad00fb41817136ef3ceeee7d58c8736a4aabf09047928f5a22f30",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3606721532758df766bf085573d143eb",
+      "displayKey": "maestro-config-model::type-def::MaestroMeetingState",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroMeetingState",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 288,
+      "end_line": 296,
+      "signature": "export interface MaestroMeetingState {",
+      "contentHash": "4efc671f35059f13efd0310bd0e8550b1279545278d9809df43890fb93ed0d90",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "37144575962f7e508981eab0caf85b51",
+      "displayKey": "maestro-config-model::type-def::DiscoveredDefinition",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DiscoveredDefinition",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 257,
+      "end_line": 275,
+      "signature": "export interface DiscoveredDefinition {",
+      "contentHash": "75c3e0eb29ae954d90ec640c1c1dc421ca445399798100dbdf45f11edbad3e27",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "389bf1cae6b0359eb3d06c99721fc540",
+      "displayKey": "maestro-config-model::type-def::RepoDetection",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "RepoDetection",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 601,
+      "end_line": 608,
+      "signature": "export interface RepoDetection {",
+      "contentHash": "ba3836e8b702c52ff2c6b6b559f2e359cefcf269aa1e40d2657300c099d16318",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3932ce0b7d5a8155966f1fb284ef4d95",
+      "displayKey": "maestro-config-model::function::readJsonSafe",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "readJsonSafe",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 36,
+      "end_line": 42,
+      "signature": "function readJsonSafe(p: string): T | null",
+      "contentHash": "49eea3b54938a116716c5d7dcde3c10326ac79fcf80d64209ac459c17a4764f3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "39f02f565beaa456d7adf55e14d19e7f",
+      "displayKey": "maestro-config-model::type-def::SessionWrite",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionWrite",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1855,
+      "end_line": 1867,
+      "signature": "export interface SessionWrite {",
+      "contentHash": "842451f104b0a2ed8322220c0e4b560f129459391a2b722223a32b6bf10c1af9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3b8d4f6fc7ffcf025b47c8f946800a26",
+      "displayKey": "maestro-config-model::type-def::ResumeDelivery",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResumeDelivery",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 273,
+      "end_line": 279,
+      "signature": "export interface ResumeDelivery {",
+      "contentHash": "0ed0414fef55c7f5f547d8df85622503ed187e2baff70c20c2662f9c611be2f6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3bd6933c33cdbfdc62c14940f5ba952e",
+      "displayKey": "maestro-config-model::type-def::DocSection",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DocSection",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2351,
+      "end_line": 2360,
+      "signature": "export interface DocSection {",
+      "contentHash": "9f24ac719e404e98dc7c68458044bdb3503fd25e7689b443b8333ea3a557695a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3cefd78a9f9254656f504be66e7cda8e",
+      "displayKey": "maestro-config-model::type-def::ClaudeReadDirectory",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeReadDirectory",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1314,
+      "end_line": 1324,
+      "signature": "export interface ClaudeReadDirectory {",
+      "contentHash": "cc5fe5cf07c15279606890128d32e583778171262d6536972c9b4d2681367c25",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3d2d37f489610316e0346b9af4ce5578",
+      "displayKey": "maestro-config-model::type-def::MaestroTaskRoutingSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroTaskRoutingSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 156,
+      "end_line": 158,
+      "signature": "export interface MaestroTaskRoutingSlice {",
+      "contentHash": "f89f214c5320bdd15883ea00a89101e7ce76ea99f22a01b977aa1dadf5d4a772",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3ee3b0dac7f1470a7bcfaeea536148e2",
+      "displayKey": "maestro-config-model::function::validateConfig",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "validateConfig",
+      "filepath": "apps/maestro/src/core/config-validate.ts",
+      "start_line": 64,
+      "end_line": 66,
+      "signature": "function validateConfig(cfg: MaestroConfigV3 | null): ConfigIssue[]",
+      "contentHash": "3a1fd55a54792289bb18dfd5593b5c5e499c54100d2893dd515df20d0a9992e8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "43c01d04f5824f20d2cc14cc41966a4e",
+      "displayKey": "maestro-config-model::function::serializeConfig",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "serializeConfig",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 61,
+      "end_line": 63,
+      "signature": "function serializeConfig(cfg: MaestroConfigV3): string",
+      "contentHash": "49deeba2d1dfea5e015f6f9a783dcd1ef4d7b70f0f0e57f8c04ec98e82a4b84f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4635de80316cbb49014cdb1b33b143ec",
+      "displayKey": "maestro-config-model::type-def::HandoffSyncSummary",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "HandoffSyncSummary",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 734,
+      "end_line": 742,
+      "signature": "export interface HandoffSyncSummary {",
+      "contentHash": "4c2260ffdc7bb6104d8d943bfb532143d4e1e3204a7a932315d4240bede60db7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "47c74a0cf698dfba0c25e267743764d1",
+      "displayKey": "maestro-config-model::type-def::SessionModel",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionModel",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1777,
+      "end_line": 1783,
+      "signature": "export interface SessionModel {",
+      "contentHash": "221b7425a4e80b36fde38ce96843817eefb67b6481f043f8323a1599162903be",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4847b36472c02e7a7d53d6ef482bd1d1",
+      "displayKey": "maestro-config-model::type-def::MaestroConfigV3",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroConfigV3",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 72,
+      "end_line": 133,
+      "signature": "export interface MaestroConfigV3 {",
+      "contentHash": "ec5d064879754e7f492f1fc0fecf763b340c0441196c4dc9787d8e209f316f5a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "495d611621859807f2792a77b281e541",
+      "displayKey": "maestro-config-model::type-def::RenderResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "RenderResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 578,
+      "end_line": 582,
+      "signature": "export interface RenderResult {",
+      "contentHash": "e0817c513e8002725c1218bb2c6d05352d3bf916bcb81b873d753a2d0196ec49",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4c17dc23b7aba9c5cc11cf7b8fc23018",
+      "displayKey": "maestro-config-model::type-def::MaestroTasksFinding",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroTasksFinding",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 912,
+      "end_line": 919,
+      "signature": "export interface MaestroTasksFinding {",
+      "contentHash": "81ae55ad0471dc8b05e91fde5fd0b1a64ae2a85bd773f0f0914319988712e62f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4d6d364833cd58c0ce4a92f16db4dc65",
+      "displayKey": "maestro-config-model::type-def::MaestroReportEntry",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroReportEntry",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 170,
+      "end_line": 173,
+      "signature": "export interface MaestroReportEntry {",
+      "contentHash": "3a2ef06ad858060fee9eed66159054e045bf69e7602f6cef55530fa81f5dd3c1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4e683b8077ad1b50861c0c292e498844",
+      "displayKey": "maestro-config-model::type-def::InstallStatus",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "InstallStatus",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 676,
+      "end_line": 706,
+      "signature": "export interface InstallStatus {",
+      "contentHash": "5f9d4c8aebbc2eafae99527a18302db3a5ecbf2e57c859521208544936bf8efa",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4ef1d0022315f7c6fc32dfb528a5bd86",
+      "displayKey": "maestro-config-model::type-def::MaestroReportsSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroReportsSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 176,
+      "end_line": 176,
+      "signature": "export type MaestroReportsSlice = Record<string, MaestroReportEntry>;",
+      "contentHash": "ed29f314f544e39f25be53d0f9bbbfbbb29de7573b7f3b89ca72b8c4c7b22e22",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "516dfd008616493d9c8fc3b3434b27da",
+      "displayKey": "maestro-config-model::type-def::ClaudeWriteTarget",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeWriteTarget",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1213,
+      "end_line": 1219,
+      "signature": "export interface ClaudeWriteTarget {",
+      "contentHash": "9732b6209d016caae0c3995e1c91c676ab7276d42c3e00f3b74a1df409da9093",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5348160d95ccda615d5979d112145205",
+      "displayKey": "maestro-config-model::function::describeVersion",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "describeVersion",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 29,
+      "end_line": 33,
+      "signature": "function describeVersion(v: unknown): string",
+      "contentHash": "c933de89dd30bc96c84cd2df8432e4fe27552f19691cd09a3df45e9e00ea6595",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "53b00f20af9eb629d597c01580e0908c",
+      "displayKey": "maestro-config-model::type-def::AgentSyncAction",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentSyncAction",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 824,
+      "end_line": 824,
+      "signature": "export type AgentSyncAction = \"update\" | \"keep\" | \"detach\";",
+      "contentHash": "af18d254852028cb1b0990fa71a2bf1fdf65b07a041b6ad564b547726436c8d6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "53e69ca4015cc4f1c7402efc7f019db2",
+      "displayKey": "maestro-config-model::type-def::QuestionAnswer",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "QuestionAnswer",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1711,
+      "end_line": 1715,
+      "signature": "export type QuestionAnswer = {",
+      "contentHash": "7a3cd2b49a04ebca7e91604a94c7ac92e19b035e916a1acf6804433d3253361c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "53f08340c5ea55bb4964beb425f1c38e",
+      "displayKey": "maestro-config-model::type-def::PermissionPrompt",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionPrompt",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1949,
+      "end_line": 1982,
+      "signature": "export interface PermissionPrompt {",
+      "contentHash": "e6f1dfb5e3b32ed2ee3374470c90f053deda3fcd46028888c29aa88710bbab14",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5535cfccc3fdb5306b4512d9ce017fcc",
+      "displayKey": "maestro-config-model::type-def::ConfigSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ConfigSlice",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 89,
+      "end_line": 94,
+      "signature": "export type ConfigSlice =",
+      "contentHash": "b9694a7703f915f8f66fcb3e41e1c78c288bdf67e6afa5c8873b72417f586284",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "56eb9fa6820e423d1e608c9955659fa2",
+      "displayKey": "maestro-config-model::function::writeConfig",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "writeConfig",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 65,
+      "end_line": 71,
+      "signature": "function writeConfig(projectRoot: string, cfg: MaestroConfigV3): string",
+      "contentHash": "1438f99b2c4caf67dbac8defdde932103c64eafe0e4cb5fb730a334bd52925b5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5845fce60cbe01d6df806dcd0b58dbb2",
+      "displayKey": "maestro-config-model::type-def::MaestroWorkflowV3",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroWorkflowV3",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 41,
+      "end_line": 45,
+      "signature": "export interface MaestroWorkflowV3 {",
+      "contentHash": "eb762d21c0afc64dd5cf41e4a162b4d6f4ab72bd39f77acad17420f276c9b751",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5a3a3a7dece736bc5b19264afb59c493",
+      "displayKey": "maestro-config-model::type-def::HandoffIssueRecord",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "HandoffIssueRecord",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 259,
+      "end_line": 270,
+      "signature": "export interface HandoffIssueRecord {",
+      "contentHash": "d81eda1cc25a7171bbc0141422521f6ff3452460af7b4e0172f62551dfe0b05a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5a4e42c6c14ffe5706168846cbd97049",
+      "displayKey": "maestro-config-model::type-def::ClaudeOutputChunk",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeOutputChunk",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1468,
+      "end_line": 1471,
+      "signature": "export interface ClaudeOutputChunk {",
+      "contentHash": "b2171ad60e2502109918c71f51a3476a768c13aa86cf082809be8e7ad32e44e4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5afd0fdb1fe28068142cdde72401fe0c",
+      "displayKey": "maestro-config-model::type-def::UsageStatsPreview",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UsageStatsPreview",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2441,
+      "end_line": 2460,
+      "signature": "export interface UsageStatsPreview {",
+      "contentHash": "ed70fce066b4b422743b792e18c2eac1a83f1e573697ce47d08d0b9c07ebc974",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5bc89a3789adbc662673cbc11171bf41",
+      "displayKey": "maestro-config-model::effect::effect-16",
+      "concept": "maestro-config-model",
+      "type": "effect",
+      "name": "effect-16",
+      "filepath": "apps/maestro/src/renderer/src/utils/config-watch-context.tsx",
+      "start_line": 16,
+      "end_line": 20,
+      "signature": "useEffect(() => {",
+      "contentHash": "87a6889c06dc75529f4d8eef2309f4e53291ce9b99d628fd3f573d1eb13ae67a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5c2525577c2c8550f89765f360ef35ad",
+      "displayKey": "maestro-config-model::type-def::ResumeRead",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResumeRead",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2122,
+      "end_line": 2136,
+      "signature": "export interface ResumeRead {",
+      "contentHash": "71dd498b9d4590489f63dd21fd3303889ea74b0a03b497d56491d0a54dd9f3d1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5d118b6e8bef976fbe882e926ab7ce5f",
+      "displayKey": "maestro-config-model::function::resolveUseMaestroTasks",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "resolveUseMaestroTasks",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 104,
+      "end_line": 107,
+      "signature": "function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean",
+      "contentHash": "45a5595dec5b2aa92b0f0bb22de70b4be59c7342258f679d3b9a44d0dc0865fd",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5e93d4a6529c7be1dfe24bd5a97ec03b",
+      "displayKey": "maestro-config-model::type-def::MaestroRulesSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroRulesSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 142,
+      "end_line": 144,
+      "signature": "export interface MaestroRulesSlice {",
+      "contentHash": "75e46825225a9d506747c4aada79a09d40294b1f225f205bfc275b18d27ca36a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5e9934414ce927afc1da27dd7a88af6f",
+      "displayKey": "maestro-config-model::type-def::ResumeDisclosure",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResumeDisclosure",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2145,
+      "end_line": 2166,
+      "signature": "export interface ResumeDisclosure {",
+      "contentHash": "4a49bcd27f64d42ef5a80e492c42291841ac72b6ebd3a35c373e38b04b8ff997",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5eb0c30cc525a8cf322221d660315110",
+      "displayKey": "maestro-config-model::type-def::RefusalSource",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "RefusalSource",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1656,
+      "end_line": 1656,
+      "signature": "export type RefusalSource = \"write-scope\" | \"read-boundary\" | \"user\" | \"auto\" | \"question\";",
+      "contentHash": "0330493aabb8ab7c32fccdf19e92f5ed435961623877c3cfb651b008a4c151ca",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "601fd130327ae8b65e2eccb6c5ba904d",
+      "displayKey": "maestro-config-model::type-def::ApplyRulesSummary",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ApplyRulesSummary",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 584,
+      "end_line": 592,
+      "signature": "export interface ApplyRulesSummary {",
+      "contentHash": "cf505ebd938cb384f9ed97b922689075a0808ab9bb31e7baac9ec124d6965751",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6282f0824056cc78638a061d6c5c1d88",
+      "displayKey": "maestro-config-model::type-def::UsageStatsView",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UsageStatsView",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2389,
+      "end_line": 2389,
+      "signature": "export type UsageStatsView = \"session\" | \"blocks\" | \"daily\" | \"monthly\";",
+      "contentHash": "d68da880d5a8bc5f3f6ea4f1ce52edec925c0cd97646965fb475f409b6a7e55c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "63932d4fd4eb32629586f2cc05ab65ad",
+      "displayKey": "maestro-config-model::type-def::GrantScope",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "GrantScope",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1742,
+      "end_line": 1742,
+      "signature": "export type GrantScope = \"file\" | \"directory\";",
+      "contentHash": "6b0ed8c84cc5318cd4eae3bf65c50e33c585fc5f6722067cf4bd450ffd25de6f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "65ecc11f322438dc172d6f6c34461a60",
+      "displayKey": "maestro-config-model::type-def::SessionEndReason",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionEndReason",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1765,
+      "end_line": 1765,
+      "signature": "export type SessionEndReason = \"closed\" | \"budget\" | \"turns\" | \"error\";",
+      "contentHash": "fb893a15d4fc92b7a9f9e423d0f6fed1e4f4ad87c82e734032b512e9ef071ea3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "661504bef52faf690ed6161f82bd57f1",
+      "displayKey": "maestro-config-model::type-def::ConfigIssue",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ConfigIssue",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 615,
+      "end_line": 619,
+      "signature": "export interface ConfigIssue {",
+      "contentHash": "203f31f27cd3f24f5835e56065e7f10e0fb2a33bbf5d74501d13562a35070d49",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "664876e3b61320637eea873d0262f49d",
+      "displayKey": "maestro-config-model::type-def::MaestroEdgeV3",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroEdgeV3",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 31,
+      "end_line": 39,
+      "signature": "export interface MaestroEdgeV3 {",
+      "contentHash": "536ea79a49ef22147b9f055df045b760f76cbc5c55c232fcfddd7fec65cbe8fe",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "666345c104c45f411387a1f3391b1042",
+      "displayKey": "maestro-config-model::type-def::PermissionDetail",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionDetail",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1926,
+      "end_line": 1938,
+      "signature": "export type PermissionDetail =",
+      "contentHash": "900e082a3beeba6c67cf2413399176c7e7e978069d87c8f17c55708300bd936c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7035c0aa9e41761c76e782d710c789c8",
+      "displayKey": "maestro-config-model::type-def::ResumableSession",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResumableSession",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2091,
+      "end_line": 2119,
+      "signature": "export interface ResumableSession {",
+      "contentHash": "84858e64be6ec75129d964201fb09df0facb9ab3ce76c736bd23108e606e6208",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "70e783654de229b127c73f3445765803",
+      "displayKey": "maestro-config-model::type-def::AgentQuestionOption",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentQuestionOption",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1999,
+      "end_line": 2011,
+      "signature": "export interface AgentQuestionOption {",
+      "contentHash": "27215d2e9a2ef9e5983f461db56d3c105f79a5387896bcfc2d0e81415fece674",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "72118a9f1429abdfe2eda11822175149",
+      "displayKey": "maestro-config-model::type-def::OrchestratorSkillAction",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "OrchestratorSkillAction",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 666,
+      "end_line": 666,
+      "signature": "export type OrchestratorSkillAction = \"installed\" | \"synced\" | \"unchanged\" | \"migrated\";",
+      "contentHash": "b1a6576b7c1c4aa84d13a32048257f99f115a254afa1add533945cf1aa535244",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "72ea91b586fb967caa96e3fbe1fb1d5f",
+      "displayKey": "maestro-config-model::function::writeRuntimeVersion",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "writeRuntimeVersion",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 82,
+      "end_line": 87,
+      "signature": "function writeRuntimeVersion(projectRoot: string, version: string): boolean",
+      "contentHash": "6f165f81d0698a86878994ca02c2226ff26f2e9fb9194cab1f6ff6c748dd77a3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "73dc41986eeee5f299cb2521e4b5a6e9",
+      "displayKey": "maestro-config-model::type-def::QuestionChoice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "QuestionChoice",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2062,
+      "end_line": 2062,
+      "signature": "export type QuestionChoice = { choice: \"answer\"; selections: QuestionSelection[] } | { choice: \"reply\"; text: string };",
+      "contentHash": "6e123c6a11dab1939324ef9bc14a367d8b0e4551a34327d8566292a6eae377ce",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "799e59f504287d7b3d757a64b98bf902",
+      "displayKey": "maestro-config-model::function::isEditableAgentSource",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "isEditableAgentSource",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 328,
+      "end_line": 330,
+      "signature": "function isEditableAgentSource(source: string): boolean",
+      "contentHash": "b9680a4f9a60f9e0e4c5f3328db83d461473021c1b2baa3d653ed6a78f5ae889",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "79e91e661189a559949d09c43f338da1",
+      "displayKey": "maestro-config-model::type-def::DiffLine",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DiffLine",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 745,
+      "end_line": 748,
+      "signature": "export interface DiffLine {",
+      "contentHash": "f0b4a64236fcc3d716f5ae62b6c0eae1e33ceb685e0c94fd78414e6980920706",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7a3bb3d88e90d09597dab262ed8a9f90",
+      "displayKey": "maestro-config-model::type-def::ParkedAnswer",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ParkedAnswer",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1723,
+      "end_line": 1723,
+      "signature": "export type ParkedAnswer = PermissionAnswer | QuestionAnswer;",
+      "contentHash": "1d2f6cb9ae79cee73546490e15d2242882b73d732b84c1aa7c563550cd46a2aa",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7be42cdc9f4d6d78688ebcb51bef5c73",
+      "displayKey": "maestro-config-model::type-def::MaestroProjectTagsSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroProjectTagsSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 146,
+      "end_line": 148,
+      "signature": "export interface MaestroProjectTagsSlice {",
+      "contentHash": "80a53b663743be8c1a76e58c49a4e77b164fab7a45bb64812f92b7a09f2dd13a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7bf201cf0c515eb6e3b3e93cddd8902f",
+      "displayKey": "maestro-config-model::type-def::SessionPermissionUpdate",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionPermissionUpdate",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1735,
+      "end_line": 1739,
+      "signature": "export interface SessionPermissionUpdate {",
+      "contentHash": "e0c222f2e583cc1188b89a64f5b6284fc9f494fece7c5439c5d87f34503c8739",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7c037939195458ad78cef4077b04f98b",
+      "displayKey": "maestro-config-model::type-def::UnavailableReason",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UnavailableReason",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 34,
+      "end_line": 34,
+      "signature": "export type UnavailableReason = \"plugin-not-installed\" | \"plugin-not-enabled\" | \"skill-not-in-plugin\" | \"not-found\";",
+      "contentHash": "b29987924e075ca172f293d09cc1000a16263dbf70a668a8eb3971f91036becc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7eaa4e0e7d67006e261186db7f93be7b",
+      "displayKey": "maestro-config-model::type-def::DocContent",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DocContent",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2363,
+      "end_line": 2367,
+      "signature": "export interface DocContent {",
+      "contentHash": "c514fb159f4474a623e0e64a984929ca3c5dc5fd1f7b73ec3b3c966547f1a60d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8097c7e591ca5ce26a4ad5be5eefbb6e",
+      "displayKey": "maestro-config-model::type-def::AvatarPartOption",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AvatarPartOption",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 78,
+      "end_line": 81,
+      "signature": "export interface AvatarPartOption {",
+      "contentHash": "13a69c94e4b52c1e72d5245855c037aae24910447926025fedd2ce3ed8e0e3fc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "82694513273e1d29b2c06d015d23bedc",
+      "displayKey": "maestro-config-model::type-def::MaestroSkillListsSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroSkillListsSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 151,
+      "end_line": 154,
+      "signature": "export interface MaestroSkillListsSlice {",
+      "contentHash": "c89a7e3a9fd0aae1439a98e41b8462fc96eee29ad7e07c670872f00984b5b5b5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "83d8e3775bd954f40dc2bc9d0ac236ba",
+      "displayKey": "maestro-config-model::type-def::UsageStats",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UsageStats",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2416,
+      "end_line": 2432,
+      "signature": "export interface UsageStats {",
+      "contentHash": "2370da398c2e8856c996dc76924c29d3c68f366530010647b063b7f34ceae63e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85405ddab00f11e2c19446b15adec5b1",
+      "displayKey": "maestro-config-model::type-def::AvatarLayers",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AvatarLayers",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 248,
+      "end_line": 251,
+      "signature": "export type AvatarLayers = Record<AvatarCategory, string | null> & {",
+      "contentHash": "adef716daef86ee619b0e87a7d8642a56315efb75385cd036c2d5d936cca8950",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "854e45db78b36e6d242ca1303b6d8854",
+      "displayKey": "maestro-config-model::type-def::PermissionChoice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionChoice",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1883,
+      "end_line": 1896,
+      "signature": "export type PermissionChoice =",
+      "contentHash": "1ac63d50aa25a94b520bac85127c8f2096e5a8a44ed7583f9145abde3305aa29",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85b27ae177e8e17db38e0a1d95c8dc10",
+      "displayKey": "maestro-config-model::type-def::SkillRefReport",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SkillRefReport",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 44,
+      "end_line": 48,
+      "signature": "export interface SkillRefReport {",
+      "contentHash": "1dfe15501096eaaedf86fbe47aaab46b2c7aeab4645c295d0a52066d0727d818",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85d7c50041b44c9b0a39aad317e5f364",
+      "displayKey": "maestro-config-model::type-def::TaskStatus",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "TaskStatus",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 483,
+      "end_line": 483,
+      "signature": "export type TaskStatus = \"done\" | \"ready\" | \"blocked\";",
+      "contentHash": "3d4ceef39d6d4cafb232c12ead55faa7c34ede9294a59eb8d2acde48e5eb8f12",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85edf3edc1586d63acb9da7bfc221830",
+      "displayKey": "maestro-config-model::type-def::SessionGrant",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionGrant",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1834,
+      "end_line": 1844,
+      "signature": "export interface SessionGrant {",
+      "contentHash": "c354cf4795b43632036552d09581b8690c99b72961b1aa1af7356e74cbf96911",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8934739e0d84ccbb02a5564ee6c05e51",
+      "displayKey": "maestro-config-model::function::readConfig",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "readConfig",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 52,
+      "end_line": 58,
+      "signature": "function readConfig(projectRoot: string): MaestroConfigV3 | null",
+      "contentHash": "f6b240b71dc9f26ce75ceae0d62bfadb318c052d20c2cd58693a564dd1b617a3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "89aef7b4b22a654fb3c0df72c61012d5",
+      "displayKey": "maestro-config-model::type-def::ResolvedReport",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResolvedReport",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 282,
+      "end_line": 286,
+      "signature": "export interface ResolvedReport {",
+      "contentHash": "2e4bd7f862d82af1f9dae9ef8dc395e17dea7ce0969363dc095279c334120b28",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8aa5888bacfd6c0cbf5cbe1229ba70ea",
+      "displayKey": "maestro-config-model::type-def::DefinitionSummary",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DefinitionSummary",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2280,
+      "end_line": 2283,
+      "signature": "export interface DefinitionSummary {",
+      "contentHash": "b521969fd3b24961e4566df6d559ddc8d11619ef3bd3e257e9c78e010bd10f09",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8ae652628c3a9afcc41a4a6895ac6378",
+      "displayKey": "maestro-config-model::type-def::ReportSyncSummary",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ReportSyncSummary",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 712,
+      "end_line": 725,
+      "signature": "export interface ReportSyncSummary {",
+      "contentHash": "c681cd9ed958fd56fb95acb6d570cbd07380a0f58b3be4a5a439854666b639b4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8aea2291c1d2e5b02e0b72afbe4b80f2",
+      "displayKey": "maestro-config-model::type-def::SessionEffort",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionEffort",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1768,
+      "end_line": 1768,
+      "signature": "export type SessionEffort = \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\";",
+      "contentHash": "bd3905a624358220b458785c3f0e2e9c3fe1b4f1ea1ed8a4960182fe493d4727",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8b0810a5dbbdf6305923a36bc5096137",
+      "displayKey": "maestro-config-model::function::watchConfigFile",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "watchConfigFile",
+      "filepath": "apps/maestro/src/core/config-watch.ts",
+      "start_line": 19,
+      "end_line": 49,
+      "signature": "function watchConfigFile(projectRoot: string, onChange: () => void, intervalMs = 1000): () => void",
+      "contentHash": "44e117013146495c912499dcdb2b99d3ae24ef2daa657a4f240508cfd08019aa",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8e6a6a465c5b8e7c8927eb3e5d810135",
+      "displayKey": "maestro-config-model::type-def::UsageTotals",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UsageTotals",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2402,
+      "end_line": 2407,
+      "signature": "export interface UsageTotals {",
+      "contentHash": "41d157a44efbeb77b0f30601c2edb08ebd0866908e9f78eb044d76c8b3f6b370",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8e6dd7fc3d15c330977ff87eb67c2c8a",
+      "displayKey": "maestro-config-model::type-def::SettingsSourceInfo",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SettingsSourceInfo",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1258,
+      "end_line": 1264,
+      "signature": "export interface SettingsSourceInfo {",
+      "contentHash": "8eeb319053e233f709c57a680e20ed6cb97cd15913a8df201abf0c251ed713bd",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8eefb4bfa2c1dec1fc36e9819697b4ac",
+      "displayKey": "maestro-config-model::type-def::AgentForkRecord",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentForkRecord",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 356,
+      "end_line": 372,
+      "signature": "export interface AgentForkRecord {",
+      "contentHash": "8516306b0842e830fab5e3767f4a447d5d7593a7a6ab0c2a3f26a33799a8048b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "92ef97bfa804ba13a7180fbe7e4d78a2",
+      "displayKey": "maestro-config-model::type-def::ClaudeRunResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeRunResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1481,
+      "end_line": 1504,
+      "signature": "export interface ClaudeRunResult {",
+      "contentHash": "ff52c0ea94b30dd8f8164d5ea6ead2defbe4ce946fab5b6ba06ea0e197b22a58",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9d887fd91984bdc65a14ad4047e04a14",
+      "displayKey": "maestro-config-model::type-def::AgentQuestion",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentQuestion",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2014,
+      "end_line": 2022,
+      "signature": "export interface AgentQuestion {",
+      "contentHash": "2787c261ce5b9655f52c9771dbb28a047c28f2dcadb2305c1d780180596b5641",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a075289bfdc8a65e6e59401eab447cd4",
+      "displayKey": "maestro-config-model::type-def::MaestroInstanceV3",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroInstanceV3",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 9,
+      "end_line": 19,
+      "signature": "export interface MaestroInstanceV3 {",
+      "contentHash": "181d312135ed61941b2fbc351e99ad2104758aa6a7284ab1214a58a457cd7799",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a32faefef95091bc5b23a540f706a98d",
+      "displayKey": "maestro-config-model::type-def::UninstallReport",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UninstallReport",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 974,
+      "end_line": 1008,
+      "signature": "export interface UninstallReport {",
+      "contentHash": "f027a18d4d5f7dc860a737748bcdd391648c2cf27433db64f2d671a188eebe6e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a397fc99949323a00670c3025109bd2b",
+      "displayKey": "maestro-config-model::type-def::SettingsPort",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SettingsPort",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1290,
+      "end_line": 1293,
+      "signature": "export interface SettingsPort {",
+      "contentHash": "9f223ac7048b92c95106f847d4f34d6481d9b303456692a69e5a08f90b08e159",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a4fc3b8f01a46ca932c97416bea883b0",
+      "displayKey": "maestro-config-model::function::readAgentsAvailable",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "readAgentsAvailable",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 116,
+      "end_line": 118,
+      "signature": "function readAgentsAvailable(projectRoot: string): string[]",
+      "contentHash": "a3e01d524cfeb8c71a5b814ababfa825ac13cbd4a5bb782b61bcb8e5181d5d2a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a64c235fc8d643652b85dd7d8c22c260",
+      "displayKey": "maestro-config-model::type-def::SessionInfo",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionInfo",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2169,
+      "end_line": 2235,
+      "signature": "export interface SessionInfo {",
+      "contentHash": "aa4688e6efffa7d928138fd94d0c4799c107890a2438a94869ecf93b11722f12",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a76613f265b81c53ee5a2d28df4ddd53",
+      "displayKey": "maestro-config-model::type-def::MaestroHandoffsSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroHandoffsSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 202,
+      "end_line": 202,
+      "signature": "export type MaestroHandoffsSlice = Record<string, MaestroHandoffEntry>;",
+      "contentHash": "33295b77f1b9f8777ec49833a2081d883c89f9201cc0d1437bb90993adaa3451",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a80eb5e039fd645c63f83619f908069d",
+      "displayKey": "maestro-config-model::function::maestroConfigRefusal",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "maestroConfigRefusal",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 40,
+      "end_line": 65,
+      "signature": "function maestroConfigRefusal(raw: string): ConfigRefusal | null",
+      "contentHash": "b02c82803027393f06438da2e0a7f0d618847def8bab5a0f401625d1d8703098",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "af3c6753a68fb0cac8ebb318e79249d5",
+      "displayKey": "maestro-config-model::type-def::WorkflowSpec",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "WorkflowSpec",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 638,
+      "end_line": 642,
+      "signature": "export interface WorkflowSpec {",
+      "contentHash": "93424060713bcdb6cd35f43648dcc88f65ecb510114b28be0a6dd2c0f86e6c89",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b0b1a8cf1c309ff83de6eed7691b2dbe",
+      "displayKey": "maestro-config-model::type-def::MaestroSession",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroSession",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 215,
+      "end_line": 250,
+      "signature": "export interface MaestroSession {",
+      "contentHash": "f68898d31e9c9d65055991cf6d27f7eaf066e247a44527cec23110d2813879e7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b2a00df913aee83153f60acab637e4e4",
+      "displayKey": "maestro-config-model::type-def::PermissionDiffHunk",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionDiffHunk",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1904,
+      "end_line": 1907,
+      "signature": "export interface PermissionDiffHunk {",
+      "contentHash": "9948f8966d74592f050beac5090894a580f92d310453d70fe22b9a778bbf6a17",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b3406911dc12d1ac909f429d62708e70",
+      "displayKey": "maestro-config-model::type-def::AgentForkResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentForkResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 338,
+      "end_line": 341,
+      "signature": "export interface AgentForkResult {",
+      "contentHash": "87d09a32900f8d70878a35f9bdc0ee8ceb179c9c23b21e81e5112d7836d6158c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b3b13700746a8864cfa666e008a099d4",
+      "displayKey": "maestro-config-model::type-def::RuleLibraryEntry",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "RuleLibraryEntry",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2318,
+      "end_line": 2325,
+      "signature": "export interface RuleLibraryEntry {",
+      "contentHash": "a8d10d0feb6ae3b636575b2380cbb1c9f0ea7aeb3b1488ec08f12cba0e74c4ac",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b3d3aebbd3ce8c6255ea09c415ff7c4d",
+      "displayKey": "maestro-config-model::type-def::AgentDescriptionResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentDescriptionResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 294,
+      "end_line": 298,
+      "signature": "export interface AgentDescriptionResult {",
+      "contentHash": "d0f3f3a49fbe1b93cf97b1519290b26549a7e530c36a7de24111a0e0636cdd27",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b70c2c2156bd32ac21ea102f9a6378d3",
+      "displayKey": "maestro-config-model::type-def::AgentSyncSummary",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentSyncSummary",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 799,
+      "end_line": 812,
+      "signature": "export interface AgentSyncSummary {",
+      "contentHash": "bc01188eaf6c68bcbf1cb3ae51a75a84a9dea3bf3571ab51860628b4dfdb5e2b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bb0ad2479b1e772521dcede6706a647d",
+      "displayKey": "maestro-config-model::type-def::SettingsPermissions",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SettingsPermissions",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1247,
+      "end_line": 1255,
+      "signature": "export interface SettingsPermissions {",
+      "contentHash": "971b8db8b77a484237d11a2a2f66f95dc7493abe1ed6c6838ef9306be0f48dbc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bcde25527204b6e3c83223ece9ffafd5",
+      "displayKey": "maestro-config-model::type-def::HandoffDefaultsListing",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "HandoffDefaultsListing",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 423,
+      "end_line": 434,
+      "signature": "export interface HandoffDefaultsListing {",
+      "contentHash": "607f9c9381db510d636c92480c0a3bf491d627640c7ca676d0f859de855b91fe",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bdaa33e0ae0260d166c82a481ee20511",
+      "displayKey": "maestro-config-model::type-def::SpendCeiling",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SpendCeiling",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1762,
+      "end_line": 1762,
+      "signature": "export type SpendCeiling = \"budget\" | \"turns\";",
+      "contentHash": "f39dfa628bea54b2bbfbe9e9266a9abfdae3a47021ac5149f0e72a3c355de996",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bdff1cf8bc6ad612cfe2a1948a120b74",
+      "displayKey": "maestro-config-model::type-def::ConfigRefusalKind",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ConfigRefusalKind",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 11,
+      "end_line": 11,
+      "signature": "export type ConfigRefusalKind = \"unparseable\" | \"unsupported-version\";",
+      "contentHash": "fbff8ce0113e126710493ce85a164e019fdd77a1bd795259be3b8413f5e90c9f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bed59054255379222033363425fea095",
+      "displayKey": "maestro-config-model::component::ConfigWatchProvider",
+      "concept": "maestro-config-model",
+      "type": "component",
+      "name": "ConfigWatchProvider",
+      "filepath": "apps/maestro/src/renderer/src/utils/config-watch-context.tsx",
+      "start_line": 13,
+      "end_line": 23,
+      "signature": "function ConfigWatchProvider({ children }: { children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "864b32521286f9b5896a3f8914c559fa425c301726f8ba4822271f73838e2093",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bf23b344ed37314395c82bb6c5765c8f",
+      "displayKey": "maestro-config-model::type-def::SettingsTier",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SettingsTier",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1244,
+      "end_line": 1244,
+      "signature": "export type SettingsTier = \"user\" | \"project\" | \"local\" | \"managed\" | \"flag\";",
+      "contentHash": "21cefe420e33062e36ce2251900165b944a5983f8c877e25438330d08a695e8f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bf3475926dbeab90754e8f28b9874086",
+      "displayKey": "maestro-config-model::type-def::SessionLogEntry",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionLogEntry",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 504,
+      "end_line": 542,
+      "signature": "export interface SessionLogEntry {",
+      "contentHash": "e5b5dc0dac9739e1a2c869afc383011b0214dc4ca39418b27acd853d2993c30e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c5202ed4590bd1294cba1a53e1743203",
+      "displayKey": "maestro-config-model::type-def::HandoffDefault",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "HandoffDefault",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 394,
+      "end_line": 398,
+      "signature": "export interface HandoffDefault {",
+      "contentHash": "6092faf435faf90a3c46d9da203f697c5d187caca05c43d9b27ed2ca9b82778a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c55d4623f078f8b9e4a39530147ac0e1",
+      "displayKey": "maestro-config-model::type-def::AgentType",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentType",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 466,
+      "end_line": 466,
+      "signature": "export type AgentType = (typeof AGENT_TYPES)[number];",
+      "contentHash": "74fd0287e7aa13cd9c7d871efc808ae0a47f51a6f6252721291708e838b328e6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c79d2bbce31bf7af84a7c4fb34950375",
+      "displayKey": "maestro-config-model::type-def::MaterializedFilesFinding",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaterializedFilesFinding",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 927,
+      "end_line": 932,
+      "signature": "export interface MaterializedFilesFinding {",
+      "contentHash": "43dfb305726f905f3d94cc323fcf400731253837f854cbcec0cecbbb11413e2a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c891a21719d7992664cb59aa85ce6ee6",
+      "displayKey": "maestro-config-model::type-def::AgentContentResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AgentContentResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 307,
+      "end_line": 310,
+      "signature": "export interface AgentContentResult {",
+      "contentHash": "cdcf685b7071868db69578d6559ea8bd7e2660cf5b3f01faddcf967f2ca7c036",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c9bdc3e682c20ef5a444782cce68d2c9",
+      "displayKey": "maestro-config-model::component::ExternalChangeBanner",
+      "concept": "maestro-config-model",
+      "type": "component",
+      "name": "ExternalChangeBanner",
+      "filepath": "apps/maestro/src/renderer/src/components/external-change-banner.tsx",
+      "start_line": 12,
+      "end_line": 52,
+      "signature": "function ExternalChangeBanner({\n  externalSlice,\n  onReload,\n  onKeepMine,\n}: {\n  externalSlice: WorkflowSlice | null;\n  onReload: () => void;\n  onKeepMine: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element | null",
+      "contentHash": "414950c6fb6503de39b6da938f0a2bc63e3bb12fc0b9edb9344d854491bffdc6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cafeb798f6e9a7240f2fc664864152b0",
+      "displayKey": "maestro-config-model::type-def::ClaudeRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1203,
+      "end_line": 1210,
+      "signature": "export type ClaudeRequest =",
+      "contentHash": "84c0f1fe3b26f28c04bd6fc096c96964d1ac5ebf943b4bd36390623439e85a01",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cbc4227f6e688419120d3ef2bbf4b897",
+      "displayKey": "maestro-config-model::type-def::ClaudeReadScope",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ClaudeReadScope",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1342,
+      "end_line": 1366,
+      "signature": "export interface ClaudeReadScope {",
+      "contentHash": "1d655fb8e48609af4d1e422fc111e44209ab84148087a36aca76c90e9f37d5ea",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cc9c79ad13398f4c35254aa4c26f39a4",
+      "displayKey": "maestro-config-model::type-def::PermissionOutcome",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PermissionOutcome",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1665,
+      "end_line": 1665,
+      "signature": "export type PermissionOutcome = \"allow\" | \"deny\" | \"stop\" | \"cancelled\" | \"answered\";",
+      "contentHash": "0c7f8909c0dead09c4138c5a2f77aa4442415eb9ab5b2ed4ca602ca4f2816361",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ce256ce229f2422d2cc9635768a42e68",
+      "displayKey": "maestro-config-model::type-def::ProjectRule",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ProjectRule",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 468,
+      "end_line": 474,
+      "signature": "export interface ProjectRule {",
+      "contentHash": "98566f834b40b7a79dcf7c76aae0d53b3927cfde8bf443938219e4e3e8a17f94",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ce261df6c65b133c05090806d6525e9e",
+      "displayKey": "maestro-config-model::type-def::WorktreeTabState",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "WorktreeTabState",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2478,
+      "end_line": 2478,
+      "signature": "export type WorktreeTabState = \"live\" | \"no-log\" | \"removed\";",
+      "contentHash": "d11002a47ad47332528588dd037e14d7138c20b930ae313cba178640108593eb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d02bf38a29361ae2a2a9531dae76c5af",
+      "displayKey": "maestro-config-model::type-def::DanglingSkillRef",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DanglingSkillRef",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 36,
+      "end_line": 41,
+      "signature": "export interface DanglingSkillRef {",
+      "contentHash": "071e1353038eb1822b9e506c93266f35121cc53320889700bc8642aa2b3e5137",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d379e68d6399835233a6129948ed53d8",
+      "displayKey": "maestro-config-model::type-def::SaveResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SaveResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2237,
+      "end_line": 2249,
+      "signature": "export interface SaveResult {",
+      "contentHash": "b391b55c790346a4b28bc9d33cc099ca930d06ce0d39cbaec10237a2fe7fdf5e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d4db8e4ad81b4c78646a913129048aa7",
+      "displayKey": "maestro-config-model::type-def::SessionEvent",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionEvent",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1532,
+      "end_line": 1641,
+      "signature": "export type SessionEvent =",
+      "contentHash": "f34db6f72736270e570417abb6b9d599eb53a0138a8471f468db0a680a6d7e80",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d548e63378384b8f1c39fbb174a283bf",
+      "displayKey": "maestro-config-model::type-def::AvatarCategory",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "AvatarCategory",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 69,
+      "end_line": 69,
+      "signature": "export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number];",
+      "contentHash": "f4b9120fb6eb2abdfba88d69ffd7f523997727d8b5335d30c0d1436338485bf2",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d5ca0d3a42434aa070a52cd78180f816",
+      "displayKey": "maestro-config-model::type-def::InstalledPluginInfo",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "InstalledPluginInfo",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2267,
+      "end_line": 2277,
+      "signature": "export interface InstalledPluginInfo {",
+      "contentHash": "1ee0c0f11a8d416ffd3bb5511f3a322b0cafb25d06686eca60aba36d83a10d31",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d836d9ca77f8c11cb8141491e0ea1bcf",
+      "displayKey": "maestro-config-model::type-def::HandoffContext",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "HandoffContext",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1434,
+      "end_line": 1465,
+      "signature": "export interface HandoffContext {",
+      "contentHash": "e7c538f7beab0ed0064b5dfa9413d3aafb784a02d9cdf17214b26123f32aff62",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d87bdb24660468d4a03a17a01a020ba7",
+      "displayKey": "maestro-config-model::type-def::ConfigRefusal",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ConfigRefusal",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 14,
+      "end_line": 22,
+      "signature": "export interface ConfigRefusal {",
+      "contentHash": "cd1b624e59465f70a99368aa8e1ed1509fabedaec1aef0d98fd08c00271e341f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "da1963b60ab7d5d4e3c1a17e37aa013d",
+      "displayKey": "maestro-config-model::type-def::ChannelDelivery",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ChannelDelivery",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 549,
+      "end_line": 556,
+      "signature": "export interface ChannelDelivery {",
+      "contentHash": "dfa23e7c5ec28e69ed40cbd00a5f0053db7fd4dc9c38e5545a873e573f5bbb23",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "db0e7a7b8317acc196cdf0cef760b10d",
+      "displayKey": "maestro-config-model::type-def::ResolvedHandoffRoute",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResolvedHandoffRoute",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 444,
+      "end_line": 454,
+      "signature": "export interface ResolvedHandoffRoute {",
+      "contentHash": "d50deb79164b7bce0fdccf1996ab1df4f0aad565efc5f70e5c449fe22c33654e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dc1e65a4f10790b6a9dd8e3c4a9fada0",
+      "displayKey": "maestro-config-model::type-def::SessionGrantOption",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionGrantOption",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1817,
+      "end_line": 1831,
+      "signature": "export interface SessionGrantOption {",
+      "contentHash": "d08f778972df65e27deee4f92d0bccfdf5248f255f9e7442b15db8ade36ee598",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dc1ee07fb290ed414eb7a8908093ea6c",
+      "displayKey": "maestro-config-model::type-def::WorktreeTabInfo",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "WorktreeTabInfo",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2481,
+      "end_line": 2492,
+      "signature": "export interface WorktreeTabInfo {",
+      "contentHash": "ee6667bbdf1c220d7cf0c3bd8777b680c8f2024d43924a9602539ffe5ba540b5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dc8b2a5b5827f10716ba152db27344ff",
+      "displayKey": "maestro-config-model::function::maestroJsonPath",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "maestroJsonPath",
+      "filepath": "apps/maestro/src/core/config.ts",
+      "start_line": 21,
+      "end_line": 23,
+      "signature": "function maestroJsonPath(projectRoot: string): string",
+      "contentHash": "39112c5c53c89e8c7a12c8e15babd94b3840b1db0558417c8d7779078eeb34ae",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dcbd89befa65d9faa236082ccdc784ac",
+      "displayKey": "maestro-config-model::type-def::MaestroWorkflowsSlice",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroWorkflowsSlice",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 135,
+      "end_line": 140,
+      "signature": "export interface MaestroWorkflowsSlice {",
+      "contentHash": "9e236055b19502f99ac48abf108968aca8f88835de199646b5f5c000211c781d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e02de3943ab546e237751a4265f8e0d7",
+      "displayKey": "maestro-config-model::type-def::CreatePluginRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CreatePluginRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1079,
+      "end_line": 1085,
+      "signature": "export type CreatePluginRequest = {",
+      "contentHash": "78db9731f9a8bbc8740fa621b149bec3e3cc8732e59d7648d732515d267de654",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e3f6cea43c407330fcd6b1618433cb57",
+      "displayKey": "maestro-config-model::type-def::InstallReport",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "InstallReport",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 837,
+      "end_line": 904,
+      "signature": "export interface InstallReport {",
+      "contentHash": "d4a7f8c98fad90a45beb2acf93e04b4338cae504ba2d87ef3858d5e9e1198365",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e4010272cb76d5e49c2469d713dae39d",
+      "displayKey": "maestro-config-model::type-def::ReadScopeOrigin",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ReadScopeOrigin",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1311,
+      "end_line": 1311,
+      "signature": "export type ReadScopeOrigin = \"cwd\" | \"app\" | \"settings\" | \"session\";",
+      "contentHash": "15303f203ac1366af7f889700c1990028e6ee41be1f0f7d70bfdf9a1c6412c3e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ebaecfa6332e5007f172a2e73f178efc",
+      "displayKey": "maestro-config-model::type-def::ResolvedHandoff",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "ResolvedHandoff",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 408,
+      "end_line": 412,
+      "signature": "export interface ResolvedHandoff {",
+      "contentHash": "cd3a9ca138c165f3e26a61835e9e5165e52bb19b500abfa92dc55574a4474142",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ec360c7e03cea69499ab905a1c6ac289",
+      "displayKey": "maestro-config-model::type-def::TreeNode",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "TreeNode",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 476,
+      "end_line": 481,
+      "signature": "export interface TreeNode {",
+      "contentHash": "3b3aad20bd155dfa9e1cbc9da5e4a0350e14b0245b0df689be7dc9b89a2e2068",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ef1890096f9c11e9c6974e7965f992f0",
+      "displayKey": "maestro-config-model::type-def::EffectiveSettingsSnapshot",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "EffectiveSettingsSnapshot",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1274,
+      "end_line": 1278,
+      "signature": "export interface EffectiveSettingsSnapshot {",
+      "contentHash": "03e21501de5a2b9b514b66a067ba99fba8fe30a620094e035eb9ab4f3ec84a5d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ef745e1d690ccb7f01f58d1902669a93",
+      "displayKey": "maestro-config-model::type-def::UpdateSkillTagsRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UpdateSkillTagsRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1106,
+      "end_line": 1106,
+      "signature": "export type UpdateSkillTagsRequest = { kind: \"update-skill-tags\" };",
+      "contentHash": "fc1e48afe46c38ff95776b2155aa57efaa1046de900ad4a76c7ad5b7c5d30184",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f02787c46b4b4adc9cccadca1978b3bb",
+      "displayKey": "maestro-config-model::type-def::DocMeta",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "DocMeta",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2334,
+      "end_line": 2343,
+      "signature": "export interface DocMeta {",
+      "contentHash": "c8ea5c4b2301c27616e50f790161e2da3ad49c2675e00828f4c8faec48373c1e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f196f93e636833a097ec2d4b654ea292",
+      "displayKey": "maestro-config-model::type-def::WorktreeOpenResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "WorktreeOpenResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2494,
+      "end_line": 2495,
+      "signature": "export type WorktreeOpenResult =",
+      "contentHash": "e68f8f4429ca5fc09b31c6cc8340e675982fc40b7ff2de4f974be2c6247986ab",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f266de6dfbbe374d320fbd207d47c5a3",
+      "displayKey": "maestro-config-model::type-def::PendingLane",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PendingLane",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 569,
+      "end_line": 576,
+      "signature": "export interface PendingLane {",
+      "contentHash": "f0813fece842de4f68b036f4f246e4cc1e0eb33d50bb51b2b4e813dd61298581",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f4b13a6893e1b466944fc75552a59f7b",
+      "displayKey": "maestro-config-model::type-def::RepoResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "RepoResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1153,
+      "end_line": 1160,
+      "signature": "export interface RepoResult {",
+      "contentHash": "474f49c2b300c31059fec49a8c0773b169e2099f0265fd2598ce76b534c59094",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f54431dc79f7e8c8da5e0a2d56a20f8a",
+      "displayKey": "maestro-config-model::type-def::MaestroOwnerRunsState",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "MaestroOwnerRunsState",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 252,
+      "end_line": 257,
+      "signature": "export interface MaestroOwnerRunsState {",
+      "contentHash": "a7f9e6b5e9c3670d76945a63c69bfe682fa6cd8c5f7ee1521b61c103a805c480",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f618a8bb7617d711085d5d4166fb0a6c",
+      "displayKey": "maestro-config-model::type-def::UninstallPlan",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UninstallPlan",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 941,
+      "end_line": 971,
+      "signature": "export interface UninstallPlan {",
+      "contentHash": "fdb89fbb2fb554b1fe5e3418c5c0d1b76c606cf724444968f6838d8d55c670bd",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f65eef14ef01202500fd43ed1d5f97dd",
+      "displayKey": "maestro-config-model::function::duplicateAgentTypes",
+      "concept": "maestro-config-model",
+      "type": "function",
+      "name": "duplicateAgentTypes",
+      "filepath": "apps/maestro/src/core/config-validate.ts",
+      "start_line": 28,
+      "end_line": 58,
+      "signature": "function duplicateAgentTypes(cfg: MaestroConfigV3 | null): ConfigIssue[]",
+      "contentHash": "5ac206f14373e63df7a3557dade5a2b7f17a624148282e11d41f0d8080795982",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f782c761b6df47d075a9f1bf686e2e76",
+      "displayKey": "maestro-config-model::type-def::CreateMarketplaceRequest",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "CreateMarketplaceRequest",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 1087,
+      "end_line": 1097,
+      "signature": "export type CreateMarketplaceRequest = {",
+      "contentHash": "bea651d6510e2fbe5596ac9d27a94fbc5c8f22a58614e9392ac2b51fe58d9760",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fa63536b28294bc86b17e686529ad7cb",
+      "displayKey": "maestro-config-model::type-def::GlobalDocsData",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "GlobalDocsData",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2376,
+      "end_line": 2380,
+      "signature": "export interface GlobalDocsData {",
+      "contentHash": "dd413fc975b5be28652836a6725f64ba7b35a808f7dfcc1bf2e165d94a6ff88b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fbeca330a6c356e0f86fdfe41a3e6450",
+      "displayKey": "maestro-config-model::type-def::PlanStepStatus",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "PlanStepStatus",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 281,
+      "end_line": 281,
+      "signature": "export type PlanStepStatus = \"pending\" | \"done\";",
+      "contentHash": "94055238db97b2c8e7c6b0ac1a98e108d02b6861869c1ec68ef8959515901ff5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fcad69defa313309509944afd60d79c1",
+      "displayKey": "maestro-config-model::type-def::UsageStatsResult",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "UsageStatsResult",
+      "filepath": "apps/maestro/src/core/contracts.ts",
+      "start_line": 2463,
+      "end_line": 2473,
+      "signature": "export interface UsageStatsResult {",
+      "contentHash": "863f5fc1230b7d2238d6319412b9e2550993bce1d1132d1b2576826c84528f0b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ff55ce2b1574ef29812991fb43c61d2d",
+      "displayKey": "maestro-config-model::type-def::SessionPlan",
+      "concept": "maestro-config-model",
+      "type": "type-def",
+      "name": "SessionPlan",
+      "filepath": "apps/maestro/src/core/types.ts",
+      "start_line": 283,
+      "end_line": 286,
+      "signature": "export interface SessionPlan {",
+      "contentHash": "9381807f5ae585d462ea4b0c2fa72c063e16dd07c84673f2f971eacedd7a32f3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "0ede3da0aed9a52b590dd831caddb978",
+      "_from": "vertices/5d118b6e8bef976fbe882e926ab7ce5f",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 104,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "11453b84c8f0ec0a1901e19dafe99c1d",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/22361e4fdd4574f3ef23a3caa44033bb",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 23,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "19710632b3f0097d7fcece649d7f3b3e",
+      "_from": "vertices/8b0810a5dbbdf6305923a36bc5096137",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 20,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1a25616e57b26e706e600c659d08360d",
+      "_from": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "_to": "vertices/1b14fff59895f23704423d7b5b43042e",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "231dea55946da582f5b7711834dc0c48",
+      "_from": "vertices/3ee3b0dac7f1470a7bcfaeea536148e2",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "294d8fd79a4f1c74e147c5988b6faf99",
+      "_from": "vertices/a80eb5e039fd645c63f83619f908069d",
+      "_to": "vertices/5348160d95ccda615d5979d112145205",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2e37d4d3e1c2adcbc468db204747fc7a",
+      "_from": "vertices/a4fc3b8f01a46ca932c97416bea883b0",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 117,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2e777b1d2a60c27d7eb9aeab5dfff785",
+      "_from": "vertices/a80eb5e039fd645c63f83619f908069d",
+      "_to": "vertices/d87bdb24660468d4a03a17a01a020ba7",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3962928f6178dd31373a81e2162c50ad",
+      "_from": "vertices/22361e4fdd4574f3ef23a3caa44033bb",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 131,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3c94ecdc47ba006f3f3f43f214d5fcaf",
+      "_from": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 53,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41b49f17f2247aafd59291c729352879",
+      "_from": "vertices/72ea91b586fb967caa96e3fbe1fb1d5f",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "42ee05448b4e1f883707c80d10c21a8a",
+      "_from": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 52,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "45fc6e40f04bc1a23b33249852eca3af",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/1b14fff59895f23704423d7b5b43042e",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 22,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "485f05b75e7a5883e42bbe02ce2989ab",
+      "_from": "vertices/22361e4fdd4574f3ef23a3caa44033bb",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 132,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57b340ff4129e18e00b9a3a788dec129",
+      "_from": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5b873228d3a885e6b83e98591b472215",
+      "_from": "vertices/3ee3b0dac7f1470a7bcfaeea536148e2",
+      "_to": "vertices/661504bef52faf690ed6161f82bd57f1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5c4ae20e018330ba5751fbf56f108ca7",
+      "_from": "vertices/43c01d04f5824f20d2cc14cc41966a4e",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "73bc567eb6df2c859846b5d9dc7a9dd7",
+      "_from": "vertices/72ea91b586fb967caa96e3fbe1fb1d5f",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "778c3a87434bb68743f5265971022cf8",
+      "_from": "vertices/22361e4fdd4574f3ef23a3caa44033bb",
+      "_to": "vertices/5535cfccc3fdb5306b4512d9ce017fcc",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 131,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "82507152099f55e5b718b0726474ea07",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/d379e68d6399835233a6129948ed53d8",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "835d5aac6b48d262c9aae5badbe0c33d",
+      "_from": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "84ed7ee4e955def0a5b1e45efd9655c1",
+      "_from": "vertices/07a9b67f6726cdbd40868cde05a82dcc",
+      "_to": "vertices/661504bef52faf690ed6161f82bd57f1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 16,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8f6d457fa4afc205064648b9f7590845",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 24,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "95af6ebf85223e71ba83921a489c932d",
+      "_from": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "_to": "vertices/3932ce0b7d5a8155966f1fb284ef4d95",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "96564cd129a6170cb5c716f6fa783b55",
+      "_from": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "_to": "vertices/43c01d04f5824f20d2cc14cc41966a4e",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9be22bd710715282c20993769c0c6a75",
+      "_from": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "_to": "vertices/661504bef52faf690ed6161f82bd57f1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9d3c86462951c5737e3a94ef120597b9",
+      "_from": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "_to": "vertices/1b14fff59895f23704423d7b5b43042e",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ab180d45f84cd9646b5a729edf2d927f",
+      "_from": "vertices/3ee3b0dac7f1470a7bcfaeea536148e2",
+      "_to": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ad36e255ef7924b9246767b38efe2661",
+      "_from": "vertices/1b14fff59895f23704423d7b5b43042e",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 25,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ba90400d6c1de72455dd95280772829f",
+      "_from": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d42549d3455cc80e972435f20872ad36",
+      "_from": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "_to": "vertices/4847b36472c02e7a7d53d6ef482bd1d1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 28,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d96eb89e3af969304be9bad5c6be9d22",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/5535cfccc3fdb5306b4512d9ce017fcc",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dfb76c1616caf721275df18fcefe650d",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 22,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e73ba1bde2cb800db96ae2ea8e0a1a1c",
+      "_from": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "_to": "vertices/661504bef52faf690ed6161f82bd57f1",
+      "type": "has-type",
+      "concept": "maestro-config-model",
+      "crosses_concept": false,
+      "line": 28,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/maestro-config-model/SKILL.md",
+    "body": "---\nname: maestro-config-model\ndescription: \"Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, code-graph's concept-skill state). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas.\"\nmetadata:\n  type: concept-skill\n  version: \"1.14\"\n  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464\n---\n\n# Maestro config model (v3)\n\n`.claude/maestro.json` is the single place the two halves of Maestro meet: the desktop app writes it\nwith no Claude session in the loop, and the runtime hooks read it inside a session with no app\nrunning. Everything else is derived. The schema is `MaestroConfigV3` in\n`apps/maestro/src/core/types.ts`; `config.ts` reads, merges and writes it; `save.ts` is the one\nentry point the IPC layer calls.\n\n## The shape\n\n| Field                                   | Meaning                                                                                                                                                                             |\n| --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| `version: 3`                            | Schema version. `mergeSlice` re-stamps it on every write.                                                                                                                           |\n| `agents_available` / `skills_available` | What the project has offered to the canvas.                                                                                                                                         |\n| `workflow_instances`                    | Reusable agent+skills pairings (`MaestroInstanceV3`) that nodes point at.                                                                                                           |\n| `workflows`                             | The graphs themselves — `MaestroWorkflowV3`, made of `MaestroNodeV3` and `MaestroEdgeV3`.                                                                                           |\n| `rules`                                 | `MaestroRuleV3[]` — rule files and the scopes they are assigned to.                                                                                                                 |\n| `reports?`                              | Per-agent report overrides. Absent means \"no project-level opinion\", and resolution falls through to the global tier.                                                               |\n| `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `\"<sender>/<receiver>\"` with **bare** agent names, flat rather than nested. Same absence rule as `reports?`.          |\n| `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                                                                                    |\n| `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                                                                                         |\n| `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks}`, `end_skills.{maestro}`. Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |\n| `gates?`                                | **Legacy, no longer read** (`092`). The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |\n| `use_maestro_tasks?`                    | A SIBLING of the skill lists, not nested in them (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**.                               |\n\n## Slice merges are the load-bearing rule\n\nSaves never write the whole file. `ConfigSlice` is a union of exactly five shapes — `workflows`,\n`rules`, `project-tags`, `skill-lists`, `task-routing` (`046`) — and `mergeSlice` copies only that slice's\nfields onto the current config. The comment on it is explicit about why: **this separation is the\nreason `/workflows` saves can't clobber `/rules` assignments and vice versa, and widening any branch\nto write another's fields reintroduces that bug.** Adding a field means deciding which slice owns\nit, not appending to whichever save path is nearest.\n\n**`mergeSlice` has five explicit `sliceType` tests and no `else`, on purpose** (`032`, `046`). It\nused to end in a catch-all `else` that happened to mean `project-tags`; that is a latent instance of\nexactly the clobbering bug the function's own header warns about, because the _next_ slice added\nwould have silently inherited the previous one's write. `046`'s `task-routing` arm writes only\n`use_maestro_tasks`. A sixth slice must add a sixth test — being forgotten should be a no-op, never\na wrong write.\n\n**`reports` and `handoffs` have no `mergeSlice` arm at all, and that is not an omission.** They are\nnever written through `config:save`. Their writers are the install-time syncs (`report-sync.ts`,\n`handoff-sync.ts`) and the explicit save functions (`saveProjectReportOverride`,\n`saveProjectHandoffOverride`), each of which does its own `readConfig` → mutate one key →\n`writeConfig`. Adding a `sliceType` for either would put a second, racier path onto state that\nalready has a writer. `033` followed that precedent rather than reopening it.\n\n**A slice can have more than one writer, and then read-before-write is the rule.** The `workflows`\nslice now has three. Two go through the app's `mergeSlice`: `/workflows`, and `/agents` (which edits\nthe selected instance's `loaded_skills` / `referenced_skills`). Because the merge replaces the\n_whole_ block, a writer that saves a copy it loaded minutes ago reverts everything the other one did\nin between — so `/agents` re-reads via `data:workflows` immediately before calling `config:save`, and\nmutates only the one instance in that fresh config. The third never goes through IPC or `mergeSlice`\nat all: `plugins/maestro/scripts/maestro-workflow-spec.cjs` runs outside the app process, doing its\nown `readConfig` → mutate the named workflow → `writeConfig` cycle — the same discipline enforced by\nhand instead of by a merge function ([workflows-slice](sub-concepts/workflows-slice.md)). Any\nfurther writer of an existing slice owes the same.\n\nA hand-edited config can still hold shapes the canvas refuses to create — chiefly two placed\ninstances in one workflow pointing at the same bare agent. `config-validate.ts` reports those and\nnever repairs them; see [config-validation](sub-concepts/config-validation.md).\n\n## What is machine-owned, and what lives elsewhere\n\n- `runtimeVersion` is **the one machine-owned field**. `installRuntime()` and `maestro-install.js`\n  stamp it on every install/update, and it is the only thing either writes here unasked\n  (see `install.ts`'s header).\n- **Session state is not here, and since `064` it is not per-project either.** It lives in\n  `<root>/.claude/maestro_sessions/<session_id>/{session.json,log.jsonl,tasks.json}` — one directory\n  per Claude Code session, ephemeral and separately owned. `session.json` holds\n  `{ workflow, generated_instances, run_id }`, so **`run_id` is per session, not per project**;\n  anything correlating a run must read it from the calling session's own directory rather than from\n  a fixed path. The three flat `maestro_session*.json` names are the pre-`064` layout and survive\n  only as `LEGACY_SESSION_FILES`. Path resolution belongs to `src/core/session-paths.ts`; see\n  `maestro-architecture` (repo root `.claude/skills/`) for \"Which session am I\".\n- **Concept-skill state is not here either.** It belongs to the `code-graph` plugin (its own\n  marketplace): the `skills` block of `<root>/scribe.config.json`, or the legacy\n  `<root>/.claude/concept-skills.json`. Concept skills are a plain `.claude/skills` convention, so a\n  repo can keep a reconciled list without Maestro installed. Older docs that say `maestro.json`\n  holds `concept-skills-last-update` are stale.\n\n## Files\n\n| File                          | Role                                                                                                                                                                                                           |\n| ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| `src/core/types.ts`           | The schema — every `MaestroConfigV3` type and slice.                                                                                                                                                           |\n| `src/core/config-usable.ts`   | `maestroConfigRefusal(raw)` (`096`) — the one \"is this existing file installable over\" check (unparseable or not `version: 3`), shared by `installRuntime()` and `maestro-install.js` via `maestro-seed`. Pure; `readConfig` is unrelated and still treats those files as a read failure. |\n| `src/core/config.ts`          | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`. (`resolveGates`/`DEFAULT_GATES` are gone; the reader is `resolveSkillLists` in `src/core/skill-lists.ts`.) |\n| `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — reports collisions across placed instances, never repairs.                                                                                                           |\n| `src/core/save.ts`            | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                                                                                                                                          |\n| `src/core/render.ts`          | Renders the orchestrator's handoff table from the config.                                                                                                                                                      |\n| `src/core/success-path.ts`    | Derives the agent→skill success path a workflow describes.                                                                                                                                                     |\n| `src/core/skill-ref-report.ts` | `skillRefReport` — the IPC-facing dangling-skill report over `findStaleSkillRefs`; advisory, never repairs (see `workflow-view`).                                                                              |\n\n## Relationships\n\n- [`workflow-view`](../workflow-view/SKILL.md) and [`rule-view`](../rule-view/SKILL.md) — the two\n  editors, one slice each.\n- [`global-stores`](../global-stores/SKILL.md) — the classification state that is deliberately\n  _machine_-wide instead of living in this per-project file.\n- `maestro-architecture` (at the repo root `.claude/skills`) — the runtime that reads this file.\n\n## Sub-concepts\n\n- [Workflows slice](sub-concepts/workflows-slice.md) — instances, nodes, edges and the success path.\n- [Rules slice](sub-concepts/rules-slice.md) — rules and their scopes.\n- [Reports slice](sub-concepts/reports-slice.md) — per-agent overrides and tier fallback.\n- [Handoffs slice](sub-concepts/handoffs-slice.md) — per-route overrides, the path-shaped key, and\n  the third tier that `reports` does not have.\n- [Project tags slice](sub-concepts/project-tags-slice.md) — catalog membership.\n- [Skill-lists slice](sub-concepts/skill-lists-slice.md) — the configurable start/end skill lists,\n  and `resolveSkillLists`.\n- [Task-routing slice](sub-concepts/task-routing-slice.md) — the `use_maestro_tasks` sibling of\n  the skill lists, its two writers and Step 4's reader.\n- [Config validation](sub-concepts/config-validation.md) — what a hand-edited config can break, and\n  the validator that reports it without repairing.\n",
+    "contentHash": "sha256:e72e0c91f65b45a9b22de0a817221f19c3bded83f46853fa07726c500fef4591"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.3",
+    "extracted_at": "2026-10-16T19:40:43.425Z"
+  }
+}

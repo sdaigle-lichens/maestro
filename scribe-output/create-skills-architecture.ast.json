@@ -1,0 +1,3175 @@
+{
+  "concept": "create-skills-architecture",
+  "vertices": [
+    {
+      "_key": "02d48d02077664c24c1c3cb929697c80",
+      "displayKey": "create-skills-architecture::function::manualAgentBody",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "manualAgentBody",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 412,
+      "end_line": 432,
+      "signature": "function manualAgentBody(name: string, triggers: string[]): string",
+      "contentHash": "79cb4c4816a96a33fa9fb8cb57649fa5ef59ae7569bb181a544d8aa8a1c14be2",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "09c6f4ae4663b1d8143b2a13e3c45a7e",
+      "displayKey": "create-skills-architecture::function::buildUpdateSkillTagsHandoff",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "buildUpdateSkillTagsHandoff",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 292,
+      "end_line": 306,
+      "signature": "function buildUpdateSkillTagsHandoff(projectRoot: string, state: string): HandoffContext",
+      "contentHash": "c7f02c928b1d4fe33c8d0ed931fbe22b3c94ce0e9e6928bb0dbce732179f2e7e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "09dd649bc5d4a7d2313c21a58c573fff",
+      "displayKey": "create-skills-architecture::function::planRepo",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "planRepo",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 347,
+      "end_line": 387,
+      "signature": "function planRepo(steps: Step[], git?: GitPort): { steps: Step[]; repo?: RepoResult; }",
+      "contentHash": "4b6077844be8311f467e1e71cb0513d0e010d79309c414edc166e6a37a2cc859",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0cc749a27d2ab775b79b965c48ee15c0",
+      "displayKey": "create-skills-architecture::type-def::CachedPlugin",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "CachedPlugin",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 85,
+      "end_line": 89,
+      "signature": "export interface CachedPlugin {",
+      "contentHash": "738f1afd835aef60090c65acfdaa22c9f81060cd8e7948a8ede7926c84285f04",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "163d493ce6ff100694c10739b4d5dbe4",
+      "displayKey": "create-skills-architecture::component::CreateShell",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "CreateShell",
+      "filepath": "apps/maestro/src/renderer/src/components/create-shell.tsx",
+      "start_line": 41,
+      "end_line": 159,
+      "signature": "function CreateShell({\n  title,\n  subtitle,\n  pills,\n  fieldIds,\n  rowIds,\n  shortcuts,\n  helpOpen,\n  onHelpOpenChange,\n  onSubmit,\n  onToggleMode,\n  submitLabel,\n  busy,\n  banner,\n  preview,\n  children,\n}: {\n  title: string;\n  subtitle: ReactNode;\n  /** Mode / target toggles, rendered beside the heading. */\n  pills?: ReactNode;\n  fieldIds: string[];\n  rowIds: string[];\n  shortcuts: ShortcutSection[];\n  helpOpen: boolean;\n  onHelpOpenChange: (open: boolean) => void;\n  onSubmit: () => void;\n  /** ⌘M. Absent on the routes with no auto/manual choice, where the key does nothing. */\n  onToggleMode?: () => void;\n  submitLabel: string;\n  busy: boolean;\n  /** What the last submit produced, above the form. */\n  banner?: ReactNode;\n  preview: ReactNode;\n  children: ReactNode;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "29a9f247fbf37ee859e3facc80629fb8722fba779625834ef8e8efa38537658d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "16793103fcc1cfaff8fed7452f443a05",
+      "displayKey": "create-skills-architecture::function::apply",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "apply",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 272,
+      "end_line": 337,
+      "signature": "function apply(steps: Step[], git?: GitPort): { ok: true; written: string[]; repoError: string; } | { ok: false; reason: string; }",
+      "contentHash": "656e24d340a977a59e2404d8cbddf18157305090fc0fc054f2e6a1a6cc187ae7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1865a92a04f8359d22a868f79c048bad",
+      "displayKey": "create-skills-architecture::component::CreateMarketplace",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "CreateMarketplace",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-marketplace.tsx",
+      "start_line": 69,
+      "end_line": 274,
+      "signature": "function CreateMarketplace(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "6d533e7f33ef832a03f4cb86665766ac1ef915c2e72d6a252076097b7498de95",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "19e145d272b4f7c0179a397bdf9720f6",
+      "displayKey": "create-skills-architecture::function::getInstalledPluginsByMarketplace",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getInstalledPluginsByMarketplace",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 65,
+      "end_line": 78,
+      "signature": "function getInstalledPluginsByMarketplace(): Promise<Record<string, string[]>>",
+      "contentHash": "7b9ecd5b86e5707195c05ffcf555bec74c01430bccc416650ad7578b71953085",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "displayKey": "create-skills-architecture::function::readAgentEntriesFromDir",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readAgentEntriesFromDir",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 115,
+      "end_line": 133,
+      "signature": "function readAgentEntriesFromDir(dir: string): Promise<AgentEntry[]>",
+      "contentHash": "8c090dc17d7790feb8c37d1a4f3da723e3780f710e1ffd94fc3ac5fe72f20f44",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1d335b19aa77b37f52fac215de6e92c6",
+      "displayKey": "create-skills-architecture::type-def::DefinitionInfo",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "DefinitionInfo",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 8,
+      "end_line": 11,
+      "signature": "export interface DefinitionInfo {",
+      "contentHash": "815454a6da98f4f468dde3bfadcdb84c4f5cccd97fef4bfdd17004f6a9632a2f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1fc5231d2ac83a31b4879f887f211506",
+      "displayKey": "create-skills-architecture::function::getInstalledPluginAgents",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getInstalledPluginAgents",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 155,
+      "end_line": 163,
+      "signature": "function getInstalledPluginAgents(): Promise<PluginDefinitionInfo[]>",
+      "contentHash": "a7f0f0330a7bab85df8ded5868069c48d4de2599400c9c70e5a6cf6712f90816",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2078213ec65b9598b9030f222a48ee26",
+      "displayKey": "create-skills-architecture::function::buildHandoff",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "buildHandoff",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 358,
+      "end_line": 372,
+      "signature": "function buildHandoff(projectRoot: string, request: CreateRequest, opts: ResolveOptions): HandoffContext",
+      "contentHash": "93ce22fb18af8ef765966d35ddca07129724df9245edf5db8b200c61175f0c15",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "25d7549944c079b621b5d2e992f3dddd",
+      "displayKey": "create-skills-architecture::function::getInstalledPluginSkills",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getInstalledPluginSkills",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 145,
+      "end_line": 153,
+      "signature": "function getInstalledPluginSkills(): Promise<PluginDefinitionInfo[]>",
+      "contentHash": "7a28e216061565cf832335affc006276afdf320eefa8641a856fc4e2710ace19",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "28a25a2d97cfd896a5d766de0127d130",
+      "displayKey": "create-skills-architecture::function::getLocalMarketplaces",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getLocalMarketplaces",
+      "filepath": "packages/claude-fs/src/marketplace.ts",
+      "start_line": 18,
+      "end_line": 21,
+      "signature": "function getLocalMarketplaces(): Promise<Record<string, KnownMarketplace>>",
+      "contentHash": "d2288c89b92050ef56f961a4b6a6df079218733f884252324787a0cfa4dd6f85",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "29ef9cf2c6b012abd51bd41a27f1af52",
+      "displayKey": "create-skills-architecture::type-def::CreateOutcome",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "CreateOutcome",
+      "filepath": "apps/maestro/src/renderer/src/utils/create-flow.tsx",
+      "start_line": 14,
+      "end_line": 17,
+      "signature": "export interface CreateOutcome {",
+      "contentHash": "cf38e6a58ad0dcb812d56badf6c0a8d4eaab1efce1bdfb1c53c6989389ddb8c8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2d56d0d4152d5960f68583b22761679d",
+      "displayKey": "create-skills-architecture::effect::effect-123",
+      "concept": "create-skills-architecture",
+      "type": "effect",
+      "name": "effect-123",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-subagent.tsx",
+      "start_line": 123,
+      "end_line": 125,
+      "signature": "useEffect(() => {",
+      "contentHash": "1d4e3e9b88b582b4514163bf306d9468fc4c3cbe24c34c5b08c475152e484ec1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "309cdd41bc5087908a5e56e8eca97fe7",
+      "displayKey": "create-skills-architecture::component::CreateSubagent",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "CreateSubagent",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-subagent.tsx",
+      "start_line": 75,
+      "end_line": 433,
+      "signature": "function CreateSubagent(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "645a42a639a6545d2bbfdd7d379598d8aebe4a8410d1068d1dd8e61a4f2a21bf",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "37c632070025cfd00b9e9c43dd9ce73c",
+      "displayKey": "create-skills-architecture::effect::effect-77",
+      "concept": "create-skills-architecture",
+      "type": "effect",
+      "name": "effect-77",
+      "filepath": "apps/maestro/src/renderer/src/components/create-shell.tsx",
+      "start_line": 77,
+      "end_line": 99,
+      "signature": "useEffect(() => {",
+      "contentHash": "c003545dab04cec9164fbc929a3143c3b4995430d2a8ca14060204f4fcc1817d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "387f1b6219dc2584a4fc972775d66831",
+      "displayKey": "create-skills-architecture::function::jumpToField",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "jumpToField",
+      "filepath": "apps/maestro/src/renderer/src/components/create-shell.tsx",
+      "start_line": 31,
+      "end_line": 39,
+      "signature": "function jumpToField(fieldIds: string[], rowIds: string[], n: number): void",
+      "contentHash": "072683c662982d54b175d4afd0a930e7c99e9062395e792ebee5436c303d460a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "38e848d334eb87d576764ccfa803f401",
+      "displayKey": "create-skills-architecture::function::description",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "description",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 435,
+      "end_line": 443,
+      "signature": "function description(mode: \"auto\" | \"manual\", idea: string, triggers: string[], what: string): string",
+      "contentHash": "fc27e563c68161bbe2f5fa70d9af7a5ef1705357281ebe2d841c2bc7db95dfed",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "394309bb3b5d5289bb3fd31ae291a020",
+      "displayKey": "create-skills-architecture::function::buildUpdateSkillTags",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "buildUpdateSkillTags",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 256,
+      "end_line": 290,
+      "signature": "function buildUpdateSkillTags(projectRoot: string): Promise<BuiltRequest>",
+      "contentHash": "99228e9dad392b4ed3a0be6bbf29102e8e6bb4e3ee5d08a2918deccb34f4071e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4218fac052601287d75403e333c3ff24",
+      "displayKey": "create-skills-architecture::function::readInstalledPluginsRaw",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readInstalledPluginsRaw",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 35,
+      "end_line": 37,
+      "signature": "function readInstalledPluginsRaw(): Promise<RawInstalledPlugins | null>",
+      "contentHash": "f297fdf14c49b8cb4efe55cd360126ef9f2a8b777568d2fee428b9a22aea9e45",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4535e9c42f1c3f96f6359782bebab02e",
+      "displayKey": "create-skills-architecture::function::readScopeFor",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readScopeFor",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 427,
+      "end_line": 453,
+      "signature": "function readScopeFor(projectRoot: string, cwd: string, targets: ClaudeWriteTarget[], settings: SettingsPort | undefined): Promise<ClaudeReadScope>",
+      "contentHash": "49bf7a7593425ac1a92bb59c92db7c3a8bafd8f1f7be463314357d327d2b329f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "47950fb9c9e72c76dd72f28f818edfc1",
+      "displayKey": "create-skills-architecture::type-def::Applied",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "Applied",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 236,
+      "end_line": 239,
+      "signature": "interface Applied {",
+      "contentHash": "6002ebeb59b88d2400625dc494d3b0fa668e28019a3a1b27e746660d3b3b2e2e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4aedca979b13b7ec9e8d7707b2e37a46",
+      "displayKey": "create-skills-architecture::component::CreateSkill",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "CreateSkill",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-skill.tsx",
+      "start_line": 70,
+      "end_line": 351,
+      "signature": "function CreateSkill(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "df662d3cb089ea451a6841c4d0a52dbf0834e201d8d5dc22369963883e12248d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4d55a8441750853c79068b45a04c97d8",
+      "displayKey": "create-skills-architecture::function::unquote",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "unquote",
+      "filepath": "packages/claude-fs/src/utils/frontmatter.ts",
+      "start_line": 27,
+      "end_line": 29,
+      "signature": "function unquote(s: string): string",
+      "contentHash": "1c70d109e48195b943ea6aad6cb9e0c827ef15639a4ca2c13258f67a728107ba",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4d59a285ae37ab1d26f927c755a3e3c7",
+      "displayKey": "create-skills-architecture::function::scaffoldedState",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "scaffoldedState",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 326,
+      "end_line": 347,
+      "signature": "function scaffoldedState(target: string): string",
+      "contentHash": "f2f54c9d0506a10eb4e62f634593f85121137a8ab41984e77dfe7995a986f63d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5237f1ba56fb1b5f046051aa3abc24ae",
+      "displayKey": "create-skills-architecture::type-def::Step",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "Step",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 226,
+      "end_line": 234,
+      "signature": "type Step =",
+      "contentHash": "0a517cce34eb963c4f3a02e7e9805fb57e58242b78b960c82feccc47a8b5deec",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "553f6028145d53b2e7cf1466da5541ae",
+      "displayKey": "create-skills-architecture::component::SubagentTemplatePreview",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "SubagentTemplatePreview",
+      "filepath": "apps/maestro/src/renderer/src/components/subagent-template-preview.tsx",
+      "start_line": 12,
+      "end_line": 91,
+      "signature": "function SubagentTemplatePreview({\n  mode,\n  target,\n  name,\n  idea,\n  description,\n  triggers,\n  tools,\n  marketplace,\n  marketplacePath,\n  plugin,\n  projectRoot,\n}: {\n  mode: \"auto\" | \"manual\";\n  target: \"marketplace\" | \"project\";\n  name: string;\n  idea: string;\n  description: string;\n  triggers: string[];\n  tools: string[];\n  marketplace: string;\n  marketplacePath: string;\n  plugin: string;\n  projectRoot: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "92883eee425afc80801d7c3d64dafe95d5d58996bc73134d9bfefbebeb4268dc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "59aca55a94da530637fd003921f1a722",
+      "displayKey": "create-skills-architecture::function::validateCreateRequest",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "validateCreateRequest",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 90,
+      "end_line": 164,
+      "signature": "function validateCreateRequest(projectRoot: string, request: CreateRequest, opts: MarketplaceOptions = {}): string[]",
+      "contentHash": "94a9df409b8dffbed1c1c2775bbf83da85b35daaf40c3c2cb02d8917156c1f7c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5a72ddd1724a4e7800683804cb950bd8",
+      "displayKey": "create-skills-architecture::function::getUserSkills",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getUserSkills",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 136,
+      "end_line": 138,
+      "signature": "function getUserSkills(): Promise<DefinitionInfo[]>",
+      "contentHash": "6e466d7a4a8ca26a76ea9dbbd32fd01d48ddce3c3123faf7f64f525a5beeaf93",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5baf09e90a5261a1a631d513dcb8d4ee",
+      "displayKey": "create-skills-architecture::type-def::InstalledPlugin",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "InstalledPlugin",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 10,
+      "end_line": 19,
+      "signature": "export interface InstalledPlugin {",
+      "contentHash": "7a2fa4ad066bfa39908c8eaf06472278f8b1a5c1173055a2057add80c8464adb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5c677576c2fac029bb060bce8bcdcab8",
+      "displayKey": "create-skills-architecture::hook::useCreateFlow",
+      "concept": "create-skills-architecture",
+      "type": "hook",
+      "name": "useCreateFlow",
+      "filepath": "apps/maestro/src/renderer/src/utils/create-flow.tsx",
+      "start_line": 33,
+      "end_line": 115,
+      "signature": "function useCreateFlow(label: string): { busy: boolean; outcome: CreateOutcome | null; previewing: boolean; dialogOpen: boolean; create: (request: CreateRequest, onWritten?: (result: ScaffoldResult) => void) => Promise<void>; finish: (request: CreateRequest, name?: string) => Promise<void>; dialog: import(\"react/jsx-runtime\").JSX.Element | null; }",
+      "contentHash": "b83031dec29417c396cfd98592db2ff6646aa0602ac35150f8f906c92a65f0b4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5cdcd8328c182d23d552cb01f41a160d",
+      "displayKey": "create-skills-architecture::type-def::AgentEntry",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "AgentEntry",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 108,
+      "end_line": 111,
+      "signature": "export interface AgentEntry extends DefinitionInfo {",
+      "contentHash": "da47e44217d011eba42259d0eca092560444e1e50d5094c34109c37bb5f231a8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "617439ae98fc3f2fbb6ba1fe134fef10",
+      "displayKey": "create-skills-architecture::type-def::PluginForm",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "PluginForm",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-plugin.tsx",
+      "start_line": 26,
+      "end_line": 26,
+      "signature": "type PluginForm = z.infer<typeof pluginSchema>;",
+      "contentHash": "9d3bb4d1f7cbd241f3702b47e02b3e3564c52b9031f0fac89a38e426f44b809e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "displayKey": "create-skills-architecture::function::readSkillsFromDir",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readSkillsFromDir",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 30,
+      "end_line": 41,
+      "signature": "function readSkillsFromDir(dir: string): Promise<DefinitionInfo[]>",
+      "contentHash": "14f98b6cb8c99467bd91fa7f962c2fc7dae3c0b5e4478ed7b334689f99705e4e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6654c2265353b4ac36e5252969d7b4fd",
+      "displayKey": "create-skills-architecture::function::stepsFor",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "stepsFor",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 445,
+      "end_line": 573,
+      "signature": "function stepsFor(target: CreateTarget, request: CreateRequest): { steps: Step[]; remaining: string; needsModel: boolean; }",
+      "contentHash": "455a77ba328caecfe0aab2921fdda0a347e856d372d6eae89f86603400456e6b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6712415a2782b499c65a69ed7bed8ec7",
+      "displayKey": "create-skills-architecture::function::mkdirTracked",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "mkdirTracked",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 242,
+      "end_line": 263,
+      "signature": "function mkdirTracked(dir: string, applied: Applied): void",
+      "contentHash": "68a1c1c95748d5c93587f107ad9c908049f1c1df2f1e222a5545aea994111740",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "692e9c673342adb40250659d472a5782",
+      "displayKey": "create-skills-architecture::function::readJsonSafe",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readJsonSafe",
+      "filepath": "packages/claude-fs/src/utils/parser.ts",
+      "start_line": 3,
+      "end_line": 9,
+      "signature": "function readJsonSafe(filePath: string): Promise<T | null>",
+      "contentHash": "08c553794beed2ce7ea1fcab3beec96febf52c5edc9faa0208c17cf44661aeac",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "730b4ad41b63d1b705db1bd7cbf8c10a",
+      "displayKey": "create-skills-architecture::function::quoteYaml",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "quoteYaml",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 391,
+      "end_line": 393,
+      "signature": "function quoteYaml(s: string): string",
+      "contentHash": "dd64f1a8f969cc1d56de1796bc2c723cc8ac33878f6c83c424168064d67e11f5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "73283730c134ae5f2ecceda0e427421f",
+      "displayKey": "create-skills-architecture::function::getCachedMarketplacePlugins",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getCachedMarketplacePlugins",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 91,
+      "end_line": 107,
+      "signature": "function getCachedMarketplacePlugins(marketplaceName: string): Promise<CachedPlugin[]>",
+      "contentHash": "19e2d88c248054d22f1518433ee07ad400f1bfd5a88f0f1a5f8414d9c3198d2e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7a06d1d9bfcadbff41a1bdf5f77a4a8d",
+      "displayKey": "create-skills-architecture::function::getMarketplacePluginsFromPath",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getMarketplacePluginsFromPath",
+      "filepath": "packages/claude-fs/src/marketplace.ts",
+      "start_line": 23,
+      "end_line": 27,
+      "signature": "function getMarketplacePluginsFromPath(dirPath: string): Promise<string[]>",
+      "contentHash": "475d10d452cb9aeb023f3a254ebd703561f9e153096fa9f7b86da847f2febed1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7d7210b958ac7003a5b92aea0b437bb0",
+      "displayKey": "create-skills-architecture::function::getUserAgents",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getUserAgents",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 140,
+      "end_line": 142,
+      "signature": "function getUserAgents(): Promise<DefinitionInfo[]>",
+      "contentHash": "1ca6aba15caa5e54a5d0aabc71f583f3396bdf4e14d4b5936e15b94ea2874c30",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7e65596ae48a834d1911bfaf60398426",
+      "displayKey": "create-skills-architecture::function::parseFrontmatterMetadata",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "parseFrontmatterMetadata",
+      "filepath": "packages/claude-fs/src/utils/frontmatter.ts",
+      "start_line": 43,
+      "end_line": 76,
+      "signature": "function parseFrontmatterMetadata(content: string): Record<string, string>",
+      "contentHash": "ee826adc2d9ae6a769aa2adf619f4a2c3b8a170f2a6ab27c603b292038a9d043",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7f47f99e5226754f0f4b1676defb7215",
+      "displayKey": "create-skills-architecture::function::projectSkillsForTagging",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "projectSkillsForTagging",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 228,
+      "end_line": 241,
+      "signature": "function projectSkillsForTagging(projectRoot: string): Promise<{ id: string; description: string; projectTags: string[]; agentTypes: string[]; }[]>",
+      "contentHash": "4f65da7a45d50c7d2e97487b747b0bcd35140461354944a0f17b42cc073ce614",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8651a43ccbafbb06df7f40783906bbcc",
+      "displayKey": "create-skills-architecture::function::resolveCreateTarget",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "resolveCreateTarget",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 173,
+      "end_line": 221,
+      "signature": "function resolveCreateTarget(projectRoot: string, request: CreateRequest, opts: MarketplaceOptions = {}): CreateTarget",
+      "contentHash": "7ea368229c7f30096c6a8b59d8763865af7d8e07d0433da300691453dab41459",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "874395bcf53c7b766b2811b70760fb44",
+      "displayKey": "create-skills-architecture::function::previewClaudeRun",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "previewClaudeRun",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 465,
+      "end_line": 544,
+      "signature": "function previewClaudeRun(projectRoot: string, request: ClaudeRequest, opts: PreviewOptions = {}): Promise<ClaudePreview>",
+      "contentHash": "a44ee2811721ecbd7f272a90625d26707a8961c102765cddaf4ee0dd9a534331",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "87ce0d4ad84c69a961c82986a0be70ac",
+      "displayKey": "create-skills-architecture::type-def::SubagentForm",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "SubagentForm",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-subagent.tsx",
+      "start_line": 46,
+      "end_line": 46,
+      "signature": "type SubagentForm = z.infer<typeof subagentSchema>;",
+      "contentHash": "3559bc5a52db0ae30d8b07322b9e6ea2fabe26ce39ed68f18ed060c2c9bbc5b5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "893b9d28ccfc07a96bf72097aa8a0d66",
+      "displayKey": "create-skills-architecture::function::skillTagsRow",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "skillTagsRow",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 244,
+      "end_line": 248,
+      "signature": "function skillTagsRow(s: { id: string; description: string; projectTags: string[]; agentTypes: string[] }): string",
+      "contentHash": "5eeaf609dfc409d1f611af12e75b8f2c47761b729effc3686a35d155d9ccbfff",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8da62c1c090db0d797863556885c0763",
+      "displayKey": "create-skills-architecture::type-def::SkillForm",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "SkillForm",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-skill.tsx",
+      "start_line": 41,
+      "end_line": 41,
+      "signature": "type SkillForm = z.infer<typeof skillSchema>;",
+      "contentHash": "06c3882f3161ff6ea7e2848b92a8098ad5b228203f297c96ef47ca030af02343",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a047fe6b3966434c16e09a33fd6ff57e",
+      "displayKey": "create-skills-architecture::function::buildCreate",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "buildCreate",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 125,
+      "end_line": 217,
+      "signature": "function buildCreate(projectRoot: string, request: CreateRequest, opts: ResolveOptions): BuiltRequest",
+      "contentHash": "c6583b86180bebd277006da7af9b6edcccf14ba9f4adcbde8164e51b5dc7c9e9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a22e814206eb85adf36923616063a839",
+      "displayKey": "create-skills-architecture::function::build",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "build",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 380,
+      "end_line": 416,
+      "signature": "function build(projectRoot: string, request: ClaudeRequest, opts: ResolveOptions): Promise<BuiltRequest>",
+      "contentHash": "bd41268c7734fe9814581d69ebf4470628c8aadefcb53e5a63788dd38bbc2cd3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a8d4c563a53ef3941282422a62f0bcb8",
+      "displayKey": "create-skills-architecture::component::SkillTemplatePreview",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "SkillTemplatePreview",
+      "filepath": "apps/maestro/src/renderer/src/components/skill-template-preview.tsx",
+      "start_line": 12,
+      "end_line": 77,
+      "signature": "function SkillTemplatePreview({\n  mode,\n  target,\n  name,\n  idea,\n  useWhen,\n  marketplace,\n  marketplacePath,\n  plugin,\n  projectRoot,\n}: {\n  mode: \"auto\" | \"manual\";\n  target: \"marketplace\" | \"project\";\n  name: string;\n  idea: string;\n  useWhen: string[];\n  marketplace: string;\n  /** Absolute path of the selected marketplace, so the preview shows where it really goes. */\n  marketplacePath: string;\n  plugin: string;\n  projectRoot: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "b823d35fe89fd15f429bde2f1cb06a8e41f63829fa31e7772ccab28589d68264",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "aaefcf9fdfb486fba5ad294770b9f420",
+      "displayKey": "create-skills-architecture::component::MarketplaceManifestPreview",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "MarketplaceManifestPreview",
+      "filepath": "apps/maestro/src/renderer/src/components/marketplace-manifest-preview.tsx",
+      "start_line": 11,
+      "end_line": 50,
+      "signature": "function MarketplaceManifestPreview({\n  name,\n  description,\n  ownerName,\n  ownerEmail,\n  homepage,\n  targetDir,\n}: {\n  name: string;\n  description: string;\n  ownerName: string;\n  ownerEmail: string;\n  homepage: string;\n  targetDir: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "2a20fae038ca3532b802f70c6e8fc31a07f571dd0188b712a8a89ff566311d94",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "adcb01833dd10884aedc4f47610412c3",
+      "displayKey": "create-skills-architecture::function::readSkillEntriesFromDir",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readSkillEntriesFromDir",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 66,
+      "end_line": 80,
+      "signature": "function readSkillEntriesFromDir(dir: string): Promise<SkillEntry[]>",
+      "contentHash": "5e02a19d3120ae4096617d818df9f5a0ef4933fb045fb79aa1afd782a7dac923",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b113af8a34e0a7d3b1699013726ea958",
+      "displayKey": "create-skills-architecture::function::isPluginInstalled",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "isPluginInstalled",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 60,
+      "end_line": 63,
+      "signature": "function isPluginInstalled(key: string): Promise<boolean>",
+      "contentHash": "3c1d08fd0295fe10ebb2797c6bd486ad459b32e7d7a48660da391fa91b43af5a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b21eda834ec99b9852226243a5639332",
+      "displayKey": "create-skills-architecture::function::manualSkillBody",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "manualSkillBody",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 400,
+      "end_line": 410,
+      "signature": "function manualSkillBody(): string",
+      "contentHash": "4e5d53a742d964912f2bd4c5dca9e682d6e094c70f61377107e8561bf9064eff",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ba0f8f34eb9f842a92e1a2c105aabf7b",
+      "displayKey": "create-skills-architecture::type-def::PreviewOptions",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "PreviewOptions",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 61,
+      "end_line": 63,
+      "signature": "export interface PreviewOptions extends ResolveOptions {",
+      "contentHash": "2506ea0972c2737e842d16be87c5f86261a99492e7aa774b9074fdef73329171",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "baa8e42d7e638974c81eb55ca503543b",
+      "displayKey": "create-skills-architecture::function::parseFrontmatter",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "parseFrontmatter",
+      "filepath": "packages/claude-fs/src/utils/frontmatter.ts",
+      "start_line": 10,
+      "end_line": 25,
+      "signature": "function parseFrontmatter(content: string): Record<string, string>",
+      "contentHash": "3cdfe2061fbf165d0747f1ab93d9346122aa82f27316c772aae6dec329f75cd8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bbacf9c98d8a9035842feab705b251cd",
+      "displayKey": "create-skills-architecture::function::scaffoldCreate",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "scaffoldCreate",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 583,
+      "end_line": 638,
+      "signature": "function scaffoldCreate(projectRoot: string, request: CreateRequest, opts: ScaffoldOptions = {}): ScaffoldResult",
+      "contentHash": "5cd9b672e6b4816d08c2009bd61977816cd0098494270c31a02c5d77534bb665",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bc8e6928933bd12c3270c2551023bef4",
+      "displayKey": "create-skills-architecture::function::defaultParent",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "defaultParent",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-marketplace.tsx",
+      "start_line": 63,
+      "end_line": 67,
+      "signature": "function defaultParent(projectRoot: string): string",
+      "contentHash": "c4ad8c3a16920127bca9f24b1155bd032674cce5e04422d787620a1cb60d69a3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c1063d30018e11222518ef47b198f66c",
+      "displayKey": "create-skills-architecture::type-def::ScaffoldOptions",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "ScaffoldOptions",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 51,
+      "end_line": 53,
+      "signature": "export interface ScaffoldOptions extends MarketplaceOptions {",
+      "contentHash": "6edb48bb5f2f36d594eabb1bdc1c86cbb23d8edec8d82bb2860f646737469d05",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c22fade9d4c8b9baec8de6dc42c645cd",
+      "displayKey": "create-skills-architecture::component::PluginManifestPreview",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "PluginManifestPreview",
+      "filepath": "apps/maestro/src/renderer/src/components/plugin-manifest-preview.tsx",
+      "start_line": 10,
+      "end_line": 51,
+      "signature": "function PluginManifestPreview({\n  name,\n  description,\n  keywords,\n  marketplace,\n  marketplacePath,\n  owner,\n}: {\n  name: string;\n  description: string;\n  keywords: string[];\n  marketplace: string;\n  marketplacePath: string;\n  /** The marketplace's owner, inherited as the plugin's author. Null when it has none. */\n  owner: { name: string; email: string } | null;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "0e2f4008632472e719606128a636125b927ba7def1595464ea244d89d40d2654",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c383a2f7ceb24a9d857ec7fdaf1a75c9",
+      "displayKey": "create-skills-architecture::type-def::MarketplaceForm",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "MarketplaceForm",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-marketplace.tsx",
+      "start_line": 34,
+      "end_line": 34,
+      "signature": "type MarketplaceForm = z.infer<typeof marketplaceSchema>;",
+      "contentHash": "02c76d354698eb68b7d49fbd2ef09fcb272d699b35b5cbde74b6b16198345bab",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ce8ef89de772741c8aa3f0b7d0ff9b1e",
+      "displayKey": "create-skills-architecture::type-def::PluginDefinitionInfo",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "PluginDefinitionInfo",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 14,
+      "end_line": 16,
+      "signature": "export interface PluginDefinitionInfo extends DefinitionInfo {",
+      "contentHash": "73a68bd2db37513bf498028bf42df5a2441554585baf123e8993db51e88e9d68",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ce90ab1ee794960a5883c9c29546f119",
+      "displayKey": "create-skills-architecture::type-def::SkillEntry",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "SkillEntry",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 46,
+      "end_line": 61,
+      "signature": "export interface SkillEntry {",
+      "contentHash": "0d0f117a1af6fd50d979f274f2c31494aa1c4dde2fe6e7f933ae5141682ecc82",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d0bd508deeff0feeaf19686f96aea7d6",
+      "displayKey": "create-skills-architecture::type-def::ShortcutSection",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "ShortcutSection",
+      "filepath": "apps/maestro/src/renderer/src/components/create-shell.tsx",
+      "start_line": 20,
+      "end_line": 23,
+      "signature": "export interface ShortcutSection {",
+      "contentHash": "cc61b69b5cab5dce89116c883efb7ac58c130b272ea1470a64b293ddedbbe3ed",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d38082a439b1f5d65f36d070c4bbec3c",
+      "displayKey": "create-skills-architecture::function::readAgentsFromDir",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "readAgentsFromDir",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 84,
+      "end_line": 102,
+      "signature": "function readAgentsFromDir(dir: string): Promise<DefinitionInfo[]>",
+      "contentHash": "d06e92f453fec69ed8e0d1eb195eddd5b710af157f275c28774d15b643971442",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d4f096f39d0d6d5183ebbb3478855980",
+      "displayKey": "create-skills-architecture::component::CreateResult",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "CreateResult",
+      "filepath": "apps/maestro/src/renderer/src/components/create-result.tsx",
+      "start_line": 16,
+      "end_line": 78,
+      "signature": "function CreateResult({\n  outcome,\n  busy,\n  onFinish,\n}: {\n  outcome: CreateOutcome;\n  busy: boolean;\n  onFinish: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "15ce43ac30f97cb44123b523d55d3633ca94984dbfbdaece5ef59ce0509846d8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d5d7b6d20c17a118e077e0b1ec31c248",
+      "displayKey": "create-skills-architecture::type-def::CreateTarget",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "CreateTarget",
+      "filepath": "apps/maestro/src/core/scaffold.ts",
+      "start_line": 58,
+      "end_line": 79,
+      "signature": "export interface CreateTarget {",
+      "contentHash": "d51dca1b7a416500cddf0345928dc115ecba1fa8a6b05f2779fe5834baffb295",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dad8adbfecadc2e83ee0cd9ae4329e72",
+      "displayKey": "create-skills-architecture::function::getKnownMarketplaces",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getKnownMarketplaces",
+      "filepath": "packages/claude-fs/src/marketplace.ts",
+      "start_line": 12,
+      "end_line": 16,
+      "signature": "function getKnownMarketplaces(): Promise<Record<string, KnownMarketplace>>",
+      "contentHash": "bd104ffa302b743b8284f3a637310d04a0cbbf6ee8540de32d3205f23e62ee70",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dd3e6bb26f0761f0af9595a7a2ebc978",
+      "displayKey": "create-skills-architecture::type-def::RawInstalledPlugins",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "RawInstalledPlugins",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 21,
+      "end_line": 33,
+      "signature": "type RawInstalledPlugins = {",
+      "contentHash": "83a3d0b87d7de57fefaafe21d012caa9d7f340596ae5785b03f9e8319dda8b4a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ede699e3897be368e7e13ed773099afa",
+      "displayKey": "create-skills-architecture::type-def::KnownMarketplace",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "KnownMarketplace",
+      "filepath": "packages/claude-fs/src/marketplace.ts",
+      "start_line": 5,
+      "end_line": 10,
+      "signature": "export interface KnownMarketplace {",
+      "contentHash": "fbd91e4141a9e0535cbc1ca281fcd3bb9f5079b601997e38150c6100c8b70534",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f1780510e3d0f7bf0e10e00a76ac2604",
+      "displayKey": "create-skills-architecture::function::rebaseOnClaudeDir",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "rebaseOnClaudeDir",
+      "filepath": "packages/claude-fs/src/definitions.ts",
+      "start_line": 22,
+      "end_line": 27,
+      "signature": "function rebaseOnClaudeDir(p: string): string",
+      "contentHash": "4fb8b88fc8a70dee4bfbc426ae3c74a48c5fdaaeab595609a619989440cfe6f3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f2d78bb50176aa22d939253ee03fcc47",
+      "displayKey": "create-skills-architecture::type-def::BuiltRequest",
+      "concept": "create-skills-architecture",
+      "type": "type-def",
+      "name": "BuiltRequest",
+      "filepath": "apps/maestro/src/core/claude-preview.ts",
+      "start_line": 85,
+      "end_line": 97,
+      "signature": "interface BuiltRequest {",
+      "contentHash": "c16d756150adbf315dfbdcebe193d8092d89980537d59981ffffd9f99c4b394a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f31c4f3a69ea71d89f728cc30eadb011",
+      "displayKey": "create-skills-architecture::component::CreatePlugin",
+      "concept": "create-skills-architecture",
+      "type": "component",
+      "name": "CreatePlugin",
+      "filepath": "apps/maestro/src/renderer/src/routes/create-plugin.tsx",
+      "start_line": 54,
+      "end_line": 191,
+      "signature": "function CreatePlugin(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "80d3b93a931ed9c60a8e60b63c2b184ad49d125f1521d242abc13ca81c38e054",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f4af348f8ba8feae667dc7af20f85a83",
+      "displayKey": "create-skills-architecture::function::getInstalledPlugins",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getInstalledPlugins",
+      "filepath": "packages/claude-fs/src/plugin.ts",
+      "start_line": 39,
+      "end_line": 58,
+      "signature": "function getInstalledPlugins(): Promise<InstalledPlugin[]>",
+      "contentHash": "6b6dbbe6162825654018fe55a436dc3959496b7ecd0cfe22e9bbf924b55bb79a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f4b2e8baf332500964bed0e23d1c1a17",
+      "displayKey": "create-skills-architecture::function::getCreateOptions",
+      "concept": "create-skills-architecture",
+      "type": "function",
+      "name": "getCreateOptions",
+      "filepath": "apps/maestro/src/renderer/src/utils/create-flow.tsx",
+      "start_line": 9,
+      "end_line": 11,
+      "signature": "function getCreateOptions(): Promise<CreateOptions>",
+      "contentHash": "7e31e437f20e3d3f017393edd518f6b38f1fed6def2c3f8ba1165e0ae16ba3e3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "00d63cf3721426897a4d1eba24745133",
+      "_from": "vertices/16793103fcc1cfaff8fed7452f443a05",
+      "_to": "vertices/47950fb9c9e72c76dd72f28f818edfc1",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 285,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "029d6825810b5f49505e4a024b9311dd",
+      "_from": "vertices/25d7549944c079b621b5d2e992f3dddd",
+      "_to": "vertices/ce8ef89de772741c8aa3f0b7d0ff9b1e",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "04965d77e937a3da44f34f0420209d07",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/8da62c1c090db0d797863556885c0763",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 84,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0570e1b946d080aaffa05db243d21324",
+      "_from": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
+      "_to": "vertices/baa8e42d7e638974c81eb55ca503543b",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 98,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0babb83a61ee3425068c5717cab9017f",
+      "_from": "vertices/25d7549944c079b621b5d2e992f3dddd",
+      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0f9d38af5d5721073c3ed7d0c610a35c",
+      "_from": "vertices/16793103fcc1cfaff8fed7452f443a05",
+      "_to": "vertices/6712415a2782b499c65a69ed7bed8ec7",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 294,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "105960510d964791f52951e87bd925a9",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/5c677576c2fac029bb060bce8bcdcab8",
+      "type": "uses-hook",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 80,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "15a74e32143ab77841145296938186f0",
+      "_from": "vertices/163d493ce6ff100694c10739b4d5dbe4",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1796dd940d2b2bdd0f2c0c0f9b9e568c",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "18182ca0fc871ed44478f5971e12b2da",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/2078213ec65b9598b9030f222a48ee26",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 493,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1c577cabb442da1bbe2b349ecb7fed6f",
+      "_from": "vertices/28a25a2d97cfd896a5d766de0127d130",
+      "_to": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 19,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "21006bba08af9c4710e27d35b912c604",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/aaefcf9fdfb486fba5ad294770b9f420",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 144,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "240c283847b338f7a088d7e3d8d27c5b",
+      "_from": "vertices/7e65596ae48a834d1911bfaf60398426",
+      "_to": "vertices/4d55a8441750853c79068b45a04c97d8",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "29705ae962327b6891f6a285acd792af",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2a50234f0bd60f664e6679fbc5ca3690",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/c22fade9d4c8b9baec8de6dc42c645cd",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 109,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2fcee8bcd298167d21edcde552e987e0",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 162,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "34c0f1d22e6706147528d470887fd047",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 154,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3588695e3ab8ae771564347cddb98a87",
+      "_from": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
+      "_to": "vertices/ede699e3897be368e7e13ed773099afa",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 12,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "35bc52262c2f45fcbc526430c1705251",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/ba0f8f34eb9f842a92e1a2c105aabf7b",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 468,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "37b435b6d2a2494224b98d322012fdc6",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/5c677576c2fac029bb060bce8bcdcab8",
+      "type": "uses-hook",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3807934221c3bb643ed28feddba179a6",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 123,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4112e90acac96a343daaeb34c258083f",
+      "_from": "vertices/25d7549944c079b621b5d2e992f3dddd",
+      "_to": "vertices/f1780510e3d0f7bf0e10e00a76ac2604",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4aabbcc55d7ad4ba3a9b1b5836d20556",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 380,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4dff863b1569b200e3bcb10051d4121c",
+      "_from": "vertices/adcb01833dd10884aedc4f47610412c3",
+      "_to": "vertices/ce90ab1ee794960a5883c9c29546f119",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4ee7183a630eb2d09883d3fb7e7c4521",
+      "_from": "vertices/7e65596ae48a834d1911bfaf60398426",
+      "_to": "vertices/4d55a8441750853c79068b45a04c97d8",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 59,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "52a185c3b61bc94f2d6c1e6b1aa7bf73",
+      "_from": "vertices/5a72ddd1724a4e7800683804cb950bd8",
+      "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5590d98464500bf6043709dd9903ce28",
+      "_from": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "_to": "vertices/5cdcd8328c182d23d552cb01f41a160d",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 115,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "567e47de26196eb3e20a78cef5dc13b3",
+      "_from": "vertices/adcb01833dd10884aedc4f47610412c3",
+      "_to": "vertices/ce90ab1ee794960a5883c9c29546f119",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 66,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5738c8f8ee8ff0ee3e00501d38307e09",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/5c677576c2fac029bb060bce8bcdcab8",
+      "type": "uses-hook",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 72,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "579518034d0a0d32584944d03ca55a49",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/b21eda834ec99b9852226243a5639332",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 452,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5f7046286093834bb45e2196e86e0c41",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5fb429ed0918faf113fabf5388262e25",
+      "_from": "vertices/4218fac052601287d75403e333c3ff24",
+      "_to": "vertices/692e9c673342adb40250659d472a5782",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "601ebc10fb707134bef8f73edcc9de1a",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/730b4ad41b63d1b705db1bd7cbf8c10a",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 454,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "609227a59a35d37494f24f6316692929",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 116,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "639555e7f3df945d051d53bcf98a8685",
+      "_from": "vertices/2078213ec65b9598b9030f222a48ee26",
+      "_to": "vertices/4d59a285ae37ab1d26f927c755a3e3c7",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 367,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "674cc2b6f8da2f1845aa956d4d9a5312",
+      "_from": "vertices/1fc5231d2ac83a31b4879f887f211506",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "67a68d5b8f6214b796cd7cb70bbc3bc5",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/c383a2f7ceb24a9d857ec7fdaf1a75c9",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 80,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "67df91da65414588c1b7ec513ce7b717",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/02d48d02077664c24c1c3cb929697c80",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 471,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "69f1357e8540185f62f9baa6d5aa021e",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/87ce0d4ad84c69a961c82986a0be70ac",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6ccdc9816e1d1ddfa1efca05cf07748d",
+      "_from": "vertices/16793103fcc1cfaff8fed7452f443a05",
+      "_to": "vertices/6712415a2782b499c65a69ed7bed8ec7",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 296,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6ce6e392436405e324ecc32b25bc6287",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/730b4ad41b63d1b705db1bd7cbf8c10a",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 473,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6d8d6858a7db04ecafe5d50d385935fa",
+      "_from": "vertices/bbacf9c98d8a9035842feab705b251cd",
+      "_to": "vertices/c1063d30018e11222518ef47b198f66c",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 586,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6eb98cfe100580f6a7f8fb28f1873935",
+      "_from": "vertices/1fc5231d2ac83a31b4879f887f211506",
+      "_to": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 159,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "703fc1d4c2e6c2dff63a8a6714e6033d",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/38e848d334eb87d576764ccfa803f401",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 451,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "70b1801a565a41dd24082f8747bba315",
+      "_from": "vertices/bbacf9c98d8a9035842feab705b251cd",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 601,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "733840f2b2f22f550be0b9e12566d3f8",
+      "_from": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
+      "_to": "vertices/692e9c673342adb40250659d472a5782",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 14,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "744569e0e91564d15f29c12977cd66ba",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 114,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "77236dab07e44d46f52eeec2bc543bf4",
+      "_from": "vertices/09dd649bc5d4a7d2313c21a58c573fff",
+      "_to": "vertices/5237f1ba56fb1b5f046051aa3abc24ae",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 347,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "776c130c111fb4c32e725dfeba3a8521",
+      "_from": "vertices/7e65596ae48a834d1911bfaf60398426",
+      "_to": "vertices/4d55a8441750853c79068b45a04c97d8",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79f3605edae56868183f7d18113320ba",
+      "_from": "vertices/1fc5231d2ac83a31b4879f887f211506",
+      "_to": "vertices/f1780510e3d0f7bf0e10e00a76ac2604",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 159,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7a582679180ddb29b19b88b789f991b3",
+      "_from": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7e1dbb7c98d37986817e9a0fedde8e1b",
+      "_from": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "_to": "vertices/59aca55a94da530637fd003921f1a722",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 178,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7fee261c09ac5612b087677d7b474edb",
+      "_from": "vertices/4218fac052601287d75403e333c3ff24",
+      "_to": "vertices/dd3e6bb26f0761f0af9595a7a2ebc978",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7ff9ae2dbfbb7e22dba18f2ec1d8c144",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/bc8e6928933bd12c3270c2551023bef4",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8147c6be1566749b8dff808b7fc007ae",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 412,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "82e3d56e278335a346898b21b1f470c3",
+      "_from": "vertices/19e145d272b4f7c0179a397bdf9720f6",
+      "_to": "vertices/4218fac052601287d75403e333c3ff24",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 66,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "847b67188cde1a8844b4d2e813399585",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/5c677576c2fac029bb060bce8bcdcab8",
+      "type": "uses-hook",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8778e695079239915da191076454f9f9",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8877f9e65a33ff388c7a591f9f5ac95b",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 383,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89a1b66ba734fa6acd0a1d43296d69ce",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/d5d7b6d20c17a118e077e0b1ec31c248",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 446,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8f318ac12355c37727697c4b7d6f8a9c",
+      "_from": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "_to": "vertices/baa8e42d7e638974c81eb55ca503543b",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 37,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "90df42062d2481a358beb2e11eb74ffa",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 122,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "921645b661644efcbab242a719100cec",
+      "_from": "vertices/1fc5231d2ac83a31b4879f887f211506",
+      "_to": "vertices/ce8ef89de772741c8aa3f0b7d0ff9b1e",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 157,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "94f7c2d85a59fe619a7be25dd3974ab1",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97c0a277fb31e275075d7d6bfc4cf481",
+      "_from": "vertices/25d7549944c079b621b5d2e992f3dddd",
+      "_to": "vertices/ce8ef89de772741c8aa3f0b7d0ff9b1e",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 145,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97c40399b938436f438b62b890323d92",
+      "_from": "vertices/16793103fcc1cfaff8fed7452f443a05",
+      "_to": "vertices/5237f1ba56fb1b5f046051aa3abc24ae",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 273,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9892ed8ef88089b90fbdcb41bdfbbd99",
+      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 256,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "98ac1a5c48f1d706062c2fd423f692da",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/617439ae98fc3f2fbb6ba1fe134fef10",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9a113824da5af8e842732378ce5bd7f0",
+      "_from": "vertices/bbacf9c98d8a9035842feab705b251cd",
+      "_to": "vertices/16793103fcc1cfaff8fed7452f443a05",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 604,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9a23d757503189b6ca3e40482dd73aa6",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/d4f096f39d0d6d5183ebbb3478855980",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 184,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9a512dfcabb462ce177a6dc866c0149c",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 155,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9d70c54b8d32c1bcea49bbe5c793b355",
+      "_from": "vertices/7d7210b958ac7003a5b92aea0b437bb0",
+      "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9f36725791aa92271896cbf7cea0457c",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/a22e814206eb85adf36923616063a839",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 471,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a17700f8a8e9c6dbeb084c422bcd4ce6",
+      "_from": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
+      "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 84,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a2e667737457c2ced7b08a905bdd3695",
+      "_from": "vertices/adcb01833dd10884aedc4f47610412c3",
+      "_to": "vertices/baa8e42d7e638974c81eb55ca503543b",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 75,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a2e9ead2fc0e640ead011c8fbaba5c3b",
+      "_from": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
+      "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a3b2a8d82874715892a30f2b37df55db",
+      "_from": "vertices/bbacf9c98d8a9035842feab705b251cd",
+      "_to": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 602,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a6ea1de9a7e307fb3f493cc9050c191b",
+      "_from": "vertices/bbacf9c98d8a9035842feab705b251cd",
+      "_to": "vertices/59aca55a94da530637fd003921f1a722",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 588,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a9170e67bb6671fd87df54401d714aa0",
+      "_from": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "_to": "vertices/d5d7b6d20c17a118e077e0b1ec31c248",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 177,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a92852d7a9217145c15ff8142d5f8343",
+      "_from": "vertices/5a72ddd1724a4e7800683804cb950bd8",
+      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 137,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ab31692c8128f2b3499255534576b7ee",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 115,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b11d92a5055f553619c2f0e428cb9caf",
+      "_from": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
+      "_to": "vertices/ede699e3897be368e7e13ed773099afa",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 14,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b242ee0a4dac094d30c47ce7bf4e6e48",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/553f6028145d53b2e7cf1466da5541ae",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 220,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b33e42d10ee901a38119f5545f07a1e2",
+      "_from": "vertices/5c677576c2fac029bb060bce8bcdcab8",
+      "_to": "vertices/29ef9cf2c6b012abd51bd41a27f1af52",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 35,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b37e628adcf768ff1779f47170c6afff",
+      "_from": "vertices/09dd649bc5d4a7d2313c21a58c573fff",
+      "_to": "vertices/5237f1ba56fb1b5f046051aa3abc24ae",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 348,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bb706d59eb4dde714b2f03803a260a1c",
+      "_from": "vertices/7f47f99e5226754f0f4b1676defb7215",
+      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 231,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bd454feae12cdf696d81d737f784689e",
+      "_from": "vertices/1fc5231d2ac83a31b4879f887f211506",
+      "_to": "vertices/ce8ef89de772741c8aa3f0b7d0ff9b1e",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 155,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c0152a6d6d46a21f2fb0f8c2c3647f46",
+      "_from": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "_to": "vertices/4218fac052601287d75403e333c3ff24",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c0f2b7e5b7857b5c12c79396459e77c5",
+      "_from": "vertices/73283730c134ae5f2ecceda0e427421f",
+      "_to": "vertices/0cc749a27d2ab775b79b965c48ee15c0",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c340d7ff92d3baf9fe755a7918fda18e",
+      "_from": "vertices/6712415a2782b499c65a69ed7bed8ec7",
+      "_to": "vertices/47950fb9c9e72c76dd72f28f818edfc1",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 242,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c38a4763ebdac7d65a32274f611aafde",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/09c6f4ae4663b1d8143b2a13e3c45a7e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 491,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c5461215f1d54b336c31634bc6e267f2",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 88,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c5c05a0b9e8d1e27a20962ffcd30d751",
+      "_from": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "_to": "vertices/5cdcd8328c182d23d552cb01f41a160d",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 118,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c691a4a27b525e4f8620bed0c8ccb604",
+      "_from": "vertices/73283730c134ae5f2ecceda0e427421f",
+      "_to": "vertices/0cc749a27d2ab775b79b965c48ee15c0",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c84d329b5c379524b73ad5ed86bd52d2",
+      "_from": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 33,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c84d483e905f1af036575b7c517e412f",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/4535e9c42f1c3f96f6359782bebab02e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 479,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cae18126647d65350e9c3f528fc1600f",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/5237f1ba56fb1b5f046051aa3abc24ae",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 448,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cbbf10dfac230394610e4850c8ade6cb",
+      "_from": "vertices/d4f096f39d0d6d5183ebbb3478855980",
+      "_to": "vertices/29ef9cf2c6b012abd51bd41a27f1af52",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d01e5f4469b6c67f03b3bda027c0236a",
+      "_from": "vertices/25d7549944c079b621b5d2e992f3dddd",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 146,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d32f6e9f7c5ccc1f3df50587f47b2eca",
+      "_from": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "_to": "vertices/5baf09e90a5261a1a631d513dcb8d4ee",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d8087c9ddea2fe9b33907b1caf02c996",
+      "_from": "vertices/b113af8a34e0a7d3b1699013726ea958",
+      "_to": "vertices/4218fac052601287d75403e333c3ff24",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d90c189b5d8b698e1066084e4b40eddd",
+      "_from": "vertices/2078213ec65b9598b9030f222a48ee26",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 359,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "da3458a12405f9b5438d5b1016cd8c02",
+      "_from": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 30,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "db86ec87b3648761b9d81afb960703e3",
+      "_from": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 126,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ddb50401af3ffd26726effa17d0ce41b",
+      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "_to": "vertices/7f47f99e5226754f0f4b1676defb7215",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 257,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ddc0ed986d0e575d24d2c9706f63da62",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/d4f096f39d0d6d5183ebbb3478855980",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "df46b3f3cc5dfc8b709746be61f23107",
+      "_from": "vertices/6654c2265353b4ac36e5252969d7b4fd",
+      "_to": "vertices/38e848d334eb87d576764ccfa803f401",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 468,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e1184dba474ad74beb2bb4473985e3b3",
+      "_from": "vertices/163d493ce6ff100694c10739b4d5dbe4",
+      "_to": "vertices/d0bd508deeff0feeaf19686f96aea7d6",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e4f3a80e1436af5948ede967be72788d",
+      "_from": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "_to": "vertices/baa8e42d7e638974c81eb55ca503543b",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e6718f6f5c114aab7f9e51b1b66bc048",
+      "_from": "vertices/bbacf9c98d8a9035842feab705b251cd",
+      "_to": "vertices/09dd649bc5d4a7d2313c21a58c573fff",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 603,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e6829b8fe57de4d6606eeb8feb94657f",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 113,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ebbef16d2cf2f649cb073f8fd146ad6e",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 80,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ec232e934b49c62ba0c5630f25bee1ea",
+      "_from": "vertices/4aedca979b13b7ec9e8d7707b2e37a46",
+      "_to": "vertices/a8d4c563a53ef3941282422a62f0bcb8",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 192,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed32091f9f36cc466934229c47a33107",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 81,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f0f1abc51bf8e7d8021fd9d92cfcedf1",
+      "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
+      "_to": "vertices/d4f096f39d0d6d5183ebbb3478855980",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 101,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f45712b970b838ea23a4f7f091e5d7bf",
+      "_from": "vertices/7a06d1d9bfcadbff41a1bdf5f77a4a8d",
+      "_to": "vertices/692e9c673342adb40250659d472a5782",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 25,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f7124d78f06e2315cbc8d2d9c79d19ef",
+      "_from": "vertices/7d7210b958ac7003a5b92aea0b437bb0",
+      "_to": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 141,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f7c277e5b91207cb751f6136c63b990e",
+      "_from": "vertices/73283730c134ae5f2ecceda0e427421f",
+      "_to": "vertices/692e9c673342adb40250659d472a5782",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 97,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f7ce66769812469e2f181c567cae7e8b",
+      "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
+      "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 117,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f8e74401d3c5d327cb98c1a5f7634957",
+      "_from": "vertices/4218fac052601287d75403e333c3ff24",
+      "_to": "vertices/dd3e6bb26f0761f0af9595a7a2ebc978",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 35,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fc58b33013fb03eed7aa5e681633b681",
+      "_from": "vertices/adcb01833dd10884aedc4f47610412c3",
+      "_to": "vertices/7e65596ae48a834d1911bfaf60398426",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 76,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fd5be9377f36c9a2a5d02e71700cdef8",
+      "_from": "vertices/28a25a2d97cfd896a5d766de0127d130",
+      "_to": "vertices/ede699e3897be368e7e13ed773099afa",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 18,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ff25126113d8bb7de516895355d27e10",
+      "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
+      "_to": "vertices/d4f096f39d0d6d5183ebbb3478855980",
+      "type": "mounts",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 212,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/create-skills-architecture/SKILL.md",
+    "body": "---\nname: create-skills-architecture\ndescription: \"Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork.\"\nmetadata:\n  type: concept-skill\n  version: \"1.3\"\n  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431\n---\n\n# Create-Skills Architecture\n\nFour creation flows share one pipeline: `create-skill`, `create-subagent`, `create-plugin`,\n`create-marketplace`. Each is a route in the Maestro desktop app, a scaffold function in\n`src/core`, and a `SKILL.md` prompt the app hands to a Claude run — which since `018` is an **Agent\nSDK session**, not a `claude -p` spawn.\n\n## End-to-end pipeline\n\n```\nUser opens the Maestro desktop app → /tools → Skills tab → Create (link at the bottom)\n        │\n        ▼\nsrc/renderer/src/routes/create-skill.tsx\n  • react-hook-form + zod govern state and validation (schema at the top of the route)\n  • split pane: form left, live FilePreview right — the file that WILL be generated\n  • the preview's description comes from src/core/text.ts's buildDesc, the same\n    implementation the scaffold uses, so preview and file cannot disagree\n        │ submit\n        ▼\nutils/create-flow.tsx  — the submit path all four routes share\n        │\n        ├─1─▶ window.maestro.create.scaffold(request)     IPC `create:scaffold`\n        │       → scaffoldSkill/Subagent/Plugin/Marketplace in src/core\n        │         writes the directory, the frontmatter, the plugin manifest, the\n        │         marketplace registration — everything deterministic\n        │         and, for a new marketplace, `git init` + the first commit\n        │       ← { path, name, needsModel, repo?, ... }\n        │       NO MODEL, and none reachable: the module behind it imports nothing\n        │       that can reach one. `git` arrives as an injected GitPort, not an import.\n        │\n        └─2─▶ only when needsModel: claude:preview → ClaudeRunDialog → claude:run\n              (headless) or session:handoff (Continue in the pane).\n              See `sub-concepts/confirmed-run.md`.\n        │\n        ▼\nThe run — headless or in the pane — calls the Skill tool for\nplugins/maestro/skills/create-<name>/SKILL.md and finishes only what\nthe scaffold left — authoring a body, enriching a README.\n```\n\n**The ordering in 1–2 is the design.** The artifact is on disk before Claude is mentioned, so\ncancelling the confirmation — or having no CLI installed at all — still leaves the user with the\nthing they asked for. `needsModel` decides whether the dialog opens by itself: an auto-mode body or\na brand-new marketplace's docs need one; a manual-mode skeleton and a plugin manifest are complete\nas written. **Finish with Claude** on the result card stays available either way.\n\nThere is no hook in this path, no result file, and no blocking wait. `/create-skill` typed into a\nsession is a different thing entirely: the skill prompt with no payload and nothing pre-scaffolded,\nwhich the SKILL.md handles by gathering the fields conversationally. Each consuming `SKILL.md` opens\nwith a \"Which entry you are on\" table that distinguishes the two, and `026` deleted the second,\ninlined copy of the finishing guidance that the prompt used to carry — the token, the dialog, the\nsession's tools and skills, and every trap in that half of the pipeline are in\n`sub-concepts/confirmed-run.md`.\n\n## File-by-file map\n\nRenderer paths are relative to `apps/maestro/`.\n\n| Concern                                                                              | File                                                                                                             |\n| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |\n| Form (route): schema, fields, preview, shortcut map                                  | `src/renderer/src/routes/create-<name>.tsx`                                                                      |\n| Shared chrome: layout, header, shortcuts, submit row                                 | `src/renderer/src/components/create-shell.tsx`                                                                   |\n| The scaffold → preview → dialog path, shared by all four                             | `src/renderer/src/utils/create-flow.tsx`                                                                         |\n| What landed on disk, plus **Finish with Claude**                                     | `src/renderer/src/components/create-result.tsx`                                                                  |\n| The confirmation: read scope, prompt, equivalent argv, cwd, targets, streamed output | `src/renderer/src/components/claude-run-dialog.tsx`                                                              |\n| **Continue in the pane**: what a handoff says to the session (seed, notice, title)   | `session-handoff.ts` in `apps/maestro/src/core/` (pure), spent by `src/main/claude-session.ts`                   |\n| \"What it can read\" — ONE component, both confirmations                               | `src/renderer/src/components/read-scope.tsx`                                                                     |\n| Live file preview components                                                         | `src/renderer/src/components/{skill,subagent}-template-preview.tsx`, `{plugin,marketplace}-manifest-preview.tsx` |\n| The typed channel contract                                                           | `src/shared/ipc.ts` (`create:options`, `create:scaffold`, `claude:preview\\|run\\|cancel`, `session:handoff`)      |\n| Main-process handlers                                                                | `src/main/ipc.ts`                                                                                                |\n| **Deterministic scaffold** + `resolveCreateTarget`                                   | `scaffold.ts` in `apps/maestro/src/core/`                                                                        |\n| Making a new marketplace a repository, via `execFile`                                | `git.ts` in `apps/maestro/src/core/` (a `GitPort`, injected)                                                     |\n| \"Is this inside a repository?\", answered with `fs`                                   | `repo.ts` in `apps/maestro/src/core/`, with no `child_process`                                                   |\n| Where the `GitPort` is supplied - the composition root                               | `src/main/ipc.ts`, `scaffoldCreate(root, request, { git: nodeGit() })`                                           |\n| Prompt + argv + cwd construction, and the token                                      | `claude-preview.ts`, `claude-tokens.ts` in `apps/maestro/src/core/`                                              |\n| Deriving the read scope from a settings snapshot (pure)                              | `read-scope.ts` in `apps/maestro/src/core/`                                                                      |\n| Deciding each write — `canUseTool`'s answer (pure)                                   | `write-scope.ts` in `apps/maestro/src/core/` (`decideWrite`)                                                     |\n| Resolving the settings cascade — the `SettingsPort`                                  | `agent-sdk.ts` in `apps/maestro/src/core/` (`nodeSettings()`), injected at `src/main/ipc.ts`                     |\n| The session itself, and the ONLY SDK import                                          | `agent-sdk.ts` in `apps/maestro/src/core/` (`startAgentSession`, `SESSION_TOOLS`)                                |\n| Start, stream, cancel, dispose                                                       | `claude-run.ts`, `claude-cli.ts` in `apps/maestro/src/core/`                                                     |\n| Marketplace discovery for the selectors                                              | `marketplaces.ts` in `apps/maestro/src/core/`                                                                    |\n| `buildDesc` and friends — ONE implementation                                         | `text.ts` in `apps/maestro/src/core/`                                                                            |\n| Shared UI primitives                                                                 | `packages/ui/src/`                                                                                               |\n| Consuming prompt                                                                     | `plugins/maestro/skills/create-<name>/SKILL.md`                                                         |\n| Shared prompt contract the four SKILL.md link to                                     | `docs/ai-tools-create-shared.md`                                                                                 |\n\n## The four flows compared\n\n|                                       | create-skill                | create-subagent             | create-plugin | create-marketplace |\n| ------------------------------------- | --------------------------- | --------------------------- | ------------- | ------------------ |\n| Mode toggle (auto / manual)           | yes                         | yes                         | no            | no                 |\n| Target toggle (marketplace / project) | yes                         | yes                         | no            | no                 |\n| Template seed (target=project only)   | no                          | yes                         | no            | no                 |\n| Chip-array fields                     | `useWhen`                   | `triggers`, `tools`         | `keywords`    | —                  |\n| File generated                        | `SKILL.md`                  | `AGENTS.md` or `<name>.md`  | `plugin.json` | `marketplace.json` |\n| Preview type                          | YAML frontmatter + markdown | YAML frontmatter + markdown | JSON          | JSON               |\n| Dialog opens on submit                | auto mode only              | auto mode only              | no            | yes                |\n\n`create-skill` and `create-subagent` are deeply parallel — they share the description-building\nalgorithm (`buildDesc`: first sentence of the idea + Oxford-joined chips, clipped to 140 chars).\n\n`create-marketplace` is the only flow that touches git: the scaffold makes the new marketplace a\nrepository itself, in a three-state, all-or-nothing sequence — see\n`sub-concepts/marketplace-repository.md`.\n\n## Mode dispatch (skill & subagent)\n\n- **Auto mode**: the payload carries `idea` and the chip arrays. The scaffold writes the frontmatter\n  with the computed description and a placeholder body; the prompt authors the body in place.\n- **Manual mode**: the payload carries `description` verbatim (plus chips). The scaffold writes a\n  minimal skeleton the user will fill in, and nothing is left for a model — hence no dialog.\n\n## Target dispatch (skill & subagent)\n\nThe `target` toggle changes where the file lands:\n\n- `target: \"marketplace\"` — the payload carries `{ marketplacePath, plugin }`; the file goes to\n  `<marketplacePath>/plugins/<plugin>/{skills,agents}/<name>/…`.\n- `target: \"project\"` — the file goes to `<projectRoot>/.claude/skills/<name>/SKILL.md` (skill) or\n  `<projectRoot>/.claude/agents/<name>.md` (subagent — single file, no enclosing directory).\n\nThe toggle survived the container's retirement; only its Docker half did not. Marketplace vs.\nproject is a real choice about where a skill lives. What went is the _path ambiguity_ that existed\nonly because the container could not write outside its mount — there is no longer any target the\napp can see but cannot reach.\n\n## Template seeding (create-subagent, project target only) (`029`)\n\n`create:options` also returns `agentTemplates: DiscoveredDefinition[]` — every discovered agent,\nproject tier included, not filtered to global. `/create-subagent` renders a \"Start from a template\"\npicker only when `target === \"project\"` and that list is non-empty; picking one sets `mode:\n\"manual\"` plus `name`/`description` from the chosen entry. **This is a form seed, not a fork** — a\n`DiscoveredDefinition` carries only `id`/`description`, so the scaffold still writes a fresh\nskeleton via `manualAgentBody()` rather than cloning the source agent's actual body/tools/triggers.\nThe byte-for-byte version lives on `/agents`' card instead (`forkAgent`,\n`src/core/agent-fork.ts`) — see `agents-view`.\n\n## Common edits — where to make them\n\n| Want to…                         | Edit                                                                                                                                                                      |\n| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Add a field to a form            | the route's zod schema **and** `scaffold.ts` **and** the prompt builder in `claude-preview.ts` **and** the matching `SKILL.md` — all four must agree on the payload shape |\n| Change validation rules          | the zod schema at the top of the route                                                                                                                                    |\n| Change the live preview          | the `<name>-preview.tsx` component                                                                                                                                        |\n| Change the description algorithm | `text.ts` in `src/core` — affects skill & subagent, preview and file, at once                                                                                             |\n| Change keyboard shortcuts        | the route's `SHORTCUT_SECTIONS` and `create-shell.tsx`                                                                                                                    |\n| Add a new shared UI primitive    | new file in `packages/ui/src/`, then an export in `packages/ui/package.json`                                                                                              |\n| Add a new create-\\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link on the page that owns the thing (`components/tabs/create-link.tsx`), not into a top-bar menu — and add it to the reachability map in `test/isolation.test.ts`, which pins **which file** holds each entry point. Step-by-step: `apps/maestro/docs/extending-the-app.md`. |\n\n**Where the four entry points live.** `test/isolation.test.ts`'s reachability map is the list of\nrecord, because a Create link nobody can reach is a green suite and a dead feature:\n\n| Flow                 | Entry point                                                  |\n| -------------------- | ------------------------------------------------------------ |\n| `create-skill`       | `src/renderer/src/routes/skills.tsx`                          |\n| `create-subagent`    | `src/renderer/src/components/agents/agent-list.tsx` — the \"+ New agent\" link at the foot of `/agents`' left pane, not the route file |\n| `create-plugin`      | `src/renderer/src/components/tabs/command-center.tsx`         |\n| `create-marketplace` | `src/renderer/src/components/tabs/marketplace.tsx`            |\n\nSkills and Agents moved off `/tools` onto their own pages; only the last two are still `/tools` tabs.\n\n## Things that bite\n\n- **Don't change the payload in just one place.** A field rename must hit the form schema, the\n  scaffold, the prompt builder, _and_ the consuming `SKILL.md` — otherwise data silently drops.\n- **Preview and scaffold must resolve the same path.** Both go through `resolveCreateTarget` in\n  `src/core`, and the confirmation dialog names the file it returns. A second resolution\n  anywhere — a path computed in the renderer, a `path.join` inlined into a prompt builder — makes the\n  modal describe a file other than the one on disk, and the user is consenting to the wrong thing.\n  `test/create-preview.test.ts` and `test/scaffold.test.ts` in that package compare the two.\n- **The renderer's `utils/text.ts` re-exports and must never implement.** `buildDesc` decides the\n  `description:` frontmatter; the form's preview shows it before the file exists and the node-side\n  scaffold writes it after. Two implementations means a preview that silently stops matching the\n  file, and it looks fine right up until someone edits one of them. Import the **subpath**\n  (`src/core/text.ts`) — that module, never the `src/core/index.ts` barrel, which re-exports `fs`. `test/isolation.test.ts` fails on a\n  re-implementation anywhere under `src/renderer`.\n- **The prompt is prose, never `/create-skill`.** A slash command in a headless run would re-enter\n  the skill from the top instead of finishing the scaffold — and historically it fired the plugin's\n  `UserPromptExpansion` hook, which launched the Docker app and blocked forever on a form submission\n  that could never arrive. That hook is gone, but the rule stands: a slash command re-enters the\n  skill's \"gather everything from scratch\" entry rather than the one written for an\n  already-scaffolded artifact. A test asserts no create prompt contains a slash command.\n- **Scaffold can still fail.** A bad path or a refused overwrite yields `scaffolded: false` with a\n  `reason`, and the consuming skill must create the artifact itself. Always branch on the `scaffold`\n  object; never assume the file exists.\n- **Nothing in a create-\\* prompt may run git.** The repository is the scaffold's, and a model that\n  helpfully runs `git init` either nests a second repository or re-commits the scaffold under a\n  different author. The prompt tells the run the repository state instead — `claude-preview.ts`\n  derives that line from `enclosingRepo(target.path)` on disk, so it is true whether or not the\n  scaffold made one.\n- Everything about the token, the dialog, what the session may read and write, and how a run is\n  cancelled: `sub-concepts/confirmed-run.md`. Everything about the new-marketplace repository:\n  `sub-concepts/marketplace-repository.md`.\n",
+    "contentHash": "sha256:cf156530e52ad895e969898bd49f3f7208b5bdaaae8ba27531f2c9ed8f16a797"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.3",
+    "extracted_at": "2026-10-16T19:40:03.770Z"
+  }
+}

@@ -1,0 +1,4118 @@
+{
+  "concept": "log-view",
+  "vertices": [
+    {
+      "_key": "00bf9be5d5bf49f63b3a3c337dbe7395",
+      "displayKey": "log-view::component::Notice",
+      "concept": "log-view",
+      "type": "component",
+      "name": "Notice",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 216,
+      "end_line": 226,
+      "signature": "function Notice({ title, testId, children }: { title: string; testId: string; children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "a79c706e4aac0b2828802de0cbb6005309f66aa3880ccbb6975635aa93b3caaf",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "050a79d9ae4dd1049bc76ded5985b218",
+      "displayKey": "log-view::function::tailSessionLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "tailSessionLog",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 94,
+      "end_line": 170,
+      "signature": "function tailSessionLog(projectRoot: string, events: Partial<SessionLogTailEvents>, intervalMs = 1000): () => void",
+      "contentHash": "b3639ddf95fdad960573d66c0a16165750a51577323cb25c6400427e4190a9e2",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0678f988aca4cfaca22b6cb67bedfa76",
+      "displayKey": "log-view::type-def::WorktreeTabBarProps",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTabBarProps",
+      "filepath": "apps/maestro/src/renderer/src/components/worktree-tab-bar.tsx",
+      "start_line": 4,
+      "end_line": 9,
+      "signature": "interface WorktreeTabBarProps {",
+      "contentHash": "39db70eb4574b52d4b97d9fd944655bec0b2cce4da30bad6f72996c3973a474c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "078d5d876dcef22029b208dedb29a212",
+      "displayKey": "log-view::function::hasCompletedRun",
+      "concept": "log-view",
+      "type": "function",
+      "name": "hasCompletedRun",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 87,
+      "end_line": 96,
+      "signature": "function hasCompletedRun(lines: unknown[], agentId: string): boolean",
+      "contentHash": "ff7c2e1ba2fb9f4abb48ff5f67f9d95e2b1c7493188b9831b87115d7ee675160",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "08346d8c763fcb1836e80a241c79d98f",
+      "displayKey": "log-view::function::underlineColor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "underlineColor",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-cards.tsx",
+      "start_line": 20,
+      "end_line": 25,
+      "signature": "function underlineColor(status: Instance[\"status\"]): string",
+      "contentHash": "21712017682c0eee09fe6fa09aee6f1841e51b322a8362cffd36594d39297ddf",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "08a0dbd2135f58da894086bd16168f28",
+      "displayKey": "log-view::type-def::SessionLogPanesProps",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogPanesProps",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-panes.tsx",
+      "start_line": 11,
+      "end_line": 24,
+      "signature": "interface SessionLogPanesProps {",
+      "contentHash": "7e2c5c51018c38a19e7b56011ae046fb024acb59bfbf5965fd1a164ee2c70358",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1176677e67ce2b094686a1e3c4c24ae5",
+      "displayKey": "log-view::type-def::SessionLogCardsProps",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogCardsProps",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-cards.tsx",
+      "start_line": 6,
+      "end_line": 10,
+      "signature": "interface SessionLogCardsProps {",
+      "contentHash": "05e32a082f91d3cc551c7fcf678a6ff1c24cecbdae8381025d420d8682ccbc0b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "12bd89286f16f65cbdfed544169b4799",
+      "displayKey": "log-view::function::orderSessions",
+      "concept": "log-view",
+      "type": "function",
+      "name": "orderSessions",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 253,
+      "end_line": 262,
+      "signature": "function orderSessions(sessions: SessionRecord[], roots: string[]): SessionRecord[]",
+      "contentHash": "1324afb21c2b3462d5beed6cb1fc5a60d0c0d841dcacb01fd1ceebf60569228c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "15f7d9268f239feaceaf7d82865bac26",
+      "displayKey": "log-view::function::freeformBranchFor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "freeformBranchFor",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 67,
+      "end_line": 70,
+      "signature": "function freeformBranchFor(sessionId: string): string | null",
+      "contentHash": "c1da6657ae9ba6f82f19c60fc2ad73abefada4c67e3bfc92e81b77a2a348bcec",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "180d00c420cf00ed56aba5875dce2157",
+      "displayKey": "log-view::type-def::WorktreeTabsOptions",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTabsOptions",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 49,
+      "end_line": 57,
+      "signature": "export interface WorktreeTabsOptions {",
+      "contentHash": "c94bc352793596c60b5a27ebfd5e5317b313c1051fd8e37da475098c90317286",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "220f7e10a6985b8f94e08f6e31327411",
+      "displayKey": "log-view::function::shortSessionId",
+      "concept": "log-view",
+      "type": "function",
+      "name": "shortSessionId",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 55,
+      "end_line": 61,
+      "signature": "function shortSessionId(sessionId: string): string | null",
+      "contentHash": "8b27dfa9cac99f0bd57162b6b168b12814a37ee278df17094e36c6818b75f247",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "25ec3d2c5b3eb1fb67dffab6d29398ad",
+      "displayKey": "log-view::function::isLinkedWorktree",
+      "concept": "log-view",
+      "type": "function",
+      "name": "isLinkedWorktree",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 107,
+      "end_line": 109,
+      "signature": "function isLinkedWorktree(dir: string): boolean",
+      "contentHash": "7ef80c787e57c749a62fa5cd88c679671413e11547c6dad928749c446deca477",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "267d2ca9f3af08b523821541d2c8e214",
+      "displayKey": "log-view::component::Section",
+      "concept": "log-view",
+      "type": "component",
+      "name": "Section",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
+      "start_line": 11,
+      "end_line": 18,
+      "signature": "function Section({ title, children }: { title: string; children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "248f2d5cf93ea0cbcffacb74548c33dbbaba91f5fe56909712035dfe8620cd79",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "275d0934f260c1dadacd22d675e39450",
+      "displayKey": "log-view::component::SessionLogTabs",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogTabs",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-tabs.tsx",
+      "start_line": 48,
+      "end_line": 129,
+      "signature": "function SessionLogTabs({\n  sessions,\n  projectState,\n  selectedKey,\n  deletable,\n  titles,\n  onSelect,\n  onDelete,\n  actions,\n}: SessionLogTabsProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "49fbc7252f115679d6ff6eeaf4bf06fb76433dcb172933ef67ed1f84cfd1c47e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2f023a186a33f80fcda2c95318913693",
+      "displayKey": "log-view::type-def::SessionLogDetailProps",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogDetailProps",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
+      "start_line": 6,
+      "end_line": 9,
+      "signature": "interface SessionLogDetailProps {",
+      "contentHash": "ba39e65a1f77d97b7cb779637ce53bd9bd2120404038551b12354ef29ed5e609",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2fb68c02e449330c45e2a40bab629f03",
+      "displayKey": "log-view::function::agentRunsFromLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "agentRunsFromLog",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 33,
+      "end_line": 64,
+      "signature": "function agentRunsFromLog(lines: unknown[]): AgentRun[]",
+      "contentHash": "25cf75fa911fb9ced3ddd085f294b91a44b26f33e4ef882a43377c2839e29906",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "31aa8b6e8848ea283ab67eab9c31cf02",
+      "displayKey": "log-view::function::relPath",
+      "concept": "log-view",
+      "type": "function",
+      "name": "relPath",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 295,
+      "end_line": 300,
+      "signature": "function relPath(p: string, cwd: string): string",
+      "contentHash": "dd4d02a00ab65002d7135330d8c0913362b9deec1ebc2f8d1bfe643c052bc5ea",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "31dbb0b674dddabcc51dc3fb325fa2bc",
+      "displayKey": "log-view::component::WorktreeTabBar",
+      "concept": "log-view",
+      "type": "component",
+      "name": "WorktreeTabBar",
+      "filepath": "apps/maestro/src/renderer/src/components/worktree-tab-bar.tsx",
+      "start_line": 17,
+      "end_line": 54,
+      "signature": "function WorktreeTabBar({ tabs, active, onSelect }: WorktreeTabBarProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "821b1de7067ddc21ce35ffbe35ad0e77a34c707b1109700d572b35c24f4c01d7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "326e3b470145fee74518ad9e544e510d",
+      "displayKey": "log-view::type-def::AgentRun",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "AgentRun",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 18,
+      "end_line": 23,
+      "signature": "export interface AgentRun {",
+      "contentHash": "f20bb0ebea5b77ae6321373a34acf5b0d39a0ce2a3cc7a2e075954b7fbd7e56b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "329c638aa28dc3c0ac533ac20d3e088d",
+      "displayKey": "log-view::function::reduceSessionLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "reduceSessionLog",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 72,
+      "end_line": 125,
+      "signature": "function reduceSessionLog(sessions: Map<string, SessionRecord>, event: SessionLogTailEvent, now: () => number = Date.now): Map<string, SessionRecord>",
+      "contentHash": "7655a714b8d6c115a15a7a4d7e6a15f3ed771f3b72b9d5fda65ae34690e90ee9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "350498509edc630746dc847aef4feaf3",
+      "displayKey": "log-view::component::SessionLogProvider",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogProvider",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 157,
+      "end_line": 210,
+      "signature": "function SessionLogProvider({ children }: { children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "63485e7f1445a37ab56a8679314f6d1b13f89f06a34bbef7688d155e224f4041",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "37fa46903a758023d2e346ce368272c0",
+      "displayKey": "log-view::function::canon",
+      "concept": "log-view",
+      "type": "function",
+      "name": "canon",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 72,
+      "end_line": 78,
+      "signature": "function canon(p: string): string",
+      "contentHash": "de8778ec30cc09f1cb0153641b6d05ba6a56e03ef1a24ff4b0b74b19b9416aa5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3831525914210b19611342601168d370",
+      "displayKey": "log-view::component::SessionLogDetail",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogDetail",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-detail.tsx",
+      "start_line": 20,
+      "end_line": 150,
+      "signature": "function SessionLogDetail({ instance, cwd }: SessionLogDetailProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "a53decc5016a05cd66e20eb6c54c327462163fd0b4d99dd6d736bc470565dacd",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3d5b7001eb0ff315c2de60a370c630c8",
+      "displayKey": "log-view::function::buildInstances",
+      "concept": "log-view",
+      "type": "function",
+      "name": "buildInstances",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 55,
+      "end_line": 218,
+      "signature": "function buildInstances(entries: SessionLogEntry[]): Instance[]",
+      "contentHash": "bc57e7a03197d1d294d498ab18c8c765e54ecadbf277c8b5eab68a43a7f39c6b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3de2d60d24c4292da3e0475a331b67b7",
+      "displayKey": "log-view::function::checkWorktreeWrite",
+      "concept": "log-view",
+      "type": "function",
+      "name": "checkWorktreeWrite",
+      "filepath": "apps/maestro/src/core/worktree-write-guard.ts",
+      "start_line": 68,
+      "end_line": 100,
+      "signature": "function checkWorktreeWrite(input: {\n  cwd: string;\n  toolName: string | null | undefined;\n  toolInput: Record<string, unknown> | null | undefined;\n  worktree: { path?: unknown; main_root?: unknown } | null | undefined;\n}): ChannelWriteVerdict",
+      "contentHash": "18c36bf03f9e2057444d8f7bc7856a53d5bab8fa048ca1de2a687ef0f7eea5e9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3ead4ea3bc31f5646fa0a84379fa5882",
+      "displayKey": "log-view::function::startedAt",
+      "concept": "log-view",
+      "type": "function",
+      "name": "startedAt",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 40,
+      "end_line": 47,
+      "signature": "function startedAt(s: SessionRecord): number",
+      "contentHash": "3102251fd857ed0442f37aa61f7daa05c3da2596cdea0ac20a91f41ffb6206be",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3fa84ae24177498e34f3cffce28ac67d",
+      "displayKey": "log-view::type-def::SessionLogViewProps",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogViewProps",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-view.tsx",
+      "start_line": 4,
+      "end_line": 11,
+      "signature": "interface SessionLogViewProps {",
+      "contentHash": "0bfc0afe8c5dbf99d022212b9507366feced39285fb844bab62c0e09a9208786",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "413e474559e09b656ffab162e94e2251",
+      "displayKey": "log-view::function::sessionTitle",
+      "concept": "log-view",
+      "type": "function",
+      "name": "sessionTitle",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 235,
+      "end_line": 245,
+      "signature": "function sessionTitle(s: SessionRecord, max = TITLE_MAX): string",
+      "contentHash": "74717a923035e4e2d2dfd6afec81e36e0a1f61fdb486693014541128e1bc3a9b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "41e0477cdffdd7dec7eda5e0d1458457",
+      "displayKey": "log-view::effect::effect-41",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-41",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 41,
+      "end_line": 45,
+      "signature": "useEffect(() => {",
+      "contentHash": "c3912e608ca976be9f61c7731aec9657d2bfa73f860f65f3d27e5b991b9fcf0c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "426d2aeb7fee005ed1e2a602e00e121c",
+      "displayKey": "log-view::function::describeWorktrees",
+      "concept": "log-view",
+      "type": "function",
+      "name": "describeWorktrees",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 28,
+      "end_line": 39,
+      "signature": "function describeWorktrees(openProject: string | null, list: WorktreeLister = listWorktrees): WorktreeTabInfo[]",
+      "contentHash": "a30a848dfa28ca7d633025f318eecdbf1b01a6f9e86f98e535a373bbb6e32973",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "45f609817d57c7220490f505c2f348da",
+      "displayKey": "log-view::function::within",
+      "concept": "log-view",
+      "type": "function",
+      "name": "within",
+      "filepath": "apps/maestro/src/core/worktree-write-guard.ts",
+      "start_line": 60,
+      "end_line": 60,
+      "signature": "within(target: string, root: string): boolean",
+      "contentHash": "b89e961a27ac0e6832f3e5421db47cd2fff04c6be359d239ab1d27d1d16c22f3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "469d52874f09b49239fa21839fc9c2c8",
+      "displayKey": "log-view::component::SessionLogPanes",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogPanes",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-panes.tsx",
+      "start_line": 34,
+      "end_line": 135,
+      "signature": "function SessionLogPanes({\n  sessions,\n  projectState,\n  connected,\n  deletable = NO_KEYS,\n  titles = NO_TITLES,\n  onDelete,\n  empty,\n  fallbackRoot = \"\",\n  tabActions,\n}: SessionLogPanesProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "e95cc3d9796cd37814a0fd9d4b0b7e590fcb17c9081aaab9bb37c72569beb9d0",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "48d916fc7e81c02cd0ec0321dc534b52",
+      "displayKey": "log-view::function::mainCheckoutRoot",
+      "concept": "log-view",
+      "type": "function",
+      "name": "mainCheckoutRoot",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 88,
+      "end_line": 104,
+      "signature": "function mainCheckoutRoot(dir: string): string",
+      "contentHash": "4941c08bc4022ccd83b2205f6167733cb0cce9cadd5008d45c963ea22ad7df85",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "491df6330b43d1fd26fea8d4c18312ce",
+      "displayKey": "log-view::effect::effect-112",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-112",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 112,
+      "end_line": 164,
+      "signature": "useEffect(() => {",
+      "contentHash": "9f75cbf183288fb01a3aad70cba90b1897f9894695ccd2b684fc89b494e13d4d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4ac99e86eda7e8ff2f9241df1143853c",
+      "displayKey": "log-view::function::pickSelection",
+      "concept": "log-view",
+      "type": "function",
+      "name": "pickSelection",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 135,
+      "end_line": 141,
+      "signature": "function pickSelection(sessions: SessionRecord[], currentKey: string | null): string | null",
+      "contentHash": "99f15001ac68654e4d52be0bf6dca6b794d627563708965a355a80e77cf964fb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4d46133ba50014f803ae270538af7fe1",
+      "displayKey": "log-view::function::sessionKey",
+      "concept": "log-view",
+      "type": "function",
+      "name": "sessionKey",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 35,
+      "end_line": 37,
+      "signature": "function sessionKey(s: Pick<SessionRecord, \"projectRoot\" | \"sessionId\">): string",
+      "contentHash": "6de89e8c1d1f3d1cb2de4cfcd039a544b5500ba88c7496506cc2470c2e951502",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5253d68343f6883c42ef4a12a241f982",
+      "displayKey": "log-view::function::tailSessionLogs",
+      "concept": "log-view",
+      "type": "function",
+      "name": "tailSessionLogs",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 221,
+      "end_line": 309,
+      "signature": "function tailSessionLogs(getProjectRoots: () => string[], events: Partial<MultiSessionLogTailEvents>, intervalMs = 1000, skipSession?: (projectRoot: string, sessionId: string) => boolean): () => void",
+      "contentHash": "590afc3f71341acc80d951d1b85f86985fb014e1e57d2bee1984d0f11f83031e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "displayKey": "log-view::type-def::SessionRecord",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionRecord",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 12,
+      "end_line": 29,
+      "signature": "export interface SessionRecord {",
+      "contentHash": "ad4729f197b8fe3c976383b0960dbcba34ab87df86f59259f257f7786219f8cb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "553b82472cc5a8eed588788c08335e9e",
+      "displayKey": "log-view::function::samePath",
+      "concept": "log-view",
+      "type": "function",
+      "name": "samePath",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 81,
+      "end_line": 83,
+      "signature": "function samePath(a: string, b: string): boolean",
+      "contentHash": "5db703b084d612f41b6668889b017847dc05eff95d8b902d00c9d74a3409627c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5d3c84d54042916589e77b75be83ae05",
+      "displayKey": "log-view::function::parseWorktreeList",
+      "concept": "log-view",
+      "type": "function",
+      "name": "parseWorktreeList",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 28,
+      "end_line": 53,
+      "signature": "function parseWorktreeList(porcelain: string): WorktreeInfo[]",
+      "contentHash": "f92073c07aad85f193649c9e7bf36e61417d2042f9c4a4b21e32a24a4b24ffc7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5eb40624f0958dcfd66162c9090473ad",
+      "displayKey": "log-view::function::worktreeLabel",
+      "concept": "log-view",
+      "type": "function",
+      "name": "worktreeLabel",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 36,
+      "end_line": 40,
+      "signature": "function worktreeLabel(t: Pick<WorktreeTab, \"path\" | \"branch\" | \"detached\">): string",
+      "contentHash": "7ae60a8ae3f46e72416d6aa284647cb7e7db85135eeaad0917e21cd3300eccde",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5efcef757a55a63c951e342fa5abd54a",
+      "displayKey": "log-view::function::realResolve",
+      "concept": "log-view",
+      "type": "function",
+      "name": "realResolve",
+      "filepath": "apps/maestro/src/core/worktree-write-guard.ts",
+      "start_line": 36,
+      "end_line": 58,
+      "signature": "function realResolve(p: string): string | null",
+      "contentHash": "2a123c4c38dd5c5206ccef7a6ce737f8d6b1e095cd873a9c9bfe92914b7453c8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5f84b075f8e2162bf6b57426aaad49d5",
+      "displayKey": "log-view::function::lastActivityAt",
+      "concept": "log-view",
+      "type": "function",
+      "name": "lastActivityAt",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 50,
+      "end_line": 57,
+      "signature": "function lastActivityAt(s: SessionRecord): number",
+      "contentHash": "b02c324016fe80a7df6e2000cdb1c12200977b14a9eb49b57dd1399f25a00184",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "63eeef2165c71bec1087a0f73c9bb81a",
+      "displayKey": "log-view::function::formatTokenWindow",
+      "concept": "log-view",
+      "type": "function",
+      "name": "formatTokenWindow",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 382,
+      "end_line": 384,
+      "signature": "function formatTokenWindow(tokens: number): string",
+      "contentHash": "9832d6ddac86a15bead304dfd49bea2b8d4fb13323384715d926989a06d2f68c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "68297290314be98d06d2802b351c4916",
+      "displayKey": "log-view::function::extractTriage",
+      "concept": "log-view",
+      "type": "function",
+      "name": "extractTriage",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 255,
+      "end_line": 287,
+      "signature": "function extractTriage(raw: string): SkillsTriage | null",
+      "contentHash": "7ce7acbcaaed835bc751c87c9e9033fe1bbe15b046cd5e30a370415258308a03",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6c0470ad93f106868f571eb0c8dd6ef4",
+      "displayKey": "log-view::type-def::WorktreeLogContextValue",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeLogContextValue",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 97,
+      "end_line": 101,
+      "signature": "interface WorktreeLogContextValue {",
+      "contentHash": "c665973775995b09161d956c4eced0f567f7e39ad654193bfc94c2ccbb2b9bd1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6c1bc1b84cdce27534191ee11a315046",
+      "displayKey": "log-view::function::listWorktrees",
+      "concept": "log-view",
+      "type": "function",
+      "name": "listWorktrees",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 56,
+      "end_line": 68,
+      "signature": "function listWorktrees(projectRoot: string): WorktreeInfo[]",
+      "contentHash": "4b5bc6852cd357c1bc8449d758384e933ffc0c075af831797af2103e9e20cd00",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6d53d2d1c15da468220c5588eaa22dfa",
+      "displayKey": "log-view::function::parseSkillsTriage",
+      "concept": "log-view",
+      "type": "function",
+      "name": "parseSkillsTriage",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 239,
+      "end_line": 253,
+      "signature": "function parseSkillsTriage(output: string | null): SkillsTriage | null",
+      "contentHash": "d4f00f5e85e429bcb7f355608f0ffb6168f8f8d287cca7138c92dab9e1046e99",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "714a36fad7e04490a22eb9ba62a79416",
+      "displayKey": "log-view::type-def::WorktreeLister",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeLister",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 70,
+      "end_line": 70,
+      "signature": "export type WorktreeLister = (projectRoot: string) => WorktreeInfo[];",
+      "contentHash": "7bc2a26f3b3f8d0cb6e6facbfa5347bbc4b79c42dde2a3a54e99ba34902eeda9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7706ea193554a74cffb16ed461212cb9",
+      "displayKey": "log-view::type-def::SessionLogTabsProps",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogTabsProps",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-tabs.tsx",
+      "start_line": 12,
+      "end_line": 25,
+      "signature": "interface SessionLogTabsProps {",
+      "contentHash": "e768dffa89681fba7c02be02776b52fba2eee30c36d0ff6ea5a79fa105bf08ea",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "776c86f1fffda9c84ca1df1d478a1283",
+      "displayKey": "log-view::effect::effect-28",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-28",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 28,
+      "end_line": 28,
+      "signature": "useEffect(() => window.maestro.project.onChanged(setProjectState), [])",
+      "contentHash": "1e28fc46d193dea2f329fa48fb575137b402ccbdac69b684c5e646900f70003f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7cefaaa05516102ec451ffbaac56f22f",
+      "displayKey": "log-view::function::freeformWorktreePathFor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "freeformWorktreePathFor",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 78,
+      "end_line": 81,
+      "signature": "function freeformWorktreePathFor(mainRoot: string, sessionId: string): string | null",
+      "contentHash": "6e9ffad2b1cdf5ca93e36ce4624e641bc510a55def0f3b5f9beb27612cd387b1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7dd1a98a8d4dcb22646745df8de1f240",
+      "displayKey": "log-view::hook::useSessionLog",
+      "concept": "log-view",
+      "type": "hook",
+      "name": "useSessionLog",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 212,
+      "end_line": 214,
+      "signature": "function useSessionLog(): SessionLogContextValue",
+      "contentHash": "3094f139d6e07f4f0fab9c4bc587a8a5d08d85d5e8669d892e16e5fb77859680",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7f463d2388b5cb924f83996e60012811",
+      "displayKey": "log-view::type-def::WorktreeTabs",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTabs",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 70,
+      "end_line": 77,
+      "signature": "export interface WorktreeTabs {",
+      "contentHash": "acd9581327596a75f867599fb54137abfc27040e6d09e11ae316742783ca9ab0",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "80b1ea37aa8deacb564efce71f05ac08",
+      "displayKey": "log-view::type-def::Tab",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "Tab",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 59,
+      "end_line": 68,
+      "signature": "interface Tab {",
+      "contentHash": "7c30112a8596a5105fd82ec5aae0c88cd1b3dfb4b55a5acba6ef845c93d7b7f2",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "83d1c16fd18e7e7b7b65383c9042710c",
+      "displayKey": "log-view::function::unaccountedSkills",
+      "concept": "log-view",
+      "type": "function",
+      "name": "unaccountedSkills",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 226,
+      "end_line": 231,
+      "signature": "function unaccountedSkills(inst: Instance): string[]",
+      "contentHash": "4e177f15153bd5103135dfca541085f61e13f5ef2e26e43707937d3a04e3093c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "865c948b67a5e061b8ee9dbc2ac18e7f",
+      "displayKey": "log-view::function::dedupeProjectRoots",
+      "concept": "log-view",
+      "type": "function",
+      "name": "dedupeProjectRoots",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 188,
+      "end_line": 203,
+      "signature": "function dedupeProjectRoots(roots: string[]): string[]",
+      "contentHash": "6889f9b6faef64089271311187418e9eca520b45eec7450d47f8f5463a2e7047",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8ddeb9e44e21d6ed01c086dae38806ae",
+      "displayKey": "log-view::function::reduceWorktreeTabs",
+      "concept": "log-view",
+      "type": "function",
+      "name": "reduceWorktreeTabs",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 47,
+      "end_line": 95,
+      "signature": "function reduceWorktreeTabs(prev: WorktreeTabsState, event: WorktreeTabsEvent): WorktreeTabsState",
+      "contentHash": "1141978d3bddc7e238d9673a2a46a859d73d21934db343be5d71b01665fe4710",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "921cc6ed481b684911a68a86db147f75",
+      "displayKey": "log-view::effect::effect-64",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-64",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 64,
+      "end_line": 67,
+      "signature": "useEffect(() => {",
+      "contentHash": "c1085e202ab3b6fa4e37e1dcde620b259d0ef015f0f8ee0716b4c898de0ebecf",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9239cab5577ad08eee454154c25eecd2",
+      "displayKey": "log-view::function::worktreePathFor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "worktreePathFor",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 48,
+      "end_line": 52,
+      "signature": "function worktreePathFor(mainRoot: string, filename: string): string | null",
+      "contentHash": "d1f12f6d31c896304c30338d495868f7aeff93eaa6974c37a8d4fef0fe3c3257",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9cb900696baea4357f7a17f09479affd",
+      "displayKey": "log-view::type-def::ContextUsage",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "ContextUsage",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 357,
+      "end_line": 363,
+      "signature": "export interface ContextUsage {",
+      "contentHash": "12a249bed1dc6ec81335ff09a9eaf1be84b75dfc2b36bfbe99267f7bdeb9354a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9dad1ea9c6a641f96e80d73de89da76d",
+      "displayKey": "log-view::function::humanizeLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "humanizeLog",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 302,
+      "end_line": 354,
+      "signature": "function humanizeLog(entry: SessionLogEntry, cwd = \"\"): string | null",
+      "contentHash": "4a39c7950dd3e64d5609c982aa81d344d392cf7300ca161430a86a90d3b20e1c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9e575613dc7779c423243e9b943607bf",
+      "displayKey": "log-view::hook::useWorktreeLog",
+      "concept": "log-view",
+      "type": "hook",
+      "name": "useWorktreeLog",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 181,
+      "end_line": 183,
+      "signature": "function useWorktreeLog(): WorktreeLogContextValue",
+      "contentHash": "9d965adc593ebf818bf282fb60df699a593eacf97004dbba3ab6de68262987e5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9ef41792862e5f4f2e725c3adb3420c3",
+      "displayKey": "log-view::function::worktreeHasLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "worktreeHasLog",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 19,
+      "end_line": 25,
+      "signature": "function worktreeHasLog(root: string): boolean",
+      "contentHash": "6c992ce5a6b6d219853b87c353048adae887880079612d8f5ed882d046f55f22",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9f527588829b07d191e80f9e3f6daa01",
+      "displayKey": "log-view::effect::effect-68",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-68",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-panes.tsx",
+      "start_line": 68,
+      "end_line": 71,
+      "signature": "useEffect(() => {",
+      "contentHash": "2a6ad4eb9cabb6ee3a0287c36e73a5f2baf4c5b628a3c42293d6c5c0a42eaec9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a07e1cea6591aea66172fa75fb241643",
+      "displayKey": "log-view::function::borderColor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "borderColor",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-view.tsx",
+      "start_line": 13,
+      "end_line": 19,
+      "signature": "function borderColor(status: Instance[\"status\"]): string",
+      "contentHash": "9c7a5e2338e203e9c79d3451de0d98b400c0f21429f031402024e8e64d6e498d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a28f8fc87dbc13999ed46585a949c3ab",
+      "displayKey": "log-view::component::SessionLogCards",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogCards",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-cards.tsx",
+      "start_line": 27,
+      "end_line": 75,
+      "signature": "function SessionLogCards({ instances, activeId, onSelect }: SessionLogCardsProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "aa18ad49b2514d91943aba9ad65ce2df865fcfdb9a7e2537ce19519dfaca0d8e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a72db31ed54ab3310df11fb21d5abf28",
+      "displayKey": "log-view::function::formatWhen",
+      "concept": "log-view",
+      "type": "function",
+      "name": "formatWhen",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-tabs.tsx",
+      "start_line": 32,
+      "end_line": 39,
+      "signature": "function formatWhen(s: SessionRecord): { date: string; time: string; } | null",
+      "contentHash": "b81f971b64eeea1e80639a8239772c0e580c985dc3cfb82d4be37d3acb59e211",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a73b70f46fe20d01e398b599c2e5d4e4",
+      "displayKey": "log-view::component::StatusIcon",
+      "concept": "log-view",
+      "type": "component",
+      "name": "StatusIcon",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-cards.tsx",
+      "start_line": 12,
+      "end_line": 18,
+      "signature": "function StatusIcon({ status }: { status: Instance[\"status\"] }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "331c2a578b3fedf961f8c79a17b387c83a1164e48a2d99ebc261490911b35970",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "displayKey": "log-view::component::WorktreeView",
+      "concept": "log-view",
+      "type": "component",
+      "name": "WorktreeView",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 164,
+      "end_line": 214,
+      "signature": "function WorktreeView({\n  tab,\n  projectState,\n  connected,\n  onClose,\n}: {\n  tab: WorktreeTab;\n  projectState: ProjectState;\n  connected: boolean;\n  onClose: (path: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "ea13b0d9fdd530a57a05f508fa1af5ace36718d3e0b2d59ad0b6d74fd00749bb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a912ea06debce88dfae820f42e853320",
+      "displayKey": "log-view::function::isFreeformBranch",
+      "concept": "log-view",
+      "type": "function",
+      "name": "isFreeformBranch",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 73,
+      "end_line": 75,
+      "signature": "function isFreeformBranch(name: string): boolean",
+      "contentHash": "2d325abf3269d41b81c18e41fe983ef2b8e094d714c6cbf6526b687a881a95db",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b22f136577937a64775d9256007292f1",
+      "displayKey": "log-view::type-def::SessionLogContextValue",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogContextValue",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 143,
+      "end_line": 149,
+      "signature": "interface SessionLogContextValue {",
+      "contentHash": "15c5c61eafeefb61073a86fb327d6ca16157ef28c894612ae5c7a0159549c820",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b3151986ff5795accd7569d5a3f60eb3",
+      "displayKey": "log-view::type-def::SessionLogTailEvents",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogTailEvents",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 75,
+      "end_line": 82,
+      "signature": "export interface SessionLogTailEvents {",
+      "contentHash": "0f09532b0e05d8a3efe3d4aa6132d20b6d0c4b8fd9c08b05c077afaac9cee209",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b6ca8f2a7649d9beb1e89836bc00cbac",
+      "displayKey": "log-view::type-def::Instance",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "Instance",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 17,
+      "end_line": 46,
+      "signature": "export interface Instance {",
+      "contentHash": "90f35a31479f640dd9be7dd08e8ef68ee3baf28c8171a86779500a9130fb787e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b7f885ca092edf77c06aa377516f340a",
+      "displayKey": "log-view::function::pickSessionTitle",
+      "concept": "log-view",
+      "type": "function",
+      "name": "pickSessionTitle",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 224,
+      "end_line": 228,
+      "signature": "function pickSessionTitle(s: SessionRecord, backendTitle: string | null | undefined, max = TITLE_MAX): string",
+      "contentHash": "435e4c4e7fd3c2accb9e7977a070e52daaade8a9f57493caf3bc0c03d3d2548d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b95cd9acc40cc4f3d9bd8220cd3de1f1",
+      "displayKey": "log-view::effect::effect-161",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-161",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 161,
+      "end_line": 188,
+      "signature": "useEffect(() => {",
+      "contentHash": "e48891d2374b4310d80f88b7db276346f97e3c5dadcdc69e5c121ac9d91ed198",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b9fd77c8abaf9c67246a2bb1c688c837",
+      "displayKey": "log-view::type-def::WorktreeTabEvents",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTabEvents",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 41,
+      "end_line": 47,
+      "signature": "export interface WorktreeTabEvents {",
+      "contentHash": "cdaaf9b33846462dfbc060f9631f0a84653d7bb08852bce71936ad28d9ae037e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ba01506df7022e9957496f855998b7c7",
+      "displayKey": "log-view::function::linkedWorktrees",
+      "concept": "log-view",
+      "type": "function",
+      "name": "linkedWorktrees",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 89,
+      "end_line": 91,
+      "signature": "function linkedWorktrees(projectRoot: string, list: WorktreeLister = listWorktrees): WorktreeInfo[]",
+      "contentHash": "24d42806f3497923b10a042799d14b7559840b3ebf245c9b6ab6af8c4acc8230",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ba42c1153e59f18b4165e4511c45d560",
+      "displayKey": "log-view::function::sessionLogFileFor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "sessionLogFileFor",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 44,
+      "end_line": 49,
+      "signature": "function sessionLogFileFor(projectRoot: string, sessionId?: string | null): string",
+      "contentHash": "f8c45a255f8d4fd12fcb922da8f178cba8a6f7c004ba94d8d0e8bd2258c1c56a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bae0ae0f2e89a41bab73a0b41678723e",
+      "displayKey": "log-view::effect::effect-106",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-106",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 106,
+      "end_line": 108,
+      "signature": "useEffect(() => {",
+      "contentHash": "016508c3eafb2b755cfa0b8b731f965ad14ce64c169be75835e0236f35998518",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bf04a91fdc3e270fcece86d71b31f0c9",
+      "displayKey": "log-view::function::latestContextUsage",
+      "concept": "log-view",
+      "type": "function",
+      "name": "latestContextUsage",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 370,
+      "end_line": 379,
+      "signature": "function latestContextUsage(entries: SessionLogEntry[], origin?: string): ContextUsage | null",
+      "contentHash": "e12a3cffc9bcb6c09397faff888dac6bfff6f72eb2e1167c8bbbf957361c7ce8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c8fc31469c6fe208e2f87916078257e7",
+      "displayKey": "log-view::effect::effect-61",
+      "concept": "log-view",
+      "type": "effect",
+      "name": "effect-61",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 61,
+      "end_line": 63,
+      "signature": "useEffect(() => {",
+      "contentHash": "13297a1aeba49cd1395484207d667e86b67bcec4ded895a6b695566147e58af4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d07ea7da58709028139892d722d93405",
+      "displayKey": "log-view::function::resolveWorktreeRoot",
+      "concept": "log-view",
+      "type": "function",
+      "name": "resolveWorktreeRoot",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 102,
+      "end_line": 111,
+      "signature": "function resolveWorktreeRoot(openProject: string | null, requested: unknown, list: WorktreeLister = listWorktrees): ViewingRoot",
+      "contentHash": "a9278783661b51070ec8ef8808dd228da86e92bb2baba8d26da5eb23a6711cb2",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d12389eace3f41b805aa13680669abcc",
+      "displayKey": "log-view::component::SessionLogView",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogView",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-view.tsx",
+      "start_line": 21,
+      "end_line": 106,
+      "signature": "function SessionLogView({\n  instances,\n  activeId,\n  onSelect,\n  sectionRefs,\n  connected,\n  cwd,\n}: SessionLogViewProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "33d1a81fa7398c65ee001257f6b11c1ce562aaf0f7510d6c0c9279284d9a694e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d2e0a9ecde6c7a5c23efc23a5a295f28",
+      "displayKey": "log-view::type-def::WorktreeTabsState",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTabsState",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 24,
+      "end_line": 24,
+      "signature": "export type WorktreeTabsState = Map<string, WorktreeTab>;",
+      "contentHash": "c201f46244a99d2b38eaf00bc506380db538d689a923376f0d1b10855302d45c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d3f12cd05aa03833a4ad9c18296970e4",
+      "displayKey": "log-view::type-def::WorktreeInfo",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeInfo",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 12,
+      "end_line": 25,
+      "signature": "export interface WorktreeInfo {",
+      "contentHash": "31ab00e9845f755501f1bf886fce977586162a96320e46429495e1591f143e22",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d63fa60afe85b89ead72beec271069e6",
+      "displayKey": "log-view::type-def::SkillsTriage",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SkillsTriage",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log.ts",
+      "start_line": 12,
+      "end_line": 15,
+      "signature": "export interface SkillsTriage {",
+      "contentHash": "73637f5ec547a0c92d3fffd680284582f91ba38a5cca83bd58099ef6739c407a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "da0b10276b0842ac2c1bb41a43fc2eee",
+      "displayKey": "log-view::function::projectName",
+      "concept": "log-view",
+      "type": "function",
+      "name": "projectName",
+      "filepath": "apps/maestro/src/renderer/src/components/session-log-tabs.tsx",
+      "start_line": 27,
+      "end_line": 30,
+      "signature": "function projectName(root: string, projectState: ProjectState): string",
+      "contentHash": "e98fc4b8fad66a4f30e54b22419c3f8e21913361772edff1d45f586d57609a23",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dc6f09cffe09d2f156e82eb37d706b07",
+      "displayKey": "log-view::function::readSessionLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "readSessionLog",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 66,
+      "end_line": 73,
+      "signature": "function readSessionLog(projectRoot: string): SessionLogEntry[]",
+      "contentHash": "ab1b6f0e686cf6e668865ebd09560075a1bb6a238dfe99def702c1d87ac435c6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dc7bd37fa99d4afeb09898f42948bc58",
+      "displayKey": "log-view::component::SessionLogPage",
+      "concept": "log-view",
+      "type": "component",
+      "name": "SessionLogPage",
+      "filepath": "apps/maestro/src/renderer/src/routes/session-log.tsx",
+      "start_line": 19,
+      "end_line": 161,
+      "signature": "function SessionLogPage(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "eb22cb87867a4bd3dc4b59a4f1cf4741c835c55b995cd6af5be922aaf2eaddab",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "de23692312c09fa08ce8efbbe97045b5",
+      "displayKey": "log-view::component::WorktreeLogProvider",
+      "concept": "log-view",
+      "type": "component",
+      "name": "WorktreeLogProvider",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 107,
+      "end_line": 179,
+      "signature": "function WorktreeLogProvider({ children }: { children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "4772cda0100be67f072549d0ffe055f923b3d69e885284e6690ba13a81dae34d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "de89f6c342fb137dc0e9f78bdf2ef83a",
+      "displayKey": "log-view::type-def::SessionLogTailEvent",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "SessionLogTailEvent",
+      "filepath": "apps/maestro/src/renderer/src/utils/session-log-context.tsx",
+      "start_line": 59,
+      "end_line": 63,
+      "signature": "export type SessionLogTailEvent =",
+      "contentHash": "0ef9b1bb21bb9b4936c9a3ab46806b7cc326f7c1ca883c2d2f9e739d65de5c51",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e1cb7d11f23c1341386a1b920111ce29",
+      "displayKey": "log-view::function::createWorktreeTabs",
+      "concept": "log-view",
+      "type": "function",
+      "name": "createWorktreeTabs",
+      "filepath": "apps/maestro/src/core/worktree-tabs.ts",
+      "start_line": 79,
+      "end_line": 165,
+      "signature": "function createWorktreeTabs(opts: WorktreeTabsOptions): WorktreeTabs",
+      "contentHash": "0879d5719d864533328224d8765e0d4350ca0cf8a3b4f33c6ebf19e24ab5047d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e52ac4ed5f23897dcecbd69ec3aaed1f",
+      "displayKey": "log-view::type-def::ViewingRoot",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "ViewingRoot",
+      "filepath": "apps/maestro/src/core/worktree-list.ts",
+      "start_line": 93,
+      "end_line": 94,
+      "signature": "export type ViewingRoot =",
+      "contentHash": "3967b3279e08babfc5cf6549027f0011974fa825888bdd89916669ff37636595",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e73649a24f74346e18fcaad00e995456",
+      "displayKey": "log-view::function::taskNumber",
+      "concept": "log-view",
+      "type": "function",
+      "name": "taskNumber",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 36,
+      "end_line": 39,
+      "signature": "function taskNumber(filename: string): string | null",
+      "contentHash": "19d93044475be3a18dc1f5b3b1c73e333490c9835a8c5aafa4087cab61f38b42",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e938a877d84b72b68fff7d86abd8e540",
+      "displayKey": "log-view::type-def::WorktreeTab",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTab",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 13,
+      "end_line": 22,
+      "signature": "export interface WorktreeTab {",
+      "contentHash": "53315f74549974543952c61fcd9bc3102ab6751bc52e57991005ca7bfc7f405f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e967652718ba981171190b4920aa5bb2",
+      "displayKey": "log-view::type-def::WorktreePointer",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreePointer",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 23,
+      "end_line": 33,
+      "signature": "export interface WorktreePointer {",
+      "contentHash": "2f5674cd06ad4d0038f10ddde9591d5775979b2f7c53edc65a599bef2184316b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ed79cb7459c601cf198f5f08f1475f1a",
+      "displayKey": "log-view::function::newestSessionLog",
+      "concept": "log-view",
+      "type": "function",
+      "name": "newestSessionLog",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 19,
+      "end_line": 32,
+      "signature": "function newestSessionLog(claudeDir: string): string | null",
+      "contentHash": "71ed9d08e84afa2be4ecae8214d5d96f070fcab8b9728e90ecb36369a32d9bbd",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "eee5f5ce37736a03b0567ab9713e813e",
+      "displayKey": "log-view::function::getProjectCwd",
+      "concept": "log-view",
+      "type": "function",
+      "name": "getProjectCwd",
+      "filepath": "apps/maestro/src/renderer/src/utils/maestro-session-log.ts",
+      "start_line": 6,
+      "end_line": 8,
+      "signature": "function getProjectCwd(): Promise<string>",
+      "contentHash": "447545b4d22df79e8f8b710688e92d1f6bd5122da6275d191d0bbcfc60ce27c4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ef44c07631d9e67df4f3198bf1ad4785",
+      "displayKey": "log-view::function::parseLogLines",
+      "concept": "log-view",
+      "type": "function",
+      "name": "parseLogLines",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 52,
+      "end_line": 64,
+      "signature": "function parseLogLines(raw: string): SessionLogEntry[]",
+      "contentHash": "a1c496bc904b09536ae668164290dd31720d0c56c117e74020f15e07f485f828",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "effc4a76e7d123f77add781588091749",
+      "displayKey": "log-view::function::resumeTarget",
+      "concept": "log-view",
+      "type": "function",
+      "name": "resumeTarget",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 115,
+      "end_line": 134,
+      "signature": "function resumeTarget(lines: unknown[], cfg: MaestroConfigV3 | null, session: MaestroSession, agentType: string): string | null",
+      "contentHash": "c2e3a5c25341623a808c9599a92fae16136110ac38969b720f3b15468fbb7328",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f1d24054b6e7d07543803236881987e5",
+      "displayKey": "log-view::function::isSideRun",
+      "concept": "log-view",
+      "type": "function",
+      "name": "isSideRun",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 67,
+      "end_line": 69,
+      "signature": "function isSideRun(entry: Record<string, unknown>): boolean",
+      "contentHash": "8b0048bf3577d434bd6f55e34c6ab0e3bec54974eb39ebaa2853b81d45094622",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f848dbab1daad039caab5505bf97a82f",
+      "displayKey": "log-view::type-def::MultiSessionLogTailEvents",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "MultiSessionLogTailEvents",
+      "filepath": "apps/maestro/src/core/session-log.ts",
+      "start_line": 172,
+      "end_line": 179,
+      "signature": "export interface MultiSessionLogTailEvents {",
+      "contentHash": "1514dd62bf1336e6087d12e703fb93ee28c27def404347c4ba7743ddf30656eb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fa0cb2a2c437ffd5ef2c610eae6b8bd5",
+      "displayKey": "log-view::function::worktreeBranchFor",
+      "concept": "log-view",
+      "type": "function",
+      "name": "worktreeBranchFor",
+      "filepath": "apps/maestro/src/core/worktree.ts",
+      "start_line": 42,
+      "end_line": 45,
+      "signature": "function worktreeBranchFor(filename: string): string | null",
+      "contentHash": "bd9fac8c9db8a1a19c7ec659d0b5fa955afc1fe803dd3a7dfd38b3674c257012",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fac084995f7a041f94cf87e34344a3ab",
+      "displayKey": "log-view::type-def::WorktreeTabsEvent",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "WorktreeTabsEvent",
+      "filepath": "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx",
+      "start_line": 26,
+      "end_line": 33,
+      "signature": "export type WorktreeTabsEvent =",
+      "contentHash": "e2d621419a81a319aed8a4b7c6c2d8a7415a1bf3e1484e8eef0b7947b5d2c82f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "02734276401b3f472c648cb5da468820",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 158,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "02ba9dbe972454c3e5625e45e0dfd18f",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "07506b446d2b30f9a6c2383f90537dd0",
+      "_from": "vertices/050a79d9ae4dd1049bc76ded5985b218",
+      "_to": "vertices/ba42c1153e59f18b4165e4511c45d560",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0785497c47520ae0315ece163d9d030a",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/80b1ea37aa8deacb564efce71f05ac08",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "080744f5a3fd718b8ef02c6567c30e3f",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "093dc6c854dc172260cc9f4653e39c20",
+      "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
+      "_to": "vertices/5efcef757a55a63c951e342fa5abd54a",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "09bd65cf8f5f1f67af9efa6bbc27bb8c",
+      "_from": "vertices/9239cab5577ad08eee454154c25eecd2",
+      "_to": "vertices/e73649a24f74346e18fcaad00e995456",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 49,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0ad1db0fafda70e76c41c6fb44465b6f",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0d85540b61c669e54eb0b77a77c29af4",
+      "_from": "vertices/275d0934f260c1dadacd22d675e39450",
+      "_to": "vertices/b7f885ca092edf77c06aa377516f340a",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0ee7c4ec0d0855ce6d66b8d06d4c803a",
+      "_from": "vertices/2fb68c02e449330c45e2a40bab629f03",
+      "_to": "vertices/f1d24054b6e7d07543803236881987e5",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "103fd0dde2554b0cf938d1dcccb9d1b1",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/08a0dbd2135f58da894086bd16168f28",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 44,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "128bf77d28a3411926ff0b884ab25e1b",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 337,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "16b4d57ca6d77c680c819b22e0e9e63a",
+      "_from": "vertices/275d0934f260c1dadacd22d675e39450",
+      "_to": "vertices/7706ea193554a74cffb16ed461212cb9",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "17697bff21cf9b110666f119752d751e",
+      "_from": "vertices/7cefaaa05516102ec451ffbaac56f22f",
+      "_to": "vertices/15f7d9268f239feaceaf7d82865bac26",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "17c6185b05fb82a45670bc2b736c4d10",
+      "_from": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 226,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "180ba8feac4e4bca1234f7667c0e03fa",
+      "_from": "vertices/6d53d2d1c15da468220c5588eaa22dfa",
+      "_to": "vertices/d63fa60afe85b89ead72beec271069e6",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 239,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1b18ad4b27484abeb7ad85097a7ff045",
+      "_from": "vertices/d07ea7da58709028139892d722d93405",
+      "_to": "vertices/553b82472cc5a8eed588788c08335e9e",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 109,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1d459de39f47a87df1b5db0c283ef979",
+      "_from": "vertices/275d0934f260c1dadacd22d675e39450",
+      "_to": "vertices/a72db31ed54ab3310df11fb21d5abf28",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 72,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1dd524e4145c4e3d1d741051fe34aedf",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1dfe5d38729772c211a7d9101d2128cb",
+      "_from": "vertices/275d0934f260c1dadacd22d675e39450",
+      "_to": "vertices/12bd89286f16f65cbdfed544169b4799",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "22cf990ee2b58b792262de1f604a3aae",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/553b82472cc5a8eed588788c08335e9e",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 102,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2394e1623c7b07530cd5ae63858f6a6d",
+      "_from": "vertices/050a79d9ae4dd1049bc76ded5985b218",
+      "_to": "vertices/ef44c07631d9e67df4f3198bf1ad4785",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 130,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "25b7a148482690dca6f409b43db14e8d",
+      "_from": "vertices/a28f8fc87dbc13999ed46585a949c3ab",
+      "_to": "vertices/1176677e67ce2b094686a1e3c4c24ae5",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 27,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "262d2551d63b525d31246bad58ec653c",
+      "_from": "vertices/5d3c84d54042916589e77b75be83ae05",
+      "_to": "vertices/d3f12cd05aa03833a4ad9c18296970e4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 29,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "26513e40e7db4b838d67649b9f1b92e9",
+      "_from": "vertices/a72db31ed54ab3310df11fb21d5abf28",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 32,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "27db1300a55069d22e0388fa3e7ca543",
+      "_from": "vertices/b7f885ca092edf77c06aa377516f340a",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 224,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2878934703664bce929f934b023543c1",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "28a1780af4774b5eaefabc6272606b81",
+      "_from": "vertices/2fb68c02e449330c45e2a40bab629f03",
+      "_to": "vertices/326e3b470145fee74518ad9e544e510d",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 33,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2bfd10557a358d5fcdc50ebdd7d7916c",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 170,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2df022ae2b733fedd9ce37df168d3a6e",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/3fa84ae24177498e34f3cffce28ac67d",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 28,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2df536165ea7a90ec2923aa045816c9f",
+      "_from": "vertices/413e474559e09b656ffab162e94e2251",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 235,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2e500c452d0fc19936fa34aeecebcc07",
+      "_from": "vertices/275d0934f260c1dadacd22d675e39450",
+      "_to": "vertices/da0b10276b0842ac2c1bb41a43fc2eee",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2e649c282aad2be67693e4204d8945d7",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/d07ea7da58709028139892d722d93405",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2fb612ade35a967450c2ff7ae0fd1381",
+      "_from": "vertices/553b82472cc5a8eed588788c08335e9e",
+      "_to": "vertices/37fa46903a758023d2e346ce368272c0",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "32dc20d77ae7dff61b164738f3c75693",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/de89f6c342fb137dc0e9f78bdf2ef83a",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "39f2ff6aa8ca3c170082ea0d5b989602",
+      "_from": "vertices/a72db31ed54ab3310df11fb21d5abf28",
+      "_to": "vertices/3ead4ea3bc31f5646fa0a84379fa5882",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 33,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3bb370e5bac832ed6b6782b3f3fb665b",
+      "_from": "vertices/12bd89286f16f65cbdfed544169b4799",
+      "_to": "vertices/3ead4ea3bc31f5646fa0a84379fa5882",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 260,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3c61c6e2b2d7ded9b42ef638b3619106",
+      "_from": "vertices/5253d68343f6883c42ef4a12a241f982",
+      "_to": "vertices/ef44c07631d9e67df4f3198bf1ad4785",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 275,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "404945d7e9973a1c796fcd8d49242862",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/7f463d2388b5cb924f83996e60012811",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "40b551d659c116c3e8acaa13ed8c20fe",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/80b1ea37aa8deacb564efce71f05ac08",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "40ba2735a9823589469d8a60babd09cd",
+      "_from": "vertices/a07e1cea6591aea66172fa75fb241643",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 13,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41cdfe1bfc90940f4d03abd141a2176e",
+      "_from": "vertices/a73b70f46fe20d01e398b599c2e5d4e4",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 12,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "467408bfae65168db8eab2ce51a639fb",
+      "_from": "vertices/12bd89286f16f65cbdfed544169b4799",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 257,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4716922004746e40194e0f8cb01b243c",
+      "_from": "vertices/31dbb0b674dddabcc51dc3fb325fa2bc",
+      "_to": "vertices/0678f988aca4cfaca22b6cb67bedfa76",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 17,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "47a70743cc855a029e6da08c96ee9b2e",
+      "_from": "vertices/5eb40624f0958dcfd66162c9090473ad",
+      "_to": "vertices/e938a877d84b72b68fff7d86abd8e540",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "495d20ba6f9586df744fc208381a4d33",
+      "_from": "vertices/5f84b075f8e2162bf6b57426aaad49d5",
+      "_to": "vertices/3ead4ea3bc31f5646fa0a84379fa5882",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "49a27aacd809da21b43742512706b8a7",
+      "_from": "vertices/ba42c1153e59f18b4165e4511c45d560",
+      "_to": "vertices/ed79cb7459c601cf198f5f08f1475f1a",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 48,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "49a6c39ed6e73869b2c9781a390516ca",
+      "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
+      "_to": "vertices/5efcef757a55a63c951e342fa5abd54a",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4cb949ead969ace9c83c60e442c23524",
+      "_from": "vertices/ba01506df7022e9957496f855998b7c7",
+      "_to": "vertices/553b82472cc5a8eed588788c08335e9e",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "50094f8ad0eb5f05fe7fa2707a1f8361",
+      "_from": "vertices/25ec3d2c5b3eb1fb67dffab6d29398ad",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "50c857b2a7b256f57fd514826ee0122f",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 86,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "529e810c624b1603d058b7a7f297b1b3",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/9e575613dc7779c423243e9b943607bf",
+      "type": "uses-hook",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 103,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "539dc610ad9fb50c0bfe25a0b3d6823c",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 70,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "56d05aaf4bc84ff243bf8972ed519715",
+      "_from": "vertices/d07ea7da58709028139892d722d93405",
+      "_to": "vertices/ba01506df7022e9957496f855998b7c7",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 109,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5a57fadd5e002032f4b5ed2a22efe1e2",
+      "_from": "vertices/a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "_to": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 195,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5d1e3ce55b043b4f3c145ba0bddc1728",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 97,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6034873a4ede9b746970c3b7cd49b38b",
+      "_from": "vertices/8ddeb9e44e21d6ed01c086dae38806ae",
+      "_to": "vertices/fac084995f7a041f94cf87e34344a3ab",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 47,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "60bd9ba189a206425adbe8d04d7f98e7",
+      "_from": "vertices/ba01506df7022e9957496f855998b7c7",
+      "_to": "vertices/714a36fad7e04490a22eb9ba62a79416",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 89,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "60d8d14298b426621ee67f33a2c23ef8",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/3831525914210b19611342601168d370",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "60e35993ef0cea4d47273dadd3ccc2d8",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 339,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6258b0d7098ed93d204a9aac88f44109",
+      "_from": "vertices/08346d8c763fcb1836e80a241c79d98f",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 20,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "645afcfbd78278997bf49a86bc1168e4",
+      "_from": "vertices/5253d68343f6883c42ef4a12a241f982",
+      "_to": "vertices/865c948b67a5e061b8ee9dbc2ac18e7f",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 238,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "68dd38d2c9ebf87bb87e047e3c6229ac",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 173,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6b18951d0c0202a65f2b02fe84923c26",
+      "_from": "vertices/4ac99e86eda7e8ff2f9241df1143853c",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6c3caa0149a5a0991dc422869b09c4d8",
+      "_from": "vertices/12bd89286f16f65cbdfed544169b4799",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 256,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6cf54c5142f85f5156280531f2588a46",
+      "_from": "vertices/8ddeb9e44e21d6ed01c086dae38806ae",
+      "_to": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 76,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6de792d22de267c62da5c631eff03ff5",
+      "_from": "vertices/fa0cb2a2c437ffd5ef2c610eae6b8bd5",
+      "_to": "vertices/e73649a24f74346e18fcaad00e995456",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6e5b5d450b704168acfd4c9e8dcbe4ce",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/267d2ca9f3af08b523821541d2c8e214",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7198b586173d001ba3d8bb83e294c30b",
+      "_from": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "71e2d8f97eb9fc762615cb3823e468eb",
+      "_from": "vertices/426d2aeb7fee005ed1e2a602e00e121c",
+      "_to": "vertices/9ef41792862e5f4f2e725c3adb3420c3",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 37,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "750b3851770875feaec9ad84b756119d",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/5253d68343f6883c42ef4a12a241f982",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "753c07fff48b45e36d256889ac9bc89d",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 29,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "77542eda3d128f5aa8a097f483e5243c",
+      "_from": "vertices/050a79d9ae4dd1049bc76ded5985b218",
+      "_to": "vertices/b3151986ff5795accd7569d5a3f60eb3",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 96,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7801b8203a0e4b997f4a47a335481ac5",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/80b1ea37aa8deacb564efce71f05ac08",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 116,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7a50f793985126a37b78784d20e62359",
+      "_from": "vertices/5d3c84d54042916589e77b75be83ae05",
+      "_to": "vertices/d3f12cd05aa03833a4ad9c18296970e4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 28,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7daed36dc36e062b1213aed44422f5ee",
+      "_from": "vertices/a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "_to": "vertices/e938a877d84b72b68fff7d86abd8e540",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 170,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7dc8c602965a275f7ab88e5e9bf62156",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/180d00c420cf00ed56aba5875dce2157",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "80d6016c29b4b4392430c103e8b033b9",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 193,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "811bff80d0d6d5d00d5dd7f9574d1bcf",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/80b1ea37aa8deacb564efce71f05ac08",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 94,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "83d512b387f01bd7fae7afb6d00e4975",
+      "_from": "vertices/2fb68c02e449330c45e2a40bab629f03",
+      "_to": "vertices/f1d24054b6e7d07543803236881987e5",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "83fbdcfa6cd03b9a3772c2481d624764",
+      "_from": "vertices/31dbb0b674dddabcc51dc3fb325fa2bc",
+      "_to": "vertices/5eb40624f0958dcfd66162c9090473ad",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "87af908fcfb5713ef8c64077d8d089b9",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/a28f8fc87dbc13999ed46585a949c3ab",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 111,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8841b5971dd0fa729e8731332ae1920e",
+      "_from": "vertices/a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "_to": "vertices/5eb40624f0958dcfd66162c9090473ad",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8c3782f1953543a931cc8fca4df788ef",
+      "_from": "vertices/5d3c84d54042916589e77b75be83ae05",
+      "_to": "vertices/d3f12cd05aa03833a4ad9c18296970e4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 34,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8da00cfd4741ace604c3c875e2ae88b2",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 334,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8e442f358815510405c00eecf64998a3",
+      "_from": "vertices/a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "_to": "vertices/00bf9be5d5bf49f63b3a3c337dbe7395",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 204,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8ee4cb754593a5b4ce0199600877eb58",
+      "_from": "vertices/9e575613dc7779c423243e9b943607bf",
+      "_to": "vertices/6c0470ad93f106868f571eb0c8dd6ef4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 181,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "912599ef0c5b78929694177fd32325c3",
+      "_from": "vertices/426d2aeb7fee005ed1e2a602e00e121c",
+      "_to": "vertices/714a36fad7e04490a22eb9ba62a79416",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 28,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "913bf8c31fcf84c9b91f9111e32cc2e6",
+      "_from": "vertices/effc4a76e7d123f77add781588091749",
+      "_to": "vertices/326e3b470145fee74518ad9e544e510d",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9159e8b3f9060ef900dd21b8e86224b7",
+      "_from": "vertices/de23692312c09fa08ce8efbbe97045b5",
+      "_to": "vertices/e938a877d84b72b68fff7d86abd8e540",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "929de30cba930bc0530144c74c63a04c",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/7dd1a98a8d4dcb22646745df8de1f240",
+      "type": "uses-hook",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "931b83449ed41a546a486e8c7089451e",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 139,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "93e69ec5cab5a82991aa6fc64327278d",
+      "_from": "vertices/6c1bc1b84cdce27534191ee11a315046",
+      "_to": "vertices/d3f12cd05aa03833a4ad9c18296970e4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "96bdc81fbf50211d579d5880d0cc83ad",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9b101cc8861d05d09c85b678bb4e3c5f",
+      "_from": "vertices/050a79d9ae4dd1049bc76ded5985b218",
+      "_to": "vertices/ef44c07631d9e67df4f3198bf1ad4785",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e08201d6c98869e514dcc21e1d247e4",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/d12389eace3f41b805aa13680669abcc",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 112,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e353b1c067e758e1b6cc7b0ff8ffc83",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/b22f136577937a64775d9256007292f1",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 204,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9efb4904a9df1ed05a951c4754a8b232",
+      "_from": "vertices/15f7d9268f239feaceaf7d82865bac26",
+      "_to": "vertices/220f7e10a6985b8f94e08f6e31327411",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9f399fb17eaafbdf47a4e08775b58424",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a1c10f0e946ef447894790270cfbf851",
+      "_from": "vertices/bf04a91fdc3e270fcece86d71b31f0c9",
+      "_to": "vertices/9cb900696baea4357f7a17f09479affd",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 370,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a1e488077263655c3436fefd212ca0bd",
+      "_from": "vertices/4ac99e86eda7e8ff2f9241df1143853c",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 135,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a208d6255eb20dd998a2d8c1f1bbc7a2",
+      "_from": "vertices/6c1bc1b84cdce27534191ee11a315046",
+      "_to": "vertices/5d3c84d54042916589e77b75be83ae05",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a2850d33490fea2d54cfc1d5bc58629a",
+      "_from": "vertices/d07ea7da58709028139892d722d93405",
+      "_to": "vertices/e52ac4ed5f23897dcecbd69ec3aaed1f",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a3f44f9ea3252333f205bfbb861dc6d2",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a490f23f17ffd9495096d1778d949eec",
+      "_from": "vertices/effc4a76e7d123f77add781588091749",
+      "_to": "vertices/2fb68c02e449330c45e2a40bab629f03",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a64462cd3cda6718d01dc81ed6a2886c",
+      "_from": "vertices/68297290314be98d06d2802b351c4916",
+      "_to": "vertices/d63fa60afe85b89ead72beec271069e6",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 255,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a6dab0a2faf8027a894c00a5d83a7a1c",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/31dbb0b674dddabcc51dc3fb325fa2bc",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a7e0be29ed9f699ffc3234f0b1875020",
+      "_from": "vertices/275d0934f260c1dadacd22d675e39450",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 67,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a927a65bfd3c3557788d2c9b130803c8",
+      "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
+      "_to": "vertices/45f609817d57c7220490f505c2f348da",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a97f93c4e6db597147e5aa24357cb5ad",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aa692b128d0ee982973aa0fe810fca52",
+      "_from": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 35,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ad4a7cf8f6bd424fe8a62ee27b56507b",
+      "_from": "vertices/6d53d2d1c15da468220c5588eaa22dfa",
+      "_to": "vertices/68297290314be98d06d2802b351c4916",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 249,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "afeb09abbb36252760abfc80a1c0dfc6",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 77,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b061a7a8bd0a737b71617eac9e7b7cb5",
+      "_from": "vertices/2fb68c02e449330c45e2a40bab629f03",
+      "_to": "vertices/326e3b470145fee74518ad9e544e510d",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b3bba26194b16603ddd1a0ecc2e36ca3",
+      "_from": "vertices/5f84b075f8e2162bf6b57426aaad49d5",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b42ac90529f475d6c4590365c026e8c1",
+      "_from": "vertices/b7f885ca092edf77c06aa377516f340a",
+      "_to": "vertices/413e474559e09b656ffab162e94e2251",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 227,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b63e3f8df1b15e297df8a334d5db08ce",
+      "_from": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 76,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b770c54af4a6218b68963945797da1c8",
+      "_from": "vertices/dc6f09cffe09d2f156e82eb37d706b07",
+      "_to": "vertices/ef44c07631d9e67df4f3198bf1ad4785",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bf6eac5386466e96f0b72689f6f1e793",
+      "_from": "vertices/d12389eace3f41b805aa13680669abcc",
+      "_to": "vertices/a07e1cea6591aea66172fa75fb241643",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c06fd55b8c84d7cb28c535886f93796b",
+      "_from": "vertices/3ead4ea3bc31f5646fa0a84379fa5882",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c3785abba2dece65d2aed2db8966e7f9",
+      "_from": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c439ff1df6ed81213e9b222241fd9b5f",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/80b1ea37aa8deacb564efce71f05ac08",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c4b01ba5b372ba16137e5a20bedd218e",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c57f4af7bc404f9470b5c0723936e06e",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/4ac99e86eda7e8ff2f9241df1143853c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c59ce590fc50a26ff921a6d9701e105c",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 72,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ce01813c136ebbbe6a5fa7c2263bf8b5",
+      "_from": "vertices/8ddeb9e44e21d6ed01c086dae38806ae",
+      "_to": "vertices/d2e0a9ecde6c7a5c23efc23a5a295f28",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cedd7b38cc66199b5a4fd7471a651055",
+      "_from": "vertices/a28f8fc87dbc13999ed46585a949c3ab",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d43c48b31272ed390b27492d87128180",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d58862eb57f3aed2f0f74853eb069544",
+      "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
+      "_to": "vertices/45f609817d57c7220490f505c2f348da",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 88,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d7ffd08470057357667b015c3b80933a",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d90029a5e48a5c13a09036d827590da7",
+      "_from": "vertices/9dad1ea9c6a641f96e80d73de89da76d",
+      "_to": "vertices/31aa8b6e8848ea283ab67eab9c31cf02",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 332,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dd01f22cb15721fa3e92f1347e9ceab0",
+      "_from": "vertices/a28f8fc87dbc13999ed46585a949c3ab",
+      "_to": "vertices/a73b70f46fe20d01e398b599c2e5d4e4",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 45,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dded073e762fbeaa0f2b33cdad9100ea",
+      "_from": "vertices/a28f8fc87dbc13999ed46585a949c3ab",
+      "_to": "vertices/83d1c16fd18e7e7b7b65383c9042710c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 54,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "de58692d7521154f190383b937aa169c",
+      "_from": "vertices/426d2aeb7fee005ed1e2a602e00e121c",
+      "_to": "vertices/ba01506df7022e9957496f855998b7c7",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 30,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e0218c1c14e722f13320b37242bba10d",
+      "_from": "vertices/d07ea7da58709028139892d722d93405",
+      "_to": "vertices/714a36fad7e04490a22eb9ba62a79416",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 105,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e034a48e16cab75cf8ebad2ebf37d207",
+      "_from": "vertices/de23692312c09fa08ce8efbbe97045b5",
+      "_to": "vertices/6c0470ad93f106868f571eb0c8dd6ef4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 166,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e13ad574905fda371c362485e472eb64",
+      "_from": "vertices/4ac99e86eda7e8ff2f9241df1143853c",
+      "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e41492c9a92e2acef32b0e079f9906a9",
+      "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
+      "_to": "vertices/5efcef757a55a63c951e342fa5abd54a",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 84,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e4306bb13cf835e9c83bdd08fa56090e",
+      "_from": "vertices/469d52874f09b49239fa21839fc9c2c8",
+      "_to": "vertices/275d0934f260c1dadacd22d675e39450",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e61441a1790bb64783f7ef12f7a6e31d",
+      "_from": "vertices/3831525914210b19611342601168d370",
+      "_to": "vertices/2f023a186a33f80fcda2c95318913693",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 20,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e8ec76e5ac9897d71e41a1056a82ece6",
+      "_from": "vertices/a82cae7a2e1bbd40a8e889d3025fbfeb",
+      "_to": "vertices/00bf9be5d5bf49f63b3a3c337dbe7395",
+      "type": "mounts",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ea043338c0a47a11e3e9559e4e493c2b",
+      "_from": "vertices/5253d68343f6883c42ef4a12a241f982",
+      "_to": "vertices/f848dbab1daad039caab5505bf97a82f",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 223,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ec6839aafb2ec03c53e5208766a05147",
+      "_from": "vertices/8ddeb9e44e21d6ed01c086dae38806ae",
+      "_to": "vertices/d2e0a9ecde6c7a5c23efc23a5a295f28",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 47,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed141a6ac26244121867d41f6e40b3df",
+      "_from": "vertices/350498509edc630746dc847aef4feaf3",
+      "_to": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 167,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed886890152c169df02445a8f1605c1c",
+      "_from": "vertices/7dd1a98a8d4dcb22646745df8de1f240",
+      "_to": "vertices/b22f136577937a64775d9256007292f1",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 212,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "efc1f9733dd89215043e90215c531e1e",
+      "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
+      "_to": "vertices/45f609817d57c7220490f505c2f348da",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 89,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f139fa20b5ddd3bbef422fc951b4a9f2",
+      "_from": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
+      "_to": "vertices/6d53d2d1c15da468220c5588eaa22dfa",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 212,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f1974f98fc42a6bc21490c15a3fe9059",
+      "_from": "vertices/4ac99e86eda7e8ff2f9241df1143853c",
+      "_to": "vertices/5f84b075f8e2162bf6b57426aaad49d5",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f53bb3407093b6807880025ab367f2d3",
+      "_from": "vertices/dc6f09cffe09d2f156e82eb37d706b07",
+      "_to": "vertices/ba42c1153e59f18b4165e4511c45d560",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f704cfa8c0cea530ded105754bbe21da",
+      "_from": "vertices/ba01506df7022e9957496f855998b7c7",
+      "_to": "vertices/d3f12cd05aa03833a4ad9c18296970e4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 89,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f75a72c89ebd842e869348ac7eed5e4c",
+      "_from": "vertices/12bd89286f16f65cbdfed544169b4799",
+      "_to": "vertices/53bdd05b9f4e4ab3dd78e64d39f368c4",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 253,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f89b97452f85b296d530a88deb5043e5",
+      "_from": "vertices/a28f8fc87dbc13999ed46585a949c3ab",
+      "_to": "vertices/08346d8c763fcb1836e80a241c79d98f",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 41,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f973f57e333d522b8ab96613067ceb44",
+      "_from": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
+      "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 60,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fdcbc8ffba36ba17f70c2c4ef31720ec",
+      "_from": "vertices/e1cb7d11f23c1341386a1b920111ce29",
+      "_to": "vertices/7f463d2388b5cb924f83996e60012811",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/log-view/SKILL.md",
+    "body": "---\nname: log-view\ndescription: \"Explains how the /session-log view in the Maestro desktop app is built end-to-end: a tab bar (065) grouping one tab per LIVE SESSION by project — current project plus every recent one, not just the open one — above the thin left step list, the center framed log pane, and the right Input/Process/Output detail panel; how log entries map to Instance segments within whichever tab is selected; how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender; how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`); how an ended session keeps a greyed, capped, evictable tab instead of vanishing; how a project being forgotten forces a full tab-bar reset rather than a per-session end; and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the log each tab reads — which since `064` is the PER-SESSION .claude/maestro_sessions/<session_id>/log.jsonl, one fixed file per session for its whole life, discovered across the current-plus-recent project allow-list by tailSessionLogs() (065) rather than resolved by mtime. Use when the user is working inside apps/maestro and asks how the session-log view or its tabs work, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log or a tab is empty, why a tab disappeared or greyed out, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`).\"\nmetadata:\n  type: concept-skill\n  version: \"2.5\"\n  last-update: 9a92b6c620c588b8d59a298edf170345ddaa7593\n---\n\n# Log View\n\nThe `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. Since `065` it shows **one tab per live session, across every project the app knows about** (the current project plus the recent-projects list) — not just the open one. Each tab reads its own `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`) and, once selected, presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three; switching tabs swaps which session's entries those three panes render, without touching the other tabs' state.\n\nSince `075` there is also a **top-level tab bar above all of that** (`WorktreeTabBar`): \"Main checkout\" (everything above) plus one tab per linked git worktree of the open project that has a session log. Each worktree tab renders its own session tab bar + three panes over only that worktree's sessions, from its own tail, and shows an explicit removed / no-log notice instead of ever falling back to the main log. Worktree tabs are not retargeted on a project switch.\n\nThis is the **read side** of the Maestro runtime: it displays what the hook scripts write. See the `maestro-architecture` skill for the full HANDOFF routing contract, and the `workflow-view` skill for the sibling `/workflows` authoring view.\n\n| Sub-concept | Covers |\n| --- | --- |\n| [`sub-concepts/log-entry-schema.md`](sub-concepts/log-entry-schema.md) | The `SessionLogEntry` JSONL shape per `kind`, the derived `Instance`, and the skills-triage audit (`offeredSkills` vs `skillsTriage` vs `unaccountedSkills`). |\n| [`sub-concepts/instance-correlation.md`](sub-concepts/instance-correlation.md) | How `buildInstances` segments by `origin` and correlates `input`/`offeredSkills`/`delivered` by `agent_id` bounded to a `(p, h)` log window (`042`, `039`, `037`). |\n| [`sub-concepts/hook-writers.md`](sub-concepts/hook-writers.md) | The write side: the three hook scripts, their entry formats, `hooks.json` registration, SessionEnd cleanup, and why status needs `maestro-subagent-log.js`. |\n| [`sub-concepts/tailing-and-tabs.md`](sub-concepts/tailing-and-tabs.md) | `tailSessionLogs` vs the legacy single-session tail (`064`/`065`), the poll loop, `tails` vs `logSubscribers` (`038`), the `reduceSessionLog`/`pickSelection` tab state machine, and **worktree tabs** (`075`): `resolveWorktreeRoot`, the per-(window, tab) `worktreeTabs` registry, `skipSession`, `WorktreeLogProvider`, live/no-log/removed states. |\n| [`sub-concepts/panes.md`](sub-concepts/panes.md) | What each of the three panes renders: icons, colors, badges, and the detail panel's sections. |\n\n## Layout\n\n```\n┌──────────────────────────────── TopNav (top-nav.tsx) ────────────────────────────────┐\n│ Workflows | Rules | Session Log                                                  ☀    │\n├────────────────────────────────── SessionLogTabs (065) ──────────────────────────────┤\n│ [● proj-a Sep 29 10:02 / title] [● proj-a Sep 29 10:14 (ended) / title ✕] …   [Clean up sessions] │\n├────────────┬─────────────────────────────────────┬──────────────────────────────────┤\n│ Left       │ Center — SessionLogView              │ Right — SessionLogDetail          │\n│ Cards      │ (session-log-view.tsx)               │ (session-log-detail.tsx)          │\n│ (cards.tsx)│                                      │                                   │\n│            │  Agents Flow                 ● live  │  Logs: Backend (1)                │\n│ Workflow   │                                      │                                   │\n│            │  ┌────────────────────────────────┐  │  Input                            │\n│ ✓ Main Ses │  │ Main Session                   │  │  Create a button component…       │\n│ ✓ Backend  │  │ - calling `backend` agent      │  │  Delivered from @scribe  channel   │\n│ ✓ Human R  │  │ - …                            │  │  Process                          │\n│ ✗ Test     │  └────────────────────────────────┘  │  - [Backend]: read file `…`       │\n│ ✓ Backend  │                                      │  - [Backend]: wrote file `…`      │\n│ ✓ Test     │  ┌════════════════════════════════┐  │  - …                              │\n│ ⚠ Reviewer │  ║ Backend (1)  ⤓1     «green»    ║  │                                   │\n│ ✓ Scribe   │  ║ - calling backend agent        ║  │  Output                           │\n│            │  ║ - [Backend]: read file `…`     ║  │  Created a button component …     │\n│            │  ║ - [Backend]: wrote file `…`    ║  │                                   │\n│            │  └════════════════════════════════┘  │                                   │\n│            │                                      │                                   │\n│            │  ┌────────────────────────────────┐  │                                   │\n│            │  │ Human Review                   │  │                                   │\n│            │  │ - …                            │  │                                   │\n│            │  └────────────────────────────────┘  │                                   │\n│            │                                      │                                   │\n└────────────┴─────────────────────────────────────┴──────────────────────────────────┘\n   180px                     1fr                                320px\n```\n\n**No workflow selector and no YAML preview toggle** — TopNav is rendered bare (no `workflowSelector` or `onPreviewToggle` props). The **tab bar** (`session-log-tabs.tsx`, `065`) sits above the three panes: one tab per session, ordered by project (current first, then recents in `project:get` order; roots de-duplicated by `orderSessions`) then start time. Each tab shows **project name, start date + time and a title** (line 2), truncated with the full text in the tooltip. Title priority: **(1) the session's active maestro task name** (H1 of the `active_task` file in `session.json`, else its filename), **(2) the `claude --resume` title** from the Claude transcript (user rename > AI title > summary), **(3) a renderer-derived title** (`sessionTitle`: first dispatch's message, else agent, else origin, else `Session <id8>`). Resolved by `src/core/session-title.ts` via `sessions:titles`, re-queried on session-set change and every 30s. An **ended** session's tab stays, dimmed with an \"(ended)\" label. The **✕ button appears on any tab that is not running** — ended, or listed by `sessions:deletable` (a crashed session never emits `end`, so its tab stays \"live\" but is deletable) — and it **deletes the session directory** (see Deleting stale sessions), not just the tab. A **Clean up sessions** button (`clean-sessions-button.tsx`) runs the same sweep as app start: icon only, pinned at the tab bar's right end (the tabs' `actions` slot, outside the scrolling tabs, as tall as a tab), and with its label in the empty state, which has no tab bar. When there are no tracked sessions in any known project, the whole three-pane layout is replaced by an **empty state**: a centred `ScrollText` icon + \"No live sessions in any known project\" message (\"A tab appears here while a Maestro session is running, in this project or a recent one.\") + a `● live / ○ connecting…` indicator.\n\n## Data flow\n\n```\nApp-wide (src/renderer/src/routes/__root.tsx)\n  <SessionLogProvider>  (src/renderer/src/utils/session-log-context.tsx)\n    └── window.maestro.log.subscribe({ onInit, onEntry, onEnd, onReset })\n          MAIN process (src/main/ipc.ts) owns ONE poll loop per window:\n          tailSessionLogs(allowedProjectRoots, …) walks every session dir\n          under every project in the current+recent allow-list and pushes,\n          per (projectRoot, sessionId):\n          `log:init` / `log:entry` / `log:end` — `log:reset` is untagged\n          and means \"drop everything\" (see sub-concepts/tailing-and-tabs.md)\n          state: Map<sessionKey, SessionRecord> (keyed by `${projectRoot} ${sessionId}`)\n                                     │\n          reduceSessionLog(prev, event) — the ONE pure fold, unit-tested alone\n          (see sub-concepts/tailing-and-tabs.md)\n                                     │\n       ┌─────────────────────────────┘\n       ▼\nSessionLogPage (src/renderer/src/routes/session-log.tsx)\n  const { sessions, connected, dismiss } = useSessionLog()   // sessions: SessionRecord[]\n  selectedKey state, kept stable by:\n    useEffect(() => pickSelection(sessions, selectedKey))    // the OTHER pure function\n  selected = sessions.find(sessionKey(s) === selectedKey)\n  instances = useMemo(() => selected ? buildInstances(selected.entries) : [])  → Instance[]\n  activeId state (which step is selected, scoped to the selected tab)\n  cwd = selected?.projectRoot ?? currentProject?.root  // the TAB's own project, not the open one\n       │\n       ├──▶ SessionLogTabs (065, above the 3 panes)\n       │      groups `sessions` by projectRoot, one tab per session,\n       │      onSelect(projectRoot, sessionId) → setSelectedKey(sessionKey(...))\n       │      onDelete(projectRoot, sessionId) → sessions.delete(...) (non-running tabs;\n       │        `not-found` → dismiss(...) just drops the tab)\n       │\n       ├──▶ SessionLogCards (left) / SessionLogView (center) / SessionLogDetail (right)\n       │      render `instances` + `activeInstance` — see sub-concepts/panes.md\n       │\n       └── isEmpty = sessions.length === 0 → the \"no live sessions in any known\n           project\" empty state (see Layout)\n\nTopNav (every Maestro page): \"● Session Log\" dot driven by useSessionLog().connected\n```\n\nThe upstream writers that produce those entries — `maestro-session-log.js` (PreToolUse),\n`maestro-subagent-log.js` (SubagentStart/Stop), `maestro-inject-agent-context.js` (SubagentStart,\n`channel_delivery`) and `maestro-session-cleanup.sh` (SessionEnd) — are in\n[`sub-concepts/hook-writers.md`](sub-concepts/hook-writers.md). All four append to **one file per\nClaude Code session** since `064` — including every subagent a run spawns, which is what makes\n`agent_id` correlation possible at all.\n\n## File-by-file map\n\nRenderer paths are relative to `apps/maestro/`.\n\n| Concern                                                                                                                        | File                                                                                  |\n| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |\n| Route, state, tab selection, 3-pane grid, scroll-sync, empty state                                                              | `src/renderer/src/routes/session-log.tsx`                                             |\n| **Tab bar** — one tab per session (project, date/time, title), ended dimming, ✕ delete on non-running tabs (`065`, `068`)      | `src/renderer/src/components/session-log-tabs.tsx`                                    |\n| **Clean up sessions button** — runs `sessions:clean`, toasts the removed count                                          | `src/renderer/src/components/clean-sessions-button.tsx`                               |\n| **Stale-session sweep + explicit delete** — `sweepStaleSessions`, `deleteSession`, `listDeletableSessions` (`068`)            | `session-sweep.ts` in `apps/maestro/src/core/`                                        |\n| **Sweep / delete / title IPC decisions** — `composeAllowedRoots`, `titlesForRefs`, `sweepAndRetarget`, `deleteAndRetarget`; `main/ipc.ts` only injects project state and the retarget callback (`070`; tests `test/core/session-ipc.test.ts`) | `session-ipc.ts` in `apps/maestro/src/core/` |\n| **Tab title resolution** — task H1 > `claude --resume` transcript title (`068`)                                               | `session-title.ts` in `apps/maestro/src/core/`                                        |\n| **Top-level view switch** — \"Main checkout\" + one tab per worktree with a log (`075`) | `src/renderer/src/components/worktree-tab-bar.tsx` |\n| **`SessionLogPanes`** — session tab bar + 3 panes for a given `SessionRecord[]`, extracted from the route so the main view and each worktree view render their own instance (`075`) | `src/renderer/src/components/session-log-panes.tsx` |\n| **`WorktreeLogProvider`** / `useWorktreeLog()` / pure `reduceWorktreeTabs` — worktree-tab state, separate from `SessionLogProvider` (`075`; tests `test/renderer/worktree-log-context.test.ts`) | `src/renderer/src/utils/worktree-log-context.tsx` |\n| **Worktree listing + viewing-root gate** — `parseWorktreeList`, `listWorktrees`, `linkedWorktrees`, `samePath`, `resolveWorktreeRoot` (`075`) | `worktree-list.ts` in `apps/maestro/src/core/` |\n| **Per-(window, tab) tail registry** — `createWorktreeTabs`, `describeWorktrees`, `worktreeHasLog`, removed/no-log/live state (`075`; tests `test/core/worktree-tabs.test.ts`, `worktree-isolation.test.ts`) | `worktree-tabs.ts` in `apps/maestro/src/core/` |\n| Left step list with status icons (CheckCircleIcon/XCircleIcon/WarningIcon)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |\n| **Context-usage badge + detail header line** (`ContextUsageBadge`, `ContextUsageLine`) | `src/renderer/src/components/context-usage.tsx` |\n| Center framed log pane, click-to-select, live indicator, per-section anchors                                                   | `src/renderer/src/components/session-log-view.tsx`                                    |\n| Right detail panel: Input/Process/Output sections                                                                              | `src/renderer/src/components/session-log-detail.tsx`                                  |\n| **The tail itself** — one poll loop per window, `tailSessionLogs(allowedProjectRoots, …)` walks every session across the current+recent allow-list and pushes `log:init`/`log:entry`/`log:end` per (projectRoot, sessionId); `tails` (running watchers) and `logSubscribers` (who asked, `038`) are separate sets | `src/main/ipc.ts` (`startTail`, `retargetTails`, `allowedProjectRoots`)               |\n| **Worktree IPC** — `worktree-log:list/open/close` (invoke) and `worktree-log:init/entry/end/state` (push, `projectRoot` = worktree root); `worktreeTabs` map + `skipSession` wiring in `startTail` | `src/main/ipc.ts`, `src/shared/ipc.ts` (`IPC.worktreeLog*`, `IPC_EVENTS.worktreeLog*`, `window.maestro.worktreeLog`) |\n| The typed channel contract — `log:init`/`log:entry`/`log:end` now carry `{projectRoot, sessionId, …}`; `log:reset` stays untagged and means \"drop everything\" | `src/shared/ipc.ts` (`SessionLogInitEvent`/`SessionLogEntryEvent`/`SessionLogEndEvent`, `log:subscribe`, `log:unsubscribe`) |\n| App-wide subscriber: `SessionLogProvider`, `useSessionLog()`, the keyed `Map<sessionKey, SessionRecord>`, the pure `reduceSessionLog`/`pickSelection` | `src/renderer/src/utils/session-log-context.tsx`                                      |\n| `parseLogLines` + `readSessionLog` + legacy single-session `tailSessionLog`/`sessionLogFileFor` (kept for `test/core/session-log.test.ts`'s differential coverage; no longer what `/session-log`'s live tail uses) + the current `tailSessionLogs` (`065`) | `session-log.ts` in `apps/maestro/src/core/`                                          |\n| The `SessionLogEntry` shape crossing the wire                                                                                  | `contracts.ts` in `apps/maestro/src/core/`, re-exported by `src/shared/ipc.ts`        |\n| Pure transforms `buildInstances` + `humanizeLog` + `parseSkillsTriage` + `unaccountedSkills` + `Instance`/`SkillsTriage` types | `src/renderer/src/utils/session-log.ts`                                               |\n| Top bar — nav links incl. `ScrollText` + global `●` live dot                                                                   | `src/renderer/src/components/top-nav.tsx`                                             |\n| `titleFromName` — origin string → display name                                                                                 | `src/renderer/src/utils/text.ts` (re-export of `src/core/text.ts`)                    |\n| Yellow color tokens (`--yellow`, `--yellow-dim`)                                                                               | `packages/styles/scss/abstracts/_tokens.scss`                                         |\n| **Writer — tool-call entries** (PreToolUse, matcher `.*`)                                                                      | `plugins/maestro/scripts/maestro-session-log.js`                             |\n| **Writer — dispatch + handoff entries** (SubagentStart/Stop, matcher `.*`)                                                     | `plugins/maestro/scripts/maestro-subagent-log.js`                            |\n| **Writer — `channel_delivery` entries** (SubagentStart, matcher `.*`)                                                          | `plugins/maestro/scripts/maestro-inject-agent-context.js`                    |\n| The read-only `pendingLanes()` — `/maestro`'s undrained-backlog view, NOT this route's data (`037`)                            | `handoff-channels.ts` in `apps/maestro/src/core/`                             |\n| Shared append helper (`appendSessionLog`, `readStdin`)                                                                         | `plugins/maestro/scripts/lib/maestro-session.cjs`                            |\n| Hook registration (all three hooks registered here)                                                                            | `plugins/maestro/hooks/hooks.json`                                           |\n| Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`)               |\n| Path resolution + session-id validation (`sessionLogFileFor`, `sessionPathsFor`, `listSessionIds`)                             | `session-log.ts` / `session-paths.ts` in `apps/maestro/src/core/`                     |\n\n## Things that bite\n\n- **The log is ephemeral.** Deleted at SessionEnd by `maestro-session-cleanup.sh`; sessions that end without it (crash, kill) are removed by the `068` sweep / ✕ instead. The desktop window outlives any session, so an empty page is the normal between-sessions state, not an error. The file only exists during and immediately after an active Maestro session.\n- **Status comes exclusively from the SubagentStop handoff entry.** If `maestro-subagent-log.js` is not registered, all steps will have `status: null` and default to green checkmarks. If a real workflow agent (has an `agent_type`) exits without a parseable `HANDOFF:` line (crash, force-stop, broken Maestro contract), the status will be `\"unknown\"` (shown as yellow warning icon). A `SubagentStop` with **no `agent_type`** is instead logged as `kind:\"transition\"` (a neutral grey card) — a boundary that isn't a workflow handoff, not a failed agent, so it deliberately does **not** show a yellow warning.\n- **`channels:pending` (the `/maestro` backlog view) is a DIFFERENT read of a DIFFERENT thing.** This route shows deliveries that already happened, reconstructed from the append-only log; `/maestro`'s `pendingLanes()` (`src/core/handoff-channels.ts`) shows undelivered files still sitting in `.claude/channels/`. Neither reads the other's data source, and neither writes anything — see `maestro-architecture` for the channel file lifecycle and `agents-view` for where a route's channel path (`.claude/channels/<receiver>/<sender>.1.md`) is surfaced as a label.\n\n## Deleting stale session directories (`068`)\n\nA session that ends without SessionEnd leaves its directory (and a tab) forever. Two paths remove it, both in `src/core/session-sweep.ts`, framework-free, sharing one rule: **delete only on positive evidence of abandonment; ambiguous = live.**\n\n| Path | Trigger | Idle cap |\n| --- | --- | --- |\n| `sweepStaleSessions(roots)` | app start (`registerIpc`) and the Clean up sessions button (`sessions:clean`, resolves to the removed count; 0 is normal) | **24h** (`SESSION_SWEEP_IDLE_CAP_MS`) |\n| `deleteSession(roots, root, id)` / `listDeletableSessions(roots)` | the tab ✕ (`sessions:delete`, `sessions:deletable`) | **15 min** (`CLAIM_IDLE_CAP_MS`) — an explicit user action, so shorter |\n\n**Confirm before deleting a non-ended tab.** The 15-minute rule cannot tell a crash from a session parked on a long human review. So in the renderer (`session-log.tsx`, `handleDelete`) a tab whose status is not `ended` gets a `window.confirm` (\"may still be waiting for input\") before `sessions:delete` is called; ended tabs delete immediately. The backend rule is unchanged.\n\n- **Liveness = last activity**: newest mtime of the directory and its direct children (`log.jsonl`, `session.json`, `tasks.json`). Task claims need no extra check (a live claim is within 15 min, inside both windows).\n- **Never deleted** (\"cannot tell\" = live): invalid session id, a symlink (never followed), the caller's own `CLAUDE_CODE_SESSION_ID`, any stat/readdir error, a future mtime (clock skew), a fresh empty directory. `deleteSession` also refuses roots outside `allowedProjectRoots()`; its reasons are `invalid | not-found | running | own-session | failed`.\n- **Why 24h for the sweep**: deleting destroys `session.json` of a session possibly parked for hours on human review; a crash leftover is as removable a day later.\n- **After a removal main calls `retargetTails()`** (`logReset` + fresh `init` burst) so the swept session has **no tab at all**. Without it `tailSessionLogs` would report the vanished directory as a per-session `end` and leave a greyed tab.\n- **`dedupeProjectRoots`** (`session-log.ts`, exported via `core/index.ts`) collapses roots that resolve to the same real path (trailing slash, symlink, current project also in recents). `allowedProjectRoots()` and `tailSessionLogs` both use it; without it one session directory is discovered under two roots and shows as two tabs.\n- Only session directories are swept — legacy flat files and `.gitignore` in `maestro_sessions/` are untouched.\n",
+    "contentHash": "sha256:195b6a7c62835c9aaa1849b4d936f9fa88c04b5da9bc0ab9f523312aff968072"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.3",
+    "extracted_at": "2026-10-16T19:40:35.703Z"
+  }
+}

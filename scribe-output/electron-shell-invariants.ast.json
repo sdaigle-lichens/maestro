@@ -1,0 +1,2081 @@
+{
+  "concept": "electron-shell-invariants",
+  "vertices": [
+    {
+      "_key": "019dc71cc3c246173f452b0d21733b13",
+      "displayKey": "electron-shell-invariants::function::stopTail",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "stopTail",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 263,
+      "end_line": 266,
+      "signature": "function stopTail(webContentsId: number): void",
+      "contentHash": "987507013ef2d799732f0bb3310c600db854a711c9b31a32acca8c7749bd2ecb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "05ce5ec5c7178f7db29642b4ebcd8be0",
+      "displayKey": "electron-shell-invariants::function::startTail",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "startTail",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 293,
+      "end_line": 320,
+      "signature": "function startTail(webContentsId: number): void",
+      "contentHash": "aeed006ba84ad9e85d80d89d4735d2dc2cabe71d9f15b29ea4f18a428c0fa6e5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0bda6a822e9b01aa397dd9dab2b8488f",
+      "displayKey": "electron-shell-invariants::type-def::WorktreeLogStateEvent",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "WorktreeLogStateEvent",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 724,
+      "end_line": 728,
+      "signature": "export interface WorktreeLogStateEvent {",
+      "contentHash": "779b591a8314cdfd231078f312114e14e91cf3f15cec1f7cf5c5e1308d17915d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0c297b1b4a9f773946defe0ef0d650a7",
+      "displayKey": "electron-shell-invariants::type-def::TaskRoutingData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "TaskRoutingData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 379,
+      "end_line": 382,
+      "signature": "export interface TaskRoutingData {",
+      "contentHash": "a003facdf90f2ab97309ca3d5222c10afe36dba07e65a2989a99e716bbdba84b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0d30e15fed19a2dd350104a30b2ec830",
+      "displayKey": "electron-shell-invariants::function::stopTaskTail",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "stopTaskTail",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 332,
+      "end_line": 335,
+      "signature": "function stopTaskTail(webContentsId: number): void",
+      "contentHash": "62df1b24cacdf934c63a7963fe17c9df160f67d744f7b2b6d5a4f88eeaf43683",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "182ae27a49b91fc59aee6d0af15cd17c",
+      "displayKey": "electron-shell-invariants::function::sweepAndRefresh",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "sweepAndRefresh",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 328,
+      "end_line": 330,
+      "signature": "function sweepAndRefresh(): number",
+      "contentHash": "4d8cb36537f89ca48ac9fa8b06fba831f12bd90e2e98bd5a684226a3f607f3f5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2105f552b6f91587e069782368551c31",
+      "displayKey": "electron-shell-invariants::type-def::SkillListsData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "SkillListsData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 369,
+      "end_line": 372,
+      "signature": "export interface SkillListsData {",
+      "contentHash": "409f08a0e55b8996159451cae8b83ffb29e3a02f9f00f9dd0015fe173b4ea0ce",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "304b1699325eb55dc75ae5a501dc2620",
+      "displayKey": "electron-shell-invariants::component::RootLayout",
+      "concept": "electron-shell-invariants",
+      "type": "component",
+      "name": "RootLayout",
+      "filepath": "apps/maestro/src/renderer/src/routes/__root.tsx",
+      "start_line": 20,
+      "end_line": 58,
+      "signature": "function RootLayout(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "182a118137a49d48ce9574b223f64b44ab2fe37b9293d59779d294730c51964f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "320e02038a17bafe01553f64c1d070a4",
+      "displayKey": "electron-shell-invariants::function::seededAgentAttrs",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "seededAgentAttrs",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 403,
+      "end_line": 411,
+      "signature": "function seededAgentAttrs(implAgents: string[]): Record<string, AgentAttrs>",
+      "contentHash": "4fc7a0df522ceb091f5b214e47e7fe7e800fa58d6f3781f37506d8935e2c83f5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "359962e5b6d472a6f9be197a96f4d449",
+      "displayKey": "electron-shell-invariants::function::announce",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "announce",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 472,
+      "end_line": 490,
+      "signature": "function announce(state: ProjectState): ProjectState",
+      "contentHash": "4826272ef6477434609bf6e701aa1fac3e699d278fdf8f36adea07d62d2086c7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "379f87026276abe2f280c1f4509b68c3",
+      "displayKey": "electron-shell-invariants::type-def::ProjectState",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "ProjectState",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 274,
+      "end_line": 278,
+      "signature": "export interface ProjectState {",
+      "contentHash": "3884796cf32e28400be9a1c2984dc588ace15562b2a2ab9c98e9ca96beea4cf3",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3a900a3a2cd72ebc93ea29581433abb5",
+      "displayKey": "electron-shell-invariants::type-def::ProjectContextValue",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "ProjectContextValue",
+      "filepath": "apps/maestro/src/renderer/src/utils/project-context.tsx",
+      "start_line": 7,
+      "end_line": 16,
+      "signature": "interface ProjectContextValue extends ProjectState {",
+      "contentHash": "9dd8b811223573c599370194b429e067976d31913e9898468b125460df1dbc58",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "423ad03fe1f95fedafa682a6d9666e01",
+      "displayKey": "electron-shell-invariants::hook::useProject",
+      "concept": "electron-shell-invariants",
+      "type": "hook",
+      "name": "useProject",
+      "filepath": "apps/maestro/src/renderer/src/utils/project-context.tsx",
+      "start_line": 95,
+      "end_line": 97,
+      "signature": "function useProject(): ProjectContextValue",
+      "contentHash": "dfd2bdae0c272bc1dbdf8db374503ed7c06da72783d89d16b7507edbb5d397bd",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "45c413649c1fe5f82a2464bb2036e37c",
+      "displayKey": "electron-shell-invariants::type-def::WorkflowsData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "WorkflowsData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 281,
+      "end_line": 304,
+      "signature": "export interface WorkflowsData {",
+      "contentHash": "e0886e445b4af5c367906c2d4bfd33d7a814e60df7bbd41571e1d702bb2ad23e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "46e04b365ce9fc22afdd441114beb732",
+      "displayKey": "electron-shell-invariants::type-def::SessionLogEndEvent",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "SessionLogEndEvent",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 718,
+      "end_line": 721,
+      "signature": "export interface SessionLogEndEvent {",
+      "contentHash": "629b1a4ad90fc2c019284c553fa9e253024a3a7e8ef80effe633f4318ed6cf8e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4c6f0db9f1c5d749afb01d3a86a67980",
+      "displayKey": "electron-shell-invariants::function::pickNoop",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "pickNoop",
+      "filepath": "apps/maestro/src/renderer/src/utils/project-context.tsx",
+      "start_line": 19,
+      "end_line": 19,
+      "signature": "pickNoop(): Promise<ProjectRef | null>",
+      "contentHash": "732d98a2d219341aeb4baf8695441c363676fc2ae2192a6b61a6d7ab1316ae84",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "504798e63994fa669878f05bc6918ffb",
+      "displayKey": "electron-shell-invariants::type-def::MaestroApi",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "MaestroApi",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 733,
+      "end_line": 1411,
+      "signature": "export interface MaestroApi {",
+      "contentHash": "292eb3056d7d7153a2cc7f24924f5e4e0f3d9d2f3c253cde0b9592efeaa4465a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "51b1840d12131fab87294668d19b6de3",
+      "displayKey": "electron-shell-invariants::type-def::SessionLogEntryEvent",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "SessionLogEntryEvent",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 713,
+      "end_line": 717,
+      "signature": "export interface SessionLogEntryEvent {",
+      "contentHash": "4126e7c04f0f63b382599447eb698f356ecad5bf3533d46e46483d116bf958e4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "56f9a8975d3414e8b53ba6c740cd9943",
+      "displayKey": "electron-shell-invariants::function::callMain",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "callMain",
+      "filepath": "apps/maestro/src/renderer/src/utils/call-main.ts",
+      "start_line": 34,
+      "end_line": 40,
+      "signature": "function callMain(op: () => Promise<T>): Promise<CallResult<T>>",
+      "contentHash": "77f5aacb4ba7f7464f9a17a6df6529457ee6bb52b10844e2acbd682b901477ed",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "587d80e8e9d676d86122734571d99e98",
+      "displayKey": "electron-shell-invariants::function::retargetTaskTails",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "retargetTaskTails",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 342,
+      "end_line": 348,
+      "signature": "function retargetTaskTails(): void",
+      "contentHash": "611f52332b5f24865380d15bb3be9a4ef179f6e1f050f175d108e4b6a436e69d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5c93b578dfc4b5632e4e881b3ba883d5",
+      "displayKey": "electron-shell-invariants::function::bundledPluginDir",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "bundledPluginDir",
+      "filepath": "apps/maestro/src/main/bundled-assets.ts",
+      "start_line": 70,
+      "end_line": 73,
+      "signature": "function bundledPluginDir(): string | null",
+      "contentHash": "859e7085aaa6c7f273c967bd73129ba239f41c918f6a83a6cd60a8f570fe9567",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "628b8d09cf10d0daef6f2f70cd004133",
+      "displayKey": "electron-shell-invariants::type-def::RulesData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "RulesData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 307,
+      "end_line": 316,
+      "signature": "export interface RulesData {",
+      "contentHash": "242b05a460526d198167e5eda4e0b5b5b4d99e95c467af833eabe775abd9b651",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "62fb2271bf13f406437fe8bfc944e252",
+      "displayKey": "electron-shell-invariants::function::allowedProjectRoots",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "allowedProjectRoots",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 375,
+      "end_line": 377,
+      "signature": "function allowedProjectRoots(): string[]",
+      "contentHash": "7844f83df3ac2d87c44e8f24f33e43a4bfab1b3cfeef49c93fdd79ced6830c2e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6359956880466413e206d6d4e233b18f",
+      "displayKey": "electron-shell-invariants::type-def::ToolsData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "ToolsData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 327,
+      "end_line": 341,
+      "signature": "export interface ToolsData {",
+      "contentHash": "136f53df5467bd130829f358a9819e4ca82f160dda3838b01417e00bf130f817",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "67a0eaefc7b46f7dcc3732503264a234",
+      "displayKey": "electron-shell-invariants::type-def::CallResult",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "CallResult",
+      "filepath": "apps/maestro/src/renderer/src/utils/call-main.ts",
+      "start_line": 28,
+      "end_line": 28,
+      "signature": "export type CallResult<T> = { ok: true; value: T } | { ok: false; error: string };",
+      "contentHash": "3dcf4a89704758a46b543d24dd8235e22375384d57c2e1179670bc3f86105e2a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "68b30d9c66116afe59d60ef27563e1aa",
+      "displayKey": "electron-shell-invariants::type-def::SaveInput",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "SaveInput",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 384,
+      "end_line": 389,
+      "signature": "export type SaveInput =",
+      "contentHash": "5d837d2430405fb57a9aa7de10be08d0d27056d07f5e23bcfd34fabae6286434",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "699cd5bc2491aebb7da2b242f1131c78",
+      "displayKey": "electron-shell-invariants::type-def::ProjectTagsData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "ProjectTagsData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 356,
+      "end_line": 361,
+      "signature": "export interface ProjectTagsData {",
+      "contentHash": "61ffa4be6b3d0cde6d22ce7d052b2a66c8469eb248150f8ff0f9221a5401917e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6f6cdb10670ed23cc30c50a68f8eaf6d",
+      "displayKey": "electron-shell-invariants::function::bundledPluginVersion",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "bundledPluginVersion",
+      "filepath": "apps/maestro/src/main/bundled-assets.ts",
+      "start_line": 85,
+      "end_line": 96,
+      "signature": "function bundledPluginVersion(): string | null",
+      "contentHash": "bdcda6de0d71319e3c33ce5f7aa0de95656a4f65664e673122599f19a5e0c0de",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7167b73e59dde10b2bad150c11202382",
+      "displayKey": "electron-shell-invariants::function::worktreeTabsFor",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "worktreeTabsFor",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 210,
+      "end_line": 231,
+      "signature": "function worktreeTabsFor(wc: Electron.WebContents): WorktreeTabs",
+      "contentHash": "3acb3ab3d04676ab7f366d3bc91051d1c56f2d405c0b9cf10a34c5de8369f25f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8b20cffd47f825ff7b1522477ec4201b",
+      "displayKey": "electron-shell-invariants::function::applyProjectTagsSet",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "applyProjectTagsSet",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 435,
+      "end_line": 470,
+      "signature": "function applyProjectTagsSet(projectRoot: string, tags: string[]): Promise<string[]>",
+      "contentHash": "0ebbf89fd79e1bc0d3bc0229d8472c85614a0f5271946d2bccf27da4c28ee711",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "displayKey": "electron-shell-invariants::component::ProjectProvider",
+      "concept": "electron-shell-invariants",
+      "type": "component",
+      "name": "ProjectProvider",
+      "filepath": "apps/maestro/src/renderer/src/utils/project-context.tsx",
+      "start_line": 37,
+      "end_line": 93,
+      "signature": "function ProjectProvider({ children }: { children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "263df66d4524e857dd5e19ad06537ac4a32d379b452547b8e1f3d3ef47740c8e",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "937ce015545eace73483c4bab63b4740",
+      "displayKey": "electron-shell-invariants::type-def::DocsData",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "DocsData",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 344,
+      "end_line": 353,
+      "signature": "export interface DocsData {",
+      "contentHash": "1a9a42c547d185127f63261bafab602dfe95542fafff784705b846da9f9babfa",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a38e574d2af3f402d2977effd0e1cc9b",
+      "displayKey": "electron-shell-invariants::function::restartConfigWatch",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "restartConfigWatch",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 250,
+      "end_line": 255,
+      "signature": "function restartConfigWatch(): void",
+      "contentHash": "b97bfa1d80f7b4a8ecc6294c96569931181bd6b5888f31dcd95852fffb5b7bdb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a6813945eda68ee8a19c674aff0ddfd7",
+      "displayKey": "electron-shell-invariants::function::createWindow",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "createWindow",
+      "filepath": "apps/maestro/src/main/index.ts",
+      "start_line": 9,
+      "end_line": 44,
+      "signature": "function createWindow(): BrowserWindow",
+      "contentHash": "f514892471309327d615553f00f425c37da47590d8b414ae823cc366d259fe26",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a89a25b772cad5d1dc8372c1ec757640",
+      "displayKey": "electron-shell-invariants::type-def::ProjectRef",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "ProjectRef",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 268,
+      "end_line": 272,
+      "signature": "export interface ProjectRef {",
+      "contentHash": "ad54b1525c03be66dfb45221dfdf444e0c6191970fbf3c0849def8c2eccfb472",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a9046f662e69153484d641dab4044d51",
+      "displayKey": "electron-shell-invariants::function::skillMapForSeed",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "skillMapForSeed",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 418,
+      "end_line": 424,
+      "signature": "function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]): import(\"../core/seed.js\").SkillMap",
+      "contentHash": "dc46a7a3ba2ffab4e2ff23b3c8c255944ee85dc9c9bb70f2e46d6511562fc2b4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ac94688df09a0341f127683bdec68d25",
+      "displayKey": "electron-shell-invariants::effect::effect-41",
+      "concept": "electron-shell-invariants",
+      "type": "effect",
+      "name": "effect-41",
+      "filepath": "apps/maestro/src/renderer/src/utils/project-context.tsx",
+      "start_line": 41,
+      "end_line": 48,
+      "signature": "useEffect(() => {",
+      "contentHash": "0498388a5edb8272a7cec851e3f5d95520a2dd2cd5932a694de572d68d1169a5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ade1b0b50ad739e2f70112d96df71093",
+      "displayKey": "electron-shell-invariants::function::mainErrorMessage",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "mainErrorMessage",
+      "filepath": "apps/maestro/src/renderer/src/utils/call-main.ts",
+      "start_line": 22,
+      "end_line": 26,
+      "signature": "function mainErrorMessage(err: unknown): string",
+      "contentHash": "4d680a3354e427e913e676f62f3cb4e517bd8eb116f87a0a14cc606b41232372",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c1507e95d537e9a843621b3c5bb5c9f6",
+      "displayKey": "electron-shell-invariants::function::maestroAppDocsDirs",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "maestroAppDocsDirs",
+      "filepath": "apps/maestro/src/main/bundled-assets.ts",
+      "start_line": 111,
+      "end_line": 118,
+      "signature": "function maestroAppDocsDirs(): string[]",
+      "contentHash": "bafaf0e35662ac7d1e35313c420f5365b82fc3d2e83979ea0bb498b78a370cdb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c670afd5e2ad92c273898f575e8ce77b",
+      "displayKey": "electron-shell-invariants::function::registerIpc",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "registerIpc",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 492,
+      "end_line": 1272,
+      "signature": "function registerIpc(): void",
+      "contentHash": "776df53e42a3e3be2cd03d6c58250f456d4a0fe04617b769db9c92d3b2344464",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cc3b8347e5995c119c7ac851deb351e4",
+      "displayKey": "electron-shell-invariants::function::noop",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "noop",
+      "filepath": "apps/maestro/src/renderer/src/utils/project-context.tsx",
+      "start_line": 18,
+      "end_line": 18,
+      "signature": "noop(): Promise<void>",
+      "contentHash": "399482a8665bd65d0b5873d6e132ad81e74d2ffc2fb07ce7e3747599aa9bf71c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cfc8bb016c13e05a8514acf5635edc90",
+      "displayKey": "electron-shell-invariants::function::retargetTails",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "retargetTails",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 272,
+      "end_line": 278,
+      "signature": "function retargetTails(): void",
+      "contentHash": "ad489f0a7a8169d7e65fe592cfba9fc5654208a2cb88da4558bd371003356cf7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d329b518dd3a7c2c427f2acb0dc0e4d8",
+      "displayKey": "electron-shell-invariants::function::broadcast",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "broadcast",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 257,
+      "end_line": 261,
+      "signature": "function broadcast(channel: string, payload?: unknown): void",
+      "contentHash": "77b07136331b6a528213335546c703948d8a964ccb7b0158953e64ee38eb7207",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "db16d6a8934bf91fa7e750a968a06d62",
+      "displayKey": "electron-shell-invariants::function::startTaskTail",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "startTaskTail",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 350,
+      "end_line": 366,
+      "signature": "function startTaskTail(webContentsId: number): void",
+      "contentHash": "ec9d78c312261001dd83c610e69f673a368930dfce1b820009f04977c07e2500",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e2fab99729415c6c796a8be9aa2a3916",
+      "displayKey": "electron-shell-invariants::function::disposeIpc",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "disposeIpc",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 1274,
+      "end_line": 1289,
+      "signature": "function disposeIpc(): void",
+      "contentHash": "7049d7f66bc3101adaa55fc39134d2f04262bd0de17c158fd3bf032d96277a67",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e5a5e010f0d5c8f14f630086635617a5",
+      "displayKey": "electron-shell-invariants::function::resolveProjectRoot",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "resolveProjectRoot",
+      "filepath": "apps/maestro/src/main/ipc.ts",
+      "start_line": 388,
+      "end_line": 393,
+      "signature": "function resolveProjectRoot(projectRoot?: string): string",
+      "contentHash": "b5a475e2a87972163815bc8f205efb04de62c6a7587e37cb034a9a2b9c69a98f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f428d89c3a8714ca12f6f1dac61002cb",
+      "displayKey": "electron-shell-invariants::type-def::SessionLogInitEvent",
+      "concept": "electron-shell-invariants",
+      "type": "type-def",
+      "name": "SessionLogInitEvent",
+      "filepath": "apps/maestro/src/shared/ipc.ts",
+      "start_line": 708,
+      "end_line": 712,
+      "signature": "export interface SessionLogInitEvent {",
+      "contentHash": "044ef1de8d368080216ae70ee1d5e55f1cb1229fb558fed113f6e4752ded0127",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f91751e9b3f6a10228edd3369a5d951d",
+      "displayKey": "electron-shell-invariants::function::bundledAgentsDir",
+      "concept": "electron-shell-invariants",
+      "type": "function",
+      "name": "bundledAgentsDir",
+      "filepath": "apps/maestro/src/main/bundled-assets.ts",
+      "start_line": 32,
+      "end_line": 42,
+      "signature": "function bundledAgentsDir(): string | null",
+      "contentHash": "cdea552595a2d0e8e6b8bbc55ed60c05dbd478a093aceb9c7b9a62dc933d9d57",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "0444863a6c2eca8c275405030ca9c1a8",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1019,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "07759d88e5dca61b9aec9a031952d440",
+      "_from": "vertices/db16d6a8934bf91fa7e750a968a06d62",
+      "_to": "vertices/0d30e15fed19a2dd350104a30b2ec830",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 358,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "081c4b2ab9e73b5571c21d108cf4d91f",
+      "_from": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "_to": "vertices/ade1b0b50ad739e2f70112d96df71093",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 38,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "09ad0be54fa497342ea10b531e554f58",
+      "_from": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "_to": "vertices/587d80e8e9d676d86122734571d99e98",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 475,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0ba88d5baa915278ada93ac07d1172a2",
+      "_from": "vertices/182ae27a49b91fc59aee6d0af15cd17c",
+      "_to": "vertices/62fb2271bf13f406437fe8bfc944e252",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 329,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0c099a920afbb5d2e21c4ff6adc76cff",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/6f6cdb10670ed23cc30c50a68f8eaf6d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 931,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0c5c12d50b16b3fd72a4251947a9fd5e",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/a9046f662e69153484d641dab4044d51",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 563,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0e3f814ac916e66a4ab214d98542a5f0",
+      "_from": "vertices/e2fab99729415c6c796a8be9aa2a3916",
+      "_to": "vertices/019dc71cc3c246173f452b0d21733b13",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1275,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "152fc63e067973b77337b1e0142283ab",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 943,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "180739b31fe1a4525750821b67a946e6",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 931,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1849cbcc09e494d725de8f57ebbbaf35",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/7167b73e59dde10b2bad150c11202382",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1248,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "18c2a9348287f2eeaffe69c52b5ba888",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/45c413649c1fe5f82a2464bb2036e37c",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 520,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1baf58df7d52967f1fc493840c2bd969",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 658,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1dc80163acaa4fff8e8421cbbfbbe0df",
+      "_from": "vertices/a9046f662e69153484d641dab4044d51",
+      "_to": "vertices/320e02038a17bafe01553f64c1d070a4",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 422,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1eebae2b7c2becb35b6db0a55fdd2221",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/699cd5bc2491aebb7da2b242f1131c78",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 770,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1fe62e7c3582180b76fcdacac92aa304",
+      "_from": "vertices/8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "22147b93409948fe3a38d00dbcd648f3",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/6359956880466413e206d6d4e233b18f",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 652,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "26a851963ea0f55b6f45b15bb77c0ff6",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/05ce5ec5c7178f7db29642b4ebcd8be0",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1233,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2cd081b247d14bd33cc378d4f258a31a",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 517,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3004f622bd106d8eb988614de86d725b",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 516,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "30198a721a9a3b9c7b714a7caad80ea1",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 913,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "322247416b7607c25809cb26cbeadc32",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/05ce5ec5c7178f7db29642b4ebcd8be0",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1251,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "35cab26317f007c6ef2fb071b651da1c",
+      "_from": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "_to": "vertices/cfc8bb016c13e05a8514acf5635edc90",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 474,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3881f4eb3975f63303f819e46191a2dc",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1055,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "39691819ddcb9105229d4ae76dd28999",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 505,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "428cf8a92c366e5bcb4b2a7321110b9a",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/a38e574d2af3f402d2977effd0e1cc9b",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 502,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4646a39f706dc996a2f9d625a670633c",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/05ce5ec5c7178f7db29642b4ebcd8be0",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1257,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b595e4f3cd2613eeecc6993b34a740f",
+      "_from": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "_to": "vertices/62fb2271bf13f406437fe8bfc944e252",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 390,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b7c9e295a66600b5a71e17d05a0faa1",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/699cd5bc2491aebb7da2b242f1131c78",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 614,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4c0f51036419ec645ccbed1615cf628b",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/0d30e15fed19a2dd350104a30b2ec830",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 975,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4daba38982b55a9d4ae2829de3eda8fe",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/db16d6a8934bf91fa7e750a968a06d62",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 972,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4e3ab3317086111ae175079bbf9696a6",
+      "_from": "vertices/8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 72,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "507871fce2b5ffe87135729c175f47cc",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/c1507e95d537e9a843621b3c5bb5c9f6",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 701,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "50f757256eb458aac661c108249c3ca9",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/62fb2271bf13f406437fe8bfc944e252",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 963,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "579548ce60ff485c195eefeb7ca32a5b",
+      "_from": "vertices/6f6cdb10670ed23cc30c50a68f8eaf6d",
+      "_to": "vertices/5c93b578dfc4b5632e4e881b3ba883d5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 86,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "63cf9204f68b5088755947603243c994",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 534,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6447803e52f682da7788cabf2e668535",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/019dc71cc3c246173f452b0d21733b13",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1242,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a9c3d2e3e062f0225419770e6a4801f",
+      "_from": "vertices/8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 38,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6b4bf16553c10888c413782ff1d1cb1b",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/62fb2271bf13f406437fe8bfc944e252",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 961,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "719e74d49038ba17988923d120147896",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/5c93b578dfc4b5632e4e881b3ba883d5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1096,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "739b69083af961f6966acb57e8931f02",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/0c297b1b4a9f773946defe0ef0d650a7",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 638,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "73e1d0fb62cd84d53d8d60068531f4ac",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/62fb2271bf13f406437fe8bfc944e252",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 959,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "750c31cc54719c6b1eefacd9b886b924",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/6f6cdb10670ed23cc30c50a68f8eaf6d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 943,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7861f3ece4f6c1d4664f08fa92afc51a",
+      "_from": "vertices/cfc8bb016c13e05a8514acf5635edc90",
+      "_to": "vertices/019dc71cc3c246173f452b0d21733b13",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 274,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7d9c0f971945ad0a5474fdb7d617ebc9",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/937ce015545eace73483c4bab63b4740",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 675,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8284114e79ca3df468e85e7c757a905c",
+      "_from": "vertices/587d80e8e9d676d86122734571d99e98",
+      "_to": "vertices/0d30e15fed19a2dd350104a30b2ec830",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 344,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "834aaf7840877698b4c3fb3fab4bbfda",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/68b30d9c66116afe59d60ef27563e1aa",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 707,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8624cdb934f1f5e4e30b488889d049cb",
+      "_from": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "_to": "vertices/d329b518dd3a7c2c427f2acb0dc0e4d8",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 473,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8d46faeb1f65c7e39cdbe988d1cace92",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/c1507e95d537e9a843621b3c5bb5c9f6",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 695,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8dc1f9477e6854a43afba28bc0e0003a",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 513,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9618c45e71eec89766fe85afc8be0f9f",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/628b8d09cf10d0daef6f2f70cd004133",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 586,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97001314fc2b72e09b3ebde68ec81258",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/019dc71cc3c246173f452b0d21733b13",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1236,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97dd9a512aa2661139bc82f7a25fa388",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1034,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "994366f99b86136e8788634d63ede12e",
+      "_from": "vertices/5c93b578dfc4b5632e4e881b3ba883d5",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9d5acb440814cc6dea0df46a65f3fa23",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/182ae27a49b91fc59aee6d0af15cd17c",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 495,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9d6624dc66df83fba3cd3d247492b107",
+      "_from": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 472,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a049e7b74d03aa80150c420f83123695",
+      "_from": "vertices/8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "_to": "vertices/a89a25b772cad5d1dc8372c1ec757640",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a4c3e99cb878c1741f74989b1f24d663",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/0d30e15fed19a2dd350104a30b2ec830",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 981,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a4e724c73622e6013ec76e4c34b548f9",
+      "_from": "vertices/e2fab99729415c6c796a8be9aa2a3916",
+      "_to": "vertices/0d30e15fed19a2dd350104a30b2ec830",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1279,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a8ffdc4ae7f2720dbfd3bbbbd597c032",
+      "_from": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "_to": "vertices/a38e574d2af3f402d2977effd0e1cc9b",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 476,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "af0b5789e81511c5a0274806774f800e",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 517,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b2cfadc83e4bf2a46cc4bd6424401fdc",
+      "_from": "vertices/05ce5ec5c7178f7db29642b4ebcd8be0",
+      "_to": "vertices/019dc71cc3c246173f452b0d21733b13",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 296,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b348922a3708bda30a7dd36c34b295e0",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1025,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b34b80e33a48a75fbfac3b17b25d2bbf",
+      "_from": "vertices/8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b5ecee9cbd6c7f8f44df7ded2641541f",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 924,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b97873ced9e3c739f1ca1c695ef2b544",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/8b20cffd47f825ff7b1522477ec4201b",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 778,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c3d0942587d520762539241827f9136c",
+      "_from": "vertices/587d80e8e9d676d86122734571d99e98",
+      "_to": "vertices/db16d6a8934bf91fa7e750a968a06d62",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 346,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d043ad64d72cbc825273313dcb3befe2",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/8b20cffd47f825ff7b1522477ec4201b",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 754,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d146cecfa4cd5ebbc3a6a2d726267d16",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 918,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d17054c33d753c50832c345bf9880fdf",
+      "_from": "vertices/4c6f0db9f1c5d749afb01d3a86a67980",
+      "_to": "vertices/a89a25b772cad5d1dc8372c1ec757640",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 19,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d172955c8c13e1ac685c2f64083b39ac",
+      "_from": "vertices/a38e574d2af3f402d2977effd0e1cc9b",
+      "_to": "vertices/d329b518dd3a7c2c427f2acb0dc0e4d8",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 254,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d3217202839e356caf5c1785b17fdc83",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/379f87026276abe2f280c1f4509b68c3",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 507,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d3e45ddace7e9b3d81f3df4081578711",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/182ae27a49b91fc59aee6d0af15cd17c",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 965,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d82ba1d198efa26bb49f696e8200fda8",
+      "_from": "vertices/304b1699325eb55dc75ae5a501dc2620",
+      "_to": "vertices/8d4aabbc7dc12dc2e15b5a93ce75535e",
+      "type": "mounts",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 22,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d8655b3ef16ffbba61cfa187573d0ddb",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 850,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dbd3d7be6402bff0dd14b1539072139f",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/a9046f662e69153484d641dab4044d51",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 583,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dccfe73db2243350c07c8217f6d70e8f",
+      "_from": "vertices/423ad03fe1f95fedafa682a6d9666e01",
+      "_to": "vertices/3a900a3a2cd72ebc93ea29581433abb5",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e198218a0a85fc3be94ad13427949003",
+      "_from": "vertices/c1507e95d537e9a843621b3c5bb5c9f6",
+      "_to": "vertices/5c93b578dfc4b5632e4e881b3ba883d5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 115,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e8dc0f228ee4f3d0e73c360dc4793e6d",
+      "_from": "vertices/cfc8bb016c13e05a8514acf5635edc90",
+      "_to": "vertices/05ce5ec5c7178f7db29642b4ebcd8be0",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 276,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e9a2286d5497198a952dd8ffe98c4780",
+      "_from": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "_to": "vertices/67a0eaefc7b46f7dcc3732503264a234",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 34,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f3b308a3b8b87fab1c53ead3cf439151",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/2105f552b6f91587e069782368551c31",
+      "type": "has-type",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 624,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f9ad67644cee5d03246aaa558dbd6c5c",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 1040,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f9b860da2c554ab313d35ed9d5a68e76",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/359962e5b6d472a6f9be197a96f4d449",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 516,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f9c5ed911d56085915b33761c8bd8a44",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/e5a5e010f0d5c8f14f630086635617a5",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 653,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fd94dfc25a998371f9212188dc2103e1",
+      "_from": "vertices/c670afd5e2ad92c273898f575e8ce77b",
+      "_to": "vertices/f91751e9b3f6a10228edd3369a5d951d",
+      "type": "calls",
+      "concept": "electron-shell-invariants",
+      "crosses_concept": false,
+      "line": 998,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/electron-shell-invariants/SKILL.md",
+    "body": "---\nname: electron-shell-invariants\ndescription: \"Explains the invariants of running the Maestro desktop app as an Electron shell over node-side logic, that don't belong to any one view or to the Claude bridge: the router's hash history (and its corollary that no route may use the URL fragment), the renderer's CSP forbidding inline script, the asar/externalizeDepsPlugin packaging trio, the settingSources: [] four-occurrence lockstep rule in agent-sdk.ts, the project-switch invalidation + key={projectRoot} keying pattern shared by every stateful view and tail, the renderer's code-splitting shape and its measurements, and the process-boundary contract test/isolation.test.ts enforces (nodeIntegration/contextIsolation/no src/core barrel outside main). Use when working on apps/maestro's Electron/Vite config, adding state that must survive a project switch, debugging a theme flash or a route that renders blank only in the packaged build, or wondering why an edit silently didn't reach across the renderer/main boundary.\"\nmetadata:\n  type: concept-skill\n  version: \"1.1\"\n  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d\n---\n\n# Electron shell invariants\n\nThe Maestro desktop app is an Electron shell over the node-side Maestro logic in `src/core/`. Most of\nwhat that means is covered where it's used — `claude-session-bridge` for the Agent SDK's own\npackaging traps, `workflow-view`/`rule-view`/`log-view`/`task-queue` for how each view survives a\nproject switch. This skill is what's left: invariants of the **shell itself** — its security policy,\nhow the bundler decides what ships where, and the one keying pattern every stateful view\nindependently reinvents.\n\n## Hash history, not browser history\n\n`src/renderer/src/main.tsx` builds the router with `createHashHistory()`. A packaged build loads the\nrenderer over `file://`, where pushState paths don't resolve to anything on reload — the same\n`file://` premise as the asset resolution below.\n\n**Corollary: a route cannot also use the URL fragment.** The whole route already lives in\n`location.hash`, so a second `#` in it is not something the router or `querySelector` can be trusted\nto split. Anything that wants to address a position *inside* a page carries it as a search param and\nresolves it by element id instead, and any in-page `#anchor` in rendered content has to be\nintercepted or it rewrites the route. The docs readers are the worked example — see\n[`docs-view`](../docs-view/SKILL.md).\n\n## The renderer's CSP forbids inline script\n\n`src/renderer/index.html` declares `script-src 'self'`. Two consequences that read as bugs the first\ntime:\n\n- **The pre-paint theme bootstrap cannot be inlined.** It lives in\n  `src/renderer/public/theme-bootstrap.js`, loaded as a parser-blocking `<script src>`. Inlining it\n  back \"because it's four lines\" silently reintroduces a theme flash — the browser blocks the inline\n  script outright, and the theme is then only applied once `ThemeToggle`'s effect runs.\n- **A Google Fonts `@import` is blocked the same way.** Fonts are vendored into `packages/styles` and\n  served same-origin instead — see `packages/styles/README.md` before changing a weight, and don't\n  restore a CDN `@import`. `test/isolation.test.ts` asserts the built renderer CSS references nothing\n  off-origin.\n\n`__root.tsx` has no `shellComponent`: the root route owns no `<html>` document. `<head>`, `<body>`\nand the theme bootstrap script tag all live in `src/renderer/index.html`, alongside the CSP — which\nis why the policy has to be satisfied there and not in a route component.\n\n## Packaging: asar, `externalizeDepsPlugin`, and what actually gets externalized\n\n- **`@repo/claude-fs` must be bundled into main, not externalized.** It's a workspace *source*\n  package with no build artifact, so `require` can't resolve it at runtime — hence the\n  `externalizeDepsPlugin({ exclude: [...] })` in `electron.vite.config.ts`. `src/core/` is ordinary\n  app source that gets bundled without anyone having to ask.\n- **`externalizeDepsPlugin` does not externalize anything on its own, and the app's runtime\n  `dependencies` are externalized by hand.** The plugin computes its list from `package.json`\n  `dependencies` and then assigns `config.build` from inside the `config` hook — a vite/electron-vite\n  breakage documented in `electron.vite.config.ts`'s own comment for its `include` option, and it\n  costs the whole plugin. It was invisible while the app had **no `dependencies` block at all**\n  (every entry a devDependency), because an empty external list and an ignored one look identical.\n  Measured when the first real dependency arrived: `@anthropic-ai/claude-agent-sdk` in\n  `dependencies`, with only the plugin to externalize it, put **1.34 MB of SDK into\n  `out/main/chunks/`**. `EXTERNAL` in `electron.vite.config.ts` now derives from the manifest and\n  goes into `rollupOptions.external` directly, where it actually takes effect — including a regex for\n  subpath imports, which a bare package name does not cover. The plugin call stays because it is\n  harmless and correct in intent; it is simply not what is doing the work.\n- **The Agent SDK's own three packaging failures (must-be-externalized, asar unpacking, the CLI path\n  handed over rather than resolved) belong to `claude-session-bridge`** — see its `agent-sdk.md`\n  sub-concept. This skill owns only the general externalize/bundle mechanics above.\n\n## `settingSources: []` appears FOUR times in `agent-sdk.ts`, and they must stay in lockstep\n\nThe smoke query, the run's own session, the pane session, and `resolveEffectiveSettings(cwd)` — the\nlast of which backs the read disclosure. The first three are so nothing on disk can redirect billing\nor widen permissions; the fourth is so the confirmation describes **the session that actually\nexists**. Configure the run one way and resolve the other and the disclosure silently becomes a lie —\nit keeps describing a session that is gone, and **nothing fails**. `test/isolation.test.ts` counts\nthe four occurrences for exactly that reason; if a fifth call site with an opinion about\n`settingSources` is ever added, it needs a fifth count, not an exception. `[]` does not drop the\nmanaged (administrator) policy tier — that is still read from disk and still applies — and it is why\na pane session auto-loads no `CLAUDE.md` (the SDK requires `settingSources` to include `'project'`\nfor that). See `claude-session-bridge` for what a run or pane session actually gets *instead* of\nfilesystem settings.\n\n## The project-switch invalidation + `key={projectRoot}` keying pattern\n\nEvery route loader reads the *current* project from main-process state, so `ProjectProvider` calls\n`router.invalidate()` on the `project:changed` broadcast — without it, a switch leaves stale data on\nscreen. That re-runs the loader, but **re-running a loader is not enough on its own**: any state\nseeded from loader data and then edited in place has to decide whether an incoming payload replaces\nit, and \"did I already seed?\" is the wrong question, because a project switch and a mid-edit\nre-render are both invalidations. Guarding on `config !== null` and on `useState(loaderData.…)` never\nre-running each produced the identical failure independently: the canvas kept rendering project A\nwhile the window was on B, and Save wrote A's config into B's `maestro.json`.\n\n**The fix is a key, not a flag.** `/workflows` keys `seedWorkflowStore` on `projectRoot` (and resets\n`activeWorkflowIdx`, which indexes the outgoing project's list); `/rules` remounts its editor with\n`key={projectRoot}`. Prefer the key — it re-initialises every derived piece at once, rather than\nrequiring every future field to remember its own guard. `test/workflow-store.test.ts` pins the store\nhalf; the failure is otherwise silent.\n\n**An outside edit to `maestro.json` is the third invalidation source.** Main polls the file\n(`src/core/config-watch.ts`) and broadcasts `configChanged`; `ConfigWatchProvider` (mounted beside\n`ProjectProvider` in `__root.tsx`) calls `router.invalidate()`. The same keying rule applies: the\ninvalidation is harmless to `/workflows` (`reconcileWorkflowSlice` decides replace vs banner) and\n`/rules` adopts new loader rules only while its editor is clean. `/agents` fetches in an effect, so it\ndepends on the loader result to refetch. See `workflow-view` for the reconcile flow.\n\n**`SkillRefProvider` (`091`, mounted just inside `ConfigWatchProvider`, above `InstallProvider`) is the\nnon-router consumer of the same signal: it re-reads `data:skill-refs` on `config:changed`, on a\nproject switch, on a debounced (300ms) window `focus`/`visibilitychange`, and on demand, because the report also depends on installed plugins that no file\nwatch sees. See `workflow-view`.\n\n**A save does not refresh loader data on its own — invalidate after one, and only because of the\nkeying above.** A save is neither a navigation nor a project switch, so the loader's computed values\n(most visibly `seeded`) stay pinned at load time — a successful `/rules` save that *moves rule files*\nis the sharpest case, since the tree and rule pool it rendered now describe a layout that no longer\nexists. Both `/workflows` and `/rules` call `router.invalidate()` on the save success path, and this\nis safe *only* because of the keying pattern above: `seedWorkflowStore` bails on an unchanged\n`projectRoot` and `/rules`' `key={projectRoot}` is unchanged, so re-running the loader cannot discard\nan in-flight edit. `test/isolation.test.ts` pins both call sites; no render test would catch the\nregression on its own.\n\n`log-view`'s and `task-queue`'s tail retargeting and the Claude bridge's dropped preview tokens on a\nproject switch are each an instance of this same shape — invalidate the loader, then key or guard\nderived state by `projectRoot` so the re-run can't clobber an edit.\n\n**The deliberate counter-instance: state that must NOT follow the open project.** `log-view`'s worktree\ntabs (`075`) are keyed by their own worktree root, live in a registry (`worktreeTabs`) and a provider\n(`WorktreeLogProvider`) that a project switch never touches, and the provider's list-fold only adds tabs.\nDecide per piece of state which side it is on; routing it through a retargeted/reset channel by habit\nkills it on every switch.\n\n## Code-splitting\n\nThe renderer bundle is code-split (`autoCodeSplitting: true`). Measured 2026-07-31: unsplit was one\n2,346 kB chunk; split is 593 kB shared + 772 kB `/workflows` (React Flow + dagre) + 802 kB\n`/maestro-tasks` (react-markdown) + ~26 kB for the rest. The landing route is `/`, the project picker,\nwhich needs none of that — so startup parse drops by roughly 75%. Re-measured 2026-08-04, by counting\nthe chunks the packaged app actually requests (CDP `Network.requestWillBeSent`; `file://` module\nloads produce no `PerformanceResourceTiming` entries, so the obvious way to measure this returns an\nempty array and reads as \"nothing loaded\"): the landing route pulls 14 chunks / 1,107 kB; `/tools`\nadds 117 kB; the docs reader (then `/docs/$slug`, now `/project-docs/$slug`) adds 558 kB, of which 555 kB is the react-markdown chunk **shared** with\n`/maestro-tasks` rather than duplicated into it.\n\nWhat makes this safe over the packaged `file://` load is that assets resolve relatively\n(`base: \"./\"`); anything that regresses that leaves routes blank in a packaged build while `dev` —\nserved over `http://localhost:5173` — stays perfectly happy. **`dev` does not exercise the `file://`\npath at all**: `main/index.ts` only calls `loadFile()` when `ELECTRON_RENDERER_URL` is unset. Verify\nroute navigation with `build` + `start` (or the `test-maestro` skill's packaged-build harness), never\nwith `dev` alone.\n\n## The process-boundary contract (`test/isolation.test.ts`)\n\nOne test file guards the shell's own security boundary: `nodeIntegration: false`,\n`contextIsolation: true`, one exposed namespace (`window.maestro`), no generic\n`invoke(channel, …)` escape hatch, no node builtins in the built renderer bundle, and — outside\n`src/main/` — no import of the `src/core/index.ts` barrel, `@repo/claude-fs`, or any `node:` builtin.\nThese are configuration and convention properties that would all regress silently without an\nassertion; there is no runtime error waiting to catch a renderer that quietly gained a node import.\n\nThe same file also pins the Claude bridge's permission-model invariants (no edit pre-acceptance, the\nfour `settingSources: []` occurrences, the session pane's single-owner and token-only-write\nguarantees) — that half belongs to `claude-session-bridge`'s own \"invariants are asserted\" section.\n\n## Main-process discipline: `getState()` and `callMain()`\n\n- **`getState()` in `project-store.ts` must not write.** It is called by `currentRoot()` from every\n  IPC handler; pruning-and-rewriting there meant an `existsSync` per remembered project on *every*\n  handler call, and made merely opening the app mutate `projects.json`. Pruning happens once, when\n  the file is first read, and only real mutations persist afterward.\n- **Every fallible main-process call goes through `callMain()`**\n  (`renderer/src/utils/call-main.ts`). `ipcMain.handle` handlers throw — `config:save` throws when no\n  project is open, and every route is reachable in that state. A bare `await` on a rejected channel is\n  an unhandled rejection: no toast, and any `setPhase(\"idle\")` after the `await` never runs, so the\n  button spins forever. Pair a raw IPC call with `try/finally` around the phase reset, or use\n  `callMain()`, which already does.\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `apps/maestro/src/renderer/index.html` | The CSP, the theme-bootstrap `<script src>`, the document `__root.tsx` doesn't own. |\n| `apps/maestro/src/renderer/public/theme-bootstrap.js` | The pre-paint theme script, kept out of the CSP's way. |\n| `apps/maestro/electron.vite.config.ts` | `externalizeDepsPlugin`, the hand-derived `EXTERNAL` list, `base: \"./\"`. |\n| `apps/maestro/src/main/project-store.ts` | `getState()`, `currentRoot()`, the read-once pruning rule. |\n| `apps/maestro/src/renderer/src/utils/call-main.ts` | `callMain()` — the one place a fallible IPC call is supposed to go through. |\n| `apps/maestro/src/renderer/src/utils/session-log-context.tsx`, `.../session-context.tsx` | Single-owner subscribers each retargeted on project switch — a `log-view`/`claude-session-bridge` concern, cited here as an instance of the keying pattern. (`.../worktree-log-context.tsx` is the opposite case: worktree tabs deliberately survive a switch.) |\n| `apps/maestro/src/core/config-watch.ts`, `.../renderer/src/utils/config-watch-context.tsx` | Main-owned `maestro.json` poller and the provider that invalidates the router on `configChanged`. |\n| `apps/maestro/test/isolation.test.ts` | The process-boundary assertions this skill describes, plus the Claude-bridge-specific ones `claude-session-bridge` owns. |\n| `apps/maestro/test/workflow-store.test.ts` | Pins the `projectRoot`-keyed store half of the keying pattern. |\n\n## Relationships\n\n- [`claude-session-bridge`](../claude-session-bridge/SKILL.md) — the Agent SDK's own three packaging\n  failures, what `settingSources: []` is *for*, and the permission-model half of\n  `test/isolation.test.ts`.\n- [`workflow-view`](../workflow-view/SKILL.md), [`rule-view`](../rule-view/SKILL.md) — the two\n  concrete instances of the invalidate-then-key pattern, one per editor.\n- [`log-view`](../log-view/SKILL.md), `task-queue` (at the repo root `.claude/skills`) — the\n  tail-retargeting instance of the same pattern, for a poll-based live view\n  instead of a loader.\n- [`docs-view`](../docs-view/SKILL.md) — the two markdown readers, and what the hash-history\n  corollary above costs a route that wants to address a heading.\n- [`test-maestro`](../test-maestro/SKILL.md) — how to verify a packaged-build-only claim (code\n  splitting, CSP, asset resolution) in a real window rather than under `dev`.\n",
+    "contentHash": "sha256:6fa3345525fb4eaa4035271af5325b2a7a38fecdece741bc6b3dc2b4394aaf52"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.3",
+    "extracted_at": "2026-10-16T19:40:19.935Z"
+  }
+}

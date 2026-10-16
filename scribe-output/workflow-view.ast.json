@@ -1,0 +1,2567 @@
+{
+  "concept": "workflow-view",
+  "vertices": [
+    {
+      "_key": "065fed41ca2666d434d1ba531a20fa81",
+      "displayKey": "workflow-view::function::resolveInstanceFromPicker",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "resolveInstanceFromPicker",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-picker.tsx",
+      "start_line": 20,
+      "end_line": 44,
+      "signature": "function resolveInstanceFromPicker(v: InstancePickerValue, opts: { instances: MaestroInstanceV3[]; placedNames: Set<string>; availableAgents: string[] }): { instance: MaestroInstanceV3; isNew: boolean; } | null",
+      "contentHash": "2295a11829e146b15d69857902e65855a223598877ee5e577cd8e70f1edb8fb6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "07d38ff1bc45224a4e5a982ac48e6901",
+      "displayKey": "workflow-view::function::replaceConfig",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "replaceConfig",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 172,
+      "end_line": 181,
+      "signature": "function replaceConfig(config: MaestroConfigV3, projectRoot: string): void",
+      "contentHash": "d19c3ecd18e17a06b1b9cad93f167d2956658b11adc64aa703e0537455e4abf8",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0af234c70ff964d65cab8b0455557909",
+      "displayKey": "workflow-view::function::makeSuccessEdge",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "makeSuccessEdge",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 193,
+      "end_line": 211,
+      "signature": "function makeSuccessEdge(from: string, to: string): Edge",
+      "contentHash": "47354f3c4097dd478bc6d734b855da854fbd572a75c3840083a0da33975a7fb0",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0feccea1db06fb4de58ef153e3db62db",
+      "displayKey": "workflow-view::function::addWorkflow",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "addWorkflow",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 238,
+      "end_line": 248,
+      "signature": "function addWorkflow(wf: MaestroWorkflowV3): void",
+      "contentHash": "74d8f9f98b3e68322c7bc9bc1481dcdee871cb70f228ca16593cbfa7b72d9544",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "15f1489406f54fe5151a038f9a434a5b",
+      "displayKey": "workflow-view::function::workflowToRfNodes",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "workflowToRfNodes",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 98,
+      "end_line": 119,
+      "signature": "function workflowToRfNodes(workflow: MaestroWorkflowV3, instances: MaestroInstanceV3[]): Node[]",
+      "contentHash": "f9e124a2e44f7099e8476662e874c4dce659fcadec9a158549e355ffe31dca9f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1a59ec845b7212a2fd789a9db8fb2a10",
+      "displayKey": "workflow-view::component::WorkflowsPage",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "WorkflowsPage",
+      "filepath": "apps/maestro/src/renderer/src/routes/workflows.tsx",
+      "start_line": 55,
+      "end_line": 510,
+      "signature": "function WorkflowsPage(): import(\"react/jsx-runtime\").JSX.Element | null",
+      "contentHash": "ba9e607d6a8c41f07779cd1f4a72dfa423877526608511005ac55e8b705af84a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1cd9f7b00a5af9b57b9ea2707a0ee9ab",
+      "displayKey": "workflow-view::effect::effect-812",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-812",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 812,
+      "end_line": 812,
+      "signature": "useEffect(() => () => clearTimeout(timerRef.current), [])",
+      "contentHash": "c201bcb5dbe63ffdc39585732cf4113ab9a99c94380faaa9b4d07362a6d9c715",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1d06e05875e2e8cf5d023d40c28a0c95",
+      "displayKey": "workflow-view::function::workflowToSpec",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "workflowToSpec",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 279,
+      "end_line": 309,
+      "signature": "function workflowToSpec(wf: MaestroWorkflowV3, _instances: MaestroInstanceV3[]): WorkflowSpec",
+      "contentHash": "6f6d7aa81d9df570765d4bd69bbc8cf20bb9ab2ee1a3f2c4e08c3b3a47442592",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1f9c42b7e59ed621136711e366ec6370",
+      "displayKey": "workflow-view::component::SuccessEdge",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "SuccessEdge",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 596,
+      "end_line": 599,
+      "signature": "function SuccessEdge({ id, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition, markerEnd }: EdgeProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "81bececda87248b2aee0366336f1086580eb4d35b448f361da04d71fc0cf7d95",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2074e2a62d458c406e71dba4724c0c71",
+      "displayKey": "workflow-view::function::applyWorkflowSpec",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "applyWorkflowSpec",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 83,
+      "end_line": 270,
+      "signature": "function applyWorkflowSpec(cfg: MaestroConfigV3, spec: WorkflowSpec, mode: \"create\" | \"update\"): ApplyWorkflowSpecResult",
+      "contentHash": "562fddadd941b2e70ba4eea168f7c5d398c01f3f9f0b5b96a8f3ef23a8dae5f4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "245d785c121becfc72c2f06ad7994307",
+      "displayKey": "workflow-view::function::emptySelection",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "emptySelection",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-skill-picker.tsx",
+      "start_line": 17,
+      "end_line": 17,
+      "signature": "emptySelection(): SkillSelection",
+      "contentHash": "5dc4922dbd9bfade5ff26eccb46369b22e9fabd204fb4b6488de6378785db58a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "263cf858902a8fd99b9c824ebbf37e60",
+      "displayKey": "workflow-view::component::ConditionEdge",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "ConditionEdge",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 601,
+      "end_line": 769,
+      "signature": "function ConditionEdge({\n  id,\n  sourceX,\n  sourceY,\n  targetX,\n  targetY,\n  sourcePosition,\n  targetPosition,\n  label,\n  markerEnd,\n  data,\n}: EdgeProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "2940d5ad2c6e99bd18f936e0c4dcb09fa96b51e480c1565481f4c94db93b2bac",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "287ada06eb67d7da556732e51fb9512e",
+      "displayKey": "workflow-view::function::rfNodesToMaestroNodes",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "rfNodesToMaestroNodes",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 136,
+      "end_line": 149,
+      "signature": "function rfNodesToMaestroNodes(nodes: Node[]): MaestroNodeV3[]",
+      "contentHash": "7d8865a7cd5d80cfb685f64a391af833e8cf248ddfca63ef6bb3047149412b58",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2bbc5fac64d7485eafefdc4d47b3bfc3",
+      "displayKey": "workflow-view::component::SkillNodeComponent",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "SkillNodeComponent",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 503,
+      "end_line": 594,
+      "signature": "function SkillNodeComponent({\n  data,\n  selected,\n}: NodeProps & {\n  data: {\n    maestroNode: MaestroNodeV3;\n    onDelete?: (id: string) => void;\n    onChangeSkill?: (id: string) => void;\n    onAddNext?: (id: string) => void;\n  };\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "5e490aff9cf3b9609a767d6a7db7143b9a6d6730f9a37b7c7f27cc9f6d168188",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2d8e01cad012af237253201202c3b7fc",
+      "displayKey": "workflow-view::effect::effect-787",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-787",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 787,
+      "end_line": 794,
+      "signature": "useEffect(() => {",
+      "contentHash": "6b72d090d0ba6a7479e18ac3c80a1395cb3596cc27d70c8405a011ec526d08e4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2f4b9baebf126979928a93324e8fe375",
+      "displayKey": "workflow-view::function::renameWorkflow",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "renameWorkflow",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 217,
+      "end_line": 224,
+      "signature": "function renameWorkflow(idx: number, name: string): void",
+      "contentHash": "5b830a6f8aff5450da711d6500f0791cddb395ac0b50e940893e0dd65124376c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "30a0ec962ae2dd0584774a6c9a1c9572",
+      "displayKey": "workflow-view::function::parseStep",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "parseStep",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 45,
+      "end_line": 52,
+      "signature": "function parseStep(step: string): ParsedStep",
+      "contentHash": "c8653f4ac5f2acf986948cf82e9fb877a8beec911c85f47f769efe7dce70b976",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "32904f01c553750e576b33a659d0a257",
+      "displayKey": "workflow-view::function::replaceSuccessEdgeFrom",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "replaceSuccessEdgeFrom",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 188,
+      "end_line": 190,
+      "signature": "function replaceSuccessEdgeFrom(edges: Edge[], sourceId: string): Edge[]",
+      "contentHash": "a379f5c136d90fec8cf65356802a45e9d1041785ffa4ef677c90acf0ac736f8c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "332971128762ca7b1c4d06c00e106ed5",
+      "displayKey": "workflow-view::function::alignMainSession",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "alignMainSession",
+      "filepath": "apps/maestro/src/core/canvas-layout.ts",
+      "start_line": 44,
+      "end_line": 53,
+      "signature": "function alignMainSession(nodes: N[], edges: EntryEdge[]): N[]",
+      "contentHash": "266bdc0458e302ad49303b8d5f72ae1c6ed2b24a2be623cce790db3445ccdd0b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "344152f976dc3bf1ab699aff5ac50878",
+      "displayKey": "workflow-view::function::workflowSlice",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "workflowSlice",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 37,
+      "end_line": 44,
+      "signature": "function workflowSlice(config: MaestroConfigV3): WorkflowSlice",
+      "contentHash": "10b6d9422adf81a0938eace0640a1b39bef357568ad21b33a6fbc3de790f2a47",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "352935736d785645bf8cef793dbaa2ac",
+      "displayKey": "workflow-view::component::MainSessionNode",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "MainSessionNode",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 229,
+      "end_line": 263,
+      "signature": "function MainSessionNode({\n  data,\n}: NodeProps & {\n  data: { onAddNext?: (id: string) => void };\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "43f57aab78fbae461efc9097e6ef6eff1fca37229788b8baf2bf2f6bab1aeade",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "39d189c24f341248e98d04ab5d735e82",
+      "displayKey": "workflow-view::function::reloadFromDisk",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "reloadFromDisk",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 92,
+      "end_line": 105,
+      "signature": "function reloadFromDisk(): void",
+      "contentHash": "327d8c3a9ef0798bd1bb1c3334e1a1a2515730528cd92ced262c752b9af9eb74",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3a10f756e80df6e3e25119c03591fbed",
+      "displayKey": "workflow-view::type-def::PlacedNode",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "PlacedNode",
+      "filepath": "apps/maestro/src/core/canvas-layout.ts",
+      "start_line": 24,
+      "end_line": 27,
+      "signature": "interface PlacedNode {",
+      "contentHash": "bab4acfb9e15fe02fa6174c4428a2888181bd890e0a3c8ac2c10c0092d269359",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3e4ccad1b38023f1a072c890023e792a",
+      "displayKey": "workflow-view::hook::useColorMode",
+      "concept": "workflow-view",
+      "type": "hook",
+      "name": "useColorMode",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 784,
+      "end_line": 796,
+      "signature": "function useColorMode(): \"light\" | \"dark\"",
+      "contentHash": "8a1556240c5550866b1c53e87135e069087366d997d3b31811d48e0b67430b0f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3ffe546d409009b95c330bb74c46bbd3",
+      "displayKey": "workflow-view::function::isSuccessEdge",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "isSuccessEdge",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 166,
+      "end_line": 171,
+      "signature": "function isSuccessEdge(e: Edge): boolean",
+      "contentHash": "d5864d9f3c754bf60f54032369edb9116c7a4550bfafe28c5c049dd57dddc98b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4650e9276eaa24697f293b5ed8f4b6b7",
+      "displayKey": "workflow-view::function::deleteWorkflow",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "deleteWorkflow",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 324,
+      "end_line": 347,
+      "signature": "function deleteWorkflow(cfg: MaestroConfigV3, name: string): DeleteWorkflowResult",
+      "contentHash": "52fb06856197e3ddddef641f0572f5d1921a0c2aacfd957741db663829b313b7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4890d35e3dd858670a52172e9c75e91f",
+      "displayKey": "workflow-view::function::setSkillsAvailable",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "setSkillsAvailable",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 194,
+      "end_line": 199,
+      "signature": "function setSkillsAvailable(ids: string[]): void",
+      "contentHash": "4e8ed597d16639ebc186b840c1bcc4dc7a22f8f38df54511ff54e92489d6b9fe",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "56f355abbfa4d942c82af4ce02365cdc",
+      "displayKey": "workflow-view::effect::effect-652",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-652",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 652,
+      "end_line": 656,
+      "signature": "useEffect(() => {",
+      "contentHash": "629bfeb8582a3691f53404161ac63736a6b57222ec29fa6f6491e4aad96b5adc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "577a27ad23e9a8887112f46a15d83a33",
+      "displayKey": "workflow-view::effect::effect-399",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-399",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 399,
+      "end_line": 406,
+      "signature": "useEffect(() => {",
+      "contentHash": "57bc573c37c7aeda5b926db240eb23b405816431ec49c04ccc3205c3e21514cb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "59a396c08e3ab23ece6b5c2aa6a23ed6",
+      "displayKey": "workflow-view::function::applyDagreLayout",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "applyDagreLayout",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 83,
+      "end_line": 94,
+      "signature": "function applyDagreLayout(nodes: Node[], edges: Edge[]): Node[]",
+      "contentHash": "566bd63dbf8afc297d535f0887f6960ad2069f3926e12fd92b54f2c40d932a9b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "649c7158400ff5b1bd73db65408ca9f2",
+      "displayKey": "workflow-view::type-def::WorkflowCanvasProps",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "WorkflowCanvasProps",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 45,
+      "end_line": 66,
+      "signature": "interface WorkflowCanvasProps {",
+      "contentHash": "2c43abef446445d846358bec5df5a307e116265cc76a6ba343e587f720b0b08a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "671ac9e2ed15982e82bf91d1ac9abb4c",
+      "displayKey": "workflow-view::function::blankInstancePicker",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "blankInstancePicker",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-picker.tsx",
+      "start_line": 14,
+      "end_line": 16,
+      "signature": "function blankInstancePicker(defaultAgent = \"\"): InstancePickerValue",
+      "contentHash": "4728c4c3ba4247657f5115d3e5d67492e124043958b4fe46dd357e7d8a8d679f",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "69e00dac89d28d38ed38c91ad44a364b",
+      "displayKey": "workflow-view::effect::effect-1428",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-1428",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 1428,
+      "end_line": 1430,
+      "signature": "useEffect(() => {",
+      "contentHash": "95cd72b2d86c0ba395a31982279edc973c8f2f7263598310a2f9cb5ac80c4670",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6b0d038f9af0642950b32c4005d17435",
+      "displayKey": "workflow-view::function::succ",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "succ",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 54,
+      "end_line": 60,
+      "signature": "succ(from: string, to: string): MaestroEdgeV3",
+      "contentHash": "3e8865b0c91c5db59f6c3e5b66d7342bb94433374907809587a7c3eaec29d766",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6e0b21968a292285466d1906e4a8aed6",
+      "displayKey": "workflow-view::component::WorkflowCanvas",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "WorkflowCanvas",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 827,
+      "end_line": 1936,
+      "signature": "function WorkflowCanvas({\n  workflow,\n  workflowKey,\n  availableAgents,\n  availableSkills,\n  instances,\n  onChange,\n  onInstancesChange,\n  onAgentForked,\n  forkableAgents,\n}: WorkflowCanvasProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "21ba1f3e95c93dfc38e03c07befa05ca1742ed12377ca0dd4ec154f2afea59e6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "displayKey": "workflow-view::function::reconcileWorkflowSlice",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "reconcileWorkflowSlice",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 71,
+      "end_line": 89,
+      "signature": "function reconcileWorkflowSlice(state: WorkflowEditState, diskSlice: WorkflowSlice): WorkflowEditState",
+      "contentHash": "0753cc1bacfcc6a39e29e8d91a6a7330db6a5aa527a08a4990f0f27079eb22f6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8447d78379ebcae21c5fd613dad16993",
+      "displayKey": "workflow-view::function::seedWorkflowStore",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "seedWorkflowStore",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 143,
+      "end_line": 160,
+      "signature": "function seedWorkflowStore(config: MaestroConfigV3, projectRoot: string): void",
+      "contentHash": "044218587d2b42d6f292ff9042a36acb099ac48e87d3552251a8faefabaf4aa7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "89fa6d1139ceaa5831cf84ce2fe6e8de",
+      "displayKey": "workflow-view::type-def::Phase",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "Phase",
+      "filepath": "apps/maestro/src/renderer/src/routes/workflows.tsx",
+      "start_line": 47,
+      "end_line": 47,
+      "signature": "type Phase = \"idle\" | \"saving\";",
+      "contentHash": "f5ebd442fd5cb3a57c86855f65d0cb54227696cf15fcefd5b8e294f13413a3da",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "89fbd9e9590f2f236b937f219271cd2b",
+      "displayKey": "workflow-view::function::setInstances",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "setInstances",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 201,
+      "end_line": 206,
+      "signature": "function setInstances(instances: MaestroInstanceV3[]): void",
+      "contentHash": "698221235ea138ddce502909f4ff8890c04a42c8d10f37c046aeb6f936a226fe",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8b1cb1ff337db7dfbebbb9f56e7c7747",
+      "displayKey": "workflow-view::function::setActiveWorkflowIdx",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "setActiveWorkflowIdx",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 183,
+      "end_line": 185,
+      "signature": "function setActiveWorkflowIdx(idx: number): void",
+      "contentHash": "fb00e32c269b17dafa1ee1456296471033da5f52abf8f3ebc61c2d3214d038b4",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8c7f87955e83c97c208dc9860b2e9e05",
+      "displayKey": "workflow-view::type-def::InstancePickerValue",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "InstancePickerValue",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-picker.tsx",
+      "start_line": 6,
+      "end_line": 12,
+      "signature": "export interface InstancePickerValue {",
+      "contentHash": "c07cd837ab01ffecf96bf075b5c24f32ff8cfbb22580eec1045d7498460975b1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9810cac22aa82f7eb78c4379a7cd4787",
+      "displayKey": "workflow-view::function::rfEdgesToMaestroEdges",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "rfEdgesToMaestroEdges",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 151,
+      "end_line": 164,
+      "signature": "function rfEdgesToMaestroEdges(edges: Edge[]): MaestroEdgeV3[]",
+      "contentHash": "e419b26e71b00543d7f56be2c2dfab7cf4c94ceb509211b793f7514d99450afa",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "989556c7be2348f7615b70749bca9500",
+      "displayKey": "workflow-view::function::keepMine",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "keepMine",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 112,
+      "end_line": 117,
+      "signature": "function keepMine(): void",
+      "contentHash": "bab401441df3abae836cb0a71d6327d2bbb1497396e63dbc646d6cabd0efc246",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9afd9c5994e5c2c6b39fadffb73a439c",
+      "displayKey": "workflow-view::type-def::SkillSelection",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "SkillSelection",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-skill-picker.tsx",
+      "start_line": 12,
+      "end_line": 15,
+      "signature": "export interface SkillSelection {",
+      "contentHash": "ddce8c1b46bfadfba78fb04beaed421949f1a1c7ae6f3ae542fdf16d98159608",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9c516b533801d5178c37752cf6d7cf80",
+      "displayKey": "workflow-view::function::FitViewEffect",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "FitViewEffect",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 799,
+      "end_line": 814,
+      "signature": "function FitViewEffect({ workflowName }: { workflowName: string | undefined }): null",
+      "contentHash": "103afd85e9da32939f444323d0a25ae333d8431f64094dffe4015a5ed087469a",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9ebc8b772bda1ba5e9bfdd90055b7af9",
+      "displayKey": "workflow-view::type-def::SkillMode",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "SkillMode",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-skill-picker.tsx",
+      "start_line": 10,
+      "end_line": 10,
+      "signature": "export type SkillMode = \"loaded\" | \"referenced\";",
+      "contentHash": "93a97098be3ee40cbadc924b1440de009e2bb437bb789fb88993eda61db0ef49",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a79fde1713f26a2f5e4a16a4ec52f9f4",
+      "displayKey": "workflow-view::type-def::EntryEdge",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "EntryEdge",
+      "filepath": "apps/maestro/src/core/canvas-layout.ts",
+      "start_line": 28,
+      "end_line": 32,
+      "signature": "interface EntryEdge {",
+      "contentHash": "390c30d7ba29245cf20ca444a167f4d27f65349264947816acdc77017ccbebe7",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ac1affae1c5204c0000eeff0c3f46ebb",
+      "displayKey": "workflow-view::function::hasSavedPositions",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "hasSavedPositions",
+      "filepath": "apps/maestro/src/core/canvas-layout.ts",
+      "start_line": 20,
+      "end_line": 22,
+      "signature": "function hasSavedPositions(nodes: ReadonlyArray<{ position?: unknown }>): boolean",
+      "contentHash": "ee90cf1a15735ebfd61098d417a141ce06e3b6f857bf4ba5ce1ba42f0afb94d1",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "acfb38fb6e55fb39a13ee157bcf691a6",
+      "displayKey": "workflow-view::effect::effect-518",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-518",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 518,
+      "end_line": 525,
+      "signature": "useEffect(() => {",
+      "contentHash": "57bc573c37c7aeda5b926db240eb23b405816431ec49c04ccc3205c3e21514cb",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b746946fac5a3833930d2190b2f24e70",
+      "displayKey": "workflow-view::function::setAgentsAvailable",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "setAgentsAvailable",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 187,
+      "end_line": 192,
+      "signature": "function setAgentsAvailable(ids: string[]): void",
+      "contentHash": "d31396274887926364398dfa174bcfca17e051564a862f511a934cc5522f629b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b919c9478e04ede535924b9ac2ce256e",
+      "displayKey": "workflow-view::type-def::ParsedStep",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "ParsedStep",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 27,
+      "end_line": 35,
+      "signature": "interface ParsedStep {",
+      "contentHash": "4affd2c2efa31ba6cef6792a79e5ebf7ec2b90d37e5e7b34ed4987b6135935ed",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b9d35cd31a6d694c9a0e529f92a488bb",
+      "displayKey": "workflow-view::component::AgentNodeComponent",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "AgentNodeComponent",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 265,
+      "end_line": 381,
+      "signature": "function AgentNodeComponent({\n  data,\n}: NodeProps & {\n  data: {\n    maestroNode: MaestroNodeV3;\n    instanceData?: MaestroInstanceV3;\n    onAddConditionEdge?: (id: string) => void;\n    onAddNext?: (id: string) => void;\n    isPickingConditionSource?: boolean;\n    isTerminal?: boolean;\n    isSelectedInstance?: boolean;\n  };\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "7c98fe32665571c247b6848ce9374026b7f5eaf9efb6633d111075dd47373651",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bc6a1dd4bec2ca163d00f1508790917b",
+      "displayKey": "workflow-view::function::nextSkillId",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "nextSkillId",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 221,
+      "end_line": 225,
+      "signature": "function nextSkillId(nodes: Node[]): string",
+      "contentHash": "47960371ad52ba64c9cac426e55db38f81cc244935240cfcbfffe9e4c58009e0",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bd3c7678d60b95e649ad8a3f53b38ea4",
+      "displayKey": "workflow-view::type-def::DeleteWorkflowResult",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "DeleteWorkflowResult",
+      "filepath": "apps/maestro/src/core/workflow-spec.ts",
+      "start_line": 311,
+      "end_line": 316,
+      "signature": "export interface DeleteWorkflowResult {",
+      "contentHash": "a4beff4ccbf17a433c15dbeb56fd841b084f129bee995442aff0051df8568cba",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c0bee619cd38f522bfc42fa60ede34cf",
+      "displayKey": "workflow-view::function::findSuccessTerminalId",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "findSuccessTerminalId",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 174,
+      "end_line": 184,
+      "signature": "function findSuccessTerminalId(edges: Edge[]): string",
+      "contentHash": "0ee0990c0ce463bbe547ce4d42fd773455f5b7910a550728ad8c066c7256f895",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c105e8ba1aac748805740c986d664cb9",
+      "displayKey": "workflow-view::function::removeWorkflow",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "removeWorkflow",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 226,
+      "end_line": 236,
+      "signature": "function removeWorkflow(idx: number): void",
+      "contentHash": "11243e5e26d00a1baca9471d4d3d777b7110537335483a38415b369e1ff8de6d",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c50ac026bdc36fe55360d145dc350b6f",
+      "displayKey": "workflow-view::component::InstancePicker",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "InstancePicker",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-picker.tsx",
+      "start_line": 48,
+      "end_line": 251,
+      "signature": "function InstancePicker({\n  value,\n  onChange,\n  availableAgents,\n  unavailableAgents = [],\n  availableSkills,\n  reusableInstances,\n  existingInstanceNames = [],\n  onEnter,\n  onEscape,\n  onForked,\n  forkableAgents = [],\n}: {\n  value: InstancePickerValue;\n  onChange: (next: InstancePickerValue) => void;\n  availableAgents: string[];\n  // Subagents already placed in this workflow — listed but disabled, so the dropdown\n  // explains itself instead of appearing empty/broken.\n  unavailableAgents?: string[];\n  availableSkills: string[];\n  reusableInstances: MaestroInstanceV3[];\n  // All instance names already in the config — used to flag duplicate new names.\n  existingInstanceNames?: string[];\n  onEnter?: () => void;\n  onEscape?: () => void;\n  /**\n   * Called with the new agent's name after a successful fork from the all-placed dead end below —\n   * the caller's job is to add it to `config.agents_available` so it becomes selectable here\n   * (`workflows.tsx:407`). Omit to hide the fork affordance entirely (e.g. a picker with nowhere\n   * to route the result).\n   */\n  onForked?: (newAgentName: string) => void;\n  /**\n   * The agents `forkAgent` will actually accept — every discovered agent whose `source` is not\n   * `\"project\"`. It throws on a project-tier agent (\"already a project agent — there's nothing to\n   * fork\"), which is why `/agents` hides its own fork affordance for those (`agent-card.tsx`'s\n   * `isProjectTier`); this list is how the dead end below applies the same rule instead of\n   * offering a choice that can only fail. A fork's own output is project-tier, so it correctly\n   * drops out of this list once it exists. Defaults to none — a caller that doesn't pass it gets\n   * no fork affordance, the same way omitting `onForked` does.\n   */\n  forkableAgents?: string[];\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "93b5f7c6ff273619c08cf5d537cdd9d7422897e3b739e270f4bb7126f71af1d9",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c79921dba160a0ea49bb66d6fefa9979",
+      "displayKey": "workflow-view::type-def::WorkflowSlice",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "WorkflowSlice",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 8,
+      "end_line": 13,
+      "signature": "export interface WorkflowSlice {",
+      "contentHash": "aebfb83ad07d1434e4098063e7ffb46f05572a0623232e13e1cfbdee35d7b23b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ce1b8d9b76fe1137c0d381e135c363c4",
+      "displayKey": "workflow-view::component::InstanceSkillPicker",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "InstanceSkillPicker",
+      "filepath": "apps/maestro/src/renderer/src/components/instance-skill-picker.tsx",
+      "start_line": 19,
+      "end_line": 116,
+      "signature": "function InstanceSkillPicker({\n  skills: availableSkills,\n  value,\n  onChange,\n  maxHeight = \"max-h-48\",\n  size = \"md\",\n  emptyHint,\n}: {\n  skills: string[];\n  value: SkillSelection;\n  onChange: (next: SkillSelection) => void;\n  maxHeight?: string;\n  size?: \"sm\" | \"md\";\n  // When the available-skills list is empty: if provided, render this hint\n  // instead of nothing (so the Skills section never silently disappears).\n  emptyHint?: string;\n}): import(\"react/jsx-runtime\").JSX.Element | null",
+      "contentHash": "8b5313f2bebd97854a0f2dd18a917912a9b9b56d81267b02c056eea86a138cec",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d2168e45d12aa452dbae25336e9a5357",
+      "displayKey": "workflow-view::function::deepEqual",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "deepEqual",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 47,
+      "end_line": 60,
+      "signature": "function deepEqual(a: unknown, b: unknown): boolean",
+      "contentHash": "aab9bc9b2695f6f30bb09746e5dd747d081283eb278f1d9c54c8f6920991d184",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d32260e75918306050385f92363e3d13",
+      "displayKey": "workflow-view::function::updateWorkflow",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "updateWorkflow",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 208,
+      "end_line": 215,
+      "signature": "function updateWorkflow(idx: number, wf: MaestroWorkflowV3): void",
+      "contentHash": "2166cfc075397430425078a78eb10845856fbe12e38617e15f9150f3488fafe5",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d93002b3bb0067c07719b2ef23a32ebe",
+      "displayKey": "workflow-view::function::markSaved",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "markSaved",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 120,
+      "end_line": 125,
+      "signature": "function markSaved(slice: WorkflowSlice, projectRoot: string): void",
+      "contentHash": "5c75c89de8689b303934592a88e2c5f8c1c16e7ea74324050340372bf0fb2f74",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dce335cbb4f21034cfb97cbad81a977b",
+      "displayKey": "workflow-view::function::nextHumanId",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "nextHumanId",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 214,
+      "end_line": 218,
+      "signature": "function nextHumanId(nodes: Node[]): string",
+      "contentHash": "5931696216f61624e9b16e9dacb71406c855f9d6665717a83a61c16cbf9bf925",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "de3d68ad985531548f0cbad9e78da201",
+      "displayKey": "workflow-view::effect::effect-1434",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-1434",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 1434,
+      "end_line": 1440,
+      "signature": "useEffect(() => {",
+      "contentHash": "66d6d9576732732ff23a69700c28bb672ff2bc0fe9da651ea34459b2b160decc",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "df61f7d6def3001b9ef3bbe5a24f8897",
+      "displayKey": "workflow-view::function::dagreNodeHeight",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "dagreNodeHeight",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 77,
+      "end_line": 81,
+      "signature": "function dagreNodeHeight(n: Node): number",
+      "contentHash": "1fe0a419b0e9f0d9410229b72f1b582e2b889eab783ed22c8af591c6372996c6",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e0e9322f6858c7472af458221a391a4a",
+      "displayKey": "workflow-view::function::workflowToRfEdges",
+      "concept": "workflow-view",
+      "type": "function",
+      "name": "workflowToRfEdges",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 121,
+      "end_line": 134,
+      "signature": "function workflowToRfEdges(workflow: MaestroWorkflowV3): Edge[]",
+      "contentHash": "104e1630cb223c7cf3d30ad5b36e118d1f26529e1c880392ff2b24035caad7fa",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e59b372339dc25f6836824adc2a2cac7",
+      "displayKey": "workflow-view::effect::effect-63",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-63",
+      "filepath": "apps/maestro/src/renderer/src/routes/workflows.tsx",
+      "start_line": 63,
+      "end_line": 65,
+      "signature": "useEffect(() => {",
+      "contentHash": "87888b296bed9029a59eec3230ed5b31e77869a8eeacf72c544a9969d06cf01b",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e71b66b0e8be1a9827f66f5544607da5",
+      "displayKey": "workflow-view::type-def::WorkflowEditState",
+      "concept": "workflow-view",
+      "type": "type-def",
+      "name": "WorkflowEditState",
+      "filepath": "apps/maestro/src/renderer/src/store/workflow-store.ts",
+      "start_line": 15,
+      "end_line": 26,
+      "signature": "export interface WorkflowEditState {",
+      "contentHash": "150fd372795249cb5426fb8695dc05aa01d3b7d0490183edea7b601d13ecc38c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ea6c800479687d95c9c5166a116c115b",
+      "displayKey": "workflow-view::effect::effect-803",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-803",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 803,
+      "end_line": 811,
+      "signature": "useEffect(() => {",
+      "contentHash": "43f133956598bb3afeacb5777ab5ff5ccff17d8bfa2fb743d3c88b2dbd696427",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f6488d6bcc0f2a7f0f212431a2ffd1be",
+      "displayKey": "workflow-view::component::HumanStepNode",
+      "concept": "workflow-view",
+      "type": "component",
+      "name": "HumanStepNode",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 383,
+      "end_line": 501,
+      "signature": "function HumanStepNode({\n  data,\n  selected,\n}: NodeProps & {\n  data: {\n    maestroNode: MaestroNodeV3;\n    onDelete?: (id: string) => void;\n    onAddNext?: (id: string) => void;\n    onAddConditionEdge?: (id: string) => void;\n    isPickingConditionSource?: boolean;\n  };\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "75b33f7169f53e5337b458ec204151429e9eea60da7d609d5f5788a4759b5f4c",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f7ea1202d005ad6993359dde781bc7ae",
+      "displayKey": "workflow-view::effect::effect-873",
+      "concept": "workflow-view",
+      "type": "effect",
+      "name": "effect-873",
+      "filepath": "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+      "start_line": 873,
+      "end_line": 892,
+      "signature": "useEffect(() => {",
+      "contentHash": "4a8a2110b67342e032194e45a4790ae754b542faf73bc75c21afd1c400f09c15",
+      "status": "live",
+      "ast": {
+        "extractor_version": "code-graph@0.3.3"
+      },
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "0ab9657703c15079770a866f6ea96b3f",
+      "_from": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0df1094b7d34cab0cf9317c6dc0e4279",
+      "_from": "vertices/8447d78379ebcae21c5fd613dad16993",
+      "_to": "vertices/344152f976dc3bf1ab699aff5ac50878",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0eb2b1b3b2f441dbda69a7dce9c50e5e",
+      "_from": "vertices/30a0ec962ae2dd0584774a6c9a1c9572",
+      "_to": "vertices/b919c9478e04ede535924b9ac2ce256e",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 45,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "14515344b15ab50b8edf2109be39b3d1",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/4890d35e3dd858670a52172e9c75e91f",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 364,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "14aa1e916b8742098b83a23e25a6defa",
+      "_from": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "16520b839e290ebd2c86ecb8c5b7b0bf",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/3ffe546d409009b95c330bb74c46bbd3",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 972,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "183c17f688e7527c96c9ff52127944a5",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/6b0d038f9af0642950b32c4005d17435",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 225,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1ee43e022d5abb04a7cd9a9ca34024d4",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/4890d35e3dd858670a52172e9c75e91f",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 392,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "21d07ac6e0f5692cf5d095c3b3b1b299",
+      "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "_to": "vertices/e71b66b0e8be1a9827f66f5544607da5",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "284fa68f21400565db1c9a583cebda93",
+      "_from": "vertices/344152f976dc3bf1ab699aff5ac50878",
+      "_to": "vertices/c79921dba160a0ea49bb66d6fefa9979",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 37,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "299db3276a9a7faede513796f7cfee32",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/0feccea1db06fb4de58ef153e3db62db",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 104,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3029092a808436a4cc6cfcbd07233478",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/59a396c08e3ab23ece6b5c2aa6a23ed6",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 888,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "303aaacd435cf63889308459c2d02542",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/d93002b3bb0067c07719b2ef23a32ebe",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "30a383e5633b3f0a119305d192525bd0",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/332971128762ca7b1c4d06c00e106ed5",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 889,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "33f25840f5805ae6e4f9cebc1165f7cd",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/c0bee619cd38f522bfc42fa60ede34cf",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1357,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3690102350eb6903ef5960e48775d2df",
+      "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "_to": "vertices/d2168e45d12aa452dbae25336e9a5357",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 75,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "370aa31e9253bc2a5687efd0ca562065",
+      "_from": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "_to": "vertices/ce1b8d9b76fe1137c0d381e135c363c4",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 242,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b0b78aea88a0a39179bc961b96087ed",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/15f1489406f54fe5151a038f9a434a5b",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 885,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3c876335f0f120785618b0b2cde2b56b",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1115,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3fb2486c6fb981e9e60e028def24ad2b",
+      "_from": "vertices/245d785c121becfc72c2f06ad7994307",
+      "_to": "vertices/9afd9c5994e5c2c6b39fadffb73a439c",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 17,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4209d9577f20d14d481753161cb3853b",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/32904f01c553750e576b33a659d0a257",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 955,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4750fca3b1c1a7b70abfa81c5d780dac",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 483,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4984d233be15bfb2a5fbf21f4753cfb5",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/30a0ec962ae2dd0584774a6c9a1c9572",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 223,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b600745363373d6e1093cfe16e1cbfa",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/dce335cbb4f21034cfb97cbad81a977b",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1307,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4e31ecf78ee47dc423f8f39cb945f697",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/065fed41ca2666d434d1ba531a20fa81",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1184,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4fb56b924685c16974be281d19d9f4ab",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/d32260e75918306050385f92363e3d13",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 489,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "52a6b9f76fb550072391b6c0e990124d",
+      "_from": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 14,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "52b6981d661ddf7b2d629f0b39bc2c3d",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/30a0ec962ae2dd0584774a6c9a1c9572",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 248,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "53d61974919518aba1e54f5198946eb4",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "55078a2cf256f47410f92ab918121122",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/ce1b8d9b76fe1137c0d381e135c363c4",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1775,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57719555e532969deb3013ac5e57ff0f",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/649c7158400ff5b1bd73db65408ca9f2",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 837,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5e18d29c178894f12daed75652725e3e",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1270,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5f23f1f6de99af48526e6144fbfe5bc7",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1261,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "60c288f2283d6acfc4b60d686567f8d5",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 852,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "680138add3dcb1e12aeb13bb6a0b8e11",
+      "_from": "vertices/ce1b8d9b76fe1137c0d381e135c363c4",
+      "_to": "vertices/9ebc8b772bda1ba5e9bfdd90055b7af9",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 53,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6ae71ea8d434f1be8ad62eac79d8123f",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/c0bee619cd38f522bfc42fa60ede34cf",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1363,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6d3344ea0bf682b9fc9d49459d62467a",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/9810cac22aa82f7eb78c4379a7cd4787",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 900,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "72148c28b4c4491875dc5578168090d0",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/b746946fac5a3833930d2190b2f24e70",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 210,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7395b91c8d6af14355eab091023d9864",
+      "_from": "vertices/065fed41ca2666d434d1ba531a20fa81",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "756cade19479e575d41f98f18cd86192",
+      "_from": "vertices/8447d78379ebcae21c5fd613dad16993",
+      "_to": "vertices/344152f976dc3bf1ab699aff5ac50878",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7bd17bcf6ca8f1d57aff309ec1990c4d",
+      "_from": "vertices/ce1b8d9b76fe1137c0d381e135c363c4",
+      "_to": "vertices/9afd9c5994e5c2c6b39fadffb73a439c",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 29,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7c28798e2b1c07a5d27f2c9e02980d19",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/4890d35e3dd858670a52172e9c75e91f",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 405,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7fcbe2401b97aa803728ef1779f25f16",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/32904f01c553750e576b33a659d0a257",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1317,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "85e6425414ab7345f29a71decb8a3339",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/30a0ec962ae2dd0584774a6c9a1c9572",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 249,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "883560398271fa2b68df9c2a7e6927bf",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/8447d78379ebcae21c5fd613dad16993",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8cd628834a39e43ed01f3348b178f403",
+      "_from": "vertices/ce1b8d9b76fe1137c0d381e135c363c4",
+      "_to": "vertices/9ebc8b772bda1ba5e9bfdd90055b7af9",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8cf586694f09cf12f71fb1baef3bd7e0",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/30a0ec962ae2dd0584774a6c9a1c9572",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 206,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "92ede0138ec0e057b06c64f88b655930",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 852,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "935183d5642a77d79e5f7812fb0d601f",
+      "_from": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "_to": "vertices/245d785c121becfc72c2f06ad7994307",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 15,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "982b034d6cc3b8387ca9cee3ee26cce0",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/0af234c70ff964d65cab8b0455557909",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1318,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9ab8643fe0679e25e12a5bdd1a91dd1d",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/287ada06eb67d7da556732e51fb9512e",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 899,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e42704714c32e71276ee2eb493dc3a0",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/3e4ccad1b38023f1a072c890023e792a",
+      "type": "uses-hook",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 867,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a0fb6821a9efca0ea0c2d1b0ebcfcd81",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/07d38ff1bc45224a4e5a982ac48e6901",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a53d49845abc0009b2e052bb9293cc9d",
+      "_from": "vertices/32904f01c553750e576b33a659d0a257",
+      "_to": "vertices/3ffe546d409009b95c330bb74c46bbd3",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 189,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a5eff9d21d3bf75a11d4ef52bd648e5c",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/bc6a1dd4bec2ca163d00f1508790917b",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1302,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a82c61b58963541af7e3035dbefe589a",
+      "_from": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 62,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a9c391de8432c31c456ed985692a64e3",
+      "_from": "vertices/4650e9276eaa24697f293b5ed8f4b6b7",
+      "_to": "vertices/bd3c7678d60b95e649ad8a3f53b38ea4",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 324,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ae6da90f0dc26b6a1b81babcc63f46ef",
+      "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "_to": "vertices/d2168e45d12aa452dbae25336e9a5357",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b5e6576b38f4b3222f5b7e72a1752200",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1663,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b7ebd5a7e569e9ea9a98ce9f77589a0d",
+      "_from": "vertices/59a396c08e3ab23ece6b5c2aa6a23ed6",
+      "_to": "vertices/df61f7d6def3001b9ef3bbe5a24f8897",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bbb5302a7c6e91d7dc6a78688564ed17",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/3ffe546d409009b95c330bb74c46bbd3",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1314,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bd5c2626e2840e9247ff8e17f03301f7",
+      "_from": "vertices/ce1b8d9b76fe1137c0d381e135c363c4",
+      "_to": "vertices/9afd9c5994e5c2c6b39fadffb73a439c",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 28,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "be104ee1fc202de821550070e134fdb4",
+      "_from": "vertices/59a396c08e3ab23ece6b5c2aa6a23ed6",
+      "_to": "vertices/df61f7d6def3001b9ef3bbe5a24f8897",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 92,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bf444ee0b61e654d389f5a8d6d93f6e3",
+      "_from": "vertices/d93002b3bb0067c07719b2ef23a32ebe",
+      "_to": "vertices/c79921dba160a0ea49bb66d6fefa9979",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c1827b7ed49c00555fdc477f80cb8a5c",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/065fed41ca2666d434d1ba531a20fa81",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1289,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c32a5d41b80a7363a072a1b8126d5e61",
+      "_from": "vertices/8447d78379ebcae21c5fd613dad16993",
+      "_to": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c406657dfc82cd9da5758acc665a56fc",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/8c7f87955e83c97c208dc9860b2e9e05",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1255,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c9f9ffda65d62054ca2fbf8e756f8c1f",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/0af234c70ff964d65cab8b0455557909",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1317,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cb3780c34efd3c5e01f72c9fe45155a9",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/e0e9322f6858c7472af458221a391a4a",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 886,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cdfb4d8498874c3b4628ba1c0a056b88",
+      "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "_to": "vertices/c79921dba160a0ea49bb66d6fefa9979",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ce25950bac7729ebd94206c3f6866899",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/0af234c70ff964d65cab8b0455557909",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 976,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d54fc6d2d26bdadd7c939163a3992a5c",
+      "_from": "vertices/332971128762ca7b1c4d06c00e106ed5",
+      "_to": "vertices/a79fde1713f26a2f5e4a16a4ec52f9f4",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 44,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dc8ad3182e2605d0d838cb4ae88edc20",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/ac1affae1c5204c0000eeff0c3f46ebb",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 887,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e43d553e603ac0437bbc1df2fe94a8e3",
+      "_from": "vertices/332971128762ca7b1c4d06c00e106ed5",
+      "_to": "vertices/3a10f756e80df6e3e25119c03591fbed",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 44,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e62df0e4366dcabb816201a32d6fdad8",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/9c516b533801d5178c37752cf6d7cf80",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1497,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e6ec61a57a5fe359b7e3a34cf5def1b4",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/3ffe546d409009b95c330bb74c46bbd3",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 971,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e97cdf82a373acdbae1e575ed821e770",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1597,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ea8509728f56ccb78fdc5f92e96c7557",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/32904f01c553750e576b33a659d0a257",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 975,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ea8d456b6ff71ce3780de94050d64cc8",
+      "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "_to": "vertices/344152f976dc3bf1ab699aff5ac50878",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ea9bedb8ff327136766b11988b9261d3",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/30a0ec962ae2dd0584774a6c9a1c9572",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 144,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eef405e5896b9e69f64f47fa47957c01",
+      "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
+      "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 1255,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f58520d13f480f843f155e5bc862c437",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/b746946fac5a3833930d2190b2f24e70",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 329,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f75ac78c1faa0612224f58918b634fb1",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/89fa6d1139ceaa5831cf84ce2fe6e8de",
+      "type": "has-type",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f96d4c8201542d2800904afbeae9d6df",
+      "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "_to": "vertices/d2168e45d12aa452dbae25336e9a5357",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f9948116fe789a2420fe8298d4d879bc",
+      "_from": "vertices/c0bee619cd38f522bfc42fa60ede34cf",
+      "_to": "vertices/3ffe546d409009b95c330bb74c46bbd3",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 179,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fa05b9d3cadc44d5b0fa07e8feba9395",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/b746946fac5a3833930d2190b2f24e70",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 309,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ffb29e7b7017b97b87848f2d513cceee",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/344152f976dc3bf1ab699aff5ac50878",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/workflow-view/SKILL.md",
+    "body": "---\nname: workflow-view\ndescription: \"Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, why a duplicate-agent-type banner is showing and what the instance picker's fork-an-agent affordance does about it (`041`), or why a workflow change isn't reaching the config.\"\nmetadata:\n  type: concept-skill\n  version: \"1.7\"\n  last-update: 036cb4685fb6be413fa708d28e8d786508e239fd\n---\n\n# Workflow View\n\nThe `/workflows` route (`src/renderer/src/routes/workflows.tsx`) is a visual editor for a project's agent workflows. The user picks which bundled subagents and project skills to make available (left pane), then wires reusable **workflow instances** (agent + skills) into an editable graph (center canvas). On save it persists the workflow slice of `.claude/maestro.json` (v3).\n\nIt is the workflow half of the desktop app's config editor — the `/rules` route owns the other half, and the two share one `maestro.json`. Saving is a single IPC call with **no Claude session in the loop**: `config:save` → `saveConfig()` in `src/core` merges the slice, writes the file, re-renders the orchestrator's handoff table, and applies rule placements. See the `maestro-architecture` skill for what then reads that config at runtime.\n\n## Layout\n\n```\n┌──────────────────────────── TopNav (top-nav.tsx) ───────────────────────────┐\n│ Workflows | Rules        ◀ workflow selector (name + ✎ + ＋ + ✕) ▶         ☀│\n├───────────────┬─────────────────────────────────────────────────────────────┤\n│ Left pane     │ Center — WorkflowCanvas                                     │\n│ (workflows    │ (workflow-canvas.tsx, @xyflow/react)                        │\n│  .tsx)        │   ● Claude Main Session  (synthetic)                        │\n│  Agents ☑     │        │ success (bottom→top)                              │\n│   backend     │   ▭ agent node  + skill chips + ⋮                          │\n│   test …      │        ◇ human step (Review)                                │\n│  ＋ Agent     │        ⋯ condition edges (orange dashed)                    │\n│  Skills ☑     │                                                             │\n│  ＋ Skill     │   [ ＋ Add Agent | ＋ Add condition ] panel                 │\n│  [Save]       │                                                             │\n└───────────────┴─────────────────────────────────────────────────────────────┘\n   280px                          1fr\n```\n\nThe grid is a fixed `280px 1fr` (left pane + center; `workflows.tsx`, `gridTemplateColumns`).\n\n## Data flow\n\n```\nRoute loader: getMaestroConfig()             (src/renderer/src/utils/maestro.ts)\n  → window.maestro.data.workflows()  = IPC `data:workflows`, handled in src/main/ipc.ts\n      main reads <projectRoot>/.claude/maestro.json → MaestroConfigV3\n      no file yet: detectImplAgents() → defaultV3Config(chain), seeded:true + RepoDetection\n      corrupt / wrong version: blankV3Config()\n  • returns { config, projectRoot, seeded, detection, agents, skills } in one round trip\n        │\n        ▼\nWorkflowsPage seeds the workflow store, KEYED ON projectRoot (see Things that bite)\n        │   passes slices down as props (incl. workflow_instances)\n        ▼\nWorkflowCanvas mirrors the active workflow into React Flow state (rfNodes/rfEdges)\n  • workflowToRfNodes / workflowToRfEdges  on the way in\n  • rfNodesToMaestroNodes / rfEdgesToMaestroEdges  on the way out → onChange(workflow)\n        │   every edit calls onChange → updateWorkflow → store\n        │   instance edits go via onInstancesChange\n        ▼ (Save workflows)\nsubmitMaestroConfig({ sliceType: \"workflows\", slice })\n  → window.maestro.config.save(...)  = IPC `config:save` → saveConfig() in src/core\n      1. merge the workflow slice into maestro.json (preserves `rules`) and write it\n         (2-space indent, NO trailing newline — preserved so existing repos show no diff)\n      2. re-render the orchestrator's Maestro:HANDOFFS table from it\n      3. apply the rule assignments\n  ← SaveResult { success paths, rule summary } → the toast reports what changed on disk\n        │\n        ▼ router.invalidate()   (a save is neither a navigation nor a project switch)\n```\n\n**Outside changes to `maestro.json`** (a hand edit, `/maestro-update`) take a second path in:\n\n```\nmain: watchConfigFile(projectRoot)  (src/core/config-watch.ts, ~1s poll of the raw text)\n  → broadcasts `config:changed` to every window     (preload: config.onChanged(cb))\n  → ConfigWatchProvider (utils/config-watch-context.tsx, mounted in __root.tsx) → router.invalidate()\n  → /workflows loader re-runs → the seed effect calls seedWorkflowStore(config, projectRoot)\n  → same project: reconcileWorkflowSlice(state, diskSlice)   (store/workflow-store.ts)\n```\n\nThe store keeps `baseline` (the workflow slice as last known to be on disk), `externalChange` and the\nflagged `externalSlice`. Only the workflow slice is compared, so a `rules` or `runtimeVersion` change\nalone never touches the canvas. Reconcile, in order: disk == baseline → no-op; disk == canvas (our own\nsave echoing back) → adopt as baseline, clear the flag; canvas clean → take the disk slice; canvas dirty\n→ keep the edits and set `externalChange`. A successful Save calls `markSaved(slice, projectRoot)` so its\nown echo is recognised. `external-change-banner.tsx` (keyed by `projectRoot`, dismissible) then offers\n**Reload from disk** (`reloadFromDisk`, discards edits) or **Keep mine** (`keepMine`, adopts the flagged\nslice as baseline; Save then overwrites only the workflow slice). `/agents` refetches because its\n`refresh()` effect depends on the loader result; `/rules` adopts new rules only while its editor is clean.\n\nSteps 2 and 3 are pure node, no model: there is no result file, no `aiToolsAction`, and no session between the canvas and the disk.\n\n**First install seeds rather than opening empty** — `defaultV3Config(detectImplAgents())`, two seed profiles, the `DetectedChain` correction chips and the exclusive `infra` category: see `sub-concepts/first-install-seed.md`.\n\n## File-by-file map\n\nPaths are relative to `apps/maestro/`.\n\n| Concern                                                                | File                                                                                                          |\n| ---------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------- |\n| Route, left pane, save, workflow CRUD                                  | `src/renderer/src/routes/workflows.tsx`                                                                       |\n| Canvas state kept across re-renders, keyed by project                  | `src/renderer/src/store/workflow-store.ts`                                                                    |\n| The canvas (React Flow nodes/edges, all interactions)                  | `src/renderer/src/components/workflow-canvas.tsx`                                                             |\n| Reuse/create instance picker + skill pickers (shared by canvas modals) | `src/renderer/src/components/instance-picker.tsx`, `.../instance-skill-picker.tsx` (loaded/referenced toggle) |\n| Detected-chain banner + correction chips                               | `src/renderer/src/components/detected-chain.tsx`, `.../seeded-banner.tsx`                                     |\n| Dangling skill-ref marks + notice (`091`)                              | `src/core/skill-ref-report.ts`, `.../components/skill-ref-mark.tsx`, `.../utils/skill-ref-context.tsx`, `.../utils/group-dangling.ts` |\n| Duplicate-agent-type banner (`041`)                                    | `src/renderer/src/components/config-issue-banner.tsx`, validator in `src/core/config-validate.ts`             |\n| Top bar — hamburger menu, direct links, workflow selector              | `src/renderer/src/components/top-nav.tsx`, `.../hamburger-menu.tsx`                                            |\n| Renderer-side loader + save wrappers over the IPC bridge               | `src/renderer/src/utils/maestro.ts`                                                                           |\n| The typed channel contract                                             | `src/shared/ipc.ts` (`data:workflows`, `data:reseed`, `config:save`)                                          |\n| Main-process handlers (the only side that touches `fs`)                | `src/main/ipc.ts`                                                                                             |\n| Read/merge/write, render, apply — all of it                            | `saveConfig()`, `seed.ts`, `render.ts`, `rules.ts` in `apps/maestro/src/core/`                                |\n| Bundled subagents (source of the Agents list)                          | `plugins/maestro/agents/*.md`                                                                        |\n| Project skills (source of the Skills list)                             | `<projectRoot>/.claude/skills/*/SKILL.md`                                                                     |\n\n## The data model (MaestroConfigV3)\n\nThe whole view edits one object. The **schema itself is owned by the `maestro-config-model` skill** — go there for field-by-field meaning and the slice-merge discipline. The types are re-exported by `src/renderer/src/utils/maestro.ts` from `src/core/contracts.ts` — that **module**, never the `src/core/index.ts` barrel, which re-exports `fs` and `child_process`.\n\nThe three shapes the canvas maps onto directly:\n\n```ts\nMaestroInstanceV3 { name, agent, loaded_skills: string[], referenced_skills: string[] }  // referenced by name from agent nodes\nMaestroWorkflowV3 { name, nodes: MaestroNodeV3[], edges: MaestroEdgeV3[] }               // one per entry in the top selector; success_path is DERIVED, never stored\nMaestroNodeV3     { id, type: \"agent\"|\"human_review\"|\"skill\", instance?, skill?, position? }\nMaestroEdgeV3     { from, to, kind: \"success\"|\"condition\", label?, sourceHandle?, targetHandle? }\n```\n\n`agents_available` / `skills_available` are the left pane's checkbox lists; `rules` is in the same\nfile but **not edited here** — it is `/rules`' slice.\n\nWhat the canvas adds on top of that schema:\n\n- **Instances carry the agent + skills, nodes just reference them.** An agent node's `instance` field (and its `id`, which equals the instance name) points at a `workflow_instances` entry. Skills are stored once per instance, not per node — the same instance reused across workflows shares one skill list, and editing an instance updates every placement. Each instance keeps two skill lists: `loaded_skills` (auto-loaded by the `SubagentStart` hook before the agent works) and `referenced_skills` (surfaced as available; the agent loads one only if the task needs it). The canvas chips render loaded skills solid and referenced skills dashed/muted.\n- **`main-session` is synthetic.** `workflowToRfNodes` always prepends a non-deletable `main-session` node, and `rfNodesToMaestroNodes` filters it back out — so it never appears in `nodes[]`. But `rfEdgesToMaestroEdges` does **not** filter edges, so edges _from_ it persist with `from: \"main-session\"`. It is the implicit entry point every workflow starts from; the success path that reaches the terminal node marks the task complete.\n- **`success_path` is derived, never stored.** It is computed by the plugin renderer (`successPath` in `maestro-render-orchestrator.cjs`) from the success edges and rendered into the orchestrator's `Maestro:HANDOFFS` table, but it is absent from `maestro.json`.\n\n## Left pane (workflows.tsx)\n\n- **Agents** checkboxes come from `bundledAgents` — read from `plugins/maestro/agents/*.md` frontmatter by `discoverAgents()` in `src/core`, in the main process. Toggling edits `config.agents_available`. `＋ Agent` `window.prompt`s for a manual id (for agents not bundled).\n- **Skills** checkboxes come from `projectSkills` — read by `discoverSkills()` in main, which walks EVERY `.claude/skills` in the project tree (`discoverProjectSkillsTree`/`skillSearchDirs` in `src/core`), not just the root's — a monorepo skill living beside the code it describes is just as visible as a root one. Toggling edits `config.skills_available` (a plain `string[]` of skill ids). `＋ Skill` prompts for a manual id.\n- `skills_available` is the menu of skills the canvas can attach to instances — only a skill checked here can be attached.\n- **Save workflows** → `handleSubmit` → `submitMaestroConfig` → `router.invalidate()`. On success the page fires a `toast` (`@repo/ui/toast`) naming what changed on disk and **stays on the canvas** — the window is long-lived and the user saves repeatedly, so there is no terminal success view.\n\n## Center canvas (workflow-canvas.tsx)\n\nBuilt on `@xyflow/react`. The node and edge types, dagre layout, `FitViewEffect` and the\n`pushChange` state-sync rules are in `sub-concepts/canvas-nodes-and-edges.md`; adding steps and\nconditions, editing labels and instances, the mid-chain relink and the `041` fork affordance are in\n`sub-concepts/canvas-interactions.md`.\n\n## Top selector (top-nav.tsx)\n\nThe centered control drives `config.workflows` through a custom dropdown (hand-rolled with an outside-click handler, not a native `<select>`):\n\n- The trigger shows the active workflow name; clicking opens the menu.\n- Each menu row switches the active workflow (`onSelect` → `activeWorkflowIdx`) and carries a trailing 🗑 button. Delete does **not** fire immediately — it opens a confirmation modal; only its **Delete** button calls `onRemove(i)` (dismissable via Cancel, backdrop, or Escape).\n- **+ Add workflow** is pinned at the bottom of the menu (`onAdd` → `confirmCreateWorkflow` pushes a blank `{ name, nodes: [], edges: [] }`).\n- The `✎` pencil beside the trigger renames the active workflow (`renameWorkflow`).\n\n`WorkflowSelectorProps` is unchanged — `onRemove(i)` deletes the clicked row (not necessarily the active one). One workflow is edited at a time.\n\n## Persistence (submitMaestroConfig)\n\nSaving sends only the **workflow slice** (`agents_available`, `skills_available`, `workflow_instances`, `workflows`) with `sliceType: \"workflows\"`, over `config:save` — so `/rules`' `rules` survive the merge.\n\nThe route then calls `router.invalidate()` on the success path, after the `!res.ok` bail-out. A save is neither a navigation nor a project switch, so without it the loader data stays pinned at its load-time value and the `seeded` banner keeps telling the user their config is unsaved while it sits on disk. This is safe only because `seedWorkflowStore` bails on an unchanged `projectRoot` — re-running the loader cannot discard in-flight edits.\n\nAt runtime the `SubagentStart` hook (`maestro-inject-agent-context.js`) reads that same `.claude/maestro.json` (v3) at each subagent start to inject the instance's skills + condition-edge handoff rules. It reads the file directly, so a save is visible to the next dispatched subagent with nothing in between.\n\n## Duplicate-agent-type banner (`041`)\n\nOn load, `workflows.tsx` renders a dismissible `config-issue-banner.tsx` (own component, not an extension of `seeded-banner.tsx` — that banner has no dismiss affordance and covers an unrelated, independently-occurring condition) when `loaderData.configIssues` is non-empty — a hand-edited config with two placed instances on one bare agent, computed in main by `config-validate.ts`'s `duplicateAgentTypes` (see `maestro-config-model`). `key={projectRoot}` so a project switch remounts it with fresh dismissal state. It never blocks editing.\n\n## Dangling skill references (`091`)\n\nA config can name a skill that no longer resolves (plugin not installed / not enabled / skill not in plugin / not found). The report is advisory: it never blocks a save and never removes a reference.\n\n- **Core:** `src/core/skill-ref-report.ts` `skillRefReport(projectRoot)` reads the on-disk `maestro.json` and calls `findStaleSkillRefs` (`skill-availability.ts`, shared with `maestro-stale-refs.cjs`). Never throws: no project or a missing/corrupt config is an empty report. Not in the plugin-entries graph. `UnavailableReason` / `DanglingSkillRef` / `SkillRefReport` live in `core/contracts.ts` (re-exported by `skill-availability.ts` and `shared/ipc.ts`).\n- **IPC:** `IPC.skillRefReport` = `data:skill-refs`, `window.maestro.data.skillRefs()`, wrapped by `getSkillRefReport()` in `utils/maestro.ts`.\n- **Provider:** `SkillRefProvider` (`utils/skill-ref-context.tsx`, in `__root.tsx` **above** `InstallProvider`, inside `ConfigWatchProvider`) exposes `{ report, find(id), refresh(), checking, recheck() }` via `useSkillRefs()`. Refresh triggers: project switch (clears marks first), every `config:changed`, a debounced (300ms) window `focus`/`visibilitychange` (enable a plugin elsewhere, return to the app), and `refresh()` (the always-visible `SkillRefRecheck` \"Recheck skills\" control on `/workflows` and `/maestro`, plus the notice's button; `workflows.tsx` and `maestro.tsx` call it after their own save rather than wait for the ~1s poll). A late answer for a project since left is dropped.\n- **Marks:** `components/skill-ref-mark.tsx` `SkillRefMark id` (amber reason label, matched **by id**, so one entry marks every occurrence) and `SkillRefNotice` (one dismissible notice with the project-level suggestions plus Recheck; render it `key={projectRoot}`). Marks sit on: instance chips in `workflow-canvas.tsx` (loaded and referenced), the skill-node label there, `instance-skill-picker.tsx` rows, the shared skills list and instance rows in `workflows.tsx`, the start/end skill pickers in `maestro.tsx`, and `agents/agent-card.tsx`. The notice renders in `workflows.tsx` and `maestro.tsx`. `checking`/`recheck()` (a refresh with `checking` held true until it settles) live in the provider, so every Recheck button reads them from `useSkillRefs()` and disables together; never keep local checking state. `SkillRefRecheck` is always visible because the notice disappears when the report is clean, which made a notice-only Recheck unreachable.\n- **Collapsed groups:** `CollapsibleGroup` (`source-group.tsx`) takes an optional `closedIndicator`, shown in the header only while closed. `workflows.tsx` passes `GroupDanglingIndicator` (`skill-ref-mark.tsx`), which uses `summarizeGroupDangling(ids, find)` (`utils/group-dangling.ts`: distinct dangling count plus the shared reason, undefined if reasons differ) and renders `data-testid=\"skill-group-dangling\"`.\n\n## Things that bite\n\n- **The skill-ref report reflects the saved file, not the canvas.** Unsaved edits are not in it; a mark clears only after a save (or an outside fix) and the next refresh.\n- **Renderer component tests are `.ts`, not `.tsx`.** vitest only includes `test/**/*.test.ts`, so `test/renderer/skill-ref-mark.test.ts` builds elements with `createElement`.\n- **The running-window check for `091` is verified:** a CDP probe against the launched app passed 11/11 checks. It needs the Electron sandbox set up (an AppArmor profile or the `chrome-sandbox` setuid bit; see `test-maestro`'s electron-sandbox-setup reference).\n- **`main-session` lives in edges but not nodes.** Code that consumes `workflows[].edges` must treat `\"main-session\"` as a valid `from` that has no matching entry in `nodes[]`. Filtering edges by \"node exists\" will silently drop the entry edge.\n- **Skills live on the instance, not the node.** A node only stores `instance` (+ id + position); the agent and skills come from the `workflow_instances` entry. Editing an instance updates every node that references it across all workflows.\n- **`success_path` is derived — never write it to `maestro.json`.** Persisting it would duplicate state that can drift from the edges.\n- **Save only touches the workflow slice.** Don't widen `submitMaestroConfig`'s workflow branch to write `rules` — that's the `/rules` route's slice, and a stray write will clobber it.\n- **This route is no longer the only writer of the workflow slice.** `/agents` also saves it, to change one instance's `loaded_skills` / `referenced_skills` — it re-reads via `data:workflows` immediately before calling `config:save`, precisely because the merge replaces the whole block. If you change the shape of `workflow_instances`, `routes/agents.tsx` (`saveSkills`) has to move with it. Its chips default a newly ticked skill to **referenced**, matching `instance-skill-picker.tsx`, and it refuses to save skills at all while the config is `seeded` — writing would materialize a starter `maestro.json` as a side effect of visiting `/agents`.\n- **An instance can only hold skills that are checked in the left pane.** The `InstanceSkillPicker` lists `availableSkills` (= `skills_available` ids). Unchecking a skill in the left pane after attaching it leaves a dangling id on the instance.\n- **Reconcile only runs while `/workflows` is mounted.** The seed effect is the only caller, so on any other\n  route the store goes stale; the next visit reconciles against fresh loader data, which is why the banner\n  can appear on arrival rather than at the moment of the edit.\n- **The watcher also fires for this window's own saves.** Never raise `externalChange` from the event\n  itself — only from `reconcileWorkflowSlice`, which recognises the echo (disk == canvas). Any new workflow\n  write path must call `markSaved`, or its own save looks like an outside edit once the canvas diverges.\n- **Slice comparison is structural (`deepEqual`, key-order and `undefined` insensitive).** Disk-parsed and\n  canvas-built objects differ in key order; a `JSON.stringify` compare would raise false banners.\n- The React Flow traps (module-level type maps, edge-type registration, handle placement, mid-drag pushes, the base CSS import) live with the mechanism they belong to, in `sub-concepts/canvas-nodes-and-edges.md`.\n",
+    "contentHash": "sha256:5acb966229fdf10be87bbfb07a56f7cc2530850da19b1d21d45ac0197da52e4c"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.3",
+    "extracted_at": "2026-10-16T19:41:07.307Z"
+  }
+}

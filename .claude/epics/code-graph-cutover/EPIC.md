@@ -78,5 +78,17 @@ gate is in its prompt.
 - Sent to code-graph-6f: the three search/version bugs above, plus a request for stable `.ast.json`
   output (no per-run timestamp) so it can be committed without churn. Queued 110 (enrich the
   concepts); its acceptance needs `blockedBy` to rank a tasks.ts function in the top 5.
+- code-graph-6f ticketed all of it. Task 009 covers search bugs 1 and 2 plus the enrichment hint;
+  the likely root cause is that doc-seeded vertices are never expanded. Task 010 covers the version
+  string (package.json is still 0.1.0) and byte-stable `.ast.json` (it drops the per-vertex
+  `extracted_at`). code-graph-6f will send one line when either ships. `.ast.json` stays
+  uncommitted until 010 is published. If 110 runs before 009 ships, its ranking criteria test
+  enrichment alone.
+- 2026-10-16: code-graph 0.3.3 (ffc15aa and 9f166c0 via code-graph-72, local and unpushed) fixes all
+  of the above. Manager check: `--version` reports 0.3.3. A second extract of all 16 concepts left
+  every `.ast.json` byte-identical (hashes matched). Plain-text "blockedBy cascade" now lists
+  results and the enrichment hint. Still weak until 110: it ranks claude-session-bridge above
+  task-queue, prints about 14.7k tokens, and repeats the same caller at the same line several
+  times in its edge lists.
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.
