@@ -10,7 +10,7 @@ Task 109 gave this repo a code-graph graph (16 concepts in scribe.config.json, a
 - Enrich every configured concept using code-graph's own enrichment flow (its `scribe` skill: write each concept's `.enriched.json`, then `code-graph apply`). Read the installed plugin's skill for the current steps; don't use the `/scribe-enrich` command, which 0.3.1 removed.
 - Describe vertices in this repo's own domain terms (task queue, blockedBy cascade, claims, epics, handoffs, design check, plugin libs parity, etc.), drawn from each concept's SKILL.md and code.
 - Keep it project configuration only: no maestro source, app or plugin file gains a dependency on code-graph.
-- Leave `scribe-output/*.ast.json` uncommitted. The user decided to hold them back until code-graph makes extract output stable. Report the total size of the `.enriched.json` files and whether re-running enrichment on an unchanged concept rewrites them, so the user can decide whether to commit those too.
+- `scribe-output/*.ast.json` are committed (fb42b29), and code-graph 0.3.3 keeps them byte-identical for unchanged code; treat a change to one like any other tracked file. Report the total size of the `.enriched.json` files and whether re-running enrichment on an unchanged concept rewrites them, so the user can decide whether to commit those too.
 
 ## Acceptance criteria
 
