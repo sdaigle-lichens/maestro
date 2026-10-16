@@ -90,5 +90,38 @@ gate is in its prompt.
   results and the enrichment hint. Still weak until 110: it ranks claude-session-bridge above
   task-queue, prints about 14.7k tokens, and repeats the same caller at the same line several
   times in its edge lists.
+- The repeated edges became code-graph task 011 (code-graph-d1, formerly code-graph-72): there is
+  one edge per call site; plain text will group them into one line with the call-site line numbers
+  (--json unchanged). 011 also checks why the output ran to ~14.7k tokens against a default
+  --max-tokens of 3000. It doesn't block 110.
+- code-graph 0.3.4 (3f56918, local and unpushed) ships 011. Manager check: edges are grouped with
+  their call lines, and the totals line reads ~3004 tokens. New churn: extractor_version is stamped
+  on every vertex and edge, so the plugin upgrade alone rewrote all 16 committed `.ast.json` files.
+  Asked code-graph-d1 to keep the version only in meta. It became code-graph task 012, which records
+  the version once in meta and moves extracted_at only when content changes. I discarded the 0.3.4
+  re-extract. When 012 ships, commit its one-time rewrite as the only churn commit.
+- 110 done (r005, maestro-d4), with a deviation: the enrichment came from a deterministic script
+  kept outside the repo, not code-graph's scribe skill. Its purposes paraphrase names and comments,
+  its tags are domain keywords, its edge reasons follow a template, and cross_concept_refs is empty.
+  Its criteria pass (blockedBy ranks parseBlockedBy 2nd, and 4 other queries rank well), but
+  "design check" and "plugin libs parity" rank noise. The `.enriched.json` files total 1.1 MB and
+  are stable across re-extract. Committing them is the user's call. Also noticed: `--json` search
+  ignores `--max-tokens` (a "design check" query returned 459 KB).
+- Superseded (see below). User chose option B, done cheaply: queued 111 to re-enrich every concept with code-graph's
+  enrichment procedure. The main session fans out Haiku agents, one per concept (subagents can't
+  spawn subagents), and chunks the big concepts. The orchestrator validates keys and spot-checks
+  purposes. "design check" and "plugin libs parity" must each rank the right code in the top 3. The
+  script-generated `.enriched.json` files stay uncommitted until 111 replaces them.
+- User redirected: concept skills lay out the map, and the graph is enriched a little at a time as
+  tasks use it. 111 was cancelled (file deleted, never committed), and 110's script-generated
+  `.enriched.json` files were discarded: filler descriptions would count as "enriched" under
+  gaps.ts's 90% rule and hide each concept's gap. The local graph.db still holds them, because
+  deleting the store was blocked, so the user must clear it. Sent code-graph-d1 four requests:
+  partial enrichment that merges into the existing file (apply wipes edge reasons missing from it),
+  stale on a body change (today a body-only edit is never stale), poor searches written to the
+  scribe gap channel, and incremental Haiku enrichment in the update flows. Maestro needs no change;
+  after it ships, one small end-to-end check task.
+- code-graph 0.3.5 (8113777, local, unpushed) ships 012: the extractor version is recorded only in
+  meta. The one-time rewrite is committed, and two re-extracts in a row are byte-identical.
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.

@@ -20,6 +20,11 @@
       "name": "maestro-a4",
       "task": "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
       "added_at": "2026-10-16T01:35:36.417Z"
+    },
+    {
+      "name": "maestro-d4",
+      "task": "110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md",
+      "added_at": "2026-10-16T22:13:30.406Z"
     }
   ],
   "log": [
@@ -77,6 +82,20 @@
       "id": "r004",
       "at": "2026-10-16T01:35:36.582Z",
       "by": "maestro-de"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md",
+      "file": "inbox/r005-110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md",
+      "at": "2026-10-16T21:58:10.853Z",
+      "from": "maestro-d4"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-10-16T22:13:30.826Z",
+      "by": "maestro-0c"
     }
   ]
 }
