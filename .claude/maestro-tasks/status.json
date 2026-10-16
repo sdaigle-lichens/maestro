@@ -538,9 +538,16 @@
     "blockedBy": []
   },
   "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md": {
+    "status": "ready",
+    "blockedBy": [
+      "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md"
     ],
     "epic": "code-graph-cutover"
   }

@@ -1,5 +1,220 @@
 {
   "project": "maestro",
+  "tsconfig": "tsconfig.code-graph.json",
+  "concepts": {
+    "task-queue": {
+      "globs": [
+        "apps/maestro/src/core/tasks.ts",
+        "apps/maestro/src/core/claims.ts",
+        "apps/maestro/src/core/epics.ts",
+        "apps/maestro/src/core/success-path.ts",
+        "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+        "apps/maestro/src/renderer/src/utils/maestro-tasks.ts"
+      ],
+      "skill": ".claude/skills/task-queue/SKILL.md"
+    },
+    "installing-maestro": {
+      "globs": [
+        "apps/maestro/src/core/install.ts",
+        "apps/maestro/src/core/uninstall.ts",
+        "apps/maestro/src/core/runtime-version.ts",
+        "apps/maestro/src/core/hook-arbitration.ts",
+        "apps/maestro/src/core/detect.ts",
+        "apps/maestro/src/renderer/src/routes/maestro.tsx",
+        "apps/maestro/src/renderer/src/utils/maestro.ts",
+        "apps/maestro/src/renderer/src/utils/install-context.tsx",
+        "apps/maestro/src/renderer/src/components/install-report-card.tsx"
+      ],
+      "skill": ".claude/skills/installing-maestro/SKILL.md"
+    },
+    "updating-maestro": {
+      "globs": [
+        "apps/maestro/src/core/runtime-version.ts",
+        "apps/maestro/src/core/hook-arbitration.ts",
+        "apps/maestro/src/core/install.ts",
+        "apps/maestro/src/core/render.ts",
+        "apps/maestro/src/core/plugins.ts"
+      ],
+      "skill": ".claude/skills/updating-maestro/SKILL.md"
+    },
+    "maestro-architecture": {
+      "globs": [
+        "apps/maestro/src/core/handoff*.ts",
+        "apps/maestro/src/core/report*.ts",
+        "apps/maestro/src/core/session-runtime.ts",
+        "apps/maestro/src/core/session-log.ts",
+        "apps/maestro/src/core/skill-availability.ts",
+        "apps/maestro/src/core/skill-regions.ts",
+        "apps/maestro/src/core/skill-resolve.ts",
+        "apps/maestro/src/core/workflow-spec.ts",
+        "apps/maestro/src/core/render.ts",
+        "apps/maestro/src/core/plugin-entries/*.ts"
+      ],
+      "skill": ".claude/skills/maestro-architecture/SKILL.md"
+    },
+    "agent-fork-sync": {
+      "globs": [
+        "apps/maestro/src/core/sync-decision.ts",
+        "apps/maestro/src/core/agent-fork*.ts",
+        "apps/maestro/src/core/agent-sync.ts",
+        "apps/maestro/src/core/report-sync.ts",
+        "apps/maestro/src/core/handoff-sync.ts",
+        "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx"
+      ],
+      "skill": "apps/maestro/.claude/skills/agent-fork-sync/SKILL.md"
+    },
+    "agents-view": {
+      "globs": [
+        "apps/maestro/src/renderer/src/routes/agents.tsx",
+        "apps/maestro/src/renderer/src/components/agents/**/*.{ts,tsx}",
+        "apps/maestro/src/renderer/src/components/avatar/**/*.tsx",
+        "apps/maestro/src/renderer/src/components/chip-multi-select.tsx",
+        "apps/maestro/src/renderer/src/utils/avatar.ts",
+        "apps/maestro/src/renderer/src/utils/handoff-picker.ts",
+        "apps/maestro/src/core/avatar-store.ts",
+        "apps/maestro/src/core/agent-descriptions.ts"
+      ],
+      "skill": "apps/maestro/.claude/skills/agents-view/SKILL.md"
+    },
+    "claude-session-bridge": {
+      "globs": [
+        "apps/maestro/src/core/claude-*.ts",
+        "apps/maestro/src/core/agent-sdk.ts",
+        "apps/maestro/src/core/read-scope.ts",
+        "apps/maestro/src/core/write-scope.ts",
+        "apps/maestro/src/core/session-*.ts",
+        "apps/maestro/src/core/permission-registry.ts",
+        "apps/maestro/src/main/claude-session.ts",
+        "apps/maestro/src/renderer/src/components/session-pane.tsx",
+        "apps/maestro/src/renderer/src/components/claude-run-dialog.tsx",
+        "apps/maestro/src/renderer/src/components/agent-question.tsx",
+        "apps/maestro/src/renderer/src/components/read-scope.tsx",
+        "apps/maestro/src/renderer/src/components/session-resume.tsx",
+        "apps/maestro/src/renderer/src/utils/session-context.tsx"
+      ],
+      "skill": "apps/maestro/.claude/skills/claude-session-bridge/SKILL.md"
+    },
+    "create-skills-architecture": {
+      "globs": [
+        "apps/maestro/src/core/scaffold.ts",
+        "apps/maestro/src/core/claude-preview.ts",
+        "packages/claude-fs/src/**/*.ts",
+        "apps/maestro/src/renderer/src/routes/create-*.tsx",
+        "apps/maestro/src/renderer/src/components/create-*.tsx",
+        "apps/maestro/src/renderer/src/components/*-template-preview.tsx",
+        "apps/maestro/src/renderer/src/components/*-manifest-preview.tsx",
+        "apps/maestro/src/renderer/src/utils/create-flow.tsx"
+      ],
+      "skill": "apps/maestro/.claude/skills/create-skills-architecture/SKILL.md"
+    },
+    "docs-view": {
+      "globs": [
+        "apps/maestro/src/core/docs.ts",
+        "apps/maestro/src/core/global-docs.ts",
+        "apps/maestro/src/renderer/src/routes/docs.*.tsx",
+        "apps/maestro/src/renderer/src/routes/project-docs.*.tsx",
+        "apps/maestro/src/renderer/src/components/docs-*.tsx",
+        "apps/maestro/src/renderer/src/components/highlight-text.tsx",
+        "apps/maestro/src/renderer/src/utils/docs.ts",
+        "apps/maestro/src/renderer/src/utils/highlight.ts"
+      ],
+      "skill": "apps/maestro/.claude/skills/docs-view/SKILL.md"
+    },
+    "electron-shell-invariants": {
+      "globs": [
+        "apps/maestro/src/main/index.ts",
+        "apps/maestro/src/main/ipc.ts",
+        "apps/maestro/src/main/bundled-assets.ts",
+        "apps/maestro/src/preload/index.ts",
+        "apps/maestro/src/shared/ipc.ts",
+        "apps/maestro/src/renderer/src/main.tsx",
+        "apps/maestro/src/renderer/src/routes/__root.tsx",
+        "apps/maestro/src/renderer/src/utils/call-main.ts",
+        "apps/maestro/src/renderer/src/utils/project-context.tsx"
+      ],
+      "skill": "apps/maestro/.claude/skills/electron-shell-invariants/SKILL.md"
+    },
+    "global-stores": {
+      "globs": [
+        "apps/maestro/src/core/skill-tags.ts",
+        "apps/maestro/src/core/agent-types.ts",
+        "apps/maestro/src/core/agent-project-tags.ts",
+        "apps/maestro/src/core/project-tags.ts",
+        "apps/maestro/src/core/report-defaults.ts",
+        "apps/maestro/src/core/handoff-defaults.ts",
+        "apps/maestro/src/core/avatar-store.ts",
+        "apps/maestro/src/core/handoff-seeds.ts",
+        "apps/maestro/src/core/skill-lists.ts",
+        "apps/maestro/src/main/project-store.ts"
+      ],
+      "skill": "apps/maestro/.claude/skills/global-stores/SKILL.md"
+    },
+    "log-view": {
+      "globs": [
+        "apps/maestro/src/core/session-log.ts",
+        "apps/maestro/src/core/worktree*.ts",
+        "apps/maestro/src/core/agent-runs.ts",
+        "apps/maestro/src/renderer/src/routes/session-log.tsx",
+        "apps/maestro/src/renderer/src/components/session-log-*.tsx",
+        "apps/maestro/src/renderer/src/components/worktree-tab-bar.tsx",
+        "apps/maestro/src/renderer/src/utils/session-log*.ts*",
+        "apps/maestro/src/renderer/src/utils/maestro-session-log.ts",
+        "apps/maestro/src/renderer/src/utils/worktree-log-context.tsx"
+      ],
+      "skill": "apps/maestro/.claude/skills/log-view/SKILL.md"
+    },
+    "maestro-config-model": {
+      "globs": [
+        "apps/maestro/src/core/types.ts",
+        "apps/maestro/src/core/config*.ts",
+        "apps/maestro/src/core/save.ts",
+        "apps/maestro/src/core/contracts.ts",
+        "apps/maestro/src/renderer/src/utils/config-watch-context.tsx",
+        "apps/maestro/src/renderer/src/components/config-issue-banner.tsx",
+        "apps/maestro/src/renderer/src/components/external-change-banner.tsx"
+      ],
+      "skill": "apps/maestro/.claude/skills/maestro-config-model/SKILL.md"
+    },
+    "plugin-libs-parity": {
+      "globs": [
+        "apps/maestro/src/core/plugin-entries/*.ts",
+        "apps/maestro/src/core/seed.ts",
+        "apps/maestro/src/core/diff.ts",
+        "apps/maestro/src/core/config-validate.ts",
+        "apps/maestro/src/core/config-usable.ts",
+        "apps/maestro/src/core/handoff-routes.ts",
+        "apps/maestro/src/core/handoff-label.ts",
+        "apps/maestro/src/core/worktree-write-guard.ts",
+        "apps/maestro/src/core/agent-runs.ts",
+        "apps/maestro/src/core/skill-lists.ts",
+        "apps/maestro/src/core/skill-availability.ts"
+      ],
+      "skill": "apps/maestro/.claude/skills/plugin-libs-parity/SKILL.md"
+    },
+    "rule-view": {
+      "globs": [
+        "apps/maestro/src/core/rules.ts",
+        "apps/maestro/src/core/rule-move.ts",
+        "apps/maestro/src/renderer/src/routes/rules.tsx",
+        "apps/maestro/src/renderer/src/components/rule-tree.tsx",
+        "apps/maestro/src/renderer/src/components/tabs/rules-tab.tsx",
+        "apps/maestro/src/renderer/src/utils/maestro-rules.ts"
+      ],
+      "skill": "apps/maestro/.claude/skills/rule-view/SKILL.md"
+    },
+    "workflow-view": {
+      "globs": [
+        "apps/maestro/src/renderer/src/routes/workflows.tsx",
+        "apps/maestro/src/renderer/src/components/workflow-canvas.tsx",
+        "apps/maestro/src/renderer/src/components/instance-*.tsx",
+        "apps/maestro/src/renderer/src/store/workflow-store.ts",
+        "apps/maestro/src/renderer/src/utils/maestro-tree.ts",
+        "apps/maestro/src/core/canvas-layout.ts",
+        "apps/maestro/src/core/workflow-spec.ts"
+      ],
+      "skill": "apps/maestro/.claude/skills/workflow-view/SKILL.md"
+    }
+  },
   "skills": {
     "version": "1.29",
     "last_update": "4d162ea",

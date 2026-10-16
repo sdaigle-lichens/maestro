@@ -2,8 +2,8 @@
   "slug": "code-graph-cutover",
   "created_at": "2026-10-14T02:02:09.698Z",
   "manager": {
-    "name": "maestro-1c",
-    "set_at": "2026-10-15T11:48:26.307Z"
+    "name": "maestro-de",
+    "set_at": "2026-10-16T00:12:56.649Z"
   },
   "workers": [
     {
@@ -15,6 +15,11 @@
       "name": "maestro-76",
       "task": "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md",
       "added_at": "2026-10-15T12:05:18.585Z"
+    },
+    {
+      "name": "maestro-a4",
+      "task": "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
+      "added_at": "2026-10-16T01:35:36.417Z"
     }
   ],
   "log": [
@@ -58,6 +63,20 @@
       "id": "r003",
       "at": "2026-10-15T13:00:44.491Z",
       "by": "maestro-1c"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
+      "file": "inbox/r004-109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
+      "at": "2026-10-16T01:34:36.642Z",
+      "from": "maestro-a4"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-10-16T01:35:36.582Z",
+      "by": "maestro-de"
     }
   ]
 }

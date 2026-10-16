@@ -62,5 +62,21 @@ gate is in its prompt.
   (1979/1979); the remaining `concept-skills` mentions are all legitimate: the legacy-state migrate
   hint and its tests, code-graph's own skill names in the README, a historical design doc, and
   dev-skill notes on the legacy file. Phase 17's removal is complete; only 109 remains (waits on code-graph 0.3.2).
+- 2026-10-15: code-graph 0.3.2 (ae504c7, via code-graph-6f) meets 109's precondition locally. Caveat:
+  ae504c7 is on code-graph's feat/integrate-concept-skills branch, 3 commits ahead of origin and not
+  on its default branch. This repo's settings.json and README point at the GitHub marketplace
+  (sdaigle-lichens/code-graph), so a fresh clone gets an older code-graph until that branch is pushed and merged.
+- 109 done (r004, maestro-a4): 16 concepts in scribe.config.json plus tsconfig.code-graph.json;
+  1480 vertices, 3510 edges. Manager check: `skills check` ok, no maestro code depends on code-graph.
+  Search works for identifiers (`MaestroTasksPage` returns its call edges) but is weak for domain
+  terms while un-enriched: `blockedBy` matches task-queue through its skill doc, then lists all 103
+  of its vertices with no ranking, and `parseBlockedBy` is buried. `--json` hits carry no edges
+  and bm25 is 0. Enrichment is the follow-up. The text-mode "0 concepts matched" for a multi-word
+  query, and `--version` printing 0.1.0, are code-graph bugs.
+  The 16 `.ast.json` files total 2.2 MB, and every extract restamps them. Whether to commit them
+  is the user's call.
+- Sent to code-graph-6f: the three search/version bugs above, plus a request for stable `.ast.json`
+  output (no per-run timestamp) so it can be committed without churn. Queued 110 (enrich the
+  concepts); its acceptance needs `blockedBy` to rank a tasks.ts function in the top 5.
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.
