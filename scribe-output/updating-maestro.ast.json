@@ -13,9 +13,7 @@
       "signature": "function refreshStaleRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport | null>",
       "contentHash": "e5f2ab7d78e5b00e7275a17e542b59256914d1b3442a9a1faa6c182f9132e30a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "export type RuntimeVersionVerdict =",
       "contentHash": "77d002a1532520b83cee01fb6a7b3618f5454cb42c51b6cac3b8f1652db0d443",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "function installRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport>",
       "contentHash": "7bfc2189b15df3cb4cf49bb3f64011031abafc0a8617c8d4647fb575f0c0a645",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "function projectMarketplacePath(projectRoot: string): string",
       "contentHash": "68815bd29775511951da5fc342a0863bad65a04c137422e1395849cfa266bac9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "function samePath(a: string, b: string): boolean",
       "contentHash": "5cb25e7884e9dc2084b0e52372c5b23abfb85211e74346ab94d7a97b697e0547",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "export interface HookCommand {",
       "contentHash": "1dcdbff63747d885ad912310eeeeed6c45542e15994f8160797cd39ebeaea256",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "export interface HookRegistration {",
       "contentHash": "3dfebcbfb1b42e5c92d165b4653543c24186b8e72246629747fef5244b531f94",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "function installOrchestratorSkill(templatePath: string, destPath: string): { action: OrchestratorSkillAction; regions: string[]; backup: string | null; }",
       "contentHash": "e2a8e0fa827e39fdea52b058994fb1251ba3815d8e975ef6ad521788a262939c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "function sha256(data: string | Buffer): string",
       "contentHash": "f32047b6f384056b8279f02cfdb4d7b1b71d5bdd3132d1cdb7964f64cc619dcf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "function runtimeNeedsRefresh(projectVersion: unknown, pluginVersion: unknown): boolean",
       "contentHash": "80b66ce5cedd121ccb6cd14590da7389672be645a65e1a61eb80d635fe435855",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "function projectTwinName(scriptPath: string): string",
       "contentHash": "f840048227e87325d0dc664e7bd4559632692a2f8a48c551e71bf2304e1d3395",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "function requirePluginRoot(pluginRoot?: string): string",
       "contentHash": "d4e272ccc8d60472ca1c435b1e5d42f945f8ceab8decc01af99de8247576db57",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "function ensureRepoRootGitignore(repoRoot: string | null): boolean",
       "contentHash": "bf308681f2dfedfe22ce2125edeabe44c97ac0fbb75a61c5ec982a47455406d4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "function findRepoRoot(startDir: string): string | null",
       "contentHash": "1feae0dc5add9560d26af2324d1cfc3b59bb180e28ad67af3063fac8f2101c7b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "function settingsPathFor(projectRoot: string): string",
       "contentHash": "60bc3c6c47e24001b267c6e7e6368e0a81c5633228e491d7051395dce1622b28",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "function settingsRegisterScript(settings: Settings, event: string, script: string): boolean",
       "contentHash": "8c827c0084d883bc0f199c949befc21a464c10a80e2b3fed91cea34e0151b6f4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "function parse(v: unknown): Parsed | null",
       "contentHash": "f5596724b42623c6214158e202fa19d4c630a3140b864825cccce8e32b061cd2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "function hasHook(settings: Settings, reg: HookRegistration): boolean",
       "contentHash": "758d8a52b7402ba6262db6f9aad6626551819d7bfa551d53c16cda10c1a759d0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "function installStatus(projectRoot: string, pluginRoot?: string): Promise<InstallStatus>",
       "contentHash": "d631e5db7d08e5c1e2f2674c616bd3baddac8594048edd34087f678347d7a1e9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "function compareRuntimeVersions(projectVersion: unknown, pluginVersion: unknown): RuntimeVersionVerdict",
       "contentHash": "b4dc2a63580f0337a0e5b5f606ba8b8e972004e580eadd2ba91bc3e61db81b52",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "function comparePre(a: string | null, b: string | null): number",
       "contentHash": "47af7d5f48bd58d7df986aa357bc0d77faa0cb611eecf647398fef5c7b3b7730",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "function appendGitignoreEntries(gitignorePath: string, entries: string[]): boolean",
       "contentHash": "55890e1aaab66925416cc10654bfea891333f686a910d4aedb96ff59980d9d04",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "interface Parsed {",
       "contentHash": "0b0ce42ef5a195ec4dab422718c5ecb374034c99e4e924cfe486f700032e0f6e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "function writeJsonAtomic(target: string, value: unknown): void",
       "contentHash": "683eaeeecb36e2df1d3315ea988825fbc43b93b0281fd9b3e8b6a2fd54379cf4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "function shippedRuntimeVersion(pluginRoot?: string): string",
       "contentHash": "216886202d5caefa613b07fb18772c2ba420015d7ff80ce8080447480a3ed6cc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "export type HookEvent =",
       "contentHash": "ee3827451d784c3bfbca838dc3149d0e67235a2a126c359b18aae112e4816b48",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "function refusedReport(projectRoot: string, root: string, refusal: ConfigRefusal): Promise<InstallReport>",
       "contentHash": "63d06e15e27efbd62a1a532ebdf907ed95aa01ba95502bb57c0dc27d9cf9410f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "function readSettings(settingsPath: string): Settings",
       "contentHash": "a0bab745829004c8ade1593c8c510be7ac9a503a38ad9677c658a182c6dfa0ed",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "function renderOrchestrator(projectRoot: string, cfg?: MaestroConfigV3): RenderResult",
       "contentHash": "19eff73f214814366697e648ede9f190f00372f91a51e658a4db4c7aed7df96b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "export interface Settings {",
       "contentHash": "cdd65cff4418f5d3893940bcb4cd656582b858a34327da5d7039bf29f71235fb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "function removeRetiredHooks(settings: Settings): string[]",
       "contentHash": "ed18000cfc23f119ddb15832b2454dbb3289d3365c05e56950cb1b7b71a18c8c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "function defaultPluginRoot(): string | null",
       "contentHash": "61f48658cfb777bbdf3c08e638027a26e5f967c347f24978f2e25aa159f1b0aa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -653,9 +589,7 @@
       "signature": "function addMissingHooks(settings: Settings, regs: HookRegistration[] = HOOK_REGISTRATIONS): string[]",
       "contentHash": "deb0f2289c1adff65d4bbd94681e794d6f1e3dd8741449911eab4c43acd8fa47",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "function ensureDir(dir: string): void",
       "contentHash": "db31de156a427534ccb60f7844c92568425e7c791268a14087f800f9cf64f042",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "function nodeHook(event: HookEvent, matcher: string, script: string): HookRegistration",
       "contentHash": "e0938ac8b659e25f6e3e19f1643a1c8f33ee6cd487dd4b7617245e69d6665e72",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function orchestratorSkillPath(projectRoot: string): string",
       "contentHash": "6d98ae5d062e90ff4ebb8483d4b775bff08c50b1b43598be9388ba8917d7fde2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "function findUpPluginRoot(start: string): string | null",
       "contentHash": "8a20dc6b3c71bb62d25474d8923e3e2ef03f31138d40b4b607e7240b7ee7d20b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -753,9 +679,7 @@
       "signature": "function projectPath(projectRoot: string, dest: string): string",
       "contentHash": "8b30392325aee3a0382ec8bf4a5e088cb1c1e3015630650a7dcc4a1898e1f5f8",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "function listInstalledPlugins(): Promise<InstalledPluginInfo[]>",
       "contentHash": "5d65507e2571f012dca0dcac60bf0a68f69368ab8dbab1516ee5c734ab3ec7db",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "export interface HookEntry {",
       "contentHash": "0d86414d399903232bc269efdda505346cc4863bf02ec7dd31123b034d5147bd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "function runtimeAssets(_pluginRoot?: string): RuntimeAsset[]",
       "contentHash": "a332e955fe5e42583641df1290f88dccc49eb773c98b495374d5e0d39855d588",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -833,9 +751,7 @@
       "signature": "function runtimeDigest(assets: RuntimeAsset[], read: (a: RuntimeAsset) => Buffer | null): string",
       "contentHash": "0fbc32722e5797d5bbc60b2aef1ebb08eb32b903b283d43e6839a83350ca2b0f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -853,9 +769,7 @@
       "signature": "function projectOwnsHook(scriptPath: string, cwd: string, event?: string): boolean",
       "contentHash": "e1a3d4764117b253c4d452ecef66439cda2f36175c228aaf88fbecb6cdc2fb56",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -873,9 +787,7 @@
       "signature": "function handoffTable(cfg: Pick<MaestroConfigV3, \"workflow_instances\" | \"workflows\">): string",
       "contentHash": "8f6ad1b01bc7dc07e37d74419956d12f979f2b070ef92afbcee5e97412a363f1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -893,9 +805,7 @@
       "signature": "function successPath(wf: MaestroWorkflowV3, instances: MaestroInstanceV3[]): string",
       "contentHash": "a8927c683078aa787284d333c123ce507b08d5dcfb933daf3bea473c7a1ae188",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -913,9 +823,7 @@
       "signature": "function readProjectMarketplace(projectRoot: string): Promise<MarketplacePluginInfo[]>",
       "contentHash": "73cca75e246f6bbd6696843a0e7c98c915716ef3ed1c6a990902b7eef68491f6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -933,9 +841,7 @@
       "signature": "export interface RuntimeAsset {",
       "contentHash": "185ed0027d403735a6caea968c966ac4457cd0335464ed6d0a2948db03fabe98",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1964,7 +1870,7 @@
     "contentHash": "sha256:93fe80c129668b6b1e49b2bdc519d2d729d50c671ab88f24e1611aa75ea54b4e"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:29:24.865Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T13:01:32.000Z"
   }
 }

@@ -13,9 +13,7 @@
       "signature": "function readDocIn(dir: string, slug: string): DocContent",
       "contentHash": "ffab7f6946fbe3a235d5fece48b8121536193e34683d6c3a51f2371f6cdb728b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "function DocsPanel({\n  isOpen,\n  onClose,\n  docs,\n  sections,\n}: {\n  isOpen: boolean;\n  onClose: () => void;\n  docs: DocMeta[];\n  sections: DocSection[];\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "3b58c1b19ac1ed71a31651737469a782c3573203b92637f5de96d1de5f92e3da",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "function DocsIndex(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "69d1d1213d29901a77acdb1f31f301663635cdbb7199ee70507eadc4d6d5f2b0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "export type DocGroup = \"app\";",
       "contentHash": "4c7c7213bf03adbe9c4ca4a07337289f2aff12018668098cf230b195276d7e7d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "function extractTitle(content: string, fallback: string): string",
       "contentHash": "4e9873a214c87fb2474d442aff7e900d1b520872c8aaa9c4573333c010db6da9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "function isValidDocSlug(slug: unknown): boolean",
       "contentHash": "2eb0fd020cd1557caf32df42ac8472cb7141c4860df0e990b4b7ca0160ca1b4f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "function readDoc(projectRoot: string, slug: string): DocContent",
       "contentHash": "f6b774a39e6d0488d6c4c5fb43c17a005ea60eaa93429b5b407f16fd503f51d7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "function filterSections(sections: DocSection[], query: string): DocSection[]",
       "contentHash": "2a0d2396a26eff4cac3809d6801632ba24612f329c6cc200fdce79c1a0f9e908",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "function GroupDocsPanel({\n  isOpen,\n  onClose,\n  group,\n  docs,\n}: {\n  isOpen: boolean;\n  onClose: () => void;\n  group: \"app\";\n  docs: DocMeta[];\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "3474f387128bb023c03331a43f0c2fdf329fbf1e1f45eeeff381d28c6ae55e0c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "function slugifyHeading(text: string): string",
       "contentHash": "7e561662018af0c1704d6707bf6b99af39b43837571dd30f64d76fe66038ac73",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "function readGlobalDoc(group: DocGroup, slug: string, dirs: GlobalDocsDirs): DocContent",
       "contentHash": "67d3e32d88c427f15adda48bdba3e2fe5513f2dceecb826c81dcc74dddce9020",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "function excerptAround(text: string, query: string, radius = 60): string",
       "contentHash": "68337f728c069359bc6b7eb93f01d0b3fd3e818ee439bc7d10e6eef6db574e36",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "export interface GlobalDocsDirs {",
       "contentHash": "678beb260e561ecc17b883cb0fd918d0825d2ae518db0ca92370c7c5eb5f8ea4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "function docSectionsIn(dir: string): DocSection[]",
       "contentHash": "0fda84385f46ce1d845ce6d56726856450983064d6425fab5cfc2f00827246df",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "df087da1e6e4f89962f3f17c240f06dc9aed8c1584a26e7afbf776e4e383bdd3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "function DocsSearch({\n  sections,\n  autoFocus = false,\n  onNavigate,\n  placeholder = \"Search the docs…\",\n}: {\n  sections: DocSection[];\n  autoFocus?: boolean;\n  /** Called after a result is chosen — the slide panel uses it to close itself. */\n  onNavigate?: () => void;\n  placeholder?: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "7bda635ea69e8392745680fa98d383e1390b6a62512e7b34354cbc4b940c70ba",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "function GlobalDocsIndex(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "b0859bf0ed9774bd9dc6f6b8deb4f27f8f5adedad55d661f645628df04575cdf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "function termPattern(terms: string[]): RegExp | null",
       "contentHash": "2970147b0bf1ae64bba325d164ed1fc950ae4e376510c07a3c801c355a248477",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "function escapeRegExp(text: string): string",
       "contentHash": "4ec2c156b7a06e52f490ddaa008fe0fb1ba860f220a05181ef36e7c89226e044",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "function markdownFilesIn(dir: string): string[]",
       "contentHash": "df1ed9ea6cab92d45854b182c5b34e7ddd96227f1b857728cda0a4f40a21e2fa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "function getGlobalDoc(group: \"app\", slug: string): Promise<DocContent>",
       "contentHash": "7bae8c3e6d7f561d6e6af4160e14962daddd99fc34d27d1f4a7e580d6ba5c9bb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "function DocPage(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "82c17d9f8c56628270f4bb00d4a532261f6c48646566bd1c5855dac3cdf5f337",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "function listDocsIn(dir: string): DocMeta[]",
       "contentHash": "7bd0cff14e462d31583a05c55cdc2d293e13e2d65574ce844b141dca62c3451a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "function docsDir(projectRoot: string): string",
       "contentHash": "8b9addb95ca559a0d092f28292c08348a9ec6cc5e2778bf8f26a01a5aa1121b4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "function HighlightText({ text, terms, className }: HighlightTextProps): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "57769b7a95cb965432575a79de3a0b2b0a1ede0c6d1e8f002257c053948f3215",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "function slugifyHeading(text: string): string",
       "contentHash": "a1d59351df8c7d7370691056e0e8c79b538b93bc40a087cd1ee65ba65332602b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "function GlobalDocPage(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "0a0c36b86c6d835909fa37a978061a7dddbbd7788a7a78703bdc11997f2c0f34",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "function getGlobalDocsData(): Promise<GlobalDocsData>",
       "contentHash": "09ef6e7de9c2e6c27025255bf021fbf22060471170aa66457aabd30849d79e4e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "function slugifyHeading(text: string): string",
       "contentHash": "a1d59351df8c7d7370691056e0e8c79b538b93bc40a087cd1ee65ba65332602b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "function listDocs(projectRoot: string): DocMeta[]",
       "contentHash": "75a687247c4367ed3c44f51906cd86e0bba5f7cf29a9cda43d73f0fa93d7bd4a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "function flatten(children: React.ReactNode): string",
       "contentHash": "024d07618e21314298096a408c73d45a1190712329a1583bc28d7ecc96770329",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "function DocList({ group, docs }: { group: \"app\"; docs: DocMeta[] }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "23bfe9fd4ef8a8ffa924028badf52c57cf2c4b76435c99378054ecb5899f49ac",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -653,9 +589,7 @@
       "signature": "interface HastNode {",
       "contentHash": "521e24e942dfdaa938aceb685c00847a6ffe2cc4d9efa6dc87b9375138ee6cf9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "function getDocsData(): Promise<DocsData>",
       "contentHash": "50b2a61691f3933f6c9821fa132ab41ec5e628de0ca227050dcdb4ab44697298",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "function rehypeHighlightTerms(terms: string[]): () => (tree: HastNode) => HastNode",
       "contentHash": "99c0c551d57238e4982ef2034f45340211ef68826cb1d046d4838aaf8482b897",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function globalDocsData(dirs: GlobalDocsDirs): GlobalDocsData",
       "contentHash": "d5b0d940ecf1fbb28705418a8093be075a1559fea6b67b47e852e78f661cbe36",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "function docSections(projectRoot: string): DocSection[]",
       "contentHash": "54fe256ba148d740544cf46930d955b0f311e99068719395276ad275eb6a271e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -753,9 +679,7 @@
       "signature": "function getDoc(slug: string): Promise<DocContent>",
       "contentHash": "da8eefd9116b195e03d6ef1ee6584fbf507f773b9aa0c766964cc3fb337952f5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "function flatten(children: React.ReactNode): string",
       "contentHash": "024d07618e21314298096a408c73d45a1190712329a1583bc28d7ecc96770329",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "export interface HighlightTextProps {",
       "contentHash": "3d7f5e9fd8a5789b3b82279aa504918c965419fc419f2eb400c487ed0ccf18b3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "df087da1e6e4f89962f3f17c240f06dc9aed8c1584a26e7afbf776e4e383bdd3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1376,7 +1294,7 @@
     "contentHash": "sha256:def5f1217b90cae06015d171d55d399a5f8ef2cfd882de6c8388517b3399350c"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:30:22.779Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T13:02:28.970Z"
   }
 }

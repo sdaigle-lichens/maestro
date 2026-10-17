@@ -13,9 +13,7 @@
       "signature": "function projectAgentsDir(projectRoot: string): string",
       "contentHash": "5bb593daf431ea0b7d785c0eca6fef321332312922ede1e4ed8fba8f579a1a15",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "function sha256(s: string): string",
       "contentHash": "d5c2e4226327fc7842d8b7badffba630187f022e60aae7762443a09a53ad46bb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "function verdictLine(entry: AgentSyncEntry): { tone: \"ok\" | \"warn\" | \"info\"; text: string; }",
       "contentHash": "dc5d2467490b4e2dd84b2a592eb270421c5c39619871d714a39073c325b97198",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "interface ResolvedTemplate {",
       "contentHash": "d034d6938f458319e3cb8189a24180c0f181c2396a4ff20fcfac483883520821",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "function AgentForkReview({\n  entry,\n  busy,\n  onAction,\n}: {\n  entry: AgentSyncEntry;\n  busy: boolean;\n  onAction: (action: AgentSyncAction) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "acb64f974a15de359e4c351db7ba34a1ca9d55e9942140c6ca2c7c294556bbbe",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "function forkAgent(projectRoot: string, bundledDir: string | null, bundledPluginVersion: string | null, agentName: string, newName?: string, storeDbPaths?: { avatar?: string; agentTypes?: string; agentProjectTags?: string }): Promise<AgentForkResult>",
       "contentHash": "007b7f48311bd7cd639921482b07ac5b5b4834a5dcd666b0cfa97f1b0c70b361",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "function templateNameOf(record: AgentForkRecord): string",
       "contentHash": "50b0c6055f87820b6e86cefe6c34852279cd572c39811dd84bb832985c948d5e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "function hasTemplateAdvanced(record: AgentForkRecord, template: ResolvedTemplate | null): boolean",
       "contentHash": "608052caa73b17a83c80ae9c802fa8558fc7ec6960123be381f2dc37b0eb6fbb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "function buildEntry(projectRoot: string, record: AgentForkRecord, options: AgentSyncOptions): Promise<{ entry: AgentSyncEntry; verdict: SyncVerdict; }>",
       "contentHash": "0a7e1aba0a649dcc80df488187aff646c42d07ca2405e7cd92475e7dbfade9de",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "function reportsDir(projectRoot: string): string",
       "contentHash": "3bee7e7948221924f809beec5b87879c24c28fb0237489ee335c3c1927b0e602",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "export type SyncVerdict =",
       "contentHash": "1311a0bbdd2c45b6ae8239c752bd53ed84416f4dbe7484ad86857af62f62af16",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "export interface SyncDecisionInput {",
       "contentHash": "a63a1b8caf036fa6b61eb6d9aae705023e3ba05f94f113d634659bda5f6213e1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "function trackedState(record: AgentForkRecord): { pluginVersion: string | null; templateBodyHash: string; }",
       "contentHash": "4d1ea35bdde2df1ca9a51734a02e5a5f2e9ef004de36c15802ea4fb6b7ee61a2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "function mergeForkBody(templateContents: string, forkContents: string): string",
       "contentHash": "40f66e2c5a21af2cfddae44f54ab598fca2f8758f426f80bd4be065e2f2f85fa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "function isUsableRecord(value: unknown): boolean",
       "contentHash": "963fce239f3c6999a69cdef9f746ebb52b84576d4b2db207b664ca99e6a1c4d9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "function decideSync({\n  tracking,\n  localHash,\n  hasTemplate,\n  templateAdvanced,\n  matchesKnownVersion,\n}: SyncDecisionInput): SyncVerdict",
       "contentHash": "2dbc8d45971be606d1aff6a0ace1cc8d9f45b1d18d10cf68b2a0c6333cc94454",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "function agentForksPath(projectRoot: string): string",
       "contentHash": "c09d3803ba0ad5f470650527cf7f0c205d43d45566b5de508c383ee26a827319",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "function writeAgentForkRecord(projectRoot: string, record: AgentForkRecord): void",
       "contentHash": "61452829db9545bca7bc83a575c070d6223272bdde3242a9149144f9027ec3b3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "function renameAgentInFrontmatter(contents: string, name: string): string",
       "contentHash": "f6b938bb969187e6e04c9f43c657f8e12cddea554c663cb583d67e097cee15e2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "function DescriptionPair({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "bd39060cc6af48b5a78a53291584db953fb3c89aea1ac9c63ab49061c89792d1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "function hashAgentBody(contents: string): string",
       "contentHash": "5387eb50c8a56ee22a68620f158b0aa45c1064dc285ed69dfabe65daa1f85939",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "function writeAllForks(projectRoot: string, all: Record<string, AgentForkRecord>): void",
       "contentHash": "ff2e1982d5ea245c275c68255164f529a4c1afbab218bb3ab1f58fa77c6ca82c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "function resolveTemplate(record: AgentForkRecord, options: AgentSyncOptions): Promise<ResolvedTemplate | null>",
       "contentHash": "9956289dd8a4e91ffc02b70bd2d485154b201a5554873dc6485fffa7ba1d99c9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "function reportFilePath(projectRoot: string, reportId: string): string",
       "contentHash": "9cdb5970a4140e28f651680275a0dda3bbdeef155d10cf3c7a33406e17e5d3b3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "function pluginVersionFor(source: string, bundledPluginVersion: string | null): Promise<string | null>",
       "contentHash": "d210358cb6d456946acd04d68a1bb3b1baf41c9e87fcc6c53ed43b054d62acfb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "function splitFrontmatter(contents: string): { lines: string[]; body: string; } | null",
       "contentHash": "e7cc6ae53a389759f2d082bbd458ad0bebe8a5f89e3264fd4b90a1e6a69542b9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "function computeAgentSync(projectRoot: string, options: AgentSyncOptions = {}): Promise<AgentSyncSummary>",
       "contentHash": "f76d88c9156ca3661afeb0c27c10d0a5e3c29754657aa4499aae75ff41602f8c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "function DiffBlock({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "1bf08a6627fd30cad2418265d276fdc0cc1d74abb54e9588b63c706486aba454",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "export interface AgentSyncOptions {",
       "contentHash": "48619a91f5d39d602880bc51c21f40d8d831cb34cb3b552c97a267773980f01b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "function installedPluginSources(): Promise<Record<string, PluginTemplateSource>>",
       "contentHash": "15754e982e0d416f71329ea980e722461ec60d013eaf7c0e6d5f992bef4583e1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "function syncProjectHandoffs(projectRoot: string, dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH): HandoffSyncSummary",
       "contentHash": "fe6fb9018bfea0ece3302699bc44032fb7c1f9350106facbe52cffb7c229ba0e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "function sha256(s: string): string",
       "contentHash": "d5c2e4226327fc7842d8b7badffba630187f022e60aae7762443a09a53ad46bb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -653,9 +589,7 @@
       "signature": "export interface PluginTemplateSource {",
       "contentHash": "c032529d9553ae6babeb035110d724d197800b160b9f14b8468b117e7f84b4d9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "function writeReportFile(projectRoot: string, reportId: string, content: string): void",
       "contentHash": "aab4d10b9397eafc86f724a5d96efca395aef549162c402f36d11c782c413f0e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "function readAgentForks(projectRoot: string): Record<string, AgentForkRecord>",
       "contentHash": "130bad12e9cf4d10bc2570cfa49cfd02ac3cf98cf026e0690ea6a549ea6d2619",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function handoffFilePath(projectRoot: string, handoffId: string): string",
       "contentHash": "b53771a1769371092c1fb2e7561e6f9024dca04c46f1e780b71c135465dfc213",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "function removeAgentFork(projectRoot: string, agentName: string): boolean",
       "contentHash": "7ea0b80a6c63dfb3f9b8015572807f9a1b02ebd3d6c0076dd7506df2a44e37f1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -753,9 +679,7 @@
       "signature": "function applyAgentSync(projectRoot: string, agentName: string, action: AgentSyncAction, options: AgentSyncOptions = {}): Promise<AgentSyncApplyResult>",
       "contentHash": "aa9e552b8778d6bdedf4e33f812c1f362513de80971adce1ceacc902e615b3cd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "function bodyForHashing(contents: string): string",
       "contentHash": "26028cb5c376cbc33eb3c303f21917b75ef72c10ed8e54a2e7e51ca66a5d1c98",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "function fieldSpan(lines: string[], key: string): { start: number; end: number; } | null",
       "contentHash": "d62fdc59184c5d0e4f04ed0c766a289faa62ee0d0d5e22cc39f1c5344bdc5e79",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "export type SyncTracking = { kind: \"tracked\"; hash: string } | { kind: \"detached\" } | { kind: \"untracked\" };",
       "contentHash": "d3577501b9368d3e5144d54677f4d650a7bdffb767fb98cf383eb8bd8fa0d94e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -833,9 +751,7 @@
       "signature": "function originLine(entry: AgentSyncEntry): string",
       "contentHash": "c7e3b0e3a0fc67bc30394d7c80c0f018815adf0437d1f1271db8334d1a0cbe06",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -853,9 +769,7 @@
       "signature": "function syncProjectReports(projectRoot: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportSyncSummary",
       "contentHash": "8f6de43d209d6c7a0799e484f5906f50dd7b09f6d41acc6b73b9cb14cd3bd949",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -873,9 +787,7 @@
       "signature": "function readAgentFrom(dir: string | null, name: string): Promise<{ file: string; description: string; } | null>",
       "contentHash": "609b0540a03cc0ebfd7b728198e7f265a8366013937a7b2c81cf32db6f14ae34",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -893,9 +805,7 @@
       "signature": "function joinFrontmatter(lines: string[], body: string): string",
       "contentHash": "38efde7847f83a49aef8232c13067588c103b8b20cb5532fae1f346fe72da6d6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -913,9 +823,7 @@
       "signature": "function copyAgentAttributeRows(fromName: string, toName: string, projectRoot: string, dbPaths: { avatar?: string; agentTypes?: string; agentProjectTags?: string } = {}): void",
       "contentHash": "2fea13a7158c19c73ea6a696e4a2b539bea04c115433d07c4e4a826e8dac47f2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2022,7 +1930,7 @@
     "contentHash": "sha256:b55c3714d278724488e31100e268e2988073d63b9c0bcf4d0b1f689a028553ce"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:29:43.274Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T13:01:49.790Z"
   }
 }

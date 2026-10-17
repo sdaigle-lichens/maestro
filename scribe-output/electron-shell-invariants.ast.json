@@ -13,9 +13,7 @@
       "signature": "function stopTail(webContentsId: number): void",
       "contentHash": "987507013ef2d799732f0bb3310c600db854a711c9b31a32acca8c7749bd2ecb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "function startTail(webContentsId: number): void",
       "contentHash": "aeed006ba84ad9e85d80d89d4735d2dc2cabe71d9f15b29ea4f18a428c0fa6e5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "export interface WorktreeLogStateEvent {",
       "contentHash": "779b591a8314cdfd231078f312114e14e91cf3f15cec1f7cf5c5e1308d17915d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "export interface TaskRoutingData {",
       "contentHash": "a003facdf90f2ab97309ca3d5222c10afe36dba07e65a2989a99e716bbdba84b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "function stopTaskTail(webContentsId: number): void",
       "contentHash": "62df1b24cacdf934c63a7963fe17c9df160f67d744f7b2b6d5a4f88eeaf43683",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "function sweepAndRefresh(): number",
       "contentHash": "4d8cb36537f89ca48ac9fa8b06fba831f12bd90e2e98bd5a684226a3f607f3f5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "export interface SkillListsData {",
       "contentHash": "409f08a0e55b8996159451cae8b83ffb29e3a02f9f00f9dd0015fe173b4ea0ce",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "function RootLayout(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "182a118137a49d48ce9574b223f64b44ab2fe37b9293d59779d294730c51964f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "function seededAgentAttrs(implAgents: string[]): Record<string, AgentAttrs>",
       "contentHash": "4fc7a0df522ceb091f5b214e47e7fe7e800fa58d6f3781f37506d8935e2c83f5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "function announce(state: ProjectState): ProjectState",
       "contentHash": "4826272ef6477434609bf6e701aa1fac3e699d278fdf8f36adea07d62d2086c7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "export interface ProjectState {",
       "contentHash": "3884796cf32e28400be9a1c2984dc588ace15562b2a2ab9c98e9ca96beea4cf3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "interface ProjectContextValue extends ProjectState {",
       "contentHash": "9dd8b811223573c599370194b429e067976d31913e9898468b125460df1dbc58",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "function useProject(): ProjectContextValue",
       "contentHash": "dfd2bdae0c272bc1dbdf8db374503ed7c06da72783d89d16b7507edbb5d397bd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "export interface WorkflowsData {",
       "contentHash": "e0886e445b4af5c367906c2d4bfd33d7a814e60df7bbd41571e1d702bb2ad23e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "export interface SessionLogEndEvent {",
       "contentHash": "629b1a4ad90fc2c019284c553fa9e253024a3a7e8ef80effe633f4318ed6cf8e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "pickNoop(): Promise<ProjectRef | null>",
       "contentHash": "732d98a2d219341aeb4baf8695441c363676fc2ae2192a6b61a6d7ab1316ae84",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "export interface MaestroApi {",
       "contentHash": "292eb3056d7d7153a2cc7f24924f5e4e0f3d9d2f3c253cde0b9592efeaa4465a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "export interface SessionLogEntryEvent {",
       "contentHash": "4126e7c04f0f63b382599447eb698f356ecad5bf3533d46e46483d116bf958e4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "function callMain(op: () => Promise<T>): Promise<CallResult<T>>",
       "contentHash": "77f5aacb4ba7f7464f9a17a6df6529457ee6bb52b10844e2acbd682b901477ed",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "function retargetTaskTails(): void",
       "contentHash": "611f52332b5f24865380d15bb3be9a4ef179f6e1f050f175d108e4b6a436e69d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "function bundledPluginDir(): string | null",
       "contentHash": "859e7085aaa6c7f273c967bd73129ba239f41c918f6a83a6cd60a8f570fe9567",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "export interface RulesData {",
       "contentHash": "242b05a460526d198167e5eda4e0b5b5b4d99e95c467af833eabe775abd9b651",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "function allowedProjectRoots(): string[]",
       "contentHash": "7844f83df3ac2d87c44e8f24f33e43a4bfab1b3cfeef49c93fdd79ced6830c2e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "export interface ToolsData {",
       "contentHash": "136f53df5467bd130829f358a9819e4ca82f160dda3838b01417e00bf130f817",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "export type CallResult<T> = { ok: true; value: T } | { ok: false; error: string };",
       "contentHash": "3dcf4a89704758a46b543d24dd8235e22375384d57c2e1179670bc3f86105e2a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "export type SaveInput =",
       "contentHash": "5d837d2430405fb57a9aa7de10be08d0d27056d07f5e23bcfd34fabae6286434",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "export interface ProjectTagsData {",
       "contentHash": "61ffa4be6b3d0cde6d22ce7d052b2a66c8469eb248150f8ff0f9221a5401917e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "function bundledPluginVersion(): string | null",
       "contentHash": "bdcda6de0d71319e3c33ce5f7aa0de95656a4f65664e673122599f19a5e0c0de",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "function worktreeTabsFor(wc: Electron.WebContents): WorktreeTabs",
       "contentHash": "3acb3ab3d04676ab7f366d3bc91051d1c56f2d405c0b9cf10a34c5de8369f25f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "function applyProjectTagsSet(projectRoot: string, tags: string[]): Promise<string[]>",
       "contentHash": "0ebbf89fd79e1bc0d3bc0229d8472c85614a0f5271946d2bccf27da4c28ee711",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "function ProjectProvider({ children }: { children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "263df66d4524e857dd5e19ad06537ac4a32d379b452547b8e1f3d3ef47740c8e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "export interface DocsData {",
       "contentHash": "1a9a42c547d185127f63261bafab602dfe95542fafff784705b846da9f9babfa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -653,9 +589,7 @@
       "signature": "function restartConfigWatch(): void",
       "contentHash": "b97bfa1d80f7b4a8ecc6294c96569931181bd6b5888f31dcd95852fffb5b7bdb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "function createWindow(): BrowserWindow",
       "contentHash": "f514892471309327d615553f00f425c37da47590d8b414ae823cc366d259fe26",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "export interface ProjectRef {",
       "contentHash": "ad54b1525c03be66dfb45221dfdf444e0c6191970fbf3c0849def8c2eccfb472",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function skillMapForSeed(implAgents: string[], skills: DiscoveredDefinition[]): import(\"../core/seed.js\").SkillMap",
       "contentHash": "dc46a7a3ba2ffab4e2ff23b3c8c255944ee85dc9c9bb70f2e46d6511562fc2b4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "0498388a5edb8272a7cec851e3f5d95520a2dd2cd5932a694de572d68d1169a5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -753,9 +679,7 @@
       "signature": "function mainErrorMessage(err: unknown): string",
       "contentHash": "4d680a3354e427e913e676f62f3cb4e517bd8eb116f87a0a14cc606b41232372",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "function maestroAppDocsDirs(): string[]",
       "contentHash": "bafaf0e35662ac7d1e35313c420f5365b82fc3d2e83979ea0bb498b78a370cdb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "function registerIpc(): void",
       "contentHash": "776df53e42a3e3be2cd03d6c58250f456d4a0fe04617b769db9c92d3b2344464",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "noop(): Promise<void>",
       "contentHash": "399482a8665bd65d0b5873d6e132ad81e74d2ffc2fb07ce7e3747599aa9bf71c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -833,9 +751,7 @@
       "signature": "function retargetTails(): void",
       "contentHash": "ad489f0a7a8169d7e65fe592cfba9fc5654208a2cb88da4558bd371003356cf7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -853,9 +769,7 @@
       "signature": "function broadcast(channel: string, payload?: unknown): void",
       "contentHash": "77b07136331b6a528213335546c703948d8a964ccb7b0158953e64ee38eb7207",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -873,9 +787,7 @@
       "signature": "function startTaskTail(webContentsId: number): void",
       "contentHash": "ec9d78c312261001dd83c610e69f673a368930dfce1b820009f04977c07e2500",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -893,9 +805,7 @@
       "signature": "function disposeIpc(): void",
       "contentHash": "7049d7f66bc3101adaa55fc39134d2f04262bd0de17c158fd3bf032d96277a67",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -913,9 +823,7 @@
       "signature": "function resolveProjectRoot(projectRoot?: string): string",
       "contentHash": "b5a475e2a87972163815bc8f205efb04de62c6a7587e37cb034a9a2b9c69a98f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -933,9 +841,7 @@
       "signature": "export interface SessionLogInitEvent {",
       "contentHash": "044ef1de8d368080216ae70ee1d5e55f1cb1229fb558fed113f6e4752ded0127",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -953,9 +859,7 @@
       "signature": "function bundledAgentsDir(): string | null",
       "contentHash": "cdea552595a2d0e8e6b8bbc55ed60c05dbd478a093aceb9c7b9a62dc933d9d57",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2075,7 +1979,7 @@
     "contentHash": "sha256:6fa3345525fb4eaa4035271af5325b2a7a38fecdece741bc6b3dc2b4394aaf52"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:30:32.259Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T13:02:37.912Z"
   }
 }

@@ -13,9 +13,7 @@
       "signature": "export interface MarketplaceEntry {",
       "contentHash": "e4d9393367c7ef7ad130c4073767edff4ffb72baa3ba34fc33c772a5180cc169",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "export interface MaestroRuleV3 {",
       "contentHash": "fca9032276142e085b4bea7d9b373c780a1baffcd79c2109bbd5740831f21ebc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "export interface QuestionPrompt {",
       "contentHash": "b29322f21c5d439150f94f186843e5ae909db89b5ce4ac2f777764817dcb483c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "function ConfigIssueBanner({ issues }: { issues: ConfigIssue[] }): import(\"react/jsx-runtime\").JSX.Element | null",
       "contentHash": "984b5a6dbeae2fb756612ca82914efe2b77c8ede46fbc5c7e9fbe5310916b2c1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "export interface ApplyWorkflowSpecResult {",
       "contentHash": "03d89563b121056a79bbd9c028ba4621802282b47e8ad5f623460b4fe8061086",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "export interface MaestroTask {",
       "contentHash": "9cd6d88050c97f8136295ee792f226e87be86d123f58def9ea4b9b5cecdeb4f6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "export interface ScaffoldResult {",
       "contentHash": "cc0f92e8eb32ebfefe01fc06327d4f92ecf7b93b5574b0b7905a9db59b021330",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "export interface MaestroNodeV3 {",
       "contentHash": "07319a63280c54fd7019105bb20ace5e29df478e387f5fc78bbefd769b75febf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "export interface ReportDefault {",
       "contentHash": "1b9fe99313e1637c27a71cd80353c6507de32dd52d018626b19252cbfe5ebad9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "export type CreateSubagentRequest = {",
       "contentHash": "4bad7330a40be34e4be95793fd45469576cbf6abbdf3d054fe7f423a159f1722",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "export interface MaestroHandoffEntry {",
       "contentHash": "189c46d68494b839ea58693209c11631339958a27b6ed6b379036e7fc85958d1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "export interface ClaudeCommand {",
       "contentHash": "d74db7437624cd8c79e298f5607c9a71894b0ef56771d4535f5713e176a0fd6a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "export type PermissionAnswer =",
       "contentHash": "4916034e9dcc6b40df75298336d44e4a368a335fcbd28d633627b2ad68c93ab0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "export interface ClaudePermissionRule {",
       "contentHash": "30925a420bcf093ac640773ec3cae77acf3793370d7d9498f2a66181c01f1b74",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "function blankConfig(): MaestroConfigV3",
       "contentHash": "7c6ed85c2f3ae948f13051a6a59d7ae8f135569f123e7971d96691458e9330ad",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "export interface PermissionDiff {",
       "contentHash": "4caddc17c546cb1b3613f63d4527c3f03b08e805ae202968f00d89c7b6d6d07c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "export interface SessionSpend {",
       "contentHash": "280ed15d6300ad2959da79a16ece437d0e3b366c888f0bcbf21fdd8068b6f4bb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "export interface ClaudePreview {",
       "contentHash": "658cecdae747649c9c1cfe347a1a748ba61ee56afab21cc0ab8d31752172962c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "function saveConfig(projectRoot: string, input: ConfigSlice): Promise<SaveResult>",
       "contentHash": "fae3fb19161b977ac81ce9bcef24dcf4100b9cfadbbb24ec41deecb28a955623",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "export type SessionEventBody = SessionEvent extends infer T ? (T extends SessionEvent ? Omit<T, \"seq\"> : never) : never;",
       "contentHash": "b4cb811872163707e5a3ebb78207c52dd236c52e7e47c25715b5951bfd55bbc7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): MaestroConfigV3",
       "contentHash": "8f36dc336b5ba24a65bc883e6ff099e629b752a78aa9dd52e5c7b569d341f25e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "export interface GitPort {",
       "contentHash": "d4c89865478ffcc6867842073e4cfadb9eb20cda3152e44f8716f91c63004982",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "export interface CreateOptions {",
       "contentHash": "bde1da2925ca96a6089bfef52199c12c4d9b2328214956a8fa32cf581001ddea",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "export interface MarketplacePluginInfo {",
       "contentHash": "f548bcbe3ee2d8546026878ee5a1bcc216cfe00761455fcfe8c8e0615bac44fe",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "export type CreateRequest = CreateSkillRequest | CreateSubagentRequest | CreatePluginRequest | CreateMarketplaceRequest;",
       "contentHash": "b151d422426c70513126ed5b9db95a64a62270c531f9364d7555c68d3c474af3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "export type CcusageSource = \"local\" | \"npx\" | \"none\";",
       "contentHash": "4811e2bfe72e4b70cb7c1bb01ebcd6c4ff5d307b46754bd147260363f556c070",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "export interface CuratedPlugin {",
       "contentHash": "d78bf269c3561de1bc3889a55c7741282f620e8264081a1d35f4af8789a98017",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "export type SyncVerdictName =",
       "contentHash": "99c8be1c7a89e6d7b0da18212a4d6b94d83b92e0fdad57b3c04038f8788760d9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "export interface QuestionSelection {",
       "contentHash": "43b04284dfd673bc12c642b9cc74c956f56c857925f9256918cc562c900efb9f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "export interface AgentSyncApplyResult {",
       "contentHash": "578e4c81255db38907e1d739e9ebabb08a19835f2191e9f717befcd1281e1521",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "export type CreateSkillRequest = {",
       "contentHash": "c78134cedf923c8038824994a583f058d4cb5854c5efa7fb5b1b739229db16f6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "export interface AgentSyncEntry {",
       "contentHash": "da0d978bea6ad00fb41817136ef3ceeee7d58c8736a4aabf09047928f5a22f30",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -648,14 +584,12 @@
       "type": "type-def",
       "name": "MaestroMeetingState",
       "filepath": "apps/maestro/src/core/types.ts",
-      "start_line": 288,
-      "end_line": 296,
+      "start_line": 289,
+      "end_line": 297,
       "signature": "export interface MaestroMeetingState {",
       "contentHash": "4efc671f35059f13efd0310bd0e8550b1279545278d9809df43890fb93ed0d90",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "export interface DiscoveredDefinition {",
       "contentHash": "75c3e0eb29ae954d90ec640c1c1dc421ca445399798100dbdf45f11edbad3e27",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "export interface RepoDetection {",
       "contentHash": "ba3836e8b702c52ff2c6b6b559f2e359cefcf269aa1e40d2657300c099d16318",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function readJsonSafe(p: string): T | null",
       "contentHash": "49eea3b54938a116716c5d7dcde3c10326ac79fcf80d64209ac459c17a4764f3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "export interface SessionWrite {",
       "contentHash": "842451f104b0a2ed8322220c0e4b560f129459391a2b722223a32b6bf10c1af9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -748,14 +674,12 @@
       "type": "type-def",
       "name": "ResumeDelivery",
       "filepath": "apps/maestro/src/core/types.ts",
-      "start_line": 273,
-      "end_line": 279,
+      "start_line": 274,
+      "end_line": 280,
       "signature": "export interface ResumeDelivery {",
       "contentHash": "0ed0414fef55c7f5f547d8df85622503ed187e2baff70c20c2662f9c611be2f6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "export interface DocSection {",
       "contentHash": "9f24ac719e404e98dc7c68458044bdb3503fd25e7689b443b8333ea3a557695a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "export interface ClaudeReadDirectory {",
       "contentHash": "cc5fe5cf07c15279606890128d32e583778171262d6536972c9b4d2681367c25",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "export interface MaestroTaskRoutingSlice {",
       "contentHash": "f89f214c5320bdd15883ea00a89101e7ce76ea99f22a01b977aa1dadf5d4a772",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -833,9 +751,7 @@
       "signature": "function validateConfig(cfg: MaestroConfigV3 | null): ConfigIssue[]",
       "contentHash": "3a1fd55a54792289bb18dfd5593b5c5e499c54100d2893dd515df20d0a9992e8",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -853,9 +769,7 @@
       "signature": "function serializeConfig(cfg: MaestroConfigV3): string",
       "contentHash": "49deeba2d1dfea5e015f6f9a783dcd1ef4d7b70f0f0e57f8c04ec98e82a4b84f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -873,9 +787,7 @@
       "signature": "export interface HandoffSyncSummary {",
       "contentHash": "4c2260ffdc7bb6104d8d943bfb532143d4e1e3204a7a932315d4240bede60db7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -893,9 +805,7 @@
       "signature": "export interface SessionModel {",
       "contentHash": "221b7425a4e80b36fde38ce96843817eefb67b6481f043f8323a1599162903be",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -913,9 +823,7 @@
       "signature": "export interface MaestroConfigV3 {",
       "contentHash": "ec5d064879754e7f492f1fc0fecf763b340c0441196c4dc9787d8e209f316f5a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -933,9 +841,7 @@
       "signature": "export interface RenderResult {",
       "contentHash": "e0817c513e8002725c1218bb2c6d05352d3bf916bcb81b873d753a2d0196ec49",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -953,9 +859,7 @@
       "signature": "export interface MaestroTasksFinding {",
       "contentHash": "81ae55ad0471dc8b05e91fde5fd0b1a64ae2a85bd773f0f0914319988712e62f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -973,9 +877,7 @@
       "signature": "export interface MaestroReportEntry {",
       "contentHash": "3a2ef06ad858060fee9eed66159054e045bf69e7602f6cef55530fa81f5dd3c1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -993,9 +895,7 @@
       "signature": "export interface InstallStatus {",
       "contentHash": "5f9d4c8aebbc2eafae99527a18302db3a5ecbf2e57c859521208544936bf8efa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1013,9 +913,7 @@
       "signature": "export type MaestroReportsSlice = Record<string, MaestroReportEntry>;",
       "contentHash": "ed29f314f544e39f25be53d0f9bbbfbbb29de7573b7f3b89ca72b8c4c7b22e22",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1033,9 +931,7 @@
       "signature": "export interface ClaudeWriteTarget {",
       "contentHash": "9732b6209d016caae0c3995e1c91c676ab7276d42c3e00f3b74a1df409da9093",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1053,9 +949,7 @@
       "signature": "function describeVersion(v: unknown): string",
       "contentHash": "c933de89dd30bc96c84cd2df8432e4fe27552f19691cd09a3df45e9e00ea6595",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1073,9 +967,7 @@
       "signature": "export type AgentSyncAction = \"update\" | \"keep\" | \"detach\";",
       "contentHash": "af18d254852028cb1b0990fa71a2bf1fdf65b07a041b6ad564b547726436c8d6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1093,9 +985,7 @@
       "signature": "export type QuestionAnswer = {",
       "contentHash": "7a3cd2b49a04ebca7e91604a94c7ac92e19b035e916a1acf6804433d3253361c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1113,9 +1003,7 @@
       "signature": "export interface PermissionPrompt {",
       "contentHash": "e6f1dfb5e3b32ed2ee3374470c90f053deda3fcd46028888c29aa88710bbab14",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1133,9 +1021,7 @@
       "signature": "export type ConfigSlice =",
       "contentHash": "b9694a7703f915f8f66fcb3e41e1c78c288bdf67e6afa5c8873b72417f586284",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1153,9 +1039,7 @@
       "signature": "function writeConfig(projectRoot: string, cfg: MaestroConfigV3): string",
       "contentHash": "1438f99b2c4caf67dbac8defdde932103c64eafe0e4cb5fb730a334bd52925b5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1173,9 +1057,7 @@
       "signature": "export interface MaestroWorkflowV3 {",
       "contentHash": "eb762d21c0afc64dd5cf41e4a162b4d6f4ab72bd39f77acad17420f276c9b751",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1189,13 +1071,11 @@
       "name": "HandoffIssueRecord",
       "filepath": "apps/maestro/src/core/types.ts",
       "start_line": 259,
-      "end_line": 270,
+      "end_line": 271,
       "signature": "export interface HandoffIssueRecord {",
-      "contentHash": "d81eda1cc25a7171bbc0141422521f6ff3452460af7b4e0172f62551dfe0b05a",
+      "contentHash": "cbd061197c033b49a17c957223351b142b413f35832b674873abef2317cf49d1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1213,9 +1093,7 @@
       "signature": "export interface ClaudeOutputChunk {",
       "contentHash": "b2171ad60e2502109918c71f51a3476a768c13aa86cf082809be8e7ad32e44e4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1233,9 +1111,7 @@
       "signature": "export interface UsageStatsPreview {",
       "contentHash": "ed70fce066b4b422743b792e18c2eac1a83f1e573697ce47d08d0b9c07ebc974",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1253,9 +1129,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "87a6889c06dc75529f4d8eef2309f4e53291ce9b99d628fd3f573d1eb13ae67a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1273,9 +1147,7 @@
       "signature": "export interface ResumeRead {",
       "contentHash": "71dd498b9d4590489f63dd21fd3303889ea74b0a03b497d56491d0a54dd9f3d1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1293,9 +1165,7 @@
       "signature": "function resolveUseMaestroTasks(cfg: MaestroConfigV3 | null): boolean",
       "contentHash": "45a5595dec5b2aa92b0f0bb22de70b4be59c7342258f679d3b9a44d0dc0865fd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1313,9 +1183,7 @@
       "signature": "export interface MaestroRulesSlice {",
       "contentHash": "75e46825225a9d506747c4aada79a09d40294b1f225f205bfc275b18d27ca36a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1333,9 +1201,7 @@
       "signature": "export interface ResumeDisclosure {",
       "contentHash": "4a49bcd27f64d42ef5a80e492c42291841ac72b6ebd3a35c373e38b04b8ff997",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1353,9 +1219,7 @@
       "signature": "export type RefusalSource = \"write-scope\" | \"read-boundary\" | \"user\" | \"auto\" | \"question\";",
       "contentHash": "0330493aabb8ab7c32fccdf19e92f5ed435961623877c3cfb651b008a4c151ca",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1373,9 +1237,7 @@
       "signature": "export interface ApplyRulesSummary {",
       "contentHash": "cf505ebd938cb384f9ed97b922689075a0808ab9bb31e7baac9ec124d6965751",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1393,9 +1255,7 @@
       "signature": "export type UsageStatsView = \"session\" | \"blocks\" | \"daily\" | \"monthly\";",
       "contentHash": "d68da880d5a8bc5f3f6ea4f1ce52edec925c0cd97646965fb475f409b6a7e55c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1413,9 +1273,7 @@
       "signature": "export type GrantScope = \"file\" | \"directory\";",
       "contentHash": "6b0ed8c84cc5318cd4eae3bf65c50e33c585fc5f6722067cf4bd450ffd25de6f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1433,9 +1291,7 @@
       "signature": "export type SessionEndReason = \"closed\" | \"budget\" | \"turns\" | \"error\";",
       "contentHash": "fb893a15d4fc92b7a9f9e423d0f6fed1e4f4ad87c82e734032b512e9ef071ea3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1453,9 +1309,7 @@
       "signature": "export interface ConfigIssue {",
       "contentHash": "203f31f27cd3f24f5835e56065e7f10e0fb2a33bbf5d74501d13562a35070d49",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1473,9 +1327,7 @@
       "signature": "export interface MaestroEdgeV3 {",
       "contentHash": "536ea79a49ef22147b9f055df045b760f76cbc5c55c232fcfddd7fec65cbe8fe",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1493,9 +1345,7 @@
       "signature": "export type PermissionDetail =",
       "contentHash": "900e082a3beeba6c67cf2413399176c7e7e978069d87c8f17c55708300bd936c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1513,9 +1363,7 @@
       "signature": "export interface ResumableSession {",
       "contentHash": "84858e64be6ec75129d964201fb09df0facb9ab3ce76c736bd23108e606e6208",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1533,9 +1381,7 @@
       "signature": "export interface AgentQuestionOption {",
       "contentHash": "27215d2e9a2ef9e5983f461db56d3c105f79a5387896bcfc2d0e81415fece674",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1553,9 +1399,7 @@
       "signature": "export type OrchestratorSkillAction = \"installed\" | \"synced\" | \"unchanged\" | \"migrated\";",
       "contentHash": "b1a6576b7c1c4aa84d13a32048257f99f115a254afa1add533945cf1aa535244",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1573,9 +1417,7 @@
       "signature": "function writeRuntimeVersion(projectRoot: string, version: string): boolean",
       "contentHash": "6f165f81d0698a86878994ca02c2226ff26f2e9fb9194cab1f6ff6c748dd77a3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1593,9 +1435,7 @@
       "signature": "export type QuestionChoice = { choice: \"answer\"; selections: QuestionSelection[] } | { choice: \"reply\"; text: string };",
       "contentHash": "6e123c6a11dab1939324ef9bc14a367d8b0e4551a34327d8566292a6eae377ce",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1613,9 +1453,7 @@
       "signature": "function isEditableAgentSource(source: string): boolean",
       "contentHash": "b9680a4f9a60f9e0e4c5f3328db83d461473021c1b2baa3d653ed6a78f5ae889",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1633,9 +1471,7 @@
       "signature": "export interface DiffLine {",
       "contentHash": "f0b4a64236fcc3d716f5ae62b6c0eae1e33ceb685e0c94fd78414e6980920706",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1653,9 +1489,7 @@
       "signature": "export type ParkedAnswer = PermissionAnswer | QuestionAnswer;",
       "contentHash": "1d2f6cb9ae79cee73546490e15d2242882b73d732b84c1aa7c563550cd46a2aa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1673,9 +1507,7 @@
       "signature": "export interface MaestroProjectTagsSlice {",
       "contentHash": "80a53b663743be8c1a76e58c49a4e77b164fab7a45bb64812f92b7a09f2dd13a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1693,9 +1525,7 @@
       "signature": "export interface SessionPermissionUpdate {",
       "contentHash": "e0c222f2e583cc1188b89a64f5b6284fc9f494fece7c5439c5d87f34503c8739",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1713,9 +1543,7 @@
       "signature": "export type UnavailableReason = \"plugin-not-installed\" | \"plugin-not-enabled\" | \"skill-not-in-plugin\" | \"not-found\";",
       "contentHash": "b29987924e075ca172f293d09cc1000a16263dbf70a668a8eb3971f91036becc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1733,9 +1561,7 @@
       "signature": "export interface DocContent {",
       "contentHash": "c514fb159f4474a623e0e64a984929ca3c5dc5fd1f7b73ec3b3c966547f1a60d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1753,9 +1579,7 @@
       "signature": "export interface AvatarPartOption {",
       "contentHash": "13a69c94e4b52c1e72d5245855c037aae24910447926025fedd2ce3ed8e0e3fc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1773,9 +1597,7 @@
       "signature": "export interface MaestroSkillListsSlice {",
       "contentHash": "c89a7e3a9fd0aae1439a98e41b8462fc96eee29ad7e07c670872f00984b5b5b5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1793,9 +1615,7 @@
       "signature": "export interface UsageStats {",
       "contentHash": "2370da398c2e8856c996dc76924c29d3c68f366530010647b063b7f34ceae63e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1813,9 +1633,7 @@
       "signature": "export type AvatarLayers = Record<AvatarCategory, string | null> & {",
       "contentHash": "adef716daef86ee619b0e87a7d8642a56315efb75385cd036c2d5d936cca8950",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1833,9 +1651,7 @@
       "signature": "export type PermissionChoice =",
       "contentHash": "1ac63d50aa25a94b520bac85127c8f2096e5a8a44ed7583f9145abde3305aa29",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1853,9 +1669,7 @@
       "signature": "export interface SkillRefReport {",
       "contentHash": "1dfe15501096eaaedf86fbe47aaab46b2c7aeab4645c295d0a52066d0727d818",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1873,9 +1687,7 @@
       "signature": "export type TaskStatus = \"done\" | \"ready\" | \"blocked\";",
       "contentHash": "3d4ceef39d6d4cafb232c12ead55faa7c34ede9294a59eb8d2acde48e5eb8f12",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1893,9 +1705,7 @@
       "signature": "export interface SessionGrant {",
       "contentHash": "c354cf4795b43632036552d09581b8690c99b72961b1aa1af7356e74cbf96911",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1913,9 +1723,7 @@
       "signature": "function readConfig(projectRoot: string): MaestroConfigV3 | null",
       "contentHash": "f6b240b71dc9f26ce75ceae0d62bfadb318c052d20c2cd58693a564dd1b617a3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1933,9 +1741,7 @@
       "signature": "export interface ResolvedReport {",
       "contentHash": "2e4bd7f862d82af1f9dae9ef8dc395e17dea7ce0969363dc095279c334120b28",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1953,9 +1759,7 @@
       "signature": "export interface DefinitionSummary {",
       "contentHash": "b521969fd3b24961e4566df6d559ddc8d11619ef3bd3e257e9c78e010bd10f09",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1973,9 +1777,7 @@
       "signature": "export interface ReportSyncSummary {",
       "contentHash": "c681cd9ed958fd56fb95acb6d570cbd07380a0f58b3be4a5a439854666b639b4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1993,9 +1795,7 @@
       "signature": "export type SessionEffort = \"low\" | \"medium\" | \"high\" | \"xhigh\" | \"max\";",
       "contentHash": "bd3905a624358220b458785c3f0e2e9c3fe1b4f1ea1ed8a4960182fe493d4727",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2013,9 +1813,7 @@
       "signature": "function watchConfigFile(projectRoot: string, onChange: () => void, intervalMs = 1000): () => void",
       "contentHash": "44e117013146495c912499dcdb2b99d3ae24ef2daa657a4f240508cfd08019aa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2033,9 +1831,7 @@
       "signature": "export interface UsageTotals {",
       "contentHash": "41d157a44efbeb77b0f30601c2edb08ebd0866908e9f78eb044d76c8b3f6b370",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2053,9 +1849,7 @@
       "signature": "export interface SettingsSourceInfo {",
       "contentHash": "8eeb319053e233f709c57a680e20ed6cb97cd15913a8df201abf0c251ed713bd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2073,9 +1867,7 @@
       "signature": "export interface AgentForkRecord {",
       "contentHash": "8516306b0842e830fab5e3767f4a447d5d7593a7a6ab0c2a3f26a33799a8048b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2093,9 +1885,7 @@
       "signature": "export interface ClaudeRunResult {",
       "contentHash": "ff52c0ea94b30dd8f8164d5ea6ead2defbe4ce946fab5b6ba06ea0e197b22a58",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2113,9 +1903,7 @@
       "signature": "export interface AgentQuestion {",
       "contentHash": "2787c261ce5b9655f52c9771dbb28a047c28f2dcadb2305c1d780180596b5641",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2133,9 +1921,7 @@
       "signature": "export interface MaestroInstanceV3 {",
       "contentHash": "181d312135ed61941b2fbc351e99ad2104758aa6a7284ab1214a58a457cd7799",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2153,9 +1939,7 @@
       "signature": "export interface UninstallReport {",
       "contentHash": "f027a18d4d5f7dc860a737748bcdd391648c2cf27433db64f2d671a188eebe6e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2173,9 +1957,7 @@
       "signature": "export interface SettingsPort {",
       "contentHash": "9f223ac7048b92c95106f847d4f34d6481d9b303456692a69e5a08f90b08e159",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2193,9 +1975,7 @@
       "signature": "function readAgentsAvailable(projectRoot: string): string[]",
       "contentHash": "a3e01d524cfeb8c71a5b814ababfa825ac13cbd4a5bb782b61bcb8e5181d5d2a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2213,9 +1993,7 @@
       "signature": "export interface SessionInfo {",
       "contentHash": "aa4688e6efffa7d928138fd94d0c4799c107890a2438a94869ecf93b11722f12",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2233,9 +2011,7 @@
       "signature": "export type MaestroHandoffsSlice = Record<string, MaestroHandoffEntry>;",
       "contentHash": "33295b77f1b9f8777ec49833a2081d883c89f9201cc0d1437bb90993adaa3451",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2253,9 +2029,7 @@
       "signature": "function maestroConfigRefusal(raw: string): ConfigRefusal | null",
       "contentHash": "b02c82803027393f06438da2e0a7f0d618847def8bab5a0f401625d1d8703098",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2273,9 +2047,7 @@
       "signature": "export interface WorkflowSpec {",
       "contentHash": "93424060713bcdb6cd35f43648dcc88f65ecb510114b28be0a6dd2c0f86e6c89",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2293,9 +2065,7 @@
       "signature": "export interface MaestroSession {",
       "contentHash": "f68898d31e9c9d65055991cf6d27f7eaf066e247a44527cec23110d2813879e7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2313,9 +2083,7 @@
       "signature": "export interface PermissionDiffHunk {",
       "contentHash": "9948f8966d74592f050beac5090894a580f92d310453d70fe22b9a778bbf6a17",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2333,9 +2101,7 @@
       "signature": "export interface AgentForkResult {",
       "contentHash": "87d09a32900f8d70878a35f9bdc0ee8ceb179c9c23b21e81e5112d7836d6158c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2353,9 +2119,7 @@
       "signature": "export interface RuleLibraryEntry {",
       "contentHash": "a8d10d0feb6ae3b636575b2380cbb1c9f0ea7aeb3b1488ec08f12cba0e74c4ac",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2373,9 +2137,7 @@
       "signature": "export interface AgentDescriptionResult {",
       "contentHash": "d0f3f3a49fbe1b93cf97b1519290b26549a7e530c36a7de24111a0e0636cdd27",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2393,9 +2155,7 @@
       "signature": "export interface AgentSyncSummary {",
       "contentHash": "bc01188eaf6c68bcbf1cb3ae51a75a84a9dea3bf3571ab51860628b4dfdb5e2b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2413,9 +2173,7 @@
       "signature": "export interface SettingsPermissions {",
       "contentHash": "971b8db8b77a484237d11a2a2f66f95dc7493abe1ed6c6838ef9306be0f48dbc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2433,9 +2191,7 @@
       "signature": "export interface HandoffDefaultsListing {",
       "contentHash": "607f9c9381db510d636c92480c0a3bf491d627640c7ca676d0f859de855b91fe",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2453,9 +2209,7 @@
       "signature": "export type SpendCeiling = \"budget\" | \"turns\";",
       "contentHash": "f39dfa628bea54b2bbfbe9e9266a9abfdae3a47021ac5149f0e72a3c355de996",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2473,9 +2227,7 @@
       "signature": "export type ConfigRefusalKind = \"unparseable\" | \"unsupported-version\";",
       "contentHash": "fbff8ce0113e126710493ce85a164e019fdd77a1bd795259be3b8413f5e90c9f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2493,9 +2245,7 @@
       "signature": "function ConfigWatchProvider({ children }: { children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "864b32521286f9b5896a3f8914c559fa425c301726f8ba4822271f73838e2093",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2513,9 +2263,7 @@
       "signature": "export type SettingsTier = \"user\" | \"project\" | \"local\" | \"managed\" | \"flag\";",
       "contentHash": "21cefe420e33062e36ce2251900165b944a5983f8c877e25438330d08a695e8f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2533,9 +2281,7 @@
       "signature": "export interface SessionLogEntry {",
       "contentHash": "e5b5dc0dac9739e1a2c869afc383011b0214dc4ca39418b27acd853d2993c30e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2553,9 +2299,7 @@
       "signature": "export interface HandoffDefault {",
       "contentHash": "6092faf435faf90a3c46d9da203f697c5d187caca05c43d9b27ed2ca9b82778a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2573,9 +2317,7 @@
       "signature": "export type AgentType = (typeof AGENT_TYPES)[number];",
       "contentHash": "74fd0287e7aa13cd9c7d871efc808ae0a47f51a6f6252721291708e838b328e6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2593,9 +2335,7 @@
       "signature": "export interface MaterializedFilesFinding {",
       "contentHash": "43dfb305726f905f3d94cc323fcf400731253837f854cbcec0cecbbb11413e2a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2613,9 +2353,7 @@
       "signature": "export interface AgentContentResult {",
       "contentHash": "cdcf685b7071868db69578d6559ea8bd7e2660cf5b3f01faddcf967f2ca7c036",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2633,9 +2371,7 @@
       "signature": "function ExternalChangeBanner({\n  externalSlice,\n  onReload,\n  onKeepMine,\n}: {\n  externalSlice: WorkflowSlice | null;\n  onReload: () => void;\n  onKeepMine: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element | null",
       "contentHash": "414950c6fb6503de39b6da938f0a2bc63e3bb12fc0b9edb9344d854491bffdc6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2653,9 +2389,7 @@
       "signature": "export type ClaudeRequest =",
       "contentHash": "84c0f1fe3b26f28c04bd6fc096c96964d1ac5ebf943b4bd36390623439e85a01",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2673,9 +2407,7 @@
       "signature": "export interface ClaudeReadScope {",
       "contentHash": "1d655fb8e48609af4d1e422fc111e44209ab84148087a36aca76c90e9f37d5ea",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2693,9 +2425,7 @@
       "signature": "export type PermissionOutcome = \"allow\" | \"deny\" | \"stop\" | \"cancelled\" | \"answered\";",
       "contentHash": "0c7f8909c0dead09c4138c5a2f77aa4442415eb9ab5b2ed4ca602ca4f2816361",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2713,9 +2443,7 @@
       "signature": "export interface ProjectRule {",
       "contentHash": "98566f834b40b7a79dcf7c76aae0d53b3927cfde8bf443938219e4e3e8a17f94",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2733,9 +2461,7 @@
       "signature": "export type WorktreeTabState = \"live\" | \"no-log\" | \"removed\";",
       "contentHash": "d11002a47ad47332528588dd037e14d7138c20b930ae313cba178640108593eb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2753,9 +2479,7 @@
       "signature": "export interface DanglingSkillRef {",
       "contentHash": "071e1353038eb1822b9e506c93266f35121cc53320889700bc8642aa2b3e5137",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2773,9 +2497,7 @@
       "signature": "export interface SaveResult {",
       "contentHash": "b391b55c790346a4b28bc9d33cc099ca930d06ce0d39cbaec10237a2fe7fdf5e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2793,9 +2515,7 @@
       "signature": "export type SessionEvent =",
       "contentHash": "f34db6f72736270e570417abb6b9d599eb53a0138a8471f468db0a680a6d7e80",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2813,9 +2533,7 @@
       "signature": "export type AvatarCategory = (typeof AVATAR_CATEGORIES)[number];",
       "contentHash": "f4b9120fb6eb2abdfba88d69ffd7f523997727d8b5335d30c0d1436338485bf2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2833,9 +2551,7 @@
       "signature": "export interface InstalledPluginInfo {",
       "contentHash": "1ee0c0f11a8d416ffd3bb5511f3a322b0cafb25d06686eca60aba36d83a10d31",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2853,9 +2569,7 @@
       "signature": "export interface HandoffContext {",
       "contentHash": "e7c538f7beab0ed0064b5dfa9413d3aafb784a02d9cdf17214b26123f32aff62",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2873,9 +2587,7 @@
       "signature": "export interface ConfigRefusal {",
       "contentHash": "cd1b624e59465f70a99368aa8e1ed1509fabedaec1aef0d98fd08c00271e341f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2893,9 +2605,7 @@
       "signature": "export interface ChannelDelivery {",
       "contentHash": "dfa23e7c5ec28e69ed40cbd00a5f0053db7fd4dc9c38e5545a873e573f5bbb23",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2913,9 +2623,7 @@
       "signature": "export interface ResolvedHandoffRoute {",
       "contentHash": "d50deb79164b7bce0fdccf1996ab1df4f0aad565efc5f70e5c449fe22c33654e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2933,9 +2641,7 @@
       "signature": "export interface SessionGrantOption {",
       "contentHash": "d08f778972df65e27deee4f92d0bccfdf5248f255f9e7442b15db8ade36ee598",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2953,9 +2659,7 @@
       "signature": "export interface WorktreeTabInfo {",
       "contentHash": "ee6667bbdf1c220d7cf0c3bd8777b680c8f2024d43924a9602539ffe5ba540b5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2973,9 +2677,7 @@
       "signature": "function maestroJsonPath(projectRoot: string): string",
       "contentHash": "39112c5c53c89e8c7a12c8e15babd94b3840b1db0558417c8d7779078eeb34ae",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2993,9 +2695,7 @@
       "signature": "export interface MaestroWorkflowsSlice {",
       "contentHash": "9e236055b19502f99ac48abf108968aca8f88835de199646b5f5c000211c781d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3013,9 +2713,7 @@
       "signature": "export type CreatePluginRequest = {",
       "contentHash": "78db9731f9a8bbc8740fa621b149bec3e3cc8732e59d7648d732515d267de654",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3033,9 +2731,7 @@
       "signature": "export interface InstallReport {",
       "contentHash": "d4a7f8c98fad90a45beb2acf93e04b4338cae504ba2d87ef3858d5e9e1198365",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3053,9 +2749,7 @@
       "signature": "export type ReadScopeOrigin = \"cwd\" | \"app\" | \"settings\" | \"session\";",
       "contentHash": "15303f203ac1366af7f889700c1990028e6ee41be1f0f7d70bfdf9a1c6412c3e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3073,9 +2767,7 @@
       "signature": "export interface ResolvedHandoff {",
       "contentHash": "cd3a9ca138c165f3e26a61835e9e5165e52bb19b500abfa92dc55574a4474142",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3093,9 +2785,7 @@
       "signature": "export interface TreeNode {",
       "contentHash": "3b3aad20bd155dfa9e1cbc9da5e4a0350e14b0245b0df689be7dc9b89a2e2068",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3113,9 +2803,7 @@
       "signature": "export interface EffectiveSettingsSnapshot {",
       "contentHash": "03e21501de5a2b9b514b66a067ba99fba8fe30a620094e035eb9ab4f3ec84a5d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3133,9 +2821,7 @@
       "signature": "export type UpdateSkillTagsRequest = { kind: \"update-skill-tags\" };",
       "contentHash": "fc1e48afe46c38ff95776b2155aa57efaa1046de900ad4a76c7ad5b7c5d30184",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3153,9 +2839,7 @@
       "signature": "export interface DocMeta {",
       "contentHash": "c8ea5c4b2301c27616e50f790161e2da3ad49c2675e00828f4c8faec48373c1e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3173,9 +2857,7 @@
       "signature": "export type WorktreeOpenResult =",
       "contentHash": "e68f8f4429ca5fc09b31c6cc8340e675982fc40b7ff2de4f974be2c6247986ab",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3193,9 +2875,7 @@
       "signature": "export interface PendingLane {",
       "contentHash": "f0813fece842de4f68b036f4f246e4cc1e0eb33d50bb51b2b4e813dd61298581",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3213,9 +2893,7 @@
       "signature": "export interface RepoResult {",
       "contentHash": "474f49c2b300c31059fec49a8c0773b169e2099f0265fd2598ce76b534c59094",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3233,9 +2911,7 @@
       "signature": "export interface MaestroOwnerRunsState {",
       "contentHash": "a7f9e6b5e9c3670d76945a63c69bfe682fa6cd8c5f7ee1521b61c103a805c480",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3253,9 +2929,7 @@
       "signature": "export interface UninstallPlan {",
       "contentHash": "fdb89fbb2fb554b1fe5e3418c5c0d1b76c606cf724444968f6838d8d55c670bd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3273,9 +2947,7 @@
       "signature": "function duplicateAgentTypes(cfg: MaestroConfigV3 | null): ConfigIssue[]",
       "contentHash": "5ac206f14373e63df7a3557dade5a2b7f17a624148282e11d41f0d8080795982",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3293,9 +2965,7 @@
       "signature": "export type CreateMarketplaceRequest = {",
       "contentHash": "bea651d6510e2fbe5596ac9d27a94fbc5c8f22a58614e9392ac2b51fe58d9760",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3313,9 +2983,7 @@
       "signature": "export interface GlobalDocsData {",
       "contentHash": "dd413fc975b5be28652836a6725f64ba7b35a808f7dfcc1bf2e165d94a6ff88b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3328,14 +2996,12 @@
       "type": "type-def",
       "name": "PlanStepStatus",
       "filepath": "apps/maestro/src/core/types.ts",
-      "start_line": 281,
-      "end_line": 281,
+      "start_line": 282,
+      "end_line": 282,
       "signature": "export type PlanStepStatus = \"pending\" | \"done\";",
       "contentHash": "94055238db97b2c8e7c6b0ac1a98e108d02b6861869c1ec68ef8959515901ff5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3353,9 +3019,7 @@
       "signature": "export interface UsageStatsResult {",
       "contentHash": "863f5fc1230b7d2238d6319412b9e2550993bce1d1132d1b2576826c84528f0b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3368,14 +3032,12 @@
       "type": "type-def",
       "name": "SessionPlan",
       "filepath": "apps/maestro/src/core/types.ts",
-      "start_line": 283,
-      "end_line": 286,
+      "start_line": 284,
+      "end_line": 287,
       "signature": "export interface SessionPlan {",
       "contentHash": "9381807f5ae585d462ea4b0c2fa72c063e16dd07c84673f2f971eacedd7a32f3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -3832,7 +3494,7 @@
     "contentHash": "sha256:e72e0c91f65b45a9b22de0a817221f19c3bded83f46853fa07726c500fef4591"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:30:57.195Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T13:03:03.446Z"
   }
 }
