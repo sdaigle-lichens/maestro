@@ -21,7 +21,7 @@ If the text below is missing, empty, or reads `[shell command execution disabled
 
 ### Step 2 — Match to workflow
 
-1. Match the request to a workflow in the table below by its success path and agents. Read only enough to route (the request, and at most enough of the repo to tell which path fits), never to design. If none clearly matches, offer to build one with the `create-workflow` skill; ask the user to clarify only if they'd rather not.
+1. Match the request to a workflow in the table below by its success path and agents. Read only enough to route (the request, and at most enough of the repo to tell which path fits), never to design. Pick a workflow whose agents can make **every** change the request names — code, tests, version bumps, a build or regenerate step — not just the main one. If none clearly matches, offer to build one with the `create-workflow` skill; ask the user to clarify only if they'd rather not.
 2. Record the workflow so the `SubagentStart` hook injects the right skills and handoff rules. If the request named a `.claude/maestro-tasks/NNN-*.md` file, record it now too:
 
 ```bash

@@ -534,7 +534,7 @@
     "epic": "code-graph-cutover"
   },
   "108-give-docs-only-work-a-route-when-it-turns-up-a-code-change.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md": {
@@ -549,6 +549,11 @@
     "blockedBy": [
       "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md"
     ],
+    "epic": "code-graph-cutover"
+  },
+  "111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md": {
+    "status": "ready",
+    "blockedBy": [],
     "epic": "code-graph-cutover"
   }
 }

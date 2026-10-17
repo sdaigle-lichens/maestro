@@ -23,18 +23,19 @@ Rejected for now: C, a classification rule in the orchestrator prose ('repo-wide
 
 ## Acceptance criteria
 
-- [ ] A decision is recorded on A and on B (adopt, adapt or reject, with the reason)
-- [ ] If A is adopted, the to-maestro-tasks skill tells ticket writers to state source-string scope for repo-wide sweeps and to keep the description consistent with repo-wide criteria
-- [ ] If B is adopted, the Documentation workflow has a condition route from the scribe to a code-capable agent and back, validated by the workflow tooling, and seeded projects receive it through /maestro-update
-- [ ] The decision states whether the r001 case (backend cannot write tests) is covered or needs its own follow-up
-- [ ] The decision covers the r015 case (a ticket that states code work still routed as Documentation) and says whether C, or a lighter classification rule, is now adopted
+- [x] A decision is recorded on A and on B (adopt, adapt or reject, with the reason)
+- [x] If A is adopted, the to-maestro-tasks skill tells ticket writers to state source-string scope for repo-wide sweeps and to keep the description consistent with repo-wide criteria
+- [x] If B is adopted, the Documentation workflow has a condition route from the scribe to a code-capable agent and back, validated by the workflow tooling, and seeded projects receive it through /maestro-update — n/a, B rejected
+- [x] The decision states whether the r001 case (backend cannot write tests) is covered or needs its own follow-up
+- [x] The decision covers the r015 case (a ticket that states code work still routed as Documentation) and says whether C, or a lighter classification rule, is now adopted
 
-## Decisions so far
+## Decisions
 
 - **A — adopted.** to-maestro-tasks Step 4 now tells ticket writers to put every kind of change the criteria need (source strings for repo-wide sweeps, code, tests, version bumps, build steps) in `whatToBuild`, and to state a later-step criterion as an end state. Covers 007; does not cover r015, whose description already named the code.
 - **Unrouted condition — added (not in the original A/B/C).** In 007 and r015 the scribe's `HANDOFF: partial` matched no edge, `handoff-issues` printed nothing, and the orchestrator improvised. The SubagentStop hook now records an `unrouted` issue (`checkRoute` in `handoff-check.ts`) when a non-success label has no condition edge in the recorded workflow, and the orchestrator template says to stop and ask the user. Reaches existing projects through `/maestro-update` (plugin 0.11.26).
 - **r001** — not a routing gap (the default workflow already runs @test after @backend); A's third bullet covers the ticket side. No follow-up.
-- **B and lighter C — open.** B in the seed reaches new projects only: `/maestro-update` never edits existing workflows, so the "seeded projects receive it" criterion needs a migration or rewording.
+- **Lighter C — adopted (covers r015).** Orchestrator Step 2 now says to pick a workflow whose agents can make every change the request names (code, tests, version bumps, a build or regenerate step), and that a mostly-docs request that also names code is not Documentation. It is in the managed STEPS region, so existing projects get it through `/maestro-update` (plugin 0.11.27). The full C ("repo-wide criteria imply source may change") stays rejected: A puts that signal in the description, where this rule reads it.
+- **B — rejected for now.** With lighter C, a docs request that names code no longer routes to Documentation; with the unrouted check, a Documentation run that discovers code stops and asks the user instead of improvising. B would also reach new projects only, since `/maestro-update` never edits an existing workflow. Revisit if the unrouted stop fires often for Documentation.
 
 ## Blocked by
 
