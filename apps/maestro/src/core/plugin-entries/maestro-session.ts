@@ -168,6 +168,7 @@ export { lastHandoffLabel, sendMessageHandoff, handbackHandoff, HANDBACK_TOOLS }
 // SubagentStart injector and the SubagentStop check use (`handoff-payload.ts`, `fs`/`path` only).
 export {
   checkHandoff,
+  checkRoute,
   checkPayload,
   reportVerdict,
   type HandoffIssue,

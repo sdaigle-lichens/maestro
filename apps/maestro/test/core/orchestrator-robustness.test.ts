@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 
 import { installRuntime, findUpPluginRoot } from "../../src/core/install.js";
 import { writeConfig } from "../../src/core/config.js";
-import { checkHandoff, reportVerdict } from "../../src/core/handoff-check.js";
+import { checkHandoff, checkRoute, reportVerdict } from "../../src/core/handoff-check.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -258,6 +258,60 @@ describe("SubagentStop hook flags verdict/HANDOFF disagreement (083)", () => {
     expect(checkHandoff("ok\nHANDOFF: success")).toBeNull();
     expect(reportVerdict('"verdict": "SUCCESS"\n...\n"verdict": "FAIL"')).toBe("FAIL");
     expect(reportVerdict(null)).toBeNull();
+  });
+});
+
+describe("SubagentStop hook flags a condition label with no route (108)", () => {
+  const setWorkflow = (root: string, name: string) => script(root, "maestro-set-session-workflow.cjs", [name], SESS);
+
+  it("a label the active workflow has no edge for is unrouted, surfaced with stop-and-ask advice", async () => {
+    const root = await installed();
+    expect(setWorkflow(root, "docs").code).toBe(0);
+
+    const run = stop(root, "scribe", "a1", '"verdict": "SUCCESS"\nHANDOFF: partial');
+    expect(run.code, run.stderr).toBe(0);
+    expect(run.stdout).toContain("handoff problem (unrouted)");
+    expect(readLog(root, SESS).find((e) => e.kind === "handoff")!.handoff_issue).toMatchObject({
+      kind: "unrouted",
+      label: "partial",
+    });
+
+    const seen = cli(root, ["handoff-issues"], SESS);
+    expect(seen.stdout).toContain("scribe: NO ROUTE for HANDOFF: partial");
+    expect(seen.stdout).toContain('workflow "docs"');
+    expect(seen.stdout).toContain("Do not dispatch another agent on your own.");
+  });
+
+  it("a label that matches an edge, and success from the last node, raise nothing", async () => {
+    const root = await installed();
+    setWorkflow(root, "docs");
+    fs.mkdirSync(path.join(root, ".claude", "channels", "scribe"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "channels", "scribe", "reviewer.1.md"), "{}\n");
+
+    expect(stop(root, "reviewer", "r1", '"verdict": "FAIL"\nHANDOFF: Changes Requested').stdout).not.toContain(
+      "handoff problem"
+    );
+    expect(stop(root, "reviewer", "r2", '"verdict": "SUCCESS"\nHANDOFF: success').stdout).not.toContain(
+      "handoff problem"
+    );
+  });
+
+  it("with no workflow recorded the label is not judged (the search list is a guess)", async () => {
+    const root = await installed();
+    expect(stop(root, "scribe", "a1", "HANDOFF: partial").stdout).not.toContain("handoff problem");
+  });
+
+  it("the pure judgement", () => {
+    const routes = [{ label: "success" }, { label: "needs code" }];
+    expect(checkRoute("HANDOFF: partial", routes, "Documentation")).toMatchObject({
+      kind: "unrouted",
+      label: "partial",
+    });
+    expect(checkRoute("HANDOFF: partial", routes, "Documentation")!.message).toContain("(its conditions: needs code)");
+    expect(checkRoute("HANDOFF: partial", [], "Documentation")!.message).toContain("(its conditions: none)");
+    expect(checkRoute("HANDOFF: Needs Code", routes, "Documentation")).toBeNull();
+    expect(checkRoute("HANDOFF: success", [], "Documentation")).toBeNull();
+    expect(checkRoute("no line", [], "Documentation")).toBeNull();
   });
 });
 

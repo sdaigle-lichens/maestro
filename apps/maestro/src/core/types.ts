@@ -261,7 +261,8 @@ export interface HandoffIssueRecord {
   agent: string;
   agent_id: string;
   /** `missing_payload` (`087`/`088`): a route's channel file was not written, or a loop-back's expected file is absent. */
-  kind: "missing" | "contradiction" | "missing_payload";
+  /** `unrouted` (`108`): a condition label the active workflow has no edge for. */
+  kind: "missing" | "contradiction" | "missing_payload" | "unrouted";
   verdict: "SUCCESS" | "FAIL" | null;
   label: string | null;
   message: string;
