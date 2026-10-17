@@ -13,9 +13,7 @@
       "signature": "export interface TrackerEntry {",
       "contentHash": "4e7aed29ca2154d9ba3cdca5f6f3acf463946f0803306b30068437b5462f416f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "function withLock(dir: string, fn: () => T): T",
       "contentHash": "7cf3e72e716bf31d745652d763f40fbc9a6260645082b1202f2e42d1b20ba0b5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "function writeStatusMap(dir: string, statusMap: StatusMap): void",
       "contentHash": "fcd492525e25a8a6cd3205b85c40accf13f9651616682c9512ffda0caa4b386a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "export type TaskStatus = MaestroTask[\"status\"];",
       "contentHash": "fb0ca9e6db8ce49be607dc3cd5de6c9419a2c1495d99ef0bb2ac4b69a6124e83",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "function epicOfTask(projectRoot: string, filename: string): string | null",
       "contentHash": "98eddd1fc5a4577a31de358652cbcca42c49679e50621cf58a400473ceb2a84c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "type StatusMap = Record<string, StatusEntry>;",
       "contentHash": "2c03aeb44fe3d9e6f8e0c42847fcbb156856ef22d31e70c09e3fa26c88c141c6",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "function epicDirFor(projectRoot: string, slug: string): string | null",
       "contentHash": "1e8a6b7ef29736a8e7e6e8f1bb705dcb85d2e1ffca94251865f47db8b71e20c4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "function unlinkTasks(projectRoot: string, tasks: string[]): SetEpicResult",
       "contentHash": "57f2c9e79f744e9052f991d78e1cce25bdce2b458640b62971236297da6f25ad",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "interface StatusEntry {",
       "contentHash": "bcf7be2a6ad5f13db36c1f046d59f029a1a9906a25750c6672b622c050117ef4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "function getMaestroTasks(): Promise<MaestroTask[]>",
       "contentHash": "fbbc26317306ba559199e1bff3569d20746a44dba1614a1c278b93bef3a0e667",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "function nextInboxId(state: EpicState, kind: EpicInboxEntry[\"kind\"]): string",
       "contentHash": "cf23725c49d9515da74c853a9cdd0d72d3b5792049dd938602e32496f46252cd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "export interface EpicReportEntry {",
       "contentHash": "f4948408dba938be0664fbf8b30b74db738b115a76df59e145484972eae83955",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "function readClaimFile(filePath: string): ClaimFile | null",
       "contentHash": "29ad70828a59e9c399df3267004952e820ebe8ebca86f7668fcf8f63ebd47d84",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "function acknowledgeReport(projectRoot: string, slug: string, id: string, by?: string): \"acknowledged\" | \"already\"",
       "contentHash": "fc294c2e8b8761a2f3bc0214042ba6757f821b78aae70d79c628a55c26ab8d7b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "export interface EpicTaskView {",
       "contentHash": "e8b52179938d5df85f422dc25a777f994ff59b2ebe09849cba482788af6c02c5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "export interface EpicState {",
       "contentHash": "3ba5dc746a9fc68a7b3d9a432ab6c8720b73a2fd0a0844e88eab5cf2a034dee9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "export type EpicLogEntry = EpicReportEntry | EpicNoteEntry | EpicAckEntry;",
       "contentHash": "273176881330304a6fa516e8eef6bb5e445deac0d4814e07b75c954af759bf04",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "type Filter = \"open\" | \"closed\";",
       "contentHash": "9f431f17fa214f7dd736ef050f37602a7f6f0aadf9b77f91c6a4ffdfd0d9ab3e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "export interface EpicView {",
       "contentHash": "e238a220414e6e6994f691b6dc13fecab1df9e27b3b897c8ed6130d913bcf6dd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "function buildStatusMap(dir: string, files: string[], doneSet: Set<string>, previous: StatusMap = {}): StatusMap",
       "contentHash": "ca111289f0dc2dffaebd162360db23e831b441e5ae47a18604e5001eeef604bf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "export interface SetEpicResult {",
       "contentHash": "422930eb1fa6ddaeb79ad8a0c8e1c230fda8067a5ee071269add70343cb230fe",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "export interface EpicSummary {",
       "contentHash": "0df705e8310b3a394ea527347d65f5d6d86772633fe53c0a1ae8413d8eec01a2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "export interface CrossEpicEdge {",
       "contentHash": "d1563819fd3aaeb512b0707a0ff936b580ab67ed9c322edc1b4d00f9825ed1da",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "export interface NoteOptions {",
       "contentHash": "59489e53533420da2347dc036330cf2d0acec98934cba978da6bea576fba3dfb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "function isValidEpicSlug(slug: string): boolean",
       "contentHash": "f240c809664969474adae2b174a63e6bc7009d9ef9d45c51d85942991d743b9e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "function claimPathFor(tasksDir: string, filename: string): string",
       "contentHash": "51f22e76597dbf7894f17ab9e0e7d4a8a11a66f8587e4b195c04434e99925598",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "function tasksFromFiles(dir: string, files: string[], statusMap: StatusMap, claims: Map<string, TaskClaim> = new Map()): MaestroTask[]",
       "contentHash": "4f498902a955d304e20e5cee278afce8d8b7363c3570978d9d88c3816be10364",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "export type EpicInboxEntry = EpicReportEntry | EpicNoteEntry;",
       "contentHash": "92ae29776662a76abb71fab06fa585015ebe80aff3dd1a437bf6a30577858cb2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "export interface TaskQueueTailEvents {",
       "contentHash": "3a547b01a1f0283a7b83b07c9abf1bad5389a5d690727ff51e35708ecf35ef9b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "function createEpic(projectRoot: string, slug: string, options: CreateEpicOptions = {}): { dir: string; }",
       "contentHash": "2d12d8d8dae8b107ddd4ad7ba5952c3b501374c927983730d2eaab95c5d74d55",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "function removeWorker(projectRoot: string, slug: string, name: string): void",
       "contentHash": "7465f069b0fbe9b499c800fdb8ebcac6ecfbe7a1ba3ab0d6a05a7c191dd9a3ae",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "function releaseTask(tasksDir: string, filename: string, sessionId: string): ReleaseResult",
       "contentHash": "3612caef06d0558aed228b791cff98a41bf3770bcfb24182f55e0a9686d5c3de",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -653,9 +589,7 @@
       "signature": "export type ClaimResult = { outcome: \"claimed\" } | { outcome: \"already-claimed\"; claim: TaskClaim };",
       "contentHash": "07109f98764f8c3883185b21d877572a319c77410599bba366bd2f03b74d07b1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "function claimsDirFor(tasksDir: string): string",
       "contentHash": "a21ab5eae509718bd8f024e210f0aab5a63ef492c5392d146dfe88c86aa1f94b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "function readStatusMap(dir: string): StatusMap",
       "contentHash": "ddc00feb47c83d99c84caec22507354bccbde9469b8295ddbe7d7bb96b3fb0e5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function unacknowledgedReports(state: EpicState): EpicInboxEntry[]",
       "contentHash": "64b676a8945608048d6266ced6ebe224f6db8391f590a0a8a31eec01d2bd1770",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "function claimSessionName(tasksDir: string, filename: string): string | null",
       "contentHash": "5b1e546cb3d122bf6a0c8d1e7c5eb3fbcb2f7702953533eca7a0e46ed786d9a0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -753,9 +679,7 @@
       "signature": "function linkTasks(projectRoot: string, slug: string, tasks: string[]): SetEpicResult",
       "contentHash": "cb3925eae7aca943feaa5aaaf12b449141b1805ebf561b776a47f507d6172b05",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "function setTaskEpic(projectRoot: string, filenames: string[], epic: string | null): SetEpicResult",
       "contentHash": "f6028dc7c7318c1cd85633115b9561b85314c5fcb4aae8387e0549917f5e7c2d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "function listTaskFiles(dir: string): string[]",
       "contentHash": "93f778d35627d7f52a676378688cad1f098796ffb67af51aff7a4f2eb93dab24",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "function collectAgentSkills(searchList: MaestroWorkflowV3[] | null | undefined, instances: MaestroInstanceV3[] | null | undefined, agentType: string | null | undefined): AgentSkills",
       "contentHash": "ecefcfc707cadfd79664837c93f5c98035e8f9540fb518ba12398d07d1481d35",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -833,9 +751,7 @@
       "signature": "function resolveSearchList(cfg: Partial<MaestroConfigV3> | null, session: Partial<MaestroSession> | null): SearchListResult",
       "contentHash": "c0c85c9d674c96c425fe124410eb6ffc0cdbcfdb9c58ba8a8e4bfb0087c4134f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -853,9 +769,7 @@
       "signature": "export type WrittenNote = WrittenReport;",
       "contentHash": "2bb0056e3ac5963cbe330f17d1de39bf2e4decba30b7fcae60ce073876950bf5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -873,9 +787,7 @@
       "signature": "function ensureClaimsDir(tasksDir: string): string",
       "contentHash": "24360ab3ced7723e71f8dc962ee4a865618b195323f932872c52b212cf66d69f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -893,9 +805,7 @@
       "signature": "function listClaimFiles(dir: string): string[]",
       "contentHash": "4e3def273984324cf2270033e02c7138d6f1a3647337f05ad8f36dc26d4eb1c1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -913,9 +823,7 @@
       "signature": "isOpen(t: MaestroTask): boolean",
       "contentHash": "43ef3d88e83bdc228ea2074a2800394906c71796709b973d94839b40d62f146f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -933,9 +841,7 @@
       "signature": "function MaestroTasksPage(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "94cf24a0ba7dc0c6e0e95404936d2c9765d82a1dc873fa2c9d3e87fad31dbfbc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -953,9 +859,7 @@
       "signature": "function checkNoteRoute(projectRoot: string, toSlug: string, fromEpic: string): void",
       "contentHash": "e38c33c78379697b874693a2ea25ed1f1f042328a3e22c3058e1d509d5bfd16a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -973,9 +877,7 @@
       "signature": "function sleepSync(ms: number): void",
       "contentHash": "fae77e5eb125a3248b0d2fee35ba552b140cc0322c85d03c6656e9bcb42d333c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -993,9 +895,7 @@
       "signature": "function isSessionLive(claudeDir: string, sessionId: string, now: number = Date.now()): boolean",
       "contentHash": "6a0167775b6814b70eacf4ccff6d281c13e2759ee0351a890ebb31cab08f3f6d",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1013,9 +913,7 @@
       "signature": "export interface AgentSkills {",
       "contentHash": "30a616ec5e2c9890c765c95c624c6ff184c20d6a5369f3d06cb4b28d9a278067",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1033,9 +931,7 @@
       "signature": "function readTaskTracker(projectRoot: string): Record<string, TrackerEntry>",
       "contentHash": "fc104b37eb4ee236e95f3e637a6fe730e929bbb666665a7911c9d4eac3799932",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1053,9 +949,7 @@
       "signature": "export interface ClaimFile {",
       "contentHash": "3f06be9a44aa046fb8a38774c9365f378134b233337c08f5ca84057e1d85101e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1073,9 +967,7 @@
       "signature": "function updateState(projectRoot: string, slug: string, fn: (state: EpicState) => T): T",
       "contentHash": "1fc82787e662cc7f4836efebed39523f0934f5299cefaea56aa0d16b3b5eba52",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1093,9 +985,7 @@
       "signature": "function tailTasks(projectRoot: string, events: Partial<TaskQueueTailEvents>, intervalMs = 1000): () => void",
       "contentHash": "7b562ae6d83a6b9f4a33dc472f903d777e84a4ae3d7f4a95181ed1767fd04fcf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1113,9 +1003,7 @@
       "signature": "function readClaims(projectRoot: string, tasksDir: string, now: number = Date.now()): Map<string, TaskClaim>",
       "contentHash": "ef898c075e3998e507f7ae71d9575ea86665f376733d2d9aaa6cdac1a1a78f94",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1133,9 +1021,7 @@
       "signature": "function listEpicSummaries(projectRoot: string): EpicSummary[]",
       "contentHash": "c7051a104f505ec734f7054fd15f9354b8b8f607d8a2f3bf39605717aa1ede18",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1153,9 +1039,7 @@
       "signature": "function nameOf(claim: ClaimFile): { sessionName?: string; }",
       "contentHash": "e1a66a1a2c27fffcd85c66ef8e135d260510386edcbfca5418ab7fcd67847f5a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1173,9 +1057,7 @@
       "signature": "function resolveWorkflowName(cfg: Partial<MaestroConfigV3> | null, explicit?: string | null): string",
       "contentHash": "4d8b9acf2d6c043cac88a1e7378be53780e3d131b0a07af00c2a1608f5591207",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1193,9 +1075,7 @@
       "signature": "function readFileSafe(dir: string, filename: string): string",
       "contentHash": "dd3275a700e9b4674bef5071d1f98fc819b3361d0533c9c93ff37b77f7840cd7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1213,9 +1093,7 @@
       "signature": "function reportCommandFor(projectRoot: string, task: string, sessionName?: string | null): string | null",
       "contentHash": "1c12b30b69af1846a9671e19b73ea3acc6aea7faf7356fd5812687d4a010d549",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1233,9 +1111,7 @@
       "signature": "export interface WrittenReport {",
       "contentHash": "2f4397101105aa1406d8b392d21e37a1d36a6a76155feff13ad9156ff85fd735",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1253,9 +1129,7 @@
       "signature": "function successPathSteps(wf: MaestroWorkflowV3, instances: MaestroInstanceV3[] | null | undefined): string[]",
       "contentHash": "d4bc47a6acbcd19c66eee264094eb3f46c36d4503eb686fc9dc107486a0632bf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1273,9 +1147,7 @@
       "signature": "export interface EpicAckEntry {",
       "contentHash": "3931fe03d7ccd060d14adb7ee34f20bbe8f102b49dabd06bfe52d79a63041466",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1293,9 +1165,7 @@
       "signature": "function formatInboxEntry(entry: EpicInboxEntry & { path: string }): string",
       "contentHash": "3bcb0a13bb0423caf887d560553bc0a937f8ddccf49e71262d3f4206e1c782e7",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1313,9 +1183,7 @@
       "signature": "function promptFor(task: MaestroTask): string",
       "contentHash": "a70bd6cf323327fdeb7a6557b55262a5a0e372c9f9eac414acdeb3afb7267023",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1333,9 +1201,7 @@
       "signature": "function deleteMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]>",
       "contentHash": "0a3cc4f5e4b98a4b33e3a0aedca51382b0ebb0fc8629de83c1f7b777c92b7100",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1353,9 +1219,7 @@
       "signature": "function workflowNodeLabels(wf: MaestroWorkflowV3, instances: MaestroInstanceV3[] | null | undefined): Set<string>",
       "contentHash": "88b00582b6efac3af3dbc7a1c4ad6bbeb01569691b15a6e24fdb592c2d89f052",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1373,9 +1237,7 @@
       "signature": "function tasksDirFor(projectRoot: string): string",
       "contentHash": "2071307093616586635f83ed988ed6fbb0c0ee36f72b0f160254dce33fa098ca",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1393,9 +1255,7 @@
       "signature": "function formatCrossEpicEdge(edge: CrossEpicEdge): string",
       "contentHash": "06b376ce4882a8cc2aa27486cbf8d5d00f8eb66e400c312caab8408ebcdbeb01",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1413,9 +1273,7 @@
       "signature": "function claimTask(projectRoot: string, tasksDir: string, filename: string, sessionId: string, now: number = Date.now(), sessionName?: string | null): ClaimResult",
       "contentHash": "08e26624bdcf0a8242829bd48bca6d49c366c7de05c1b18380d142000ea96269",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1433,9 +1291,7 @@
       "signature": "function isInboxEntry(e: EpicLogEntry): boolean",
       "contentHash": "0e698c9a9bc9fc23f73d4694067c2192686962af18d6e694edee8e55e043d4b9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1453,9 +1309,7 @@
       "signature": "function now(): string",
       "contentHash": "eee0a5ff5501551b0ea7f6fc18e286437193c5d497f46699b46a38b4a6ad101c",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1473,9 +1327,7 @@
       "signature": "function StatusBadge({ status }: { status: TaskStatus }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "62ea8bbc6da2cda665de0c846bfc63659e4d3037b9a6e2a18b5c90801a1aafea",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1493,9 +1345,7 @@
       "signature": "function nodeLabel(id: string, wf: MaestroWorkflowV3, instances: MaestroInstanceV3[] | null | undefined): string",
       "contentHash": "a7043c3de982895ca102b3b4a7b17558c805f01227905e387803254e3ff7b0ad",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1513,9 +1363,7 @@
       "signature": "function writeNote(projectRoot: string, toSlug: string, body: string, options: NoteOptions): WrittenReport",
       "contentHash": "6e22be7d4cd47fdd34d52bddbdbc20fa4fb3d742ec8e6c31c91743a3cc6549fa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1533,9 +1381,7 @@
       "signature": "function bareAgentName(s: string | null | undefined): string",
       "contentHash": "7b52fb9c4f9920d265a88cfedaacd50232ace546c64fdb135d26ec3af5403b8b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1553,9 +1399,7 @@
       "signature": "function ago(iso: string): string",
       "contentHash": "aadfaa0d7f5388536059d03c486268b186edf42aceea042464e5c356969e82b4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1573,9 +1417,7 @@
       "signature": "function extractPostMortemSection(content: string): string | null",
       "contentHash": "6992dd7e471ac89b2dd19901c8d3dd86a5ce6073fd02105cf7cf2094d5307113",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1593,9 +1435,7 @@
       "signature": "export interface EpicNoteEntry {",
       "contentHash": "023c9d4d147253b93e4fb2b667916bde5f0952408f78db7d539e16f6e09975c4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1613,9 +1453,7 @@
       "signature": "function deleteClaimIfAny(tasksDir: string, filename: string): void",
       "contentHash": "48eece2fc7db41f28c4fb5c3b82f4830f9031891ca5602efb142bbd0bddd17d0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1633,9 +1471,7 @@
       "signature": "function addWorker(projectRoot: string, slug: string, name: string, task?: string): void",
       "contentHash": "76f910806b8a213ec6199af240b4cf71555433d0799cf7af2c31ff1baa78074f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1653,9 +1489,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "007e271b5096b1797c2a9c8d46eb71bea92d01541208bab65b13bad5f2375056",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1673,9 +1507,7 @@
       "signature": "function parseTitle(content: string, filename: string): string",
       "contentHash": "a6db162a0e59782fcddff9ed8239d424b70fb7632134b5b5b2df1892019df8b3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1693,9 +1525,7 @@
       "signature": "function writeReport(projectRoot: string, task: string, body: string, sender?: string): WrittenReport | null",
       "contentHash": "51365da5bb5d48505be604bad2d559bb2160377909e948ca40d6a0ac239b8498",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1713,9 +1543,7 @@
       "signature": "export interface EpicWorker {",
       "contentHash": "6892e6fcec9632609d3f33134c6db729cfe6da020dff7bfdb1f8534de69858ba",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1733,9 +1561,7 @@
       "signature": "function crossEpicEdges(tracker: Record<string, TrackerEntry>, slug: string): CrossEpicEdge[]",
       "contentHash": "b9e63158536e6889a63e167b68d48d5de3a874e45a9f8467f1d77e5d8e9537ca",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1753,9 +1579,7 @@
       "signature": "export type ReleaseResult = \"released\" | \"no-claim\" | \"not-owner\";",
       "contentHash": "11bb20c4056693f013ab6b4a26dc078ce4bd00abf590318d6c8c4cc95dffeda4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1773,9 +1597,7 @@
       "signature": "export interface CreateEpicOptions {",
       "contentHash": "8f5c608d7670a8913392c49c4dd12ac8f8a0d45056b4a20c9e3ae1a0f3529941",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1793,9 +1615,7 @@
       "signature": "export interface SearchListResult {",
       "contentHash": "452e8791e86a3c1afb0a4924a18e4f3b6a6d798406de4e5a9b1a5387d794bf2f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1813,9 +1633,7 @@
       "signature": "function listTasks(projectRoot: string): MaestroTask[]",
       "contentHash": "d770b3413c22b8897eb131795cc8624a5a036e4c34811650d94e709f9364530b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1833,9 +1651,7 @@
       "signature": "function writeEpicState(dir: string, state: EpicState): void",
       "contentHash": "6ba16e71d2d3bef7f21e320726f90a95d9e57caf48e738a5e16391fbf302c235",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1853,9 +1669,7 @@
       "signature": "function ClaimBadge({ claim }: { claim: NonNullable<MaestroTask[\"claim\"]> }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "c1612f5b27caf6507f5e72ef0b6458f88400d9c18576c435df395dd251c8f720",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1873,9 +1687,7 @@
       "signature": "function readEpicState(projectRoot: string, slug: string): EpicState | null",
       "contentHash": "e35c0c14cc994a72c4cacc84985eef9ce04cf6287d384abacce8e5c8a3701683",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1893,9 +1705,7 @@
       "signature": "function deleteTask(projectRoot: string, filename: string): MaestroTask[]",
       "contentHash": "282af79b23723f042cc2c750657aa23c42a20b1c0f3c5c405aae6a2f57ab4f59",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1913,9 +1723,7 @@
       "signature": "function parseBlockedBy(content: string): string[]",
       "contentHash": "a00d4263e9a01a3e80b9e58de8c506d553a280c21249ff96d846a51af7222eed",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1933,9 +1741,7 @@
       "signature": "function showEpic(projectRoot: string, slug: string): EpicView",
       "contentHash": "1ab0ec9e320042efe0a774b24d10270543259f8f51462641ec16ce4ec93f974e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1953,9 +1759,7 @@
       "signature": "function closeTask(projectRoot: string, filename: string): MaestroTask[]",
       "contentHash": "50cf92fe78dc0c4e872d91550e41d4100ac26b0b2c067fdc8b0d69ea8b5bcae9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1973,9 +1777,7 @@
       "signature": "function listEpics(projectRoot: string): string[]",
       "contentHash": "45d921a02db8b1aad96b0ae628d3b57770dd3d4fa01c426d66d03153c8b97eb9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1993,9 +1795,7 @@
       "signature": "function setManager(projectRoot: string, slug: string, name: string): void",
       "contentHash": "374d86044674cfe2f489a94cfd3ccfb22abda2cf58fad78bbdbcd4547a55e458",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2013,9 +1813,7 @@
       "signature": "function closeMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]>",
       "contentHash": "097b8534b0f2374945cff37da499429a1a861a862ff8c808917cc25de179e5b1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2033,9 +1831,7 @@
       "signature": "export interface TaskClaim {",
       "contentHash": "9ca3961b5f38495a135a63df77bad7d151a009d3723f300f651d63a15d8b9e0a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2053,9 +1849,7 @@
       "signature": "function formatEpic(view: EpicView): string",
       "contentHash": "aa20f078c12cfaccf34bb84f3c816d1b12b65d40646d78e3668179d0e7f82623",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -4432,11 +4226,11 @@
   ],
   "skill": {
     "path": ".claude/skills/task-queue/SKILL.md",
-    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"1.5\"\n  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`. |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
-    "contentHash": "sha256:5ed8d5a03286d1d8d9e1070ec2e5db00ebf2a05e2d9f12802d2775df864b442f"
+    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"1.6\"\n  last-update: 77c8c95568c2a59d68cc5db4aab39f562e6ff702\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
+    "contentHash": "sha256:e2469d3c958ef913d04844684563e74eec3a33d07453f093c0dd0be82fb2a50f"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:29:06.517Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T12:32:15.582Z"
   }
 }

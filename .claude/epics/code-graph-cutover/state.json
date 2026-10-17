@@ -2,8 +2,8 @@
   "slug": "code-graph-cutover",
   "created_at": "2026-10-14T02:02:09.698Z",
   "manager": {
-    "name": "maestro-0c",
-    "set_at": "2026-10-16T19:51:41.850Z"
+    "name": "maestro-cb",
+    "set_at": "2026-10-17T12:47:32.187Z"
   },
   "workers": [
     {
@@ -96,6 +96,20 @@
       "id": "r005",
       "at": "2026-10-16T22:13:30.826Z",
       "by": "maestro-0c"
+    },
+    {
+      "kind": "report",
+      "id": "r006",
+      "task": "111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md",
+      "file": "inbox/r006-111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md",
+      "at": "2026-10-17T12:45:01.903Z",
+      "from": "maestro-94"
+    },
+    {
+      "kind": "ack",
+      "id": "r006",
+      "at": "2026-10-17T12:52:58.583Z",
+      "by": "maestro-cb"
     }
   ]
 }

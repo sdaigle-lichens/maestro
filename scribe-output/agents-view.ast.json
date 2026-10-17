@@ -13,9 +13,7 @@
       "signature": "function AgentForkReview({\n  entry,\n  busy,\n  onAction,\n}: {\n  entry: AgentSyncEntry;\n  busy: boolean;\n  onAction: (action: AgentSyncAction) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "acb64f974a15de359e4c351db7ba34a1ca9d55e9942140c6ca2c7c294556bbbe",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -33,9 +31,7 @@
       "signature": "type PaneTab = \"interactions\" | \"content\";",
       "contentHash": "1dfe0925aa4bc503a0513ce8b9fa018e04115270db835f2887fb153f707e0f4b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -53,9 +49,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "87b71e9fedba2a1ba89025edd39b8577c07baff8410dbcadc041c79655dd5ad1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -73,9 +67,7 @@
       "signature": "function isRequired(cat: AvatarCategory): boolean",
       "contentHash": "61a54720c9da12e85e6acbd6951a99c877b0f1ba09fc4d628c010e1d53e523e2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -93,9 +85,7 @@
       "signature": "function AgentsPage(): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "acf56941a5d1b9d3d77a7265058e978c02335f1282cc197884732256db9128a0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -113,9 +103,7 @@
       "signature": "function Entry({\n  header,\n  testId,\n  value,\n  editable,\n  editing,\n  placeholder,\n  emptyText,\n  note,\n  lanePath,\n  onChange,\n  onStartEdit,\n}: {\n  header: React.ReactNode;\n  testId?: string;\n  value: string;\n  editable: boolean;\n  editing: boolean;\n  placeholder: string;\n  emptyText: string;\n  note: string | null;\n  /** Where this route's template lands at runtime (`036`) — null for the report entry. */\n  lanePath?: string | null;\n  onChange: (value: string) => void;\n  onStartEdit: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "4387e67e9e35c7548c166b4291a226c86ef071dcb16039c19c7ff3bef5c245f3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -133,9 +121,7 @@
       "signature": "function InteractionsPane({\n  report,\n  reportNote,\n  routes,\n  content,\n  contentEditable,\n  contentNote,\n  handoffs,\n  editing,\n  open,\n  width,\n  onToggleOpen,\n  onStartEdit,\n  onReport,\n  onContent,\n  onHandoff,\n  onWidth,\n}: {\n  report: string;\n  reportNote: string | null;\n  /** The routes leaving the selected agent, in the graph walk's own order. */\n  routes: ResolvedHandoffRoute[];\n  /**\n   * The selected agent's markdown body — everything after the closing frontmatter `---` — for the\n   * Content tab. The DRAFT value while editing (`045`), same as `report`/`handoffs` below.\n   */\n  content: string;\n  /** Whether the Content tab's body may be edited — project-tier only, same gate as the description. */\n  contentEditable: boolean;\n  /** Why the Content tab is locked, when it is. Null when `contentEditable`. */\n  contentNote: string | null;\n  /** The DRAFT bodies, keyed by handoff id — what the editors show and what Save compares. */\n  handoffs: Record<string, string>;\n  editing: boolean;\n  open: boolean;\n  width: number;\n  onToggleOpen: () => void;\n  onStartEdit: () => void;\n  onReport: (value: string) => void;\n  onContent: (value: string) => void;\n  onHandoff: (handoffId: string, value: string) => void;\n  onWidth: (width: number) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "e3afc715b22b77971bf3f92ca478b652813f7a412069a488e0b925f9c6f57420",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -153,9 +139,7 @@
       "signature": "function clampText(text: string, max = 108): string",
       "contentHash": "4f16658097efb87c3d143d4e7fb504989033b7e944a1b9deb9ca827add580cb1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -173,9 +157,7 @@
       "signature": "function openDb(dbPath: string): DatabaseSync",
       "contentHash": "c377be8c51a59c7564c298a40c8002cb531e744dd7ee4c81c02b5c911dbbcebc",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -193,9 +175,7 @@
       "signature": "function SectionLabel({ children }: { children: string }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "6c2c51686ce659868d309fcdfa94790f66ee975a3908d91f78481fa990bc0a57",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -213,9 +193,7 @@
       "signature": "function findAgentFile(projectRoot: string, bundledDir: string | null, agentName: string): Promise<AgentFileRef | null>",
       "contentHash": "bac4e4f16651f5d68fc4a39931f7b28da873671366f4d8b5ab10f78d9ebdf5ee",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -233,9 +211,7 @@
       "signature": "function AgentList({\n  items,\n  selected,\n  open,\n  query,\n  onQueryChange,\n  onToggleOpen,\n  onSelect,\n  onEdit,\n}: {\n  items: AgentListItem[];\n  selected: string | null;\n  open: boolean;\n  query: string;\n  onQueryChange: (q: string) => void;\n  onToggleOpen: () => void;\n  onSelect: (id: string) => void;\n  onEdit: (id: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "ce313fdba75f9a3a88fc7e66d5015dc6852fd491de106686d7b46328ef030e0e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -253,9 +229,7 @@
       "signature": "function getAvatar(agentName: string, dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): AvatarLayers | null",
       "contentHash": "21020c6ab51c7b75aa0b6cebb05561db69ebda9e542702f3d4885b74a1a227b3",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -273,9 +247,7 @@
       "signature": "function sameSkills(a: AgentSkill[], b: AgentSkill[]): boolean",
       "contentHash": "69927a02b53067561b0060c0c887b45e6c8675f69ef59872a08b784e3f5039aa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -293,9 +265,7 @@
       "signature": "function originLine(entry: AgentSyncEntry): string",
       "contentHash": "c7e3b0e3a0fc67bc30394d7c80c0f018815adf0437d1f1271db8334d1a0cbe06",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -313,9 +283,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "f9a94b41456b3804f07357363aadcb2999bbca6476dd02184fc8cb953ac6b3c2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -333,9 +301,7 @@
       "signature": "function verdictLine(entry: AgentSyncEntry): { tone: \"ok\" | \"warn\" | \"info\"; text: string; }",
       "contentHash": "dc5d2467490b4e2dd84b2a592eb270421c5c39619871d714a39073c325b97198",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -353,9 +319,7 @@
       "signature": "function extractAgentBody(contents: string): string",
       "contentHash": "741c360ac38d926c624bdfb0697729666e245474dfa279e7795b3a1376c6147f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -373,9 +337,7 @@
       "signature": "function sourceLabel(source: ResolvedReport[\"source\"]): string",
       "contentHash": "5efd89bd02ce1f6249c57327b21a78a48ca2c62f5fb197bcc33c419821a8339b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -393,9 +355,7 @@
       "signature": "function dropLegacySchema(db: DatabaseSync): void",
       "contentHash": "0fbcd6d21560f4aca09a2c86de4b7059bbf1893c85e5efd1b49b16fd7d04a3cf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -413,9 +373,7 @@
       "signature": "function replaceDescriptionInFrontmatter(contents: string, description: string): string",
       "contentHash": "9aa76a1e8988c4c4ab1235a2b8dbe337fa5c8b0c9233a2ca6953e21f2a32f1df",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -433,9 +391,7 @@
       "signature": "function skillsOf(instance: MaestroInstanceV3 | null): AgentSkill[]",
       "contentHash": "bbe7014c5671803ca80fb548fb52085b0bd6a42c3c76b24ff69b6930962c70bf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -453,9 +409,7 @@
       "signature": "function cycleOption(options: string[], required: boolean, current: string | null, dir: 1 | -1): string | null",
       "contentHash": "5c3d883fd356545f95e92fc01b8b71f1ff5994a07a3fcd7f2916da4e6e8e6ccd",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -473,9 +427,7 @@
       "signature": "function DiffBlock({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "1bf08a6627fd30cad2418265d276fdc0cc1d74abb54e9588b63c706486aba454",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -493,9 +445,7 @@
       "signature": "function setAgentContent(projectRoot: string, bundledDir: string | null, agentName: string, body: string): Promise<AgentContentResult>",
       "contentHash": "90a398ba1664577e139cf8bf4488a7cd2455b378aeaa7620f3a9f05a8a6b4715",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -513,9 +463,7 @@
       "signature": "export interface AgentListItem {",
       "contentHash": "54364234cd73642145177e1bcd68b25e5cfbd01a2fba35fce41589cbfc3a4442",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -533,9 +481,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "58c7b0506e03fd89d3cd88f978c95a6256112ed2fe2d779fb6d93375a2505d02",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -553,9 +499,7 @@
       "signature": "function DescriptionPair({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "bd39060cc6af48b5a78a53291584db953fb3c89aea1ac9c63ab49061c89792d1",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -573,9 +517,7 @@
       "signature": "function nativeHairColor(id: string | null): string",
       "contentHash": "df23c4e19e4b95306ec8d27c7b96f5fdd4ac43de0bfb2b9cd9d340e8491fa220",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -593,9 +535,7 @@
       "signature": "interface AgentAttributes {",
       "contentHash": "683f526a66e6d8942b7cf001b817336c6519582912178d80042e2ffb744ebee4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -613,9 +553,7 @@
       "signature": "function AgentRow({\n  agent,\n  selected,\n  onSelect,\n  onEdit,\n}: {\n  agent: AgentListItem;\n  selected: string | null;\n  onSelect: (id: string) => void;\n  onEdit: (id: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "bbbf331cf5157d003fb32ec5434bafda7b98819449c47964912656bfa29a275b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -633,9 +571,7 @@
       "signature": "function randomAvatarLayers(): AvatarLayers",
       "contentHash": "19440724efb772b73638460290b2a76c7e5833ec4ef822ff9e2a03e2c64eeb96",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -653,9 +589,7 @@
       "signature": "interface LayerSpec {",
       "contentHash": "0c83d2efe484da391c305bed76a09c177d9da9017eccfd0034e5480b14813678",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -673,9 +607,7 @@
       "signature": "function pluginAgentEntries(): Promise<(AgentEntry & { plugin: string; })[]>",
       "contentHash": "a99754403974f00b8f02929fd3d5f886a1d10bb84935fec61e28e81c6b877f0a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -693,9 +625,7 @@
       "signature": "export interface AgentDraft {",
       "contentHash": "6a57be2baff0c7b6ccfc471999bc9c7685800c7923daa62bff9bbcc3b455e189",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -713,9 +643,7 @@
       "signature": "function readAllAvatars(dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): Record<string, AvatarLayers>",
       "contentHash": "db91f514b65002f91a6cf6a11e391cc15c3768076224a3d909f66a706132e39e",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -733,9 +661,7 @@
       "signature": "function defaultAvatarLayers(): AvatarLayers",
       "contentHash": "543b9fded958229253d08f91ebeab803a1aa4bdf0439821d6d4d8e298df2213f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -753,9 +679,7 @@
       "signature": "function SkillChip({\n  skill,\n  editing,\n  onToggle,\n  onCycleMode,\n}: {\n  skill: AgentSkill;\n  editing: boolean;\n  onToggle: () => void;\n  onCycleMode: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "00018f6efb5c88cc8bc756420a46e4a4299fc1dedfae4b3c6d10dddfa879c1e5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -773,9 +697,7 @@
       "signature": "function ColorControl({\n  label,\n  color,\n  native,\n  onChange,\n}: {\n  label: string;\n  color: string | null;\n  native: string;\n  onChange: (color: string | null) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "928790090f4c054a76d15131f36a862d92b2dcbf4c4a0c914350b641c2a30e9a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -793,9 +715,7 @@
       "signature": "function sameLayers(a: AvatarLayers, b: AvatarLayers): boolean",
       "contentHash": "f74bcb5ba45890689f221f98134cf63eececdc01087eedfc4fa7fc5729dd0bf2",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -813,9 +733,7 @@
       "signature": "function replaceBodyInFrontmatter(contents: string, body: string): string",
       "contentHash": "fd1fafb1e609b557b94109e47af429cd7361645135e73d4af6033de42bd946ed",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -833,9 +751,7 @@
       "signature": "function getAgentBody(projectRoot: string, bundledDir: string | null, agentName: string): Promise<string>",
       "contentHash": "c1075bb48870078c6a461e9e755f364b58628eaa5a4268ed6bcfb55537556ecf",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -853,9 +769,7 @@
       "signature": "function describeUneditableSource(agentName: string, source: string): string",
       "contentHash": "e0196cee110ad393c1adde0f18b5a78f5fe4fd9282892a01c052056e70236e86",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -873,9 +787,7 @@
       "signature": "export interface AgentFileRef {",
       "contentHash": "79ffd0c38483ecaab2812153ff758154efd50746768273c738ac4898000f6d42",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -893,9 +805,7 @@
       "signature": "function partName(cat: AvatarCategory, id: string | null): string",
       "contentHash": "7deca2bfcbeed5eb5bcc614282c42b4efe7788c0776788b023a6a3a262746273",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -913,9 +823,7 @@
       "signature": "function nativeEyesColor(id: string | null): string",
       "contentHash": "25f6a59abaede3da11320536ec06cdfa4c8ba11c2bc49c68e626a6bfe75f1de9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -933,9 +841,7 @@
       "signature": "function setAvatar(agentName: string, layers: AvatarLayers, dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): AvatarLayers",
       "contentHash": "5a9815bbcc7d6d4f3f569500265181937a9f3c3a09c6ba438350838e7c8210a4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -953,9 +859,7 @@
       "signature": "function ChipMultiSelect({\n  options,\n  value,\n  onChange,\n  emptyText = \"No options available.\",\n}: {\n  options: string[];\n  value: string[];\n  onChange: (next: string[]) => void;\n  emptyText?: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "98e4ab49f560d853362b6ce45031950ca6f060d21f34d3adbd4bb944dc05e3f9",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -973,9 +877,7 @@
       "signature": "function loadImage(src: string): Promise<HTMLImageElement>",
       "contentHash": "c4888bbddbff171ed7ec9fc8a33ad6e285c4107d2698d2a537ba6ec3489b545b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -993,9 +895,7 @@
       "signature": "function normalizeAgentDescription(description: string): string",
       "contentHash": "3690822a620921d6b3f8542939438c3face8f2aa4825e1e43ca9760600f8d61a",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1013,9 +913,7 @@
       "signature": "function isValidColor(value: unknown): boolean",
       "contentHash": "4c98f18b281301cf98a4b033f67e1638b3d20838c002955743413fda520db40b",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1033,9 +931,7 @@
       "signature": "function AgentCard({\n  name,\n  source,\n  description,\n  type,\n  projectTag,\n  projectTagOptions,\n  layers,\n  skills,\n  editing,\n  saving,\n  forking,\n  activeCat,\n  descriptionEditable,\n  skillsEditable,\n  footerNote,\n  nextSkill,\n  onActiveCat,\n  onDescription,\n  onType,\n  onProjectTag,\n  onLayers,\n  onToggleSkill,\n  onCycleSkillMode,\n  onAddSkill,\n  onStartEdit,\n  onCancel,\n  onSave,\n  onFork,\n}: {\n  name: string;\n  /** The tier this agent resolved from — \"project\", \"user\", \"maestro\", or a plugin name. */\n  source: string;\n  description: string;\n  type: AgentType;\n  projectTag: string;\n  projectTagOptions: string[];\n  layers: AvatarLayers;\n  skills: AgentSkill[];\n  editing: boolean;\n  saving: boolean;\n  /** A fork is in flight — disables the fork control the same way `saving` disables Save. */\n  forking: boolean;\n  activeCat: AvatarCategory;\n  descriptionEditable: boolean;\n  skillsEditable: boolean;\n  /**\n   * The one line of edit-mode explanation, rendered in the FOOTER rather than in the card. Inside\n   * the card it would change the card's height with its own wrapping, and the card's height is\n   * what stops the page reflowing when the user presses Edit.\n   */\n  footerNote: string | null;\n  /** The next catalog skill the `+` would attach, or null when the catalog is exhausted/empty. */\n  nextSkill: string | null;\n  onActiveCat: (cat: AvatarCategory) => void;\n  onDescription: (value: string) => void;\n  onType: (value: AgentType) => void;\n  onProjectTag: (value: string) => void;\n  onLayers: (layers: AvatarLayers) => void;\n  onToggleSkill: (index: number) => void;\n  onCycleSkillMode: (index: number) => void;\n  onAddSkill: () => void;\n  onStartEdit: () => void;\n  onCancel: () => void;\n  onSave: () => void;\n  /** \"Copy into the project\" — the read-only card's escape hatch. Always shadows under the same name. */\n  onFork: (newName: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "e2f33f0a153b164e5986882f2a4a51e67b99f1afc707f8a25a7a16e38be5bee0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1053,9 +949,7 @@
       "signature": "function quoteYaml(s: string): string",
       "contentHash": "dd64f1a8f969cc1d56de1796bc2c723cc8ac33878f6c83c424168064d67e11f5",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1073,9 +967,7 @@
       "signature": "function cloneDraft(base: AgentDraft): AgentDraft",
       "contentHash": "4cb131e91e69a68909d0ad219ee3b513398baa0e7959c8f6f30bc1ad34edd1bb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1093,9 +985,7 @@
       "signature": "function activeCount(skills: AgentSkill[]): number",
       "contentHash": "f95702f822f7cf23e658b7c755b7b07374a7a6e46281151d6b4938f26c6a9863",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1113,9 +1003,7 @@
       "signature": "function AvatarPicker({\n  value,\n  onChange,\n}: {\n  value: AvatarLayers;\n  onChange: (layers: AvatarLayers) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "34156bc09b299b63c1c00a1663f728a7892ea17ba99b5704e719aa39bb542ccb",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1133,9 +1021,7 @@
       "signature": "function AvatarCanvas({\n  layers,\n  size = 128,\n  fill = false,\n  className = \"\",\n}: {\n  layers: AvatarLayers;\n  size?: number;\n  /**\n   * Stretch to the parent box instead of `size` px. The /agents card frames the avatar in a\n   * responsive `aspect-square` container whose width the layout decides, so it cannot name a pixel\n   * size up front; every other caller still passes one.\n   */\n  fill?: boolean;\n  className?: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "371b15da00d54d68e4e20c046323d533576425916745cb207e8eb78cff09a724",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1153,9 +1039,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "eece8c70e39beadf2b680fc47d2d91c7f16b68d95ec25cbd7562a97e68325ac4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1173,9 +1057,7 @@
       "signature": "useEffect(() => {",
       "contentHash": "e80bb62188a5acfdfe66021711083ea3f9c1e22cbb94f8d50308116f2b2eacc4",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1193,9 +1075,7 @@
       "signature": "function ColorControl({\n  label,\n  color,\n  native,\n  onChange,\n}: {\n  label: string;\n  color: string | null;\n  native: string;\n  onChange: (color: string | null) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "f221c1fe368fdc446dba00e1a28d7354f8ff1f4fb130bf19a4d005a8a54f9647",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1213,9 +1093,7 @@
       "signature": "function resolveAgentPickerState(viewedRoot: string | null, projectAgents: string[]): { options: string[]; createDisabled: boolean; }",
       "contentHash": "a58dffcedfed717c49cb1835f7d62b27782d1b7b268d3a0053d34206bf8ba6e0",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1233,9 +1111,7 @@
       "signature": "function setAgentDescription(projectRoot: string, bundledDir: string | null, agentName: string, description: string): Promise<AgentDescriptionResult>",
       "contentHash": "857a2effba5c3db7ecacf657bdb8d6e4af258d264b9724cf4c7f2d86233afe60",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1253,9 +1129,7 @@
       "signature": "function isValidLayers(value: unknown): boolean",
       "contentHash": "c831c35078d5d1882a04e0fadbd92c65c8dd8e31971b3c5b2948b56d7a6d428f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1273,9 +1147,7 @@
       "signature": "function AgentAvatarBlock({\n  layers,\n  editing,\n  activeCat,\n  onActiveCat,\n  onChange,\n}: {\n  layers: AvatarLayers;\n  editing: boolean;\n  activeCat: AvatarCategory;\n  onActiveCat: (cat: AvatarCategory) => void;\n  onChange: (layers: AvatarLayers) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "e2e289160f5806a700b3cb877365c41e606320af1e2f7c11757ef629edc426fa",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1293,9 +1165,7 @@
       "signature": "function handoffsOf(routes: ResolvedHandoffRoute[]): Record<string, string>",
       "contentHash": "85a4b3ef42d1d539e6010f9018d22a14b5cb764f6ac955eb2f6f773e2eceac69",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -1313,9 +1183,7 @@
       "signature": "export interface AgentSkill {",
       "contentHash": "184d6d497d0207bbe8274b9b8fc1571177c61b0a2b918b1833de85eebf62ed9f",
       "status": "live",
-      "ast": {
-        "extractor_version": "code-graph@0.3.5"
-      },
+      "ast": {},
       "agent": {
         "authored_by": null,
         "stale": false
@@ -2418,11 +2286,11 @@
   ],
   "skill": {
     "path": "apps/maestro/.claude/skills/agents-view/SKILL.md",
-    "body": "---\nname: agents-view\ndescription: \"Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the \"Copy into the project\" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body.\"\nmetadata:\n  type: concept-skill\n  version: \"1.13\"\n  last-update: 4a94620c64a136a5b12d3df435b0b033a32f17a9\n---\n\n# Agents View\n\nThe `/agents` route (`src/renderer/src/routes/agents.tsx`) is where you browse the subagents a\nproject can dispatch, read the report a run would actually receive, and edit an agent's properties\nand its cosmetic avatar in place.\n\nIt is the third of the app's editor routes, alongside `workflow-view` and `rule-view` — but unlike\nthose two it does **not** own one slice of one file. An \"agent\" as this page presents it is assembled\nfrom seven different homes, and that is the single fact everything else here follows from.\n\n## Layout\n\n```\n┌───────────────────────────── TopNav (top-nav.tsx, unchanged) ─────────────────────────────┐\n├──────────────────┬────────────────────────────────────────┬───────────────────────────────┤\n│ Agents           │                                        │ Interactions            [▤]  │\n│ [▤]              │        ┌────────────────────────┐      │                              │\n│ [Filter agents…] │        │ probe-agent  DEVELOPER │      │ [Main Session]          [✎]  │\n│                  │        │                        │      │ ┌──────────────────────────┐ │\n│ ┌──────────────┐ │        │      ┌──────────┐      │      │ │ the resolved report,     │ │\n│ │ backend  [✎] │ │        │  ‹   │  avatar  │   ›  │      │ │ capped at 50% and faded  │ │\n│ │ [◲] desc…    │ │        │      └──────────┘      │      │ └──────────────────────────┘ │\n│ └──────────────┘ │        │  Hair · Long Bangs     │      │  Project override — saving…  │\n│ ┌──────────────┐ │        │ ── // DESCRIPTION ──   │      │ → test                  [✎]  │\n│ │ frontend [✎] │ │        │ ── // SKILLS ──        │      │ ┌──────────────────────────┐ │\n│ │ [◲] desc…    │ │        │ ── // PROJECT TAG ──   │      │ │ handoff_details protocol │ │\n│ └──────────────┘ │        └────────────────────────┘      │ └──────────────────────────┘ │\n│ [+ New agent]    │                     [Cancel] [Save]    │◂ drag                        │\n└──────────────────┴────────────────────────────────────────┴───────────────────────────────┘\n      292px                        flex: 1, min 560px                 400px, 280–720\n```\n\nThe left pane is two labelled sections, **Project** and **Global** (`agent-list.tsx`'s\n`SectionLabel`) — `source === \"project\"` vs. everything else — shown only when non-empty. Since\n`discoverAgents` already runs `dedupeById` over project → user → bundled → plugins (first wins),\nevery agent appears in exactly one section, and forking one moves its row from Global to Project on\nthe next refresh — that movement is the confirmation the fork worked, no toast needed. The card\ncarries a matching uppercase tier tag next to the agent name.\n\nBoth side panes collapse to their header row. The right pane is resizable by dragging its left edge.\n\n**One horizontal scroller wraps the nav _and_ the pane row**, with an inner `min-width: 1120px`, so\nchrome and content scroll together and nothing clips on a narrow window. There are no breakpoints —\nthis is a desktop window, so it has a floor rather than a set of layouts.\n\nThe page renders the real `TopNav` with no arguments. The page-local `ProjectSelect` the old version\ncarried is **gone**, and its removal fixed a latent split: the list was fetched for `viewedRoot`\nwhile `reports.get` resolved against `currentRoot()`, so the two could describe different projects.\nEverything on this page now reads the open project, and only the nav's folder button changes it.\n\n## One edit session, eight write paths\n\nPressing Edit — from the card footer, a list row's pencil, or *any* of the Interactions pane's\npencils — clones the agent into a **draft** via `cloneDraft(base)` (`agents.tsx`), which deep-copies\n`layers`, `skills` **and** `handoffs`; a shallow spread would edit `base` and make Cancel a no-op.\nEvery control edits the draft. Cancel drops it. **Nothing touches disk until Save**, which then fans\nout to the channel that owns each field:\n\n| Field | Channel | Destination |\n| --- | --- | --- |\n| report | `report:save` | `.claude/reports/<agent>.md` — a **project override**, keyed by the agent's own name |\n| handoffs (`034`) | `handoff:save`, once per edited route | `.claude/handoffs/<sender>/<receiver>.md` — a project override, and it **drops that pair's `syncedFrom`** |\n| avatar | `avatar:set` | `~/.claude/maestro-avatars.sqlite` — global, or this project's own row (see below) |\n| type | `template:agent-types:save` | `~/.claude/maestro-agent-types.sqlite` — global, or this project's own row |\n| project tag | `template:agent-project-tags:save` | `~/.claude/maestro-agent-project-tags.sqlite` — global, or this project's own row |\n| description | `agent:describe` | **the agent's own `.md` frontmatter** |\n| content (`045`) | `agent:content:save` | **the same `.md`'s body**, everything past the frontmatter block |\n| skills | `config:save` (workflows slice) | `.claude/maestro.json`'s `workflow_instances` |\n\nEach write is attempted only when that field actually changed, and **failures are collected per\nfield**: a partial failure toasts what failed and **stays in edit mode**, rather than closing the\neditor as if the whole save had landed. There is no transaction across eight destinations — the\nhonest alternative is to say which parts got through.\n\nThe two least obvious paths are documented with the pane that owns them: the **content** write\n(`setAgentContent`/`replaceBodyInFrontmatter`, the mirror image of the description write) and the\n**handoff** write (the only path that is a list, and the only one that re-reads after writing) are\nboth in [`interactions-pane`](sub-concepts/interactions-pane.md).\n\n**Avatar/type/project-tag are global or project-scoped depending on the selected agent's tier\n(`030`).** `handleSave()` computes `const projectScoped = agent?.source === \"project\"` from the\nalready-in-scope `DiscoveredDefinition` and passes it as the trailing argument to all three writes\n(`avatar.set`, `agentTypes.save`, `agentProjectTags.save`). Editing a `user`/`maestro`/plugin-tier\nagent still writes the one shared global row, exactly as before `030`; editing a project-tier agent\nscopes the write to the open project, so two projects with a same-named agent no longer collide.\n`refresh()`'s three bulk reads (`agentTypes.list`, `agentProjectTags.list`, `avatar.list`) always\npass `true` — this page wants the merged (global ∪ open-project) view regardless of which agent is\nselected. See [`global-stores`](../global-stores/SKILL.md)'s \"Keyed by project, not just agent\nname\" section for the store-level mechanism.\n\nTwo of these are documented in depth elsewhere rather than restated here:\n\n- **Why the description (and, since `045`, the content) is a file write and not a store** — see the\n  \"The exception: a description is not a store\" section of [`global-stores`](../global-stores/SKILL.md).\n  Short version: type/tag/avatar are Maestro's own metadata, but a description and a body are what\n  Claude Code itself reads to decide when to dispatch the agent and how it behaves — the same\n  argument, extended to the second file-backed field.\n- **Why the skills write re-reads before writing** — see `maestro-config-model`'s read-before-write\n  rule and `workflow-view`'s \"no longer the only writer\" note.\n\n## Data in\n\nThe route holds no loader-driven state beyond the first paint. `refresh()` fans out seven reads in\nparallel, and re-runs on every project change, after every save, and on every router invalidation (including an\noutside edit to `maestro.json` — the effect depends on `loaderResult`):\n\n```\ngetToolsData()                            → data.agents (id, description, source), data.skills\nwindow.maestro.data.workflows()           → config.workflow_instances, config.skills_available, seeded\nwindow.maestro.templates.agentTypes.list(true)        → Record<agent, AgentType> — merged, global ∪ open project\nwindow.maestro.templates.agentProjectTags.list(true)  → Record<agent, string> — merged\nwindow.maestro.avatar.list(true)                      → Record<agent, AvatarLayers> — merged\nwindow.maestro.templates.projectTags.list()       → the catalog for the dropdown\nwindow.maestro.agents.sync()                      → AgentSyncSummary — which forks are behind their template (`031`)\n```\n\nThe seventh read is the only one that is *also* computed app-wide: `install-context.tsx`'s\n`refresh()` calls the same channel on project selection and hangs the result off\n`InstallContextValue.agentSync`, so `/maestro` can show the headline count without visiting this\npage. Both call sites swallow a failure the way the auto-refresh does — a fork check that throws\nmust not stop the page from loading.\n\n`avatar:list` exists because of this page. The list draws a composited thumb per row, and the\nper-agent `avatar:get` would have been one sqlite open per agent on every render — see\n`global-stores`' avatars sub-concept.\n\n**Three things are refetched per selection, in one `Promise.all`** (`034`, `content` added `044`):\n`reports.get(agent)`, `handoffs.routes(agent)`, and `agents.content(agent)`. They are the per-agent\npair (now a triple), project-scoped — everything else arrives with the global attributes in\n`refresh()`'s bulk reads. `handoff:routes` is deliberately **one** call for every row the\nInteractions pane will render rather than a `get` per route: the graph walk that produces the list\n(`handoff-routes.ts`) is not renderer-safe, and a fan-out would reopen the global sqlite store once\nper row on every click. Each read failing toasts on its own and falls back to `NO_REPORT` /\n`NO_ROUTES` / `NO_CONTENT`; none of the three stops the others.\n\n## Skills are the instance's, not the agent's\n\nThe chips come from the first `workflow_instances` entry whose `agent` matches the selected agent,\nflattened out of its two lists. `AgentSkill.mode` is therefore **tri-state**:\n\n| `mode` | Means | On save |\n| --- | --- | --- |\n| `\"loaded\"` | in `loaded_skills` — the SubagentStart hook injects it before the agent works | stays in `loaded_skills` |\n| `\"referenced\"` | in `referenced_skills` — offered, loaded only if the task needs it | stays in `referenced_skills` |\n| `null` | on screen but unticked | dropped from **both** lists |\n\nThe third state is what lets the count read \"2 of 3 active\" without the chip vanishing the instant it\nis unticked, so unticking is visibly reversible before Save.\n\n**The loaded/ref toggle inside each chip is the one control the design did not draw**, and it is not\ncosmetic: an instance keeps its skills in two lists, so a chip that showed only \"attached\" would let\na save silently demote every loaded skill to referenced. Ticking a fresh chip defaults it to\n**referenced**, matching `instance-skill-picker.tsx` on the workflows canvas — offering a skill is\nthe reversible choice; loading one costs context on every run.\n\nThe `+` attaches the next unused entry from `config.skills_available`, which keeps `maestro.json`\ninternally consistent — an instance skill that is not in the project's available set is a config that\ndisagrees with itself.\n\nSkills are **read-only** in two cases, both signposted in the footer note rather than by a silently\ninert control: when the agent has no instance in this project's workflow, and when the config is\n`seeded` (no `maestro.json` on disk). The second matters — writing would materialise a starter config\nas a side effect of visiting `/agents`.\n\n## The avatar block\n\nThe card's cosmetic avatar editor — tabs-and-arrows over seven categories, the eyes/hair\n`ColorControl` and its live recolor, and why it supersedes `avatar-picker.tsx` here only — is\n[`avatar-block`](sub-concepts/avatar-block.md).\n\n## The Interactions pane (`034`)\n\nThe right pane's two tabs (`044`) — the Interactions list (the resolved report plus one editor per\noutgoing handoff route, each labelled since `037` with its `.claude/channels/<receiver>/<sender>.1.md`\nlane path) and the Content tab (`044` read-only, `045` editable for a project-tier agent) — plus the\ncontent and handoff write paths they own, are [`interactions-pane`](sub-concepts/interactions-pane.md).\n\n## Forking a global agent\n\nThe Copy button, same-name vs. renamed forks, the `agent-forks.json` provenance record, and the\nfork-review block that renders below the card (`031`) are\n[`forking-a-global-agent`](sub-concepts/forking-a-global-agent.md).\n\n## Things that bite\n\n- **`CARD_MIN_HEIGHT` is a measured constant, not a round number.** The card must be the same height\n  in view and edit mode so pressing Edit does not reflow the page under the pointer. Measured in a\n  real window: natural view height **607px**, natural edit height **627px**, so the floor is 627. If\n  you change edit-mode card content, **re-measure and update it** — the `test-maestro` skill's CDP\n  harness is how. Re-measured on the packaged build for `034`: view **618.95px**, edit **603.83px**,\n  applied **627px** in both modes — unchanged, and expected to be, because the Interactions pane is\n  outside the card and `034` changed no edit-mode card content.\n- **The single line of edit-mode explanation lives in the card's _footer_, outside the card.** That is\n  the same constraint: an in-card note changes the card's height with its own wrapping, and the note\n  is conditional (it changes for a plugin-owned agent, or one with no instance), so in-card it would\n  make the height vary by agent.\n- **Measuring that height by setting `card.style.minHeight = \"\"` deletes React's own inline\n  declaration** until the next render, so every later measurement in the same probe silently loses the\n  floor and reports a card that \"doesn't respect its minimum\". Save the previous inline value and\n  restore *that*. This cost a probe run.\n- **The description — and, since `045`, the Content tab body — is not editable for every agent, as\n  of `029`, only `project`-tier is.** `EDITABLE_AGENT_SOURCES` in `contracts.ts` is `[\"project\"]`;\n  every other tier renders a read-only paragraph (description) or `<pre>` (content) even in edit\n  mode. The renderer decides from `DiscoveredDefinition.source` alone, with no round trip — which is\n  why that constant is a value export from an otherwise interfaces-only file.\n  `describeUneditableSource(agentName, source)` (`agent-descriptions.ts`) gives the thrown refusal a\n  tier-specific message, shared verbatim by both fields' server-side rejection: `user`-tier says the\n  agent is machine-wide and points at forking rather than claiming it was \"created\" anywhere (there\n  is no such place); `maestro`/plugin-tier names the plugin and says an update overwrites the file.\n  The card's own footer note and the Content tab's `contentNote` are each a **separate, hand-written\n  parallel** of that message (`agents.tsx`), not a shared import — the renderer can only pull\n  `contracts`/`text` out of `src/core`, so the three strings can drift; check all of them if you\n  change one.\n- **A pencil on an _unselected_ row cannot build the draft immediately.** That agent's report is still\n  in flight, so `startEdit` sets `selected` plus a `pendingEdit` flag and an effect builds the draft\n  once `base` resolves. Building it inline would clone a draft carrying the previously selected\n  agent's report.\n- **List descriptions are truncated in JS (`clampText`), deliberately not `-webkit-line-clamp`.** The\n  clamp loses its ellipsis as a flex child and how many lines fit depends on the Chromium build; the\n  untruncated text still goes in `title`.\n- **Two page-local surfaces are mixed from tokens, not hard-coded.** The design names `#2b2722` (side\n  panes, avatar frame) and `#2f2b26` (the read-only report block) and the token set has neither, so\n  `PANE_SURFACES` sets `--pane` and `--sunken` with `color-mix()` on the page root. They resolve to\n  exactly those two hexes in dark mode and follow the theme in light. When asserting on them: a\n  `color-mix()` result serialises as `color(srgb r g b)` with 0..1 channels, **not** as `rgb()`.\n- **The right pane's drag writes width straight to the DOM and only tells React on mouseup.** A\n  `setState` per `mousemove` re-renders the card, the list and every canvas on it, once per pixel.\n- **`components/tabs/discovered-definitions.tsx` is still shared with `/skills`.** This page grew its\n  own list (a skill has no avatar and no per-row pencil); do not widen the shared table to serve both.\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `src/renderer/src/routes/agents.tsx` | State, the draft (`cloneDraft`, `handoffsOf`), the eight-way save, the round trips. |\n| `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` (incl. `034`'s `handoffs: Record<handoffId, string>` and `045`'s `content: string`) / `AgentSkill`, the constants, `clampText`, `cycleOption`, `PANE_SURFACES`, the shared class strings. |\n| `src/renderer/src/components/agents/agent-list.tsx` | Left pane. Holds the `/create-subagent` link. |\n| `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card + the Edit/Cancel/Save footer. |\n| `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |\n| `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane: the Interactions/Content tab strip (`044`), the report + one entry per route, `HANDOFF_TIER`, the resize handle, one auto-growing editor per entry, and (`045`) the Content tab's own pencil, `agent-content-editor` textarea and `contentNote` for a project-tier agent. |\n| `src/core/handoffs.ts` | `resolvedRoutesFrom(projectRoot, agent, dbPath?)` — the pane's one round trip, and `saveProjectHandoffOverride`, its write. |\n| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, `describeUneditableSource`'s tier-specific refusals, (`044`) `extractAgentBody`/`getAgentBody` for the Content tab, and (`045`) `replaceBodyInFrontmatter`/`setAgentContent`, the tab's write path. |\n| `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, and `copyAgentAttributeRows`. Re-exports everything below. |\n| `src/core/agent-fork-record.ts` | The sidecar and the hashing/merging helpers, split out of `agent-fork.ts` in `031` so nothing sqlite-shaped reaches the generated bundle. |\n| `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts`. |\n| `src/core/agent-sync.ts` | `computeAgentSync` (read-only) and `applyAgentSync` (the only writer). |\n| `src/core/diff.ts` | `diffLines`/`hasChanges`/`unifiedDiffText` — LCS, with a `MAX_LINES = 4000` fallback to a whole-file replace. |\n| `src/renderer/src/components/agents/agent-fork-review.tsx` | The review block: both descriptions, the diff, and the three actions. |\n| `test/core/sync-decision.test.ts` | The branch table — `detached` outranks everything, `stale-customized` decided before `templateAdvanced`. |\n| `test/core/agent-sync.test.ts` | One case per `031` acceptance criterion, including the mtime-and-bytes proof that computing writes nothing. |\n| `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |\n| `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |\n| `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — the mechanism behind the fork review on\n  this page: the one decision function `report-sync.ts` shares, the two staleness triggers, and\n  what update / keep / detach write.\n- [`global-stores`](../global-stores/SKILL.md) — five of the eight write paths, why the description\n  and (`045`) the content deliberately are not stores, and where `copyAgentAttributeRows`\n  reads/writes those same three stores for a renamed fork.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the workflows slice this page is the\n  second writer of, and the read-before-write rule that follows.\n- [`workflow-view`](../workflow-view/SKILL.md) — the other writer, and where `loaded_skills` /\n  `referenced_skills` are normally edited.\n- [`create-skills-architecture`](../create-skills-architecture/SKILL.md) — the `/create-subagent` flow\n  this page's \"+ New agent\" link is the entry point for.\n- [`test-maestro`](../test-maestro/SKILL.md) — how the measured numbers above were measured, and how\n  to re-measure them.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is the tenth\n  generated bundle, and the reason the fork record had to leave `agent-fork.ts`.\n- `updating-maestro` (at the repo root `.claude/skills`) — why a plugin-tier fork is checked by\n  version string alone, and why that is the *correct* answer rather than a shortcut.\n",
-    "contentHash": "sha256:b81c018ab736114f5edf69acdadca4a1a8fdb4e5d608c4fe4792f92d2087be35"
+    "body": "---\nname: agents-view\ndescription: \"Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the \"Copy into the project\" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body.\"\nmetadata:\n  type: concept-skill\n  version: \"1.14\"\n  last-update: 77c8c95568c2a59d68cc5db4aab39f562e6ff702\n---\n\n# Agents View\n\nThe `/agents` route (`src/renderer/src/routes/agents.tsx`) is where you browse the subagents a\nproject can dispatch, read the report a run would actually receive, and edit an agent's properties\nand its cosmetic avatar in place.\n\nIt is the third of the app's editor routes, alongside `workflow-view` and `rule-view` — but unlike\nthose two it does **not** own one slice of one file. An \"agent\" as this page presents it is assembled\nfrom seven different homes, and that is the single fact everything else here follows from.\n\n## Layout\n\n```\n┌───────────────────────────── TopNav (top-nav.tsx, unchanged) ─────────────────────────────┐\n├──────────────────┬────────────────────────────────────────┬───────────────────────────────┤\n│ Agents           │                                        │ Interactions            [▤]  │\n│ [▤]              │        ┌────────────────────────┐      │                              │\n│ [Filter agents…] │        │ probe-agent  DEVELOPER │      │ [Main Session]          [✎]  │\n│                  │        │                        │      │ ┌──────────────────────────┐ │\n│ ┌──────────────┐ │        │      ┌──────────┐      │      │ │ the resolved report,     │ │\n│ │ backend  [✎] │ │        │  ‹   │  avatar  │   ›  │      │ │ capped at 50% and faded  │ │\n│ │ [◲] desc…    │ │        │      └──────────┘      │      │ └──────────────────────────┘ │\n│ └──────────────┘ │        │  Hair · Long Bangs     │      │  Project override — saving…  │\n│ ┌──────────────┐ │        │ ── // DESCRIPTION ──   │      │ → test                  [✎]  │\n│ │ frontend [✎] │ │        │ ── // SKILLS ──        │      │ ┌──────────────────────────┐ │\n│ │ [◲] desc…    │ │        │ ── // PROJECT TAG ──   │      │ │ handoff_details protocol │ │\n│ └──────────────┘ │        └────────────────────────┘      │ └──────────────────────────┘ │\n│ [+ New agent]    │                     [Cancel] [Save]    │◂ drag                        │\n└──────────────────┴────────────────────────────────────────┴───────────────────────────────┘\n      292px                        flex: 1, min 560px                 400px, 280–720\n```\n\nThe left pane is two labelled sections, **Project** and **Global** (`agent-list.tsx`'s\n`SectionLabel`) — `source === \"project\"` vs. everything else — shown only when non-empty. Since\n`discoverAgents` already runs `dedupeById` over project → user → bundled → plugins (first wins),\nevery agent appears in exactly one section, and forking one moves its row from Global to Project on\nthe next refresh — that movement is the confirmation the fork worked, no toast needed. The card\ncarries a matching uppercase tier tag next to the agent name.\n\nBoth side panes collapse to their header row. The right pane is resizable by dragging its left edge.\n\n**One horizontal scroller wraps the nav _and_ the pane row**, with an inner `min-width: 1120px`, so\nchrome and content scroll together and nothing clips on a narrow window. There are no breakpoints —\nthis is a desktop window, so it has a floor rather than a set of layouts.\n\nThe page renders the real `TopNav` with no arguments. The page-local `ProjectSelect` the old version\ncarried is **gone**, and its removal fixed a latent split: the list was fetched for `viewedRoot`\nwhile `reports.get` resolved against `currentRoot()`, so the two could describe different projects.\nEverything on this page now reads the open project, and only the nav's folder button changes it.\n\n## One edit session, eight write paths\n\nPressing Edit — from the card footer, a list row's pencil, or *any* of the Interactions pane's\npencils — clones the agent into a **draft** via `cloneDraft(base)` (`agents.tsx`), which deep-copies\n`layers`, `skills` **and** `handoffs`; a shallow spread would edit `base` and make Cancel a no-op.\nEvery control edits the draft. Cancel drops it. **Nothing touches disk until Save**, which then fans\nout to the channel that owns each field:\n\n| Field | Channel | Destination |\n| --- | --- | --- |\n| report | `report:save` | `.claude/reports/<agent>.md` — a **project override**, keyed by the agent's own name |\n| handoffs (`034`) | `handoff:save`, once per edited route | `.claude/handoffs/<sender>/<receiver>.md` — a project override, and it **drops that pair's `syncedFrom`** |\n| avatar | `avatar:set` | `~/.claude/maestro-avatars.sqlite` — global, or this project's own row (see below) |\n| type | `template:agent-types:save` | `~/.claude/maestro-agent-types.sqlite` — global, or this project's own row |\n| project tag | `template:agent-project-tags:save` | `~/.claude/maestro-agent-project-tags.sqlite` — global, or this project's own row |\n| description | `agent:describe` | **the agent's own `.md` frontmatter** |\n| content (`045`) | `agent:content:save` | **the same `.md`'s body**, everything past the frontmatter block |\n| skills | `config:save` (workflows slice) | `.claude/maestro.json`'s `workflow_instances` |\n\nEach write is attempted only when that field actually changed, and **failures are collected per\nfield**: a partial failure toasts what failed and **stays in edit mode**, rather than closing the\neditor as if the whole save had landed. There is no transaction across eight destinations — the\nhonest alternative is to say which parts got through.\n\nThe two least obvious paths are documented with the pane that owns them: the **content** write\n(`setAgentContent`/`replaceBodyInFrontmatter`, the mirror image of the description write) and the\n**handoff** write (the only path that is a list, and the only one that re-reads after writing) are\nboth in [`interactions-pane`](sub-concepts/interactions-pane.md).\n\n**Avatar/type/project-tag are global or project-scoped depending on the selected agent's tier\n(`030`).** `handleSave()` computes `const projectScoped = agent?.source === \"project\"` from the\nalready-in-scope `DiscoveredDefinition` and passes it as the trailing argument to all three writes\n(`avatar.set`, `agentTypes.save`, `agentProjectTags.save`). Editing a `user`/`maestro`/plugin-tier\nagent still writes the one shared global row, exactly as before `030`; editing a project-tier agent\nscopes the write to the open project, so two projects with a same-named agent no longer collide.\n`refresh()`'s three bulk reads (`agentTypes.list`, `agentProjectTags.list`, `avatar.list`) always\npass `true` — this page wants the merged (global ∪ open-project) view regardless of which agent is\nselected. See [`global-stores`](../global-stores/SKILL.md)'s \"Keyed by project, not just agent\nname\" section for the store-level mechanism.\n\nTwo of these are documented in depth elsewhere rather than restated here:\n\n- **Why the description (and, since `045`, the content) is a file write and not a store** — see the\n  \"The exception: a description is not a store\" section of [`global-stores`](../global-stores/SKILL.md).\n  Short version: type/tag/avatar are Maestro's own metadata, but a description and a body are what\n  Claude Code itself reads to decide when to dispatch the agent and how it behaves — the same\n  argument, extended to the second file-backed field.\n- **Why the skills write re-reads before writing** — see `maestro-config-model`'s read-before-write\n  rule and `workflow-view`'s \"no longer the only writer\" note.\n\n## Data in\n\nThe route holds no loader-driven state beyond the first paint. `refresh()` fans out seven reads in\nparallel, and re-runs on every project change, after every save, and on every router invalidation (including an\noutside edit to `maestro.json` — the effect depends on `loaderResult`):\n\n```\ngetToolsData()                            → data.agents (id, description, source), data.skills\nwindow.maestro.data.workflows()           → config.workflow_instances, config.skills_available, seeded\nwindow.maestro.templates.agentTypes.list(true)        → Record<agent, AgentType> — merged, global ∪ open project\nwindow.maestro.templates.agentProjectTags.list(true)  → Record<agent, string> — merged\nwindow.maestro.avatar.list(true)                      → Record<agent, AvatarLayers> — merged\nwindow.maestro.templates.projectTags.list()       → the catalog for the dropdown\nwindow.maestro.agents.sync()                      → AgentSyncSummary — which forks are behind their template (`031`)\n```\n\nThe seventh read is the only one that is *also* computed app-wide: `install-context.tsx`'s\n`refresh()` calls the same channel on project selection and hangs the result off\n`InstallContextValue.agentSync`, so `/maestro` can show the headline count without visiting this\npage. Both call sites swallow a failure the way the auto-refresh does — a fork check that throws\nmust not stop the page from loading.\n\n`avatar:list` exists because of this page. The list draws a composited thumb per row, and the\nper-agent `avatar:get` would have been one sqlite open per agent on every render — see\n`global-stores`' avatars sub-concept.\n\n**Three things are refetched per selection, in one `Promise.all`** (`034`, `content` added `044`):\n`reports.get(agent)`, `handoffs.routes(agent)`, and `agents.content(agent)`. They are the per-agent\npair (now a triple), project-scoped — everything else arrives with the global attributes in\n`refresh()`'s bulk reads. `handoff:routes` is deliberately **one** call for every row the\nInteractions pane will render rather than a `get` per route: the graph walk that produces the list\n(`handoff-routes.ts`) is not renderer-safe, and a fan-out would reopen the global sqlite store once\nper row on every click. Each read failing toasts on its own and falls back to `NO_REPORT` /\n`NO_ROUTES` / `NO_CONTENT`; none of the three stops the others.\n\n## Skills are the instance's, not the agent's\n\nThe chips come from the first `workflow_instances` entry whose `agent` matches the selected agent,\nflattened out of its two lists. `AgentSkill.mode` is therefore **tri-state**:\n\n| `mode` | Means | On save |\n| --- | --- | --- |\n| `\"loaded\"` | in `loaded_skills` — the SubagentStart hook injects it before the agent works | stays in `loaded_skills` |\n| `\"referenced\"` | in `referenced_skills` — offered, loaded only if the task needs it | stays in `referenced_skills` |\n| `null` | on screen but unticked | dropped from **both** lists |\n\nThe third state is what lets the count read \"2 of 3 active\" without the chip vanishing the instant it\nis unticked, so unticking is visibly reversible before Save.\n\n**The loaded/ref toggle inside each chip is the one control the design did not draw**, and it is not\ncosmetic: an instance keeps its skills in two lists, so a chip that showed only \"attached\" would let\na save silently demote every loaded skill to referenced. Ticking a fresh chip defaults it to\n**referenced**, matching `instance-skill-picker.tsx` on the workflows canvas — offering a skill is\nthe reversible choice; loading one costs context on every run.\n\nThe `+` attaches the next unused entry from `config.skills_available`, which keeps `maestro.json`\ninternally consistent — an instance skill that is not in the project's available set is a config that\ndisagrees with itself.\n\nSkills are **read-only** in two cases, both signposted in the footer note rather than by a silently\ninert control: when the agent has no instance in this project's workflow, and when the config is\n`seeded` (no `maestro.json` on disk). The second matters — writing would materialise a starter config\nas a side effect of visiting `/agents`.\n\n## The avatar block\n\nThe card's cosmetic avatar editor — tabs-and-arrows over seven categories, the eyes/hair\n`ColorControl` and its live recolor, and why it supersedes `avatar-picker.tsx` here only — is\n[`avatar-block`](sub-concepts/avatar-block.md).\n\n## The Interactions pane (`034`)\n\nThe right pane's two tabs (`044`) — the Interactions list (the resolved report plus one editor per\noutgoing handoff route, each labelled since `037` with its `.claude/channels/<receiver>/<sender>.1.md`\nlane path) and the Content tab (`044` read-only, `045` editable for a project-tier agent) — plus the\ncontent and handoff write paths they own, are [`interactions-pane`](sub-concepts/interactions-pane.md).\n\n## Forking a global agent\n\nThe Copy button, same-name vs. renamed forks, the `agent-forks.json` provenance record, and the\nfork-review block that renders below the card (`031`) are\n[`forking-a-global-agent`](sub-concepts/forking-a-global-agent.md).\n\n## Things that bite\n\n- **`CARD_MIN_HEIGHT` is a measured constant, not a round number.** The card must be the same height\n  in view and edit mode so pressing Edit does not reflow the page under the pointer. Measured in a\n  real window: natural view height **607px**, natural edit height **627px**, so the floor is 627. If\n  you change edit-mode card content, **re-measure and update it** — the `test-maestro` skill's CDP\n  harness is how. Re-measured on the packaged build for `034`: view **618.95px**, edit **603.83px**,\n  applied **627px** in both modes — unchanged, and expected to be, because the Interactions pane is\n  outside the card and `034` changed no edit-mode card content.\n- **The single line of edit-mode explanation lives in the card's _footer_, outside the card.** That is\n  the same constraint: an in-card note changes the card's height with its own wrapping, and the note\n  is conditional (it changes for a plugin-owned agent, or one with no instance), so in-card it would\n  make the height vary by agent.\n- **Measuring that height by setting `card.style.minHeight = \"\"` deletes React's own inline\n  declaration** until the next render, so every later measurement in the same probe silently loses the\n  floor and reports a card that \"doesn't respect its minimum\". Save the previous inline value and\n  restore *that*. This cost a probe run.\n- **The description — and, since `045`, the Content tab body — is not editable for every agent, as\n  of `029`, only `project`-tier is.** `EDITABLE_AGENT_SOURCES` in `contracts.ts` is `[\"project\"]`;\n  every other tier renders a read-only paragraph (description) or `<pre>` (content) even in edit\n  mode. The renderer decides from `DiscoveredDefinition.source` alone, with no round trip — which is\n  why that constant is a value export from an otherwise interfaces-only file.\n  `describeUneditableSource(agentName, source)` (`agent-descriptions.ts`) gives the thrown refusal a\n  tier-specific message, shared verbatim by both fields' server-side rejection: `user`-tier says the\n  agent is machine-wide and points at forking rather than claiming it was \"created\" anywhere (there\n  is no such place); `maestro`/plugin-tier names the plugin and says an update overwrites the file.\n  The card's own footer note and the Content tab's `contentNote` are each a **separate, hand-written\n  parallel** of that message (`agents.tsx`), not a shared import — the renderer can only pull\n  `contracts`/`text` out of `src/core`, so the three strings can drift; check all of them if you\n  change one.\n- **A pencil on an _unselected_ row cannot build the draft immediately.** That agent's report is still\n  in flight, so `startEdit` sets `selected` plus a `pendingEdit` flag and an effect builds the draft\n  once `base` resolves. Building it inline would clone a draft carrying the previously selected\n  agent's report.\n- **List descriptions are truncated in JS (`clampText`), deliberately not `-webkit-line-clamp`.** The\n  clamp loses its ellipsis as a flex child and how many lines fit depends on the Chromium build; the\n  untruncated text still goes in `title`.\n- **Two page-local surfaces are mixed from tokens, not hard-coded.** The design names `#2b2722` (side\n  panes, avatar frame) and `#2f2b26` (the read-only report block) and the token set has neither, so\n  `PANE_SURFACES` sets `--pane` and `--sunken` with `color-mix()` on the page root. They resolve to\n  exactly those two hexes in dark mode and follow the theme in light. When asserting on them: a\n  `color-mix()` result serialises as `color(srgb r g b)` with 0..1 channels, **not** as `rgb()`.\n- **The right pane's drag writes width straight to the DOM and only tells React on mouseup.** A\n  `setState` per `mousemove` re-renders the card, the list and every canvas on it, once per pixel.\n- **`components/tabs/discovered-definitions.tsx` is still shared with `/skills`.** This page grew its\n  own list (a skill has no avatar and no per-row pencil); do not widen the shared table to serve both.\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `src/renderer/src/routes/agents.tsx` | State, the draft (`cloneDraft`, `handoffsOf`), the eight-way save, the round trips. |\n| `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` (incl. `034`'s `handoffs: Record<handoffId, string>` and `045`'s `content: string`) / `AgentSkill`, the constants, `clampText`, `cycleOption`, `PANE_SURFACES`, the shared class strings. |\n| `src/renderer/src/components/agents/agent-list.tsx` | Left pane. Holds the `/create-subagent` link. |\n| `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card + the Edit/Cancel/Save footer. |\n| `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |\n| `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane: the Interactions/Content tab strip (`044`), the report + one entry per route, `HANDOFF_TIER`, the resize handle, one auto-growing editor per entry, and (`045`) the Content tab's own pencil, `agent-content-editor` textarea and `contentNote` for a project-tier agent. |\n| `src/core/handoffs.ts` | `resolvedRoutesFrom(projectRoot, agent, dbPath?)` — the pane's one round trip, and `saveProjectHandoffOverride`, its write. |\n| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, `describeUneditableSource`'s tier-specific refusals, (`044`) `extractAgentBody`/`getAgentBody` for the Content tab, and (`045`) `replaceBodyInFrontmatter`/`setAgentContent`, the tab's write path. |\n| `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, and `copyAgentAttributeRows`. Re-exports everything below. |\n| `src/core/agent-fork-record.ts` | The sidecar and the hashing/merging helpers, split out of `agent-fork.ts` in `031` so nothing sqlite-shaped reaches the generated bundle. |\n| `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts`. |\n| `src/core/agent-sync.ts` | `computeAgentSync` (read-only) and `applyAgentSync` (the only writer). |\n| `src/core/diff.ts` | `diffLines`/`hasChanges`/`unifiedDiffText` — LCS, with a `MAX_LINES = 4000` fallback to a whole-file replace. |\n| `src/renderer/src/components/agents/agent-fork-review.tsx` | The review block: both descriptions, the diff, and the three actions. |\n| `test/core/sync-decision.test.ts` | The branch table — `detached` outranks everything, `stale-customized` decided before `templateAdvanced`. |\n| `test/core/agent-sync.test.ts` | One case per `031` acceptance criterion, including the mtime-and-bytes proof that computing writes nothing. |\n| `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |\n| `src/renderer/src/utils/avatar.ts` | Pure client-side avatar helpers, no IPC: the placeholder layers for an agent with no saved avatar, randomised layers for a new one, and the native colour each recolourable shape starts from in the colour picker. |\n| `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |\n| `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — the mechanism behind the fork review on\n  this page: the one decision function `report-sync.ts` shares, the two staleness triggers, and\n  what update / keep / detach write.\n- [`global-stores`](../global-stores/SKILL.md) — five of the eight write paths, why the description\n  and (`045`) the content deliberately are not stores, and where `copyAgentAttributeRows`\n  reads/writes those same three stores for a renamed fork.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the workflows slice this page is the\n  second writer of, and the read-before-write rule that follows.\n- [`workflow-view`](../workflow-view/SKILL.md) — the other writer, and where `loaded_skills` /\n  `referenced_skills` are normally edited.\n- [`create-skills-architecture`](../create-skills-architecture/SKILL.md) — the `/create-subagent` flow\n  this page's \"+ New agent\" link is the entry point for.\n- [`test-maestro`](../test-maestro/SKILL.md) — how the measured numbers above were measured, and how\n  to re-measure them.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is the tenth\n  generated bundle, and the reason the fork record had to leave `agent-fork.ts`.\n- `updating-maestro` (at the repo root `.claude/skills`) — why a plugin-tier fork is checked by\n  version string alone, and why that is the *correct* answer rather than a shortcut.\n",
+    "contentHash": "sha256:eb66b4f710d24658d6e2c71712cf48196311413eece93eef409ccc83b5c59511"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.5",
-    "extracted_at": "2026-10-16T22:29:53.234Z"
+    "extractor_version": "code-graph@0.3.11",
+    "extracted_at": "2026-10-17T12:25:05.753Z"
   }
 }

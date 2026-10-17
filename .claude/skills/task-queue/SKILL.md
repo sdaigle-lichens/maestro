@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task."
 metadata:
   type: concept-skill
-  version: "1.5"
-  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464
+  version: "1.6"
+  last-update: 77c8c95568c2a59d68cc5db4aab39f562e6ff702
 ---
 
 # Task queue
@@ -44,7 +44,7 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 | --- | --- |
 | `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |
 | `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |
-| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`. |
+| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |
 | `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
 | `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |

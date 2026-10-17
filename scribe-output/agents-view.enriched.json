@@ -1,0 +1,396 @@
+{
+  "concept": "agents-view",
+  "vertices": [
+    {
+      "_key": "1d14ccf264a35431ae321dd126372bf2",
+      "purpose": "Truncates text to about 108 characters at a word boundary with an ellipsis, leaving short text unchanged.",
+      "inputs": [
+        "text",
+        "max length, default 108"
+      ],
+      "outputs": [
+        "clamped string"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "list-truncation"
+      ],
+      "sig_seen": "function clampText(text: string, max = 108): string",
+      "hash_seen": "4f16658097efb87c3d143d4e7fb504989033b7e944a1b9deb9ca827add580cb1"
+    },
+    {
+      "_key": "245653b9f645a61987a1ae7f95147369",
+      "purpose": "Opens the avatar sqlite store, creating its directory and dropping a legacy table that lacks the project_root column before creating the current one.",
+      "inputs": [
+        "dbPath: sqlite file path"
+      ],
+      "outputs": [
+        "open database handle"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "avatar-store",
+        "project-scoped"
+      ],
+      "sig_seen": "function openDb(dbPath: string): DatabaseSync",
+      "hash_seen": "c377be8c51a59c7564c298a40c8002cb531e744dd7ee4c81c02b5c911dbbcebc"
+    },
+    {
+      "_key": "25aee2ad033114ee0c6d203e0a4c4748",
+      "purpose": "Renders the uppercase Project or Global heading above a left-pane section.",
+      "inputs": [
+        "children: heading text"
+      ],
+      "outputs": [
+        "JSX element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "agent-list"
+      ],
+      "sig_seen": "function SectionLabel({ children }: { children: string }): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "6c2c51686ce659868d309fcdfa94790f66ee975a3908d91f78481fa990bc0a57"
+    },
+    {
+      "_key": "279f8ee9522682ead77b097a8618f16f",
+      "purpose": "Resolves an agent name to its definition file by checking the project, user, bundled and plugin tiers in that order.",
+      "inputs": [
+        "projectRoot: project folder",
+        "bundledDir: bundled agents folder or null",
+        "agentName: agent to find"
+      ],
+      "outputs": [
+        "AgentFileRef with name, description, file and source tier, or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "tier-resolution",
+        "agent-file"
+      ],
+      "sig_seen": "function findAgentFile(projectRoot: string, bundledDir: string | null, agentName: string): Promise<AgentFileRef | null>",
+      "hash_seen": "bac4e4f16651f5d68fc4a39931f7b28da873671366f4d8b5ab10f78d9ebdf5ee"
+    },
+    {
+      "_key": "56a71fb5ee00920637c7818a8237eb18",
+      "purpose": "Returns the file contents after the closing frontmatter block, or the whole file when there is no frontmatter.",
+      "inputs": [
+        "contents: full file text"
+      ],
+      "outputs": [
+        "body string"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "frontmatter",
+        "content-tab"
+      ],
+      "sig_seen": "function extractAgentBody(contents: string): string",
+      "hash_seen": "741c360ac38d926c624bdfb0697729666e245474dfa279e7795b3a1376c6147f"
+    },
+    {
+      "_key": "70fbd25e40e4ed6eb3aa63f82f941942",
+      "purpose": "Returns the next or previous option in a category, wrapping at both ends and including null only for optional categories.",
+      "inputs": [
+        "options",
+        "required flag",
+        "current value",
+        "direction 1 or -1"
+      ],
+      "outputs": [
+        "next value or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "avatar-layers",
+        "tabs-and-arrows"
+      ],
+      "sig_seen": "function cycleOption(options: string[], required: boolean, current: string | null, dir: 1 | -1): string | null",
+      "hash_seen": "5c3d883fd356545f95e92fc01b8b71f1ff5994a07a3fcd7f2916da4e6e8e6ccd"
+    },
+    {
+      "_key": "7765e7e62cc9fd148af8732bcb57ab10",
+      "purpose": "Writes a new body into a project-tier agent's file, refusing other tiers and files that are not writable.",
+      "inputs": [
+        "projectRoot",
+        "bundledDir",
+        "agentName",
+        "body"
+      ],
+      "outputs": [
+        "AgentContentResult with file path and source tier"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "tier-gate",
+        "content-tab",
+        "frontmatter"
+      ],
+      "sig_seen": "function setAgentContent(projectRoot: string, bundledDir: string | null, agentName: string, body: string): Promise<AgentContentResult>",
+      "hash_seen": "90a398ba1664577e139cf8bf4488a7cd2455b378aeaa7620f3a9f05a8a6b4715"
+    },
+    {
+      "_key": "9b1549976d12544bfa16debe2f10c6d4",
+      "purpose": "Describes the in-progress copy an edit session works on, covering description, type, tag, layers, skills, report, handoffs and content.",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "draft",
+        "edit-session"
+      ],
+      "sig_seen": "export interface AgentDraft {",
+      "hash_seen": "6a57be2baff0c7b6ccfc471999bc9c7685800c7923daa62bff9bbcc3b455e189"
+    },
+    {
+      "_key": "aa957754f5518729f9206da7757c2f2a",
+      "purpose": "Renders the same colour swatch, Select color button and reset control for the avatar picker.",
+      "inputs": [
+        "label",
+        "color or null",
+        "native colour",
+        "onChange"
+      ],
+      "outputs": [
+        "JSX fragment"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "recolor",
+        "avatar-picker"
+      ],
+      "sig_seen": "function ColorControl({\n  label,\n  color,\n  native,\n  onChange,\n}: {\n  label: string;\n  color: string | null;\n  native: string;\n  onChange: (color: string | null) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "928790090f4c054a76d15131f36a862d92b2dcbf4c4a0c914350b641c2a30e9a"
+    },
+    {
+      "_key": "aee28571c50c65fde1009f885445716d",
+      "purpose": "Keeps the frontmatter block byte-for-byte and replaces everything after it with the new body; throws when there is no frontmatter.",
+      "inputs": [
+        "contents: current file text",
+        "body: new body"
+      ],
+      "outputs": [
+        "new file text"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "frontmatter",
+        "content-tab"
+      ],
+      "sig_seen": "function replaceBodyInFrontmatter(contents: string, body: string): string",
+      "hash_seen": "fd1fafb1e609b557b94109e47af429cd7361645135e73d4af6033de42bd946ed"
+    },
+    {
+      "_key": "b79ab69813d7beffced90a6f868ad481",
+      "purpose": "Reads an agent's file and returns its body without the frontmatter.",
+      "inputs": [
+        "projectRoot",
+        "bundledDir",
+        "agentName"
+      ],
+      "outputs": [
+        "body string"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "content-tab",
+        "frontmatter"
+      ],
+      "sig_seen": "function getAgentBody(projectRoot: string, bundledDir: string | null, agentName: string): Promise<string>",
+      "hash_seen": "c1075bb48870078c6a461e9e755f364b58628eaa5a4268ed6bcfb55537556ecf"
+    },
+    {
+      "_key": "b88e81bb8f5d13e06ce9f5f97fd569b1",
+      "purpose": "Returns the refusal message for a non-project agent, naming the user or plugin tier and pointing to forking.",
+      "inputs": [
+        "agentName",
+        "source tier"
+      ],
+      "outputs": [
+        "message string"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "tier-gate",
+        "forking"
+      ],
+      "sig_seen": "function describeUneditableSource(agentName: string, source: string): string",
+      "hash_seen": "e0196cee110ad393c1adde0f18b5a78f5fe4fd9282892a01c052056e70236e86"
+    },
+    {
+      "_key": "e501d29d90a9be57cf239bd6b544ecde",
+      "purpose": "Deep-copies a draft's layers, skills and handoffs so edits to the copy leave the base untouched.",
+      "inputs": [
+        "base: AgentDraft"
+      ],
+      "outputs": [
+        "new AgentDraft"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "draft",
+        "edit-session"
+      ],
+      "sig_seen": "function cloneDraft(base: AgentDraft): AgentDraft",
+      "hash_seen": "4cb131e91e69a68909d0ad219ee3b513398baa0e7959c8f6f30bc1ad34edd1bb"
+    },
+    {
+      "_key": "e7470b42f6a88344ddcd94e3ed6efe72",
+      "purpose": "Draws the composited avatar layers onto a canvas, applying recolours, and stretches to its parent box when fill is set.",
+      "inputs": [
+        "layers",
+        "size",
+        "fill",
+        "className"
+      ],
+      "outputs": [
+        "canvas JSX element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "avatar-layers",
+        "recolor"
+      ],
+      "sig_seen": "function AvatarCanvas({\n  layers,\n  size = 128,\n  fill = false,\n  className = \"\",\n}: {\n  layers: AvatarLayers;\n  size?: number;\n  /**\n   * Stretch to the parent box instead of `size` px. The /agents card frames the avatar in a\n   * responsive `aspect-square` container whose width the layout decides, so it cannot name a pixel\n   * size up front; every other caller still passes one.\n   */\n  fill?: boolean;\n  className?: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "371b15da00d54d68e4e20c046323d533576425916745cb207e8eb78cff09a724"
+    },
+    {
+      "_key": "ec3c021e1b407d4c380e4c0974e161ac",
+      "purpose": "Renders a colour swatch, a Select color button and a reset control that clears the override back to the native colour.",
+      "inputs": [
+        "label",
+        "color or null",
+        "native colour",
+        "onChange"
+      ],
+      "outputs": [
+        "JSX element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "recolor",
+        "avatar-block"
+      ],
+      "sig_seen": "function ColorControl({\n  label,\n  color,\n  native,\n  onChange,\n}: {\n  label: string;\n  color: string | null;\n  native: string;\n  onChange: (color: string | null) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "f221c1fe368fdc446dba00e1a28d7354f8ff1f4fb130bf19a4d005a8a54f9647"
+    },
+    {
+      "_key": "f89e4ebe7e1756e94f5becd8a0e9ab32",
+      "purpose": "Checks that a value is a well-formed avatar layer set: every category is null or a known part, and both colour fields are valid.",
+      "inputs": [
+        "value: unknown stored value"
+      ],
+      "outputs": [
+        "boolean"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "avatar-layers",
+        "recolor"
+      ],
+      "sig_seen": "function isValidLayers(value: unknown): boolean",
+      "hash_seen": "c831c35078d5d1882a04e0fadbd92c65c8dd8e31971b3c5b2948b56d7a6d428f"
+    },
+    {
+      "_key": "fb37549dedc5f337fa820475421b438d",
+      "purpose": "Seeds the draft's handoff map from the resolved routes, keyed by handoff id to content.",
+      "inputs": [
+        "routes: resolved handoff routes"
+      ],
+      "outputs": [
+        "Record of handoff id to content"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "handoffs",
+        "draft"
+      ],
+      "sig_seen": "function handoffsOf(routes: ResolvedHandoffRoute[]): Record<string, string>",
+      "hash_seen": "85a4b3ef42d1d539e6010f9018d22a14b5cb764f6ac955eb2f6f773e2eceac69"
+    },
+    {
+      "_key": "fdb96562026e7fb39f4deec9f5e471c7",
+      "purpose": "Describes one skill chip on an agent, holding its id and tri-state mode (loaded, referenced, or unticked).",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "skills",
+        "tri-state"
+      ],
+      "sig_seen": "export interface AgentSkill {",
+      "hash_seen": "184d6d497d0207bbe8274b9b8fc1571177c61b0a2b918b1833de85eebf62ed9f"
+    }
+  ],
+  "edges": [
+    {
+      "_key": "08ce3c720093d6bb74b01f344022bbce",
+      "reason": "Loads each layer image before compositing it onto the canvas."
+    },
+    {
+      "_key": "0bfd6c1641fc4eb8b2298543f51fe228",
+      "reason": "Types the layer entries as a URL with an optional recolour."
+    },
+    {
+      "_key": "2285e9c6de177c3351afe0bb9bdfeb9b",
+      "reason": "Falls through to the plugin-shipped agents after the three file tiers miss."
+    },
+    {
+      "_key": "26e222141e8430c7d56153dfd2e46ec5",
+      "reason": "Declares the return type carrying the agent's name, file and source tier."
+    },
+    {
+      "_key": "3ebbaeb9445d7f5992d430ed63a7dda1",
+      "reason": "Takes and returns the draft type the edit session copies."
+    },
+    {
+      "_key": "4a3d3d586f167ba5f1f144dc9f790194",
+      "reason": "Types the filtered layer list drawn onto the canvas."
+    },
+    {
+      "_key": "5262d0cbbd14015f1e9aaa613c133507",
+      "reason": "Locates the agent file before its body is read."
+    },
+    {
+      "_key": "715b0fbf95b6d901c0aa0adeeec8fbde",
+      "reason": "Builds the new file contents, keeping the frontmatter intact, before the write."
+    },
+    {
+      "_key": "94a580406b4ff711469ee06f83f97879",
+      "reason": "Strips the frontmatter so only the body is returned."
+    },
+    {
+      "_key": "9eeff48134035a2a3943b79be352089a",
+      "reason": "Drops a legacy avatar table before the current table is created."
+    },
+    {
+      "_key": "b83932f12d0ae5636a324cdc9e67c803",
+      "reason": "Refuses non-project tiers with the tier-specific message."
+    },
+    {
+      "_key": "e552d58dfe18bfc2150e210749c40e0d",
+      "reason": "Validates the two recolour fields with the same colour check used for the rest."
+    },
+    {
+      "_key": "f2a3ca29eb05eb1e0341d55da006262f",
+      "reason": "Resolves which file the body write targets."
+    }
+  ]
+}

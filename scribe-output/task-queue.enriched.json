@@ -1,0 +1,862 @@
+{
+  "concept": "task-queue",
+  "vertices": [
+    {
+      "_key": "05a3e61634be359f37425915d6de3537",
+      "purpose": "Writes status.json with keys sorted, creating the directory if needed, by writing a per-process temp file and renaming it over the target.",
+      "inputs": [
+        "dir: tasks directory; created if missing",
+        "statusMap: map from task filename to its status entry"
+      ],
+      "outputs": [
+        "none (void)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "status-json"
+      ],
+      "sig_seen": "function writeStatusMap(dir: string, statusMap: StatusMap): void",
+      "hash_seen": "fcd492525e25a8a6cd3205b85c40accf13f9651616682c9512ffda0caa4b386a"
+    },
+    {
+      "_key": "0dc7bd142d696f521309be415905428a",
+      "purpose": "Returns the epic directory under the main checkout for a slug, or null when the slug is not a valid epic slug.",
+      "inputs": [
+        "projectRoot: project root path (resolved to the main checkout)",
+        "slug: epic slug"
+      ],
+      "outputs": [
+        "<main checkout>/<EPICS_DIR>/<slug> path, or null for an invalid slug"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "main-checkout-root"
+      ],
+      "sig_seen": "function epicDirFor(projectRoot: string, slug: string): string | null",
+      "hash_seen": "1e8a6b7ef29736a8e7e6e8f1bb705dcb85d2e1ffca94251865f47db8b71e20c4"
+    },
+    {
+      "_key": "12e51def13197d29aaa18fdbb4321f7b",
+      "purpose": "Reads and parses a claim file, accepting it only if it has string session_id and claimed_at fields.",
+      "inputs": [
+        "filePath: path to a claim JSON file"
+      ],
+      "outputs": [
+        "the ClaimFile, or null if the file is unreadable, unparsable, or missing a required field"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims"
+      ],
+      "sig_seen": "function readClaimFile(filePath: string): ClaimFile | null",
+      "hash_seen": "29ad70828a59e9c399df3267004952e820ebe8ebca86f7668fcf8f63ebd47d84"
+    },
+    {
+      "_key": "250aade7b331dbf112093a1d18c60d3d",
+      "purpose": "Builds a fresh StatusMap for the given task files: done if the file is in doneSet, ready if every blockedBy entry is done or not present among the files, otherwise blocked; keeps any epic link from the previous map.",
+      "inputs": [
+        "dir: tasks directory the task files are read from",
+        "files: task filenames to include",
+        "doneSet: set of filenames already done",
+        "previous: earlier StatusMap whose epic links are carried over (default {})"
+      ],
+      "outputs": [
+        "StatusMap keyed by filename, each entry with status, blockedBy, and an epic field when one was previously linked"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "blockedBy-cascade",
+        "status-json",
+        "epic-membership"
+      ],
+      "sig_seen": "function buildStatusMap(dir: string, files: string[], doneSet: Set<string>, previous: StatusMap = {}): StatusMap",
+      "hash_seen": "ca111289f0dc2dffaebd162360db23e831b441e5ae47a18604e5001eeef604bf"
+    },
+    {
+      "_key": "35ec0e141b5a8822363510c51e9604aa",
+      "purpose": "Returns the path of the JSON claim file for a given task filename.",
+      "inputs": [
+        "tasksDir: path to the task queue directory",
+        "filename: task file name; only its basename is used"
+      ],
+      "outputs": [
+        "<claims dir>/<basename>.json path"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims"
+      ],
+      "sig_seen": "function claimPathFor(tasksDir: string, filename: string): string",
+      "hash_seen": "51f22e76597dbf7894f17ab9e0e7d4a8a11a66f8587e4b195c04434e99925598"
+    },
+    {
+      "_key": "36dd167f0bae91ed3b9ed2a4db6c6597",
+      "purpose": "Turns a list of task filenames into MaestroTask records, deriving each task's status from status.json, the done set and blockedBy, and attaching any claim.",
+      "inputs": [
+        "dir: tasks directory path",
+        "files: task filenames in that directory",
+        "statusMap: parsed status.json entries keyed by filename",
+        "claims: per-filename claim records, empty by default"
+      ],
+      "outputs": [
+        "MaestroTask[] with filename, relativePath, title, blockedBy, status (ready, blocked, done or the materialized value), content, claim and optional epic"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "blockedBy-cascade",
+        "claims-overlay"
+      ],
+      "sig_seen": "function tasksFromFiles(dir: string, files: string[], statusMap: StatusMap, claims: Map<string, TaskClaim> = new Map()): MaestroTask[]",
+      "hash_seen": "4f498902a955d304e20e5cee278afce8d8b7363c3570978d9d88c3816be10364"
+    },
+    {
+      "_key": "4900be733905e0e3dff9b761ed1e194f",
+      "purpose": "Removes a task's claim file, but only when the calling session is the one that owns it.",
+      "inputs": [
+        "tasksDir: path to the task queue directory",
+        "filename: task file name to release",
+        "sessionId: id of the session asking to release"
+      ],
+      "outputs": [
+        "ReleaseResult: 'released', 'no-claim', or 'not-owner'"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims"
+      ],
+      "sig_seen": "function releaseTask(tasksDir: string, filename: string, sessionId: string): ReleaseResult",
+      "hash_seen": "3612caef06d0558aed228b791cff98a41bf3770bcfb24182f55e0a9686d5c3de"
+    },
+    {
+      "_key": "4b98ee0e98ae5c84a328efefd73871df",
+      "purpose": "Returns the claims directory path under a tasks directory.",
+      "inputs": [
+        "tasksDir: path to the task queue directory"
+      ],
+      "outputs": [
+        "path.join(tasksDir, CLAIMS_DIR_NAME)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims"
+      ],
+      "sig_seen": "function claimsDirFor(tasksDir: string): string",
+      "hash_seen": "a21ab5eae509718bd8f024e210f0aab5a63ef492c5392d146dfe88c86aa1f94b"
+    },
+    {
+      "_key": "4ce603d3d87cae4d15cd1dce5bea146c",
+      "purpose": "Reads status.json from a tasks directory and returns it as a StatusMap, or an empty map if the file is missing, unparseable, or not an object.",
+      "inputs": [
+        "dir: tasks directory that contains status.json"
+      ],
+      "outputs": [
+        "StatusMap parsed from status.json, or {}"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "status-json"
+      ],
+      "sig_seen": "function readStatusMap(dir: string): StatusMap",
+      "hash_seen": "ddc00feb47c83d99c84caec22507354bccbde9469b8295ddbe7d7bb96b3fb0e5"
+    },
+    {
+      "_key": "53c2dc3252dea6e963f79032a744c8c7",
+      "purpose": "Sets or clears the epic field on the status.json entries for the named task files, writing nothing if any name is unknown.",
+      "inputs": [
+        "projectRoot: project path",
+        "filenames: task filenames to update; basenames are used",
+        "epic: epic slug to set, or null to clear the field"
+      ],
+      "outputs": [
+        "SetEpicResult with changed (names written) and missing (unknown names); changed is empty when any name is missing"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "epic-membership"
+      ],
+      "sig_seen": "function setTaskEpic(projectRoot: string, filenames: string[], epic: string | null): SetEpicResult",
+      "hash_seen": "f6028dc7c7318c1cd85633115b9561b85314c5fcb4aae8387e0549917f5e7c2d"
+    },
+    {
+      "_key": "540f0b68de78d81852395d53e079208c",
+      "purpose": "Lists the .md files in a tasks directory, sorted with localeCompare so numbered files come out in their run order.",
+      "inputs": [
+        "dir: tasks directory"
+      ],
+      "outputs": [
+        "sorted array of .md filenames; empty array if the directory cannot be read"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "numbered-files"
+      ],
+      "sig_seen": "function listTaskFiles(dir: string): string[]",
+      "hash_seen": "93f778d35627d7f52a676378688cad1f098796ffb67af51aff7a4f2eb93dab24"
+    },
+    {
+      "_key": "759f9da661dccfa9ab5ab30b4cbc50be",
+      "purpose": "Reports whether a claiming session still counts as live, based on how recently its session log was modified.",
+      "inputs": [
+        "claudeDir: the .claude directory path",
+        "sessionId: id of the session holding the claim",
+        "now: current time in epoch ms (defaults to Date.now())"
+      ],
+      "outputs": [
+        "true when the session directory exists and its log mtime is within CLAIM_IDLE_CAP_MS of now, otherwise false"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims",
+        "liveness"
+      ],
+      "sig_seen": "function isSessionLive(claudeDir: string, sessionId: string, now: number = Date.now()): boolean",
+      "hash_seen": "6a0167775b6814b70eacf4ccff6d281c13e2759ee0351a890ebb31cab08f3f6d"
+    },
+    {
+      "_key": "77cb22333b4b2f151862b2cc65bc70ed",
+      "purpose": "Projects the status.json map into a per-file tracker record of status, epic and blockedBy, normalising blockedBy to an array.",
+      "inputs": [
+        "projectRoot: project path"
+      ],
+      "outputs": [
+        "Record keyed by filename of {status, epic, blockedBy}; blockedBy is [] when not an array"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "status-json"
+      ],
+      "sig_seen": "function readTaskTracker(projectRoot: string): Record<string, TrackerEntry>",
+      "hash_seen": "fc104b37eb4ee236e95f3e637a6fe730e929bbb666665a7911c9d4eac3799932"
+    },
+    {
+      "_key": "8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "purpose": "Runs a mutation on an epic's state.json under the epic directory lock: it throws if the epic or its state file is missing, applies fn to the current state, then writes the state back.",
+      "inputs": [
+        "projectRoot: project root that holds the epic directory",
+        "slug: epic slug",
+        "fn: mutator that receives the current EpicState and returns a value"
+      ],
+      "outputs": [
+        "the value returned by fn"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function updateState(projectRoot: string, slug: string, fn: (state: EpicState) => T): T",
+      "hash_seen": "1fc82787e662cc7f4836efebed39523f0934f5299cefaea56aa0d16b3b5eba52"
+    },
+    {
+      "_key": "8509cae44807ec761925913fb3eb8e0c",
+      "purpose": "Polls the task queue on an interval and calls back with the initial snapshot and with each later snapshot whose serialized form differs from the last one.",
+      "inputs": [
+        "projectRoot: project path",
+        "events: optional init and update callbacks",
+        "intervalMs: poll interval in milliseconds, default 1000"
+      ],
+      "outputs": [
+        "A stop function that clears the timer and prevents further callbacks"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "live-tail"
+      ],
+      "sig_seen": "function tailTasks(projectRoot: string, events: Partial<TaskQueueTailEvents>, intervalMs = 1000): () => void",
+      "hash_seen": "7b562ae6d83a6b9f4a33dc472f903d777e84a4ae3d7f4a95181ed1767fd04fcf"
+    },
+    {
+      "_key": "851b412e528c96d3191fbdb02e38bd47",
+      "purpose": "Lists the claim files in the claims directory, returns the live ones keyed by task filename, and deletes the claim files whose sessions are not live.",
+      "inputs": [
+        "projectRoot: project root path",
+        "tasksDir: path to the task queue directory",
+        "now: current time in epoch ms (defaults to Date.now())"
+      ],
+      "outputs": [
+        "Map from task filename to TaskClaim (sessionId, claimedAt, live, optional sessionName) for claims read from the directory"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims",
+        "liveness",
+        "reaping"
+      ],
+      "sig_seen": "function readClaims(projectRoot: string, tasksDir: string, now: number = Date.now()): Map<string, TaskClaim>",
+      "hash_seen": "ef898c075e3998e507f7ae71d9575ea86665f376733d2d9aaa6cdac1a1a78f94"
+    },
+    {
+      "_key": "86e8200e3c068cf87a326a17750d6f9c",
+      "purpose": "Extracts the optional session name from a claim as a sessionName field.",
+      "inputs": [
+        "claim: parsed ClaimFile"
+      ],
+      "outputs": [
+        "{ sessionName } when session_name is a non-empty string, otherwise {}"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims"
+      ],
+      "sig_seen": "function nameOf(claim: ClaimFile): { sessionName?: string; }",
+      "hash_seen": "e1a66a1a2c27fffcd85c66ef8e135d260510386edcbfca5418ab7fcd67847f5a"
+    },
+    {
+      "_key": "895550bdf313f084c082c3d882e174e4",
+      "purpose": "Reads a file from a directory as UTF-8, returning an empty string instead of throwing when the read fails.",
+      "inputs": [
+        "dir: directory containing the file",
+        "filename: file name within that directory"
+      ],
+      "outputs": [
+        "file contents as a string, or '' on any read error"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function readFileSafe(dir: string, filename: string): string",
+      "hash_seen": "dd3275a700e9b4674bef5071d1f98fc819b3361d0533c9c93ff37b77f7840cd7"
+    },
+    {
+      "_key": "980dcb86fef33c2d55e4c66b334e6b77",
+      "purpose": "Returns the task queue directory under the main checkout root, so a call made from inside a git worktree still resolves to the main checkout's queue.",
+      "inputs": [
+        "projectRoot: project path, which may be inside a git worktree"
+      ],
+      "outputs": [
+        "path to the TASKS_SUBDIR directory inside the main checkout root"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "main-checkout-queue"
+      ],
+      "sig_seen": "function tasksDirFor(projectRoot: string): string",
+      "hash_seen": "2071307093616586635f83ed988ed6fbb0c0ee36f72b0f160254dce33fa098ca"
+    },
+    {
+      "_key": "9cb273b8be3b4d3c8ffbd22abad98943",
+      "purpose": "Claims a task file for a session, replacing a claim whose session is no longer live and reporting already-claimed when another live session holds it.",
+      "inputs": [
+        "projectRoot: project root path",
+        "tasksDir: path to the task queue directory",
+        "filename: task file name to claim",
+        "sessionId: id of the claiming session",
+        "now: current time in epoch ms (defaults to Date.now())",
+        "sessionName: optional display name for the session"
+      ],
+      "outputs": [
+        "ClaimResult: outcome 'claimed', or 'already-claimed' with the holding claim"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims",
+        "liveness"
+      ],
+      "sig_seen": "function claimTask(projectRoot: string, tasksDir: string, filename: string, sessionId: string, now: number = Date.now(), sessionName?: string | null): ClaimResult",
+      "hash_seen": "08e26624bdcf0a8242829bd48bca6d49c366c7de05c1b18380d142000ea96269"
+    },
+    {
+      "_key": "a1c77134536e9138a4b79ff35306ee42",
+      "purpose": "Returns the current time as an ISO 8601 string.",
+      "inputs": [],
+      "outputs": [
+        "new Date().toISOString() value"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function now(): string",
+      "hash_seen": "eee0a5ff5501551b0ea7f6fc18e286437193c5d497f46699b46a38b4a6ad101c"
+    },
+    {
+      "_key": "a91580ce491b4883b540c9b852087643",
+      "purpose": "Formats an ISO timestamp as a coarse relative age for display in the tasks view.",
+      "inputs": [
+        "iso: ISO timestamp string"
+      ],
+      "outputs": [
+        "'just now' under a minute, then '<n>m ago', '<n>h ago' or '<n>d ago'; 'unknown' when the timestamp does not parse"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function ago(iso: string): string",
+      "hash_seen": "aadfaa0d7f5388536059d03c486268b186edf42aceea042464e5c356969e82b4"
+    },
+    {
+      "_key": "b2d02b1a58254edd866781ddeb6a4857",
+      "purpose": "Returns the '## Post-Mortem' section of a task file, from its heading up to the next level-2 heading, trimmed.",
+      "inputs": [
+        "content: full markdown text of a task file"
+      ],
+      "outputs": [
+        "trimmed section text including its heading, or null if the section is absent"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "postmortems-log"
+      ],
+      "sig_seen": "function extractPostMortemSection(content: string): string | null",
+      "hash_seen": "6992dd7e471ac89b2dd19901c8d3dd86a5ce6073fd02105cf7cf2094d5307113"
+    },
+    {
+      "_key": "d8ff7806335d0f2e4754f451e5acfb32",
+      "purpose": "Lists the task queue for a project by resolving the main checkout, then reading the task files, status.json and claims and building the task records.",
+      "inputs": [
+        "projectRoot: project path, possibly a worktree; resolved to the main checkout"
+      ],
+      "outputs": [
+        "MaestroTask[] for the project's queue, or [] when projectRoot is empty"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "main-checkout-root",
+        "claims-overlay"
+      ],
+      "sig_seen": "function listTasks(projectRoot: string): MaestroTask[]",
+      "hash_seen": "d770b3413c22b8897eb131795cc8624a5a036e4c34811650d94e709f9364530b"
+    },
+    {
+      "_key": "e0c9d8bebb72839f0883e4a773e76464",
+      "purpose": "Reads an epic's state.json and returns it normalised as an EpicState, or null if the epic directory is missing or the file is unreadable or not an object.",
+      "inputs": [
+        "projectRoot: project root that holds the epic directory",
+        "slug: epic slug, resolved to a directory by epicDirFor"
+      ],
+      "outputs": [
+        "EpicState with slug, created_at (string or empty), manager (object with a name, or null), workers and log (arrays, or empty); null on any failure"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function readEpicState(projectRoot: string, slug: string): EpicState | null",
+      "hash_seen": "e35c0c14cc994a72c4cacc84985eef9ce04cf6287d384abacce8e5c8a3701683"
+    },
+    {
+      "_key": "e2c57759878018a7a3f06ac467bb3e1a",
+      "purpose": "Deletes a task file, appends its Post-Mortem section to postmortems.log when present, removes its claim, rebuilds the status map for the remaining files, and returns the refreshed queue.",
+      "inputs": [
+        "projectRoot: project path, resolved to the main checkout",
+        "filename: task file to delete; basename is used"
+      ],
+      "outputs": [
+        "MaestroTask[] for the remaining files; the unchanged queue when the filename is not a known task file, or [] when projectRoot is empty"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "postmortems-log",
+        "blockedBy-cascade",
+        "claims-overlay",
+        "main-checkout-root"
+      ],
+      "sig_seen": "function deleteTask(projectRoot: string, filename: string): MaestroTask[]",
+      "hash_seen": "282af79b23723f042cc2c750657aa23c42a20b1c0f3c5c405aae6a2f57ab4f59"
+    },
+    {
+      "_key": "e6038e473146f4b3f0edc7f2183246e4",
+      "purpose": "Extracts the task filenames listed under the '## Blocked by' heading of a task file, de-duplicated and in first-seen order.",
+      "inputs": [
+        "content: full markdown text of a task file"
+      ],
+      "outputs": [
+        "array of unique NNN-*.md filenames found in backticks in that section; empty array if there is no such section"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "blockedBy-cascade"
+      ],
+      "sig_seen": "function parseBlockedBy(content: string): string[]",
+      "hash_seen": "a00d4263e9a01a3e80b9e58de8c506d553a280c21249ff96d846a51af7222eed"
+    },
+    {
+      "_key": "ecc6d29d0257ec7f171713d246611a1e",
+      "purpose": "Marks one task file done in status.json, rebuilds the status map so tasks it unblocks become ready, drops its claim, and returns the refreshed queue.",
+      "inputs": [
+        "projectRoot: project path, resolved to the main checkout",
+        "filename: task file to close; basename is used"
+      ],
+      "outputs": [
+        "MaestroTask[] after the close; the unchanged queue when the filename is not a known task file, or [] when projectRoot is empty"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "blockedBy-cascade",
+        "claims-overlay",
+        "main-checkout-root"
+      ],
+      "sig_seen": "function closeTask(projectRoot: string, filename: string): MaestroTask[]",
+      "hash_seen": "50cf92fe78dc0c4e872d91550e41d4100ac26b0b2c067fdc8b0d69ea8b5bcae9"
+    }
+  ],
+  "edges": [
+    {
+      "_key": "04019b0c0dbeb1df6762d857ea5c260e",
+      "reason": "The claims parameter is typed as a Map of TaskClaim records."
+    },
+    {
+      "_key": "04ad86fecbe5820a9990ccbd2d66d18b",
+      "reason": "readTaskTracker resolves the tasks directory from the project root."
+    },
+    {
+      "_key": "06d60c2e58a0d0a7931246fd16c1bb58",
+      "reason": "deleteTask reads the file content so its Post-Mortem section can be extracted."
+    },
+    {
+      "_key": "0e467caaf2fe6ba9fb00385bb9cc9b51",
+      "reason": "On the early-return path for an unknown filename, closeTask loads claims for the unchanged queue."
+    },
+    {
+      "_key": "0f69eef677149e0bab93aabad83d31ca",
+      "reason": "updateState runs its read-modify-write inside withLock so the epic directory is locked while state changes."
+    },
+    {
+      "_key": "115fb9248fdd0e5a56f75bb0d22e2e10",
+      "reason": "claimTask calls ensureClaimsDir to make sure the claims directory exists before writing."
+    },
+    {
+      "_key": "118f6d8552d4321557389edef1bf3c95",
+      "reason": "buildStatusMap calls parseBlockedBy on each task file's text to get its blockedBy list."
+    },
+    {
+      "_key": "184d307698c60d2a448d5b6f595d5bbf",
+      "reason": "releaseTask calls readClaimFile to read the claim and check its owner before removing it."
+    },
+    {
+      "_key": "1a06a3da9d9e8a5c741721d3106b2983",
+      "reason": "deleteTask extracts the Post-Mortem section to archive it to postmortems.log."
+    },
+    {
+      "_key": "1b6ab93e1650dd95636906ba60f8db50",
+      "reason": "closeTask rebuilds the status map with the closed file added to the done set."
+    },
+    {
+      "_key": "1d798f9b2f694e104d1278a814b58d18",
+      "reason": "Each returned task's title is read from its file content."
+    },
+    {
+      "_key": "1f49ddbe0087911a23327acecaf9731f",
+      "reason": "deleteTask loads claims for the refreshed queue it returns."
+    },
+    {
+      "_key": "20b9f666c9766fbb4983ebab3601f66c",
+      "reason": "The map entry whose epic field is set or cleared is typed as StatusEntry."
+    },
+    {
+      "_key": "23f7970806664492aa44e808e2082756",
+      "reason": "The return type of setTaskEpic is SetEpicResult."
+    },
+    {
+      "_key": "26a7db47de5c4d3d1dcab76e940e648e",
+      "reason": "readClaimFile uses the ClaimFile type in its cast or return at line 94."
+    },
+    {
+      "_key": "26b2bb4c368a993e3be721be9f37d539",
+      "reason": "epicDirFor calls isValidEpicSlug to reject an invalid slug before building the path."
+    },
+    {
+      "_key": "26cadb2d5d1927ff213e0a65071d7377",
+      "reason": "deleteTask reads the existing status.json entries before deleting."
+    },
+    {
+      "_key": "28a2d47c57a5a9e73ec33791bc770fad",
+      "reason": "listTasks delegates building the final task list to tasksFromFiles."
+    },
+    {
+      "_key": "2a39d4040b842625367702ff7ac05fcf",
+      "reason": "readClaimFile uses the ClaimFile type in its cast at line 92."
+    },
+    {
+      "_key": "2ded5452b029834a3e94b441884615dd",
+      "reason": "The return type annotation of readStatusMap names the StatusMap type."
+    },
+    {
+      "_key": "2e30839ead57729fbdf92252020c97b1",
+      "reason": "setTaskEpic writes the status map only when at least one entry changed."
+    },
+    {
+      "_key": "2f7bbe9f6aaaf461d8e9f1bf98f920f9",
+      "reason": "closeTask resolves the tasks directory from the project root."
+    },
+    {
+      "_key": "33a42f2e567ab0093a0ec8d7467827ba",
+      "reason": "When the filename is not a known task file, deleteTask returns the unchanged queue via tasksFromFiles."
+    },
+    {
+      "_key": "37cc8fb4fc8dd6ca6368d0b82359bc49",
+      "reason": "The parsed status.json value is cast to StatusMap before it is returned."
+    },
+    {
+      "_key": "3819b1d83dfbd802ec6f00532df21402",
+      "reason": "nameOf takes a ClaimFile as its parameter type."
+    },
+    {
+      "_key": "3ef397e2ca5ca70d5f596ac8d16825ba",
+      "reason": "claimTask calls readClaimFile to check for an existing claim before deciding whether to replace it."
+    },
+    {
+      "_key": "3f959c4d7649ecf18cd517b431fa2b19",
+      "reason": "updateState loads the current state with readEpicState inside the lock before calling the mutator."
+    },
+    {
+      "_key": "3fc603b3f3ca14209d30c85c73e8e7d1",
+      "reason": "listTasks resolves the tasks directory from the project root."
+    },
+    {
+      "_key": "4258bfe1c8d8380262c4cb113eb2076e",
+      "reason": "listTasks reads status.json to pass as the status map."
+    },
+    {
+      "_key": "48319b3e993e348924fa2c88c8439a01",
+      "reason": "readClaims calls readClaimFile to parse each claim file it lists."
+    },
+    {
+      "_key": "4fe28aa92dcd1df2615cab7279e70035",
+      "reason": "readClaims calls isSessionLive to decide whether each claim is still live."
+    },
+    {
+      "_key": "50c810f01f84cf671d3e57348a64bd65",
+      "reason": "The return type annotation of readEpicState names the EpicState type."
+    },
+    {
+      "_key": "51d42911218a00ba7230ea27e8413c4c",
+      "reason": "setTaskEpic lists valid task files to check the requested names against."
+    },
+    {
+      "_key": "51e48f842895afa9503d929beb415762",
+      "reason": "The statusMap parameter of writeStatusMap is typed as StatusMap."
+    },
+    {
+      "_key": "57206a5f2b82c3c10dcbfeeba31a57d0",
+      "reason": "claimPathFor builds the claim file path from the claims directory returned by claimsDirFor."
+    },
+    {
+      "_key": "5ba43c13f27bd76f7f3dbe0fbead916b",
+      "reason": "deleteTask removes the deleted task's claim file."
+    },
+    {
+      "_key": "5d141aad8ce693e7421802b603efdd07",
+      "reason": "Each tracker record in the returned object is typed as TrackerEntry."
+    },
+    {
+      "_key": "699264362898e374c008f725c8d8bd85",
+      "reason": "closeTask loads claims for the refreshed queue it returns."
+    },
+    {
+      "_key": "6ae91ce1d7f1eace06dc2fe19d622da8",
+      "reason": "claimTask declares ClaimResult as its return type at line 177."
+    },
+    {
+      "_key": "6d89407478e001df27561c123d01229f",
+      "reason": "The local s is cast to Partial<EpicState> to read the parsed state.json fields."
+    },
+    {
+      "_key": "6fc6792d21000ca19a8ae7c75f39a80e",
+      "reason": "The statusMap parameter is typed as StatusMap."
+    },
+    {
+      "_key": "73c374088c901d8464bf0d7b463e50f2",
+      "reason": "closeTask removes the closed task's claim file."
+    },
+    {
+      "_key": "764bd90d9b4ef3d056ad97929947fc85",
+      "reason": "readClaims calls nameOf to attach the optional sessionName to each returned claim."
+    },
+    {
+      "_key": "7a4bdbb385af28446cd1287799b13536",
+      "reason": "The mutator parameter fn is typed to receive an EpicState."
+    },
+    {
+      "_key": "7ab36281cfd521b9941bbea1ac46d4a2",
+      "reason": "updateState calls epicDirFor to find the directory it locks and writes to."
+    },
+    {
+      "_key": "8dc11c570ce6f858ac0836c6d2ac2899",
+      "reason": "claimTask calls readClaimFile again on EEXIST to read the winning claim."
+    },
+    {
+      "_key": "91c2cba1962124d58685cd5eb3749a5f",
+      "reason": "listTasks lists the task filenames in the directory."
+    },
+    {
+      "_key": "95579aac8292d21f13ee066b9bd0dcc4",
+      "reason": "setTaskEpic resolves the tasks directory from the project root."
+    },
+    {
+      "_key": "9586e5f64a7ae7d469fd769e582adf1e",
+      "reason": "The return type of buildStatusMap is StatusMap."
+    },
+    {
+      "_key": "9ac7c309fc9f0ae64268a8ae63a03eb1",
+      "reason": "claimTask types the payload it writes as a ClaimFile at line 198."
+    },
+    {
+      "_key": "a2e4570f9a808e59a2fb61c20fad909c",
+      "reason": "closeTask returns the refreshed queue built by tasksFromFiles after writing the status map."
+    },
+    {
+      "_key": "a429eb1a2f1a06c721c699d62d168592",
+      "reason": "readClaims calls claimsDirFor to find the directory to list."
+    },
+    {
+      "_key": "a554b1bb669ddad286776af8d6f8d8f3",
+      "reason": "releaseTask calls claimPathFor to locate the claim file for the task."
+    },
+    {
+      "_key": "a7c30fcb91ded3b83849607bbdc5761f",
+      "reason": "When the filename is not a known task file, closeTask returns the unchanged queue via tasksFromFiles."
+    },
+    {
+      "_key": "a86f07a0f72bbf757d8a381380bd187f",
+      "reason": "deleteTask builds the returned queue from the remaining files via tasksFromFiles."
+    },
+    {
+      "_key": "af573527107c43113e62bb7e05ca3772",
+      "reason": "readTaskTracker reads the status map to project into tracker records."
+    },
+    {
+      "_key": "b1bbdc86a03e4c2fc717a19a3189b2b3",
+      "reason": "The output map out is declared as a StatusMap that buildStatusMap fills and returns."
+    },
+    {
+      "_key": "b94e468727b3a51e623f9c0946781e02",
+      "reason": "claimTask calls nameOf to attach the existing holder's session name to the already-claimed result."
+    },
+    {
+      "_key": "bd76bf7ce7e3c7e16d1a1941dfeb5993",
+      "reason": "tailTasks takes the task queue snapshot via listTasks on every poll."
+    },
+    {
+      "_key": "bf0ea5a89aef628e22a25b4acb5f3c55",
+      "reason": "closeTask persists the updated status map to status.json."
+    },
+    {
+      "_key": "c0f4b75506a04781217dc916e9107a4f",
+      "reason": "readClaims uses the TaskClaim type in the Map it builds at line 143."
+    },
+    {
+      "_key": "c1dd814a096df97676cfedb978b72134",
+      "reason": "The events parameter is typed as Partial of TaskQueueTailEvents."
+    },
+    {
+      "_key": "c370c050b9196b6cba0c56c16431cb5d",
+      "reason": "deleteTask resolves the tasks directory from the project root."
+    },
+    {
+      "_key": "c3ea59dd4b84c1e474d8a6b56d10d923",
+      "reason": "claimTask calls isSessionLive to decide whether an existing claim blocks the new one."
+    },
+    {
+      "_key": "c6783abbadc51d8c60319d8c96b9f5bd",
+      "reason": "readClaims calls listClaimFiles to enumerate the claim files in the directory."
+    },
+    {
+      "_key": "cb8bacfae2d0c0cb47d7f340e4c67271",
+      "reason": "buildStatusMap calls readFileSafe to read each task file's contents before parsing its blockedBy section."
+    },
+    {
+      "_key": "cc7355ebc5cb0afa83e8eb9931c96a04",
+      "reason": "The sorted copy of the map is declared as a StatusMap before being written."
+    },
+    {
+      "_key": "cf11967c2ebdd885f1ae4e7b5f45e1eb",
+      "reason": "readClaimFile uses the ClaimFile type in its cast at line 91."
+    },
+    {
+      "_key": "d00c54a972b8640f2fecf5a7cdb4afe5",
+      "reason": "Each task file's content is loaded from dir before parsing."
+    },
+    {
+      "_key": "d2237b6f5b635772c10cdd9b714f2096",
+      "reason": "setTaskEpic reads the current status map so it can update epic fields in place."
+    },
+    {
+      "_key": "d4239863816c40ecf3c6c57aa4a21996",
+      "reason": "The return type of readTaskTracker is a Record of TrackerEntry."
+    },
+    {
+      "_key": "d4a464d08e8791f94ef51bd8bc687d1f",
+      "reason": "A file with no status.json entry gets a default entry from buildStatusMap before its epic is set."
+    },
+    {
+      "_key": "d54e04cf3a080710edec9ef76305be52",
+      "reason": "deleteTask persists the status map with the deleted task removed."
+    },
+    {
+      "_key": "da4e9495a4f81f6902165c83cfe5351e",
+      "reason": "claimTask calls nameOf to attach the winning claim's session name when reporting already-claimed after EEXIST."
+    },
+    {
+      "_key": "df34427cc0adc928625beb7367c03e03",
+      "reason": "closeTask lists the task files to compute the done set."
+    },
+    {
+      "_key": "dfa9b31e6e3da2655425861f6b13b7b2",
+      "reason": "updateState calls writeEpicState to persist the mutated state after fn returns."
+    },
+    {
+      "_key": "e3706497318aa83211b8242b750d3753",
+      "reason": "On the early-return path for an unknown filename, deleteTask loads claims for the unchanged queue."
+    },
+    {
+      "_key": "e4a9054f760b496feda59ad656dff1b6",
+      "reason": "readClaimFile declares ClaimFile as its return type at line 85."
+    },
+    {
+      "_key": "e833130133dd90046aa2227c307b60fa",
+      "reason": "readClaims declares TaskClaim as the Map value type in its return type at line 140."
+    },
+    {
+      "_key": "e93d8acc4228f252076d6fc93137d9ac",
+      "reason": "blockedBy is parsed from the file content when status.json has no entry for that file."
+    },
+    {
+      "_key": "ea68fb65f245c52696b791fb68dcecde",
+      "reason": "readEpicState calls epicDirFor to resolve the epic directory before reading state.json."
+    },
+    {
+      "_key": "ee9078bc1943e893d744c9578b5ce5e3",
+      "reason": "deleteTask lists task files to find the deleted one and the remaining ones."
+    },
+    {
+      "_key": "efd02177ec872f2d29d8b534e0395e4d",
+      "reason": "closeTask reads the existing status.json entries before applying the close."
+    },
+    {
+      "_key": "f4e82a6430d9dc7586f8dc3ce9572c5a",
+      "reason": "listTasks loads claim records to attach to the tasks."
+    },
+    {
+      "_key": "f56afcbfdaf4cd6f4ff1e163aba73541",
+      "reason": "deleteTask rebuilds the status map for the remaining files after the delete."
+    },
+    {
+      "_key": "f7a5b5f46555ef7972e2e55797f2aa59",
+      "reason": "deleteTask reads the title for the postmortems.log entry header."
+    },
+    {
+      "_key": "fddc2b77a6971e6a240fa09052a36439",
+      "reason": "releaseTask declares ReleaseResult as its return type at line 229."
+    }
+  ]
+}

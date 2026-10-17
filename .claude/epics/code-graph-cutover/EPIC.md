@@ -121,7 +121,75 @@ gate is in its prompt.
   stale on a body change (today a body-only edit is never stale), poor searches written to the
   scribe gap channel, and incremental Haiku enrichment in the update flows. Maestro needs no change;
   after it ships, one small end-to-end check task.
+- The incremental-enrichment request became code-graph tasks 013 and 014.
+  - 013 (CLI, 0.3.6): `enrich targets <concept> --json` picks new, changed, stale or named
+    vertices, and `enrich merge <concept> <partial>` merges into `.enriched.json`, keeping edge
+    reasons. Stale is now based on content (hash_seen); old entries keep the signature rule.
+    Stale descriptions stop counting as enriched in gaps.ts.
+  - 014 (skills, 0.3.7): retrieval writes gaps to the scribe channel, and the update flows enrich
+    only the targets, via Haiku agents launched by the caller, with a spot-check.
+  - Told code-graph-d1 to keep one json block per gap file and to leave the run_id stamp to
+    maestro's SubagentStop. The file must be named after the writing agent's bare name.
+  - After 0.3.7 ships: queue the maestro end-to-end check.
 - code-graph 0.3.5 (8113777, local, unpushed) ships 012: the extractor version is recorded only in
   meta. The one-time rewrite is committed, and two re-extracts in a row are byte-identical.
+- code-graph 0.3.6 (013, 892b871) and 0.3.7 (014, f9b7b6d) are pushed on feat/integrate-concept-skills.
+  The user's plugin cache is still 0.3.4; only the PATH CLI is 0.3.7. Updating the plugin is the
+  end-to-end check's precondition.
+  - Gap: 0.3.7 runs the Haiku fan-out from the main session, but maestro runs the flows inside the
+    scribe subagent, which can't spawn agents.
+  - The user chose option A: in a subagent, the scribe enriches up to ~20 targets itself and
+    reports any larger list as left to enrich. Maestro doesn't change.
+  - Also sent: core-first enrichment. On first touch, `enrich targets --core` takes the vertices
+    named in the SKILL.md, plus hubs (median ~13 per concept, against 274 for
+    claude-session-bridge), and gaps.ts measures the ratio over core vertices only. Also reported
+    the `search --json` max-tokens bug.
+  - code-graph-d1 queued four tasks, to run in order:
+    - 015 (0.3.8): the deps cache is keyed by ts-morph, so it survives plugin updates. Everyone
+      reinstalls once.
+    - 016 (0.3.9): `--core`, plus gaps measured over the core. A thin core (50+ vertices, fewer
+      than 5 core) is reported.
+    - 017 (0.3.10): the subagent path. Up to 20 targets are enriched inline, and first touch uses
+      --core.
+    - 018 (0.3.11): `search --json` honours --max-tokens.
+  - The end-to-end check waits for d1's one-line notice that 0.3.11 is pushed. Then the user
+    updates the plugin and runs `deps install`.
+- code-graph 0.3.11 is pushed on feat/integrate-concept-skills (not on main):
+  - 015 1e0c9a6, 016 fe54a57, 017 4c818ec, 018 4cbc905.
+  - The deps cache is now deps/ts-morph@28.0.0.
+  - The user's cache showed 0.3.9.
+  - Queued 111, the end-to-end check, gated on 0.3.11 installed plus one `deps install`.
+  - code-graph-d1 deferred two JSON-output tickets: --max-tokens for the other query commands, and
+    search JSON keeping edges within the budget. 111 reports any case of (a) query output read as
+    --json, or (b) plain-text search dropping needed edges.
+- The user installed plugin 0.3.11, and I ran `deps install` from it.
+  - Core sizes run larger than my estimate, because hubs are added: median about 20, and 9 of 16
+    concepts are above 20 (claude-session-bridge 50, log-view 44). None is thin; maestro-architecture
+    has 21.
+  - 111 now covers both paths: agents-view (18, inline) and task-queue (27, left to enrich, then a
+    main-session fan-out).
+- 111 done (r006, maestro-94). Both paths work through maestro:
+  - agents-view: the scribe enriched all 18 core vertices itself.
+  - task-queue: the core of 28 was reported as left to enrich, then 3 Haiku batches ran from the
+    main session; 6 descriptions spot-checked correct.
+  - Gap file: stamped and inlined. Edge reasons survive a re-extract.
+  - `search blockedBy`: parseBlockedBy 13th -> 4th, ~3004 -> ~1821 tokens.
+  - Manager check: the ast.json diffs are only the per-vertex `ast.extractor_version`. 0.3.5 still
+    wrote it and 0.3.11 writes `{}`; vertex and edge counts are equal, and the skill section changed
+    because the skill was edited. The next extract churns all 16 files once.
+  - Findings:
+    - The core grows when the scribe names more code in the SKILL.md (18 -> 22), and can cross 20.
+    - `gaps` is not a CLI command; that criterion was my error.
+    - The scribe reads `enrich targets --json` (29 KB, too big to inline). That is not query output.
+    - A natural-language search ("how an agent's description or avatar is edited") missed
+      agents-view entirely.
+    - The gap file was retired at the next scribe start without being acted on, so the gap is lost.
+    - The scribe ended `HANDOFF: done`, which has no route; the orchestrator stopped and asked.
+  - The diffs in maestro.json and plugin.json (0.11.27) come from another session, not 111.
+  - With the user's approval:
+    - Sent the search miss, the 29 KB `enrich targets` output and the core growing with the skill
+      edit to code-graph-82.
+    - Queued 112: keep a scribe gap until a scribe handles it.
+    - The one-time ast.json churn becomes its own commit.
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.

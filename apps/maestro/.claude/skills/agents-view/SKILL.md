@@ -3,8 +3,8 @@ name: agents-view
 description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the "Copy into the project" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: 4a94620c64a136a5b12d3df435b0b033a32f17a9
+  version: "1.14"
+  last-update: 77c8c95568c2a59d68cc5db4aab39f562e6ff702
 ---
 
 # Agents View
@@ -258,6 +258,7 @@ fork-review block that renders below the card (`031`) are
 | `test/core/sync-decision.test.ts` | The branch table — `detached` outranks everything, `stale-customized` decided before `templateAdvanced`. |
 | `test/core/agent-sync.test.ts` | One case per `031` acceptance criterion, including the mtime-and-bytes proof that computing writes nothing. |
 | `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |
+| `src/renderer/src/utils/avatar.ts` | Pure client-side avatar helpers, no IPC: the placeholder layers for an agent with no saved avatar, randomised layers for a new one, and the native colour each recolourable shape starts from in the colour picker. |
 | `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |
 | `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |
 

@@ -552,6 +552,11 @@
     "epic": "code-graph-cutover"
   },
   "111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md": {
     "status": "ready",
     "blockedBy": [],
     "epic": "code-graph-cutover"
