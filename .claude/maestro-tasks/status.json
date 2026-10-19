@@ -557,6 +557,11 @@
     "epic": "code-graph-cutover"
   },
   "112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md": {
     "status": "ready",
     "blockedBy": [],
     "epic": "code-graph-cutover"

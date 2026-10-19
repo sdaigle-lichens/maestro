@@ -2,8 +2,8 @@
   "slug": "code-graph-cutover",
   "created_at": "2026-10-14T02:02:09.698Z",
   "manager": {
-    "name": "maestro-cb",
-    "set_at": "2026-10-17T12:47:32.187Z"
+    "name": "manager-code-graph-merge",
+    "set_at": "2026-10-19T12:36:31.109Z"
   },
   "workers": [
     {
@@ -110,6 +110,19 @@
       "id": "r006",
       "at": "2026-10-17T12:52:58.583Z",
       "by": "maestro-cb"
+    },
+    {
+      "kind": "report",
+      "id": "r007",
+      "task": "112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md",
+      "file": "inbox/r007-112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md",
+      "at": "2026-10-19T22:35:28.652Z"
+    },
+    {
+      "kind": "ack",
+      "id": "r007",
+      "at": "2026-10-19T22:37:07.979Z",
+      "by": "manager-code-graph-merge"
     }
   ]
 }

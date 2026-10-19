@@ -191,5 +191,52 @@ gate is in its prompt.
       edit to code-graph-82.
     - Queued 112: keep a scribe gap until a scribe handles it.
     - The one-time ast.json churn becomes its own commit.
+  - Committed 95bd33c (111's results, 112) and 7c5c9d5 (0.3.11 snapshot rewrite).
+    agents-view and task-queue were byte-stable on re-extract. maestro-architecture and
+    maestro-config-model also caught up with 5647010's code.
+- code-graph-82 queued two releases:
+  - 019 (0.3.12): plain `enrich targets` stays lazy after the first touch. Today it lists every
+    never-enriched vertex. Adds `--summary` and `--json --vertex`.
+  - 020 (0.3.13): a subagent enriches the top 20 targets and lists the rest, instead of none.
+  - Until 0.3.12, don't run update-concept-skills on an enriched concept such as task-queue: it
+    would fan out the whole concept.
+  - Search re-run after enrichment: agents-view is now 1st, but only its avatar code shows, not
+    agent-descriptions.ts. Reported to code-graph-82.
+  - code-graph-82: a query with two intents ranks one of them, so no ticket. The single-intent
+    query "how an agent's description is edited" does find agent-descriptions.ts (checked). The
+    "← triggered by" label on every inbound edge is a bug, and its fix rides along in 019.
+- code-graph 0.3.12 (019, 79a11a1) is committed, sent by manager-concept-skills-merge (code-graph's
+  epic manager).
+  - Plain `enrich targets` is now lazy: it lists the core, changed and stale vertices, and those
+    touched since the last apply. The old full listing is `--all`, and `--core` does nothing now.
+  - `--vertex` now narrows the list instead of adding to it.
+  - Manager check with the PATH CLI 0.3.12: task-queue lists 0 targets (core 28 enriched, 75 left
+    out); agents-view lists 0 (core 18, 48 left out).
+  - The plugin cache is still 0.3.11, so the scribe-lazy caution stands until the user updates.
+  - Next from code-graph: 020 (0.3.13, the subagent enriches the top 20) and 021 (0.3.14, un-enriched
+    search hits are reported as "enrich only" gaps). Their manager sends the versions after 021.
+- code-graph 020 (0.3.13) is accepted by its manager and awaits the user's commit. Its report,
+  r018, came here by mistake; I forwarded it.
+- Queued 114: the scribe ends with `HANDOFF: success` when its docs are done.
+  - Why: 111's `HANDOFF: done` stopped the Documentation run with NO ROUTE.
+  - Owner: maestro, not code-graph. The code-graph scribe skill stays maestro-neutral, and
+    maestro's own scribe.md (the plugin copy and its mirror) has no HANDOFF rule (checked).
+  - `checkRoute` already accepts `success` with no edge, and stays strict on synonyms.
+- code-graph 0.3.14 (021) is done but not committed.
+  - Search marks un-enriched hits "_not enriched_".
+  - Retrieval agents write `skill_gaps` entries whose `missing` reads "enrich only: …". The shape is
+    unchanged.
+  - The scribe enriches only those vertices, with no SKILL.md edit and no stamp.
+  - Checked: no maestro code reads the `missing` text; it appears only in prompt seeds.
+  - 112 was amended: a gap handled by enrichment counts as handled, so it can't be detected through
+    a re-stamp.
+  - Plugin update pending: 0.3.12–0.3.14 aren't installed. Install once all three are committed.
+- 112 done (r007, acked). A scribe-lane file with a non-empty `skill_gaps` array survives delivery
+  until a scribe ends with `SKILL_GAPS_HANDLED: <file>, …`, or ages out at 14 days. Plugin 0.11.28.
+  - Manager check: the gap-retention, channel, parity and session-log tests pass (131).
+  - The acknowledgement instruction lives only in the SubagentStart block, so a resumed scribe
+    misses it. Folded into 114, which already edits scribe.md.
+  - `pnpm verify` fails in the sandbox only (turbo drops TMPDIR); every step passes on its own.
+  - Not re-stamped (ts-morph missing): maestro-architecture, log-view, plugin-libs-parity.
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.
