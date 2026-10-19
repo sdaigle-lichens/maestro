@@ -39,6 +39,8 @@ export const CLAIM_IDLE_CAP_MS = 15 * 60 * 1000;
 
 const CHANNELS_DIR_NAME = "channels";
 const CONSUMED_DIR_NAME = ".consumed";
+/** The scribe's lane — the only one whose skill-gap reports outlive their delivery (`112`). */
+const SCRIBE_LANE = "scribe";
 
 /** `<projectDir>/.claude/channels` — never used directly for I/O outside this module. */
 function channelsRoot(projectDir: string): string {
@@ -59,7 +61,9 @@ function consumedDir(projectDir: string, receiver: string): string {
  * The path a `sender` writes its payload for `receiver` to. Always `.1.md` — the seed bodies tell
  * an agent to write there literally; there is no multi-file protocol for one sender/receiver pair
  * in this slice, so a second write simply overwrites the first (a stale, undelivered file being
- * clobbered by a fresher one from the same sender is the desired behaviour, not a bug).
+ * clobbered by a fresher one from the same sender is the desired behaviour, not a bug). The one
+ * exception (`112`): `writeStamp` moves a stamped scribe-lane gap report off this slot to
+ * `<sender>.<n>.md`, because an unhandled gap must survive the sender's next one.
  */
 export function laneFor(projectDir: string, sender: string, receiver: string): string {
   return path.join(channelDir(projectDir, receiver), `${sender}.1.md`);
@@ -158,10 +162,108 @@ export function writeStamp(
       }
       if (STAMP_RE.test(content)) continue;
       fs.writeFileSync(filePath, formatStampedContent(content, runId));
+      // `112`: a scribe-lane gap report survives delivery until a scribe acknowledges it, so it
+      // must not stay on the `<sender>.1.md` write slot — the sender's next gap is written to that
+      // literal path and would clobber an unhandled one. Move it to the next free `<sender>.<n>.md`.
+      if (receiver === SCRIBE_LANE && hasGapBlock(content)) {
+        const dest = nextFreeLanePath(dir, sender);
+        try {
+          fs.renameSync(filePath, dest);
+          stamped.push(dest);
+          continue;
+        } catch {
+          // Left at the write slot — still stamped, still a gap.
+        }
+      }
       stamped.push(filePath);
     }
   }
   return stamped;
+}
+
+/** `<dir>/<sender>.<n>.md` for the lowest `n >= 2` not already taken — `.1.md` is the write slot. */
+function nextFreeLanePath(dir: string, sender: string): string {
+  for (let n = 2; ; n++) {
+    const candidate = path.join(dir, `${sender}.${n}.md`);
+    if (!fs.existsSync(candidate)) return candidate;
+  }
+}
+
+const FENCED_JSON_RE = /```json[^\n]*\n([\s\S]*?)```/g;
+
+/**
+ * Whether `body` holds a fenced `json` block whose TOP-LEVEL object carries a NON-EMPTY
+ * `skill_gaps` array (or the legacy `concept_skill_gaps`). An empty array is the seeded
+ * reviewer/refactor → scribe shape with nothing to report, so it stays an ordinary deliver-once
+ * payload. The gap format is maestro's own: nothing here reads the entries themselves — in
+ * particular never a gap's `missing` text, which another tool writes.
+ */
+function hasGapBlock(body: string): boolean {
+  for (const m of body.matchAll(FENCED_JSON_RE)) {
+    let parsed: unknown;
+    try {
+      parsed = JSON.parse(m[1]);
+    } catch {
+      continue;
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+    const obj = parsed as Record<string, unknown>;
+    if (isNonEmptyArray(obj.skill_gaps) || isNonEmptyArray(obj.concept_skill_gaps)) return true;
+  }
+  return false;
+}
+
+function isNonEmptyArray(value: unknown): boolean {
+  return Array.isArray(value) && value.length > 0;
+}
+
+/**
+ * `112`: whether a lane entry is a skill-gap report — in the scribe's lane, with a gap block (see
+ * `hasGapBlock`). Such an entry is inlined to every scribe and never retired on delivery; only a
+ * scribe's `SKILL_GAPS_HANDLED:` line (`acknowledgeGaps`) or `sweep`'s age cap removes it.
+ */
+export function isGapReport(entry: ChannelEntry): boolean {
+  return path.basename(path.dirname(entry.path)) === SCRIBE_LANE && hasGapBlock(entry.body);
+}
+
+const GAPS_HANDLED_RE = /^[ \t]*SKILL_GAPS_HANDLED:(.*)$/gm;
+
+/**
+ * The gap files a scribe's final message acknowledges: every `SKILL_GAPS_HANDLED: a.2.md, b.3.md`
+ * line, split on commas and trimmed. Empty when there is no such line.
+ */
+export function parseGapsHandled(finalMessage: string): string[] {
+  const names: string[] = [];
+  for (const m of (finalMessage ?? "").matchAll(GAPS_HANDLED_RE)) {
+    for (const raw of m[1].split(",")) {
+      const name = raw.trim();
+      if (name && !names.includes(name)) names.push(name);
+    }
+  }
+  return names;
+}
+
+/**
+ * Retire the named scribe-lane gap reports to `.consumed/scribe/` and return what was retired.
+ * A name that is path-shaped, no longer in the lane, or not a gap report is skipped silently — a
+ * scribe repeating its ack, or naming an ordinary payload, is not an error.
+ */
+export function acknowledgeGaps(projectDir: string, fileNames: readonly string[]): ChannelEntry[] {
+  const wanted = new Set(
+    fileNames.filter((n) => n && n === path.basename(n) && !n.includes("\\") && n !== "." && n !== "..")
+  );
+  if (wanted.size === 0) return [];
+  const retired: ChannelEntry[] = [];
+  for (const entry of readLane(projectDir, SCRIBE_LANE)) {
+    if (!wanted.has(entry.fileName) || !isGapReport(entry)) continue;
+    try {
+      retire(projectDir, SCRIBE_LANE, entry);
+      retired.push(entry);
+    } catch {
+      // Left in the lane: delivered again to the next scribe, which can acknowledge it then.
+    }
+  }
+  return retired;
 }
 
 /**

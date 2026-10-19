@@ -6,7 +6,8 @@ directory of per-receiver lanes:
 ```
 <project>/.claude/channels/
   <receiver>/<sender>.1.md      <- the payload the sender wrote
-  .consumed/<receiver>/...      <- retired after delivery
+  scribe/<sender>.<n>.md        <- a stamped skill-gap report, kept until acknowledged (`112`)
+  .consumed/<receiver>/...      <- retired after delivery (or, for a gap report, acknowledgement)
 ```
 
 A sender writes its `handoff_details` payload straight to the receiver's lane instead of putting it
@@ -19,7 +20,8 @@ the starting agent's BARE type in `.claude/channels/<bareAgentType>/`:
 
 - same-`run_id` entries are inlined verbatim as `additionalContext` and **retired** (moved to
   `.consumed/`, logged as a `kind:"channel_delivery"` entry);
-- anything from a different or absent run is only **mentioned** (sender, age, path), never inlined.
+- anything from a different or absent run is only **mentioned** (sender, age, path), never inlined;
+- except a stamped scribe-lane **gap report**, inlined whatever its run and kept (see below).
 
 It is gated on nothing but the lane having files — a filesystem fact, not a workflow-routing one,
 which is what lets a gap reach `@scribe` on a run whose workflow never wired a route to it. Two
@@ -29,6 +31,27 @@ Claude Code drops a resume's `additionalContext`. Its current-run files are hand
 `maestro-resume-target.cjs` prints them as `deliver:` lines for the orchestrator's `SendMessage` and
 records them in `session.json` `resume_deliveries` — and retired at that run's own `SubagentStop`,
 logged as `channel_delivery` with `via:"resume"` (see `agent-resume.md`).
+
+## Scribe-lane gap reports (`112`)
+
+The one exception to deliver-once. A **gap report** (`isGapReport`) is a scribe-lane file whose
+fenced `json` block's top-level object has a **non-empty** `skill_gaps` (or legacy
+`concept_skill_gaps`) array. An empty array — the seeded reviewer/refactor → scribe payload with
+nothing to report — is an ordinary payload and keeps deliver-once.
+
+| Step | What happens to a gap report |
+| --- | --- |
+| Sender's `SubagentStop` (`writeStamp`) | Stamped, then renamed off the `<sender>.1.md` write slot to the next free `<sender>.<n>.md` (`n >= 2`), so the sender's next gap can't clobber an unhandled one. |
+| Any scribe's cold `SubagentStart` | Inlined **whatever run stamped it** (logged as an ordinary `channel_delivery`, once per scribe start) and **never retired**. The injected block tells the scribe to end with `SKILL_GAPS_HANDLED: <file>, <file>`. An unstamped one is only mentioned, like any unattributable file. |
+| Resumed scribe | A current-run gap goes as a `deliver:` line like any file, but `retireResumeDeliveries` skips it. |
+| Scribe's `SubagentStop` | `parseGapsHandled` reads every `SKILL_GAPS_HANDLED:` line; `acknowledgeGaps` retires exactly those files (gap reports only; a path-shaped or unknown name is ignored), each logged as `channel_delivery` with `via:"ack"`. Skipped for a meeting participant or owner run. |
+| `SessionEnd`'s `sweep()` | Ages an unacknowledged one out at `CHANNEL_AGE_CAP_MS` like any lane file. |
+
+"Handled" is whatever the scribe names: an enrich-only run (no SKILL.md edit, no stamp), a "left to
+enrich" remainder and a concept with no graph all count. Maestro never parses a gap's `missing`
+text, and never infers "handled" from a skill re-stamp. `payloadWrittenSince` (the `087` missing-
+payload check) also accepts the sender's renamed gap reports in the receiver's lane, under the same
+mtime rule. Test: `test/core/scribe-gap-retention.test.ts`.
 
 ## Stamping and lifecycle
 
@@ -74,10 +97,14 @@ about "too old".
   check the `run_id` in the file's first line against the live session's, not when the file was
   written.
 - **Retiring a channel file is the hooks' job alone — `SubagentStart` on a cold start, the resumed
-  run's `SubagentStop` on a resume (`088`) — never delete one by hand or from a script.** Retiring
+  run's `SubagentStop` on a resume (`088`), the scribe's `SubagentStop` ack for a gap report (`112`)
+  — never delete one by hand or from a script.** Retiring
   before the receiver has actually seen the file is the 085 bug. `retire()` moves a delivered file to `.claude/channels/.consumed/<receiver>/`; it is
   never removed outright until `SessionEnd`'s `sweep()` ages it out (14 days). A delivered-but-then-
   failed agent's payload is recoverable for that window rather than gone the moment it was read.
+- **A scribe that omits `SKILL_GAPS_HANDLED:` gets the same gap again on every later run** until
+  the 14-day cap — by design, not a retirement bug. The instruction lives only in the injected
+  delivery block, which a resumed scribe never sees (`088`).
 - **The desktop app surfaces both halves of this mechanism read-only (`037`)**, and neither surface
   writes back into it. `/session-log` renders a delivered payload on the *receiving* instance's Input
   panel from the `channel_delivery` log entry — see `log-view` in `apps/maestro/.claude/skills`.

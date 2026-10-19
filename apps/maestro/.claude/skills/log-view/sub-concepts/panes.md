@@ -18,8 +18,10 @@ A thin (180px) vertical list of step names with status icons. Each row:
 - **Skills badge** (right-aligned, only when `inst.skillsTriage` is set) → compact `<loaded>` in
   `--success-text`, `/<skipped>` in `--warning-text`, and `/<unaccounted>` in `--danger-text`. Lets you scan which steps
   skipped or silently dropped skills without opening each detail panel.
-- **Delivery count** (`037`) → an `Inbox` icon + `inst.delivered.length` when non-zero, the same
-  at-a-glance class of signal as the skills badge. Omitted when `delivered` is empty.
+- **Delivery count** (`037`) → an `Inbox` icon + `receivedCount(inst)` when non-zero, the same
+  at-a-glance class of signal as the skills badge. `receivedCount` (`utils/session-log.ts`, `112`) is
+  `delivered` minus `via:"ack"` entries, which record a gap acknowledgement, not a delivery. The step
+  list's "N delivered" uses it too.
 
 - **Context badge** (`ContextUsageBadge`, `context-usage.tsx`) → `~NN%` from the instance's latest
   stamped `ctx_pct`; yellow at 75%, red at 90%. Renders nothing when no entry carries `ctx_pct`.
@@ -47,7 +49,7 @@ Shows the selected instance's data in sections:
   because parallel subagents share one `transcript_path` (see `core/session-usage.ts`).
 - **Input:** the instance's `input` field — the full spawning message sent by the main session —
   followed by each entry in `inst.delivered` (`037`), rendered as "Delivered from @`<sender>`" plus a
-  "channel" badge ("channel · resume" for a `via:"resume"` delivery, `088`) and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when
+  "channel" badge ("channel · resume" for a `via:"resume"` delivery, `088`; a `via:"ack"` entry, `112`, reads "Acknowledged gap report from @`<sender>`" with a "gap · acknowledged" badge) and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when
   `delivered` is empty; shows "No input captured" for main_session instances or when there is neither a
   dispatch entry nor a delivery.
 - **Process:** the humanized log lines (same content as the center pane section for this step).

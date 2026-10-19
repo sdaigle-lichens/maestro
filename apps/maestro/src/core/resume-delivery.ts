@@ -24,7 +24,7 @@
 //
 // `fs`/`path` only: rides in the maestro-session bundle, which must stay free of `node:sqlite`.
 
-import { readLane, retire, type ChannelEntry } from "./handoff-channels.js";
+import { isGapReport, readLane, retire, type ChannelEntry } from "./handoff-channels.js";
 import type { PayloadRoute } from "./handoff-payload.js";
 import { bareAgentName } from "./success-path.js";
 import type { HandoffIssueRecord, MaestroSession, ResumeDelivery } from "./types.js";
@@ -84,6 +84,9 @@ export function retireResumeDeliveries(
   for (const e of readLane(projectDir, bare)) {
     const runId = want.get(laneFileOf(bare, e.fileName));
     if (runId === undefined || e.runId !== runId) continue;
+    // `112`: a scribe-lane gap report is retired only by the scribe's own `SKILL_GAPS_HANDLED:`
+    // line (`acknowledgeGaps`), never by having been handed over.
+    if (isGapReport(e)) continue;
     try {
       retire(projectDir, bare, e);
       retired.push(e);

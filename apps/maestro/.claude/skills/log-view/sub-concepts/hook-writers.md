@@ -10,6 +10,7 @@ Active Maestro session
   SubagentStart     → maestro-subagent-log.js         → dispatch entry        (kind:"dispatch", agent, agent_id, input)
   SubagentStart     → maestro-inject-agent-context.js → channel_delivery entry (kind:"channel_delivery", sender, receiver, agent_id, content) — (`036`/`037`)
   SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"resume", resumed run only, BEFORE its handoff) — (`088`)
+  SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"ack", scribe only, per gap file named on SKILL_GAPS_HANDLED:) — (`112`)
   SubagentStop      → maestro-subagent-log.js         → handoff entry         (kind:"handoff", agent_id, status, label, output)
   SessionEnd        → maestro-session-cleanup.sh      → DELETE this session's directory only
 ```
@@ -90,6 +91,11 @@ array rather than by which segment it landed in (see `instance-correlation.md`).
 injector neither inlines nor logs there. The resumed run's own `SubagentStop`
 (`maestro-subagent-log.js`) retires the files it was handed by path and writes the `channel_delivery`
 entries with `via:"resume"`, just before that run's handoff entry.
+
+**Scribe gap reports (`112`).** The injector inlines a scribe-lane gap report to every scribe start
+and logs it as an ordinary `channel_delivery` each time (log line ends `(gap, kept)`), without
+retiring it. The scribe's own `SubagentStop` retires the files named on its `SKILL_GAPS_HANDLED:`
+line and writes one `channel_delivery` with `via:"ack"` per file.
 
 ## Hook registration (`hooks.json`)
 

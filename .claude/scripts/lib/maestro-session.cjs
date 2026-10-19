@@ -56,6 +56,7 @@ __export(maestro_session_exports, {
   SESSION_STATE_NAME: () => SESSION_STATE_NAME,
   SESSION_TASKS_NAME: () => SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME: () => SESSION_WORKTREE_NAME,
+  acknowledgeGaps: () => acknowledgeGaps,
   agentRunsFromLog: () => agentRunsFromLog,
   appendHandoffIssue: () => appendHandoffIssue,
   appendSessionLog: () => appendSessionLog,
@@ -92,6 +93,7 @@ __export(maestro_session_exports, {
   hasCompletedRun: () => hasCompletedRun,
   isChannelOnlyAgent: () => isChannelOnlyAgent,
   isFreeformBranch: () => isFreeformBranch,
+  isGapReport: () => isGapReport,
   isLinkedWorktree: () => isLinkedWorktree,
   isResumableEnd: () => isResumableEnd,
   isRootSkillPath: () => isRootSkillPath,
@@ -114,6 +116,7 @@ __export(maestro_session_exports, {
   ownerRunFor: () => ownerRunFor,
   ownerRunLeftovers: () => ownerRunLeftovers,
   ownerRunNotice: () => ownerRunNotice,
+  parseGapsHandled: () => parseGapsHandled,
   parseStampedContent: () => parseStampedContent,
   payloadRequirement: () => payloadRequirement,
   payloadRoutes: () => payloadRoutes,
@@ -565,6 +568,7 @@ var CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1e3;
 var CLAIM_IDLE_CAP_MS = 15 * 60 * 1e3;
 var CHANNELS_DIR_NAME = "channels";
 var CONSUMED_DIR_NAME = ".consumed";
+var SCRIBE_LANE = "scribe";
 function channelsRoot(projectDir) {
   return import_node_path3.default.join(projectDir, ".claude", CHANNELS_DIR_NAME);
 }
@@ -625,10 +629,73 @@ function writeStamp(projectDir, sender, runId, opts = {}) {
       }
       if (STAMP_RE.test(content)) continue;
       import_node_fs5.default.writeFileSync(filePath, formatStampedContent(content, runId));
+      if (receiver === SCRIBE_LANE && hasGapBlock(content)) {
+        const dest = nextFreeLanePath(dir, sender);
+        try {
+          import_node_fs5.default.renameSync(filePath, dest);
+          stamped.push(dest);
+          continue;
+        } catch {
+        }
+      }
       stamped.push(filePath);
     }
   }
   return stamped;
+}
+function nextFreeLanePath(dir, sender) {
+  for (let n = 2; ; n++) {
+    const candidate = import_node_path3.default.join(dir, `${sender}.${n}.md`);
+    if (!import_node_fs5.default.existsSync(candidate)) return candidate;
+  }
+}
+var FENCED_JSON_RE = /```json[^\n]*\n([\s\S]*?)```/g;
+function hasGapBlock(body) {
+  for (const m of body.matchAll(FENCED_JSON_RE)) {
+    let parsed;
+    try {
+      parsed = JSON.parse(m[1]);
+    } catch {
+      continue;
+    }
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) continue;
+    const obj = parsed;
+    if (isNonEmptyArray(obj.skill_gaps) || isNonEmptyArray(obj.concept_skill_gaps)) return true;
+  }
+  return false;
+}
+function isNonEmptyArray(value) {
+  return Array.isArray(value) && value.length > 0;
+}
+function isGapReport(entry) {
+  return import_node_path3.default.basename(import_node_path3.default.dirname(entry.path)) === SCRIBE_LANE && hasGapBlock(entry.body);
+}
+var GAPS_HANDLED_RE = /^[ \t]*SKILL_GAPS_HANDLED:(.*)$/gm;
+function parseGapsHandled(finalMessage) {
+  const names = [];
+  for (const m of (finalMessage ?? "").matchAll(GAPS_HANDLED_RE)) {
+    for (const raw of m[1].split(",")) {
+      const name = raw.trim();
+      if (name && !names.includes(name)) names.push(name);
+    }
+  }
+  return names;
+}
+function acknowledgeGaps(projectDir, fileNames) {
+  const wanted = new Set(
+    fileNames.filter((n) => n && n === import_node_path3.default.basename(n) && !n.includes("\\") && n !== "." && n !== "..")
+  );
+  if (wanted.size === 0) return [];
+  const retired = [];
+  for (const entry of readLane(projectDir, SCRIBE_LANE)) {
+    if (!wanted.has(entry.fileName) || !isGapReport(entry)) continue;
+    try {
+      retire(projectDir, SCRIBE_LANE, entry);
+      retired.push(entry);
+    } catch {
+    }
+  }
+  return retired;
 }
 function unstampedFilesOf(projectDir, sender) {
   const out = [];
@@ -1420,9 +1487,16 @@ function runStartedAt(lines, agentId) {
 }
 var MTIME_SLACK_MS = 1e3;
 function payloadWrittenSince(projectDir, route, sinceMs) {
+  const candidates = [laneFor(projectDir, route.sender, route.receiver)];
+  for (const entry of readLane(projectDir, route.receiver)) {
+    if (entry.sender === route.sender && isGapReport(entry)) candidates.push(entry.path);
+  }
+  return candidates.some((filePath) => writtenSince(filePath, sinceMs));
+}
+function writtenSince(filePath, sinceMs) {
   let stat;
   try {
-    stat = import_node_fs10.default.statSync(laneFor(projectDir, route.sender, route.receiver));
+    stat = import_node_fs10.default.statSync(filePath);
   } catch {
     return false;
   }
@@ -1457,6 +1531,7 @@ function retireResumeDeliveries(projectDir, session, agentId, receiver) {
   for (const e of readLane(projectDir, bare)) {
     const runId = want.get(laneFileOf(bare, e.fileName));
     if (runId === void 0 || e.runId !== runId) continue;
+    if (isGapReport(e)) continue;
     try {
       retire(projectDir, bare, e);
       retired.push(e);
@@ -2156,6 +2231,7 @@ function meetingNotice(meeting, agentType) {
   SESSION_STATE_NAME,
   SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME,
+  acknowledgeGaps,
   agentRunsFromLog,
   appendHandoffIssue,
   appendSessionLog,
@@ -2192,6 +2268,7 @@ function meetingNotice(meeting, agentType) {
   hasCompletedRun,
   isChannelOnlyAgent,
   isFreeformBranch,
+  isGapReport,
   isLinkedWorktree,
   isResumableEnd,
   isRootSkillPath,
@@ -2214,6 +2291,7 @@ function meetingNotice(meeting, agentType) {
   ownerRunFor,
   ownerRunLeftovers,
   ownerRunNotice,
+  parseGapsHandled,
   parseStampedContent,
   payloadRequirement,
   payloadRoutes,

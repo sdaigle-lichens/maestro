@@ -19,8 +19,13 @@ import {
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
 } from "../../src/core/handoff-channels.js";
+// `112`'s additions are reached through the namespace so this file still loads (and every test
+// above them still runs) against a module that does not export them yet.
+import * as channels from "../../src/core/handoff-channels.js";
 import { writeSession } from "../../src/core/session-runtime.js";
 import { ensureSessionPaths } from "../../src/core/session-paths.js";
+import { payloadWrittenSince, type PayloadRoute } from "../../src/core/handoff-payload.js";
+import { scribeSeedShapes, noGapPayload, withGapPayload } from "../helpers/scribe-seed-payloads.js";
 
 let projectDir: string;
 
@@ -248,5 +253,272 @@ describe("pendingLanes (037)", () => {
 
     const receivers = pendingLanes(projectDir).map((l) => l.receiver);
     expect(receivers).toEqual(["scribe"]);
+  });
+});
+
+// `112`: a scribe-lane skill-gap report survives delivery until a scribe acknowledges it with a
+// `SKILL_GAPS_HANDLED:` line. The hook end lives in scribe-gap-retention.test.ts; this is the pure
+// module underneath it.
+describe("scribe gap reports (112)", () => {
+  const fenced = (obj: unknown) => "Some prose first.\n\n```json\n" + JSON.stringify(obj, null, 2) + "\n```\n";
+  const GAP = fenced({ skill_gaps: [{ skill: "agents-view", missing: "the tri-state chip logic" }] });
+  const LEGACY_GAP = fenced({ concept_skill_gaps: [{ skill: "agents-view", missing: "x" }] });
+
+  function put(receiver: string, fileName: string, body: string): string {
+    const p = path.join(channelDir(projectDir, receiver), fileName);
+    fs.mkdirSync(path.dirname(p), { recursive: true });
+    fs.writeFileSync(p, body);
+    return p;
+  }
+  const entryOf = (receiver: string, fileName: string) => {
+    const e = readLane(projectDir, receiver).find((x) => x.fileName === fileName);
+    expect(e, `${receiver}/${fileName} not in lane`).toBeDefined();
+    return e!;
+  };
+  const consumedPath = (receiver: string, fileName: string) =>
+    path.join(projectDir, ".claude", "channels", ".consumed", receiver, fileName);
+
+  describe("isGapReport", () => {
+    it("is true for a scribe-lane entry whose fenced json block has a top-level skill_gaps array", () => {
+      put("scribe", "backend.1.md", GAP);
+      expect(channels.isGapReport(entryOf("scribe", "backend.1.md"))).toBe(true);
+    });
+
+    it("counts the legacy concept_skill_gaps key too", () => {
+      put("scribe", "backend.1.md", LEGACY_GAP);
+      expect(channels.isGapReport(entryOf("scribe", "backend.1.md"))).toBe(true);
+    });
+
+    it("is true for a STAMPED gap (the stamp line is not part of the body it inspects)", () => {
+      put("scribe", "backend.1.md", formatStampedContent(GAP, "run-1"));
+      expect(channels.isGapReport(entryOf("scribe", "backend.1.md"))).toBe(true);
+    });
+
+    it("is false for the same gap body in any lane other than scribe's", () => {
+      put("test", "backend.1.md", GAP);
+      expect(channels.isGapReport(entryOf("test", "backend.1.md"))).toBe(false);
+    });
+
+    it("is false for a scribe-lane payload whose fenced json has no gap array", () => {
+      put("scribe", "test.1.md", fenced({ docs_to_update: ["README.md"] }));
+      expect(channels.isGapReport(entryOf("scribe", "test.1.md"))).toBe(false);
+    });
+
+    it("is false when skill_gaps is not an array, or is nested rather than top-level", () => {
+      put("scribe", "a.1.md", fenced({ skill_gaps: "agents-view is missing stuff" }));
+      put("scribe", "b.1.md", fenced({ report: { skill_gaps: [{ skill: "s", missing: "m" }] } }));
+      expect(channels.isGapReport(entryOf("scribe", "a.1.md"))).toBe(false);
+      expect(channels.isGapReport(entryOf("scribe", "b.1.md"))).toBe(false);
+    });
+
+    it("is false (not a throw) for a fenced json block that does not parse, and for an empty body", () => {
+      put("scribe", "a.1.md", '```json\n{ "skill_gaps": [ oops\n```\n');
+      put("scribe", "b.1.md", "");
+      expect(channels.isGapReport(entryOf("scribe", "a.1.md"))).toBe(false);
+      expect(channels.isGapReport(entryOf("scribe", "b.1.md"))).toBe(false);
+    });
+
+    it("never reads the missing text — an enrich-only gap is a gap like any other", () => {
+      put(
+        "scribe",
+        "backend.1.md",
+        fenced({
+          skill_gaps: [{ skill: "agents-view", missing: 'enrich only: Chip (src/chip.tsx) — found by search "chip"' }],
+        })
+      );
+      expect(channels.isGapReport(entryOf("scribe", "backend.1.md"))).toBe(true);
+    });
+  });
+
+  describe("parseGapsHandled", () => {
+    it("parses the comma-separated file names from a SKILL_GAPS_HANDLED line", () => {
+      const msg = "Updated agents-view.\n\nSKILL_GAPS_HANDLED: backend.2.md, test.3.md\nHANDOFF: success";
+      expect(channels.parseGapsHandled(msg)).toEqual(["backend.2.md", "test.3.md"]);
+    });
+
+    it("trims whitespace around each name and around the line", () => {
+      expect(channels.parseGapsHandled("SKILL_GAPS_HANDLED:   backend.2.md ,test.3.md   \n")).toEqual([
+        "backend.2.md",
+        "test.3.md",
+      ]);
+    });
+
+    it("is empty when the message has no such line (the 111 scribe that never acted)", () => {
+      expect(channels.parseGapsHandled("Wrote docs/foo.md.\nHANDOFF: success")).toEqual([]);
+    });
+
+    it("is empty for an empty message", () => {
+      expect(channels.parseGapsHandled("")).toEqual([]);
+    });
+  });
+
+  describe("acknowledgeGaps", () => {
+    it("retires exactly the named gap reports into .consumed/scribe/ and returns them", () => {
+      put("scribe", "backend.2.md", formatStampedContent(GAP, "run-1"));
+      put("scribe", "test.2.md", formatStampedContent(LEGACY_GAP, "run-1"));
+
+      const retired = channels.acknowledgeGaps(projectDir, ["backend.2.md"]);
+
+      expect(retired.map((e) => e.fileName)).toEqual(["backend.2.md"]);
+      expect(fs.existsSync(path.join(channelDir(projectDir, "scribe"), "backend.2.md"))).toBe(false);
+      expect(fs.existsSync(consumedPath("scribe", "backend.2.md"))).toBe(true);
+      // The one it was not told about stays in the live lane.
+      expect(readLane(projectDir, "scribe").map((e) => e.fileName)).toEqual(["test.2.md"]);
+    });
+
+    it("skips a non-gap scribe-lane file, an unknown name, and an already-retired name — silently", () => {
+      put("scribe", "backend.2.md", formatStampedContent(GAP, "run-1"));
+      put("scribe", "frontend.1.md", formatStampedContent(fenced({ docs_to_update: ["x"] }), "run-1"));
+
+      const first = channels.acknowledgeGaps(projectDir, ["backend.2.md", "frontend.1.md", "ghost.1.md"]);
+      expect(first.map((e) => e.fileName)).toEqual(["backend.2.md"]);
+      expect(fs.existsSync(path.join(channelDir(projectDir, "scribe"), "frontend.1.md"))).toBe(true);
+
+      // Acknowledged twice (a resumed scribe repeating its line): the name is already gone.
+      expect(() => channels.acknowledgeGaps(projectDir, ["backend.2.md"])).not.toThrow();
+      expect(channels.acknowledgeGaps(projectDir, ["backend.2.md"])).toEqual([]);
+      expect(fs.existsSync(consumedPath("scribe", "backend.2.md"))).toBe(true);
+    });
+
+    it("never reaches outside the scribe lane, even for a path-shaped name", () => {
+      const other = put("test", "backend.1.md", GAP);
+      expect(channels.acknowledgeGaps(projectDir, ["../test/backend.1.md", "test/backend.1.md"])).toEqual([]);
+      expect(fs.existsSync(other)).toBe(true);
+    });
+
+    it("is a no-op against a project with no channels directory at all", () => {
+      expect(channels.acknowledgeGaps(projectDir, ["backend.1.md"])).toEqual([]);
+    });
+  });
+
+  describe("writeStamp on a scribe-lane gap report", () => {
+    it("moves the stamped gap off <sender>.1.md, so the sender's next gap cannot clobber it", () => {
+      put("scribe", "backend.1.md", GAP.replace("tri-state chip logic", "FIRST-GAP"));
+      writeStamp(projectDir, "backend", "run-1");
+
+      const afterFirst = readLane(projectDir, "scribe");
+      expect(afterFirst).toHaveLength(1);
+      expect(afterFirst[0].fileName).toMatch(/^backend\.\d+\.md$/);
+      expect(afterFirst[0].fileName).not.toBe("backend.1.md");
+      expect(afterFirst[0].runId).toBe("run-1");
+
+      // The same sender reports a second gap, to the literal path its report tells it to use.
+      put("scribe", "backend.1.md", GAP.replace("tri-state chip logic", "SECOND-GAP"));
+      writeStamp(projectDir, "backend", "run-2");
+
+      const lane = readLane(projectDir, "scribe");
+      expect(lane).toHaveLength(2);
+      expect(new Set(lane.map((e) => e.fileName)).size).toBe(2);
+      for (const e of lane) {
+        expect(e.fileName).toMatch(/^backend\.\d+\.md$/);
+        expect(e.sender).toBe("backend");
+      }
+      const bodies = lane.map((e) => e.body).join("\n");
+      expect(bodies).toContain("FIRST-GAP");
+      expect(bodies).toContain("SECOND-GAP");
+      expect(lane.find((e) => e.body.includes("FIRST-GAP"))!.runId).toBe("run-1");
+      expect(lane.find((e) => e.body.includes("SECOND-GAP"))!.runId).toBe("run-2");
+    });
+
+    it("leaves a non-gap scribe-lane payload, and a gap-shaped payload in another lane, at <sender>.1.md", () => {
+      put("scribe", "backend.1.md", fenced({ docs_to_update: ["x"] }));
+      put("test", "backend.1.md", GAP);
+      writeStamp(projectDir, "backend", "run-1");
+      expect(readLane(projectDir, "scribe").map((e) => e.fileName)).toEqual(["backend.1.md"]);
+      expect(readLane(projectDir, "test").map((e) => e.fileName)).toEqual(["backend.1.md"]);
+    });
+  });
+
+  describe("sweep still bounds a never-acknowledged gap", () => {
+    it("keeps a stamped gap inside CHANNEL_AGE_CAP_MS and removes it past the cap", () => {
+      const p = put("scribe", "backend.2.md", formatStampedContent(GAP, "run-1"));
+      expect(sweep(projectDir, { now: Date.now() + CHANNEL_AGE_CAP_MS - 60_000 }).removed).toEqual([]);
+      expect(fs.existsSync(p)).toBe(true);
+      expect(sweep(projectDir, { now: Date.now() + CHANNEL_AGE_CAP_MS + 60_000 }).removed).toEqual([p]);
+      expect(fs.existsSync(p)).toBe(false);
+    });
+
+    it("honours an injected ageCapMs", () => {
+      const p = put("scribe", "backend.2.md", formatStampedContent(GAP, "run-1"));
+      expect(sweep(projectDir, { now: Date.now() + 10_000, ageCapMs: 60_000 }).removed).toEqual([]);
+      expect(sweep(projectDir, { now: Date.now() + 120_000, ageCapMs: 60_000 }).removed).toEqual([p]);
+    });
+  });
+
+  // Reviewer loop-back on 112: the seeded reviewer->scribe and refactor->scribe payloads always
+  // carry a gap array, usually `[]`. Those are ordinary handoffs, not gap reports.
+  describe("seeded scribe payloads with an EMPTY gap array (112 review)", () => {
+    for (const sender of ["reviewer", "refactor"] as const) {
+      it(`a ${sender}->scribe seed payload with no gaps is not a gap report (every seed generation)`, () => {
+        for (const [i, shape] of scribeSeedShapes(sender).entries()) {
+          const fileName = `${sender}.${i + 1}.md`;
+          put("scribe", fileName, formatStampedContent(noGapPayload(shape, "NO-GAPS"), "run-1"));
+          expect(channels.isGapReport(entryOf("scribe", fileName)), `seed #${i}`).toBe(false);
+        }
+      });
+
+      it(`a ${sender}->scribe seed payload WITH a gap entry is a gap report`, () => {
+        for (const [i, shape] of scribeSeedShapes(sender).entries()) {
+          const fileName = `${sender}.${i + 1}.md`;
+          put("scribe", fileName, withGapPayload(shape, "REAL-GAP"));
+          expect(channels.isGapReport(entryOf("scribe", fileName)), `seed #${i}`).toBe(true);
+        }
+      });
+
+      it(`writeStamp leaves a no-gap ${sender}->scribe payload at ${sender}.1.md`, () => {
+        put("scribe", `${sender}.1.md`, noGapPayload(scribeSeedShapes(sender)[0], "NO-GAPS"));
+        writeStamp(projectDir, sender, "run-1");
+        const lane = readLane(projectDir, "scribe");
+        expect(lane.map((e) => e.fileName)).toEqual([`${sender}.1.md`]);
+        expect(lane[0].runId).toBe("run-1");
+      });
+
+      it(`acknowledgeGaps does not retire a no-gap ${sender}->scribe payload`, () => {
+        put("scribe", `${sender}.1.md`, formatStampedContent(noGapPayload(scribeSeedShapes(sender)[0], "x"), "run-1"));
+        expect(channels.acknowledgeGaps(projectDir, [`${sender}.1.md`])).toEqual([]);
+        expect(readLane(projectDir, "scribe").map((e) => e.fileName)).toEqual([`${sender}.1.md`]);
+      });
+    }
+  });
+
+  // Reviewer loop-back on 112: `writeStamp` moves a gap payload off `<sender>.1.md`, and the
+  // SubagentStop payload check must still see that the sender wrote it this run.
+  describe("payloadWrittenSince after a gap payload was renamed by its stamp (112 review)", () => {
+    const route: PayloadRoute = {
+      label: "success",
+      sender: "reviewer",
+      receiver: "scribe",
+      channelFile: ".claude/channels/scribe/reviewer.1.md",
+      protocol: "",
+    };
+
+    it("counts a this-run gap payload that writeStamp renamed to reviewer.<n>.md", () => {
+      const since = Date.now();
+      put("scribe", "reviewer.1.md", withGapPayload(scribeSeedShapes("reviewer")[0], "RENAMED"));
+      writeStamp(projectDir, "reviewer", "run-1");
+      const lane = readLane(projectDir, "scribe");
+      expect(lane).toHaveLength(1);
+      expect(lane[0].fileName).not.toBe("reviewer.1.md"); // precondition: it really was renamed
+
+      expect(payloadWrittenSince(projectDir, route, since)).toBe(true);
+      expect(payloadWrittenSince(projectDir, route, null)).toBe(true);
+    });
+
+    it("still does not count a renamed gap payload written BEFORE this run started", () => {
+      put("scribe", "reviewer.1.md", withGapPayload(scribeSeedShapes("reviewer")[0], "OLD"));
+      writeStamp(projectDir, "reviewer", "run-0");
+      const [old] = readLane(projectDir, "scribe");
+      const past = new Date(Date.now() - 60 * 60 * 1000);
+      fs.utimesSync(old.path, past, past);
+
+      expect(payloadWrittenSince(projectDir, route, Date.now())).toBe(false);
+    });
+
+    it("does not count another sender's renamed gap payload", () => {
+      const since = Date.now();
+      put("scribe", "refactor.1.md", withGapPayload(scribeSeedShapes("refactor")[0], "OTHER"));
+      writeStamp(projectDir, "refactor", "run-1");
+      expect(payloadWrittenSince(projectDir, route, since)).toBe(false);
+    });
   });
 });

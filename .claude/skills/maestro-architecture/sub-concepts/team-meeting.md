@@ -22,7 +22,7 @@ in the session, and the main session (no `agent_type`), behaves normally. A malf
 
 | Hook | For a participant |
 | --- | --- |
-| `SubagentStart` inject | `meetingNotice` replaces the resume line, `HANDOFF:` routing, per-route protocols and the report, on a first run **and** a resume, because a resumed workflow agent still has its first run's routing in its history. The skills blocks stay on a first run, since they are what it reviews. **Channel delivery is skipped**: nothing is inlined and nothing is retired, so a payload waiting for its next workflow step is still there. |
+| `SubagentStart` inject | `meetingNotice` replaces the resume line, `HANDOFF:` routing, per-route protocols and the report, on a first run **and** a resume, because a resumed workflow agent still has its first run's routing in its history. The skills blocks stay on a first run, since they are what it reviews. **Channel delivery is skipped**: nothing is inlined and nothing is retired, so a payload waiting for its next workflow step is still there. A scribe participant's `SKILL_GAPS_HANDLED:` line acknowledges nothing either (`112`). |
 | `SubagentStart`/`SubagentStop` log | `dispatch` and `handoff` entries carry `meeting: true` (`log` reads `(meeting)` / `meeting turn`). |
 | `SubagentStop` | Skips the `078` transcript hand-back recovery and `writeStamp` entirely. |
 | Write guard | Any agent type is confined to `<session dir>/meeting/`, its own channel lane included. |

@@ -154,6 +154,8 @@ only and every hook already requires this bundle" argument:
   `retireResumeDeliveries`, `latestWorkflowHandoff`, `expectedLoopbackPayloads`,
   `missingLoopbackPayload`, `appendHandoffIssue`), read by `maestro-resume-target.cjs` and the
   SubagentStop hook. `fs`/`path` only; the grep is still `0`.
+- `112` — `isGapReport`, `acknowledgeGaps` and `parseGapsHandled` from `handoff-channels.ts`, read
+  by the SubagentStart delivery block and the SubagentStop hook. `fs`/`path` only.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

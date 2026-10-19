@@ -60,6 +60,8 @@ populated in the *same* per-instance loop as `input`/`offeredSkills`, not a sepa
 A resume delivery (`088`) is logged before the resumed run's handoff, so it falls inside that run's
 `(p, h)` window and lands on the resumed card. Its `via:"resume"` is carried onto the
 `ChannelDelivery`, and the detail panel badges it "channel · resume" instead of "channel".
+A `via:"ack"` entry (`112`) is carried the same way and lands on the acknowledging scribe's card,
+but `receivedCount` leaves it out of the delivery badges.
 
 ## Things that bite
 

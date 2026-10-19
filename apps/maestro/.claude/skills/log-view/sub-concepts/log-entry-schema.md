@@ -40,7 +40,7 @@ interface SessionLogEntry {
   sender?: string; // bare agent name that wrote the payload
   receiver?: string; // bare agent name it was delivered to
   content?: string; // the payload body, inlined verbatim (no stamp — that's stripped before logging)
-  via?: "resume"; // `088`: handed to a RESUMED run by path, logged at its SubagentStop (maestro-subagent-log.js), not SubagentStart
+  via?: "resume" | "ack"; // `088` "resume": handed to a RESUMED run by path, logged at its SubagentStop (maestro-subagent-log.js), not SubagentStart. `112` "ack": a scribe's SKILL_GAPS_HANDLED: line retired this gap report — not a delivery
 }
 ```
 

@@ -530,9 +530,11 @@ export interface SessionLogEntry {
   /**
    * channel_delivery only (`088`): `"resume"` when the payload reached a RESUMED run by path and was
    * retired at that run's SubagentStop — logged just before its handoff, not at a SubagentStart.
-   * Absent for the ordinary SubagentStart inlining.
+   * Absent for the ordinary SubagentStart inlining. `"ack"` (`112`) when a scribe's
+   * `SKILL_GAPS_HANDLED:` line retired a skill-gap report at its SubagentStop — the gap itself was
+   * already logged (once per scribe start) as an ordinary delivery.
    */
-  via?: "resume";
+  via?: "resume" | "ack";
   /** phase only: which pre-coding orchestration step this marks, e.g. "step1_gates". */
   phase?: string;
   /** Best-effort context-window fill percentage at write time. Absent means unknown, never 0. */
@@ -551,8 +553,12 @@ export interface ChannelDelivery {
   receiver: string;
   agent_id: string;
   content: string;
-  /** `"resume"` when delivered by path to a resumed run (`088`); absent for SubagentStart inlining. */
-  via?: "resume";
+  /**
+   * `"resume"` when delivered by path to a resumed run (`088`); `"ack"` (`112`) when this is not a
+   * delivery at all but the scribe's acknowledgement retiring a gap report it was handed earlier.
+   * Absent for SubagentStart inlining.
+   */
+  via?: "resume" | "ack";
 }
 
 /**

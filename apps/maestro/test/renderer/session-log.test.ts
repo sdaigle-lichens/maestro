@@ -3,7 +3,7 @@
 // per run, so name-matching would misattribute the second run's deliveries to the first).
 
 import { describe, it, expect } from "vitest";
-import { buildInstances } from "../../src/renderer/src/utils/session-log.js";
+import { buildInstances, receivedCount } from "../../src/renderer/src/utils/session-log.js";
 import type { SessionLogEntry } from "../../src/renderer/src/utils/maestro-session-log.js";
 
 const ts = "2026-01-01T00:00:00.000Z";
@@ -534,7 +534,7 @@ describe("buildInstances — a resumed run's delivery logged at its SubagentStop
     receiver: string,
     id: string,
     content: string,
-    via?: "resume"
+    via?: "resume" | "ack"
   ): SessionLogEntry => ({
     ts,
     origin: "main_session",
@@ -620,6 +620,55 @@ describe("buildInstances — a resumed run's delivery logged at its SubagentStop
     expect(backend[0].delivered).toEqual([]);
     const frontend = instances.find((i) => i.origin === "frontend")!;
     expect(frontend.delivered.map((d) => d.content)).toEqual(["FOR FRONTEND"]);
+  });
+
+  // `112`: a scribe's SKILL_GAPS_HANDLED: line logs the gap it retired as via:"ack" at its
+  // SubagentStop. The gap itself was already logged as an ordinary delivery at SubagentStart.
+  it("carries via:'ack' onto the scribe's run, after its plain delivery, and does not count it as received", () => {
+    const entries: SessionLogEntry[] = [
+      delivery("frontend", "scribe", "S", "GAP"),
+      dispatch("scribe", "S", "document it"),
+      { ts, origin: "scribe", log: "Edit(/skill.md)" },
+      delivery("frontend", "scribe", "S", "GAP", "ack"),
+      handoff("scribe", "S", "success", null),
+    ];
+    const instances = buildInstances(entries);
+    const scribe = instances.filter((i) => i.origin === "scribe");
+    expect(scribe).toHaveLength(1);
+    expect(scribe[0].status).toBe("success");
+    expect(scribe[0].delivered).toEqual([
+      { sender: "frontend", receiver: "scribe", agent_id: "S", content: "GAP" },
+      { sender: "frontend", receiver: "scribe", agent_id: "S", content: "GAP", via: "ack" },
+    ]);
+    expect(receivedCount(scribe[0])).toBe(1);
+  });
+
+  it("an ack whose gap was delivered in an earlier session still attaches, labelled, with zero received", () => {
+    const entries: SessionLogEntry[] = [
+      dispatch("scribe", "S", "document it"),
+      delivery("backend", "scribe", "S", "OLD GAP", "ack"),
+      handoff("scribe", "S", "success", null),
+    ];
+    const scribe = buildInstances(entries).find((i) => i.origin === "scribe")!;
+    expect(scribe.delivered.map((d) => d.via)).toEqual(["ack"]);
+    expect(receivedCount(scribe)).toBe(0);
+  });
+
+  it("the same gap kept across two scribe runs shows once per run, and only the acking run carries the ack", () => {
+    const entries: SessionLogEntry[] = [
+      delivery("frontend", "scribe", "S1", "GAP"),
+      dispatch("scribe", "S1", "first"),
+      handoff("scribe", "S1", "success", null),
+      { ts, origin: "main_session", log: "Bash(x)" },
+      delivery("frontend", "scribe", "S2", "GAP"),
+      dispatch("scribe", "S2", "second"),
+      delivery("frontend", "scribe", "S2", "GAP", "ack"),
+      handoff("scribe", "S2", "success", null),
+    ];
+    const [first, second] = buildInstances(entries).filter((i) => i.origin === "scribe");
+    expect(first.delivered.map((d) => d.via ?? "plain")).toEqual(["plain"]);
+    expect(second.delivered.map((d) => d.via ?? "plain")).toEqual(["plain", "ack"]);
+    expect([receivedCount(first), receivedCount(second)]).toEqual([1, 1]);
   });
 });
 

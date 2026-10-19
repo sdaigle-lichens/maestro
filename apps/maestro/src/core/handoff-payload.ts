@@ -17,7 +17,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { laneFor } from "./handoff-channels.js";
+import { isGapReport, laneFor, readLane } from "./handoff-channels.js";
 import { resolveHandoff, type GlobalHandoffInput } from "./handoff-resolution.js";
 import type { HandoffRoute } from "./handoff-routes.js";
 
@@ -125,11 +125,24 @@ const MTIME_SLACK_MS = 1000;
 /**
  * Did `route.sender` write `route.receiver`'s channel file at or after `sinceMs`? With no known
  * start (`null`), the file merely existing counts — the conservative direction, never a false flag.
+ *
+ * `112`: the sender's stamp moves a scribe-lane gap report off the `<sender>.1.md` write slot to
+ * `<sender>.<n>.md`, so a resumed sender stopping again would find its slot empty. Its own gap
+ * reports in the receiver's lane count too, under the same mtime rule — the stamp's rewrite sets
+ * that mtime, so one stamped by an earlier run still fails it.
  */
 export function payloadWrittenSince(projectDir: string, route: PayloadRoute, sinceMs: number | null): boolean {
+  const candidates = [laneFor(projectDir, route.sender, route.receiver)];
+  for (const entry of readLane(projectDir, route.receiver)) {
+    if (entry.sender === route.sender && isGapReport(entry)) candidates.push(entry.path);
+  }
+  return candidates.some((filePath) => writtenSince(filePath, sinceMs));
+}
+
+function writtenSince(filePath: string, sinceMs: number | null): boolean {
   let stat: fs.Stats;
   try {
-    stat = fs.statSync(laneFor(projectDir, route.sender, route.receiver));
+    stat = fs.statSync(filePath);
   } catch {
     return false;
   }
