@@ -153,6 +153,10 @@ const HOOK_SCRIPTS = [
   // `## Post-Mortem` section and a tail of `.claude/postmortems.log` as context before that skill
   // runs, so its own prose doesn't re-derive them by hand every time.
   "maestro-post-mortem-context",
+  // Deterministic session names (`113`): records `maestro[-mgr]-<id8>` on the /maestro and
+  // /maestro-manager entrances and applies it as the session title on UserPromptSubmit and
+  // SessionStart, so a restarted session keeps the name its epic and claims recorded.
+  "maestro-session-name",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -272,7 +276,14 @@ export function runtimeAssets(_pluginRoot?: string): RuntimeAsset[] {
 // ── the hooks ──────────────────────────────────────────────────────────────
 
 export type HookEvent =
-  "UserPromptExpansion" | "SubagentStart" | "SubagentStop" | "PreToolUse" | "PostToolUse" | "SessionEnd";
+  | "UserPromptExpansion"
+  | "UserPromptSubmit"
+  | "SessionStart"
+  | "SubagentStart"
+  | "SubagentStop"
+  | "PreToolUse"
+  | "PostToolUse"
+  | "SessionEnd";
 
 export interface HookRegistration {
   event: HookEvent;
@@ -297,6 +308,9 @@ const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
  * still recognises these names so it can clean up a project that was never re-installed.
  */
 export const RETIRED_HOOK_SCRIPTS = ["bash-validation.sh"];
+
+/** The /maestro and /maestro-manager entrances, as one UserPromptExpansion matcher (`113`). */
+export const SESSION_NAME_EXPANSION_MATCHER = "^(maestro|(maestro:)?maestro-manager)$";
 
 function nodeHook(event: HookEvent, matcher: string, script: string): HookRegistration {
   return { event, matcher, script, command: `node "${SCRIPTS_VAR}/${script}"`, id: `${event}:${script}` };
@@ -329,6 +343,14 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   // Same two entrances again, watching for /maestro-post-mortem.
   nodeHook("UserPromptExpansion", "maestro-post-mortem", "maestro-post-mortem-context.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-post-mortem-context.cjs"),
+  // `113`: session names. ONE UserPromptExpansion entry for both commands, not one per command:
+  // a registration is keyed on event + script (`hasHook`), so a second UserPromptExpansion entry
+  // for the same script would read as already registered and never be written. The anchored regex
+  // covers `maestro`, `maestro-manager` and the plugin-namespaced `maestro:maestro-manager`.
+  nodeHook("UserPromptExpansion", SESSION_NAME_EXPANSION_MATCHER, "maestro-session-name.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-session-name.cjs"),
+  nodeHook("UserPromptSubmit", "", "maestro-session-name.cjs"),
+  nodeHook("SessionStart", "", "maestro-session-name.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),

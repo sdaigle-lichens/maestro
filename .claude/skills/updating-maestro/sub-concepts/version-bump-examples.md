@@ -1,6 +1,11 @@
 # Version bump precedent — the worked examples
 
-**Latest: `0.11.0` (`084`), a minor.** A new directory under `skills/` (`maestro-manager`) grows the
+**Latest: `0.12.0` (`113`), a minor.** `maestro-session-name.js` registers on two events
+`hooks.json` had never had, `UserPromptSubmit` and `SessionStart`: the minor row's "a hook
+registered on a new event". Its `UserPromptExpansion` and `PreToolUse` entries alone would have been
+a patch, since those events were already registered.
+
+**Previous: `0.11.0` (`084`), a minor.** A new directory under `skills/` (`maestro-manager`) grows the
 published surface. The new scripts (`maestro-epic.cjs` and its lib) and the `claim --name` /
 `--epic` flags alone would have been a patch: a new file under `scripts/` is not a published surface.
 

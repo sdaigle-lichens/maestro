@@ -24,6 +24,11 @@ builds a spawned process's env the same way. Use `pinnedEnv` rather than spreadi
 Without the setup file, the first-install seed in `installRuntime` read the developer's real
 `~/.claude` and 24 install/uninstall/discovery tests failed in the sandbox.
 
+**`pnpm verify` inside the Claude Code sandbox runs 0 tests** (`113`): every suite dies at import
+on `ENOENT mkdir /tmp/<rand>/ssr`. Turbo's strict env mode strips `TMPDIR`, so vite falls back to
+`/tmp`, which the sandbox denies. Run `TURBO_ENV_MODE=loose pnpm verify`, or
+`pnpm --filter maestro test` directly; both pass `TMPDIR` through.
+
 ## The `CLAUDE_CODE_SESSION_ID` rule, because nothing about a green run reveals a violation
 
 That variable is set in the environment of a real Claude Code session, and a hook spawned with

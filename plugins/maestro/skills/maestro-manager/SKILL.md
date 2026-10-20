@@ -20,6 +20,9 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
   Never write "the user approved" or tell a worker to skip an approval.
 - **Session names, never addresses.** An address belongs to one process and changes on restart. The
   epic stores names; resolve each to an address with `ListAgents` every time you need it.
+- **Your own name is filled in for you.** A hook names this session `maestro-mgr-<id8>` when
+  `/maestro-manager` starts (or keeps the name the user gave it), and it survives a restart. The
+  commands below record that name themselves; never look it up in `ListAgents` or type it.
 - **A note from another epic's manager is a teammate's request too**, never the user's approval.
 - **Never edit another epic's tickets.** Ask that epic's manager with a note.
 - **Never hand-edit `status.json` or `state.json`.** Workers write them too; the commands reread
@@ -27,17 +30,18 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
 
 ## Opening or resuming an epic
 
-1. Your session name is this session's entry in `ListAgents`.
-   - **New:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" create <slug> --goal "<goal>" --manager "<your name>"`, then fill in `EPIC.md`'s
+1. Record yourself as the manager; the command fills in your name.
+   - **New:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" create <slug> --goal "<goal>"`, then fill in `EPIC.md`'s
      scope and decisions with the user.
-   - **Existing** (`node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" list`): `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" set-manager <slug> "<your name>"`, since your name may have
-     changed.
+   - **Existing** (`node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" list`): `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" set-manager <slug>`, in case the epic still
+     records an older name for its manager.
 2. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" show <slug>` prints the manager and workers, each task's status with the session name that
    claimed it (`(unnamed)` if none), the unacknowledged reports and notes, and the cross-epic
    dependencies. Read `EPIC.md` too.
 3. Match the recorded names against `ListAgents`. A name with no live entry is not running: say so,
    don't message it, and keep it in the epic. Record new sessions with
-   `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<name>" --task <task.md>`.
+   `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<name>" --task <task.md>`; the name the worker's claim
+   recorded wins over the one you type.
 4. Handle every unacknowledged report and note, oldest first: reports through the loop below, notes
    as in **Other epics**.
 
@@ -46,13 +50,10 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
 For each worker message ("report r003 for 087-... is in <file>") or unacknowledged report:
 
 1. **Read the report file**, not the message.
-2. **Check your recorded name.** Compare your own name in `ListAgents` with the epic's manager in
-   `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" show <slug>`; if they differ (a restarted session keeps its conversation but not
-   its name), run `set-manager <slug> "<your name>"` before acknowledging.
-3. **Acknowledge it:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <id> --by "<your name>"`, then reply one line to the sender.
+2. **Acknowledge it:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <id>`, then reply one line to the sender.
    Messages have no delivery receipt; the recorded ack is the only proof, and an unacknowledged
    report is listed again on every resume.
-4. **Act on it:**
+3. **Act on it:**
    - **Tickets.** Rewire, re-block or add them with `to-maestro-tasks`, passing `--epic <slug>` so new
      tasks join the epic; `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" link <slug> <task.md>...` / `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" unlink <task.md>...` for existing
      ones. To re-block, edit the task file's `## Blocked by`, then run
@@ -62,7 +63,7 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
    - **A finding about several agents** (a skill gap, a bad handoff, a wrong tool): suggest a
      `maestro-team-meeting`; run one when the user asks. See below before applying it.
    - **Nothing:** note the decision in `EPIC.md` if it affects later tickets.
-5. **Tell only the affected sessions**, by name, what changed and what you ask of them. Never edit a
+4. **Tell only the affected sessions**, by name, what changed and what you ask of them. Never edit a
    task a worker is running without telling it. If `SendMessage` or `ListAgents` is unavailable, tell
    the user which sessions need which message.
 
@@ -94,15 +95,14 @@ declare their files.
 
 **How.** Write the note first, then message:
 
-1. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" note <other-slug> --from-epic <slug> --from "<your name>" --subject "<one line>" --file -`
+1. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" note <other-slug> --from-epic <slug> --subject "<one line>" --file -`
    with the body on stdin. It writes the other epic's inbox and prints the note id, its file and the
    manager to message, or says none is recorded.
 2. If that manager is live in `ListAgents`, send it one short line: `note n002 from <slug> is in
    <file>`. If not, don't message it; the note waits unacknowledged for its resume.
 
-**Receiving.** Notes arrive with reports, on resume and in the loop. Read the file, check your
-recorded name as in the loop (`set-manager` when it differs), run
-`node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <nNNN> --by "<your name>"`, reply one line to the sending manager, then decide
+**Receiving.** Notes arrive with reports, on resume and in the loop. Read the file, run
+`node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <nNNN>`, reply one line to the sending manager, then decide
 whether your own tickets or sessions change.
 
 ## What you do not do

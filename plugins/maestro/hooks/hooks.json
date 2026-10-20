@@ -30,6 +30,40 @@
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-post-mortem-context.js"]
           }
         ]
+      },
+      {
+        "matcher": "^(maestro|(maestro:)?maestro-manager)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-name.js"]
+          }
+        ]
+      }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-name.js"]
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-name.js"]
+          }
+        ]
       }
     ],
     "SubagentStart": [
@@ -99,6 +133,11 @@
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-post-mortem-context.js"]
+          },
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-name.js"]
           }
         ]
       }

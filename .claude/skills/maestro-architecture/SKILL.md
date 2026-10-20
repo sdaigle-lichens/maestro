@@ -156,8 +156,14 @@ A task can belong to an **epic**: related tasks that several `/maestro` sessions
 by a resumable `maestro-manager` session (a published skill, not a hook or an agent). What changes
 inside a worker session, and only for a task that has an epic:
 
-- **Claim records the session name** (`claim --name "<session name>"`, read from the `ListAgents`
-  entry); a nameless claim still works. The manager finds workers by name, never by address.
+- **Claim records the session name, and the CLI fills it in (`113`).** The `maestro-session-name`
+  hook names every Maestro session from its id (`maestro-<id8>` on the first `/maestro`,
+  `maestro-mgr-<id8>` on the first `/maestro-manager`, or keeps a user-set custom title), stores it
+  in `session.json` and applies it as `sessionTitle`, so it survives `claude --resume` (a fork gets a
+  new id, hence a new name). `claim` and the epic CLI record that stored name in preference to a
+  passed `--name`/`--from`/`--by`; the orchestrator never reads it from `ListAgents`. A nameless
+  claim still works. The manager finds workers by name, never by address. Mechanism:
+  `sub-concepts/session-state.md`.
 - **Step 4's report.** Before the task is marked done, the orchestrator runs
   `maestro-epic.cjs report --task <active_task> --from <name> --file -` with the report on stdin. It
   writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator
@@ -165,8 +171,9 @@ inside a worker session, and only for a task that has an epic:
   happens. A report written while no manager runs survives and is listed unacknowledged when a
   manager resumes; the manager's `ack` is the only delivery proof. If that SendMessage fails, the
   printed hint says to run ListAgents and ask the user before messaging a plausible match, never to
-  treat one failed send as the manager gone (`102`). The manager re-syncs its recorded name with
-  `set-manager` whenever it differs from its `ListAgents` name, before each ack.
+  treat one failed send as the manager gone (`102`). Since `113` a restarted manager keeps its name,
+  so it runs `set-manager <slug>` (name optional; the CLI fills it in) only on opening or resuming an
+  epic that may record an older name.
 - **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and
   the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the
   user in the worker's own session.

@@ -42,7 +42,7 @@ export const Route = createFileRoute("/maestro-tasks")({
  * the two stay in step — change one, change the other.
  */
 function promptFor(task: MaestroTask): string {
-  return `Use /maestro to complete the task described in file ${task.relativePath}`;
+  return `/maestro Complete the task described in file ${task.relativePath}`;
 }
 
 type Filter = "open" | "closed";

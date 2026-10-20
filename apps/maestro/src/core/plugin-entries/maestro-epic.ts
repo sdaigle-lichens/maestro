@@ -18,6 +18,7 @@ export {
   linkTasks,
   unlinkTasks,
   epicOfTask,
+  taskClaimName,
   writeReport,
   reportCommandFor,
   checkNoteRoute,

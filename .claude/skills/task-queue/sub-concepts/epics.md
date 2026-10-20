@@ -23,10 +23,16 @@ scheme.
   writes nothing).
 - **Session names, never addresses.** `state.json` stores the manager and worker NAMES. An address
   belongs to one process and changes on restart; the manager rediscovers live sessions by name with
-  `ListAgents` each time it opens or resumes. A restarted session keeps its conversation but not its
-  name and never re-runs the skill's opening steps, so the manager also compares its own name with
-  `show`'s recorded manager on every report or note and runs `set-manager` when they differ, before
-  `ack` (`102`).
+  `ListAgents` each time it opens or resumes.
+- **The CLI fills in the caller's own name (`113`).** Sessions are named from their id
+  (`maestro-<id8>`, `maestro-mgr-<id8>`, or a user-set custom title kept as is) by the
+  `maestro-session-name` hook, which re-applies it on restart, so a restarted session keeps its
+  name. `create --manager`, `set-manager` (name now optional), `report --from`, `note --from` and
+  `ack --by` record the caller's stored name (`ownName()` → `storedSessionName`) in preference to
+  the passed one, which is only a fallback. `add-worker`, run by the manager FOR a worker, prefers
+  the caller's stored name only when the caller is a worker and not this epic's manager, else the
+  `--task` claim's name (`taskClaimName`), else the typed name. This replaces `102`'s
+  compare-with-`ListAgents`-then-`set-manager` step before every ack.
 - **A failed send is not a gone manager (`102`).** `report` and `note` print a `sendFailedHint` after
   the "message the manager" line: on a failed `SendMessage`, run `ListAgents`; if exactly one session
   plausibly matches, ask the user before messaging it; never conclude the manager is gone from one
@@ -59,8 +65,8 @@ scheme.
 addresses (stale on restart); a hand-written CJS twin of `epics.ts` (a third parity pair; the lib is
 generated instead).
 
-**Claims:** `claim --name "<session name>"` stores `session_name` in the claim file; a nameless claim
-works and shows as `(unnamed)`. See [Claims](task-claims.md).
+**Claims:** `claim` stores `session_name` in the claim file, the stored session name first and
+`--name` only as a fallback (`113`); a nameless claim works and shows as `(unnamed)`. See [Claims](task-claims.md).
 
 ## Cross-epic notes (`085`)
 

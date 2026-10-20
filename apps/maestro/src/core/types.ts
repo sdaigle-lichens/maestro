@@ -247,7 +247,22 @@ export interface MaestroSession {
   resume_deliveries?: Record<string, ResumeDelivery[]>;
   /** The orchestrator's own success-path tracker, the fallback when TaskCreate is unavailable (`083`). */
   plan?: SessionPlan | null;
+  /**
+   * This session's name for cross-session messages (`113`): `maestro-<id8>` / `maestro-mgr-<id8>`
+   * recorded by the first /maestro or /maestro-manager entrance, or the user's own custom title.
+   * Written by `session-name.ts` only; the epic and claim CLIs prefer it over a passed-in name.
+   */
+  session_name?: string;
+  /** Which entrance recorded `session_name` first. */
+  session_name_role?: SessionNameRole;
+  /** True when `session_name` is the user's own title (`--name`, `/rename`), not a derived one. */
+  session_name_custom?: boolean;
+  /** True once a hook applied `session_name` as the session title (UserPromptSubmit applies it once). */
+  session_name_applied?: boolean;
 }
+
+/** The two entrances that name a session (`113`). */
+export type SessionNameRole = "worker" | "manager";
 
 export interface MaestroOwnerRunsState {
   meeting_id: string;

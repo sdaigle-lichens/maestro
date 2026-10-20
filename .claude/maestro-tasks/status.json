@@ -561,6 +561,10 @@
     "blockedBy": [],
     "epic": "code-graph-cutover"
   },
+  "113-name-maestro-sessions-automatically-so-cross-session-messages-survive-restarts.md": {
+    "status": "done",
+    "blockedBy": []
+  },
   "114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md": {
     "status": "ready",
     "blockedBy": [],

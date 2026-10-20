@@ -392,8 +392,9 @@ async function build(projectRoot: string, request: ClaudeRequest, opts: ResolveO
       const relativePath = path.posix.join(".claude", "maestro-tasks", filename);
       return {
         // The same sentence /maestro-tasks offers as "Copy prompt" — running it here and pasting
-        // it into a session by hand must produce the same session.
-        prompt: `Use /maestro to complete the task described in file ${relativePath}`,
+        // it into a session by hand must produce the same session. It starts with the command so
+        // the typed `/maestro` entrance (and its session-name hook) fires on the first prompt.
+        prompt: `/maestro Complete the task described in file ${relativePath}`,
         targets: [
           {
             path: projectRoot,

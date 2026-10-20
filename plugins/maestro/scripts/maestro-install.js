@@ -293,6 +293,12 @@ const HOOK_REGISTRATIONS = [
   // Same two entrances again, watching for /maestro-post-mortem.
   nodeHook("UserPromptExpansion", "maestro-post-mortem", "maestro-post-mortem-context.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-post-mortem-context.cjs"),
+  // `113`: session names. ONE UserPromptExpansion entry for both /maestro and /maestro-manager:
+  // hasHook keys on event + script, so a second entry for the same script would never be written.
+  nodeHook("UserPromptExpansion", "^(maestro|(maestro:)?maestro-manager)$", "maestro-session-name.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-session-name.cjs"),
+  nodeHook("UserPromptSubmit", "", "maestro-session-name.cjs"),
+  nodeHook("SessionStart", "", "maestro-session-name.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -400,6 +406,8 @@ const HOOK_SCRIPTS = [
   "maestro-enable-task-routing",
   // Injects the active task's Post-Mortem section + postmortems.log tail before /maestro-post-mortem runs.
   "maestro-post-mortem-context",
+  // Records and applies the deterministic session name `maestro[-mgr]-<id8>` (113).
+  "maestro-session-name",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the

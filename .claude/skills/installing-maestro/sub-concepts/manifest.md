@@ -113,7 +113,7 @@ It is also the one hook script with **no arbitration guard**: since `064` both c
 
 ## Hooks — `HOOK_REGISTRATIONS`
 
-Eleven entries (`047`; nine before it), written into the project's `.claude/settings.json`,
+Sixteen entries (`113`), written into the project's `.claude/settings.json`,
 mirroring the plugin's `hooks.json` one-for-one:
 
 | Event                 | Matcher      | Script                             |
@@ -122,6 +122,12 @@ mirroring the plugin's `hooks.json` one-for-one:
 | `PreToolUse`          | `Skill`      | `maestro-step0.cjs`                |
 | `UserPromptExpansion` | `to-maestro-tasks` | `maestro-enable-task-routing.cjs` (`047`) |
 | `PreToolUse`          | `Skill`      | `maestro-enable-task-routing.cjs` (`047`) |
+| `UserPromptExpansion` | `maestro-post-mortem` | `maestro-post-mortem-context.cjs` |
+| `PreToolUse`          | `Skill`      | `maestro-post-mortem-context.cjs`  |
+| `UserPromptExpansion` | `^(maestro\|(maestro:)?maestro-manager)$` | `maestro-session-name.cjs` (`113`) |
+| `PreToolUse`          | `Skill`      | `maestro-session-name.cjs` (`113`) |
+| `UserPromptSubmit`    | _(none)_     | `maestro-session-name.cjs` (`113`) |
+| `SessionStart`        | _(none)_     | `maestro-session-name.cjs` (`113`) |
 | `SubagentStart` | `.*`         | `maestro-inject-agent-context.cjs` |
 | `SubagentStart` | `.*`         | `maestro-subagent-log.cjs`         |
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |
@@ -129,13 +135,19 @@ mirroring the plugin's `hooks.json` one-for-one:
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
-`id` is `<Event>:<script>`, unique because now **three** scripts are registered on two events each
+`id` is `<Event>:<script>`, unique because a script is registered at most once per event
+(`maestro-session-name` on four events since `113`). Several scripts sit on two events each:
 (`maestro-subagent-log` on SubagentStart/Stop, `maestro-step0` and, since `047`,
 `maestro-enable-task-routing` on the two entrances to a skill invocation — a typed slash command, and
 a `Skill` tool call — each keyed by its own matcher on `UserPromptExpansion` but **sharing** the
 `Skill` matcher on `PreToolUse` with `maestro-step0`, two commands under one matcher block). **`SubagentStop`
 is included even though the plan lists four events** — without it the session log has dispatch
 entries with no matching handoff and `/session-log` renders half a conversation.
+
+**`maestro-session-name` has ONE `UserPromptExpansion` entry with a regex matcher** (`113`,
+`SESSION_NAME_EXPANSION_MATCHER`), not one per command: `hasHook` keys on event + script, so a
+second `UserPromptExpansion` entry for the same script reads as already registered and is never
+written. Add another entrance by widening the regex, never by adding a row.
 
 Two properties of how they are written:
 

@@ -10,8 +10,11 @@ without touching `status.json` or the `done`/`ready`/`blocked` enum — a claim 
   <task-file>.md.json     { session_id, claimed_at, project_root, session_name? }
 ```
 
-`session_name` (`084`) is optional: `claim <file> --name "<session name>"` records it so an epic's
-manager can find the worker by name; a claim without it still works and reads as unnamed. It is
+`session_name` (`084`) is optional and records the claiming session's name so an epic's manager can
+find the worker by name. Since `113` the CLI fills it in: `storedName()` (the `maestro-<id8>` or
+custom title the session-name hook put in `session.json`, see `maestro-architecture`) wins, and
+`--name "<session name>"` is only the fallback; the orchestrator never reads its name from
+`ListAgents`. A claim with neither still works and reads as unnamed. It is
 exposed as `claim.sessionName` on `MaestroTask` only when set. See [Epics](epics.md).
 
 - **Created with an exclusive `fs` create (`flag: "wx"`).** The create either succeeds (this session

@@ -230,6 +230,24 @@ export {
   type Totals,
 } from "../run-metrics.js";
 
+// Deterministic session names (`113`): `maestro-<id8>` / `maestro-mgr-<id8>` recorded by the first
+// /maestro or /maestro-manager entrance, applied as the session title by maestro-session-name.js,
+// and preferred by the epic and claim CLIs over a passed-in name. `fs`/`path` only — keeps
+// `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  sessionNameFor,
+  entranceRoleFor,
+  promptEntranceRole,
+  noteEntrance,
+  titleFor,
+  storedName,
+  storedSessionName,
+  rederiveSessionName,
+  type SessionNameRole,
+  type SessionNamePayload,
+  type StoredSessionName,
+} from "../session-name.js";
+
 // Team-meeting mode — the `meeting` flag in session.json that the SubagentStart/Stop hooks and the
 // write guard read to treat a meeting participant differently from a workflow agent. `fs`/`path`
 // only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.

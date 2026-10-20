@@ -274,6 +274,15 @@ export function unlinkTasks(projectRoot: string, tasks: string[]): SetEpicResult
   return setTaskEpic(projectRoot, tasks, null);
 }
 
+/**
+ * The session name recorded on `task`'s claim, or null when it has no claim or an unnamed one
+ * (`113`). `add-worker --task` prefers it over the name the manager typed: the claim's name was
+ * filled in by the worker's own CLI from its stored session name.
+ */
+export function taskClaimName(projectRoot: string, task: string): string | null {
+  return claimSessionName(tasksDirFor(mainCheckoutRoot(projectRoot)), path.basename(task));
+}
+
 /** The epic a task belongs to, from the tracker; null when it belongs to none. */
 export function epicOfTask(projectRoot: string, filename: string): string | null {
   return readTaskTracker(projectRoot)[path.basename(filename)]?.epic ?? null;

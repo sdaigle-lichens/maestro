@@ -90,7 +90,13 @@ keeps it out of resume targets and the post-mortem timeline (see `team-meeting.m
 `session.json` may also carry `meeting` (an active team meeting) and `meeting_leftovers` (lane files
 an ended meeting left unstamped), both from `meeting-mode.ts`, and `resume_deliveries`
 (`agent_id` → `{file, sender, run_id}[]`, lane files a resumed run was handed by path — written by
-`maestro-resume-target.cjs`, cleared at that run's `SubagentStop`, `088`, see `agent-resume.md`). Every `session.json` writer spreads
+`maestro-resume-target.cjs`, cleared at that run's `SubagentStop`, `088`, see `agent-resume.md`).
+Since `113` it also carries the session's name for cross-session messages: `session_name`
+(`maestro-<id8>`, `maestro-mgr-<id8>`, or the user's custom title), `session_name_role`
+(`worker`/`manager`, the first entrance), `session_name_custom` and `session_name_applied`. Only
+`core/session-name.ts` writes them (via `maestro-session-name.js`, see `hooks.md`); `storedName()`
+is what `claim` and the epic CLI record in preference to a passed name. When the directory was
+swept, `SessionStart` re-derives the name from a claim or epic record. Every `session.json` writer spreads
 the existing object; `maestro-set-session-workflow.cjs` is the only one that removes a key, ending
 the meeting through `closeMeeting`.
 
