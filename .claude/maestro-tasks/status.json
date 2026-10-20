@@ -566,7 +566,7 @@
     "blockedBy": []
   },
   "114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
   }

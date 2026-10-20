@@ -138,8 +138,9 @@ const SCRIBE_REPORT_V2 =
 
 // `090`: Maestro no longer knows about concept skills, so the scribe's report does not count them
 // separately — they are part of `claudeFilesUpdated` like any other `.claude/skills` file. This is
-// character-for-character the pre-concept-skill (V1) body.
-const SCRIBE_REPORT =
+// character-for-character the pre-concept-skill (V1) body, and it was the current body until `114`
+// appended `SCRIBE_ENDING_NOTE` below.
+const SCRIBE_REPORT_V1 =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
   "```json\n" +
@@ -156,6 +157,26 @@ const SCRIBE_REPORT =
   "\n" +
   '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
   "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
+
+// `114`: the scribe carries no verdict, so `VERDICT_HANDOFF_NOTE` never reached it, and a finished
+// scribe ended `HANDOFF: done` — a label no workflow routes, so the orchestrator stopped and asked.
+// `112`'s acknowledgement line lived only in the SubagentStart block, which a RESUMED scribe never
+// gets. Both rules travel here (and in plugins/maestro/agents/scribe.md), in the order
+// `parseGapsHandled` and `lastHandoffLabel` read them: the gap line first, the HANDOFF line last.
+const SCRIBE_ENDING_NOTE =
+  "End your final message with these plain-text lines, in this order:\n" +
+  "\n" +
+  "1. `SKILL_GAPS_HANDLED: <file>, <file>, …` — only when you acted on skill-gap reports from " +
+  "`.claude/channels/scribe/`. Name every gap file you acted on, including one handled by enrichment only, " +
+  "one with a remainder left to enrich, and one with no graph to enrich. A gap file you do not " +
+  "name stays in your channel for the next scribe run.\n" +
+  "2. `HANDOFF: <label>` — always last. `HANDOFF: success` when the documentation is done, even if you " +
+  "skipped a step (a graph refresh skipped for lack of a tsconfig, targets left to enrich): report skipped " +
+  "steps in the report body, never through the label. `done` or `complete` is not a label — no workflow " +
+  "routes it. When you could not finish, end with a condition label from your injected routes when one fits, " +
+  "else `HANDOFF: partial` with the reason in the body: the orchestrator's unrouted check stops there and asks the user.";
+
+const SCRIBE_REPORT = SCRIBE_REPORT_V1 + "\n\n" + SCRIBE_ENDING_NOTE;
 
 function testReportBody(gapsNote: string): string {
   return (
@@ -296,8 +317,8 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
 
   // v3 (`083`): the body before the verdict/HANDOFF agreement note was appended. v4 (`090`): the
   // body with that note but the concept-skill-specific gap note, before the gap note went generic.
-  // The V1 scribe body is deliberately absent: it IS the current scribe body now, and a prior that
-  // equals the current one would be "refreshed" (version bumped) on every open.
+  // The V1 scribe body was absent while it was the current one (a prior equal to the current body
+  // would be "refreshed" on every open); `114` superseded it, so it is a prior again.
   return {
     backend: [backendLikeV1("backend"), backendLikeV2("backend"), backendLikeV3("backend"), backendLikeV4("backend")],
     frontend: [
@@ -308,7 +329,7 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     ],
     mobile: [backendLikeV1("mobile"), backendLikeV2("mobile"), backendLikeV3("mobile"), backendLikeV4("mobile")],
     infra: [backendLikeV3("infra"), backendLikeV4("infra")],
-    scribe: [SCRIBE_REPORT_V2],
+    scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1],
     test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4],
   };
 })();

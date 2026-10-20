@@ -83,6 +83,15 @@ returns — it prints and clears the list — and to route deliberately (matchin
 resume the agent for a corrected line) instead of defaulting to success. Agents that map to no workflow
 instance, and meeting participants, are never judged.
 
+**The scribe gets its ending rule from its own report (`114`).** It carries no verdict, so
+`VERDICT_HANDOFF_NOTE` never reached it, and a finished scribe ended `HANDOFF: done` — routed by no
+workflow, so the orchestrator stopped and asked. `SCRIBE_ENDING_NOTE` (appended to the scribe report
+seed) and the scribe agent file's "Ending your run" section now state it: `SKILL_GAPS_HANDLED:` first
+(when gaps were acted on), `HANDOFF:` last; `success` when the docs are done even with skipped steps,
+else a routed condition label or the deliberately unrouted `partial`. The note lives in the report,
+not only in the `SubagentStart` block, because a resumed scribe never sees that block (`088`).
+`checkRoute` is unchanged and still strict.
+
 **The line may arrive in a tool call (`078`, `087`).** Current Claude Code tells every subagent to
 end with a `SubagentHandback({message})` call, and then the `SubagentStop` payload has no
 `last_assistant_message`. The hook recovers the label from the agent's transcript via

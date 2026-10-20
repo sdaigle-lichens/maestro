@@ -103,8 +103,9 @@ about "too old".
   never removed outright until `SessionEnd`'s `sweep()` ages it out (14 days). A delivered-but-then-
   failed agent's payload is recoverable for that window rather than gone the moment it was read.
 - **A scribe that omits `SKILL_GAPS_HANDLED:` gets the same gap again on every later run** until
-  the 14-day cap — by design, not a retirement bug. The instruction lives only in the injected
-  delivery block, which a resumed scribe never sees (`088`).
+  the 14-day cap — by design, not a retirement bug. The instruction is in the injected delivery
+  block, which a resumed scribe never sees (`088`), and since `114` also in the scribe report seed
+  (`SCRIBE_ENDING_NOTE`) and the scribe agent file, which a resume keeps.
 - **The desktop app surfaces both halves of this mechanism read-only (`037`)**, and neither surface
   writes back into it. `/session-log` renders a delivered payload on the *receiving* instance's Input
   panel from the `channel_delivery` log entry — see `log-view` in `apps/maestro/.claude/skills`.

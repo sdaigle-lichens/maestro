@@ -27,5 +27,11 @@ set `decideSync`'s `adopt` verdict needs — see `agent-fork-sync`'s shared-deci
 `report-defaults.ts`'s equivalent of `handoff-seeds.ts`'s already-exported `PRIOR_SEEDS`, kept private
 until now only because nothing needed it outside this module.
 
+**A body leaves `PRIOR_SEEDS` while it is current and returns when superseded.** A prior equal to
+the current body would be "refreshed" (version bumped) on every open. `090` made the scribe's V1
+body current again, so it was dropped from `PRIOR_SEEDS.scribe`; `114` appended
+`SCRIBE_ENDING_NOTE` (the `SKILL_GAPS_HANDLED:`/`HANDOFF:` ending rule) to it, so `SCRIBE_REPORT_V1`
+is a prior again beside `SCRIBE_REPORT_V2`.
+
 Files: `src/core/report-defaults.ts`, `src/core/report-resolution.ts`, `src/core/report-sync.ts`,
 `src/core/reports.ts`.

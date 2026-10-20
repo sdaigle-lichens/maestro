@@ -123,6 +123,20 @@
       "id": "r007",
       "at": "2026-10-19T22:37:07.979Z",
       "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md",
+      "file": "inbox/r008-114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md",
+      "at": "2026-10-20T02:05:18.146Z",
+      "from": "Scribe handoff label workflow routing"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "at": "2026-10-20T02:05:59.079Z",
+      "by": "manager-code-graph-merge"
     }
   ]
 }
