@@ -238,5 +238,29 @@ gate is in its prompt.
     misses it. Folded into 114, which already edits scribe.md.
   - `pnpm verify` fails in the sandbox only (turbo drops TMPDIR); every step passes on its own.
   - Not re-stamped (ts-morph missing): maestro-architecture, log-view, plugin-libs-parity.
+- The user re-stamped maestro-architecture, log-view and plugin-libs-parity from their shell; no
+  snapshot changed. The sandbox can't read ~/.cache/code-graph/deps, so graph commands fail inside
+  a session. Asked code-graph's manager to offer a sandbox read path at install, and to make the
+  error say "installed but unreadable".
+  - Ticketed as code-graph 022, for 0.3.15. Settings key: `sandbox.filesystem.allowRead`, added
+    to user settings only on the user's yes. The worker may move the install into
+    `$CLAUDE_PLUGIN_DATA` instead, which the sandbox can already read.
+  - 0.3.15 (022) is done but not committed. The install stays in ~/.cache. The error and
+    `deps status` now name `sandbox.filesystem.allowRead`, and code-graph-install offers the edit.
+    This project's sandbox setting is the user's decision.
+- Correction: the user's re-stamp did change snapshots. The three `scribe-output/*.ast.json` files
+  caught up with 112's code; I had only checked `.claude/` and `apps/`.
+- 114 done (r008, acked). The scribe now ends with `SKILL_GAPS_HANDLED:` (when it acted on gaps)
+  and then `HANDOFF: success`, or `partial` when it couldn't finish. The rule is in scribe.md, its
+  mirror and the report default. Plugin 0.12.1.
+  - Root cause of r006: the project's `.claude/reports/scribe.md` said `HANDOFF: <next agent or
+    done>`. Fixed.
+  - Only the scribe lacked the rule; the other agents get it from `VERDICT_HANDOFF_NOTE` or state it
+    inline.
+  - Manager check: report-defaults, orchestrator-robustness and parity tests pass (113).
+  - Follow-ups: the injected SubagentStart gap block now says `SKILL_GAPS_HANDLED:` goes just
+    before `HANDOFF:` (plugin 0.12.2, fixed directly). The scribe and test forks in
+    agent-forks.json still record template 0.11.23; the user re-baselines them with /maestro-update.
+- All 8 tasks are done.
 - `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
   workers must not commit or delete them.

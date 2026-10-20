@@ -417,7 +417,8 @@ function collectReportContext(cfg, projectDir, agentType) {
       const delivered = runId ? rest.filter((e) => e.runId === runId) : [];
       const waiting = runId ? rest.filter((e) => e.runId !== runId) : rest;
       const gapAck =
-        `If you acted on a gap report, end your final message with one line naming every gap file you acted on:\n` +
+        `If you acted on a gap report, end your final message with one line naming every gap file you acted on, ` +
+        `just before your \`HANDOFF:\` line, which stays last:\n` +
         `SKILL_GAPS_HANDLED: <file>, <file>, …\n` +
         `Acting on it counts even when you only enriched (no SKILL.md edit, no stamp), left a remainder to enrich, ` +
         `or found the concept has no graph. A gap file you do not name stays in your channel for the next scribe run.`;
