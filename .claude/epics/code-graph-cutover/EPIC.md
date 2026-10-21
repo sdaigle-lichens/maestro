@@ -262,5 +262,55 @@ gate is in its prompt.
     before `HANDOFF:` (plugin 0.12.2, fixed directly). The scribe and test forks in
     agent-forks.json still record template 0.11.23; the user re-baselines them with /maestro-update.
 - All 8 tasks are done.
-- `merge-proposal.md` and `plan.md` at the repo root stay untracked and uncommitted until 107 is done;
-  workers must not commit or delete them.
+- Merge review (`merge-review.md` in this folder). Search on un-enriched concepts got worse (R1:
+  2/8 on a maestro eval); the rest is minor or better.
+  - User decisions: the committed 491 KB bundle stays (R2), and lazy enrichment is the intended
+    steady state, so R1 is structural.
+  - Sent R1 and R3–R9's code-graph halves to code-graph's manager.
+  - R9 was partly wrong: what the user ran was a graph refresh, not a skill re-stamp.
+  - Queued 115 (an install hint with exact commands) and 116 (bring the stale concept skills up
+    to date). Maestro's half of R7 waits for code-graph's gap fixture.
+  - code-graph ticketed them as 023–027 (planned 0.3.16–0.3.20):
+    - 023: R1 ranking + `low_confidence`, and R9's wording.
+    - 024: R3 drift by content hash.
+    - 025: R4 scribe size and `--max-tokens`.
+    - 026: R5 and R6's code-graph half.
+    - 027: R7 fixture at `plugin/contracts/skill-gaps.example.json`, plus R8.
+  - Two corrections from code-graph:
+    - R1: SKILL.md bodies are indexed, so the cause is ranking, not missing docs.
+    - R5: a sandbox hides denied paths as ENOENT, so deps status becomes three-way.
+  - Maestro's half: the R6 install command (115), retiring the old `concept-skills@maestro` install
+    (the user's own `claude plugin uninstall`), and the R9 re-stamp of log-view and
+    plugin-libs-parity (inside 116).
+- code-graph 0.3.16 (023) done, not yet committed. The cause of R1: FTS didn't split camelCase.
+  The eval went from 2/8 to 7/8. A low-confidence `search` now exits 7, which means "results printed,
+  low confidence", not failure. No maestro hook or script maps search exit codes, so nothing to change.
+  - The remaining miss, `ma-design-check`, is folded into 116: name `seedSkillsFor` and the design
+    check in the concept's SKILL.md. 116 now also needs 0.3.16 and a `code-graph reindex` first.
+  - 116's "design check" criterion relaxed to "`seedSkillsFor` in the top 5, exit 0 or 7": exit 7
+    is by design for an un-enriched concept, and we don't enrich just to clear the threshold.
+- code-graph 0.3.17 (024, R3) done, not yet committed. `extract` stores file hashes in `.ast.json`
+  `meta.files`, and status/drift report `unextracted` file counts. A concept gets this only after
+  its first extract on 0.3.17, so 116 now needs 0.3.17 and extracts every concept, stamped-only
+  ones included. Known limit: concepts that glob `dist`/`build` aren't scanned.
+  - 116's `meta.files` check applies only to `.ast.json` files with vertices; docs-only concepts
+    have none, by design.
+- code-graph 0.3.18 (025, R4) committed on feat/integrate-concept-skills (90f7b24), not pushed.
+  0.3.17 is b12e082.
+  - Scribe SKILL.md went from 16.7 KB to 9.0 KB; enrichment moved to `enrichment.md`, read on demand.
+  - search JSON gaps are compact and trimmed; `skills status --summary` is new.
+  - The FTS index rebuilds itself once after an upgrade, so 116 no longer asks for `reindex`.
+  - No maestro code depends on the scribe skill's text; nothing to change.
+- code-graph 0.3.19 (026, R5 and R6's code-graph half) committed (e876d55), not pushed.
+  - Store commands exit 8 with a one-line fix when node:sqlite is missing; layer 1 is unaffected.
+  - `deps status` gains `not-visible` for a hidden sandbox path.
+  - code-graph-uninstall lists each leftover and asks per item, default no.
+  - Maestro never runs `deps status` and never reads code-graph's exit codes; nothing to change.
+- code-graph 0.3.20 (027, R7 and R8) committed (82a46ab), not pushed. code-graph's side is closed:
+  tickets 003–027 are all done.
+  - The gap contract is at `plugin/contracts/skill-gaps.example.json` (+ `.schema.json`), and
+    code-graph's tests pin its skill examples to it.
+  - Without maestro, the scribe reads `.claude/channels/scribe/*.md` itself at the start of a run.
+  - Queued 117 (maestro's half of R7): vendor both files into maestro's test fixtures and test the
+    full gap-report lifecycle against them. Nothing reads across repos.
+- `merge-proposal.md` and `plan.md` were deleted on the user's approval.

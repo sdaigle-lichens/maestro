@@ -569,5 +569,20 @@
     "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
+  },
+  "115-give-maestro-s-code-graph-install-hint-the-exact-commands.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "116-bring-maestro-s-stale-concept-skills-up-to-date.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
   }
 }
