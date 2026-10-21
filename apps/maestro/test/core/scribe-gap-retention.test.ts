@@ -18,6 +18,7 @@ import { sweep, CHANNEL_AGE_CAP_MS } from "../../src/core/handoff-channels.js";
 import { pinnedEnv } from "../helpers/env.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 import { scribeSeedShapes, noGapPayload, withGapPayload } from "../helpers/scribe-seed-payloads.js";
+import { GAP_EXAMPLE_TEXT } from "../helpers/skill-gaps-contract.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
@@ -352,6 +353,57 @@ describe("a second gap from the same sender does not clobber an unhandled first 
     expect(ctx).toContain("GAP-SECOND-TOKEN");
     expect(ctx).toContain(first);
     expect(ctx).toContain(second);
+  });
+});
+
+// `117` (merge review R7): code-graph's published gap example (vendored, 0.3.20) is treated by
+// maestro's real scripts as a gap report from classification through acknowledgement.
+describe("code-graph's published gap example is a gap report end to end (117)", () => {
+  // The vendored file verbatim, in one fenced json block, as an agent would write it.
+  const fixtureBody = "```json\n" + GAP_EXAMPLE_TEXT.trim() + "\n```\n";
+
+  it("is stamped to <sender>.<n>.md, inlined to the scribe, survives delivery, and a SKILL_GAPS_HANDLED line retires it", async () => {
+    const root = await installed();
+    start(root, S1, "backend", "b1");
+    writeRaw(root, "scribe", "backend", fixtureBody);
+    stop(root, S1, "backend", "b1", '"verdict": "SUCCESS"\nHANDOFF: success');
+
+    // Classified as a gap report: the stamp renamed it away from the route's channel file.
+    const [gap, ...rest] = filesIn(laneDir(root, "scribe"));
+    expect(rest).toEqual([]);
+    expect(gap).toMatch(/^backend\.\d+\.md$/);
+    expect(gap).not.toBe("backend.1.md");
+    expect(read(laneDir(root, "scribe"), gap)).toMatch(/^<!-- maestro:run_id=[^\s>]+ -->\n/);
+
+    // Inlined to the scribe, with the acknowledgement instruction naming the file.
+    const ctx = start(root, S1, "scribe", "s1");
+    expect(ctx).toContain('"skill": "<skill-id>"');
+    expect(ctx).toContain('"missing": "<text>"');
+    expect(ctx).toContain("SKILL_GAPS_HANDLED");
+    expect(ctx).toContain(gap);
+
+    // Not retired on delivery, nor by a scribe that does not name it.
+    expect(filesIn(laneDir(root, "scribe"))).toEqual([gap]);
+    expect(filesIn(consumedDir(root, "scribe"))).toEqual([]);
+    stop(root, S1, "scribe", "s1", "Did something else.\nHANDOFF: success");
+    expect(filesIn(laneDir(root, "scribe"))).toEqual([gap]);
+
+    // Retired by the ack line.
+    start(root, S1, "scribe", "s2");
+    stop(root, S1, "scribe", "s2", `SKILL_GAPS_HANDLED: ${gap}\nHANDOFF: success`);
+    expect(filesIn(laneDir(root, "scribe"))).toEqual([]);
+    expect(filesIn(consumedDir(root, "scribe"))).toEqual([gap]);
+    expect(start(root, S2, "scribe", "s3")).not.toContain('"missing": "<text>"');
+  });
+
+  it("negative control: the same body with an empty skill_gaps array is an ordinary deliver-once payload", async () => {
+    const root = await installed();
+    start(root, S1, "backend", "b1");
+    writeRaw(root, "scribe", "backend", "```json\n" + JSON.stringify({ skill_gaps: [] }) + "\n```\n");
+    stop(root, S1, "backend", "b1", '"verdict": "SUCCESS"\nHANDOFF: success');
+    expect(filesIn(laneDir(root, "scribe"))).toEqual(["backend.1.md"]);
+    start(root, S1, "scribe", "s1");
+    expect(filesIn(laneDir(root, "scribe"))).toEqual([]);
   });
 });
 
