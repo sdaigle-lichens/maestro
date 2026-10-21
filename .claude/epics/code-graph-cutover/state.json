@@ -151,6 +151,48 @@
       "id": "r009",
       "at": "2026-10-21T16:08:38.337Z",
       "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r010",
+      "task": "116-bring-maestro-s-stale-concept-skills-up-to-date.md",
+      "file": "inbox/r010-116-bring-maestro-s-stale-concept-skills-up-to-date.md",
+      "at": "2026-10-21T16:29:20.765Z",
+      "from": "maestro-54a42673"
+    },
+    {
+      "kind": "ack",
+      "id": "r010",
+      "at": "2026-10-21T16:29:57.214Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r011",
+      "task": "117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md",
+      "file": "inbox/r011-117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md",
+      "at": "2026-10-21T17:21:13.065Z",
+      "from": "maestro-fbcb0f28"
+    },
+    {
+      "kind": "ack",
+      "id": "r011",
+      "at": "2026-10-21T17:21:43.911Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r012",
+      "task": "118-fully-review-the-five-riskiest-stamped-only-concept-skills.md",
+      "file": "inbox/r012-118-fully-review-the-five-riskiest-stamped-only-concept-skills.md",
+      "at": "2026-10-21T18:29:16.723Z",
+      "from": "maestro-848c8834"
+    },
+    {
+      "kind": "ack",
+      "id": "r012",
+      "at": "2026-10-21T18:29:36.318Z",
+      "by": "manager-code-graph-merge"
     }
   ]
 }

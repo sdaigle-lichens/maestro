@@ -41,8 +41,21 @@ interface SessionLogEntry {
   receiver?: string; // bare agent name it was delivered to
   content?: string; // the payload body, inlined verbatim (no stamp — that's stripped before logging)
   via?: "resume" | "ack"; // `088` "resume": handed to a RESUMED run by path, logged at its SubagentStop (maestro-subagent-log.js), not SubagentStart. `112` "ack": a scribe's SKILL_GAPS_HANDLED: line retired this gap report — not a delivery
+
+  // Present only on phase entries (kind:"phase"): a pre-coding orchestration marker
+  phase?: string; // e.g. "step1_gates"
+
+  // Any entry — best-effort context-window fill when written (absent = unknown, never 0)
+  ctx_pct?: number;
+  ctx_model?: string; // model id ctx_pct was computed against
 }
 ```
+
+`kind` is `"dispatch" | "handoff" | "transition" | "channel_delivery" | "phase"`. The hooks also write
+fields the interface does **not** type: `meeting: true` / `owner_run: true` marks on dispatch and handoff
+entries of a team-meeting turn or an owner run (`083`/`087`), and a `handoff_issue { kind, verdict,
+label, message, files? }` on a handoff the hook judged defective (`108`). The renderer reads them as
+untyped extras.
 
 A missing `kind` = a plain tool-call entry from `maestro-session-log.js`. The schema is **backward
 compatible**: old logs (tool-call-only) parse and display correctly; `dispatch`/`handoff`/`transition`

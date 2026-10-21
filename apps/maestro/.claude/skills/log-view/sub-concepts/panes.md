@@ -5,7 +5,8 @@ them knows a tab bar exists above them. Clicking a step in any pane selects it i
 
 ## Left pane — step list (`session-log-cards.tsx`)
 
-A thin (180px) vertical list of step names with status icons. Each row:
+A thin vertical list of step names with status icons (180px by default, drag-resizable via
+`usePanelResize`). Each row:
 
 - **Status icon** (from `@phosphor-icons/react`):
   - `"success"` → `CheckCircleIcon` in `text-maestro-success`
@@ -16,19 +17,19 @@ A thin (180px) vertical list of step names with status icons. Each row:
 - **Click** → `onSelect(id)` → `setActiveId(id)` + `scrollIntoView` on the matching center-pane section.
 - **Active step** → `font-medium` + a `border-b-2` underline colored by status (green/red/yellow).
 - **Skills badge** (right-aligned, only when `inst.skillsTriage` is set) → compact `<loaded>` in
-  `--success-text`, `/<skipped>` in `--warning-text`, and `/<unaccounted>` in `--danger-text`. Lets you scan which steps
+  `text-maestro-success`, `/<skipped>` in `text-maestro-warning`, and `/<unaccounted>` in `text-maestro-danger`. Lets you scan which steps
   skipped or silently dropped skills without opening each detail panel.
-- **Delivery count** (`037`) → an `Inbox` icon + `receivedCount(inst)` when non-zero, the same
+- **Delivery count** (`037`) → a `TrayIcon` + `receivedCount(inst)` when non-zero, the same
   at-a-glance class of signal as the skills badge. `receivedCount` (`utils/session-log.ts`, `112`) is
   `delivered` minus `via:"ack"` entries, which record a gap acknowledgement, not a delivery. The step
   list's "N delivered" uses it too.
 
 - **Context badge** (`ContextUsageBadge`, `context-usage.tsx`) → `~NN%` from the instance's latest
-  stamped `ctx_pct`; yellow at 75%, red at 90%. Renders nothing when no entry carries `ctx_pct`.
+  stamped `ctx_pct`; muted below 75%, `text-maestro-warning` from 75%, `text-maestro-danger` from 90%. Renders nothing when no entry carries `ctx_pct`.
 
 ## Center pane — framed log (`session-log-view.tsx`)
 
-A header row ("Agents Flow" + `● live` indicator) above a scrollable body of per-instance sections. Each
+A header row ("Agents Flow" + a `● live` / `reconnecting…` indicator; the empty state reads `connecting…`) above a scrollable body of per-instance sections. Each
 section is wrapped in a **rounded bordered frame** (`border rounded-lg p-4`):
 
 - **Click** anywhere in the frame → `onSelect(id)` → selects the step across all panes.
@@ -50,12 +51,12 @@ Shows the selected instance's data in sections:
 - **Input:** the instance's `input` field — the full spawning message sent by the main session —
   followed by each entry in `inst.delivered` (`037`), rendered as "Delivered from @`<sender>`" plus a
   "channel" badge ("channel · resume" for a `via:"resume"` delivery, `088`; a `via:"ack"` entry, `112`, reads "Acknowledged gap report from @`<sender>`" with a "gap · acknowledged" badge) and the content verbatim in a `<pre>` block, in log order. Renders nothing extra when
-  `delivered` is empty; shows "No input captured" for main_session instances or when there is neither a
-  dispatch entry nor a delivery.
+  `delivered` is empty; shows "No input captured" whenever `input` is null (main_session instances, or no
+  dispatch entry) — even if deliveries are listed beneath it.
 - **Process:** the humanized log lines (same content as the center pane section for this step).
 - **Skills Triage:** (only when `instance.skillsTriage` is set) **Loaded** render as green chips;
   **Unaccounted** (`unaccountedSkills(instance)`) render as red chips; **Skipped** render as
-  `id — reason`, with a hollow reason (`< 8` chars) flagged in `--warning-text`. Hollow reasons surface lazy
+  `id — reason`, with the skipped id of a hollow reason (`< 8` chars) colored `text-maestro-warning`. Hollow reasons surface lazy
   _explicit_ skips; red unaccounted chips surface skills the agent dropped _silently_. See
   `log-entry-schema.md` for how the two sides of that diff are produced.
 - **Output:** the instance's `output` field — the agent's full final message including the HANDOFF line.

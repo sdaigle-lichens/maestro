@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.14"
-  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
+  version: "2.0"
+  last-update: bbb69aba5cc3b304f8b672198781663c2b38866f
 ---
 
 # Core ↔ plugin parity
@@ -24,8 +24,11 @@ Regenerate with `pnpm --filter maestro build:plugin-libs`.
 ## This fails quietly — the single most important fact here
 
 The build script's own header says it: **if it stops producing correct output, the committed `.cjs`
-files keep working and every test keeps passing.** The symptom is not a red suite; it is an edit to
-a source module that stops reaching the plugin while the hooks go on running the old behaviour.
+files keep working.** The symptom is an edit to a source module that stops reaching the plugin while
+the hooks go on running the old behaviour. Since `066` one test does catch a stale bundle —
+`parity.test.ts`'s "generated bundle freshness (066)" rebuilds into a scratch dir and diffs every
+committed lib — but it only fires if the suite is run, and it cannot notice a build that is wrong in
+a way both the fresh and the committed output share (a lost `"use strict"`, a dropped entry).
 
 So after changing anything in `plugin-entries/` or in a `src/core` module one of them pulls in,
 re-run the build and **read `git diff plugins/maestro/scripts/lib/`** rather than trusting green
@@ -166,7 +169,7 @@ Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` �
 addition. The sqlite tier is a **separate** bundle, `maestro-handoff-defaults`, which
 `maestro-inject-agent-context.js` `require`s inside a try/catch — so on a `node` older than 22.5 the
 sqlite `require` fails and the seed still answers. The trap: `handoff-seeds.ts` imports **nothing**,
-and adding one store import to it moves 23 protocol bodies behind a `node` version check without
+and adding one store import to it moves 24 protocol bodies behind a `node` version check without
 failing a single test.
 
 **`maestro-workflow-spec` carries no `node:sqlite`-free requirement of its own.** It is `require`d
@@ -223,7 +226,9 @@ lives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, 
 module needs an alias there too.
 
 `maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the
-worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
+worktree branch of `maestro-channel-write-guard.js`, and the worktree helpers from `worktree.ts`
+(`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`, …) — all still
+`fs`/`path` only.
 
 ## Why the build is so specific
 
@@ -247,8 +252,9 @@ worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
 | `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments.     |
 | `apps/maestro/src/core/plugin-entries/*.ts`    | The seventeen entry points — thin re-exports of `src/core`. |
 | `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.              |
-| `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.           |
-| `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                                 |
+| `apps/maestro/test/core/parity.test.ts`        | Differential test vs legacy CJS, plus bundle freshness and mirror checks. |
+| `apps/maestro/test/core/avatar-parity.test.ts` | Unrelated drift check: avatar part ids vs the renderer manifest. |
+| `apps/maestro/test/helpers/mirror-parity.ts`   | `staleMirrors` / `describeStale`, behind the mirror checks. |
 
 ## Relationships
 
@@ -270,4 +276,4 @@ worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
 ## Sub-concepts
 
 - [Parity tests](sub-concepts/parity-tests.md) — the snapshot baseline, why it is not the live file,
-  and the user-visible strings it freezes byte for byte.
+  the user-visible strings it freezes byte for byte, and the freshness/manifest/mirror blocks.

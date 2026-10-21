@@ -12,7 +12,7 @@ Active Maestro session
   SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"resume", resumed run only, BEFORE its handoff) — (`088`)
   SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"ack", scribe only, per gap file named on SKILL_GAPS_HANDLED:) — (`112`)
   SubagentStop      → maestro-subagent-log.js         → handoff entry         (kind:"handoff", agent_id, status, label, output)
-  SessionEnd        → maestro-session-cleanup.sh      → DELETE this session's directory only
+  SessionEnd        → maestro-session-cleanup.sh      → record metrics, DELETE this session's directory (unless the end reason is resumable), sweep channels
 ```
 
 All four hooks append to the same file — **the same file being "this Claude Code session's
@@ -20,7 +20,7 @@ All four hooks append to the same file — **the same file being "this Claude Co
 subagent's hook payload carries the MAIN session's id, so a whole workflow run (orchestrator plus every
 subagent it spawns) lands in one file, which is what makes `buildInstances`' `agent_id` correlation work
 at all. All are no-ops when `maestro.json` is absent, and a **silent** no-op when no session id
-resolves. The directory is deleted at that session's own SessionEnd, so the empty state is normal.
+resolves. The directory is deleted at that session's own non-resumable SessionEnd, so the empty state is normal.
 
 ## `maestro-session-log.js` — tool-call entries (PreToolUse)
 
@@ -45,11 +45,15 @@ resolves. The directory is deleted at that session's own SessionEnd, so the empt
     "agent": "<agent_type>",
     "agent_id": "<agent_id>",
     "input": "<last_assistant_message>",
+    "offered_skills": { "loaded": [], "referenced": [] },
     "log": "→ <agent_type>"
   }
   ```
   `last_assistant_message` on SubagentStart = the main session's message that triggered the subagent
-  spawn. This is the **Input** shown in the right detail panel.
+  spawn. This is the **Input** shown in the right detail panel. `offered_skills` is present only when
+  the hook surfaced some. For a team-meeting participant (`083`) or an owner run (`081`) the entry also
+  carries `meeting: true` / `owner_run: true` and the log reads `→ <agent_type> (meeting)` /
+  `(owner run)`. Both marks keep the run out of `agentRunsFromLog` (never a resume target).
 - **On SubagentStop with an `agent_type`** → parses `last_assistant_message` for a `HANDOFF:` line (last
   occurrence, tolerant of surrounding backticks/asterisks), writes a `kind:"handoff"` entry:
   ```json
@@ -66,7 +70,15 @@ resolves. The directory is deleted at that session's own SessionEnd, so the empt
   ```
   `last_assistant_message` on SubagentStop = the agent's entire final message, including `HANDOFF:` +
   any `handoff_details` payload. This is the **Output** shown in the right detail panel. `agent_id` is
-  shared across both entries for correlation.
+  shared across both entries for correlation. Beyond the entry itself, the same SubagentStop:
+  - **Recovers a missing HANDOFF** (`078`/`087`): when the final message has none, it reads the agent's
+    own transcript (`agent_transcript_path`) for one handed back via `SubagentHandback` /
+    `SendMessage`, so the entry is not `unknown`. Skipped for meeting and owner runs.
+  - **Judges the handoff** (`108`): a defective label, route or payload is attached to the entry as
+    `handoff_issue`, appended to session.json's `handoff_issues`, and surfaced as a systemMessage.
+    Meeting / owner-run handoffs log `meeting turn` / `owner run` instead and skip judging.
+  - **Stamps channel files** (`036`): the agent's lane files get a run stamp
+    (`ensureSessionRunId` + `writeStamp`), minus meeting/owner-run leftovers.
 - **On SubagentStop with NO `agent_type`** → not a real workflow handoff. Writes a `kind:"transition"`
   entry instead, so it can't masquerade as a failed/unknown agent run:
   ```json
@@ -125,10 +137,16 @@ Claude session to pick up.
 
 ## SessionEnd cleanup
 
-`maestro-session-cleanup.sh` (SessionEnd hook) deletes **only the ending session's own**
+`maestro-session-cleanup.sh` (SessionEnd hook), in order: `recordSessionRun` (`080` metrics, into
+`.claude/maestro-metrics/`), then `endSessionState(claudeDir, sid, reason)`, then `sweep(cwd)` over
+`.claude/channels` (`036`). `endSessionState` deletes **only the ending session's own**
 `.claude/maestro_sessions/<session_id>/` directory — its `log.jsonl`, `session.json` and `tasks.json`
 together — plus the three pre-`064` flat files if an older runtime left them. A sibling session's
 directory is never touched, so one session ending no longer blanks a concurrent one's view mid-run.
+**A resumable `reason` (`prompt_input_exit`, `other`, `resume`) removes nothing** (`077`): the session may
+be continued, so its directory — and the live tab — stays. The project-local `.cjs` twin calls the same
+`endSessionState`. The logging hooks also stand down via `projectOwnsHook` when the project registered
+its own copy, so only one copy writes.
 
 The hook does not run when a session dies hard; those leftovers are removed by the desktop app's startup sweep or a tab's ✕ (see `SKILL.md`, "Deleting stale session directories"). The page's empty state is still the expected condition when no Maestro session is active — it is not an
 error.

@@ -576,12 +576,17 @@
     "epic": "code-graph-cutover"
   },
   "116-bring-maestro-s-stale-concept-skills-up-to-date.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
   },
   "117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md": {
-    "status": "ready",
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "118-fully-review-the-five-riskiest-stamped-only-concept-skills.md": {
+    "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
   }

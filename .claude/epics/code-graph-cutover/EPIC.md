@@ -322,4 +322,62 @@ gate is in its prompt.
     code-graph@code-graph. skill-availability, parity and code-graph-plugin tests pass (100).
   - code-graph's own README shows only the `/plugin install … --marketplace` form. Code-graph
     could add the CLI form there; not a maestro task.
+- code-graph README now has the two-step install, both in-session and shell forms (code-graph
+  05cf5b7, on the user's request).
+- 116 done (r010, acked). Two concepts edited: maestro-architecture now names `seedSkillsFor` /
+  `DESIGN_CHECK_CANDIDATES`, and claude-session-bridge's module list and line counts were fixed.
+  13 were stamped only and agents-view was extract/apply only. List v1.30.
+  - Manager check: `skills status --summary` shows 0 commits, 0 changed/stale and 0 unextracted
+    everywhere. `search "design check"` ranks `seedSkillsFor` #1 (exit 7, as accepted).
+  - Enrichment stayed small: 8 new `.enriched.json` files, about one vertex each.
+  - `skills stamp` can't write `.claude/skills/**` from Bash (the sandbox's denyWithinAllow), so
+    the scribe set four stamps by hand to the tool's values. Status confirms them. The sandbox
+    rule is the user's call. A code-graph option: on EROFS, print the exact frontmatter to set.
+  - The worker flagged that "stamped only" was decided from commit lists and diffs, not a full
+    re-read of each SKILL.md.
+  - `worktree-write-guard.ts` vertices appear in both log-view and plugin-libs-parity (overlapping
+    globs). Harmless, noted.
+- The user committed 116. Asked code-graph for a `skills stamp` fallback: on a read-only SKILL.md
+  it prints the exact frontmatter lines and exits with a documented code, so the scribe applies them
+  with Edit instead of hand-computing them. The `.claude/skills` write block is Claude Code's own
+  protection and stays.
+  - Ticketed as code-graph 028 (planned 0.3.21). Stamp is one skill per call: on a write error it
+    exits 9 and prints the lines to apply (`--json`: written:false, blocked.lines). `--print`
+    computes without writing. Four code-graph skills will say "on exit 9, apply verbatim with Edit".
+    Maestro never runs `skills stamp` itself; nothing to change.
+- 116's worker follow-up: a stamp proves nothing about review. `status` counts commits but doesn't
+  say which mapped files changed, and SKILL.md prose has no drift check. The riskiest stamped-only
+  concepts are plugin-libs-parity (14 commits), electron-shell-invariants (13), workflow-view (9),
+  log-view (7) and rule-view (7).
+  - User approved. Asked code-graph for: `status` lists the mapped files changed since the stamp,
+    and `stamp` warns (doesn't refuse) on a stamp-only over changed files, with a `--reviewed`
+    override.
+  - Queued 118: a full read of those five concepts against today's code.
+  - Ticketed as code-graph 029 (planned 0.3.22), blocked by 028. Per-file counts in `status`; the
+    stamp warns on stderr, still exits 0, and takes `--reviewed`. The flows require a reason for each
+    stamp-only. Maestro: no change.
+- 117 done (r011, acked). code-graph 0.3.20's gap example and schema are vendored under
+  `apps/maestro/test/fixtures/` with a README (source, version, re-copy rule).
+  - The fixture runs through the real hooks: classify, rename, inline to the scribe, survive
+    delivery, retire by SKILL_GAPS_HANDLED. There is a negative control.
+  - A hand-written validator checks every agent's emitted gap example against the schema.
+    No plugins/ change.
+  - Manager check: both vendored files are byte-identical to code-graph's, and the two test files
+    pass (24).
+  - Limits: drift is caught only after a re-copy, the validator checks only required keys and
+    types, and the example regex is tied to the report-default wording.
+  - User decision: only the drift limit gets action. Asked code-graph for a `.claude/rules/` entry:
+    a change under `plugin/contracts/` must be called out to maestro in the release note.
+    - Mostly exists already: code-graph's `.claude/rules/plugin-skills.md` (e9d01f4) says a contract
+      change goes to maestro's manager. The extension (old and new shape in the note, one version
+      of the old shape kept on a breaking change) waits on the user's approval in the code-graph
+      session.
+- 118 done (r012, acked). All five concepts were read in full and every one had real
+  inaccuracies: wrong file locations, renamed functions, removed UI, and one false claim about this
+  repo's maestro.json. 16 files were edited and the five are stamped at v2.0 (log-view v3.0). The
+  stamps were written by the tool, and no vertices were enriched.
+  - Manager check: `skills status --summary` shows 0 commits, 0 changed/stale and 0 unextracted
+    for all five.
+  - Lesson: 116's "stamped only" was wrong 5 out of 5 times, so the other 8 stamped-only concepts
+    are suspect too. That backs code-graph 029.
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

@@ -11,9 +11,10 @@ React Flow never remounts nodes.
   (`left`, `right`, `bottom`) are fragment siblings of the card div — **not inside it** — so they
   anchor to the node bounding box, not to the card's flex flow.
 - `agentNode` — card showing the instance name (primary) and `@agent` (secondary), skill chips from
-  the referenced instance, side `+` buttons (left/right) for conditions, a bottom-center `+`
-  (`onAddNext`), and a `⋮` kebab menu (Edit instance / Delete). Orange normally; **green when it is
-  the success-path terminal** (`findSuccessTerminalId`).
+  the referenced instance, side `+` buttons (left/right) for conditions and a bottom-center `+`
+  (`onAddNext`). **No kebab menu** — clicking the node opens the right-hand instance panel, which
+  carries the delete button. Orange normally; **green when it is the success-path terminal**
+  (`findSuccessTerminalId`).
 - `humanStep` — amber diamond rendering "Review" (`human_review`). Wrapped in a `relative` div so the
   bottom-center `+` and the `⋮` kebab (**Delete**) can be absolutely positioned around the diamond —
   both are **siblings** of the clipped diamond div, since the `clipPath` would cut off anything
@@ -22,7 +23,7 @@ React Flow never remounts nodes.
   route a correction back to the agent that produced the work under review (e.g. `human requested
   code corrections` → `@backend`). The orchestrator (not a subagent — a human-review node has no
   agent) reads the user's feedback and dispatches it to that node; the seeded default/tdd workflows
-  wire this edge automatically (`buildWorkflow` in `maestro.ts`).
+  wire this edge automatically (`buildWorkflow` in `src/core/seed.ts`).
 - `skillNode` — violet card rendering `/<skill>` for a standalone **skill step** (`type: "skill"`,
   carries a `skill` id, no instance). A `⋮` kebab offers **Change skill** / **Delete**, plus the
   bottom-center `+`. Like `human_review` it is a non-agent node: no instance, excluded from
