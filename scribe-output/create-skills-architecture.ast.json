@@ -404,8 +404,8 @@
       "type": "function",
       "name": "readScopeFor",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 427,
-      "end_line": 453,
+      "start_line": 428,
+      "end_line": 454,
       "signature": "function readScopeFor(projectRoot: string, cwd: string, targets: ClaudeWriteTarget[], settings: SettingsPort | undefined): Promise<ClaudeReadScope>",
       "contentHash": "49bf7a7593425ac1a92bb59c92db7c3a8bafd8f1f7be463314357d327d2b329f",
       "status": "live",
@@ -836,8 +836,8 @@
       "type": "function",
       "name": "previewClaudeRun",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 465,
-      "end_line": 544,
+      "start_line": 466,
+      "end_line": 545,
       "signature": "function previewClaudeRun(projectRoot: string, request: ClaudeRequest, opts: PreviewOptions = {}): Promise<ClaudePreview>",
       "contentHash": "a44ee2811721ecbd7f272a90625d26707a8961c102765cddaf4ee0dd9a534331",
       "status": "live",
@@ -927,9 +927,9 @@
       "name": "build",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
       "start_line": 380,
-      "end_line": 416,
+      "end_line": 417,
       "signature": "function build(projectRoot: string, request: ClaudeRequest, opts: ResolveOptions): Promise<BuiltRequest>",
-      "contentHash": "bd41268c7734fe9814581d69ebf4470628c8aadefcb53e5a63788dd38bbc2cd3",
+      "contentHash": "ba11255243a3f1ddb72e6f36026beeeb0f43a86b713732a4fae4257473c3a696",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1525,19 +1525,6 @@
       }
     },
     {
-      "_key": "18182ca0fc871ed44478f5971e12b2da",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/2078213ec65b9598b9030f222a48ee26",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 493,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "1c577cabb442da1bbe2b349ecb7fed6f",
       "_from": "vertices/28a25a2d97cfd896a5d766de0127d130",
       "_to": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
@@ -1603,6 +1590,19 @@
       }
     },
     {
+      "_key": "2bc55329a6e49bfffe9bbbd4ebd28a21",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/4535e9c42f1c3f96f6359782bebab02e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 480,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "2fcee8bcd298167d21edcde552e987e0",
       "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
       "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
@@ -1642,19 +1642,6 @@
       }
     },
     {
-      "_key": "35bc52262c2f45fcbc526430c1705251",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/ba0f8f34eb9f842a92e1a2c105aabf7b",
-      "type": "has-type",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 468,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "37b435b6d2a2494224b98d322012fdc6",
       "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
       "_to": "vertices/5c677576c2fac029bb060bce8bcdcab8",
@@ -1688,6 +1675,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4728f184fe13cbec144a5433ab05afd7",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/ba0f8f34eb9f842a92e1a2c105aabf7b",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 469,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2006,6 +2006,19 @@
       }
     },
     {
+      "_key": "735428aea17f2c020a48d2ee8cd450a0",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 413,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "744569e0e91564d15f29c12977cd66ba",
       "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
       "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
@@ -2110,13 +2123,13 @@
       }
     },
     {
-      "_key": "8147c6be1566749b8dff808b7fc007ae",
-      "_from": "vertices/a22e814206eb85adf36923616063a839",
-      "_to": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "_key": "8127b301f3aca0e798df481f86168a48",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/2078213ec65b9598b9030f222a48ee26",
       "type": "calls",
       "concept": "create-skills-architecture",
       "crosses_concept": false,
-      "line": 412,
+      "line": 494,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2143,6 +2156,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "84ea9e66ce94e8087739307019dfd9ad",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/a22e814206eb85adf36923616063a839",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 472,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2344,19 +2370,6 @@
       }
     },
     {
-      "_key": "9f36725791aa92271896cbf7cea0457c",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/a22e814206eb85adf36923616063a839",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 471,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "a17700f8a8e9c6dbeb084c422bcd4ce6",
       "_from": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
       "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
@@ -2474,6 +2487,19 @@
       }
     },
     {
+      "_key": "b1cbe5eac0de6f29c30b0cd96ee8e688",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/09c6f4ae4663b1d8143b2a13e3c45a7e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 492,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "b242ee0a4dac094d30c47ce7bf4e6e48",
       "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
       "_to": "vertices/553f6028145d53b2e7cf1466da5541ae",
@@ -2578,19 +2604,6 @@
       }
     },
     {
-      "_key": "c38a4763ebdac7d65a32274f611aafde",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/09c6f4ae4663b1d8143b2a13e3c45a7e",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 491,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "c5461215f1d54b336c31634bc6e267f2",
       "_from": "vertices/f31c4f3a69ea71d89f728cc30eadb011",
       "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
@@ -2637,19 +2650,6 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 33,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c84d483e905f1af036575b7c517e412f",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/4535e9c42f1c3f96f6359782bebab02e",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 479,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3009,11 +3009,33 @@
   ],
   "skill": {
     "path": "apps/maestro/.claude/skills/create-skills-architecture/SKILL.md",
-    "body": "---\nname: create-skills-architecture\ndescription: \"Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork.\"\nmetadata:\n  type: concept-skill\n  version: \"1.3\"\n  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431\n---\n\n# Create-Skills Architecture\n\nFour creation flows share one pipeline: `create-skill`, `create-subagent`, `create-plugin`,\n`create-marketplace`. Each is a route in the Maestro desktop app, a scaffold function in\n`src/core`, and a `SKILL.md` prompt the app hands to a Claude run — which since `018` is an **Agent\nSDK session**, not a `claude -p` spawn.\n\n## End-to-end pipeline\n\n```\nUser opens the Maestro desktop app → /tools → Skills tab → Create (link at the bottom)\n        │\n        ▼\nsrc/renderer/src/routes/create-skill.tsx\n  • react-hook-form + zod govern state and validation (schema at the top of the route)\n  • split pane: form left, live FilePreview right — the file that WILL be generated\n  • the preview's description comes from src/core/text.ts's buildDesc, the same\n    implementation the scaffold uses, so preview and file cannot disagree\n        │ submit\n        ▼\nutils/create-flow.tsx  — the submit path all four routes share\n        │\n        ├─1─▶ window.maestro.create.scaffold(request)     IPC `create:scaffold`\n        │       → scaffoldSkill/Subagent/Plugin/Marketplace in src/core\n        │         writes the directory, the frontmatter, the plugin manifest, the\n        │         marketplace registration — everything deterministic\n        │         and, for a new marketplace, `git init` + the first commit\n        │       ← { path, name, needsModel, repo?, ... }\n        │       NO MODEL, and none reachable: the module behind it imports nothing\n        │       that can reach one. `git` arrives as an injected GitPort, not an import.\n        │\n        └─2─▶ only when needsModel: claude:preview → ClaudeRunDialog → claude:run\n              (headless) or session:handoff (Continue in the pane).\n              See `sub-concepts/confirmed-run.md`.\n        │\n        ▼\nThe run — headless or in the pane — calls the Skill tool for\nplugins/maestro/skills/create-<name>/SKILL.md and finishes only what\nthe scaffold left — authoring a body, enriching a README.\n```\n\n**The ordering in 1–2 is the design.** The artifact is on disk before Claude is mentioned, so\ncancelling the confirmation — or having no CLI installed at all — still leaves the user with the\nthing they asked for. `needsModel` decides whether the dialog opens by itself: an auto-mode body or\na brand-new marketplace's docs need one; a manual-mode skeleton and a plugin manifest are complete\nas written. **Finish with Claude** on the result card stays available either way.\n\nThere is no hook in this path, no result file, and no blocking wait. `/create-skill` typed into a\nsession is a different thing entirely: the skill prompt with no payload and nothing pre-scaffolded,\nwhich the SKILL.md handles by gathering the fields conversationally. Each consuming `SKILL.md` opens\nwith a \"Which entry you are on\" table that distinguishes the two, and `026` deleted the second,\ninlined copy of the finishing guidance that the prompt used to carry — the token, the dialog, the\nsession's tools and skills, and every trap in that half of the pipeline are in\n`sub-concepts/confirmed-run.md`.\n\n## File-by-file map\n\nRenderer paths are relative to `apps/maestro/`.\n\n| Concern                                                                              | File                                                                                                             |\n| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |\n| Form (route): schema, fields, preview, shortcut map                                  | `src/renderer/src/routes/create-<name>.tsx`                                                                      |\n| Shared chrome: layout, header, shortcuts, submit row                                 | `src/renderer/src/components/create-shell.tsx`                                                                   |\n| The scaffold → preview → dialog path, shared by all four                             | `src/renderer/src/utils/create-flow.tsx`                                                                         |\n| What landed on disk, plus **Finish with Claude**                                     | `src/renderer/src/components/create-result.tsx`                                                                  |\n| The confirmation: read scope, prompt, equivalent argv, cwd, targets, streamed output | `src/renderer/src/components/claude-run-dialog.tsx`                                                              |\n| **Continue in the pane**: what a handoff says to the session (seed, notice, title)   | `session-handoff.ts` in `apps/maestro/src/core/` (pure), spent by `src/main/claude-session.ts`                   |\n| \"What it can read\" — ONE component, both confirmations                               | `src/renderer/src/components/read-scope.tsx`                                                                     |\n| Live file preview components                                                         | `src/renderer/src/components/{skill,subagent}-template-preview.tsx`, `{plugin,marketplace}-manifest-preview.tsx` |\n| The typed channel contract                                                           | `src/shared/ipc.ts` (`create:options`, `create:scaffold`, `claude:preview\\|run\\|cancel`, `session:handoff`)      |\n| Main-process handlers                                                                | `src/main/ipc.ts`                                                                                                |\n| **Deterministic scaffold** + `resolveCreateTarget`                                   | `scaffold.ts` in `apps/maestro/src/core/`                                                                        |\n| Making a new marketplace a repository, via `execFile`                                | `git.ts` in `apps/maestro/src/core/` (a `GitPort`, injected)                                                     |\n| \"Is this inside a repository?\", answered with `fs`                                   | `repo.ts` in `apps/maestro/src/core/`, with no `child_process`                                                   |\n| Where the `GitPort` is supplied - the composition root                               | `src/main/ipc.ts`, `scaffoldCreate(root, request, { git: nodeGit() })`                                           |\n| Prompt + argv + cwd construction, and the token                                      | `claude-preview.ts`, `claude-tokens.ts` in `apps/maestro/src/core/`                                              |\n| Deriving the read scope from a settings snapshot (pure)                              | `read-scope.ts` in `apps/maestro/src/core/`                                                                      |\n| Deciding each write — `canUseTool`'s answer (pure)                                   | `write-scope.ts` in `apps/maestro/src/core/` (`decideWrite`)                                                     |\n| Resolving the settings cascade — the `SettingsPort`                                  | `agent-sdk.ts` in `apps/maestro/src/core/` (`nodeSettings()`), injected at `src/main/ipc.ts`                     |\n| The session itself, and the ONLY SDK import                                          | `agent-sdk.ts` in `apps/maestro/src/core/` (`startAgentSession`, `SESSION_TOOLS`)                                |\n| Start, stream, cancel, dispose                                                       | `claude-run.ts`, `claude-cli.ts` in `apps/maestro/src/core/`                                                     |\n| Marketplace discovery for the selectors                                              | `marketplaces.ts` in `apps/maestro/src/core/`                                                                    |\n| `buildDesc` and friends — ONE implementation                                         | `text.ts` in `apps/maestro/src/core/`                                                                            |\n| Shared UI primitives                                                                 | `packages/ui/src/`                                                                                               |\n| Consuming prompt                                                                     | `plugins/maestro/skills/create-<name>/SKILL.md`                                                         |\n| Shared prompt contract the four SKILL.md link to                                     | `docs/ai-tools-create-shared.md`                                                                                 |\n\n## The four flows compared\n\n|                                       | create-skill                | create-subagent             | create-plugin | create-marketplace |\n| ------------------------------------- | --------------------------- | --------------------------- | ------------- | ------------------ |\n| Mode toggle (auto / manual)           | yes                         | yes                         | no            | no                 |\n| Target toggle (marketplace / project) | yes                         | yes                         | no            | no                 |\n| Template seed (target=project only)   | no                          | yes                         | no            | no                 |\n| Chip-array fields                     | `useWhen`                   | `triggers`, `tools`         | `keywords`    | —                  |\n| File generated                        | `SKILL.md`                  | `AGENTS.md` or `<name>.md`  | `plugin.json` | `marketplace.json` |\n| Preview type                          | YAML frontmatter + markdown | YAML frontmatter + markdown | JSON          | JSON               |\n| Dialog opens on submit                | auto mode only              | auto mode only              | no            | yes                |\n\n`create-skill` and `create-subagent` are deeply parallel — they share the description-building\nalgorithm (`buildDesc`: first sentence of the idea + Oxford-joined chips, clipped to 140 chars).\n\n`create-marketplace` is the only flow that touches git: the scaffold makes the new marketplace a\nrepository itself, in a three-state, all-or-nothing sequence — see\n`sub-concepts/marketplace-repository.md`.\n\n## Mode dispatch (skill & subagent)\n\n- **Auto mode**: the payload carries `idea` and the chip arrays. The scaffold writes the frontmatter\n  with the computed description and a placeholder body; the prompt authors the body in place.\n- **Manual mode**: the payload carries `description` verbatim (plus chips). The scaffold writes a\n  minimal skeleton the user will fill in, and nothing is left for a model — hence no dialog.\n\n## Target dispatch (skill & subagent)\n\nThe `target` toggle changes where the file lands:\n\n- `target: \"marketplace\"` — the payload carries `{ marketplacePath, plugin }`; the file goes to\n  `<marketplacePath>/plugins/<plugin>/{skills,agents}/<name>/…`.\n- `target: \"project\"` — the file goes to `<projectRoot>/.claude/skills/<name>/SKILL.md` (skill) or\n  `<projectRoot>/.claude/agents/<name>.md` (subagent — single file, no enclosing directory).\n\nThe toggle survived the container's retirement; only its Docker half did not. Marketplace vs.\nproject is a real choice about where a skill lives. What went is the _path ambiguity_ that existed\nonly because the container could not write outside its mount — there is no longer any target the\napp can see but cannot reach.\n\n## Template seeding (create-subagent, project target only) (`029`)\n\n`create:options` also returns `agentTemplates: DiscoveredDefinition[]` — every discovered agent,\nproject tier included, not filtered to global. `/create-subagent` renders a \"Start from a template\"\npicker only when `target === \"project\"` and that list is non-empty; picking one sets `mode:\n\"manual\"` plus `name`/`description` from the chosen entry. **This is a form seed, not a fork** — a\n`DiscoveredDefinition` carries only `id`/`description`, so the scaffold still writes a fresh\nskeleton via `manualAgentBody()` rather than cloning the source agent's actual body/tools/triggers.\nThe byte-for-byte version lives on `/agents`' card instead (`forkAgent`,\n`src/core/agent-fork.ts`) — see `agents-view`.\n\n## Common edits — where to make them\n\n| Want to…                         | Edit                                                                                                                                                                      |\n| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Add a field to a form            | the route's zod schema **and** `scaffold.ts` **and** the prompt builder in `claude-preview.ts` **and** the matching `SKILL.md` — all four must agree on the payload shape |\n| Change validation rules          | the zod schema at the top of the route                                                                                                                                    |\n| Change the live preview          | the `<name>-preview.tsx` component                                                                                                                                        |\n| Change the description algorithm | `text.ts` in `src/core` — affects skill & subagent, preview and file, at once                                                                                             |\n| Change keyboard shortcuts        | the route's `SHORTCUT_SECTIONS` and `create-shell.tsx`                                                                                                                    |\n| Add a new shared UI primitive    | new file in `packages/ui/src/`, then an export in `packages/ui/package.json`                                                                                              |\n| Add a new create-\\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link on the page that owns the thing (`components/tabs/create-link.tsx`), not into a top-bar menu — and add it to the reachability map in `test/isolation.test.ts`, which pins **which file** holds each entry point. Step-by-step: `apps/maestro/docs/extending-the-app.md`. |\n\n**Where the four entry points live.** `test/isolation.test.ts`'s reachability map is the list of\nrecord, because a Create link nobody can reach is a green suite and a dead feature:\n\n| Flow                 | Entry point                                                  |\n| -------------------- | ------------------------------------------------------------ |\n| `create-skill`       | `src/renderer/src/routes/skills.tsx`                          |\n| `create-subagent`    | `src/renderer/src/components/agents/agent-list.tsx` — the \"+ New agent\" link at the foot of `/agents`' left pane, not the route file |\n| `create-plugin`      | `src/renderer/src/components/tabs/command-center.tsx`         |\n| `create-marketplace` | `src/renderer/src/components/tabs/marketplace.tsx`            |\n\nSkills and Agents moved off `/tools` onto their own pages; only the last two are still `/tools` tabs.\n\n## Things that bite\n\n- **Don't change the payload in just one place.** A field rename must hit the form schema, the\n  scaffold, the prompt builder, _and_ the consuming `SKILL.md` — otherwise data silently drops.\n- **Preview and scaffold must resolve the same path.** Both go through `resolveCreateTarget` in\n  `src/core`, and the confirmation dialog names the file it returns. A second resolution\n  anywhere — a path computed in the renderer, a `path.join` inlined into a prompt builder — makes the\n  modal describe a file other than the one on disk, and the user is consenting to the wrong thing.\n  `test/create-preview.test.ts` and `test/scaffold.test.ts` in that package compare the two.\n- **The renderer's `utils/text.ts` re-exports and must never implement.** `buildDesc` decides the\n  `description:` frontmatter; the form's preview shows it before the file exists and the node-side\n  scaffold writes it after. Two implementations means a preview that silently stops matching the\n  file, and it looks fine right up until someone edits one of them. Import the **subpath**\n  (`src/core/text.ts`) — that module, never the `src/core/index.ts` barrel, which re-exports `fs`. `test/isolation.test.ts` fails on a\n  re-implementation anywhere under `src/renderer`.\n- **The prompt is prose, never `/create-skill`.** A slash command in a headless run would re-enter\n  the skill from the top instead of finishing the scaffold — and historically it fired the plugin's\n  `UserPromptExpansion` hook, which launched the Docker app and blocked forever on a form submission\n  that could never arrive. That hook is gone, but the rule stands: a slash command re-enters the\n  skill's \"gather everything from scratch\" entry rather than the one written for an\n  already-scaffolded artifact. A test asserts no create prompt contains a slash command.\n- **Scaffold can still fail.** A bad path or a refused overwrite yields `scaffolded: false` with a\n  `reason`, and the consuming skill must create the artifact itself. Always branch on the `scaffold`\n  object; never assume the file exists.\n- **Nothing in a create-\\* prompt may run git.** The repository is the scaffold's, and a model that\n  helpfully runs `git init` either nests a second repository or re-commits the scaffold under a\n  different author. The prompt tells the run the repository state instead — `claude-preview.ts`\n  derives that line from `enclosingRepo(target.path)` on disk, so it is true whether or not the\n  scaffold made one.\n- Everything about the token, the dialog, what the session may read and write, and how a run is\n  cancelled: `sub-concepts/confirmed-run.md`. Everything about the new-marketplace repository:\n  `sub-concepts/marketplace-repository.md`.\n",
-    "contentHash": "sha256:cf156530e52ad895e969898bd49f3f7208b5bdaaae8ba27531f2c9ed8f16a797"
+    "body": "---\nname: create-skills-architecture\ndescription: \"Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork.\"\nmetadata:\n  type: concept-skill\n  version: \"1.4\"\n  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9\n---\n\n# Create-Skills Architecture\n\nFour creation flows share one pipeline: `create-skill`, `create-subagent`, `create-plugin`,\n`create-marketplace`. Each is a route in the Maestro desktop app, a scaffold function in\n`src/core`, and a `SKILL.md` prompt the app hands to a Claude run — which since `018` is an **Agent\nSDK session**, not a `claude -p` spawn.\n\n## End-to-end pipeline\n\n```\nUser opens the Maestro desktop app → /tools → Skills tab → Create (link at the bottom)\n        │\n        ▼\nsrc/renderer/src/routes/create-skill.tsx\n  • react-hook-form + zod govern state and validation (schema at the top of the route)\n  • split pane: form left, live FilePreview right — the file that WILL be generated\n  • the preview's description comes from src/core/text.ts's buildDesc, the same\n    implementation the scaffold uses, so preview and file cannot disagree\n        │ submit\n        ▼\nutils/create-flow.tsx  — the submit path all four routes share\n        │\n        ├─1─▶ window.maestro.create.scaffold(request)     IPC `create:scaffold`\n        │       → scaffoldSkill/Subagent/Plugin/Marketplace in src/core\n        │         writes the directory, the frontmatter, the plugin manifest, the\n        │         marketplace registration — everything deterministic\n        │         and, for a new marketplace, `git init` + the first commit\n        │       ← { path, name, needsModel, repo?, ... }\n        │       NO MODEL, and none reachable: the module behind it imports nothing\n        │       that can reach one. `git` arrives as an injected GitPort, not an import.\n        │\n        └─2─▶ only when needsModel: claude:preview → ClaudeRunDialog → claude:run\n              (headless) or session:handoff (Continue in the pane).\n              See `sub-concepts/confirmed-run.md`.\n        │\n        ▼\nThe run — headless or in the pane — calls the Skill tool for\nplugins/maestro/skills/create-<name>/SKILL.md and finishes only what\nthe scaffold left — authoring a body, enriching a README.\n```\n\n**The ordering in 1–2 is the design.** The artifact is on disk before Claude is mentioned, so\ncancelling the confirmation — or having no CLI installed at all — still leaves the user with the\nthing they asked for. `needsModel` decides whether the dialog opens by itself: an auto-mode body or\na brand-new marketplace's docs need one; a manual-mode skeleton and a plugin manifest are complete\nas written. **Finish with Claude** on the result card stays available either way.\n\nThere is no hook in this path, no result file, and no blocking wait. `/create-skill` typed into a\nsession is a different thing entirely: the skill prompt with no payload and nothing pre-scaffolded,\nwhich the SKILL.md handles by gathering the fields conversationally. Each consuming `SKILL.md` opens\nwith a \"Which entry you are on\" table that distinguishes the two, and `026` deleted the second,\ninlined copy of the finishing guidance that the prompt used to carry — the token, the dialog, the\nsession's tools and skills, and every trap in that half of the pipeline are in\n`sub-concepts/confirmed-run.md`.\n\n## File-by-file map\n\nRenderer paths are relative to `apps/maestro/`.\n\n| Concern                                                                              | File                                                                                                             |\n| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |\n| Form (route): schema, fields, preview, shortcut map                                  | `src/renderer/src/routes/create-<name>.tsx`                                                                      |\n| Shared chrome: layout, header, shortcuts, submit row                                 | `src/renderer/src/components/create-shell.tsx`                                                                   |\n| The scaffold → preview → dialog path, shared by all four                             | `src/renderer/src/utils/create-flow.tsx`                                                                         |\n| What landed on disk, plus **Finish with Claude**                                     | `src/renderer/src/components/create-result.tsx`                                                                  |\n| The confirmation: read scope, prompt, equivalent argv, cwd, targets, streamed output | `src/renderer/src/components/claude-run-dialog.tsx`                                                              |\n| **Continue in the pane**: what a handoff says to the session (seed, notice, title)   | `session-handoff.ts` in `apps/maestro/src/core/` (pure), spent by `src/main/claude-session.ts`                   |\n| \"What it can read\" — ONE component, both confirmations                               | `src/renderer/src/components/read-scope.tsx`                                                                     |\n| Live file preview components                                                         | `src/renderer/src/components/{skill,subagent}-template-preview.tsx`, `{plugin,marketplace}-manifest-preview.tsx` |\n| The typed channel contract                                                           | `src/shared/ipc.ts` (`create:options`, `create:scaffold`, `claude:preview\\|run\\|cancel`, `session:handoff`)      |\n| Main-process handlers                                                                | `src/main/ipc.ts`                                                                                                |\n| **Deterministic scaffold** + `resolveCreateTarget`                                   | `scaffold.ts` in `apps/maestro/src/core/`                                                                        |\n| Making a new marketplace a repository, via `execFile`                                | `git.ts` in `apps/maestro/src/core/` (a `GitPort`, injected)                                                     |\n| \"Is this inside a repository?\", answered with `fs`                                   | `repo.ts` in `apps/maestro/src/core/`, with no `child_process`                                                   |\n| Where the `GitPort` is supplied - the composition root                               | `src/main/ipc.ts`, `scaffoldCreate(root, request, { git: nodeGit() })`                                           |\n| Prompt + argv + cwd construction, and the token                                      | `claude-preview.ts`, `claude-tokens.ts` in `apps/maestro/src/core/`                                              |\n| Deriving the read scope from a settings snapshot (pure)                              | `read-scope.ts` in `apps/maestro/src/core/`                                                                      |\n| Deciding each write — `canUseTool`'s answer (pure)                                   | `write-scope.ts` in `apps/maestro/src/core/` (`decideWrite`)                                                     |\n| Resolving the settings cascade — the `SettingsPort`                                  | `agent-sdk.ts` in `apps/maestro/src/core/` (`nodeSettings()`), injected at `src/main/ipc.ts`                     |\n| The session itself, and the ONLY SDK import                                          | `agent-sdk.ts` in `apps/maestro/src/core/` (`startAgentSession`, `SESSION_TOOLS`)                                |\n| Start, stream, cancel, dispose                                                       | `claude-run.ts`, `claude-cli.ts` in `apps/maestro/src/core/`                                                     |\n| Marketplace discovery for the selectors                                              | `marketplaces.ts` in `apps/maestro/src/core/`                                                                    |\n| `buildDesc` and friends — ONE implementation                                         | `text.ts` in `apps/maestro/src/core/`                                                                            |\n| Shared UI primitives                                                                 | `packages/ui/src/`                                                                                               |\n| Consuming prompt                                                                     | `plugins/maestro/skills/create-<name>/SKILL.md`                                                         |\n| Shared prompt contract the four SKILL.md link to                                     | `docs/ai-tools-create-shared.md`                                                                                 |\n\n## The four flows compared\n\n|                                       | create-skill                | create-subagent             | create-plugin | create-marketplace |\n| ------------------------------------- | --------------------------- | --------------------------- | ------------- | ------------------ |\n| Mode toggle (auto / manual)           | yes                         | yes                         | no            | no                 |\n| Target toggle (marketplace / project) | yes                         | yes                         | no            | no                 |\n| Template seed (target=project only)   | no                          | yes                         | no            | no                 |\n| Chip-array fields                     | `useWhen`                   | `triggers`, `tools`         | `keywords`    | —                  |\n| File generated                        | `SKILL.md`                  | `AGENTS.md` or `<name>.md`  | `plugin.json` | `marketplace.json` |\n| Preview type                          | YAML frontmatter + markdown | YAML frontmatter + markdown | JSON          | JSON               |\n| Dialog opens on submit                | auto mode only              | auto mode only              | no            | yes                |\n\n`create-skill` and `create-subagent` are deeply parallel — they share the description-building\nalgorithm (`buildDesc`: first sentence of the idea + Oxford-joined chips, clipped to 140 chars).\n\n`create-marketplace` is the only flow that touches git: the scaffold makes the new marketplace a\nrepository itself, in a three-state, all-or-nothing sequence — see\n`sub-concepts/marketplace-repository.md`.\n\n## Mode dispatch (skill & subagent)\n\n- **Auto mode**: the payload carries `idea` and the chip arrays. The scaffold writes the frontmatter\n  with the computed description and a placeholder body; the prompt authors the body in place.\n- **Manual mode**: the payload carries `description` verbatim (plus chips). The scaffold writes a\n  minimal skeleton the user will fill in, and nothing is left for a model — hence no dialog.\n\n## Target dispatch (skill & subagent)\n\nThe `target` toggle changes where the file lands:\n\n- `target: \"marketplace\"` — the payload carries `{ marketplacePath, plugin }`; the file goes to\n  `<marketplacePath>/plugins/<plugin>/{skills,agents}/<name>/…`.\n- `target: \"project\"` — the file goes to `<projectRoot>/.claude/skills/<name>/SKILL.md` (skill) or\n  `<projectRoot>/.claude/agents/<name>.md` (subagent — single file, no enclosing directory).\n\nThe toggle survived the container's retirement; only its Docker half did not. Marketplace vs.\nproject is a real choice about where a skill lives. What went is the _path ambiguity_ that existed\nonly because the container could not write outside its mount — there is no longer any target the\napp can see but cannot reach.\n\n## Template seeding (create-subagent, project target only) (`029`)\n\n`create:options` also returns `agentTemplates: DiscoveredDefinition[]` — every discovered agent,\nproject tier included, not filtered to global. `/create-subagent` renders a \"Start from a template\"\npicker only when `target === \"project\"` and that list is non-empty; picking one sets `mode:\n\"manual\"` plus `name`/`description` from the chosen entry. **This is a form seed, not a fork** — a\n`DiscoveredDefinition` carries only `id`/`description`, so the scaffold still writes a fresh\nskeleton via `manualAgentBody()` rather than cloning the source agent's actual body/tools/triggers.\nThe byte-for-byte version lives on `/agents`' card instead (`forkAgent`,\n`src/core/agent-fork.ts`) — see `agents-view`.\n\n## Common edits — where to make them\n\n| Want to…                         | Edit                                                                                                                                                                      |\n| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |\n| Add a field to a form            | the route's zod schema **and** `scaffold.ts` **and** the prompt builder in `claude-preview.ts` **and** the matching `SKILL.md` — all four must agree on the payload shape |\n| Change validation rules          | the zod schema at the top of the route                                                                                                                                    |\n| Change the live preview          | the `<name>-preview.tsx` component                                                                                                                                        |\n| Change the description algorithm | `text.ts` in `src/core` — affects skill & subagent, preview and file, at once                                                                                             |\n| Change keyboard shortcuts        | the route's `SHORTCUT_SECTIONS` and `create-shell.tsx`                                                                                                                    |\n| Add a new shared UI primitive    | new file in `packages/ui/src/`, then an export in `packages/ui/package.json`                                                                                              |\n| Add a new create-\\* flow         | new route + a `scaffold*` function + a preview builder + a `SKILL.md`; wire it in as a **Create** link on the page that owns the thing (`components/tabs/create-link.tsx`), not into a top-bar menu — and add it to the reachability map in `test/isolation.test.ts`, which pins **which file** holds each entry point. Step-by-step: `apps/maestro/docs/extending-the-app.md`. |\n\n**Where the four entry points live.** `test/isolation.test.ts`'s reachability map is the list of\nrecord, because a Create link nobody can reach is a green suite and a dead feature:\n\n| Flow                 | Entry point                                                  |\n| -------------------- | ------------------------------------------------------------ |\n| `create-skill`       | `src/renderer/src/routes/skills.tsx`                          |\n| `create-subagent`    | `src/renderer/src/components/agents/agent-list.tsx` — the \"+ New agent\" link at the foot of `/agents`' left pane, not the route file |\n| `create-plugin`      | `src/renderer/src/components/tabs/command-center.tsx`         |\n| `create-marketplace` | `src/renderer/src/components/tabs/marketplace.tsx`            |\n\nSkills and Agents moved off `/tools` onto their own pages; only the last two are still `/tools` tabs.\n\n## Things that bite\n\n- **Don't change the payload in just one place.** A field rename must hit the form schema, the\n  scaffold, the prompt builder, _and_ the consuming `SKILL.md` — otherwise data silently drops.\n- **Preview and scaffold must resolve the same path.** Both go through `resolveCreateTarget` in\n  `src/core`, and the confirmation dialog names the file it returns. A second resolution\n  anywhere — a path computed in the renderer, a `path.join` inlined into a prompt builder — makes the\n  modal describe a file other than the one on disk, and the user is consenting to the wrong thing.\n  `test/create-preview.test.ts` and `test/scaffold.test.ts` in that package compare the two.\n- **The renderer's `utils/text.ts` re-exports and must never implement.** `buildDesc` decides the\n  `description:` frontmatter; the form's preview shows it before the file exists and the node-side\n  scaffold writes it after. Two implementations means a preview that silently stops matching the\n  file, and it looks fine right up until someone edits one of them. Import the **subpath**\n  (`src/core/text.ts`) — that module, never the `src/core/index.ts` barrel, which re-exports `fs`. `test/isolation.test.ts` fails on a\n  re-implementation anywhere under `src/renderer`.\n- **The prompt is prose, never `/create-skill`.** A slash command in a headless run would re-enter\n  the skill from the top instead of finishing the scaffold — and historically it fired the plugin's\n  `UserPromptExpansion` hook, which launched the Docker app and blocked forever on a form submission\n  that could never arrive. That hook is gone, but the rule stands: a slash command re-enters the\n  skill's \"gather everything from scratch\" entry rather than the one written for an\n  already-scaffolded artifact. A test asserts no create prompt contains a slash command.\n- **Scaffold can still fail.** A bad path or a refused overwrite yields `scaffolded: false` with a\n  `reason`, and the consuming skill must create the artifact itself. Always branch on the `scaffold`\n  object; never assume the file exists.\n- **Nothing in a create-\\* prompt may run git.** The repository is the scaffold's, and a model that\n  helpfully runs `git init` either nests a second repository or re-commits the scaffold under a\n  different author. The prompt tells the run the repository state instead — `claude-preview.ts`\n  derives that line from `enclosingRepo(target.path)` on disk, so it is true whether or not the\n  scaffold made one.\n- Everything about the token, the dialog, what the session may read and write, and how a run is\n  cancelled: `sub-concepts/confirmed-run.md`. Everything about the new-marketplace repository:\n  `sub-concepts/marketplace-repository.md`.\n",
+    "contentHash": "sha256:ab7156edfe27b2d1f7f8c2f705266c64bd90220f7fefb8d07b79d51c41544cae"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.11",
-    "extracted_at": "2026-10-17T13:02:19.678Z"
+    "extractor_version": "code-graph@0.3.20",
+    "extracted_at": "2026-10-21T16:22:40.782Z",
+    "files": {
+      "apps/maestro/src/core/claude-preview.ts": "sha256:5c37f03feb249b32959cf11f496767769b59f48bd80cdc334b38e5047054bee1",
+      "apps/maestro/src/core/scaffold.ts": "sha256:ddf76a1c01daa063f5a61afd6dd15828e3174b3aabf0d658d4461401abdb40ee",
+      "apps/maestro/src/renderer/src/components/create-result.tsx": "sha256:00e94ddad7f87c6ba0eacb925084a1052c4bd335eb2c703499d128295e95fd3a",
+      "apps/maestro/src/renderer/src/components/create-shell.tsx": "sha256:af789b474726e8903aa4c4eb3d9741ba58c984234b0f8b309884e1a17effcbbd",
+      "apps/maestro/src/renderer/src/components/marketplace-manifest-preview.tsx": "sha256:de594322e0131f49adbde1f55a5eed6961bbaad543bf81b1b3015544416ef6b4",
+      "apps/maestro/src/renderer/src/components/plugin-manifest-preview.tsx": "sha256:7a10ecc92d7366949cfeda2caa4f3750eac035f582d02b18d22fb44ccf197cd1",
+      "apps/maestro/src/renderer/src/components/skill-template-preview.tsx": "sha256:5e3bd262b9f01d3b8f6b607be53a0ac4e9b54fecdad0121bf4cbfb532d6a037f",
+      "apps/maestro/src/renderer/src/components/subagent-template-preview.tsx": "sha256:cde48b2c4661a4787cb5af78d206495390282bb527436559fcd276d5e58b5ebe",
+      "apps/maestro/src/renderer/src/routes/create-marketplace.tsx": "sha256:a118a927941d05d0436cce55d2a6ef9e1027cb96aa70c55ad446f7367807af00",
+      "apps/maestro/src/renderer/src/routes/create-plugin.tsx": "sha256:b6757b85caecf402ae63ab6d1532ac851c618283b1a86547f0feacba48ac61e8",
+      "apps/maestro/src/renderer/src/routes/create-skill.tsx": "sha256:b845f3e0d240ec56548e26c2a3be493bd0fc7ee800c50d5d3b1253693eb482bd",
+      "apps/maestro/src/renderer/src/routes/create-subagent.tsx": "sha256:d105f0f18e165c322509b6a789a54e2a6e4b486f926d26b9021b4c68046e711d",
+      "apps/maestro/src/renderer/src/utils/create-flow.tsx": "sha256:79566583ab10d5a349de9fc0d0bd836fed9ec872b710f96331f102cdcaa4030b",
+      "packages/claude-fs/src/config/directories.ts": "sha256:53675cedc89de7d8c1da68018c01ce1a438dca5612506af4bd3400ab144ebf1f",
+      "packages/claude-fs/src/definitions.ts": "sha256:95f8d07577de1265a822a001fdd9cfef86217162c812f59bf3235b35a0da8f4c",
+      "packages/claude-fs/src/index.ts": "sha256:5cbd7fe8c238656032883c54e2486cd5e824fce76228c1a9cec50557f047f998",
+      "packages/claude-fs/src/marketplace.ts": "sha256:eaeb388b0c42e1230489e41d4e53d4e9ed44669c41b8b1b3546e0246a1c66825",
+      "packages/claude-fs/src/plugin.ts": "sha256:921a0787821918b82358574f12336b7b8c20dae94854ca07257b78b492d85499",
+      "packages/claude-fs/src/utils/frontmatter.ts": "sha256:96da20028edf0c5c50ecb3167ec586d5c805fa0a2d32413615fba3e5c605ba03",
+      "packages/claude-fs/src/utils/parser.ts": "sha256:fc39b11c6d4df4cee02be6f1b1bf8fc9a1de750c0581e48452fbc7b82f852809"
+    }
   }
 }

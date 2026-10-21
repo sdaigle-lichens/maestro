@@ -1,0 +1,21 @@
+{
+  "concept": "updating-maestro",
+  "vertices": [
+    {
+      "_key": "78ee71e315944a08ab4c40bc00d076fb",
+      "purpose": "Names the eight Claude Code hook events the install can register.",
+      "inputs": [],
+      "outputs": [
+        "string union of hook event names"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-manifest"
+      ],
+      "sig_seen": "export type HookEvent =",
+      "hash_seen": "d037650b3849fef9d11999293a520735913d0d5c18e7a080845da8b9be7c6589"
+    }
+  ],
+  "edges": []
+}

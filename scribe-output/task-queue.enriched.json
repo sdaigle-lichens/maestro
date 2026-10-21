@@ -332,6 +332,23 @@
       "hash_seen": "dd3275a700e9b4674bef5071d1f98fc819b3361d0533c9c93ff37b77f7840cd7"
     },
     {
+      "_key": "97140114560ee2592d50b7a13c777f53",
+      "purpose": "Builds the /maestro prompt text a user copies for a task; it must match the prompt the main process runs.",
+      "inputs": [
+        "task: the MaestroTask whose relativePath is named"
+      ],
+      "outputs": [
+        "the prompt string"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "prompt"
+      ],
+      "sig_seen": "function promptFor(task: MaestroTask): string",
+      "hash_seen": "e5317e15824322ff719f5ca8ba39f11a588d42fd4e8c90346c107721bfcabdad"
+    },
+    {
       "_key": "980dcb86fef33c2d55e4c66b334e6b77",
       "purpose": "Returns the task queue directory under the main checkout root, so a call made from inside a git worktree still resolves to the main checkout's queue.",
       "inputs": [

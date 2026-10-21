@@ -2291,6 +2291,22 @@
   },
   "meta": {
     "extractor_version": "code-graph@0.3.11",
-    "extracted_at": "2026-10-17T12:25:05.753Z"
+    "extracted_at": "2026-10-17T12:25:05.753Z",
+    "files": {
+      "apps/maestro/src/core/agent-descriptions.ts": "sha256:02f886605d001f2fde218bdbdb040a8b189701592e8ec337778e808d80ec4985",
+      "apps/maestro/src/core/avatar-store.ts": "sha256:8d037cfc7aab0e180f6fcea32b652525f41597edfff181a55451e1d17468b58f",
+      "apps/maestro/src/renderer/src/components/agents/agent-avatar-block.tsx": "sha256:53bafe0bbf8feb43e7ac6d1b6497cf6eef7b2f1da65af7aa0fd86fafd8ab7fba",
+      "apps/maestro/src/renderer/src/components/agents/agent-card.tsx": "sha256:638038d318889587bbc4e7252c273e34df0e43abb495dd37e7d67726f5588dc9",
+      "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx": "sha256:a7078870e61a9d1a662291cfbef7e3f4a27066c2d234e30b01ac44051451a506",
+      "apps/maestro/src/renderer/src/components/agents/agent-list.tsx": "sha256:c26c283656e31ff90430e9f627d656aff627ed0ffd9ff8948e7ddbc442195003",
+      "apps/maestro/src/renderer/src/components/agents/agent-shared.ts": "sha256:7bc071101d9d98db610738371b4591aa5a3b9bb1f420d77c164f682878550479",
+      "apps/maestro/src/renderer/src/components/agents/interactions-pane.tsx": "sha256:35b8c5fae181019d69088866f69a95f7eda70e9eccafef403d7bbbb47c5d069f",
+      "apps/maestro/src/renderer/src/components/avatar/avatar-canvas.tsx": "sha256:d9ba08860c63e4f0643510467e20fbcca0c93c22c069378359f4a46c2528bff9",
+      "apps/maestro/src/renderer/src/components/avatar/avatar-picker.tsx": "sha256:36426c21caf9f0a1afcdda7335f7bfb61d4c6ea83816a86e8d35b95dce56b77f",
+      "apps/maestro/src/renderer/src/components/chip-multi-select.tsx": "sha256:0bf25c9b7df926cedc6606aac18dba9a0c4a730ed27f05d6029bef863f175d63",
+      "apps/maestro/src/renderer/src/routes/agents.tsx": "sha256:415164fe03bf1d54828ad587d181bb627be60d8940da2c06772d72d1d4be77b7",
+      "apps/maestro/src/renderer/src/utils/avatar.ts": "sha256:b5227415c5ac4ba967d568d7248e86cbc750de51fd7de11f3334540a87978fab",
+      "apps/maestro/src/renderer/src/utils/handoff-picker.ts": "sha256:76a13316adf48f6e36ea29da2cfeaf83eb92f760dade3f7a10e10a47b51fa209"
+    }
   }
 }

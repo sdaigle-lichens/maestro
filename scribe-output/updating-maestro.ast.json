@@ -8,8 +8,8 @@
       "type": "function",
       "name": "refreshStaleRuntime",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 911,
-      "end_line": 935,
+      "start_line": 933,
+      "end_line": 957,
       "signature": "function refreshStaleRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport | null>",
       "contentHash": "e5f2ab7d78e5b00e7275a17e542b59256914d1b3442a9a1faa6c182f9132e30a",
       "status": "live",
@@ -44,8 +44,8 @@
       "type": "function",
       "name": "installRuntime",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 683,
-      "end_line": 873,
+      "start_line": 705,
+      "end_line": 895,
       "signature": "function installRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport>",
       "contentHash": "7bfc2189b15df3cb4cf49bb3f64011031abafc0a8617c8d4647fb575f0c0a645",
       "status": "live",
@@ -116,8 +116,8 @@
       "type": "type-def",
       "name": "HookRegistration",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 277,
-      "end_line": 287,
+      "start_line": 288,
+      "end_line": 298,
       "signature": "export interface HookRegistration {",
       "contentHash": "3dfebcbfb1b42e5c92d165b4653543c24186b8e72246629747fef5244b531f94",
       "status": "live",
@@ -134,8 +134,8 @@
       "type": "function",
       "name": "installOrchestratorSkill",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 471,
-      "end_line": 495,
+      "start_line": 493,
+      "end_line": 517,
       "signature": "function installOrchestratorSkill(templatePath: string, destPath: string): { action: OrchestratorSkillAction; regions: string[]; backup: string | null; }",
       "contentHash": "e2a8e0fa827e39fdea52b058994fb1251ba3815d8e975ef6ad521788a262939c",
       "status": "live",
@@ -152,8 +152,8 @@
       "type": "function",
       "name": "sha256",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 461,
-      "end_line": 463,
+      "start_line": 483,
+      "end_line": 485,
       "signature": "function sha256(data: string | Buffer): string",
       "contentHash": "f32047b6f384056b8279f02cfdb4d7b1b71d5bdd3132d1cdb7964f64cc619dcf",
       "status": "live",
@@ -224,8 +224,8 @@
       "type": "function",
       "name": "ensureRepoRootGitignore",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 558,
-      "end_line": 561,
+      "start_line": 580,
+      "end_line": 583,
       "signature": "function ensureRepoRootGitignore(repoRoot: string | null): boolean",
       "contentHash": "bf308681f2dfedfe22ce2125edeabe44c97ac0fbb75a61c5ec982a47455406d4",
       "status": "live",
@@ -242,8 +242,8 @@
       "type": "function",
       "name": "findRepoRoot",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 540,
-      "end_line": 550,
+      "start_line": 562,
+      "end_line": 572,
       "signature": "function findRepoRoot(startDir: string): string | null",
       "contentHash": "1feae0dc5add9560d26af2324d1cfc3b59bb180e28ad67af3063fac8f2101c7b",
       "status": "live",
@@ -260,8 +260,8 @@
       "type": "function",
       "name": "settingsPathFor",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 417,
-      "end_line": 419,
+      "start_line": 439,
+      "end_line": 441,
       "signature": "function settingsPathFor(projectRoot: string): string",
       "contentHash": "60bc3c6c47e24001b267c6e7e6368e0a81c5633228e491d7051395dce1622b28",
       "status": "live",
@@ -314,8 +314,8 @@
       "type": "function",
       "name": "hasHook",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 353,
-      "end_line": 355,
+      "start_line": 375,
+      "end_line": 377,
       "signature": "function hasHook(settings: Settings, reg: HookRegistration): boolean",
       "contentHash": "758d8a52b7402ba6262db6f9aad6626551819d7bfa551d53c16cda10c1a759d0",
       "status": "live",
@@ -332,8 +332,8 @@
       "type": "function",
       "name": "installStatus",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 587,
-      "end_line": 664,
+      "start_line": 609,
+      "end_line": 686,
       "signature": "function installStatus(projectRoot: string, pluginRoot?: string): Promise<InstallStatus>",
       "contentHash": "d631e5db7d08e5c1e2f2674c616bd3baddac8594048edd34087f678347d7a1e9",
       "status": "live",
@@ -386,8 +386,8 @@
       "type": "function",
       "name": "appendGitignoreEntries",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 525,
-      "end_line": 537,
+      "start_line": 547,
+      "end_line": 559,
       "signature": "function appendGitignoreEntries(gitignorePath: string, entries: string[]): boolean",
       "contentHash": "55890e1aaab66925416cc10654bfea891333f686a910d4aedb96ff59980d9d04",
       "status": "live",
@@ -422,8 +422,8 @@
       "type": "function",
       "name": "writeJsonAtomic",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 444,
-      "end_line": 449,
+      "start_line": 466,
+      "end_line": 471,
       "signature": "function writeJsonAtomic(target: string, value: unknown): void",
       "contentHash": "683eaeeecb36e2df1d3315ea988825fbc43b93b0281fd9b3e8b6a2fd54379cf4",
       "status": "live",
@@ -458,10 +458,10 @@
       "type": "type-def",
       "name": "HookEvent",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 274,
-      "end_line": 275,
+      "start_line": 278,
+      "end_line": 286,
       "signature": "export type HookEvent =",
-      "contentHash": "ee3827451d784c3bfbca838dc3149d0e67235a2a126c359b18aae112e4816b48",
+      "contentHash": "d037650b3849fef9d11999293a520735913d0d5c18e7a080845da8b9be7c6589",
       "status": "live",
       "ast": {},
       "agent": {
@@ -476,8 +476,8 @@
       "type": "function",
       "name": "refusedReport",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 876,
-      "end_line": 897,
+      "start_line": 898,
+      "end_line": 919,
       "signature": "function refusedReport(projectRoot: string, root: string, refusal: ConfigRefusal): Promise<InstallReport>",
       "contentHash": "63d06e15e27efbd62a1a532ebdf907ed95aa01ba95502bb57c0dc27d9cf9410f",
       "status": "live",
@@ -494,8 +494,8 @@
       "type": "function",
       "name": "readSettings",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 428,
-      "end_line": 441,
+      "start_line": 450,
+      "end_line": 463,
       "signature": "function readSettings(settingsPath: string): Settings",
       "contentHash": "a0bab745829004c8ade1593c8c510be7ac9a503a38ad9677c658a182c6dfa0ed",
       "status": "live",
@@ -548,8 +548,8 @@
       "type": "function",
       "name": "removeRetiredHooks",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 383,
-      "end_line": 415,
+      "start_line": 405,
+      "end_line": 437,
       "signature": "function removeRetiredHooks(settings: Settings): string[]",
       "contentHash": "ed18000cfc23f119ddb15832b2454dbb3289d3365c05e56950cb1b7b71a18c8c",
       "status": "live",
@@ -584,8 +584,8 @@
       "type": "function",
       "name": "addMissingHooks",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 358,
-      "end_line": 375,
+      "start_line": 380,
+      "end_line": 397,
       "signature": "function addMissingHooks(settings: Settings, regs: HookRegistration[] = HOOK_REGISTRATIONS): string[]",
       "contentHash": "deb0f2289c1adff65d4bbd94681e794d6f1e3dd8741449911eab4c43acd8fa47",
       "status": "live",
@@ -602,8 +602,8 @@
       "type": "function",
       "name": "ensureDir",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 453,
-      "end_line": 455,
+      "start_line": 475,
+      "end_line": 477,
       "signature": "function ensureDir(dir: string): void",
       "contentHash": "db31de156a427534ccb60f7844c92568425e7c791268a14087f800f9cf64f042",
       "status": "live",
@@ -620,8 +620,8 @@
       "type": "function",
       "name": "nodeHook",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 301,
-      "end_line": 303,
+      "start_line": 315,
+      "end_line": 317,
       "signature": "function nodeHook(event: HookEvent, matcher: string, script: string): HookRegistration",
       "contentHash": "e0938ac8b659e25f6e3e19f1643a1c8f33ee6cd487dd4b7617245e69d6665e72",
       "status": "live",
@@ -674,8 +674,8 @@
       "type": "function",
       "name": "projectPath",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 457,
-      "end_line": 459,
+      "start_line": 479,
+      "end_line": 481,
       "signature": "function projectPath(projectRoot: string, dest: string): string",
       "contentHash": "8b30392325aee3a0382ec8bf4a5e088cb1c1e3015630650a7dcc4a1898e1f5f8",
       "status": "live",
@@ -728,8 +728,8 @@
       "type": "function",
       "name": "runtimeAssets",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 268,
-      "end_line": 270,
+      "start_line": 272,
+      "end_line": 274,
       "signature": "function runtimeAssets(_pluginRoot?: string): RuntimeAsset[]",
       "contentHash": "a332e955fe5e42583641df1290f88dccc49eb773c98b495374d5e0d39855d588",
       "status": "live",
@@ -746,8 +746,8 @@
       "type": "function",
       "name": "runtimeDigest",
       "filepath": "apps/maestro/src/core/install.ts",
-      "start_line": 572,
-      "end_line": 585,
+      "start_line": 594,
+      "end_line": 607,
       "signature": "function runtimeDigest(assets: RuntimeAsset[], read: (a: RuntimeAsset) => Buffer | null): string",
       "contentHash": "0fbc32722e5797d5bbc60b2aef1ebb08eb32b903b283d43e6839a83350ca2b0f",
       "status": "live",
@@ -876,6 +876,58 @@
       }
     },
     {
+      "_key": "07418a74d27839a7320949164cc46d91",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/56c3fc30c2e5697a66e4c4c9157438e5",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 717,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "07d4285ae3b6988f75610e8ffb5ec847",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 616,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "08f5b79e88d97c89c3eba5a7d693c508",
+      "_from": "vertices/6fc62900d928c3864d666d7b33d0ca13",
+      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 556,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0942a0c1ae9d056ddac345929e615d7c",
+      "_from": "vertices/df3bd742b233d8802249d8473023c506",
+      "_to": "vertices/ff242970c4755e9be638ddf6101c63ad",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 272,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "0b1d90f712eaf826df5651d5ae66fb1f",
       "_from": "vertices/6e453334fd4063b327f150e71b2b12b4",
       "_to": "vertices/5e81ed592e7d7ae8e9c7206326ea588a",
@@ -889,26 +941,52 @@
       }
     },
     {
-      "_key": "121a28c39ab366c8fc646fc070ce86b5",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
+      "_key": "0e90be13255d3ea0cbfbadd7aa29d8d7",
+      "_from": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
+      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 722,
+      "line": 907,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "1858dbb3ff44450d94e3142819498faa",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
+      "_key": "0f6bd23d0e340291cca605182e7f99ca",
+      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
+      "_to": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 728,
+      "line": 956,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1046a56709c80c929a1250cc72551040",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/b69160d43445f6b4c17a9812b1429749",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 626,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e21b26285384707b539fa909e015c38",
+      "_from": "vertices/9b109fc9476ed533484e56ad22efda4a",
+      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 380,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -928,65 +1006,26 @@
       }
     },
     {
-      "_key": "208763284dfb57fa70771f91ea2dde0b",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/b69160d43445f6b4c17a9812b1429749",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 711,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "224ebddf5bf42ef15e19d8fc3c56a4dd",
-      "_from": "vertices/df3bd742b233d8802249d8473023c506",
-      "_to": "vertices/ff242970c4755e9be638ddf6101c63ad",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 268,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "231c03027eefcc4567f75cd5fb576db5",
-      "_from": "vertices/9b109fc9476ed533484e56ad22efda4a",
-      "_to": "vertices/14551c7f62e0cd440844854905cebef5",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 358,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "24f7613052886660d30e88c13c056491",
+      "_key": "2070d07d030c0dbfc2b7cf0c21fd2629",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
+      "_to": "vertices/7f1499a60a91cdee078c68390f4443d5",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 594,
+      "line": 641,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "251543aebcb3495e5c983e061d253818",
-      "_from": "vertices/9b109fc9476ed533484e56ad22efda4a",
-      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
-      "type": "has-type",
+      "_key": "2121c9ae0e95fbe793216d9f7b934e81",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/df3bd742b233d8802249d8473023c506",
+      "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 358,
+      "line": 729,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1006,6 +1045,32 @@
       }
     },
     {
+      "_key": "26a99669060fda10908934ef0e7688fc",
+      "_from": "vertices/538b5d9677807bd974ea38b531e8fd6c",
+      "_to": "vertices/6fc62900d928c3864d666d7b33d0ca13",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 582,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "285c01c67e76fea69d57d5edcb42b69c",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/7f1499a60a91cdee078c68390f4443d5",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 718,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "29dcbb28fbd9f3f75121fbb91a0e7286",
       "_from": "vertices/6e453334fd4063b327f150e71b2b12b4",
       "_to": "vertices/5e81ed592e7d7ae8e9c7206326ea588a",
@@ -1019,13 +1084,26 @@
       }
     },
     {
-      "_key": "2ba64272dd449865dcfcab79c9c57be0",
+      "_key": "2cc451d8e085dedd1bd562048ea18256",
       "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
-      "_to": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 934,
+      "line": 949,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3262364bb1077d63ed010b582e8efdd6",
+      "_from": "vertices/7f1499a60a91cdee078c68390f4443d5",
+      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 450,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1045,45 +1123,6 @@
       }
     },
     {
-      "_key": "355e75c50cb7f1e9eadc82c000c394b8",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/df3bd742b233d8802249d8473023c506",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 589,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "368e928cd7a29784bf836798f1e0d024",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 616,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "3750bf98da0cd1a5588f0487795dad88",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 719,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "38a8efa05813d659e95f0152d8cd3438",
       "_from": "vertices/e70a5c80079b260b34dcc42760bc13f5",
       "_to": "vertices/5d57ef47cb1b148f203af5d037f00cee",
@@ -1097,13 +1136,13 @@
       }
     },
     {
-      "_key": "3a8ef34ccdb0efe1f7ae0644ba392b57",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
+      "_key": "3a188135b1ab643e570eacb5c911608e",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/e3dfab303b52913d57783eaedc6e1561",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 808,
+      "line": 677,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1123,13 +1162,13 @@
       }
     },
     {
-      "_key": "40bd7a666d3795934a616a0785e684f6",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/3ba712bb1a0769553f65332ffcb882d2",
+      "_key": "41a296474826955642f5915113df104a",
+      "_from": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
+      "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 588,
+      "line": 913,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1149,6 +1188,19 @@
       }
     },
     {
+      "_key": "43f196e4f202f70a505c2fe006343902",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 638,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "441c013c93ef4fbe8d4c33590ec6e0e4",
       "_from": "vertices/5d57ef47cb1b148f203af5d037f00cee",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1156,84 +1208,6 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 58,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "4451b2697c8e4d6b6811322d94b94b65",
-      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
-      "_to": "vertices/2c77fafeedaaabb7ea40c9acb7ed3356",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 931,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "45acdeb09ede8e16efcfac4f76deddce",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/5f4269aa6e5bd842cf62d738c5245451",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 626,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "4615d9c289e285dec224c0da2c2b9306",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/7f1499a60a91cdee078c68390f4443d5",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 619,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "492f3840a85970c6c8571a1e47ed2379",
-      "_from": "vertices/9b109fc9476ed533484e56ad22efda4a",
-      "_to": "vertices/5f4269aa6e5bd842cf62d738c5245451",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 361,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "4eecd6a7a69447c225b078abfaf6a37f",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 634,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "516de653fd051b137ebc10ce8b7a6dfb",
-      "_from": "vertices/b2b345f329d7b08b866bc5a63942fe60",
-      "_to": "vertices/78ee71e315944a08ab4c40bc00d076fb",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 301,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1253,39 +1227,13 @@
       }
     },
     {
-      "_key": "54be478fd5d7c3ab4719a1eb8cd865b0",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/55df5c4558a23113515b5a5177a87693",
+      "_key": "54ff88c33e11878ee4fa2302c9f87779",
+      "_from": "vertices/9b109fc9476ed533484e56ad22efda4a",
+      "_to": "vertices/5f4269aa6e5bd842cf62d738c5245451",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 744,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "54c7d39a42657db713674e802715fe4c",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/e3dfab303b52913d57783eaedc6e1561",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 656,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "565c383c366520c5175362dac789e528",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/df3bd742b233d8802249d8473023c506",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 707,
+      "line": 383,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1305,130 +1253,208 @@
       }
     },
     {
-      "_key": "668f99313256eaa53730768143c25fa8",
-      "_from": "vertices/b2b345f329d7b08b866bc5a63942fe60",
-      "_to": "vertices/14551c7f62e0cd440844854905cebef5",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 301,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "682089f58e5c0244d6c9e403b0125f0e",
-      "_from": "vertices/5f4269aa6e5bd842cf62d738c5245451",
-      "_to": "vertices/14551c7f62e0cd440844854905cebef5",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 353,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "694c71114cfa477c0fd535ad59104030",
-      "_from": "vertices/e3dfab303b52913d57783eaedc6e1561",
-      "_to": "vertices/ff242970c4755e9be638ddf6101c63ad",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 572,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "6c7e7a6c3a6b45074e666bf5e04ae378",
-      "_from": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
-      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 885,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "718f9037a5773528557a6593f59afe71",
+      "_key": "5afa1d53af0d0a53a1d0f5c011c7d961",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 738,
+      "line": 760,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "76ebb9bbaae778bbd854ee0783e8ee93",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/56c3fc30c2e5697a66e4c4c9157438e5",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 615,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7f26207a368064385bcb3ec2585159cb",
-      "_from": "vertices/73325cf578a286ba2bf0e02894e9d253",
-      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 445,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7fb519f038e7e8d74940d624c95ffa79",
+      "_key": "5ca4751a98717c1345352219e9152203",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/56c3fc30c2e5697a66e4c4c9157438e5",
+      "_to": "vertices/55df5c4558a23113515b5a5177a87693",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 695,
+      "line": 766,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "9647dde0da8c489e38518a42617b047f",
-      "_from": "vertices/538b5d9677807bd974ea38b531e8fd6c",
-      "_to": "vertices/6fc62900d928c3864d666d7b33d0ca13",
+      "_key": "656f546deead16446243033270995aee",
+      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
+      "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 560,
+      "line": 954,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "965e9c7317712fdc3c57d22accf6a340",
+      "_key": "7363826cbd75eb1c477160ee5e063e89",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/9b109fc9476ed533484e56ad22efda4a",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 753,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "75cfebb3472abc888f083766803bba5c",
+      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
+      "_to": "vertices/2c77fafeedaaabb7ea40c9acb7ed3356",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 953,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "77dc08b0c2d99556b6d0e20e5d51df9c",
+      "_from": "vertices/e3dfab303b52913d57783eaedc6e1561",
+      "_to": "vertices/2265c53e78ff698fc668a519c51eb4a4",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 600,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7876037197cfbd33e52bc5fdfd83c2ee",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 848,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7a3d41fd0a8f5f1f3b13a2f399816e7c",
+      "_from": "vertices/5f4269aa6e5bd842cf62d738c5245451",
+      "_to": "vertices/5d57ef47cb1b148f203af5d037f00cee",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 376,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7c10cf04c887e70828cc15394dd5214e",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/3ba712bb1a0769553f65332ffcb882d2",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 610,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "85bf43cd2378fc0548b9295ebaed46e5",
       "_from": "vertices/5f4269aa6e5bd842cf62d738c5245451",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
       "type": "has-type",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 353,
+      "line": 375,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89494ee095a48243e5210499afab6e8b",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/5f4269aa6e5bd842cf62d738c5245451",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 648,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89a151b2242f373908028d2f1e95316a",
+      "_from": "vertices/b2b345f329d7b08b866bc5a63942fe60",
+      "_to": "vertices/14551c7f62e0cd440844854905cebef5",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 315,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89b9b7db2a2692da60912f39ec3ba439",
+      "_from": "vertices/5f4269aa6e5bd842cf62d738c5245451",
+      "_to": "vertices/14551c7f62e0cd440844854905cebef5",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 375,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8a0e2091f870fba9b75376e5e7abf985",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 744,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8afad5dadcda07f08ab6413dc46f1757",
+      "_from": "vertices/73325cf578a286ba2bf0e02894e9d253",
+      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 467,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9181c4d7b9892edcf5664ba8587ea0f2",
+      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
+      "_to": "vertices/3ba712bb1a0769553f65332ffcb882d2",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 940,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1448,6 +1474,19 @@
       }
     },
     {
+      "_key": "998c2bade78071b5ee2153d1797ecc04",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/56c3fc30c2e5697a66e4c4c9157438e5",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 637,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "9c1c38c5a8089c47b38f8079f4aef823",
       "_from": "vertices/e70a5c80079b260b34dcc42760bc13f5",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1455,6 +1494,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 134,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9fc2deb48f36a38aecae83822c552ef1",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/538b5d9677807bd974ea38b531e8fd6c",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 766,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1474,182 +1526,156 @@
       }
     },
     {
-      "_key": "a2c621e5b69aecc270d5b136d98e576f",
+      "_key": "ae49be5800e8fe0de524111d24a82efe",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "_to": "vertices/2265c53e78ff698fc668a519c51eb4a4",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 599,
+      "line": 621,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "a2ee411379d3a4a121b7314cdab70a2b",
-      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
-      "_to": "vertices/3ba712bb1a0769553f65332ffcb882d2",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 918,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "a7ff9fc83cf30762685f35310c809a6c",
-      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
-      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 927,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "a8589a3ddd285ac41f624bf0bf615d5f",
-      "_from": "vertices/5f4269aa6e5bd842cf62d738c5245451",
-      "_to": "vertices/5d57ef47cb1b148f203af5d037f00cee",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 354,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "aa73ace53874d4ee39b88da2c4123722",
-      "_from": "vertices/1c2acf2fcbb88fe426f1cd7d6ec729e1",
-      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 476,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b85332826adb69a4015c40c248a84865",
+      "_key": "ae84f4f337864149b5b978a0391368ef",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/b69160d43445f6b4c17a9812b1429749",
+      "_to": "vertices/6e453334fd4063b327f150e71b2b12b4",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 604,
+      "line": 658,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "ba67bfe08230b8b0ce6d69bd960f1601",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/73325cf578a286ba2bf0e02894e9d253",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 732,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c0266a52cc6ba4b0d11112f0a90bf060",
-      "_from": "vertices/e3dfab303b52913d57783eaedc6e1561",
-      "_to": "vertices/2265c53e78ff698fc668a519c51eb4a4",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 578,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c0a2be72be04659dd4fe905c357ceeb8",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/538b5d9677807bd974ea38b531e8fd6c",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 744,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c41b6a599289893c81d23f08b91c973f",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 704,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c61eb2d57ad8ff739700c3e0875986a9",
+      "_key": "b3fac5950b1f4524a25bb87e69f9af7f",
       "_from": "vertices/7f1499a60a91cdee078c68390f4443d5",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
       "type": "has-type",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 434,
+      "line": 456,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "c77055192ecbcb4d623284fac0787a63",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/e3dfab303b52913d57783eaedc6e1561",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 655,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c819ac94e7857b4aa4b742de21937853",
+      "_key": "b44d0ccfad8256d3ac15d4c82855c4d5",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/3ba712bb1a0769553f65332ffcb882d2",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 692,
+      "line": 714,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "cbf9bbbd4df4bead3720a15226fa2160",
+      "_key": "b69f1fab4cd6cf08f05ab585c701bb31",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/b69160d43445f6b4c17a9812b1429749",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 733,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c339472bda36467089f8403a85be2461",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/8e6a660fd4e9e1d5846b408f402e58fd",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 730,
+      "line": 752,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c966d5953e884077c08072b484c40273",
+      "_from": "vertices/1c2acf2fcbb88fe426f1cd7d6ec729e1",
+      "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 498,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cba453fb15ad3bf5ec0ef0936ee16cb9",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 830,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cccc39b93b2476af710e576793d31446",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/2265c53e78ff698fc668a519c51eb4a4",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 743,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cff0af1787f7feb3cd5871d773819fb0",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/df3bd742b233d8802249d8473023c506",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 611,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d18784139d9eb6b953355b48f0c82b34",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/73325cf578a286ba2bf0e02894e9d253",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 754,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d18f1e35df936f317764df36dde42d47",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 741,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1669,91 +1695,52 @@
       }
     },
     {
-      "_key": "d69862e24626fcf46ea6f51508918fbb",
+      "_key": "da88492df823f9ab6d9be8a8d1c3a337",
+      "_from": "vertices/b2b345f329d7b08b866bc5a63942fe60",
+      "_to": "vertices/78ee71e315944a08ab4c40bc00d076fb",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 315,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dddb418f1bffb7c910ada1ae7379e13e",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/e3dfab303b52913d57783eaedc6e1561",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 678,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e65754bae7ee952dc1b843d87d9fa59e",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/2265c53e78ff698fc668a519c51eb4a4",
+      "_to": "vertices/1c2acf2fcbb88fe426f1cd7d6ec729e1",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 721,
+      "line": 731,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "da3d4a76dc987c8f8a3d219b05b628f3",
-      "_from": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
-      "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 891,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e065e51dce40a752898dfdb381af0a32",
-      "_from": "vertices/6fc62900d928c3864d666d7b33d0ca13",
+      "_key": "e6c10574b13a3689be78c38707c4cad0",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 534,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e183c1372fe3d9a038a866656cf327b4",
-      "_from": "vertices/7f1499a60a91cdee078c68390f4443d5",
-      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
-      "type": "has-type",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 428,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e40c01c1fe705e1c937f53163a15e261",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 657,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e5ab84225f2ea222edc4a1c961ad4cc1",
-      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "_to": "vertices/6e453334fd4063b327f150e71b2b12b4",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 636,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e8541114720057f61112300559b128d4",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 826,
+      "line": 750,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1773,19 +1760,6 @@
       }
     },
     {
-      "_key": "e9418b9ad5c0929ffb6879499d24cb8f",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/1c2acf2fcbb88fe426f1cd7d6ec729e1",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 709,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "ee17b2c50400b292f8c80b1ff6af9f65",
       "_from": "vertices/e70a5c80079b260b34dcc42760bc13f5",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1799,39 +1773,26 @@
       }
     },
     {
-      "_key": "efa0da248a84451768b855b890997882",
-      "_from": "vertices/8e6a660fd4e9e1d5846b408f402e58fd",
-      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
+      "_key": "f12ca8f10f7cf58e7a884645d653b997",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 726,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f37b1c73e58e41dfbac95844df4ed5e0",
+      "_from": "vertices/e3dfab303b52913d57783eaedc6e1561",
+      "_to": "vertices/ff242970c4755e9be638ddf6101c63ad",
       "type": "has-type",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 383,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "efbeb7999a83a1411d6c3c71a249b014",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/7f1499a60a91cdee078c68390f4443d5",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 696,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "f0f92dde113b0a976f13e8c95974bcdd",
-      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
-      "_to": "vertices/9b109fc9476ed533484e56ad22efda4a",
-      "type": "calls",
-      "concept": "updating-maestro",
-      "crosses_concept": false,
-      "line": 731,
+      "line": 594,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1851,13 +1812,52 @@
       }
     },
     {
-      "_key": "f70dc7b6f5aa346750013f83ee3b5141",
-      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
-      "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_key": "f3dafc26311874d83b4a36ec847ace40",
+      "_from": "vertices/8e6a660fd4e9e1d5846b408f402e58fd",
+      "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 405,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f4a1f685f367b80d1b6e4fbf3c6105cd",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/bc01c999064b014cf8581fac17ad95ae",
       "type": "calls",
       "concept": "updating-maestro",
       "crosses_concept": false,
-      "line": 932,
+      "line": 679,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f524a5a2a178e058edb2defb43e9e007",
+      "_from": "vertices/9b109fc9476ed533484e56ad22efda4a",
+      "_to": "vertices/14551c7f62e0cd440844854905cebef5",
+      "type": "has-type",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 380,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fe50913b306825c405fd649d5a7b6742",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": false,
+      "line": 656,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1866,11 +1866,18 @@
   ],
   "skill": {
     "path": ".claude/skills/updating-maestro/SKILL.md",
-    "body": "---\nname: updating-maestro\ndescription: \"How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall.\"\nmetadata:\n  type: concept-skill\n  version: \"1.12\"\n  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464\n---\n\n# Getting a Maestro runtime change to actually land\n\nThere are **two** ways a project ends up with Maestro's hooks, they have different staleness\nrules, and the first thing to establish is which one you are looking at.\n\n```\nproject-local (wins per hook)                 plugin-global (fallback / no-install)\n  <project>/.claude/settings.json                ~/.claude/plugins/cache/maestro/\n    hooks → $CLAUDE_PROJECT_DIR/                    maestro/<version>/hooks/hooks.json\n            .claude/scripts/*.cjs                 scripts run from that cache dir\n  written by: the desktop app's /install,        written by: installing the plugin\n              or /maestro-install\n  refreshed by: re-running either                refreshed by: a plugin.json VERSION bump\n```\n\n**Both being live is no longer a bug — it is a precedence rule.** The plugin's copy of a hook\nstands down when the project registers that same hook itself, arbitrated at runtime by\n`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the five\nplugin hook scripts. So the left column wins per hook, the right column covers any hook the project\ndid not register, and neither the app nor this repo touches the user's global configuration to make\nthat happen. `InstallStatus.pluginHooksActive` and its warnings are gone.\n\n**The guard reaches a machine only through path 2's version bump**, because it lives in the plugin's\ncopy of the scripts. It shipped in `plugin.json` `0.3.3`; a project still on an older cached version\nkeeps double-firing until it re-pulls. The fix for the version trap is itself subject to the version\ntrap.\n\n## Path 1 — project-local copies\n\n`installRuntime()` (desktop app) and `maestro-install.js` (terminal) both **copy** scripts into\n`<project>/.claude/scripts/` and register them in the project's own `settings.json`. That is why\nthis path exists at all: `${CLAUDE_PLUGIN_ROOT}` resolves into the version-keyed cache below, so\nruntime fixes shipped without a version bump never reached an installed project.\n\nThe trade is that a copy is a snapshot. A project picks up a newer runtime only when someone\nre-runs the install:\n\n- desktop app → `/maestro` route → **Update** (the badge is driven by\n  `installedRuntimeId` vs `shippedRuntimeId`, both sha-256 over the runtime manifest — **content,\n  never mtime**, because a `git clone` rewrites every mtime and an mtime comparison would report a\n  fresh checkout as stale),\n- terminal → `/maestro-update`, which re-copies the scripts and then re-renders the orchestrator.\n\n**Neither path refreshes a project down (`087`).** A project stamped newer than the plugin or the\napp is reported as the *plugin/app* being behind (`pluginBehind` notice at Step 0, `appBehind` in\nthe app), and `maestro-install.js` refuses with `refused:\"downgrade\"` unless re-run with\n`--allow-downgrade` on the user's explicit request. In this repo the project is often ahead of the\ninstalled plugin cache, so \"update the plugin\" is the usual fix. See `installing-maestro`'s\nstaleness sub-concept.\n\n**Copied scripts are `.cjs`, never `.js`.** The plugin can run them as `.js` because its directory\nhas no `package.json` declaring a module type; a project's does, and `\"type\": \"module\"` makes node\nparse their `require()` as ESM — the hook then fails on _every tool call_ with \"require is not\ndefined in ES module scope\".\n\nWhich files ride this path, and what the recent changes did to that set (including the ~23 handoff\ntemplates `033` removed, the two mirrored manifests, and how Step 0 now reaches a project):\n[what recent changes did to the copied set](sub-concepts/copied-asset-manifest.md).\n\n## Path 2 — the plugin's own hooks, and the version trap\n\nThe `maestro` marketplace installs the plugin into a **per-version cache** at\n`~/.claude/plugins/cache/maestro/maestro/<version>/`. `autoUpdate` compares the cached\nversion against `plugin.json` `version` — **if the version string is unchanged, nothing is\nre-pulled, even for a `directory`-source marketplace pointed straight at this repo.**\n\nSo every edit to `hooks/`, `scripts/`, `agents/`, `skills/` or `templates/` that ships **without a\nversion bump is invisible to every project running the plugin's hooks.**\n\n### Why it's easy to miss\n\nSkills and commands are copied into the same cache, so a stale cache **still resolves skills\nnormally** — `/maestro-install`, `/create-skill` all work. But a snapshot taken before `hooks/` and\n`scripts/` existed has no `hooks/hooks.json` and no hook scripts at all, so `SubagentStart` (skill\ninjection + handoff routing), `PreToolUse`/`SubagentStop` logging, the `TaskCreate` validator, and\n(since `0.4.0`) the `maestro-step0` readiness check **silently never fire** — no error, the files\njust aren't there. **Step 0 is the worst of these**, because `0.4.0` deleted its prose from\n`templates/maestro/SKILL.md` outright: there is no fallback left in the orchestrator, so a stale\nproject gets no readiness check, no fork check, and nothing telling it either was skipped.\n\nThis exact gap froze `lichens-ordonnancement-ui` at a May-2026 snapshot — the plugin had been edited\ndozens of times, but `version` stayed `0.1.0`, so autoUpdate never re-pulled.\n\n### The rule\n\n**Any change under `plugins/<plugin>/` must bump that plugin's `plugin.json` `version`.** That is\nthe only signal autoUpdate watches.\n\n1. Bump `plugins/<plugin>/.claude-plugin/plugin.json` `version`. The repo `marketplace.json` reads\n   each plugin's version from its own `plugin.json` — nothing to update there.\n2. Commit **and push** — the gate only helps teammates once the new version is in the repo they pull.\n3. Refresh locally: `/plugin` → update, or clear the stale cache dir and restart Claude Code:\n   ```bash\n   rm -rf ~/.claude/plugins/cache/maestro/<plugin>/<old-version>\n   ```\n\nVerify the refresh landed:\n\n```bash\nP=~/.claude/plugins/cache/maestro/maestro/<new-version>\nls \"$P/hooks/hooks.json\"                          # exists\nls \"$P/scripts/maestro-inject-agent-context.js\"   # exists\n```\n\nThen `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.\n\n### Which component to bump\n\n**Nothing reads the magnitude.** autoUpdate compares the cached version string against\n`plugin.json`'s for *inequality* only, so `0.3.2 → 0.3.3` re-pulls exactly as `0.3.2 → 0.4.0` does.\nThere is never a delivery reason to inflate a bump. The component is free to be honest, and the\nthing it should be honest about is **the plugin's published surface** — what a consumer of the\nplugin can name and call:\n\n| Bump | When | Because |\n| --- | --- | --- |\n| **major** | The published surface **breaks**: a skill, agent or command removed or renamed; a hook event dropped; a config file's shape changed incompatibly. | Someone's `/command` or `@agent` stops resolving, or their config stops loading. Not used yet — the plugin is still `0.x`. |\n| **minor** | The published surface **grows**: a new skill, agent, command, or a hook registered on a new event. | There is something new to invoke that was not there before. |\n| **patch** | Everything else: the behaviour of existing scripts, bug fixes, prose edits inside a skill, and bumps that exist only to force a re-pull. | The same surface, doing what it already claimed to do — only correctly, or better. |\n\nA new file under `scripts/` is **not** a published surface; a new directory under `skills/` or\n`agents/` is. A `feat:` commit is **not** automatically a minor.\n\nEvery bump this repo has argued about, with the reasoning that settled it —\n`0.3.3`, `0.3.5`, `0.4.0` (the first legitimate minor), `0.4.1`, `0.4.2`, `0.4.3`, `0.4.4`, `0.5.0`\n(the textbook minor), `0.5.2`, `0.5.3`, `0.5.4` — is in\n[version bump precedent](sub-concepts/version-bump-examples.md). Read it when a change feels like it\nmight be a minor.\n\n### The frontmatter trap\n\n**`/maestro-update` re-syncs the orchestrator's managed regions. It never rewrites its\nfrontmatter** — so a template change *outside* a `Maestro:*` region reaches new installs and nothing\nelse, and since `032` the thing outside the region is an `allowed-tools` grant whose absence makes\n`/maestro` abort rather than degrade. The two fixes and the general rule:\n[the frontmatter trap](sub-concepts/frontmatter-trap.md).\n\n## Generated files that need a build, not just an edit\n\n`scripts/lib/maestro-session.cjs`, `scripts/lib/maestro-skill-regions.cjs`,\n`scripts/lib/maestro-seed.cjs` and `scripts/lib/maestro-agent-sync.cjs` are **generated** from\n`apps/maestro/src/core/plugin-entries/` by `pnpm --filter maestro build:plugin-libs`. Editing the\n`.cjs` directly is overwritten on the next build; edit the TypeScript source and rebuild. They are\ncommitted because a project installs them by file copy, so they must exist in the repo.\n\n**`032` is the worked example of forgetting.** It changed `seed.ts` to emit a `gates` block, but\n`seed.ts` is a `plugin-entries` source, so until `build:plugin-libs` was re-run the terminal\ninstaller went on seeding a config with **no `gates` field** from the stale\n`lib/maestro-seed.cjs` — which resolves to \"both gates off\" and therefore looked correct. No test\ncaught it; installing into a real fixture project did. Anything under `src/core/plugin-entries`'\nimport graph needs the rebuild **and** a `git diff plugins/maestro/scripts/lib/` afterwards.\n\n## Diagnosing \"my hook/script change isn't taking effect\"\n\n| Check                                     | Command                                                                                               |\n| ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |\n| Which path is this project on?            | `cat <project>/.claude/settings.json` — Maestro hooks present ⇒ project-local; absent ⇒ plugin-global |\n| Project-local and stale?                  | the `/maestro` route's badge, or just re-run `/maestro-update`                                        |\n| What plugin version is installed?         | `cat ~/.claude/plugins/installed_plugins.json` (`installPath` + `version` + `installedAt`)            |\n| Does the cached copy even have the files? | `ls ~/.claude/plugins/cache/maestro/<plugin>/<version>/{hooks,scripts}`                  |\n| Is the cache older than the change?       | compare `installedAt` / dir mtime against the commit that added the file                              |\n| Everything logged twice?                  | the cached plugin version predates `0.3.3` — it has no arbitration guard. Bump/re-pull (above)        |\n| Hook fires from **neither** copy?         | a runtime older than `0.4.0` on a project reached through a **symlinked** ancestor. `projectOwnsHook` compared `path.resolve`d paths, so the project's own copy failed to recognise itself (`/tmp/p` vs `/private/tmp/p`), stood down, and the plugin's copy stood down too — no error, no output, nothing in the log. Fixed by `samePath` (realpath both sides). Subject to the same double version trap as `0.3.3`'s guard: re-install (path 1) **and** re-pull (path 2). |\n| An agent gets **no** output format, or the shipped handoff protocol instead of the customized one | the project is on a runtime older than `0.4.4`, so its `.claude/scripts/lib/` has no `maestro-report-defaults.cjs` / `maestro-handoff-defaults.cjs` and the global sqlite tier silently does not exist for its copy of the hook. Confirm with `ls <project>/.claude/scripts/lib/`; fix by re-installing (path 1). Note this only shows up where the project's copy **wins** the arbitration — the plugin's copy resolves the tier fine |\n| `/maestro` aborts instead of running, right after an update | the orchestrator's frontmatter is missing the `allowed-tools` grant Step 1's injected command needs — an update never rewrites frontmatter. Delete `.claude/skills/maestro/SKILL.md` and re-install, or purge and reinstall (see [the frontmatter trap](sub-concepts/frontmatter-trap.md)) |\n\nIf skills work but `hooks/`/`scripts/` are absent from the cache → **stale cache, version was never\nbumped.**\n\n## Sub-concepts\n\n- [Version bump precedent](sub-concepts/version-bump-examples.md) — every bump this repo has\n  argued about and the reasoning that settled it, for when a change feels like a minor.\n- [What recent changes did to the copied set](sub-concepts/copied-asset-manifest.md) — the path-1\n  asset manifest: what each new copied file is for, the ~23 `033` removed, the two mirrored\n  manifests and the tests that pin them.\n- [The frontmatter trap](sub-concepts/frontmatter-trap.md) — why a template change outside a\n  managed region is not deliverable by an update, and the two ways to force it through.\n\n## Related\n\n- `[[agent-fork-sync]]` (in `apps/maestro/.claude/skills`) — the other consumer of the\n  version-string rule: a forked agent's staleness is a plugin `version` inequality, so a plugin\n  edit shipped without a bump correctly reports *no update available*.\n- `[[installing-maestro]]` — what an install actually writes into a project, and why the\n  project-local copies exist at all. Its **hook arbitration** sub-concept is the full rule for which\n  copy of a hook runs, and the three decisions behind it.\n- `[[maestro-architecture]]` — what those hooks and scripts do at runtime once they are present.\n- `/maestro-update` refreshes the project copies from the **currently installed plugin** — so if the\n  plugin cache itself is stale, it faithfully propagates the stale copy. Fix the cache first.\n- Config repair rides along with a re-install (`092`): a missing `start_skills`/`end_skills` is\n  seeded once and `gates` removed. The stale-refs report suggests `/maestro-install` when authored\n  config lacks `start_skills`; `/maestro-update` relays that suggestion and tells the user to adjust\n  the seeded lists on the app's `/maestro` page.\n",
-    "contentHash": "sha256:93fe80c129668b6b1e49b2bdc519d2d729d50c671ab88f24e1611aa75ea54b4e"
+    "body": "---\nname: updating-maestro\ndescription: \"How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall.\"\nmetadata:\n  type: concept-skill\n  version: \"1.13\"\n  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9\n---\n\n# Getting a Maestro runtime change to actually land\n\nThere are **two** ways a project ends up with Maestro's hooks, they have different staleness\nrules, and the first thing to establish is which one you are looking at.\n\n```\nproject-local (wins per hook)                 plugin-global (fallback / no-install)\n  <project>/.claude/settings.json                ~/.claude/plugins/cache/maestro/\n    hooks → $CLAUDE_PROJECT_DIR/                    maestro/<version>/hooks/hooks.json\n            .claude/scripts/*.cjs                 scripts run from that cache dir\n  written by: the desktop app's /install,        written by: installing the plugin\n              or /maestro-install\n  refreshed by: re-running either                refreshed by: a plugin.json VERSION bump\n```\n\n**Both being live is no longer a bug — it is a precedence rule.** The plugin's copy of a hook\nstands down when the project registers that same hook itself, arbitrated at runtime by\n`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the five\nplugin hook scripts. So the left column wins per hook, the right column covers any hook the project\ndid not register, and neither the app nor this repo touches the user's global configuration to make\nthat happen. `InstallStatus.pluginHooksActive` and its warnings are gone.\n\n**The guard reaches a machine only through path 2's version bump**, because it lives in the plugin's\ncopy of the scripts. It shipped in `plugin.json` `0.3.3`; a project still on an older cached version\nkeeps double-firing until it re-pulls. The fix for the version trap is itself subject to the version\ntrap.\n\n## Path 1 — project-local copies\n\n`installRuntime()` (desktop app) and `maestro-install.js` (terminal) both **copy** scripts into\n`<project>/.claude/scripts/` and register them in the project's own `settings.json`. That is why\nthis path exists at all: `${CLAUDE_PLUGIN_ROOT}` resolves into the version-keyed cache below, so\nruntime fixes shipped without a version bump never reached an installed project.\n\nThe trade is that a copy is a snapshot. A project picks up a newer runtime only when someone\nre-runs the install:\n\n- desktop app → `/maestro` route → **Update** (the badge is driven by\n  `installedRuntimeId` vs `shippedRuntimeId`, both sha-256 over the runtime manifest — **content,\n  never mtime**, because a `git clone` rewrites every mtime and an mtime comparison would report a\n  fresh checkout as stale),\n- terminal → `/maestro-update`, which re-copies the scripts and then re-renders the orchestrator.\n\n**Neither path refreshes a project down (`087`).** A project stamped newer than the plugin or the\napp is reported as the *plugin/app* being behind (`pluginBehind` notice at Step 0, `appBehind` in\nthe app), and `maestro-install.js` refuses with `refused:\"downgrade\"` unless re-run with\n`--allow-downgrade` on the user's explicit request. In this repo the project is often ahead of the\ninstalled plugin cache, so \"update the plugin\" is the usual fix. See `installing-maestro`'s\nstaleness sub-concept.\n\n**Copied scripts are `.cjs`, never `.js`.** The plugin can run them as `.js` because its directory\nhas no `package.json` declaring a module type; a project's does, and `\"type\": \"module\"` makes node\nparse their `require()` as ESM — the hook then fails on _every tool call_ with \"require is not\ndefined in ES module scope\".\n\nWhich files ride this path, and what the recent changes did to that set (including the ~23 handoff\ntemplates `033` removed, the two mirrored manifests, and how Step 0 now reaches a project):\n[what recent changes did to the copied set](sub-concepts/copied-asset-manifest.md).\n\n## Path 2 — the plugin's own hooks, and the version trap\n\nThe `maestro` marketplace installs the plugin into a **per-version cache** at\n`~/.claude/plugins/cache/maestro/maestro/<version>/`. `autoUpdate` compares the cached\nversion against `plugin.json` `version` — **if the version string is unchanged, nothing is\nre-pulled, even for a `directory`-source marketplace pointed straight at this repo.**\n\nSo every edit to `hooks/`, `scripts/`, `agents/`, `skills/` or `templates/` that ships **without a\nversion bump is invisible to every project running the plugin's hooks.**\n\n### Why it's easy to miss\n\nSkills and commands are copied into the same cache, so a stale cache **still resolves skills\nnormally** — `/maestro-install`, `/create-skill` all work. But a snapshot taken before `hooks/` and\n`scripts/` existed has no `hooks/hooks.json` and no hook scripts at all, so `SubagentStart` (skill\ninjection + handoff routing), `PreToolUse`/`SubagentStop` logging, the `TaskCreate` validator, and\n(since `0.4.0`) the `maestro-step0` readiness check **silently never fire** — no error, the files\njust aren't there. **Step 0 is the worst of these**, because `0.4.0` deleted its prose from\n`templates/maestro/SKILL.md` outright: there is no fallback left in the orchestrator, so a stale\nproject gets no readiness check, no fork check, and nothing telling it either was skipped.\n\nThis exact gap froze `lichens-ordonnancement-ui` at a May-2026 snapshot — the plugin had been edited\ndozens of times, but `version` stayed `0.1.0`, so autoUpdate never re-pulled.\n\n### The rule\n\n**Any change under `plugins/<plugin>/` must bump that plugin's `plugin.json` `version`.** That is\nthe only signal autoUpdate watches.\n\n1. Bump `plugins/<plugin>/.claude-plugin/plugin.json` `version`. The repo `marketplace.json` reads\n   each plugin's version from its own `plugin.json` — nothing to update there.\n2. Commit **and push** — the gate only helps teammates once the new version is in the repo they pull.\n3. Refresh locally: `/plugin` → update, or clear the stale cache dir and restart Claude Code:\n   ```bash\n   rm -rf ~/.claude/plugins/cache/maestro/<plugin>/<old-version>\n   ```\n\nVerify the refresh landed:\n\n```bash\nP=~/.claude/plugins/cache/maestro/maestro/<new-version>\nls \"$P/hooks/hooks.json\"                          # exists\nls \"$P/scripts/maestro-inject-agent-context.js\"   # exists\n```\n\nThen `/hooks` should list **SubagentStart → maestro-inject-agent-context.js**.\n\n### Which component to bump\n\n**Nothing reads the magnitude.** autoUpdate compares the cached version string against\n`plugin.json`'s for *inequality* only, so `0.3.2 → 0.3.3` re-pulls exactly as `0.3.2 → 0.4.0` does.\nThere is never a delivery reason to inflate a bump. The component is free to be honest, and the\nthing it should be honest about is **the plugin's published surface** — what a consumer of the\nplugin can name and call:\n\n| Bump | When | Because |\n| --- | --- | --- |\n| **major** | The published surface **breaks**: a skill, agent or command removed or renamed; a hook event dropped; a config file's shape changed incompatibly. | Someone's `/command` or `@agent` stops resolving, or their config stops loading. Not used yet — the plugin is still `0.x`. |\n| **minor** | The published surface **grows**: a new skill, agent, command, or a hook registered on a new event. | There is something new to invoke that was not there before. |\n| **patch** | Everything else: the behaviour of existing scripts, bug fixes, prose edits inside a skill, and bumps that exist only to force a re-pull. | The same surface, doing what it already claimed to do — only correctly, or better. |\n\nA new file under `scripts/` is **not** a published surface; a new directory under `skills/` or\n`agents/` is. A `feat:` commit is **not** automatically a minor.\n\nEvery bump this repo has argued about, with the reasoning that settled it —\n`0.3.3`, `0.3.5`, `0.4.0` (the first legitimate minor), `0.4.1`, `0.4.2`, `0.4.3`, `0.4.4`, `0.5.0`\n(the textbook minor), `0.5.2`, `0.5.3`, `0.5.4` — is in\n[version bump precedent](sub-concepts/version-bump-examples.md). Read it when a change feels like it\nmight be a minor.\n\n### The frontmatter trap\n\n**`/maestro-update` re-syncs the orchestrator's managed regions. It never rewrites its\nfrontmatter** — so a template change *outside* a `Maestro:*` region reaches new installs and nothing\nelse, and since `032` the thing outside the region is an `allowed-tools` grant whose absence makes\n`/maestro` abort rather than degrade. The two fixes and the general rule:\n[the frontmatter trap](sub-concepts/frontmatter-trap.md).\n\n## Generated files that need a build, not just an edit\n\n`scripts/lib/maestro-session.cjs`, `scripts/lib/maestro-skill-regions.cjs`,\n`scripts/lib/maestro-seed.cjs` and `scripts/lib/maestro-agent-sync.cjs` are **generated** from\n`apps/maestro/src/core/plugin-entries/` by `pnpm --filter maestro build:plugin-libs`. Editing the\n`.cjs` directly is overwritten on the next build; edit the TypeScript source and rebuild. They are\ncommitted because a project installs them by file copy, so they must exist in the repo.\n\n**`032` is the worked example of forgetting.** It changed `seed.ts` to emit a `gates` block, but\n`seed.ts` is a `plugin-entries` source, so until `build:plugin-libs` was re-run the terminal\ninstaller went on seeding a config with **no `gates` field** from the stale\n`lib/maestro-seed.cjs` — which resolves to \"both gates off\" and therefore looked correct. No test\ncaught it; installing into a real fixture project did. Anything under `src/core/plugin-entries`'\nimport graph needs the rebuild **and** a `git diff plugins/maestro/scripts/lib/` afterwards.\n\n## Diagnosing \"my hook/script change isn't taking effect\"\n\n| Check                                     | Command                                                                                               |\n| ----------------------------------------- | ----------------------------------------------------------------------------------------------------- |\n| Which path is this project on?            | `cat <project>/.claude/settings.json` — Maestro hooks present ⇒ project-local; absent ⇒ plugin-global |\n| Project-local and stale?                  | the `/maestro` route's badge, or just re-run `/maestro-update`                                        |\n| What plugin version is installed?         | `cat ~/.claude/plugins/installed_plugins.json` (`installPath` + `version` + `installedAt`)            |\n| Does the cached copy even have the files? | `ls ~/.claude/plugins/cache/maestro/<plugin>/<version>/{hooks,scripts}`                  |\n| Is the cache older than the change?       | compare `installedAt` / dir mtime against the commit that added the file                              |\n| Everything logged twice?                  | the cached plugin version predates `0.3.3` — it has no arbitration guard. Bump/re-pull (above)        |\n| Hook fires from **neither** copy?         | a runtime older than `0.4.0` on a project reached through a **symlinked** ancestor. `projectOwnsHook` compared `path.resolve`d paths, so the project's own copy failed to recognise itself (`/tmp/p` vs `/private/tmp/p`), stood down, and the plugin's copy stood down too — no error, no output, nothing in the log. Fixed by `samePath` (realpath both sides). Subject to the same double version trap as `0.3.3`'s guard: re-install (path 1) **and** re-pull (path 2). |\n| An agent gets **no** output format, or the shipped handoff protocol instead of the customized one | the project is on a runtime older than `0.4.4`, so its `.claude/scripts/lib/` has no `maestro-report-defaults.cjs` / `maestro-handoff-defaults.cjs` and the global sqlite tier silently does not exist for its copy of the hook. Confirm with `ls <project>/.claude/scripts/lib/`; fix by re-installing (path 1). Note this only shows up where the project's copy **wins** the arbitration — the plugin's copy resolves the tier fine |\n| `/maestro` aborts instead of running, right after an update | the orchestrator's frontmatter is missing the `allowed-tools` grant Step 1's injected command needs — an update never rewrites frontmatter. Delete `.claude/skills/maestro/SKILL.md` and re-install, or purge and reinstall (see [the frontmatter trap](sub-concepts/frontmatter-trap.md)) |\n\nIf skills work but `hooks/`/`scripts/` are absent from the cache → **stale cache, version was never\nbumped.**\n\n## Sub-concepts\n\n- [Version bump precedent](sub-concepts/version-bump-examples.md) — every bump this repo has\n  argued about and the reasoning that settled it, for when a change feels like a minor.\n- [What recent changes did to the copied set](sub-concepts/copied-asset-manifest.md) — the path-1\n  asset manifest: what each new copied file is for, the ~23 `033` removed, the two mirrored\n  manifests and the tests that pin them.\n- [The frontmatter trap](sub-concepts/frontmatter-trap.md) — why a template change outside a\n  managed region is not deliverable by an update, and the two ways to force it through.\n\n## Related\n\n- `[[agent-fork-sync]]` (in `apps/maestro/.claude/skills`) — the other consumer of the\n  version-string rule: a forked agent's staleness is a plugin `version` inequality, so a plugin\n  edit shipped without a bump correctly reports *no update available*.\n- `[[installing-maestro]]` — what an install actually writes into a project, and why the\n  project-local copies exist at all. Its **hook arbitration** sub-concept is the full rule for which\n  copy of a hook runs, and the three decisions behind it.\n- `[[maestro-architecture]]` — what those hooks and scripts do at runtime once they are present.\n- `/maestro-update` refreshes the project copies from the **currently installed plugin** — so if the\n  plugin cache itself is stale, it faithfully propagates the stale copy. Fix the cache first.\n- Config repair rides along with a re-install (`092`): a missing `start_skills`/`end_skills` is\n  seeded once and `gates` removed. The stale-refs report suggests `/maestro-install` when authored\n  config lacks `start_skills`; `/maestro-update` relays that suggestion and tells the user to adjust\n  the seeded lists on the app's `/maestro` page.\n",
+    "contentHash": "sha256:6dd5aa69cfff4f22c3dd724e08c2f324b3afbcb1834a2f872aeec95a343d0a73"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.11",
-    "extracted_at": "2026-10-17T13:01:32.000Z"
+    "extractor_version": "code-graph@0.3.20",
+    "extracted_at": "2026-10-21T16:26:08.462Z",
+    "files": {
+      "apps/maestro/src/core/hook-arbitration.ts": "sha256:66a35f2cfe8286a1f7b0b348d2acd5a1bb3305b8bd3a6448d22039f250321dad",
+      "apps/maestro/src/core/install.ts": "sha256:d55f6e283c9c5348871b6e9e24e8e73ad5a786b802b728cb0f3693ccfddfa5b4",
+      "apps/maestro/src/core/plugins.ts": "sha256:d93df306a9ce5006a70e3331118fd93b0c05f4ffed3b0c16bbe9cc891b52edc9",
+      "apps/maestro/src/core/render.ts": "sha256:09a1812fa96193e19b2d13624bce4f2ce2a8bf6ca3680d7e60db3bc93d58ee59",
+      "apps/maestro/src/core/runtime-version.ts": "sha256:0a3795f6d0642f0657bde9a14d69a984a1bb3c9c70337c802770261d7a007a6c"
+    }
   }
 }

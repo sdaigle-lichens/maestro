@@ -3,8 +3,8 @@ name: create-skills-architecture
 description: "Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
+  version: "1.4"
+  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
 ---
 
 # Create-Skills Architecture

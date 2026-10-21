@@ -80,8 +80,8 @@
       "type": "function",
       "name": "epicOfTask",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 278,
-      "end_line": 280,
+      "start_line": 287,
+      "end_line": 289,
       "signature": "function epicOfTask(projectRoot: string, filename: string): string | null",
       "contentHash": "98eddd1fc5a4577a31de358652cbcca42c49679e50621cf58a400473ceb2a84c",
       "status": "live",
@@ -188,8 +188,8 @@
       "type": "function",
       "name": "nextInboxId",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 285,
-      "end_line": 288,
+      "start_line": 294,
+      "end_line": 297,
       "signature": "function nextInboxId(state: EpicState, kind: EpicInboxEntry[\"kind\"]): string",
       "contentHash": "cf23725c49d9515da74c853a9cdd0d72d3b5792049dd938602e32496f46252cd",
       "status": "live",
@@ -242,8 +242,8 @@
       "type": "function",
       "name": "acknowledgeReport",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 408,
-      "end_line": 421,
+      "start_line": 417,
+      "end_line": 430,
       "signature": "function acknowledgeReport(projectRoot: string, slug: string, id: string, by?: string): \"acknowledged\" | \"already\"",
       "contentHash": "fc294c2e8b8761a2f3bc0214042ba6757f821b78aae70d79c628a55c26ab8d7b",
       "status": "live",
@@ -260,8 +260,8 @@
       "type": "type-def",
       "name": "EpicTaskView",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 429,
-      "end_line": 434,
+      "start_line": 438,
+      "end_line": 443,
       "signature": "export interface EpicTaskView {",
       "contentHash": "e8b52179938d5df85f422dc25a777f994ff59b2ebe09849cba482788af6c02c5",
       "status": "live",
@@ -332,8 +332,8 @@
       "type": "type-def",
       "name": "EpicView",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 449,
-      "end_line": 458,
+      "start_line": 458,
+      "end_line": 467,
       "signature": "export interface EpicView {",
       "contentHash": "e238a220414e6e6994f691b6dc13fecab1df9e27b3b897c8ed6130d913bcf6dd",
       "status": "live",
@@ -404,8 +404,8 @@
       "type": "type-def",
       "name": "CrossEpicEdge",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 442,
-      "end_line": 447,
+      "start_line": 451,
+      "end_line": 456,
       "signature": "export interface CrossEpicEdge {",
       "contentHash": "d1563819fd3aaeb512b0707a0ff936b580ab67ed9c322edc1b4d00f9825ed1da",
       "status": "live",
@@ -422,8 +422,8 @@
       "type": "type-def",
       "name": "NoteOptions",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 346,
-      "end_line": 352,
+      "start_line": 355,
+      "end_line": 361,
       "signature": "export interface NoteOptions {",
       "contentHash": "59489e53533420da2347dc036330cf2d0acec98934cba978da6bea576fba3dfb",
       "status": "live",
@@ -638,8 +638,8 @@
       "type": "function",
       "name": "unacknowledgedReports",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 424,
-      "end_line": 427,
+      "start_line": 433,
+      "end_line": 436,
       "signature": "function unacknowledgedReports(state: EpicState): EpicInboxEntry[]",
       "contentHash": "64b676a8945608048d6266ced6ebe224f6db8391f590a0a8a31eec01d2bd1770",
       "status": "live",
@@ -764,8 +764,8 @@
       "type": "type-def",
       "name": "WrittenNote",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 355,
-      "end_line": 355,
+      "start_line": 364,
+      "end_line": 364,
       "signature": "export type WrittenNote = WrittenReport;",
       "contentHash": "2bb0056e3ac5963cbe330f17d1de39bf2e4decba30b7fcae60ce073876950bf5",
       "status": "live",
@@ -854,8 +854,8 @@
       "type": "function",
       "name": "checkNoteRoute",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 368,
-      "end_line": 372,
+      "start_line": 377,
+      "end_line": 381,
       "signature": "function checkNoteRoute(projectRoot: string, toSlug: string, fromEpic: string): void",
       "contentHash": "e38c33c78379697b874693a2ea25ed1f1f042328a3e22c3058e1d509d5bfd16a",
       "status": "live",
@@ -1088,8 +1088,8 @@
       "type": "function",
       "name": "reportCommandFor",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 333,
-      "end_line": 344,
+      "start_line": 342,
+      "end_line": 353,
       "signature": "function reportCommandFor(projectRoot: string, task: string, sessionName?: string | null): string | null",
       "contentHash": "1c12b30b69af1846a9671e19b73ea3acc6aea7faf7356fd5812687d4a010d549",
       "status": "live",
@@ -1106,8 +1106,8 @@
       "type": "type-def",
       "name": "WrittenReport",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 290,
-      "end_line": 297,
+      "start_line": 299,
+      "end_line": 306,
       "signature": "export interface WrittenReport {",
       "contentHash": "2f4397101105aa1406d8b392d21e37a1d36a6a76155feff13ad9156ff85fd735",
       "status": "live",
@@ -1160,8 +1160,8 @@
       "type": "function",
       "name": "formatInboxEntry",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 516,
-      "end_line": 520,
+      "start_line": 525,
+      "end_line": 529,
       "signature": "function formatInboxEntry(entry: EpicInboxEntry & { path: string }): string",
       "contentHash": "3bcb0a13bb0423caf887d560553bc0a937f8ddccf49e71262d3f4206e1c782e7",
       "status": "live",
@@ -1181,7 +1181,7 @@
       "start_line": 44,
       "end_line": 46,
       "signature": "function promptFor(task: MaestroTask): string",
-      "contentHash": "a70bd6cf323327fdeb7a6557b55262a5a0e372c9f9eac414acdeb3afb7267023",
+      "contentHash": "e5317e15824322ff719f5ca8ba39f11a588d42fd4e8c90346c107721bfcabdad",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1250,8 +1250,8 @@
       "type": "function",
       "name": "formatCrossEpicEdge",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 522,
-      "end_line": 527,
+      "start_line": 531,
+      "end_line": 536,
       "signature": "function formatCrossEpicEdge(edge: CrossEpicEdge): string",
       "contentHash": "06b376ce4882a8cc2aa27486cbf8d5d00f8eb66e400c312caab8408ebcdbeb01",
       "status": "live",
@@ -1280,14 +1280,32 @@
       }
     },
     {
+      "_key": "9d95a562e24915129d62cbbb06be306a",
+      "displayKey": "task-queue::function::taskClaimName",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "taskClaimName",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 282,
+      "end_line": 284,
+      "signature": "function taskClaimName(projectRoot: string, task: string): string | null",
+      "contentHash": "9a229d2b2c0a782da6e1b11af2155d21df6b3ffe19be46be0e16648877a00bb1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "9f227024aefada6a231df819fb087b92",
       "displayKey": "task-queue::function::isInboxEntry",
       "concept": "task-queue",
       "type": "function",
       "name": "isInboxEntry",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 403,
-      "end_line": 405,
+      "start_line": 412,
+      "end_line": 414,
       "signature": "function isInboxEntry(e: EpicLogEntry): boolean",
       "contentHash": "0e698c9a9bc9fc23f73d4694067c2192686962af18d6e694edee8e55e043d4b9",
       "status": "live",
@@ -1358,8 +1376,8 @@
       "type": "function",
       "name": "writeNote",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 374,
-      "end_line": 401,
+      "start_line": 383,
+      "end_line": 410,
       "signature": "function writeNote(projectRoot: string, toSlug: string, body: string, options: NoteOptions): WrittenReport",
       "contentHash": "6e22be7d4cd47fdd34d52bddbdbc20fa4fb3d742ec8e6c31c91743a3cc6549fa",
       "status": "live",
@@ -1520,8 +1538,8 @@
       "type": "function",
       "name": "writeReport",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 305,
-      "end_line": 326,
+      "start_line": 314,
+      "end_line": 335,
       "signature": "function writeReport(projectRoot: string, task: string, body: string, sender?: string): WrittenReport | null",
       "contentHash": "51365da5bb5d48505be604bad2d559bb2160377909e948ca40d6a0ac239b8498",
       "status": "live",
@@ -1556,8 +1574,8 @@
       "type": "function",
       "name": "crossEpicEdges",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 466,
-      "end_line": 482,
+      "start_line": 475,
+      "end_line": 491,
       "signature": "function crossEpicEdges(tracker: Record<string, TrackerEntry>, slug: string): CrossEpicEdge[]",
       "contentHash": "b9e63158536e6889a63e167b68d48d5de3a874e45a9f8467f1d77e5d8e9537ca",
       "status": "live",
@@ -1736,8 +1754,8 @@
       "type": "function",
       "name": "showEpic",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 485,
-      "end_line": 513,
+      "start_line": 494,
+      "end_line": 522,
       "signature": "function showEpic(projectRoot: string, slug: string): EpicView",
       "contentHash": "1ab0ec9e320042efe0a774b24d10270543259f8f51462641ec16ce4ec93f974e",
       "status": "live",
@@ -1844,8 +1862,8 @@
       "type": "function",
       "name": "formatEpic",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 530,
-      "end_line": 549,
+      "start_line": 539,
+      "end_line": 558,
       "signature": "function formatEpic(view: EpicView): string",
       "contentHash": "aa20f078c12cfaccf34bb84f3c816d1b12b65d40646d78e3668179d0e7f82623",
       "status": "live",
@@ -1897,19 +1915,6 @@
       }
     },
     {
-      "_key": "0426fe71750b4be0be21b2f323ba7d4b",
-      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
-      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 424,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "04ad86fecbe5820a9990ccbd2d66d18b",
       "_from": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
       "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
@@ -1930,19 +1935,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 275,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "0c946bbe2ad391d5589549a8cfc3934d",
-      "_from": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
-      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 285,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1995,6 +1987,45 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 118,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "13a9a0b6f98985777b126d55adf86648",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/9f227024aefada6a231df819fb087b92",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 435,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "13de7ef1dd8e9b992356700f542fcc73",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 433,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "14f5c2a010dfa5ed864e707472bd2e0c",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 539,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2092,6 +2123,19 @@
       }
     },
     {
+      "_key": "1a764411a48e1a60d54e122653c828b8",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/8b4b1c6419a9a355dadaccf9d18fb4d8",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 314,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "1b6ab93e1650dd95636906ba60f8db50",
       "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
       "_to": "vertices/250aade7b331dbf112093a1d18c60d3d",
@@ -2099,19 +2143,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 194,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "1bed331b57c33646b1a6cf5f73670498",
-      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
-      "_to": "vertices/9f227024aefada6a231df819fb087b92",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 426,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2131,6 +2162,19 @@
       }
     },
     {
+      "_key": "1e5c92cb63d352581c042d524daab5a5",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 433,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "1f49ddbe0087911a23327acecaf9731f",
       "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
       "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
@@ -2138,6 +2182,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 291,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1fae724363aeb08ec74423179c0afdcb",
+      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
+      "_to": "vertices/9f227024aefada6a231df819fb087b92",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 424,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2196,19 +2253,6 @@
       }
     },
     {
-      "_key": "247dc8b7efc726a7b46c865af8d0795a",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 511,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "26a7db47de5c4d3d1dcab76e940e648e",
       "_from": "vertices/12e51def13197d29aaa18fdbb4321f7b",
       "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
@@ -2242,6 +2286,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 272,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "27737d16fe769d4fe8dcf0b89d1276fe",
+      "_from": "vertices/9d95a562e24915129d62cbbb06be306a",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 283,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2365,26 +2422,13 @@
       }
     },
     {
-      "_key": "32410229c0f36aab833062775f542a44",
-      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
-      "_to": "vertices/8dc681797a2b576708884a4f930325e6",
+      "_key": "30a148d32aff00dbcc653e3a62a9d2de",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 545,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "338d78e8d0ce3493ed1ced4b53d3774d",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/8b4b1c6419a9a355dadaccf9d18fb4d8",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 305,
+      "line": 499,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2430,19 +2474,6 @@
       }
     },
     {
-      "_key": "3728ce48bb1dc5ed26f01ed9aaaa17fb",
-      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 384,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "37cc8fb4fc8dd6ca6368d0b82359bc49",
       "_from": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
       "_to": "vertices/0d315ff547976199b45bf6486c686d05",
@@ -2482,6 +2513,19 @@
       }
     },
     {
+      "_key": "3a421d631ba3133720f430d01e19c609",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 500,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "3affee3395821f8dcaea211b595125b1",
       "_from": "vertices/5341839d6016bc10fb5df403fac3f8f2",
       "_to": "vertices/53c2dc3252dea6e963f79032a744c8c7",
@@ -2489,19 +2533,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 270,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "3e276ea2e2e2fe9e2e11fcd7275a577b",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 491,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2547,6 +2578,19 @@
       }
     },
     {
+      "_key": "41e0249008507f22f71ec55791e85c6b",
+      "_from": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 378,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4258bfe1c8d8380262c4cb113eb2076e",
       "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
       "_to": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
@@ -2554,19 +2598,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 173,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "443d6c1304ea7ea69c133a769a3c278c",
-      "_from": "vertices/9f227024aefada6a231df819fb087b92",
-      "_to": "vertices/1b06390ce27406909b03f2460e262e6c",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 403,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2586,6 +2617,19 @@
       }
     },
     {
+      "_key": "475f789e2cfaabcf0e4589df2af0e18a",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 323,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "48319b3e993e348924fa2c88c8439a01",
       "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
       "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
@@ -2599,19 +2643,6 @@
       }
     },
     {
-      "_key": "49c9e50908ce1d5fc3eede12694c8105",
-      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 381,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4fe28aa92dcd1df2615cab7279e70035",
       "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
       "_to": "vertices/759f9da661dccfa9ab5ab30b4cbc50be",
@@ -2619,32 +2650,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 149,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "50700c3f5e5560776d269f0d7f504dd4",
-      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
-      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 466,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "50a6f6967bbdae35a7b28263d3bd9f11",
-      "_from": "vertices/8b0f6670e3b9c37d4ee54a13446c669c",
-      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 337,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2703,32 +2708,6 @@
       }
     },
     {
-      "_key": "522261af19c6607fdfa034be20996b51",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 316,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "52db0388cfafbcd80156fc96c6b9fc43",
-      "_from": "vertices/8b0f6670e3b9c37d4ee54a13446c669c",
-      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 335,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "57206a5f2b82c3c10dcbfeeba31a57d0",
       "_from": "vertices/35ec0e141b5a8822363510c51e9604aa",
       "_to": "vertices/4b98ee0e98ae5c84a328efefd73871df",
@@ -2749,19 +2728,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 365,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "580d2e7f14c74e0be6cf3509c7a15c19",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/16b6125d220ab89df9272d3d3be047d6",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 492,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2794,6 +2760,19 @@
       }
     },
     {
+      "_key": "5c1ec6f1fb0bc948db9ad6aba5a04c6c",
+      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 427,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "5d141aad8ce693e7421802b603efdd07",
       "_from": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
       "_to": "vertices/0447987955bc8d5c027456a4826a1c70",
@@ -2801,6 +2780,32 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 247,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6008e0de26232c7cd71be7127dbdcc7e",
+      "_from": "vertices/9d95a562e24915129d62cbbb06be306a",
+      "_to": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 283,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "66d0b895d7745259518244e3750a9f0f",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 390,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2820,6 +2825,45 @@
       }
     },
     {
+      "_key": "677cc95324573bccbc77d8539cf76218",
+      "_from": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 294,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "689f8bec91b623470ca4273f1957597a",
+      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 476,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "69140a369f5d3d4b86f513e94cc825a3",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/30108449c638db17bba95a83cf1a1d71",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 383,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "699264362898e374c008f725c8d8bd85",
       "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
       "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
@@ -2827,6 +2871,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 197,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a45552b4e3d1250389fba86b5f1bc45",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 321,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2846,19 +2903,6 @@
       }
     },
     {
-      "_key": "6b96de9261c08af018be8deafaf064c1",
-      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/5f6924f412d4fe0ebe08acff5b24671e",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 374,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "6ba39535a0970fa64cf232a8b323b190",
       "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
       "_to": "vertices/0dc7bd142d696f521309be415905428a",
@@ -2872,13 +2916,13 @@
       }
     },
     {
-      "_key": "6bfa062374a6604a44221675ebfbfc52",
-      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "_key": "6d338561e7d01019b82a03e32838d80f",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 378,
+      "line": 325,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2898,19 +2942,6 @@
       }
     },
     {
-      "_key": "6d98b092f573b96cadcfa37c7347f641",
-      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
-      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 530,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "6fc6792d21000ca19a8ae7c75f39a80e",
       "_from": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
       "_to": "vertices/0d315ff547976199b45bf6486c686d05",
@@ -2918,6 +2949,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7050b1b495535d6cfd94cb65a23b4016",
+      "_from": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 294,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2963,13 +3007,26 @@
       }
     },
     {
-      "_key": "793d176a3ee6e0bee19b70b9bd50acde",
-      "_from": "vertices/8dc681797a2b576708884a4f930325e6",
-      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "_key": "77e944913944031bccd2a79cdcfeda8d",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 328,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79610985570e94bb3e14e17e8086519a",
+      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
       "type": "has-type",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 516,
+      "line": 475,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3015,136 +3072,6 @@
       }
     },
     {
-      "_key": "7d0c62989141fe70fef23cedd638ab2f",
-      "_from": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
-      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 370,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7d5c533eddde60d7d98745ad65613b66",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 491,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "81859227bc62dcf03c12998d2cce42be",
-      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
-      "_to": "vertices/9a6e62d6960395654e07c09fa4477c13",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 547,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8331634f93719d3dc6bd23d460b7085d",
-      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
-      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 424,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "84086696f084ab430843b400b115219f",
-      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
-      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 418,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8431809a45178a8304b455478d7ecad1",
-      "_from": "vertices/9a6e62d6960395654e07c09fa4477c13",
-      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 522,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "845a68b22e90be898ff7dc8f07308ef8",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 319,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "850ae17a55ab43b702481f8d5476e113",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 490,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "86fec370ef395bb1f477c132ceb519cc",
-      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
-      "_to": "vertices/9f227024aefada6a231df819fb087b92",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 415,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8a15a53f626f5c631b0d0f65d5c805e4",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 485,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "8dc11c570ce6f858ac0836c6d2ac2899",
       "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
       "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
@@ -3158,26 +3085,13 @@
       }
     },
     {
-      "_key": "90b56116d8c3c11b7d17f1543ceea11b",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "_key": "8f87b31a541f4b257d645c92e17c2639",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/9a6e62d6960395654e07c09fa4477c13",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 314,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "90b6b1bfd55ca054d548199802d5ee61",
-      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
-      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 467,
+      "line": 556,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3210,19 +3124,6 @@
       }
     },
     {
-      "_key": "9551445f51b7f09c7e5451465331b65c",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/4e735a1964d429efa4a2d04cf64679e0",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 510,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "95579aac8292d21f13ee066b9bd0dcc4",
       "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
       "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
@@ -3230,6 +3131,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 214,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9560eedd2e76f63aac0bf3d8b2d493ef",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/5f6924f412d4fe0ebe08acff5b24671e",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 383,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3275,13 +3189,39 @@
       }
     },
     {
-      "_key": "a0c493e433cb117c1fbddce62fb473e1",
+      "_key": "9ceb28d0286b531c75e46169e363a51d",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 519,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a0821e4ed9bac01fba7d98abd7f2537d",
       "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/30108449c638db17bba95a83cf1a1d71",
+      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 391,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a1243dbc0ecc8d6f0f942132756e6afe",
+      "_from": "vertices/9f227024aefada6a231df819fb087b92",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
       "type": "has-type",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 374,
+      "line": 412,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3327,6 +3267,19 @@
       }
     },
     {
+      "_key": "a5402b3296de96fea1379494e20bd247",
+      "_from": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 379,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "a554b1bb669ddad286776af8d6f8d8f3",
       "_from": "vertices/4900be733905e0e3dff9b761ed1e194f",
       "_to": "vertices/35ec0e141b5a8822363510c51e9604aa",
@@ -3353,19 +3306,6 @@
       }
     },
     {
-      "_key": "a6f5413083da9d2848728f84f8218e04",
-      "_from": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
-      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 369,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "a7c30fcb91ded3b83849607bbdc5761f",
       "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
       "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
@@ -3386,32 +3326,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 291,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "a8f804e9714cc3c317b8e868323677c3",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 317,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "ab6826c52459b89ed80566cc6b30ac59",
-      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
-      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 426,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3470,19 +3384,6 @@
       }
     },
     {
-      "_key": "b170b99f7bdce303254ab3bc2ee1687b",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 307,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "b1bbdc86a03e4c2fc717a19a3189b2b3",
       "_from": "vertices/250aade7b331dbf112093a1d18c60d3d",
       "_to": "vertices/0d315ff547976199b45bf6486c686d05",
@@ -3496,13 +3397,26 @@
       }
     },
     {
-      "_key": "b8ba4443de8757f76eb6da079c180858",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "_key": "b35623ad60ff8555160e830aabea224a",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 486,
+      "line": 321,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b5c11b257ad36c7c91f1f670155b44f2",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 322,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3535,19 +3449,6 @@
       }
     },
     {
-      "_key": "bc4010503c6e8c982a9b43eaf78bec37",
-      "_from": "vertices/0c030394bf7b0d306056206f01085c16",
-      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 279,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "bcf45771102c8e167b541bc52b62a068",
       "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
       "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
@@ -3561,19 +3462,6 @@
       }
     },
     {
-      "_key": "bcfc4f8f2331ccb7ee2915071b88dfd2",
-      "_from": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
-      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 285,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "bd76bf7ce7e3c7e16d1a1941dfeb5993",
       "_from": "vertices/8509cae44807ec761925913fb3eb8e0c",
       "_to": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
@@ -3581,6 +3469,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 323,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bef1937e0fbda5cf26eec51abf65c1e4",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 316,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3613,6 +3514,19 @@
       }
     },
     {
+      "_key": "c08befe450bc6b0317286e64a0d33cf2",
+      "_from": "vertices/9f227024aefada6a231df819fb087b92",
+      "_to": "vertices/1b06390ce27406909b03f2460e262e6c",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 412,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c0f4b75506a04781217dc916e9107a4f",
       "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
       "_to": "vertices/f30965524d648a6eb35904d64d57c393",
@@ -3626,6 +3540,19 @@
       }
     },
     {
+      "_key": "c1d253ae3a9667e22294c9072335cf69",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 393,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c1dd814a096df97676cfedb978b72134",
       "_from": "vertices/8509cae44807ec761925913fb3eb8e0c",
       "_to": "vertices/45147e20d5f83c1a0679810fa97c5b45",
@@ -3633,6 +3560,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 320,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c2451fcf15869de09b057160cbe2f953",
+      "_from": "vertices/9a6e62d6960395654e07c09fa4477c13",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 531,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3665,6 +3605,32 @@
       }
     },
     {
+      "_key": "c529ffaaf545f5005249c8eb0247869a",
+      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 423,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c5ffed4e3ae1f1eea1ae5885cf115b2a",
+      "_from": "vertices/0c030394bf7b0d306056206f01085c16",
+      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 288,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c6783abbadc51d8c60319d8c96b9f5bd",
       "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
       "_to": "vertices/684768b508e7edb0072b59886126e1c4",
@@ -3672,19 +3638,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 144,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c6d485f05fd4004ead3533feeb372b59",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 312,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3711,6 +3664,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "caddb648d982cd7dc87315c9337feb4f",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 435,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3769,6 +3735,19 @@
       }
     },
     {
+      "_key": "d04375a47570620e091818a35885e0de",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 387,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d0485ddac32ef2f5862ab1b69a3473e9",
       "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
       "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
@@ -3782,13 +3761,13 @@
       }
     },
     {
-      "_key": "d0c0016962ac485e0dcb53b09c37c748",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "_key": "d1e2fbd6309fc8dd266c0262692e020e",
+      "_from": "vertices/8b0f6670e3b9c37d4ee54a13446c669c",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 312,
+      "line": 346,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3847,6 +3826,32 @@
       }
     },
     {
+      "_key": "d82c98cbe58f0796d685537c1f4917e2",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 496,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d8d9adc6d7fa08f1f336429bdb6942e1",
+      "_from": "vertices/8b0f6670e3b9c37d4ee54a13446c669c",
+      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 344,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "da4e9495a4f81f6902165c83cfe5351e",
       "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
       "_to": "vertices/86e8200e3c068cf87a326a17750d6f9c",
@@ -3860,13 +3865,39 @@
       }
     },
     {
-      "_key": "db77c2d54735d39a39de1a1f69d23406",
-      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
-      "_to": "vertices/0447987955bc8d5c027456a4826a1c70",
-      "type": "has-type",
+      "_key": "dac099ccc077d102fd0db06be09c4a13",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 466,
+      "line": 500,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "db4cee4b6031361933069561bb614b51",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 495,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dba519ae333eb5918acc819d5193823b",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 386,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3925,19 +3956,6 @@
       }
     },
     {
-      "_key": "e3ba40bf109c0f3748ba209f56535bc2",
-      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
-      "_to": "vertices/0dc7bd142d696f521309be415905428a",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 487,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e43ad6a7de84cb4a05fba1c4bd0053b4",
       "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
       "_to": "vertices/6a6f0606f8e996a9371550750dbd47de",
@@ -3964,6 +3982,19 @@
       }
     },
     {
+      "_key": "e54b24d8221ecdbc711f5bac36a5b2cc",
+      "_from": "vertices/8dc681797a2b576708884a4f930325e6",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 525,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e686022f8b59cee489002dcd8c9c7a45",
       "_from": "vertices/a21165036ad1c3400f13f71e6d9ee77f",
       "_to": "vertices/0badc33a242eccf12edf799a03ddd499",
@@ -3971,6 +4002,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e8004b07e090b850c29bdffcd1a1d396",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 520,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4016,19 +4060,6 @@
       }
     },
     {
-      "_key": "e9782d4d53e0bef0a787835d7a11e0be",
-      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
-      "_to": "vertices/0dc7bd142d696f521309be415905428a",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 313,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e9c6ae10757711793f62225b41b8b18f",
       "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
       "_to": "vertices/1ed19486d656d7055c17a74c0adb7d34",
@@ -4036,6 +4067,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 111,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ea409a05aada3b566a06277d9a9b0b46",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/16b6125d220ab89df9272d3d3be047d6",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 501,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4068,13 +4112,13 @@
       }
     },
     {
-      "_key": "ebd7065dfa84d20fa99d250ba6e557df",
-      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
-      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "_key": "ed6ec10743cc7ba8c8b8ffaf37ddba8d",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/8dc681797a2b576708884a4f930325e6",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 414,
+      "line": 554,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4133,19 +4177,6 @@
       }
     },
     {
-      "_key": "f49a7d93e8c6aa01bcc31036e38e1d96",
-      "_from": "vertices/9f227024aefada6a231df819fb087b92",
-      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 403,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "f4e82a6430d9dc7586f8dc3ce9572c5a",
       "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
       "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
@@ -4172,6 +4203,32 @@
       }
     },
     {
+      "_key": "f617a5140187d3997bfa60818c326def",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 326,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f6828aafbcc0c459573933a51463f01f",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 494,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f7a5b5f46555ef7972e2e55797f2aa59",
       "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
       "_to": "vertices/c103f2b64636df6a794b2127a7d2914f",
@@ -4185,26 +4242,13 @@
       }
     },
     {
-      "_key": "f947dd5b1553538ecb506163e604f7ab",
-      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
-      "type": "calls",
+      "_key": "fc381772781a5c6318e10dba501808aa",
+      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "_to": "vertices/0447987955bc8d5c027456a4826a1c70",
+      "type": "has-type",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 377,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "fd7b92e168badf8205e4b8f8771c0f92",
-      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
-      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
-      "type": "calls",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 382,
+      "line": 475,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4226,11 +4270,19 @@
   ],
   "skill": {
     "path": ".claude/skills/task-queue/SKILL.md",
-    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"1.6\"\n  last-update: 77c8c95568c2a59d68cc5db4aab39f562e6ff702\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
-    "contentHash": "sha256:e2469d3c958ef913d04844684563e74eec3a33d07453f093c0dd0be82fb2a50f"
+    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"1.7\"\n  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive` (`066`). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view; owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
+    "contentHash": "sha256:4903b03f9410bd21f85204b1f1649f445b1a71af6f074eedaf742dc83f5853eb"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.11",
-    "extracted_at": "2026-10-17T12:32:15.582Z"
+    "extractor_version": "code-graph@0.3.20",
+    "extracted_at": "2026-10-21T16:25:52.879Z",
+    "files": {
+      "apps/maestro/src/core/claims.ts": "sha256:51b78e57db31159c49f90c6db135ced4959269921144b08340ad09409b4e1e8c",
+      "apps/maestro/src/core/epics.ts": "sha256:9596bf622f15dcb0cf041603cdce6e53518c0283f31c8026015f361e0171b41d",
+      "apps/maestro/src/core/success-path.ts": "sha256:f1aab1123ed0b851916d6f7379988bc6f5f0d921319ff111bfee2ea0f35df1d4",
+      "apps/maestro/src/core/tasks.ts": "sha256:c0f796132c86df27e172aaa1f28e8ded38d188334d4e23709176a99c1d1690d7",
+      "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx": "sha256:95dc9de847e877098f9e43c2ceea58425618f73e9cfe63c74df01218cbf39b23",
+      "apps/maestro/src/renderer/src/utils/maestro-tasks.ts": "sha256:3f8529dd75d4ee76bd5ea4f8634345b50cfdc43c20b3ac65faeecd4071f4d287"
+    }
   }
 }

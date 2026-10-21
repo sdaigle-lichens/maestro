@@ -20,6 +20,24 @@
       }
     },
     {
+      "_key": "011c5ef0e6e02b23df8e6430356cc2d7",
+      "displayKey": "claude-session-bridge::function::listJson",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "listJson",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 154,
+      "end_line": 160,
+      "signature": "function listJson(dir: string): string[]",
+      "contentHash": "43c3880804d49050b367f69a63032233cb1e2582fabba54f3ec46588486219a1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "01361e5425d315f06d9a4cf3c907c356",
       "displayKey": "claude-session-bridge::effect::effect-99",
       "concept": "claude-session-bridge",
@@ -254,6 +272,24 @@
       }
     },
     {
+      "_key": "0b423b738d79539cb39007ceae7c8062",
+      "displayKey": "claude-session-bridge::function::promptEntranceRole",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "promptEntranceRole",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 92,
+      "end_line": 96,
+      "signature": "function promptEntranceRole(prompt: unknown): SessionNameRole | null",
+      "contentHash": "580139c73a67671c0f33db716492b2d159d1a9a479727f4a968eea127afa4b48",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "0b7de823e783d1ef4e6b6eef95736b5d",
       "displayKey": "claude-session-bridge::type-def::StoredMessage",
       "concept": "claude-session-bridge",
@@ -282,6 +318,24 @@
       "end_line": 193,
       "signature": "function spendLabel(spend: SessionSpend): string",
       "contentHash": "aff109361417949f55fd4584f95a98f34edd88212a15a46f63a16c70881cb7ca",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "10467889337feefd7d286be171eff8b7",
+      "displayKey": "claude-session-bridge::function::listDirs",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "listDirs",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 162,
+      "end_line": 171,
+      "signature": "function listDirs(dir: string): string[]",
+      "contentHash": "2f902deb3649f9fe4bd190fce31ec6e85d4eb55e7093ce7ede4fafb31a349dac",
       "status": "live",
       "ast": {},
       "agent": {
@@ -560,6 +614,24 @@
       }
     },
     {
+      "_key": "1ce302be47f54d7ee7aae44fee7e984d",
+      "displayKey": "claude-session-bridge::function::storedSessionName",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "storedSessionName",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 128,
+      "end_line": 132,
+      "signature": "function storedSessionName(claudeDir: string, sessionId: unknown): StoredSessionName | null",
+      "contentHash": "b97872294229cc50378cdde72023fea4a00414957129e06e39874c1785481cc7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "1e3fda5228241a214f6382e51285b26e",
       "displayKey": "claude-session-bridge::type-def::ClaudeRunEvents",
       "concept": "claude-session-bridge",
@@ -686,6 +758,24 @@
       }
     },
     {
+      "_key": "283d1377587f33f78287062ea4b68944",
+      "displayKey": "claude-session-bridge::function::noteEntrance",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "noteEntrance",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 144,
+      "end_line": 152,
+      "signature": "function noteEntrance(claudeDir: string, sessionId: unknown, role: SessionNameRole): string | null",
+      "contentHash": "6017fa7f9a7e3a509077a52fd3930ebb1ecbb27ff2594f36ad00bc2c0a99e4ab",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "2863311b7342c0ec80a91293e01ead21",
       "displayKey": "claude-session-bridge::function::isEffortLevel",
       "concept": "claude-session-bridge",
@@ -750,6 +840,24 @@
       "end_line": 292,
       "signature": "function decidePaneCall({ tool, input, writable, directories, cwd }: PaneCallInput): PaneVerdict",
       "contentHash": "c918a9aecbe998169780041dd931e6f2a3d564032cba32682660dc53b31153c8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2bf472fd78a69d5767afca71e976897e",
+      "displayKey": "claude-session-bridge::function::patchState",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "patchState",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 120,
+      "end_line": 125,
+      "signature": "function patchState(claudeDir: string, sessionId: string, patch: Partial<MaestroSession>): void",
+      "contentHash": "2beb4dde51cdb5e9b0695c056b5deef85a173bd5685325413dca5c7b69c74c2a",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1082,6 +1190,24 @@
       }
     },
     {
+      "_key": "3d837240f413ede70b4a0d2a04f02969",
+      "displayKey": "claude-session-bridge::function::customTitleOf",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "customTitleOf",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 218,
+      "end_line": 222,
+      "signature": "function customTitleOf(payload: SessionNamePayload): string | null",
+      "contentHash": "14f31fa4c63d6867dc9b1d5500c3b1de151b3053bfba9ba63e5b4e498d11b156",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "3d9fc72772280f4c004416737807fe89",
       "displayKey": "claude-session-bridge::type-def::AgentSession",
       "concept": "claude-session-bridge",
@@ -1268,10 +1394,28 @@
       "type": "function",
       "name": "previewClaudeRun",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 465,
-      "end_line": 544,
+      "start_line": 466,
+      "end_line": 545,
       "signature": "function previewClaudeRun(projectRoot: string, request: ClaudeRequest, opts: PreviewOptions = {}): Promise<ClaudePreview>",
       "contentHash": "a44ee2811721ecbd7f272a90625d26707a8961c102765cddaf4ee0dd9a534331",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "44a14b2ddbae39b75148b4ec8ca168ed",
+      "displayKey": "claude-session-bridge::function::readState",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "readState",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 106,
+      "end_line": 109,
+      "signature": "function readState(statePath: string): Partial<MaestroSession>",
+      "contentHash": "22975f340edc6d9d62948cffccaca3f4fb9d0fd6009b8472938dabea77e4e0a2",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1845,9 +1989,9 @@
       "name": "build",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
       "start_line": 380,
-      "end_line": 416,
+      "end_line": 417,
       "signature": "function build(projectRoot: string, request: ClaudeRequest, opts: ResolveOptions): Promise<BuiltRequest>",
-      "contentHash": "bd41268c7734fe9814581d69ebf4470628c8aadefcb53e5a63788dd38bbc2cd3",
+      "contentHash": "ba11255243a3f1ddb72e6f36026beeeb0f43a86b713732a4fae4257473c3a696",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2054,6 +2198,42 @@
       }
     },
     {
+      "_key": "6f5be64c9d758865344bde4d701b1a10",
+      "displayKey": "claude-session-bridge::function::storedFrom",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "storedFrom",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 111,
+      "end_line": 117,
+      "signature": "function storedFrom(state: Partial<MaestroSession>): StoredSessionName | null",
+      "contentHash": "249ef5f34d57ad914abca1bb5c3e88889903cc82d4560303474a94d9171c3399",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "706a682d490858113db9fec53e32cfc9",
+      "displayKey": "claude-session-bridge::function::roleOfName",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "roleOfName",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 173,
+      "end_line": 175,
+      "signature": "function roleOfName(name: string): SessionNameRole",
+      "contentHash": "706458885174c95ba21c0b278e1f4c4615322736ef83b2fccf3de23b911b358a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "716321be2af2ee312b6b478981ce4166",
       "displayKey": "claude-session-bridge::type-def::QuestionResolution",
       "concept": "claude-session-bridge",
@@ -2222,10 +2402,28 @@
       "type": "function",
       "name": "readScopeFor",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 427,
-      "end_line": 453,
+      "start_line": 428,
+      "end_line": 454,
       "signature": "function readScopeFor(projectRoot: string, cwd: string, targets: ClaudeWriteTarget[], settings: SettingsPort | undefined): Promise<ClaudeReadScope>",
       "contentHash": "49bf7a7593425ac1a92bb59c92db7c3a8bafd8f1f7be463314357d327d2b329f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7a7a2d036983940616b57f54c63d3e3f",
+      "displayKey": "claude-session-bridge::type-def::SessionNamePayload",
+      "concept": "claude-session-bridge",
+      "type": "type-def",
+      "name": "SessionNamePayload",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 45,
+      "end_line": 54,
+      "signature": "export interface SessionNamePayload {",
+      "contentHash": "bbc18eb100194caba9ee2fca1fe65350e371e6147d1d484ab770eed49793b3e3",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2666,6 +2864,24 @@
       }
     },
     {
+      "_key": "8c69ede2f0270a67491b6a308bab560b",
+      "displayKey": "claude-session-bridge::function::hasMaestroConfig",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "hasMaestroConfig",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 98,
+      "end_line": 104,
+      "signature": "function hasMaestroConfig(claudeDir: string): boolean",
+      "contentHash": "193fc6335a499c60c3c510bc738deb56480db348c73faaed754f9f43a2a52df6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "8dcae859ad46e610e4934c39a7e04871",
       "displayKey": "claude-session-bridge::function::readJson",
       "concept": "claude-session-bridge",
@@ -2874,6 +3090,24 @@
       "end_line": 37,
       "signature": "export interface ResolveOptions {",
       "contentHash": "febf77ffcbafe4bb3757f55ff4b281f8c37bf1c38b501538e69eb4cc5cd0d84b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "99cb72b2df922c1d9483d79354a452f5",
+      "displayKey": "claude-session-bridge::function::sessionNameFor",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "sessionNameFor",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 68,
+      "end_line": 72,
+      "signature": "function sessionNameFor(sessionId: unknown, role: SessionNameRole): string | null",
+      "contentHash": "cdd943823526cf7da6dc39d3890ad17d2271a42f573c2c7ce0d3ea620369ea77",
       "status": "live",
       "ast": {},
       "agent": {
@@ -3216,6 +3450,24 @@
       "end_line": 241,
       "signature": "function projectSkillsForTagging(projectRoot: string): Promise<{ id: string; description: string; projectTags: string[]; agentTypes: string[]; }[]>",
       "contentHash": "4f65da7a45d50c7d2e97487b747b0bcd35140461354944a0f17b42cc073ce614",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "displayKey": "claude-session-bridge::function::rederiveSessionName",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "rederiveSessionName",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 185,
+      "end_line": 216,
+      "signature": "function rederiveSessionName(claudeDir: string, sessionId: unknown): { name: string; role: SessionNameRole; } | null",
+      "contentHash": "1dcb4ef0717977209573022f2297428e88ac85916388d70443c23ed680e4c923",
       "status": "live",
       "ast": {},
       "agent": {
@@ -3638,6 +3890,24 @@
       }
     },
     {
+      "_key": "bc37563a64ee94760dad69e48360964f",
+      "displayKey": "claude-session-bridge::type-def::StoredSessionName",
+      "concept": "claude-session-bridge",
+      "type": "type-def",
+      "name": "StoredSessionName",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 57,
+      "end_line": 62,
+      "signature": "export interface StoredSessionName {",
+      "contentHash": "2dc21298f2bd33f2fff3c8cae0388cdcb930e438fe28508debd08181edbcebde",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "bca259bfae8792e5aecde4e520a4deb8",
       "displayKey": "claude-session-bridge::function::describeSession",
       "concept": "claude-session-bridge",
@@ -3810,6 +4080,24 @@
       "end_line": 234,
       "signature": "function grantNote(grant: SessionGrant): string",
       "contentHash": "e9b59089d4a9ca8ad1038f955576c210de32facd7bb0a84dcdf3dc9e64c5c5fe",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c4a65cb0993290d3ba850f03b59d32f6",
+      "displayKey": "claude-session-bridge::function::entranceRoleFor",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "entranceRoleFor",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 79,
+      "end_line": 85,
+      "signature": "function entranceRoleFor(name: unknown): SessionNameRole | null",
+      "contentHash": "fe32e2f4620c3084800bb7a4dc4ce842135d4361cbb15e29e56b069fa668eb77",
       "status": "live",
       "ast": {},
       "agent": {
@@ -4062,6 +4350,24 @@
       "end_line": 28,
       "signature": "function writeScopeNote(scope: HandoffContext[\"scope\"]): string",
       "contentHash": "6103f329ace065e19351127872bd0a02f84fa0ffc1ee90551e3acbd669d2419e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d52cc387ea43b80b6d97dd8e257b83ab",
+      "displayKey": "claude-session-bridge::function::titleFor",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "titleFor",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 233,
+      "end_line": 278,
+      "signature": "function titleFor(claudeDir: string, payload: SessionNamePayload | null | undefined): string | null",
+      "contentHash": "b24a548b964f5bce5748158d1eeb162be9914a4938d20a3448c5d6c85232ba6a",
       "status": "live",
       "ast": {},
       "agent": {
@@ -4808,6 +5114,24 @@
       }
     },
     {
+      "_key": "fb4acb1bb036a4aef547c113dbbb59e5",
+      "displayKey": "claude-session-bridge::function::storedName",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "storedName",
+      "filepath": "apps/maestro/src/core/session-name.ts",
+      "start_line": 135,
+      "end_line": 137,
+      "signature": "function storedName(claudeDir: string, sessionId: unknown): string | null",
+      "contentHash": "7407262b3d2fc93ce03a6e06f993ddfd22b66eba85d6a54774e22da87c000b96",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "fb52a78ce68e1cf97ad4915dda036977",
       "displayKey": "claude-session-bridge::function::readStdin",
       "concept": "claude-session-bridge",
@@ -4949,6 +5273,19 @@
       }
     },
     {
+      "_key": "0065a985b9b5c6c10e9ba183c3a3dfcd",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/7f1c410c68da76c5daec2408e2a9a605",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 492,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "0225594668a7971d2a63d0469779f851",
       "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
       "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
@@ -4982,6 +5319,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 208,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0311ad028a16bc25c2ed27e81dc0fe04",
+      "_from": "vertices/99cb72b2df922c1d9483d79354a452f5",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 69,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5378,19 +5728,6 @@
       }
     },
     {
-      "_key": "14f7089d8fb520aabd898fb8b5f914f7",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/5aaac27cda71ce6d44b0052d4752b112",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 468,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "1548be6be3e71913f4bbab2083392987",
       "_from": "vertices/3272b616fa3bd49a1c913cc9df7f1fff",
       "_to": "vertices/f196accd3477f19c840f84de30b38d16",
@@ -5463,6 +5800,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 977,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "185bcb0f96b9825896d10b18af979649",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/7a7a2d036983940616b57f54c63d3e3f",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 233,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5612,19 +5962,6 @@
       }
     },
     {
-      "_key": "1e569875a3b2679881d26354ea79dff8",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/53db7fa679af6fb9fbaffcee2f191a5c",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 511,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "1e8b9d6dd6b19ba66a61ba2f42ec12d5",
       "_from": "vertices/dbcfa74b008f1424556795e659e0a0ca",
       "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
@@ -5632,6 +5969,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 244,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1fb0452e4e705b1793187e0ca900ec66",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/8c69ede2f0270a67491b6a308bab560b",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 238,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5911,6 +6261,19 @@
       }
     },
     {
+      "_key": "2abf7118133a4e90ea22a105c294f123",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/5aaac27cda71ce6d44b0052d4752b112",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 469,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "2aef0ee3aa879c7b867d5a5370485439",
       "_from": "vertices/09d2419205babcdf98022c0df938aaca",
       "_to": "vertices/9d5ea4134e123ac49411c5b0bcb4b83c",
@@ -6041,19 +6404,6 @@
       }
     },
     {
-      "_key": "2daeb9909ff2025f9518e2dd4cfd3d9f",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/7f1c410c68da76c5daec2408e2a9a605",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 491,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2e805be5e4282a1cb93482b33e11f786",
       "_from": "vertices/bf197f6513dad5e092b6c7e6d1c64137",
       "_to": "vertices/37e42847e6dc45af564188562bb94262",
@@ -6074,19 +6424,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 108,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "2f5a2c04fad9f38021da9b210912e2e1",
-      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 443,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6444,6 +6781,19 @@
       }
     },
     {
+      "_key": "3892e16f344b59ca6275b7b4576b2aea",
+      "_from": "vertices/283d1377587f33f78287062ea4b68944",
+      "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 150,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "39c7519db3fce148ee09ddf64ab5a5f9",
       "_from": "vertices/3272b616fa3bd49a1c913cc9df7f1fff",
       "_to": "vertices/6c9697ad0a91f10523db9d0c50827abe",
@@ -6503,6 +6853,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 259,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b0448ff3fb176e7ae9e2889746d56ef",
+      "_from": "vertices/1ce302be47f54d7ee7aae44fee7e984d",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 129,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6652,19 +7015,6 @@
       }
     },
     {
-      "_key": "409e460fcd7b5a45507588ada60fc72a",
-      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "_to": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 412,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "41240ab4bc434573353103e84c7b9e2e",
       "_from": "vertices/e47877180d42f074e23f92175d713152",
       "_to": "vertices/32edc9dd76528d9884c7e417caf21fbb",
@@ -6672,6 +7022,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 618,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41c81862805a69a9c1a95b8a560ad5a8",
+      "_from": "vertices/0b423b738d79539cb39007ceae7c8062",
+      "_to": "vertices/c4a65cb0993290d3ba850f03b59d32f6",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 95,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6717,19 +7080,6 @@
       }
     },
     {
-      "_key": "44e2e92d53dbf0e2366d334bfafc80de",
-      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 445,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "450c71c2108785cf72ea5577dc508d03",
       "_from": "vertices/d654930daa2871f84dbaca16c192ea18",
       "_to": "vertices/1431df95bfa5171e5718eca1eaea6941",
@@ -6769,6 +7119,19 @@
       }
     },
     {
+      "_key": "45c92e0cd32601877b348a5c07fda8ae",
+      "_from": "vertices/44a14b2ddbae39b75148b4ec8ca168ed",
+      "_to": "vertices/8dcae859ad46e610e4934c39a7e04871",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4711aa90ab446652deb2211529b84d7d",
       "_from": "vertices/42a9215bfd6237199ad4382e74e09228",
       "_to": "vertices/32b13179f19183c440e97935d950260f",
@@ -6789,6 +7152,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 105,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "47d8d67afb9cc7c85a0389f9228db5f4",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 480,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6854,6 +7230,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 652,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4d0af0fe2a8cb033575b6ebf619cc480",
+      "_from": "vertices/1ce302be47f54d7ee7aae44fee7e984d",
+      "_to": "vertices/6f5be64c9d758865344bde4d701b1a10",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 131,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6938,6 +7327,19 @@
       }
     },
     {
+      "_key": "4f66d231a68620863f1e51adbb4cc6b4",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 472,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4fb9d9dc56c3deb24b5e871a43c70f39",
       "_from": "vertices/dff4c31a3d716df20e755d674462e010",
       "_to": "vertices/a7aeb15203e27e437b2c684a68ce0da8",
@@ -6958,6 +7360,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1365,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5094c4a4e11eaee032b0edd32a32ca3b",
+      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 435,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7042,19 +7457,6 @@
       }
     },
     {
-      "_key": "55d5133e145f6ebca0d133781e6ddc94",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 471,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "56616c06d83a5c574b42ff2e32bd398a",
       "_from": "vertices/150e61ca51281b96a85f45d848661f59",
       "_to": "vertices/9b066380e7159bda10759a772a76e3e6",
@@ -7062,6 +7464,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 394,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "56f35e2555a832f404dba990d63f73af",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/011c5ef0e6e02b23df8e6430356cc2d7",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 193,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7088,6 +7503,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 205,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57e387fb2de0d9c6bb926c38222e3434",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 276,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7127,6 +7555,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 173,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5a0ca525e5054d3ac8bf68630cf2d8c0",
+      "_from": "vertices/283d1377587f33f78287062ea4b68944",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 145,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7244,6 +7685,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 266,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5e1c4a45c629d968b2a1d821e9311aa7",
+      "_from": "vertices/6f5be64c9d758865344bde4d701b1a10",
+      "_to": "vertices/bc37563a64ee94760dad69e48360964f",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 111,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7380,6 +7834,19 @@
       }
     },
     {
+      "_key": "6380e7f6386fa85abe1061370227cb92",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/8dcae859ad46e610e4934c39a7e04871",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 194,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "6389e9add956af01e4c455f482551013",
       "_from": "vertices/a3f607de046d12f125f892d4e48b132f",
       "_to": "vertices/716eca19cdcf9cb8693cdb37a2878d66",
@@ -7426,6 +7893,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 714,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "64b108c0751a67429154102614a903df",
+      "_from": "vertices/fb4acb1bb036a4aef547c113dbbb59e5",
+      "_to": "vertices/1ce302be47f54d7ee7aae44fee7e984d",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 136,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7491,6 +7971,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 139,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "68af4757a7dcfb179c06bc91739a9691",
+      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 444,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "68b47a4686e9d08476fe1011088a982d",
+      "_from": "vertices/3d837240f413ede70b4a0d2a04f02969",
+      "_to": "vertices/7a7a2d036983940616b57f54c63d3e3f",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 218,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7738,6 +8244,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 207,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "73b615905f13b4c5baa8667f007cd370",
+      "_from": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "_to": "vertices/3217359b54bda5f0edf4fc89dbc3e9f5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 124,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8004,6 +8523,19 @@
       }
     },
     {
+      "_key": "7c17957c3c223d3f2c705620dc71b877",
+      "_from": "vertices/1ce302be47f54d7ee7aae44fee7e984d",
+      "_to": "vertices/44a14b2ddbae39b75148b4ec8ca168ed",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 131,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "7cafeb338117b13e630a8c8c4993b42c",
       "_from": "vertices/db325910b822c842b7e3d3782e633530",
       "_to": "vertices/415eab97a5b471905e47726058935345",
@@ -8037,6 +8569,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 324,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7e3b6e433ab5fc608f5a0c64da8d8899",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/8dcae859ad46e610e4934c39a7e04871",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 207,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8160,6 +8705,19 @@
       }
     },
     {
+      "_key": "8625e22bf00de208412fab368577a148",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 265,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "866e6cb3dac7125b6c4734c8e021a12d",
       "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
       "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
@@ -8238,6 +8796,19 @@
       }
     },
     {
+      "_key": "88fbe46ee04840285cde0a90c16dad9b",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 247,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "89389005da077ce2bc5000957b29eccd",
       "_from": "vertices/a7aeb15203e27e437b2c684a68ce0da8",
       "_to": "vertices/2183c5cbcc11cb891b4cd4d75cb2d757",
@@ -8245,6 +8816,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 30,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8b076ddd79a75e7c8d68857b63e7d4ce",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/10467889337feefd7d286be171eff8b7",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 206,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8316,6 +8900,19 @@
       }
     },
     {
+      "_key": "8d62f1fc944f1cc4abcad3dc5243d886",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/1ce302be47f54d7ee7aae44fee7e984d",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 241,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "8f67b72353a5bac2eb58bb429216baef",
       "_from": "vertices/09d2419205babcdf98022c0df938aaca",
       "_to": "vertices/43f05260dbd49cd976590ff8c79dc3e9",
@@ -8362,6 +8959,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 96,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "91118a023f71e53b57f9a19002d1a811",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 237,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8537,6 +9147,19 @@
       }
     },
     {
+      "_key": "9cc725b5e1febeacf29004dde59c3f8c",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/99cb72b2df922c1d9483d79354a452f5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 203,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "9cdb6e9373ec2ff3e5a4d9ede9f16540",
       "_from": "vertices/32edc9dd76528d9884c7e417caf21fbb",
       "_to": "vertices/4aca03997c820a4c94c242101b9e770a",
@@ -8680,6 +9303,19 @@
       }
     },
     {
+      "_key": "a67388256a96f7a2b379700a43d8e92f",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 189,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "a6a1a4d7c76b955f18195c5c663f4ecf",
       "_from": "vertices/b2eeced799b9431206e309959cb396b6",
       "_to": "vertices/4a376c0350c91b7e7bc1be4b318642a0",
@@ -8797,6 +9433,19 @@
       }
     },
     {
+      "_key": "aa5d405b1426ed16ef0c5b3b047f424b",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 270,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "aaba5c893364ef7ce24a58e3a95a3e39",
       "_from": "vertices/2b23ca887d9af6a54a45019e25f9c0dd",
       "_to": "vertices/3f2173d56b67e32b21dd3ef76f3a35d8",
@@ -8843,19 +9492,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 221,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "afbbb0d3a96d4379c417d61113249f4b",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/8201a5a2645c0de551dae7f627632d14",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 493,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9148,19 +9784,6 @@
       }
     },
     {
-      "_key": "bbd1056142e413950812cbb9921b7739",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/dbef9a3cffafa739114822a905bf6196",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 476,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "bc3c14261a352d20ba70b42507b08c7b",
       "_from": "vertices/2ebef88c8bafc3a9500d46cada051806",
       "_to": "vertices/faf458fa00642e3dedacc56fbf010251",
@@ -9298,19 +9921,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 168,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c2057c83c3df60ef1a98803b693c0003",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/b809bb24b2077044f24c48bb67275199",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 519,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9512,6 +10122,19 @@
       }
     },
     {
+      "_key": "cc4c1eb2aa2cd2abf9485f0d4c6c9e96",
+      "_from": "vertices/1ce302be47f54d7ee7aae44fee7e984d",
+      "_to": "vertices/bc37563a64ee94760dad69e48360964f",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "cc54c7256fddf4600c14c2d534597195",
       "_from": "vertices/673cd8217aca212ca941466ee789acd4",
       "_to": "vertices/4b9683f837faaa88708e4515e94a0383",
@@ -9629,6 +10252,19 @@
       }
     },
     {
+      "_key": "d1247a3ebd83755e59fd03be353e89a9",
+      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 446,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d1e55a46e21fca7311622420f8624bcf",
       "_from": "vertices/ce35e7523353753e4e44e5a576989981",
       "_to": "vertices/b3bafab2ac78f2d08b2d052bc76853fa",
@@ -9636,19 +10272,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 139,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d21d522fcde856bf6770bc9adab10fbb",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 479,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9727,6 +10350,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 103,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d568f98897a8bd85d4670c448e322b2c",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 255,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9941,6 +10577,19 @@
       }
     },
     {
+      "_key": "def86d16d2aaf2bcbc3ab781732ae1a0",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/99cb72b2df922c1d9483d79354a452f5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 202,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "df14a1bffd3a76163b67bb29e6c27415",
       "_from": "vertices/1140f10cefafc7877824f9e436ca6824",
       "_to": "vertices/17cd2d579a6eeda26b2b2364a65ead59",
@@ -9961,6 +10610,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 358,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "df8bfbbb69a6f5c43caa84862a4d0885",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/dbef9a3cffafa739114822a905bf6196",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 477,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dfd2127afb1899da8b6ada938c1dd54a",
+      "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "_to": "vertices/706a682d490858113db9fec53e32cfc9",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 198,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10045,6 +10720,19 @@
       }
     },
     {
+      "_key": "e1b4a769e361edad76025ec7c6608469",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 244,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e1d608db3c8f8ee5023c3f5e6baa7767",
       "_from": "vertices/8f22fb9c474bfce01d5f205c9841ba7b",
       "_to": "vertices/d01b5df88b5832e67cbdc28dfbd23df0",
@@ -10065,6 +10753,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 599,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e2a96d0ba20866f7cb123046ed5c846e",
+      "_from": "vertices/283d1377587f33f78287062ea4b68944",
+      "_to": "vertices/fb4acb1bb036a4aef547c113dbbb59e5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 146,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10156,6 +10857,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 257,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e52ee42ebb7f6599ee26871ed3322a19",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/8201a5a2645c0de551dae7f627632d14",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 494,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10273,6 +10987,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1665,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed748953c193c561b9e071b85ca678bd",
+      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "_to": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 413,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "edbefc4102e2df190df8239b8ed7e696",
+      "_from": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "_to": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 121,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10435,19 +11175,6 @@
       }
     },
     {
-      "_key": "f3d310b8857739e0b0385f95410c15fb",
-      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 434,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "f410cf7bb9b174952842a2a2103fee8f",
       "_from": "vertices/bf197f6513dad5e092b6c7e6d1c64137",
       "_to": "vertices/dfe5998588f9d744d28df48eff6979cc",
@@ -10513,6 +11240,19 @@
       }
     },
     {
+      "_key": "f5aa59099a2720f221a0ca6d3614e825",
+      "_from": "vertices/283d1377587f33f78287062ea4b68944",
+      "_to": "vertices/8c69ede2f0270a67491b6a308bab560b",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 145,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f625cc00557ff462422a7764a78b81ad",
       "_from": "vertices/7484e5526a45cf39f32caf6b76777eed",
       "_to": "vertices/0b7de823e783d1ef4e6b6eef95736b5d",
@@ -10546,6 +11286,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 116,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f7197c0a7f860fcbe9a42f08876623a6",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/b809bb24b2077044f24c48bb67275199",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 520,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10734,6 +11487,19 @@
       }
     },
     {
+      "_key": "fba0f1be5aada2c812e6c6ea9ca24c77",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/53db7fa679af6fb9fbaffcee2f191a5c",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 512,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "fbc5f37b362fdb5a73f50c2a672d50fe",
       "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
       "_to": "vertices/15534ffa5b6a404f5be8d906aed877ec",
@@ -10741,6 +11507,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fc4e845ac26b9391a44a88582ce22b60",
+      "_from": "vertices/283d1377587f33f78287062ea4b68944",
+      "_to": "vertices/99cb72b2df922c1d9483d79354a452f5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 148,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10786,6 +11565,19 @@
       }
     },
     {
+      "_key": "fd1a83d04bb2d57290743d0daf64aadb",
+      "_from": "vertices/2bf472fd78a69d5767afca71e976897e",
+      "_to": "vertices/44a14b2ddbae39b75148b4ec8ca168ed",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 123,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "fd7949311fcde9f38fc1240eb892a577",
       "_from": "vertices/42a9215bfd6237199ad4382e74e09228",
       "_to": "vertices/fc1841851fa7dbf69c0e851e57f341d0",
@@ -10806,6 +11598,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 142,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "feecc8ccb1cb69e3b564f518cfdb5722",
+      "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
+      "_to": "vertices/3d837240f413ede70b4a0d2a04f02969",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 240,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10905,11 +11710,42 @@
   ],
   "skill": {
     "path": "apps/maestro/.claude/skills/claude-session-bridge/SKILL.md",
-    "body": "---\nname: claude-session-bridge\ndescription: \"Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process.\"\nmetadata:\n  type: concept-skill\n  version: \"2.3\"\n  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d\n---\n\n# Claude session bridge\n\nEverything in the Maestro app that causes a Claude process to exist goes through this cluster in\n`apps/maestro/src/core`, plus one owner in the main process. Both of its entry points now run on\nthe **Agent SDK** — `claude-run.ts` stopped spawning `claude -p` at task `018` — so what separates\nthem is not the spawn path but the **authorisation**:\n\n|                  | One-shot run                                                    | Pane session                                          |\n| ---------------- | --------------------------------------------------------------- | ----------------------------------------------------- |\n| Started by       | `runPreviewedClaude(token, …)`                                  | `startSession` / `resumeSession` in main              |\n| Its prompt is    | built by `claude-preview.ts`, shown, then authorised by a token | typed by the user, verbatim                           |\n| Tools / skills   | `SESSION_TOOLS` / `SESSION_SKILLS`                              | `PANE_TOOLS` / `PANE_SKILLS` (adds `AskUserQuestion`) |\n| Can ask a person | no — allow or deny only                                         | yes — the host parks the promise                      |\n| Teardown         | `cancelClaudeRun(token)`                                        | `endSession(webContentsId)` — the pane holds no token |\n\nThe invariant the whole cluster is built around: **the module that builds a prompt cannot start a\nprocess, and the module that starts a process cannot build a prompt.** `claude-preview.ts` issues a\none-time token; `claude-run.ts` takes a token _and nothing else_. The pane restates it from the\nother side: main never composes a prompt, so the only prompts there are ones the user **wrote**.\n\nThat is a claim about the import graph, and it is **enforced by tests, not by convention** — see\n[The invariants are asserted](#the-invariants-are-asserted). Adding an `fs` or `child_process`\nimport to one of these modules defeats the design; the test is what makes it fail loudly.\n\n## Files\n\n**The one-shot pipeline** — see [run-pipeline](sub-concepts/run-pipeline.md).\n\n| File                     | Lines | What it owns                                                                                           |\n| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |\n| `core/claude-preview.ts` | 540   | Builds the prompt for all 6 request kinds, reports CLI availability, issues the token. Spawns nothing. |\n| `core/claude-tokens.ts`  | 150   | The token contract. The security design in one file.                                                   |\n| `core/claude-run.ts`     | 308   | Claims a token, drives an SDK session, owns the detached process group.                                |\n| `core/claude-cli.ts`     | 179   | Locating the `claude` binary, and the `PATH` a GUI launch does not have.                               |\n\n**The SDK, and the pane's owner** — see [agent-sdk](sub-concepts/agent-sdk.md).\n\n| File                     | Lines | What it owns                                                                                                      |\n| ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------- |\n| `core/agent-sdk.ts`      | 2185  | The app's **only** importer of the SDK. `startAgentSession`, `startPaneSession`, `nodeSettings`, the smoke check. |\n| `main/claude-session.ts` | 1056  | One live session per window. Composes no prose and resolves no CLI path.                                          |\n\n**The pure modules.** No `fs`, no spawn, no SDK — which is what lets `claude-preview.ts` import\nthem while remaining unable to spawn, and what lets every decision below be unit-tested without a\nwindow. Each has a test of the same name under `test/core/`.\n\n| File                          | Lines | Answers                                                                              |\n| ----------------------------- | ----- | ------------------------------------------------------------------------------------ |\n| `core/read-scope.ts`          | 266   | What a run _will_ be able to read, before it starts, with each path's origin.        |\n| `core/write-scope.ts`         | 151   | May this one tool call write?                                                        |\n| `core/session-scope.ts`       | 268   | Did this read stay inside the disclosed directories — and what could a person grant? |\n| `core/session-budget.ts`      | 266   | What may it spend, and how is a ceiling continued past?                              |\n| `core/session-permission.ts`  | 331   | Settle it, or ask a person? Composes the two above; decides nothing itself.          |\n| `core/permission-registry.ts` | 123   | The parked promises, and every way they end.                                         |\n| `core/session-question.ts`    | 196   | `AskUserQuestion` — same wire, different meaning.                                    |\n| `core/session-resume.ts`      | 313   | Which stored conversations may be offered, and what must be disclosed first.         |\n| `core/session-handoff.ts`     | 118   | What a create-\\* form says to the session it hands off into.                         |\n\n## How a tool call is decided\n\n**Four routes can refuse one, and they share no code.** An agent debugging \"why was this refused\"\nis usually looking at the wrong one:\n\n1. **`canUseTool`** — the SDK asks the host. `decideWrite` for the headless run; `decidePaneCall`\n   for the pane, which returns `settled` (allow, or a deny not worth asking about) or `ask`.\n2. **The `PreToolUse` hook** — fires for _every_ call, **before** the permission flow, and is where\n   the bound on **reads** lives (`decideBoundary`). `canUseTool` cannot do this job: reads are\n   auto-approved and never reach it.\n3. **A person**, answering a prompt the host parked. Allowing a write grants that one call and\n   nothing more; allowing a read may also grant a directory for the session's lifetime.\n4. **The CLI's own permission system** — a deny rule or the permission mode, refusing before\n   `canUseTool` is ever called. It surfaces only as a `permission_denied` stream event, which\n   `autoRefusal` turns into a transcript entry\n   ([asking-a-person](sub-concepts/asking-a-person.md)). This is the route a user's own\n   configuration takes, and the one they can least diagnose.\n\n`decidePaneCall`'s ordering is the design: always-ask tools (`WebFetch`/`WebSearch`) first, then\nthe read boundary **over read-only tools only**, then `decideWrite`. Letting the boundary answer\nfor writes too would replace `decideWrite`'s reason with a different one, and a refused write is\nrequired to keep its own — the model reads that sentence and acts on it.\n\n## Things that bite\n\nEach is named here and reasoned out in the sub-concept linked beside it.\n\n- **`write-scope.ts` returns `allow` for `Read` without looking at the path**, and adding a check\n  there _looks like the fix and is not_: reads never reach `canUseTool`. The read bound is\n  `session-scope.ts`, applied by the hook — [scopes](sub-concepts/scopes.md).\n- **The two fall-throughs are opposite, deliberately** — `decideWrite` denies what it does not\n  recognise, `decideBoundary` allows it. Making them agree breaks one of them —\n  [scopes](sub-concepts/scopes.md).\n- **Never resolve a `canUseTool` promise to `undefined` or `null`**, and **every exit must drain the\n  registry**: both leave a permanently wedged session holding a detached child, with nothing on\n  screen — [asking-a-person](sub-concepts/asking-a-person.md).\n- **A permission prompt and a structured question arrive on the same wire.** `agent-sdk.ts` branches\n  on the tool name _first_ so `session-permission.ts` never sees an `AskUserQuestion` —\n  [asking-a-person](sub-concepts/asking-a-person.md).\n- **Tokens are shared with the usage-stats reader**, which is why a claim is purpose-pinned —\n  [run-pipeline](sub-concepts/run-pipeline.md).\n- **The plugin's `hooks.json` does NOT fire in a pane session** — measured, and the reason the pane's\n  calls stay out of `/session-log` — [agent-sdk](sub-concepts/agent-sdk.md).\n- **The pane's transcript must be cleared BEFORE a resume round trip**, and `SessionProvider` must\n  stay at the renderer root — [pane-in-the-renderer](sub-concepts/pane-in-the-renderer.md).\n- **`session-runtime.ts` and `session-log.ts` are not this concept**, despite the prefix. They are\n  the hook-written files under `<project>/.claude/` — see `maestro-architecture` and `log-view`.\n\n## The invariants are asserted\n\n`test/isolation.test.ts` holds four **reviewed lists** — deliberately short enough to read, so a\nwidening arrives as a diff to a line with a paragraph of reasoning above it, not as an import\nnobody looked at. When a change here fails one, the list is the thing to think about; editing it to\ngo green is the failure mode it exists to catch.\n\n| The list                                               | Currently                                                          |\n| ------------------------------------------------------ | ------------------------------------------------------------------ |\n| Modules that resolve the CLI path                      | `agent-sdk.ts`, `claude-preview.ts`                                |\n| Modules that claim a token (purpose pinned per module) | `ccusage.ts`, `claude-run.ts`                                      |\n| Modules that import `child_process`                    | those two, plus `discovery.ts`, `git.ts`, `install.ts`, `rules.ts` |\n| `--permission-mode acceptEdits`                        | nowhere in the app                                                 |\n\n`test/core/claude.test.ts` walks `claude-preview.ts`'s **transitive** import graph and fails if a\nspawn reaches it. That is why the settings cascade is handed in as a `SettingsPort` rather than\nimported: resolving it lives in `agent-sdk.ts`, which can spawn.\n\n**The design record is `.claude/maestro-tasks/`.** Tasks `007`, `008`, `013`, `015` and `017`–`026`\nare this cluster, one slice each, and the code comments cite them by number. They carry the\nmeasurements the comments assert. Comments also cite `SESSION-PANE-PLAN.md` — **it was never\ncommitted and does not exist**; do not go looking for it.\n\n## Relationships\n\n- [`create-skills-architecture`](../create-skills-architecture/SKILL.md) — the four create-\\* flows\n  are this bridge's main caller; `session-handoff.ts` is the seam where a form becomes a conversation.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the project a run's scopes are derived\n  against.\n- [`global-stores`](../global-stores/SKILL.md) — `update-skill-tags` previews from the tag store and\n  writes back through a fenced block in the pane's reply.\n- `maestro-architecture` (repo root `.claude/skills/`) — the _other_ way Claude runs in Maestro:\n  hooks inside a session the app never started. Nothing in this cluster runs there.\n\n## Related\n\n- `docs/ideas/mcp-channel-bridge.md` (in `apps/maestro`) — why an MCP server and a Claude Code channel\n  between a session and this app were evaluated and deferred (`081`): the app's own sessions are Agent\n  SDK sessions and cannot receive channel events, and a second front door would sidestep the preview,\n  token, run design above.\n\n## Sub-concepts\n\n- [Run pipeline](sub-concepts/run-pipeline.md) — preview → token → run, and why it is three files.\n- [Agent SDK integration](sub-concepts/agent-sdk.md) — the right package, the packaging traps, the\n  tool and skill lists, and the environment the child gets.\n- [Scope modules](sub-concepts/scopes.md) — read, write and session scope, and which answers what.\n- [Budgets and ceilings](sub-concepts/budgets.md) — spend limits that can be continued past.\n- [Asking a person](sub-concepts/asking-a-person.md) — the parked-promise registry, permission asks,\n  grants, and structured questions.\n- [Resume and handoff](sub-concepts/resume-and-handoff.md) — picking up a terminal conversation, and\n  seeding one from a form.\n- [The pane in the renderer](sub-concepts/pane-in-the-renderer.md) — where the provider lives, and\n  the event-ordering trap around a resume.\n",
-    "contentHash": "sha256:cebfa19529c3b023b860d06f225d823c222b7712d3d51da44acc8bc4b3d715f0"
+    "body": "---\nname: claude-session-bridge\ndescription: \"Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process.\"\nmetadata:\n  type: concept-skill\n  version: \"2.4\"\n  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9\n---\n\n# Claude session bridge\n\nEverything in the Maestro app that causes a Claude process to exist goes through this cluster in\n`apps/maestro/src/core`, plus one owner in the main process. Both of its entry points now run on\nthe **Agent SDK** — `claude-run.ts` stopped spawning `claude -p` at task `018` — so what separates\nthem is not the spawn path but the **authorisation**:\n\n|                  | One-shot run                                                    | Pane session                                          |\n| ---------------- | --------------------------------------------------------------- | ----------------------------------------------------- |\n| Started by       | `runPreviewedClaude(token, …)`                                  | `startSession` / `resumeSession` in main              |\n| Its prompt is    | built by `claude-preview.ts`, shown, then authorised by a token | typed by the user, verbatim                           |\n| Tools / skills   | `SESSION_TOOLS` / `SESSION_SKILLS`                              | `PANE_TOOLS` / `PANE_SKILLS` (adds `AskUserQuestion`) |\n| Can ask a person | no — allow or deny only                                         | yes — the host parks the promise                      |\n| Teardown         | `cancelClaudeRun(token)`                                        | `endSession(webContentsId)` — the pane holds no token |\n\nThe invariant the whole cluster is built around: **the module that builds a prompt cannot start a\nprocess, and the module that starts a process cannot build a prompt.** `claude-preview.ts` issues a\none-time token; `claude-run.ts` takes a token _and nothing else_. The pane restates it from the\nother side: main never composes a prompt, so the only prompts there are ones the user **wrote**.\n\nThat is a claim about the import graph, and it is **enforced by tests, not by convention** — see\n[The invariants are asserted](#the-invariants-are-asserted). Adding an `fs` or `child_process`\nimport to one of these modules defeats the design; the test is what makes it fail loudly.\n\n## Files\n\n**The one-shot pipeline** — see [run-pipeline](sub-concepts/run-pipeline.md).\n\n| File                     | Lines | What it owns                                                                                           |\n| ------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |\n| `core/claude-preview.ts` | 545   | Builds the prompt for all 6 request kinds, reports CLI availability, issues the token. Spawns nothing. |\n| `core/claude-tokens.ts`  | 150   | The token contract. The security design in one file.                                                   |\n| `core/claude-run.ts`     | 308   | Claims a token, drives an SDK session, owns the detached process group.                                |\n| `core/claude-cli.ts`     | 179   | Locating the `claude` binary, and the `PATH` a GUI launch does not have.                               |\n\n**The SDK, and the pane's owner** — see [agent-sdk](sub-concepts/agent-sdk.md).\n\n| File                     | Lines | What it owns                                                                                                      |\n| ------------------------ | ----- | ----------------------------------------------------------------------------------------------------------------- |\n| `core/agent-sdk.ts`      | 2185  | The app's **only** importer of the SDK. `startAgentSession`, `startPaneSession`, `nodeSettings`, the smoke check. |\n| `main/claude-session.ts` | 1056  | One live session per window. Composes no prose and resolves no CLI path.                                          |\n\n**The pure modules.** No `fs`, no spawn, no SDK — which is what lets `claude-preview.ts` import\nthem while remaining unable to spawn, and what lets every decision below be unit-tested without a\nwindow. Each has a test of the same name under `test/core/`.\n\n| File                          | Lines | Answers                                                                              |\n| ----------------------------- | ----- | ------------------------------------------------------------------------------------ |\n| `core/read-scope.ts`          | 266   | What a run _will_ be able to read, before it starts, with each path's origin.        |\n| `core/write-scope.ts`         | 151   | May this one tool call write?                                                        |\n| `core/session-scope.ts`       | 268   | Did this read stay inside the disclosed directories — and what could a person grant? |\n| `core/session-budget.ts`      | 266   | What may it spend, and how is a ceiling continued past?                              |\n| `core/session-permission.ts`  | 331   | Settle it, or ask a person? Composes the two above; decides nothing itself.          |\n| `core/permission-registry.ts` | 123   | The parked promises, and every way they end.                                         |\n| `core/session-question.ts`    | 196   | `AskUserQuestion` — same wire, different meaning.                                    |\n| `core/session-resume.ts`      | 313   | Which stored conversations may be offered, and what must be disclosed first.         |\n| `core/session-handoff.ts`     | 120   | What a create-\\* form says to the session it hands off into.                         |\n\n## How a tool call is decided\n\n**Four routes can refuse one, and they share no code.** An agent debugging \"why was this refused\"\nis usually looking at the wrong one:\n\n1. **`canUseTool`** — the SDK asks the host. `decideWrite` for the headless run; `decidePaneCall`\n   for the pane, which returns `settled` (allow, or a deny not worth asking about) or `ask`.\n2. **The `PreToolUse` hook** — fires for _every_ call, **before** the permission flow, and is where\n   the bound on **reads** lives (`decideBoundary`). `canUseTool` cannot do this job: reads are\n   auto-approved and never reach it.\n3. **A person**, answering a prompt the host parked. Allowing a write grants that one call and\n   nothing more; allowing a read may also grant a directory for the session's lifetime.\n4. **The CLI's own permission system** — a deny rule or the permission mode, refusing before\n   `canUseTool` is ever called. It surfaces only as a `permission_denied` stream event, which\n   `autoRefusal` turns into a transcript entry\n   ([asking-a-person](sub-concepts/asking-a-person.md)). This is the route a user's own\n   configuration takes, and the one they can least diagnose.\n\n`decidePaneCall`'s ordering is the design: always-ask tools (`WebFetch`/`WebSearch`) first, then\nthe read boundary **over read-only tools only**, then `decideWrite`. Letting the boundary answer\nfor writes too would replace `decideWrite`'s reason with a different one, and a refused write is\nrequired to keep its own — the model reads that sentence and acts on it.\n\n## Things that bite\n\nEach is named here and reasoned out in the sub-concept linked beside it.\n\n- **`write-scope.ts` returns `allow` for `Read` without looking at the path**, and adding a check\n  there _looks like the fix and is not_: reads never reach `canUseTool`. The read bound is\n  `session-scope.ts`, applied by the hook — [scopes](sub-concepts/scopes.md).\n- **The two fall-throughs are opposite, deliberately** — `decideWrite` denies what it does not\n  recognise, `decideBoundary` allows it. Making them agree breaks one of them —\n  [scopes](sub-concepts/scopes.md).\n- **Never resolve a `canUseTool` promise to `undefined` or `null`**, and **every exit must drain the\n  registry**: both leave a permanently wedged session holding a detached child, with nothing on\n  screen — [asking-a-person](sub-concepts/asking-a-person.md).\n- **A permission prompt and a structured question arrive on the same wire.** `agent-sdk.ts` branches\n  on the tool name _first_ so `session-permission.ts` never sees an `AskUserQuestion` —\n  [asking-a-person](sub-concepts/asking-a-person.md).\n- **Tokens are shared with the usage-stats reader**, which is why a claim is purpose-pinned —\n  [run-pipeline](sub-concepts/run-pipeline.md).\n- **The plugin's `hooks.json` does NOT fire in a pane session** — measured, and the reason the pane's\n  calls stay out of `/session-log` — [agent-sdk](sub-concepts/agent-sdk.md).\n- **The pane's transcript must be cleared BEFORE a resume round trip**, and `SessionProvider` must\n  stay at the renderer root — [pane-in-the-renderer](sub-concepts/pane-in-the-renderer.md).\n- **`session-runtime.ts`, `session-log.ts`, `session-paths.ts`, `session-name.ts`, `session-title.ts`,\n  `session-sweep.ts`, `session-usage.ts` and `session-ipc.ts` are not this concept**, despite the\n  prefix. They read and decide about the hook-written session files under `<project>/.claude/` (log,\n  names, titles, sweep, context usage) — see `maestro-architecture` and `log-view`.\n\n## The invariants are asserted\n\n`test/isolation.test.ts` holds four **reviewed lists** — deliberately short enough to read, so a\nwidening arrives as a diff to a line with a paragraph of reasoning above it, not as an import\nnobody looked at. When a change here fails one, the list is the thing to think about; editing it to\ngo green is the failure mode it exists to catch.\n\n| The list                                               | Currently                                                          |\n| ------------------------------------------------------ | ------------------------------------------------------------------ |\n| Modules that resolve the CLI path                      | `agent-sdk.ts`, `claude-preview.ts`                                |\n| Modules that claim a token (purpose pinned per module) | `ccusage.ts`, `claude-run.ts`                                      |\n| Modules that import `child_process`                    | those two, plus `discovery.ts`, `git.ts`, `install.ts`, `rules.ts` |\n| `--permission-mode acceptEdits`                        | nowhere in the app                                                 |\n\n`test/core/claude.test.ts` walks `claude-preview.ts`'s **transitive** import graph and fails if a\nspawn reaches it. That is why the settings cascade is handed in as a `SettingsPort` rather than\nimported: resolving it lives in `agent-sdk.ts`, which can spawn.\n\n**The design record is `.claude/maestro-tasks/`.** Tasks `007`, `008`, `013`, `015` and `017`–`026`\nare this cluster, one slice each, and the code comments cite them by number. They carry the\nmeasurements the comments assert. Comments also cite `SESSION-PANE-PLAN.md` — **it was never\ncommitted and does not exist**; do not go looking for it.\n\n## Relationships\n\n- [`create-skills-architecture`](../create-skills-architecture/SKILL.md) — the four create-\\* flows\n  are this bridge's main caller; `session-handoff.ts` is the seam where a form becomes a conversation.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the project a run's scopes are derived\n  against.\n- [`global-stores`](../global-stores/SKILL.md) — `update-skill-tags` previews from the tag store and\n  writes back through a fenced block in the pane's reply.\n- `maestro-architecture` (repo root `.claude/skills/`) — the _other_ way Claude runs in Maestro:\n  hooks inside a session the app never started. Nothing in this cluster runs there.\n\n## Related\n\n- `docs/ideas/mcp-channel-bridge.md` (in `apps/maestro`) — why an MCP server and a Claude Code channel\n  between a session and this app were evaluated and deferred (`081`): the app's own sessions are Agent\n  SDK sessions and cannot receive channel events, and a second front door would sidestep the preview,\n  token, run design above.\n\n## Sub-concepts\n\n- [Run pipeline](sub-concepts/run-pipeline.md) — preview → token → run, and why it is three files.\n- [Agent SDK integration](sub-concepts/agent-sdk.md) — the right package, the packaging traps, the\n  tool and skill lists, and the environment the child gets.\n- [Scope modules](sub-concepts/scopes.md) — read, write and session scope, and which answers what.\n- [Budgets and ceilings](sub-concepts/budgets.md) — spend limits that can be continued past.\n- [Asking a person](sub-concepts/asking-a-person.md) — the parked-promise registry, permission asks,\n  grants, and structured questions.\n- [Resume and handoff](sub-concepts/resume-and-handoff.md) — picking up a terminal conversation, and\n  seeding one from a form.\n- [The pane in the renderer](sub-concepts/pane-in-the-renderer.md) — where the provider lives, and\n  the event-ordering trap around a resume.\n",
+    "contentHash": "sha256:b2d0e337c45eab06dc4d58157242aa9907b54b59b4384750480d82ed74aee5a1"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.11",
-    "extracted_at": "2026-10-17T13:02:09.977Z"
+    "extractor_version": "code-graph@0.3.20",
+    "extracted_at": "2026-10-21T16:22:32.478Z",
+    "files": {
+      "apps/maestro/src/core/agent-sdk.ts": "sha256:239f9064c289fff2811caa508b2955572790cb0963702fa100bbff649e616044",
+      "apps/maestro/src/core/claude-cli.ts": "sha256:301a0f6339051f0d251226289f1d31fff0e937dbbf5b72bd006905a880e02ec8",
+      "apps/maestro/src/core/claude-preview.ts": "sha256:5c37f03feb249b32959cf11f496767769b59f48bd80cdc334b38e5047054bee1",
+      "apps/maestro/src/core/claude-run.ts": "sha256:6045993c1ac03b7afde5c933b58f0979e0bc89d8f3b7393c4f8684244c8cc855",
+      "apps/maestro/src/core/claude-tokens.ts": "sha256:7b94a9da17587e44608076855da40ee20f355ab7d96604ac6c2181682f1f1000",
+      "apps/maestro/src/core/permission-registry.ts": "sha256:8bcf542ad03a81a46d39d593ced0c47b5c3d15e156a447d4e97dab48f609c57b",
+      "apps/maestro/src/core/read-scope.ts": "sha256:2957f750de355b2e3765e5d66a11024fbba58f774fc966bb1b5040264cf5f224",
+      "apps/maestro/src/core/session-budget.ts": "sha256:367c03070276374e6354efebe25b01943de9faf47458f4e82825049da1117d33",
+      "apps/maestro/src/core/session-handoff.ts": "sha256:9ee47b4587e9f1bf10248dac4d72913785274b52918c6d065d3427aaf4fb62bf",
+      "apps/maestro/src/core/session-ipc.ts": "sha256:9812f6094f953e80e872b2da70914df3f56c1826c9381a87640a2470568168e9",
+      "apps/maestro/src/core/session-log.ts": "sha256:215e104f764d11f46ec7e9efa42fe0c485909cfd0212174e9f88f5c3c17b84e2",
+      "apps/maestro/src/core/session-name.ts": "sha256:cdbc471554d7e0b0c07840486b14b51f4138e9f737a5ed348936dec13851df2e",
+      "apps/maestro/src/core/session-paths.ts": "sha256:af761dc940939a0623cb6aed44349d78c0b3959cc788f65f43cfbfc19c2827a0",
+      "apps/maestro/src/core/session-permission.ts": "sha256:43b4da22bfc8fb7d967490f853bc99bf7f5cf8ede4b9b80820f8372d92ca87ab",
+      "apps/maestro/src/core/session-question.ts": "sha256:a89732188a3cbef636df8519a5dfe40faef14940a4dfe57be4bfcc3510716473",
+      "apps/maestro/src/core/session-resume.ts": "sha256:e79500f3d9ad8fe5ad4d14559a80f7ecd3a85b68f9411bc6de53b54d1c3de775",
+      "apps/maestro/src/core/session-runtime.ts": "sha256:983430cac67cc15a4461ff6b101072e95e2f3a9ad6bc106ae40dbe64ab1097a4",
+      "apps/maestro/src/core/session-scope.ts": "sha256:e1a0628a99b11150537ddb949d90873acc4dcb5a6f85b9f9b7fbd0948c11913c",
+      "apps/maestro/src/core/session-sweep.ts": "sha256:2c67c527797f9223d3aa6525ca4cb656ee4f73b3fb1a9002be4c773b4f979f92",
+      "apps/maestro/src/core/session-title.ts": "sha256:bbd5ff04e065541f9e3291a79b17db5f7aa329da3c39b1895191dd99b18fd9a6",
+      "apps/maestro/src/core/session-usage.ts": "sha256:52c717bf9c7cbac6e6e6a2277fbcb98a608ec66c077ac82546abb8c7da0c1bb9",
+      "apps/maestro/src/core/write-scope.ts": "sha256:3fe690ea30e77d2a0980380480a173aef4daa51be78d935d3b9a54eecbe4455e",
+      "apps/maestro/src/main/claude-session.ts": "sha256:b8037eb1008781142f468b4fa7191e50af0f61bf6fddcf576092387b0acdf676",
+      "apps/maestro/src/renderer/src/components/agent-question.tsx": "sha256:2adf476bd8b58c7c1ae303a02d4a7caa537dd4a5e315c21ff11b2fe4189b5bb9",
+      "apps/maestro/src/renderer/src/components/claude-run-dialog.tsx": "sha256:34b130234b5273855ddbf18e2162ab2dc7dc707f82dbcb90c4c80ce8115fa6aa",
+      "apps/maestro/src/renderer/src/components/read-scope.tsx": "sha256:990640b095a6c22344c1263e8650dc912d3ff27da8e4a95ca1c25abcf678b3fa",
+      "apps/maestro/src/renderer/src/components/session-pane.tsx": "sha256:c22ce3407f738f1abafd23f611abc58f5f31e387f7d94026ee6c77d1baa7891a",
+      "apps/maestro/src/renderer/src/components/session-resume.tsx": "sha256:e41c2dec1738e24b382f6e56785aa7b67b516c3f160931865761b67284376cdf",
+      "apps/maestro/src/renderer/src/utils/session-context.tsx": "sha256:a706404ecbc148ed6bcb4a6ca38ee1eb104f9b6d3ab3b11a5ed1f2fae041286f"
+    }
   }
 }

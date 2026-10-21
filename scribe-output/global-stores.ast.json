@@ -98,8 +98,8 @@
       "type": "function",
       "name": "writeAgentReportDefault",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 466,
-      "end_line": 495,
+      "start_line": 487,
+      "end_line": 516,
       "signature": "function writeAgentReportDefault(agentName: string, content: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportDefault",
       "contentHash": "829cb20f3fe4728cfa922e83ea9dd4d5f9ee336d5ee227065205f5882868b8f3",
       "status": "live",
@@ -278,8 +278,8 @@
       "type": "function",
       "name": "readAllAgentReportDefaults",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 437,
-      "end_line": 454,
+      "start_line": 458,
+      "end_line": 475,
       "signature": "function readAllAgentReportDefaults(dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): Record<string, ReportDefault>",
       "contentHash": "d41921d770d423cfe8edb95afc7ee3e4d917068b34b3d0a156872e375efec315",
       "status": "live",
@@ -584,8 +584,8 @@
       "type": "function",
       "name": "testReportBody",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 160,
-      "end_line": 176,
+      "start_line": 181,
+      "end_line": 197,
       "signature": "function testReportBody(gapsNote: string): string",
       "contentHash": "3f319a0d3ab37dda2d991ec72519c359d56251e318fa9f361cd61bd8c930291a",
       "status": "live",
@@ -656,8 +656,8 @@
       "type": "function",
       "name": "priorReportSeeds",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 397,
-      "end_line": 399,
+      "start_line": 418,
+      "end_line": 420,
       "signature": "function priorReportSeeds(agentName: string): string[]",
       "contentHash": "bfa857a6232820bb529079d116f0e60205f3e863c41a14d9a78db0c216d25ec9",
       "status": "live",
@@ -782,8 +782,8 @@
       "type": "function",
       "name": "openDb",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 316,
-      "end_line": 338,
+      "start_line": 337,
+      "end_line": 359,
       "signature": "function openDb(dbPath: string): DatabaseSync",
       "contentHash": "59294e58b393814b3dbf96d498575b143119872b3903f622815a19f78d695040",
       "status": "live",
@@ -836,8 +836,8 @@
       "type": "function",
       "name": "seedIfEmpty",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 371,
-      "end_line": 387,
+      "start_line": 392,
+      "end_line": 408,
       "signature": "function seedIfEmpty(db: DatabaseSync): void",
       "contentHash": "fa8a4033627ff804de4406b99965dae2a4efa2a986959b75db76a0ce2d2fd68a",
       "status": "live",
@@ -1016,8 +1016,8 @@
       "type": "function",
       "name": "refreshSupersededSeeds",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 348,
-      "end_line": 368,
+      "start_line": 369,
+      "end_line": 389,
       "signature": "function refreshSupersededSeeds(db: DatabaseSync): void",
       "contentHash": "ac87bd78960c69460dac628eab740f370e1529ab3cbc1e684765cc4101ab7d30",
       "status": "live",
@@ -1106,8 +1106,8 @@
       "type": "function",
       "name": "readReportById",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 422,
-      "end_line": 434,
+      "start_line": 443,
+      "end_line": 455,
       "signature": "function readReportById(reportId: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): { content: string; version: number; } | null",
       "contentHash": "1069e9a6b7f4d2b25592861ddefd7f8c7680561ae1f0aeee9b63df18f555f4e6",
       "status": "live",
@@ -1268,8 +1268,8 @@
       "type": "function",
       "name": "readAgentReportDefault",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 402,
-      "end_line": 419,
+      "start_line": 423,
+      "end_line": 440,
       "signature": "function readAgentReportDefault(agentName: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportDefault | null",
       "contentHash": "404130549ec80594a7cc93da3303d821b41c883c4fbdac9e7d5131d91de8221b",
       "status": "live",
@@ -1445,13 +1445,13 @@
       }
     },
     {
-      "_key": "1a0e9fab12f247aea4eccfb917c8aa83",
-      "_from": "vertices/cb9ffc016121bb2ab5552933df451847",
-      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "_key": "18468537bcc8d85e3dad05aac1dd805c",
+      "_from": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "_to": "vertices/9e920fdc6fd9462402aa073e2a1ff061",
       "type": "calls",
       "concept": "global-stores",
       "crosses_concept": false,
-      "line": 426,
+      "line": 356,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1478,19 +1478,6 @@
       "concept": "global-stores",
       "crosses_concept": false,
       "line": 31,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "2302c9b68fe26ab6df7088216aa32b04",
-      "_from": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
-      "_to": "vertices/c3974ba5e8a066668202f84e2225a0c4",
-      "type": "calls",
-      "concept": "global-stores",
-      "crosses_concept": false,
-      "line": 336,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1595,6 +1582,19 @@
       "concept": "global-stores",
       "crosses_concept": false,
       "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41401a7cd31a987822a8474d01113dcf",
+      "_from": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "_to": "vertices/c3974ba5e8a066668202f84e2225a0c4",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 357,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1757,6 +1757,19 @@
       }
     },
     {
+      "_key": "67ff0eaaf91f76da4f7785239e8d61ae",
+      "_from": "vertices/f29bf12a50080e9f95a08884773bc081",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 427,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "683d57597d8b2ff234365bfb1b721422",
       "_from": "vertices/c2371299799a36437ea965aff982cd90",
       "_to": "vertices/85d237bba846b57ac1b2dba480863915",
@@ -1913,6 +1926,19 @@
       }
     },
     {
+      "_key": "97763fe9094c6e8dadb8a7e6debc72ea",
+      "_from": "vertices/3053c4eb995fce2c248382752cac0ddc",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 461,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "9ae25c75e5474ad9dc68347918679195",
       "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
       "_to": "vertices/a1ffb6089c936d7d9001ad9547257cc9",
@@ -1933,19 +1959,6 @@
       "concept": "global-stores",
       "crosses_concept": false,
       "line": 149,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "9ed02f0cf00c3033df84a136b0d2826c",
-      "_from": "vertices/3053c4eb995fce2c248382752cac0ddc",
-      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
-      "type": "calls",
-      "concept": "global-stores",
-      "crosses_concept": false,
-      "line": 440,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2069,19 +2082,6 @@
       }
     },
     {
-      "_key": "bcb95ce74ab8015141d0e239edc1f92f",
-      "_from": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
-      "_to": "vertices/9e920fdc6fd9462402aa073e2a1ff061",
-      "type": "calls",
-      "concept": "global-stores",
-      "crosses_concept": false,
-      "line": 335,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "bd3e57268c2ad8ae422a2fdbbd0e045a",
       "_from": "vertices/3e9b42ca8957a30903066325cb8b90e8",
       "_to": "vertices/4aa9836981c69ba7eb2593b15f5d0a3b",
@@ -2160,6 +2160,19 @@
       }
     },
     {
+      "_key": "d6685b8fc413854b9fcf3baca1a73ab0",
+      "_from": "vertices/13bf29d15cddf7b9e1d2b09e4b5ccb62",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 492,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "dba61784db3369ff1e10bd16933ca293",
       "_from": "vertices/c80d985129359ec591a8fc837ce953b6",
       "_to": "vertices/6a0caf098a3c364966f18873d08278b6",
@@ -2225,19 +2238,6 @@
       }
     },
     {
-      "_key": "e98d6097b73c033acf5e5730cdcd58fb",
-      "_from": "vertices/13bf29d15cddf7b9e1d2b09e4b5ccb62",
-      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
-      "type": "calls",
-      "concept": "global-stores",
-      "crosses_concept": false,
-      "line": 471,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e9e9cc26eeda08e98791be1c22b7575d",
       "_from": "vertices/2145a9d0a677287d7f9eae607b77e798",
       "_to": "vertices/c540938cf2bee1e9e2c1429d1ff433f5",
@@ -2264,19 +2264,6 @@
       }
     },
     {
-      "_key": "ef95d5067238ad9b83db5b7f5afcda5d",
-      "_from": "vertices/f29bf12a50080e9f95a08884773bc081",
-      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
-      "type": "calls",
-      "concept": "global-stores",
-      "crosses_concept": false,
-      "line": 406,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "efa6cb879fcc328f75df30931f0839e2",
       "_from": "vertices/3e9b42ca8957a30903066325cb8b90e8",
       "_to": "vertices/2145a9d0a677287d7f9eae607b77e798",
@@ -2284,6 +2271,19 @@
       "concept": "global-stores",
       "crosses_concept": false,
       "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f0e3643e1e57c0caa840c0a572e403b1",
+      "_from": "vertices/cb9ffc016121bb2ab5552933df451847",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 447,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2357,11 +2357,23 @@
   ],
   "skill": {
     "path": "apps/maestro/.claude/skills/global-stores/SKILL.md",
-    "body": "---\nname: global-stores\ndescription: \"Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two.\"\nmetadata:\n  type: concept-skill\n  version: \"1.13\"\n  last-update: e9d00d58d06d6162ee56f5f527207a524b0a3464\n---\n\n# Global stores\n\nSix modules in `apps/maestro/src/core` share one mechanism: a `node:sqlite` database under\n`~/.claude`, one store per machine, read by every project the app opens. They are the deliberate\ncounterweight to [`maestro-config-model`](../maestro-config-model/SKILL.md) — state that is\nexplicitly _not_ per-project.\n\n| Store                                         | File                    | Keyed by                            |\n| --------------------------------------------- | ----------------------- | ------------------------------------ |\n| `~/.claude/maestro-skill-tags.sqlite`         | `skill-tags.ts`         | skill id                            |\n| `~/.claude/maestro-agent-types.sqlite`        | `agent-types.ts`        | `(project_root, agent_name)` (`030`) |\n| `~/.claude/maestro-agent-project-tags.sqlite` | `agent-project-tags.ts` | `(project_root, agent_name)` (`030`) |\n| `~/.claude/maestro-report-defaults.sqlite`    | `report-defaults.ts`    | agent name → report id              |\n| `~/.claude/maestro-handoff-defaults.sqlite`   | `handoff-defaults.ts`   | `\"<sender>/<receiver>\"` (`033`)      |\n| `~/.claude/maestro-avatars.sqlite`            | `avatar-store.ts`       | `(project_root, agent_name)` (`030`) |\n\nEach exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the\nreal machine's store.\n\n## Keyed by project, not just agent name (`030`)\n\nThe three per-agent stores — types, project tags, avatars — widened their primary key from\n`agent_name` alone to `(project_root, agent_name)`, `project_root = ''` meaning \"global\". This\nmatters only for a `project`-tier agent: two unrelated projects that each define\n`.claude/agents/reviewer.md` no longer share one avatar/type/tag row. `user`/`maestro`/plugin-tier\nagents are unaffected — they're the same agent everywhere, so they still key on `''` (global).\n\nEvery read/write function on these three takes an optional trailing `projectRoot?: string`:\n\n- **Omitted** → touches the GLOBAL row only. This is what `/templates` and the plugin's\n  install-time reader do, unchanged from before `030`.\n- **Passed on a bulk read** (`readAllAgentTypes`, `readAllAgentProjectTags`, `readAllAvatars`) →\n  one SQL query returns the global rows unioned with `projectRoot`'s own rows; a later row for the\n  same agent name overwrites the earlier one as the result map is built, because `''` collates\n  before any real path — so a project's own override wins over the global default for that project\n  only.\n- **Passed on a write** (`setAgentType`, `setAgentProjectTag`, `setAvatar`) → targets that\n  project's own row exclusively.\n\n**No migration.** Each store's `openDb()` calls a `dropLegacySchema()` helper that `DROP TABLE`s a\npre-`030` shape (no `project_root` column) before the `CREATE TABLE IF NOT EXISTS`/`seedIfEmpty`\nthat follows — a deliberate, one-time data loss, acceptable because Maestro wasn't installed\nanywhere that mattered yet.\n\n`report-defaults.ts` was deliberately **not** touched — it's already the global fallback tier by\ndefinition (see below), a different kind of thing from these three's per-instance metadata.\n\n## Why global — the reasons are not the same\n\nDo not collapse these into one rationale; the modules' own headers distinguish them:\n\n- **Skill tags and avatars** are global because _the thing is the same thing everywhere_: a skill is\n  the same skill wherever it is used, an agent of the same name should look the same everywhere.\n- **Report defaults and handoff defaults** are global for a different reason: they are the\n  **fallback tier** a project falls back to when it has no opinion of its own, and the thing\n  install/update syncs a project's `.claude/reports/*.md` and `.claude/handoffs/**.md` _from_.\n\n**These two are the only stores a HOOK reads, and since `035` it reads them from the project's own\ncopy too.** Their generated bundles (`lib/maestro-report-defaults.cjs`,\n`lib/maestro-handoff-defaults.cjs`) are in `install.ts`'s `STATIC_ASSETS`, so\n`maestro-inject-agent-context` resolves both tiers whether it runs from the marketplace cache or\nfrom `<project>/.claude/scripts/`. Before `035` the project copy's `require` resolved nothing, its\ntry/catch swallowed the failure, and the tier silently did not exist: no output format at all for an\nagent whose report is only global (reports have **no** seed tier), and the shipped seed instead of\nthe user's global row for a handoff. So a store these hooks read must keep a bundle safe under a\nbare, possibly old `node`, and `require`ing a *third* store from the hook means adding its bundle to\n`STATIC_ASSETS` in **both** install implementations. See `installing-maestro`'s manifest\nsub-concept.\n\n## `handoff-defaults.ts` is not a copy of `report-defaults.ts` (`033`)\n\nSame argument for being global, deliberately different shape: one table instead of two, a\npath-shaped id, a sqlite-free seed module, and two editing surfaces since `034`. All of it is in\n[Handoff defaults](sub-concepts/handoff-defaults.md).\n\n## The exception: a description is not a store\n\n`/agents` also edits an agent's **description**, and that one deliberately does *not* get a store:\n`src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the\n`agent:describe` channel. That is the test to apply before adding a seventh store — type, project\ntag and avatar are **Maestro's own metadata**, meaningless to a Claude session, so a machine-wide\ncopy is the truth; a description is the line **Claude Code itself reads** to decide when to dispatch\nthe agent, so a copy beside the app would make the page show one sentence while every run used\nanother.\n\nTwo guards bound the write, and both are about not lying to the user:\n\n- `EDITABLE_AGENT_SOURCES` (`contracts.ts`) is `[\"project\"]` (narrowed from `[\"project\", \"user\",\n  \"maestro\"]` in `029` — the `maestro` entry was editable by accident: bundled agents are ordinary\n  files in a repo checkout but live inside `app.asar` in a packaged build). Every non-project tier is\n  refused: `user`-tier agents belong to no project and are shared by every project on the machine;\n  `maestro`/an **installed plugin's** agents live in a version-keyed marketplace cache that the next\n  plugin update overwrites, so an edit there is discarded, not merely unowned.\n  `describeUneditableSource` gives each its own message — see `agents-view`. `contracts.ts` is\n  otherwise interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` /\n  `AVATAR_CATEGORIES` / `AGENT_TYPES`) so the renderer can decide from `source` alone with no round\n  trip. (`034`'s `BUNDLED_AGENT_NAMES` used to join this list; `043` removed it once the Handoffs\n  tab's pair roster moved to a picked project's own `agents_available` — see `handoff-defaults.md`.)\n- `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's\n  read-only bundled agents report why instead of appearing to save.\n\n`replaceDescriptionInFrontmatter` **refuses** a YAML block scalar (`|`, `>`) or a value continued on\nthe next line rather than flattening it: `parseFrontmatter` already misreads those, and rewriting\nonly the first line would leave the continuation dangling as garbage keys.\n\n## A fourth writer, on a fork\n\n`agent-fork.ts`'s `copyAgentAttributeRows(fromName, toName, projectRoot, dbPaths?)` (`029`, rekeyed\n`030`) is a new consumer of three of these six stores — avatar, agent type, project tag — called\nonly for a **renamed** fork on `/agents`. The read side stays name-only/global (a fork's source is\nalways a global-tier template), but the write side passes `projectRoot` — the new fork's own\nproject — since the copy always lands on a project-tier agent, and after `030`'s rekey landing it on\nthe global row would leak into every other project. A same-name fork needs no copy at all: the\nshadowing row *is* the template's own global row. See `agents-view`.\n\n**This writer is why `agent-fork.ts` was split in two (`031`).** It touches three sqlite stores, so\n`agent-fork.ts` transitively imports `node:sqlite` — and `031`'s fork-staleness check reaches the\nplugin's hook scripts through a generated bundle that runs under a bare `node` which may predate\nthat module (the same constraint `maestro-skill-tags.cjs` lives with). So the sidecar and the\nfrontmatter arithmetic moved to **`agent-fork-record.ts`** (`agentForksPath`, `readAgentForks`,\n`writeAgentForkRecord`, `removeAgentFork`, `bodyForHashing`, `hashAgentBody`, `mergeForkBody`,\n`renameAgentInFrontmatter`), which imports no store; `agent-fork.ts` keeps `forkAgent` and\n`copyAgentAttributeRows` and re-exports the rest, so every existing import still resolves. The\nproperty to preserve: `grep -c \"node:sqlite\" plugins/maestro/scripts/lib/maestro-agent-sync.cjs`\nmust stay **0**. Adding a store import to `agent-fork-record.ts` breaks that silently — the bundle\nstill builds, and only a bare-`node` run notices.\n\n## Why `node:sqlite`\n\nNo native module, and therefore no `electron-rebuild` step. `skill-tags.ts`'s header carries the\nfull argument — the other five cite it rather than restating it. A new store should use the same\nmechanism for the same reason.\n\n**The version floor is not the app's, it's whatever `node` is on the session's PATH.** Electron 40\nbundles Node 24, where `node:sqlite` loads fine (with the standard experimental-feature warning). The\ntest suite or `maestro-install.js` running under an older *system* `node` needs at least **22.5** for\nthe module to exist at all — which is why `maestro-install.js` wraps its\n`require(\"./lib/maestro-skill-tags.cjs\")` in try/catch: an old `node` degrades to the pre-tags, fully\nClaude-driven best-fit flow instead of failing the install. That degradation only works because the\nbundler keeps `node:sqlite` as a real `require()` rather than inlining a shim — see\n[`plugin-libs-parity`](../plugin-libs-parity/SKILL.md).\n\n## Skill tags, and the trap: `SKILL_TAGS` is gone\n\n`skill-tags.ts` stores a user's manual annotation once per skill id in\n`~/.claude/maestro-skill-tags.sqlite`, shared across every project. It has **two** dimensions:\n\n- **`projectTags`** — which `project-tags.ts` catalog entries the skill applies to, plus `GLOBAL_TAG`\n  for \"regardless of project tag\".\n- **`agentTypes`** — which of `agent-types.ts`'s closed vocabulary the skill applies to, plus\n  `GLOBAL_TAG` for \"regardless of agent type\".\n\nBoth are edited together in one Skills-tab row and always read together — `skillMapFromTags` is\nwhere they combine to decide which skills a given seeded agent instance receives. Routing is by\n_what kind of agent and what kind of project_, never by agent name. Edited from the `/skills` route;\nsee also `plugins/maestro/skills/update-skill-tags`.\n\nThe old single-dimension `SKILL_TAGS` was literally the seven built-in agent _names_, matched 1:1\nagainst an agent's name. It conflated \"which kind of project\" with \"which kind of agent\" into one\nflat list and could only route a skill to an agent whose name it already knew. The two dimensions\nmatch instead against a seeded agent _instance's_ own stored attributes, which is what decouples\nMaestro from a fixed agent roster. Any code or doc still routing by agent name is working from the\nretired model.\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — why the sidecar and the frontmatter helpers had\n  to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these stores, so it drags\n  `node:sqlite` into any bundle that imports it. Also `syncProjectHandoffs`, `decideSync`'s third\n  caller, which syncs `.claude/handoffs/` from this store the way `report-sync.ts` syncs\n  `.claude/reports/`.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the per-project counterpart; the\n  `reports` and `handoffs` slices are what override the `report-defaults` and `handoff-defaults`\n  tiers.\n- `maestro-architecture` (at the repo root `.claude/skills`) — the `SubagentStart` hook resolves a\n  report *and* a per-route handoff protocol across these tiers at dispatch time.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — five of these six have a generated CJS\n  twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules` (every one\n  but `avatar-store.ts`).\n- [`agents-view`](../agents-view/SKILL.md) — the fourth writer above, and the \"Fork into this\n  project\" button that triggers it.\n\n## Sub-concepts\n\n- [Agent types and project tags](sub-concepts/agent-classification.md) — the per-agent half of the\n  two-dimensional match above.\n- [Report defaults](sub-concepts/report-defaults.md) — the global fallback tier and its two tables.\n- [Handoff defaults](sub-concepts/handoff-defaults.md) — the one-table twin, its path-shaped id, and\n  the sqlite-free seed module that keeps the floor alive on an old `node`.\n- [Avatars](sub-concepts/avatars.md) — cosmetic, layered, keyed by agent name.\n",
-    "contentHash": "sha256:f29c05a3bb7d311d391ee71685468300d6a81391b86550872b204b82bceb5921"
+    "body": "---\nname: global-stores\ndescription: \"Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two.\"\nmetadata:\n  type: concept-skill\n  version: \"1.14\"\n  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9\n---\n\n# Global stores\n\nSix modules in `apps/maestro/src/core` share one mechanism: a `node:sqlite` database under\n`~/.claude`, one store per machine, read by every project the app opens. They are the deliberate\ncounterweight to [`maestro-config-model`](../maestro-config-model/SKILL.md) — state that is\nexplicitly _not_ per-project.\n\n| Store                                         | File                    | Keyed by                            |\n| --------------------------------------------- | ----------------------- | ------------------------------------ |\n| `~/.claude/maestro-skill-tags.sqlite`         | `skill-tags.ts`         | skill id                            |\n| `~/.claude/maestro-agent-types.sqlite`        | `agent-types.ts`        | `(project_root, agent_name)` (`030`) |\n| `~/.claude/maestro-agent-project-tags.sqlite` | `agent-project-tags.ts` | `(project_root, agent_name)` (`030`) |\n| `~/.claude/maestro-report-defaults.sqlite`    | `report-defaults.ts`    | agent name → report id              |\n| `~/.claude/maestro-handoff-defaults.sqlite`   | `handoff-defaults.ts`   | `\"<sender>/<receiver>\"` (`033`)      |\n| `~/.claude/maestro-avatars.sqlite`            | `avatar-store.ts`       | `(project_root, agent_name)` (`030`) |\n\nEach exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the\nreal machine's store.\n\n## Keyed by project, not just agent name (`030`)\n\nThe three per-agent stores — types, project tags, avatars — widened their primary key from\n`agent_name` alone to `(project_root, agent_name)`, `project_root = ''` meaning \"global\". This\nmatters only for a `project`-tier agent: two unrelated projects that each define\n`.claude/agents/reviewer.md` no longer share one avatar/type/tag row. `user`/`maestro`/plugin-tier\nagents are unaffected — they're the same agent everywhere, so they still key on `''` (global).\n\nEvery read/write function on these three takes an optional trailing `projectRoot?: string`:\n\n- **Omitted** → touches the GLOBAL row only. This is what `/templates` and the plugin's\n  install-time reader do, unchanged from before `030`.\n- **Passed on a bulk read** (`readAllAgentTypes`, `readAllAgentProjectTags`, `readAllAvatars`) →\n  one SQL query returns the global rows unioned with `projectRoot`'s own rows; a later row for the\n  same agent name overwrites the earlier one as the result map is built, because `''` collates\n  before any real path — so a project's own override wins over the global default for that project\n  only.\n- **Passed on a write** (`setAgentType`, `setAgentProjectTag`, `setAvatar`) → targets that\n  project's own row exclusively.\n\n**No migration.** Each store's `openDb()` calls a `dropLegacySchema()` helper that `DROP TABLE`s a\npre-`030` shape (no `project_root` column) before the `CREATE TABLE IF NOT EXISTS`/`seedIfEmpty`\nthat follows — a deliberate, one-time data loss, acceptable because Maestro wasn't installed\nanywhere that mattered yet.\n\n`report-defaults.ts` was deliberately **not** touched — it's already the global fallback tier by\ndefinition (see below), a different kind of thing from these three's per-instance metadata.\n\n## Why global — the reasons are not the same\n\nDo not collapse these into one rationale; the modules' own headers distinguish them:\n\n- **Skill tags and avatars** are global because _the thing is the same thing everywhere_: a skill is\n  the same skill wherever it is used, an agent of the same name should look the same everywhere.\n- **Report defaults and handoff defaults** are global for a different reason: they are the\n  **fallback tier** a project falls back to when it has no opinion of its own, and the thing\n  install/update syncs a project's `.claude/reports/*.md` and `.claude/handoffs/**.md` _from_.\n\n**These two are the only stores a HOOK reads, and since `035` it reads them from the project's own\ncopy too.** Their generated bundles (`lib/maestro-report-defaults.cjs`,\n`lib/maestro-handoff-defaults.cjs`) are in `install.ts`'s `STATIC_ASSETS`, so\n`maestro-inject-agent-context` resolves both tiers whether it runs from the marketplace cache or\nfrom `<project>/.claude/scripts/`. Before `035` the project copy's `require` resolved nothing, its\ntry/catch swallowed the failure, and the tier silently did not exist: no output format at all for an\nagent whose report is only global (reports have **no** seed tier), and the shipped seed instead of\nthe user's global row for a handoff. So a store these hooks read must keep a bundle safe under a\nbare, possibly old `node`, and `require`ing a *third* store from the hook means adding its bundle to\n`STATIC_ASSETS` in **both** install implementations. See `installing-maestro`'s manifest\nsub-concept.\n\n## `handoff-defaults.ts` is not a copy of `report-defaults.ts` (`033`)\n\nSame argument for being global, deliberately different shape: one table instead of two, a\npath-shaped id, a sqlite-free seed module, and two editing surfaces since `034`. All of it is in\n[Handoff defaults](sub-concepts/handoff-defaults.md).\n\n## The exception: a description is not a store\n\n`/agents` also edits an agent's **description**, and that one deliberately does *not* get a store:\n`src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the\n`agent:describe` channel. That is the test to apply before adding a seventh store — type, project\ntag and avatar are **Maestro's own metadata**, meaningless to a Claude session, so a machine-wide\ncopy is the truth; a description is the line **Claude Code itself reads** to decide when to dispatch\nthe agent, so a copy beside the app would make the page show one sentence while every run used\nanother.\n\nTwo guards bound the write, and both are about not lying to the user:\n\n- `EDITABLE_AGENT_SOURCES` (`contracts.ts`) is `[\"project\"]` (narrowed from `[\"project\", \"user\",\n  \"maestro\"]` in `029` — the `maestro` entry was editable by accident: bundled agents are ordinary\n  files in a repo checkout but live inside `app.asar` in a packaged build). Every non-project tier is\n  refused: `user`-tier agents belong to no project and are shared by every project on the machine;\n  `maestro`/an **installed plugin's** agents live in a version-keyed marketplace cache that the next\n  plugin update overwrites, so an edit there is discarded, not merely unowned.\n  `describeUneditableSource` gives each its own message — see `agents-view`. `contracts.ts` is\n  otherwise interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` /\n  `AVATAR_CATEGORIES` / `AGENT_TYPES`) so the renderer can decide from `source` alone with no round\n  trip. (`034`'s `BUNDLED_AGENT_NAMES` used to join this list; `043` removed it once the Handoffs\n  tab's pair roster moved to a picked project's own `agents_available` — see `handoff-defaults.md`.)\n- `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's\n  read-only bundled agents report why instead of appearing to save.\n\n`replaceDescriptionInFrontmatter` **refuses** a YAML block scalar (`|`, `>`) or a value continued on\nthe next line rather than flattening it: `parseFrontmatter` already misreads those, and rewriting\nonly the first line would leave the continuation dangling as garbage keys.\n\n## A fourth writer, on a fork\n\n`agent-fork.ts`'s `copyAgentAttributeRows(fromName, toName, projectRoot, dbPaths?)` (`029`, rekeyed\n`030`) is a new consumer of three of these six stores — avatar, agent type, project tag — called\nonly for a **renamed** fork on `/agents`. The read side stays name-only/global (a fork's source is\nalways a global-tier template), but the write side passes `projectRoot` — the new fork's own\nproject — since the copy always lands on a project-tier agent, and after `030`'s rekey landing it on\nthe global row would leak into every other project. A same-name fork needs no copy at all: the\nshadowing row *is* the template's own global row. See `agents-view`.\n\n**This writer is why `agent-fork.ts` was split in two (`031`).** It touches three sqlite stores, so\n`agent-fork.ts` transitively imports `node:sqlite` — and `031`'s fork-staleness check reaches the\nplugin's hook scripts through a generated bundle that runs under a bare `node` which may predate\nthat module (the same constraint `maestro-skill-tags.cjs` lives with). So the sidecar and the\nfrontmatter arithmetic moved to **`agent-fork-record.ts`** (`agentForksPath`, `readAgentForks`,\n`writeAgentForkRecord`, `removeAgentFork`, `bodyForHashing`, `hashAgentBody`, `mergeForkBody`,\n`renameAgentInFrontmatter`), which imports no store; `agent-fork.ts` keeps `forkAgent` and\n`copyAgentAttributeRows` and re-exports the rest, so every existing import still resolves. The\nproperty to preserve: `grep -c \"node:sqlite\" plugins/maestro/scripts/lib/maestro-agent-sync.cjs`\nmust stay **0**. Adding a store import to `agent-fork-record.ts` breaks that silently — the bundle\nstill builds, and only a bare-`node` run notices.\n\n## Why `node:sqlite`\n\nNo native module, and therefore no `electron-rebuild` step. `skill-tags.ts`'s header carries the\nfull argument — the other five cite it rather than restating it. A new store should use the same\nmechanism for the same reason.\n\n**The version floor is not the app's, it's whatever `node` is on the session's PATH.** Electron 40\nbundles Node 24, where `node:sqlite` loads fine (with the standard experimental-feature warning). The\ntest suite or `maestro-install.js` running under an older *system* `node` needs at least **22.5** for\nthe module to exist at all — which is why `maestro-install.js` wraps its\n`require(\"./lib/maestro-skill-tags.cjs\")` in try/catch: an old `node` degrades to the pre-tags, fully\nClaude-driven best-fit flow instead of failing the install. That degradation only works because the\nbundler keeps `node:sqlite` as a real `require()` rather than inlining a shim — see\n[`plugin-libs-parity`](../plugin-libs-parity/SKILL.md).\n\n## Skill tags, and the trap: `SKILL_TAGS` is gone\n\n`skill-tags.ts` stores a user's manual annotation once per skill id in\n`~/.claude/maestro-skill-tags.sqlite`, shared across every project. It has **two** dimensions:\n\n- **`projectTags`** — which `project-tags.ts` catalog entries the skill applies to, plus `GLOBAL_TAG`\n  for \"regardless of project tag\".\n- **`agentTypes`** — which of `agent-types.ts`'s closed vocabulary the skill applies to, plus\n  `GLOBAL_TAG` for \"regardless of agent type\".\n\nBoth are edited together in one Skills-tab row and always read together — `skillMapFromTags` is\nwhere they combine to decide which skills a given seeded agent instance receives. Routing is by\n_what kind of agent and what kind of project_, never by agent name. Edited from the `/skills` route;\nsee also `plugins/maestro/skills/update-skill-tags`.\n\nThe old single-dimension `SKILL_TAGS` was literally the seven built-in agent _names_, matched 1:1\nagainst an agent's name. It conflated \"which kind of project\" with \"which kind of agent\" into one\nflat list and could only route a skill to an agent whose name it already knew. The two dimensions\nmatch instead against a seeded agent _instance's_ own stored attributes, which is what decouples\nMaestro from a fixed agent roster. Any code or doc still routing by agent name is working from the\nretired model.\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — why the sidecar and the frontmatter helpers had\n  to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these stores, so it drags\n  `node:sqlite` into any bundle that imports it. Also `syncProjectHandoffs`, `decideSync`'s third\n  caller, which syncs `.claude/handoffs/` from this store the way `report-sync.ts` syncs\n  `.claude/reports/`.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the per-project counterpart; the\n  `reports` and `handoffs` slices are what override the `report-defaults` and `handoff-defaults`\n  tiers.\n- `maestro-architecture` (at the repo root `.claude/skills`) — the `SubagentStart` hook resolves a\n  report *and* a per-route handoff protocol across these tiers at dispatch time.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — five of these six have a generated CJS\n  twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules` (every one\n  but `avatar-store.ts`).\n- [`agents-view`](../agents-view/SKILL.md) — the fourth writer above, and the \"Fork into this\n  project\" button that triggers it.\n\n## Sub-concepts\n\n- [Agent types and project tags](sub-concepts/agent-classification.md) — the per-agent half of the\n  two-dimensional match above.\n- [Report defaults](sub-concepts/report-defaults.md) — the global fallback tier and its two tables.\n- [Handoff defaults](sub-concepts/handoff-defaults.md) — the one-table twin, its path-shaped id, and\n  the sqlite-free seed module that keeps the floor alive on an old `node`.\n- [Avatars](sub-concepts/avatars.md) — cosmetic, layered, keyed by agent name.\n",
+    "contentHash": "sha256:f5adf6f629a9dd9ac17ed9f36981602c6c4efcb7226abbb0f07f23a3f66d48d5"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.11",
-    "extracted_at": "2026-10-17T13:02:46.363Z"
+    "extractor_version": "code-graph@0.3.20",
+    "extracted_at": "2026-10-21T16:23:03.728Z",
+    "files": {
+      "apps/maestro/src/core/agent-project-tags.ts": "sha256:f85eba64471a0c2cf29b7d2f0085bd70d8114700b46844497b80f0f8ad19db0c",
+      "apps/maestro/src/core/agent-types.ts": "sha256:27a118dfadf30099855371796a61f5e1f47f9f12c24a37f84c4623c7d0f661c3",
+      "apps/maestro/src/core/avatar-store.ts": "sha256:8d037cfc7aab0e180f6fcea32b652525f41597edfff181a55451e1d17468b58f",
+      "apps/maestro/src/core/handoff-defaults.ts": "sha256:c600746fa9a55f74322d779e596f8bcd74ef779fea68e7c55f4e8facc6ce7811",
+      "apps/maestro/src/core/handoff-seeds.ts": "sha256:f20102c7c4a81d15859c7146bf7a6570f2bb50915c87e44b88fa18cd84bd7524",
+      "apps/maestro/src/core/project-tags.ts": "sha256:3fea889f4f272a834a6ebcf144913de57154889c9b4227b01c459b568d373b06",
+      "apps/maestro/src/core/report-defaults.ts": "sha256:1a64f45dae11a8644cf60f6d3a9df7efeca61a79f33708b3a09e7703123a72eb",
+      "apps/maestro/src/core/skill-lists.ts": "sha256:207f5463739b24ff8367948362be3e5bd7f20af4ff9378793d6db5e6cf3ec6f0",
+      "apps/maestro/src/core/skill-tags.ts": "sha256:bee4976107be303aa9899d5cc9d9d5ff17f42db1ea6f5bf4335ae29db28b1f61",
+      "apps/maestro/src/main/project-store.ts": "sha256:515390f1bb2ca284e7be283ede46e3af3287f00157ae0b81feb86b23ca7895c4"
+    }
   }
 }

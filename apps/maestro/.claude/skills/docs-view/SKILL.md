@@ -3,8 +3,8 @@ name: docs-view
 description: "Explains the two markdown documentation readers in the Maestro desktop app — /docs/$group/$slug over the corpus the app SHIPS (not gated on an open project) and /project-docs/$slug over the open project's own docs/ — and what they share: the one parsing/slugging implementation in src/core/docs.ts (the *In primitives, slugifyHeading, isValidDocSlug), the react-markdown + remark-gfm + rehypeHighlightTerms stack, why a heading travels as the `at` SEARCH param instead of a URL fragment under hash history, and why in-page #anchor links must be intercepted. Use when adding a doc corpus or a route param to either reader, changing heading anchors or search highlighting, touching src/core/docs.ts or global-docs.ts, or debugging a search hit that scrolls nowhere or highlights nothing."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "1.1"
+  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
 ---
 
 # Docs view

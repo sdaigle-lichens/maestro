@@ -1,0 +1,82 @@
+{
+  "concept": "log-view",
+  "vertices": [
+    {
+      "_key": "3831525914210b19611342601168d370",
+      "purpose": "Renders the detail pane for the selected instance: its input, skills, delivered channel payloads and output.",
+      "inputs": [
+        "instance: the selected run or null",
+        "cwd"
+      ],
+      "outputs": [
+        "detail element, or a prompt to select a step"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "session-log-ui"
+      ],
+      "sig_seen": "function SessionLogDetail({ instance, cwd }: SessionLogDetailProps): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "a489b67ac07701311cee0c8860e672967a93b633cb5bb8d82a45d1a55ae079ab"
+    },
+    {
+      "_key": "3d5b7001eb0ff315c2de60a370c630c8",
+      "purpose": "Segments the flat log entries into ordered instance runs, a new one whenever origin changes, filling each run's input, output, status and deliveries from its dispatch and handoff entries.",
+      "inputs": [
+        "entries: the session's log entries"
+      ],
+      "outputs": [
+        "ordered Instance list"
+      ],
+      "cross_concept_refs": [
+        "maestro-config-model"
+      ],
+      "document_ref": null,
+      "tags": [
+        "session-log-model"
+      ],
+      "sig_seen": "function buildInstances(entries: SessionLogEntry[]): Instance[]",
+      "hash_seen": "bd6f31f9a0251a2adb0773bd120d93890f9d92fa7f03a24e29ab23169905c32c"
+    },
+    {
+      "_key": "a28f8fc87dbc13999ed46585a949c3ab",
+      "purpose": "Renders the workflow's instance cards, with a status icon and underline per instance, and reports which one is selected.",
+      "inputs": [
+        "instances",
+        "activeId",
+        "onSelect"
+      ],
+      "outputs": [
+        "card list element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "session-log-ui"
+      ],
+      "sig_seen": "function SessionLogCards({ instances, activeId, onSelect }: SessionLogCardsProps): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "3f7604c0bec99217dfbe32e5436b81fad0507652d1fad3778fc6091ac10afafc"
+    },
+    {
+      "_key": "d12389eace3f41b805aa13680669abcc",
+      "purpose": "Renders the instance cards as a bordered list with the selected instance's detail beside them.",
+      "inputs": [
+        "instances",
+        "activeId",
+        "onSelect",
+        "cwd"
+      ],
+      "outputs": [
+        "session log view element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "session-log-ui"
+      ],
+      "sig_seen": "function SessionLogView({\n  instances,\n  activeId,\n  onSelect,\n  sectionRefs,\n  connected,\n  cwd,\n}: SessionLogViewProps): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "faf506912f7c2475e7ed20643fe7645d631ac107fbcccc423ee6194c59778850"
+    }
+  ],
+  "edges": []
+}

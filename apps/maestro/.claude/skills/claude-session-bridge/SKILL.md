@@ -3,8 +3,8 @@ name: claude-session-bridge
 description: "Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process."
 metadata:
   type: concept-skill
-  version: "2.3"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "2.4"
+  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
 ---
 
 # Claude session bridge
@@ -37,7 +37,7 @@ import to one of these modules defeats the design; the test is what makes it fai
 
 | File                     | Lines | What it owns                                                                                           |
 | ------------------------ | ----- | ------------------------------------------------------------------------------------------------------ |
-| `core/claude-preview.ts` | 540   | Builds the prompt for all 6 request kinds, reports CLI availability, issues the token. Spawns nothing. |
+| `core/claude-preview.ts` | 545   | Builds the prompt for all 6 request kinds, reports CLI availability, issues the token. Spawns nothing. |
 | `core/claude-tokens.ts`  | 150   | The token contract. The security design in one file.                                                   |
 | `core/claude-run.ts`     | 308   | Claims a token, drives an SDK session, owns the detached process group.                                |
 | `core/claude-cli.ts`     | 179   | Locating the `claude` binary, and the `PATH` a GUI launch does not have.                               |
@@ -63,7 +63,7 @@ window. Each has a test of the same name under `test/core/`.
 | `core/permission-registry.ts` | 123   | The parked promises, and every way they end.                                         |
 | `core/session-question.ts`    | 196   | `AskUserQuestion` — same wire, different meaning.                                    |
 | `core/session-resume.ts`      | 313   | Which stored conversations may be offered, and what must be disclosed first.         |
-| `core/session-handoff.ts`     | 118   | What a create-\* form says to the session it hands off into.                         |
+| `core/session-handoff.ts`     | 120   | What a create-\* form says to the session it hands off into.                         |
 
 ## How a tool call is decided
 
@@ -110,8 +110,10 @@ Each is named here and reasoned out in the sub-concept linked beside it.
   calls stay out of `/session-log` — [agent-sdk](sub-concepts/agent-sdk.md).
 - **The pane's transcript must be cleared BEFORE a resume round trip**, and `SessionProvider` must
   stay at the renderer root — [pane-in-the-renderer](sub-concepts/pane-in-the-renderer.md).
-- **`session-runtime.ts` and `session-log.ts` are not this concept**, despite the prefix. They are
-  the hook-written files under `<project>/.claude/` — see `maestro-architecture` and `log-view`.
+- **`session-runtime.ts`, `session-log.ts`, `session-paths.ts`, `session-name.ts`, `session-title.ts`,
+  `session-sweep.ts`, `session-usage.ts` and `session-ipc.ts` are not this concept**, despite the
+  prefix. They read and decide about the hook-written session files under `<project>/.claude/` (log,
+  names, titles, sweep, context usage) — see `maestro-architecture` and `log-view`.
 
 ## The invariants are asserted
 
