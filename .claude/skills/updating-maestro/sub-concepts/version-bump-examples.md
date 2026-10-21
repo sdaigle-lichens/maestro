@@ -1,6 +1,7 @@
 # Version bump precedent — the worked examples
 
-**Latest: `0.12.0` (`113`), a minor.** `maestro-session-name.js` registers on two events
+**Latest minor: `0.12.0` (`113`)** (`plugin.json` reads `0.12.3`; `0.12.1`–`0.12.3` were patch bumps —
+scribe handoff prose and the missing-code-graph hint). `maestro-session-name.js` registers on two events
 `hooks.json` had never had, `UserPromptSubmit` and `SessionStart`: the minor row's "a hook
 registered on a new event". Its `UserPromptExpansion` and `PreToolUse` entries alone would have been
 a patch, since those events were already registered.

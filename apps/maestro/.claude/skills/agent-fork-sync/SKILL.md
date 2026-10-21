@@ -3,8 +3,8 @@ name: agent-fork-sync
 description: "Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that its three callers — the report sync, the forked-agent sync and (since 033) the handoff sync — all call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card, and the terminal side — the maestro-step0 hook plus /maestro-update's CLI) that must always reach the same verdict. Use when changing report-sync.ts, agent-sync.ts or handoff-sync.ts, adding a fourth caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them)."
 metadata:
   type: concept-skill
-  version: "1.7"
-  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
+  version: "2.0"
+  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
 ---
 
 # Keeping a copy in step with the thing it was copied from
@@ -45,7 +45,7 @@ year — the same argument `resolveReport` makes for the hook and the app. `031`
 out of `report-sync.ts` rather than paraphrasing them, preserving the order exactly: the report
 sync's tests passed unmodified, which is the evidence that nothing moved.
 
-## The five branches
+## The seven verdicts
 
 `decideSync` answers with one of `detached` / `no-template` / `materialize` / `adopt` /
 `stale-customized` / `refresh` / `unchanged`, and **the branch order is the contract**: `detached` is
@@ -168,6 +168,7 @@ apply an approved `agent.fork` proposal. It is plugin-only and never added to th
 | `apps/maestro/src/core/handoff-sync.ts` | Caller 3 (`033`): handoff protocols, on install/update. Writes. Candidates come from the workflow graph, not from a list of agents. |
 | `apps/maestro/src/core/agent-fork-record.ts` | The `agent-forks.json` sidecar, `hashAgentBody`, `mergeForkBody`, `renameAgentInFrontmatter`. No sqlite. |
 | `apps/maestro/src/core/agent-fork.ts` | `forkAgent` + `copyAgentAttributeRows`; re-exports the above. |
+| `apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx` | The `/agents` review card (diff, Update / Keep as fork / Detach). |
 | `apps/maestro/src/core/diff.ts` | The line diff both surfaces render. Pure. |
 | `apps/maestro/src/core/plugin-entries/maestro-agent-sync.ts` | Bundle entry → `plugins/maestro/scripts/lib/maestro-agent-sync.cjs`. |
 | `plugins/maestro/scripts/maestro-agent-forks.cjs` | The CLI: `list` / `diff` / `update` / `keep` / `detach`. Driven by `/maestro-update`. |
@@ -189,8 +190,8 @@ apply an approved `agent.fork` proposal. It is plugin-only and never added to th
 
 ## Sub-concepts
 
-- [The shared decision](sub-concepts/the-shared-decision.md) — the five branches, what each caller
-  passes, and the rule for adding a third.
+- [The shared decision](sub-concepts/the-shared-decision.md) — the verdicts in branch order, what each
+  caller passes, and the rule for adding a fourth.
 - [The fork record](sub-concepts/the-fork-record.md) — `agent-forks.json`, the hashing
   normalisation, and what `keep` and `detach` actually write.
 - [The two surfaces](sub-concepts/the-two-surfaces.md) — the app and the CLI, and why neither may

@@ -4,11 +4,18 @@
 hook with matcher `TaskCreate`. It compares the tasks the orchestrator creates against the selected
 workflow's success path.
 
-Two warnings:
+A task's step label comes from `metadata.maestro_step`, else a heuristic match of subject/description
+against the workflow's node labels. Two warnings:
 
-- **mismatch** — a created task matches no node in the workflow.
-- **skipped step** — a success-path step never got a task (human review being the example the source
-  calls out).
+- **mismatch** — the resolved label is not a node in the workflow. A task that resolves to no label
+  at all is silently ignored (counts toward nothing), and the synthetic `mark-task-done` step is
+  accepted and skipped.
+- **skipped step** — the created step is on the success path but an earlier success-path step has no
+  task yet (human review being the example the source calls out).
+
+The hook is a no-op without `maestro.json`, without a resolvable session, without a recorded active
+workflow, or when the project owns its own registered copy (`projectOwnsHook`, see
+`installing-maestro`'s hook-arbitration).
 
 Both are **non-blocking**. The hook never fails a `TaskCreate` call; it annotates. Any work that
 legitimately sits outside the active workflow — running a code-graph skill such as `/code-graph:scribe`, for instance —

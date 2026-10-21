@@ -49,8 +49,9 @@ the app has not got, so they stay conversational and the skill offers them (neve
 
 ## Things that bite
 
-- **`src/core/git.ts` is a _sixth_ entry on the reviewed spawner list in `test/isolation.test.ts`,
-  and the list got wider on purpose.** What moved out of the prompt was the shell in the **session**,
+- **`src/core/git.ts` is on the reviewed spawner list in `test/isolation.test.ts` (seven modules
+  today: `ccusage`, `claude-run`, `discovery`, `git`, `install`, `rules`, `worktree-list`), and the
+  list got wider on purpose.** What moved out of the prompt was the shell in the **session**,
   not in the app: the app runs `git` itself, `execFileSync` with an argument vector and no shell
   interpretation, so a marketplace name with a quote in it cannot become syntax. One more module
   that can spawn, in exchange for taking `Bash` out of the create-marketplace conversation. It is

@@ -98,8 +98,8 @@ Nothing is written to `claims/` or `status.json`, so a freeform run can never ap
 ### Finishing a worktree task (`076`)
 
 `maestro-task-status.cjs merge <filename|NNN>` — a CLI subcommand (no new lib export, so no
-`build:plugin-libs`), run by the orchestrator **only after the user explicitly asks** (template Step 4
-offers it, never does it). Decided from how worktree tasks behave: the branch is a plain local
+`build:plugin-libs`), run by the orchestrator **only after the user explicitly asks** (template Step 8,
+worktree only, offers it, never does it). Decided from how worktree tasks behave: the branch is a plain local
 `task-NNN` the CLI already knows, the worktree is a sibling checkout, and `done` has marked the queue
 in the main checkout — so the merge is one `git merge --no-ff` in the main checkout.
 

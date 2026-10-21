@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "1.14"
-  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
+  version: "2.0"
+  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
 ---
 
 # Global stores
@@ -25,6 +25,13 @@ explicitly _not_ per-project.
 
 Each exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the
 real machine's store.
+
+A seventh sqlite file sits beside them but is a catalog, not a per-thing store:
+`~/.claude/maestro-project-tags.sqlite` (`project-tags.ts`: `readAllProjectTags`, `addProjectTag`,
+`removeProjectTag`), the vocabulary skill tags and agent project tags key against — see
+[Agent types and project tags](sub-concepts/agent-classification.md). `skill-lists.ts` (also mapped
+here) is **not** a store: it is the pure, `unknown`-tolerant reader of `maestro.json`'s start/end skill
+lists, shared by the app and the runtime scripts via `lib/maestro-skill-lists.cjs`.
 
 ## Keyed by project, not just agent name (`030`)
 
@@ -86,7 +93,7 @@ path-shaped id, a sqlite-free seed module, and two editing surfaces since `034`.
 
 `/agents` also edits an agent's **description**, and that one deliberately does *not* get a store:
 `src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the
-`agent:describe` channel. That is the test to apply before adding a seventh store — type, project
+`agent:describe` channel. That is the test to apply before adding another store — type, project
 tag and avatar are **Maestro's own metadata**, meaningless to a Claude session, so a machine-wide
 copy is the truth; a description is the line **Claude Code itself reads** to decide when to dispatch
 the agent, so a copy beside the app would make the page show one sentence while every run used

@@ -32,6 +32,12 @@ The fix is one of:
 injection is not permitted and `/maestro` fails to start. Same remedy: delete
 `.claude/skills/maestro/SKILL.md` and re-install.
 
+The template's `allowed-tools` now carries four grants — `maestro-step1-gates.cjs`,
+`maestro-end-skills.cjs`, `maestro-resume-target.cjs *` and `maestro-step4-gate.cjs` — and **each**
+is outside a managed region, so a project whose frontmatter predates any one of them hits the same
+abort or a denied call. Check the project's frontmatter against `templates/maestro/SKILL.md`'s, not
+against the two examples above.
+
 Generalise it: **a template change outside a managed region is not deliverable by an update.** If
 the change must reach existing projects, either put it inside a region, or say plainly in the ship
 notes that it needs the file deleted first. `plugins/maestro/skills/maestro-update/` carries this in

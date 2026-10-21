@@ -5,15 +5,19 @@ for whoever ends up running it: a title, a "What to build" section describing on
 acceptance criteria. It names no agent — `/to-maestro-tasks` writes them workflow-agnostic on purpose,
 so the orchestrator classifies at dispatch time.
 
-`parseBlockedBy` reads dependencies out of the file. `status.json` stores `{ status, blockedBy }`
-per filename, and `listTasks` combines the two to report what is ready:
+`parseBlockedBy` reads dependencies out of the file (the backtick-wrapped `NNN-name.md` references in
+its `## Blocked by` section; "None" gives `[]`). `status.json` stores `{ status, blockedBy, epic? }`
+per filename (`epic` is owned by `setTaskEpic`, see [Epics](epics.md); every rebuild preserves it),
+and `listTasks` combines the two to report what is ready:
 
 ```json
 { "001-….md": { "status": "done", "blockedBy": [] } }
 ```
 
-The cascade means a task is ready only when everything it names is done. `closeTask` marks one done
-and recomputes the cascade, so a single close can unblock several tasks at once.
+The cascade means a task is ready only when everything it names is done. A blocker whose file no
+longer exists counts as satisfied. `closeTask` marks one done and recomputes the cascade, so a single
+close can unblock several tasks at once. `status.json` is written atomically with sorted keys, so
+either side's save gives a stable diff.
 
 `/to-maestro-tasks` does not hand-assemble the files for a fresh batch: it hands
 `maestro-write-tasks.cjs` a JSON array of slices (title, body, `blockedBy` as indices into that same

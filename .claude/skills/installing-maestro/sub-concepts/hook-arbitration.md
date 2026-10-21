@@ -52,10 +52,13 @@ is running, so the plugin's copy should.
 
 ## Where the guard is called
 
-The five plugin hook scripts — `maestro-session-log.js`, `maestro-subagent-log.js`,
-`maestro-validate-tasks.js`, `maestro-inject-agent-context.js`, `maestro-step0.js` — each call
-`projectOwnsHook(__filename, cwd, p.hook_event_name)` right after resolving `cwd`, and `exit 0` when
-it is true. `projectOwnsHook` reaches them through the `maestro-session.cjs` bundle
+The eight plugin hook scripts that have a project twin — `maestro-session-log.js`,
+`maestro-subagent-log.js`, `maestro-validate-tasks.js`, `maestro-inject-agent-context.js`,
+`maestro-step0.js`, `maestro-enable-task-routing.js`, `maestro-post-mortem-context.js`,
+`maestro-session-name.js` (exactly `HOOK_SCRIPTS`) — each call `projectOwnsHook` right after
+resolving `cwd` and `exit 0` when it is true. **`maestro-channel-write-guard.js` is not one of
+them:** it is plugin-only (no project twin, not in `HOOK_REGISTRATIONS`), so it never stands down and
+runs once from the plugin. `projectOwnsHook` reaches them through the `maestro-session.cjs` bundle
 (`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm --filter maestro
 build:plugin-libs` — see `plugin-libs-parity`.
 

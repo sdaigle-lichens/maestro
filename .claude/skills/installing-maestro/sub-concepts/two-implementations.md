@@ -18,7 +18,9 @@ one of them. **Since `032` that is no longer only a convention:** `test/core/par
 files** and asserts the two `src` sets are equal. Before it, an asset added to one and forgotten in
 the other showed up as a puzzling differential diff; now it fails as a named test. Same shape as
 `task-queue`'s two implementations, and unlike `plugin-libs-parity`, **nothing here is generated** —
-both copies are hand-maintained.
+both copies are hand-maintained. `parity.test.ts` also holds this repo's own tracked
+`.claude/scripts/` mirror of every `STATIC_ASSETS` lib and hand-written script to the plugin's copy
+(`066`, `087`) — the cp it names is in `.claude/rules/plugin-publishing.md`.
 
 **The handoff sync is a second thing that must match, and it is hand-mirrored prose, not a shared
 module.** `maestro-install.js` `require`s `decideSync` and `handoffRoutes` from the generated libs,

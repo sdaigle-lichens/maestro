@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
+  version: "2.0"
+  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -24,8 +24,9 @@ project-local (wins per hook)                 plugin-global (fallback / no-insta
 
 **Both being live is no longer a bug — it is a precedence rule.** The plugin's copy of a hook
 stands down when the project registers that same hook itself, arbitrated at runtime by
-`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the five
-plugin hook scripts. So the left column wins per hook, the right column covers any hook the project
+`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by each of the eight
+plugin hook scripts that have a project twin (every `HOOK_SCRIPTS` entry). The plugin-only
+`maestro-channel-write-guard.js` has no twin and always runs. So the left column wins per hook, the right column covers any hook the project
 did not register, and neither the app nor this repo touches the user's global configuration to make
 that happen. `InstallStatus.pluginHooksActive` and its warnings are gone.
 
@@ -146,11 +147,15 @@ else, and since `032` the thing outside the region is an `allowed-tools` grant w
 
 ## Generated files that need a build, not just an edit
 
-`scripts/lib/maestro-session.cjs`, `scripts/lib/maestro-skill-regions.cjs`,
-`scripts/lib/maestro-seed.cjs` and `scripts/lib/maestro-agent-sync.cjs` are **generated** from
-`apps/maestro/src/core/plugin-entries/` by `pnpm --filter maestro build:plugin-libs`. Editing the
+Every `scripts/lib/*.cjs` except `maestro-tasks.cjs` (`maestro-session`, `maestro-seed`,
+`maestro-skill-regions`, `maestro-agent-sync`, `maestro-epic`, and so on — one per file under
+`apps/maestro/src/core/plugin-entries/`, seventeen) is **generated** from that directory by
+`pnpm --filter maestro build:plugin-libs`. Editing the
 `.cjs` directly is overwritten on the next build; edit the TypeScript source and rebuild. They are
-committed because a project installs them by file copy, so they must exist in the repo.
+committed because a project installs them by file copy, so they must exist in the repo. A rebuilt
+lib that is in `STATIC_ASSETS` must also be copied over this repo's own `.claude/scripts/lib/`
+mirror (`parity.test.ts` names the `cp`; see `.claude/rules/plugin-publishing.md`) — a second place
+a change can go stale.
 
 **`032` is the worked example of forgetting.** It changed `seed.ts` to emit a `gates` block, but
 `seed.ts` is a `plugin-entries` source, so until `build:plugin-libs` was re-run the terminal

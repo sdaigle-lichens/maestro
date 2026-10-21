@@ -46,7 +46,7 @@ That only works because a run can actually reach the skill's body now, on **both
   pane-only tool set and into the base one. A headless run offers it too; `AskUserQuestion` remains
   pane-only, since a headless run still has nobody to answer a question.
 - `SESSION_SKILLS = ["create-skill", "create-subagent", "create-plugin", "create-marketplace"]`. The
-  pane extends it with `super-help`: `PANE_SKILLS = [...SESSION_SKILLS, "super-help"]`.
+  pane extends it with two more: `PANE_SKILLS = [...SESSION_SKILLS, "maestro-help", "update-skill-tags"]`.
   `PANE_TOOLS = [...SESSION_TOOLS, QUESTION_TOOL]` — it no longer names `"Skill"` a second time.
 - Naming a skill is not enough on its own — `019` already established that `skills: [...]` with no
   `plugins` entry makes the `Skill` tool answer "Unknown skill" for every name, because

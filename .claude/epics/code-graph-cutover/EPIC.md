@@ -370,8 +370,8 @@ gate is in its prompt.
     a change under `plugin/contracts/` must be called out to maestro in the release note.
     - Mostly exists already: code-graph's `.claude/rules/plugin-skills.md` (e9d01f4) says a contract
       change goes to maestro's manager. The extension (old and new shape in the note, one version
-      of the old shape kept on a breaking change) waits on the user's approval in the code-graph
-      session.
+      of the old shape kept on a breaking change) is committed in code-graph (628e56a). The
+      contract is unchanged since 0.3.20.
 - 118 done (r012, acked). All five concepts were read in full and every one had real
   inaccuracies: wrong file locations, renamed functions, removed UI, and one false claim about this
   repo's maestro.json. 16 files were edited and the five are stamped at v2.0 (log-view v3.0). The
@@ -380,4 +380,23 @@ gate is in its prompt.
     for all five.
   - Lesson: 116's "stamped only" was wrong 5 out of 5 times, so the other 8 stamped-only concepts
     are suspect too. That backs code-graph 029.
+  - The user committed 118. Queued 119: the same full review for the other eight (task-queue,
+    installing-maestro, updating-maestro, agent-fork-sync, create-skills-architecture, docs-view,
+    global-stores, maestro-config-model).
+- 119 done (r013, acked). All eight concepts had real inaccuracies, so 116's stamp-only calls were
+  wrong 13 times out of 13. 31 files were corrected; all eight are stamped v2.0 @5dd6034, and no
+  vertices changed.
+  - The stamps for task-queue, installing-maestro and updating-maestro hit EROFS (exit 9, so 028's
+    fallback is live). The worker applied the printed lines verbatim with Edit.
+  - Manager check: `skills status --summary` shows all 16 concepts at 0 commits, 0 changed/stale and
+    0 unextracted. The repo-level list (v1.30 @eb19235) is 3 commits behind, which wasn't in
+    scope.
+  - On the user's request, the manager re-stamped the repo-level list: v1.31 @5dd6034, and all 16
+    concepts plus the list are now at 0 commits. A plain `skills stamp` (no `--bump`) wrote "1.0"
+    over "1.30". I reverted it, re-ran it with `--bump minor`, and reported the bug to code-graph.
+    It's ticketed as code-graph 030 (0.3.22). A repo-level stamp with no `--bump` over an existing
+    version will refuse with exit 1. The per-skill stamp already refuses. 029 moves to the next
+    patch, and 028 is done but not yet committed. Maestro: always pass `--bump`.
+  - `.claude/maestro.json` `runtimeVersion` 0.12.2 → 0.12.3 is the runtime picking up plugin
+    0.12.3 (from 115), not the worker's edit.
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

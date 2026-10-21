@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, code-graph's concept-skill state). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "1.15"
-  last-update: eb1923563f7c8b98de55fe2a17ce036ca2b551b9
+  version: "2.0"
+  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
 ---
 
 # Maestro config model (v3)
@@ -29,7 +29,8 @@ entry point the IPC layer calls.
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                                                                                    |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                                                                                         |
 | `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks}`, `end_skills.{maestro}`. Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |
-| `gates?`                                | **Legacy, no longer read** (`092`). The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |
+| `gates`                                 | **Legacy, no longer read** (`092`), and no longer a field of `MaestroConfigV3` — only a leftover key in an old file. The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |
+| `metrics?`                              | `{ recent_runs? }` (`080`) — how many finished runs stay as full records in `.claude/maestro-metrics/metrics.json`. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader. No slice writes it. |
 | `use_maestro_tasks?`                    | A SIBLING of the skill lists, not nested in them (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**.                               |
 
 ## Slice merges are the load-bearing rule
@@ -73,10 +74,13 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
 ## What is machine-owned, and what lives elsewhere
 
 - `runtimeVersion` is **the one machine-owned field**. `installRuntime()` and `maestro-install.js`
-  stamp it on every install/update, and it is the only thing either writes here unasked
-  (see `install.ts`'s header).
+  stamp it on every install/update (`writeRuntimeVersion`: a no-op with no `maestro.json` or an
+  already-current stamp). It is the only field an install rewrites on every run; the other unasked
+  writes are one-time seeds — a first install writes the whole seeded config, a re-install fills a
+  missing `start_skills`/`end_skills` and drops `gates` (`seedMissingSkillLists`).
 - **Session state is not here, and since `064` it is not per-project either.** It lives in
-  `<root>/.claude/maestro_sessions/<session_id>/{session.json,log.jsonl,tasks.json}` — one directory
+  `<root>/.claude/maestro_sessions/<session_id>/{session.json,log.jsonl,tasks.json}` (plus a
+  `worktree.json` pointer when the session works in a worktree) — one directory
   per Claude Code session, ephemeral and separately owned. `session.json` holds
   `{ workflow, generated_instances, run_id }`, so **`run_id` is per session, not per project**;
   anything correlating a run must read it from the calling session's own directory rather than from
@@ -95,7 +99,11 @@ never repairs them; see [config-validation](sub-concepts/config-validation.md).
 | ----------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/core/types.ts`           | The schema — every `MaestroConfigV3` type and slice.                                                                                                                                                           |
 | `src/core/config-usable.ts`   | `maestroConfigRefusal(raw)` (`096`) — the one "is this existing file installable over" check (unparseable or not `version: 3`), shared by `installRuntime()` and `maestro-install.js` via `maestro-seed`. Pure; `readConfig` is unrelated and still treats those files as a read failure. |
-| `src/core/config.ts`          | `maestroJsonPath`, `readConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`. (`resolveGates`/`DEFAULT_GATES` are gone; the reader is `resolveSkillLists` in `src/core/skill-lists.ts`.) |
+| `src/core/config.ts`          | `maestroJsonPath`, `readConfig`, `readJsonSafe`, `serializeConfig`, `writeConfig`, `mergeSlice`, `blankConfig`, `writeRuntimeVersion`, `resolveUseMaestroTasks`, `readAgentsAvailable`. (`resolveGates`/`DEFAULT_GATES` are gone; the reader is `resolveSkillLists` in `src/core/skill-lists.ts`.) |
+| `src/core/config-watch.ts`    | `watchConfigFile` — polls the raw `maestro.json` text (not `fs.watch`) and fires on any difference; main owns the one watcher and broadcasts to every window. |
+| `src/renderer/src/utils/config-watch-context.tsx` | `ConfigWatchProvider` — on that broadcast, `router.invalidate()` re-reads every loader-based route. Fires for this window's own saves too; harmless. |
+| `src/renderer/src/components/config-issue-banner.tsx` | Dismissible, never blocking list of `ConfigIssue`s; render keyed by project root. |
+| `src/renderer/src/components/external-change-banner.tsx` | On `/workflows`: the file changed on disk while the canvas holds unsaved edits — Reload from disk / Keep mine. |
 | `src/core/config-validate.ts` | `duplicateAgentTypes`, `validateConfig` — reports collisions across placed instances, never repairs.                                                                                                           |
 | `src/core/save.ts`            | `saveConfig` — merge, write, re-render the orchestrator, apply rules.                                                                                                                                          |
 | `src/core/render.ts`          | Renders the orchestrator's handoff table from the config.                                                                                                                                                      |
