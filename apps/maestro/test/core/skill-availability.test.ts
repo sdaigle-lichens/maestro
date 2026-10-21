@@ -279,6 +279,24 @@ describe("findStaleSkillRefs", () => {
     expect(report.suggestions[0]).not.toContain("@maestro");
   });
 
+  it("both missing-plugin hints name the exact marketplace-add and install commands (115)", () => {
+    const add = "claude plugin marketplace add sdaigle-lichens/code-graph";
+    const install = "claude plugin install code-graph@code-graph";
+    writeJson(path.join(project, "scribe.config.json"), {});
+    writeJson(path.join(project, ".claude", "concept-skills.json"), { version: "1.0", last_update: "x" });
+    const { suggestions } = findStaleSkillRefs(project, {}, home);
+    expect(suggestions).toHaveLength(2);
+    for (const s of suggestions) {
+      expect(s).toContain(add);
+      expect(s).toContain(install);
+      expect(s.indexOf(add)).toBeLessThan(s.indexOf(install));
+    }
+    expect(suggestions[0]).toBe(
+      "This project has a scribe.config.json (a code-graph project) but the code-graph plugin is not enabled. " +
+        `Install it from the code-graph marketplace (${add}, then ${install}) and enable it for this project.`
+    );
+  });
+
   it("scribe.config.json with code-graph enabled: the hint is absent", () => {
     writeJson(path.join(project, "scribe.config.json"), {});
     enableInProject("code-graph");

@@ -220,16 +220,19 @@ export function collectSkillRefs(cfg: unknown): Map<string, string[]> {
 function pluginSuggestions(projectRoot: string, sources: SkillSources): string[] {
   const codeGraphOn = sources.enabledPlugins.includes("code-graph");
   const out: string[] = [];
+  // Text only: Maestro has no code dependency on code-graph. The commands match code-graph's README.
+  const installCommands =
+    "claude plugin marketplace add sdaigle-lichens/code-graph, then claude plugin install code-graph@code-graph";
   if (!codeGraphOn && isObject(readJson(path.join(projectRoot, "scribe.config.json")))) {
     out.push(
       "This project has a scribe.config.json (a code-graph project) but the code-graph plugin is not enabled. " +
-        "Install it from the code-graph marketplace and enable it for this project."
+        `Install it from the code-graph marketplace (${installCommands}) and enable it for this project.`
     );
   }
   if (!codeGraphOn && isObject(readJson(path.join(projectRoot, ".claude", "concept-skills.json")))) {
     out.push(
       "This project keeps a concept-skill list (.claude/concept-skills.json) but the code-graph plugin is not enabled. " +
-        "Install code-graph from its own marketplace (it is not in Maestro's), then migrate via /code-graph-install."
+        `Install code-graph from its own marketplace (it is not in Maestro's): ${installCommands}. Then migrate via /code-graph-install.`
     );
   }
   return out;

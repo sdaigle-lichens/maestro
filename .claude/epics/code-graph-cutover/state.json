@@ -137,6 +137,20 @@
       "id": "r008",
       "at": "2026-10-20T02:05:59.079Z",
       "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r009",
+      "task": "115-give-maestro-s-code-graph-install-hint-the-exact-commands.md",
+      "file": "inbox/r009-115-give-maestro-s-code-graph-install-hint-the-exact-commands.md",
+      "at": "2026-10-21T16:08:06.906Z",
+      "from": "maestro-a92095d5"
+    },
+    {
+      "kind": "ack",
+      "id": "r009",
+      "at": "2026-10-21T16:08:38.337Z",
+      "by": "manager-code-graph-merge"
     }
   ]
 }

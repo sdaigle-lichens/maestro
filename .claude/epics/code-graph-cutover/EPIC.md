@@ -313,4 +313,13 @@ gate is in its prompt.
   - Without maestro, the scribe reads `.claude/channels/scribe/*.md` itself at the start of a run.
   - Queued 117 (maestro's half of R7): vendor both files into maestro's test fixtures and test the
     full gap-report lifecycle against them. Nothing reads across repos.
+- The user uninstalled concept-skills@maestro (both scopes), updated code-graph to 0.3.20, and
+  updated the guardrails. The hook now allows reads in the sandbox's allowRead.
+- 115 done (r009, acked). Both missing-code-graph hints now give
+  `claude plugin marketplace add sdaigle-lichens/code-graph`, then
+  `claude plugin install code-graph@code-graph`. Pinned by a test; plugin 0.12.3.
+  - Manager check: code-graph's remote is sdaigle-lichens/code-graph, and the installed key is
+    code-graph@code-graph. skill-availability, parity and code-graph-plugin tests pass (100).
+  - code-graph's own README shows only the `/plugin install … --marketplace` form. Code-graph
+    could add the CLI form there; not a maestro task.
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.
