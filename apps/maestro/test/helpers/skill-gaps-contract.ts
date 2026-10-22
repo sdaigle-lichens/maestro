@@ -13,7 +13,12 @@ export const GAP_SCHEMA = JSON.parse(
   fs.readFileSync(path.join(fixtures, "code-graph-skill-gaps.schema.json"), "utf8")
 ) as {
   required: string[];
-  properties: { skill_gaps: { type: string; items: { type: string; required: string[]; properties: Record<string, { type: string }> } } };
+  properties: {
+    skill_gaps: {
+      type: string;
+      items: { type: string; required: string[]; properties: Record<string, { type: string }> };
+    };
+  };
 };
 
 const isObject = (v: unknown): v is Record<string, unknown> => !!v && typeof v === "object" && !Array.isArray(v);
@@ -35,7 +40,8 @@ export function gapBodyViolations(body: unknown): string[] {
     if (!isObject(g)) return void out.push(`skill_gaps[${i}] is not an object`);
     for (const key of item.required) if (!(key in g)) out.push(`skill_gaps[${i}] missing "${key}"`);
     for (const [key, spec] of Object.entries(item.properties)) {
-      if (key in g && spec.type === "string" && typeof g[key] !== "string") out.push(`skill_gaps[${i}].${key} is not a string`);
+      if (key in g && spec.type === "string" && typeof g[key] !== "string")
+        out.push(`skill_gaps[${i}].${key} is not a string`);
     }
   });
   return out;

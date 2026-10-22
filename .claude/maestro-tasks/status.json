@@ -599,5 +599,10 @@
     "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
+  },
+  "121-close-the-channel-write-guard-gap-in-project-local-installs-or-correct-the-comment-that-hides-it.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
   }
 }

@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.0"
-  last-update: bbb69aba5cc3b304f8b672198781663c2b38866f
+  version: "2.1"
+  last-update: 110f5d7cf22d3612c3b5de58e07cc6235672c26f
 ---
 
 # Core ↔ plugin parity
@@ -226,7 +226,8 @@ lives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, 
 module needs an alias there too.
 
 `maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the
-worktree branch of `maestro-channel-write-guard.js`, and the worktree helpers from `worktree.ts`
+worktree branch of `maestro-channel-write-guard.js` (a `HOOK_SCRIPTS` entry since `121`, so a copy
+lives at `.claude/scripts/maestro-channel-write-guard.cjs` and `parity.test.ts` checks it), and the worktree helpers from `worktree.ts`
 (`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`, …) — all still
 `fs`/`path` only.
 

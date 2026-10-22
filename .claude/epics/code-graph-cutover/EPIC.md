@@ -422,6 +422,22 @@ gate is in its prompt.
   - Worker finding: install.ts:319-326 says HOOK_REGISTRATIONS mirrors hooks.json one-for-one, but
     `maestro-channel-write-guard.js` is plugin-only. Per hooks.md, that guard is the only thing
     stopping reviewer/refactor from editing code. So a project-local install without the plugin
-    may leave them unconfined. Possibly more than a stale comment; awaiting the user's decision.
+    may leave them unconfined. Possibly more than a stale comment.
+  - The user committed 120. Queued 121. It first proves whether reviewer/refactor can run
+    unconfined without the plugin. If they can, it registers the guard in the project install
+    (with tests, arbitration, a lib rebuild and a patch bump). If they can't, it fixes the comment
+    and adds a divergence test.
+- 121 done (r015, acked). The gap was real (branch 2a): a forked or user-tier reviewer runs
+  unconfined in a project-local install with the plugin disabled.
+  - The guard is now in HOOK_SCRIPTS/HOOK_REGISTRATIONS and `maestro-install.js`; the plugin copy
+    stands down via `projectOwnsHook`; mirror added; plugin 0.12.4; 13 new tests.
+  - Manager check: 206/206 in the guard, install, team-meeting and parity suites. Ran the missing
+    extract/apply for installing-maestro and updating-maestro (hand-stamped by the worker); all
+    16 concepts now show 0 unextracted.
+  - Caveats: the runtime identity hash changes, so every project is told to re-install once. This
+    repo's `.claude/settings.json` is write-protected from the sandbox, so the user runs
+    `/maestro-update` here. `pnpm verify` fails in the sandbox only at the turbo test step (tmp
+    dir); the same steps pass with `--env-mode=loose`. There's no negative control against
+    pre-fix code.
 - Every concept skill has now had a full review (118–120).
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

@@ -157,6 +157,12 @@ const HOOK_SCRIPTS = [
   // /maestro-manager entrances and applies it as the session title on UserPromptSubmit and
   // SessionStart, so a restarted session keeps the name its epic and claims recorded.
   "maestro-session-name",
+  // The write guard (`078`/`082`): confines the reviewer and refactor agents (and team-meeting
+  // participants) and refuses worktree-run writes into the main checkout. It is registered here
+  // because those agents' frontmatter carries no `disallowedTools` — a project that gets its
+  // hooks only from this install (a forked `reviewer`, a `~/.claude/agents` copy, the plugin
+  // disabled) would otherwise run them with nothing confining their writes.
+  "maestro-channel-write-guard",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -312,6 +318,9 @@ export const RETIRED_HOOK_SCRIPTS = ["bash-validation.sh"];
 /** The /maestro and /maestro-manager entrances, as one UserPromptExpansion matcher (`113`). */
 export const SESSION_NAME_EXPANSION_MATCHER = "^(maestro|(maestro:)?maestro-manager)$";
 
+/** The file-write tools the channel write guard watches (`078`); identical to hooks.json. */
+export const CHANNEL_GUARD_MATCHER = "Write|Edit|MultiEdit|NotebookEdit";
+
 function nodeHook(event: HookEvent, matcher: string, script: string): HookRegistration {
   return { event, matcher, script, command: `node "${SCRIPTS_VAR}/${script}"`, id: `${event}:${script}` };
 }
@@ -319,11 +328,12 @@ function nodeHook(event: HookEvent, matcher: string, script: string): HookRegist
 /**
  * What the app registers in the project's `.claude/settings.json`.
  *
- * Mirrors the plugin's hooks.json one-for-one. It used to be "minus two": a SessionStart that
- * refcounted live sessions against the per-project web-app container, and the four
- * UserPromptExpansion entries that launched that container for the `create-*` commands. M5 deleted
- * both from the plugin, so there is no longer any divergence to explain — if this list and
- * hooks.json ever differ again, that is a bug in one of them.
+ * Mirrors the plugin's hooks.json one-for-one: every script hooks.json registers has a project
+ * twin here, with the same event and matcher (the plugin's SessionEnd `.sh` twin is the `.cjs`).
+ * The channel write guard was missing from this list for a while (`121`) even though this comment
+ * claimed parity; it is registered now because a project-local install can run the reviewer and
+ * refactor agents without the plugin, and the guard is the only thing confining them. If this list
+ * and hooks.json ever differ again, that is a bug in one of them.
  *
  * SubagentStop IS included even though the plan lists only four events — without it the session log
  * has dispatch entries with no matching handoff, and /session-log renders half a conversation.
@@ -356,6 +366,7 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
+  nodeHook("PreToolUse", CHANNEL_GUARD_MATCHER, "maestro-channel-write-guard.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 

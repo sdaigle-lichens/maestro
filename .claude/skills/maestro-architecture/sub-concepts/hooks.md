@@ -39,9 +39,10 @@ hook scripts above (`maestro-step0.js`, `maestro-enable-task-routing.js` (`047`)
 `${CLAUDE_PLUGIN_ROOT}/scripts/` — which resolves into the **version-keyed marketplace cache**, so
 an edit reaches a project only after a `plugin.json` version bump and re-pull. The installer also
 copies nine of them into `<project>/.claude/scripts/` as `.cjs`, and those copies only refresh on
-(re)install or `/maestro-update`. **`maestro-channel-write-guard.js` is plugin-only**: it is not in
-`HOOK_REGISTRATIONS` or the static assets, so a project that has the hooks only locally has no
-write confinement for the reviewer and refactor agents. `maestro-set-session-workflow.cjs`,
+(re)install or `/maestro-update`. **`maestro-channel-write-guard.js` is one of the nine since `121`**
+(`HOOK_SCRIPTS` + `HOOK_REGISTRATIONS`, `PreToolUse`): it used to be plugin-only, which left a project
+running a forked or user-tier `reviewer` without the plugin with no write confinement. The plugin copy
+stands down (`projectOwnsHook`) when the project registers its own. `maestro-set-session-workflow.cjs`,
 `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs` and `maestro-step1-gates.cjs` (`032`)
 exist **only** as project copies. Both staleness rules: `updating-maestro`.
 

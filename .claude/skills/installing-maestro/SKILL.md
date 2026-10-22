@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.0"
-  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
+  version: "2.1"
+  last-update: 110f5d7cf22d3612c3b5de58e07cc6235672c26f
 ---
 
 # Installing Maestro
@@ -112,7 +112,7 @@ refuses cleanly. Both write nothing; only the shape differs.
 | `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`     | 40    | `061`'s addition — a `STATIC_ASSET`, not a hook. See the skill-discovery sub-concept. |
 | `plugins/maestro/scripts/maestro-post-mortem-context.js`, `maestro-session-name.js` | 130, 84 | The other two dual-registered `HOOK_SCRIPTS` (post-mortem context, see `task-queue`; `113`'s deterministic session names, see `maestro-architecture`). Both are in `HOOK_REGISTRATIONS` and renamed `.cjs` on copy. |
 | `plugins/maestro/scripts/maestro-epic.cjs`, `maestro-workflow-spec.cjs`, `maestro-resume-target.cjs` | — | Orchestrator- or skill-invoked `STATIC_ASSETS` (`084`, `063`, `039`), not hooks. |
-| `plugins/maestro/hooks/hooks.json` | — | **Plugin-only registrations exist.** `maestro-channel-write-guard.js` (`PreToolUse`, `Write\|Edit\|MultiEdit\|NotebookEdit`) is registered here but is in neither `HOOK_SCRIPTS` nor `HOOK_REGISTRATIONS`: it is never copied into a project, so `hooks.json` is **not** a one-for-one mirror of the install manifest. |
+| `plugins/maestro/hooks/hooks.json` | — | **One-for-one with `HOOK_REGISTRATIONS`.** `maestro-channel-write-guard.js` (`PreToolUse`, `Write\|Edit\|MultiEdit\|NotebookEdit`) was plugin-only until `121`; it is now a `HOOK_SCRIPTS` entry and registered by the install too (`CHANNEL_GUARD_MATCHER`), so the plugin's copy stands down in a project that installed it. |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 369   | The published skills that drive the terminal path (184 + 100 + 85).                           |
 
 Supporting: `config-usable.ts` (`maestroConfigRefusal`, `096`; re-exported by
@@ -133,8 +133,9 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   The plugin's copy stands down for exactly the hooks the project registers, so removing a
   registration hands that hook back to the plugin rather than turning it off. Read the
   hook-arbitration sub-concept before changing `HOOK_REGISTRATIONS` or how `hasHook()` matches. A
-  hook the plugin registers that is not in `HOOK_REGISTRATIONS` (`maestro-channel-write-guard.js`)
-  has no project copy to arbitrate: it always runs, from the plugin.
+  hook the plugin registers that is not in `HOOK_REGISTRATIONS` would have no project copy to
+  arbitrate and always run from the plugin; none exists today — `maestro-channel-write-guard.js` was
+  the last, closed by `121`. Keep `hooks.json` and `HOOK_REGISTRATIONS` identical.
 - **The install writes HOOKS into `settings.json` and nothing else — no `permissions` block, ever.**
   `032` needed a permission grant and still didn't break this, putting it in the orchestrator
   template's frontmatter as `allowed-tools`. A permissions entry is a claim on the user's
@@ -163,7 +164,7 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   sub-concept.
 - **Changing the asset list makes every installed project stale exactly once.** `031` added two,
   `032` one, `033` **removed ~23**, `035` two, `046` one, and more since (`063`, `084`, `089`, `113`;
-  the manifest is 30 files now, 12 scripts + 9 libs + the cleanup + 8 hook scripts) — `shippedRuntimeId` moved each time and
+  the manifest is 31 files now, 12 scripts + 9 libs + the cleanup + 9 hook scripts; `121` added the channel guard) — `shippedRuntimeId` moved each time and
   every project reported stale on its next check and re-copied. Expected, and the only way a runtime
   file ever arrives or leaves, but worth saying out loud because "everything went stale after my
   change" reads like a bug. The digest is over the **manifest**, so this fires whether or not any

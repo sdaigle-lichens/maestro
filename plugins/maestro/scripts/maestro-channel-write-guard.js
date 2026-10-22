@@ -5,8 +5,10 @@
 // refactor agents' file writes to `<cwd>/.claude/channels/`, so they can hand a payload to the
 // next agent without being able to modify code, docs or config. Every other agent is untouched.
 //
-// Registered only from the plugin's hooks.json (the agents are shipped by the plugin), so it needs
-// no project-local twin and no arbitration. Deliberately NOT gated on maestro.json: the agents'
+// Registered from the plugin's hooks.json AND, since `121`, from a project-local install (a
+// project can run a forked or user-tier `reviewer` with the plugin disabled, and this hook is the
+// only thing confining it). When the project registers its own copy, the plugin's copy stands down
+// (projectOwnsHook below). Deliberately NOT gated on maestro.json: the agents'
 // frontmatter no longer carries `disallowedTools`, so this hook is the only thing standing between
 // them and a write anywhere. Logic: apps/maestro/src/core/channel-write-guard.ts.
 
@@ -26,6 +28,7 @@ const {
   meetingFor,
   meetingDirFor,
   checkWorktreeWrite,
+  projectOwnsHook,
 } = require("./lib/maestro-session.cjs");
 
 (async () => {
@@ -35,6 +38,10 @@ const {
   } catch {
     process.exit(0);
   }
+
+  // The plugin's copy stands down when the project registers its own (no-op in the project's copy).
+  // See src/core/hook-arbitration.ts. Before any fail-closed path: a stood-down copy decides nothing.
+  if (p.cwd && projectOwnsHook(__filename, p.cwd, p.hook_event_name)) process.exit(0);
 
   let verdict;
   let participant = false;

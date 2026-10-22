@@ -543,9 +543,9 @@ describe("leak 5 — a workflow agent resumed into a post-mortem meeting is no l
 
 describe("leak 6 — the write guard confines a participant to the meeting directory", () => {
   const guard = (root: string, agentType: string, file: string, tool = "Write", sessionId: string | null = SESSION) => {
-    // Plugin-only hook (hooks.json registers it from the plugin root; it is never copied into a
-    // project), so the plugin's own script is the real one.
-    const r = run(path.join(PLUGIN_SCRIPTS, "maestro-channel-write-guard.js"), [], root, sessionId, {
+    // The project's own copy: the install registers the guard (121), so the plugin's copy stands
+    // down for this project.
+    const r = run(path.join(root, ".claude", "scripts", "maestro-channel-write-guard.cjs"), [], root, sessionId, {
       cwd: root,
       hook_event_name: "PreToolUse",
       agent_type: agentType,

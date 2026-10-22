@@ -1044,6 +1044,71 @@ describe("the installed hooks actually run", () => {
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
   });
 
+  // `121`. The channel write guard was in the plugin's hooks.json only, so a project whose hooks
+  // came from this install ran a forked/user-tier `reviewer` with nothing confining its writes.
+  describe("channel write guard (121)", () => {
+    const denied = (out: string) => (out ? JSON.parse(out).hookSpecificOutput.permissionDecision : "allow");
+
+    it("is copied as .cjs and registered under PreToolUse with the plugin's matcher", async () => {
+      const root = makeProject("guard-reg");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-channel-write-guard.cjs"))).toBe(true);
+      const entry = readSettings(root).hooks.PreToolUse.find((e: any) =>
+        e.hooks.some((h: any) => h.command.includes("maestro-channel-write-guard.cjs"))
+      );
+      expect(entry.matcher).toBe("Write|Edit|MultiEdit|NotebookEdit");
+      const pluginHooks = JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, "hooks", "hooks.json"), "utf8"));
+      const pluginEntry = pluginHooks.hooks.PreToolUse.find((e: any) =>
+        e.hooks.some((h: any) => h.args.join(" ").includes("maestro-channel-write-guard.js"))
+      );
+      expect(entry.matcher).toBe(pluginEntry.matcher);
+    });
+
+    it("denies a reviewer Write outside .claude/channels/ and allows one inside, from the project copy", async () => {
+      const root = makeProject("guard-run");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      const run = (file: string) =>
+        runHook(root, "maestro-channel-write-guard.cjs", {
+          hook_event_name: "PreToolUse",
+          cwd: root,
+          agent_type: "reviewer",
+          tool_name: "Write",
+          tool_input: { file_path: path.join(root, file) },
+        });
+
+      expect(denied(run("src/app.ts"))).toBe("deny");
+      expect(denied(run(".claude/channels/scribe/reviewer.1.md"))).toBe("allow");
+    });
+
+    it("the plugin's copy stands down once the project registers its own, and runs for an uninstalled one", async () => {
+      const pluginGuard = path.join(PLUGIN_ROOT, "scripts", "maestro-channel-write-guard.js");
+      const payload = (root: string) => ({
+        hook_event_name: "PreToolUse",
+        cwd: root,
+        agent_type: "reviewer",
+        tool_name: "Write",
+        tool_input: { file_path: path.join(root, "src", "app.ts") },
+      });
+      const runPlugin = (root: string) =>
+        execFileSync("node", [pluginGuard], {
+          input: JSON.stringify(payload(root)),
+          encoding: "utf8",
+          env: hookEnv(root, HOOK_SESSION, tmp),
+        });
+
+      const bare = makeProject("guard-bare");
+      expect(denied(runPlugin(bare))).toBe("deny");
+
+      const installed = makeProject("guard-installed");
+      writeConfig(installed, defaultish);
+      await installRuntime(installed, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      expect(runPlugin(installed)).toBe("");
+    });
+  });
+
   // `035`. The global report tier, reached from the PROJECT'S copy of the hook — which is the
   // whole point: `.claude/scripts/` is a different `require` root than the marketplace cache the
   // plugin's copy runs from, and until this slice the manifest copied no

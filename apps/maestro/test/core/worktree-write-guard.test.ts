@@ -17,7 +17,6 @@ import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
-const GUARD = path.join(PLUGIN_ROOT, "scripts", "maestro-channel-write-guard.js");
 
 const SESSION_A = "sess-aaa-111";
 const SESSION_B = "sess-bbb-222";
@@ -84,7 +83,8 @@ async function worktreeRun(): Promise<{ root: string; wt: string }> {
 }
 
 function runHook(cwd: string, sessionId: string, filePath: string, agentType = "backend") {
-  const res = spawnSync("node", [GUARD], {
+  // The project's own copy: the plugin's stands down once the install registers the guard (121).
+  const res = spawnSync("node", [path.join(cwd, ".claude", "scripts", "maestro-channel-write-guard.cjs")], {
     encoding: "utf8",
     env: pinnedEnv(tmp, { CLAUDE_PROJECT_DIR: cwd, CLAUDE_CODE_SESSION_ID: sessionId }),
     input: JSON.stringify({

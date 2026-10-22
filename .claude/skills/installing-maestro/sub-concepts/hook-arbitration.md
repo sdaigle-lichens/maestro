@@ -52,13 +52,14 @@ is running, so the plugin's copy should.
 
 ## Where the guard is called
 
-The eight plugin hook scripts that have a project twin — `maestro-session-log.js`,
+The nine plugin hook scripts that have a project twin — `maestro-session-log.js`,
 `maestro-subagent-log.js`, `maestro-validate-tasks.js`, `maestro-inject-agent-context.js`,
 `maestro-step0.js`, `maestro-enable-task-routing.js`, `maestro-post-mortem-context.js`,
-`maestro-session-name.js` (exactly `HOOK_SCRIPTS`) — each call `projectOwnsHook` right after
-resolving `cwd` and `exit 0` when it is true. **`maestro-channel-write-guard.js` is not one of
-them:** it is plugin-only (no project twin, not in `HOOK_REGISTRATIONS`), so it never stands down and
-runs once from the plugin. `projectOwnsHook` reaches them through the `maestro-session.cjs` bundle
+`maestro-session-name.js`, `maestro-channel-write-guard.js` (exactly `HOOK_SCRIPTS`) — each call
+`projectOwnsHook` right after resolving `cwd` and `exit 0` when it is true. The channel guard
+(`121`) calls it **before** its fail-closed paths: a stood-down copy decides nothing, so an
+unparseable payload is judged only by the copy that owns the hook. It was plugin-only (never stood
+down) until `121`. `projectOwnsHook` reaches them through the `maestro-session.cjs` bundle
 (`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm --filter maestro
 build:plugin-libs` — see `plugin-libs-parity`.
 
@@ -90,7 +91,12 @@ re-pulls. This is why the change shipped with `plugins/maestro/.claude-plugin/pl
 
 ## Tests
 
-`apps/maestro/test/core/hook-arbitration.test.ts` covers the predicates in isolation. The four
+`apps/maestro/test/core/hook-arbitration.test.ts` covers the predicates in isolation.
+`test/core/channel-guard-install.test.ts` (`121`) is the guard's stand-down case: after
+`installRuntime`, the plugin's `maestro-channel-write-guard.js` exits 0 allowing a write it would
+deny, while the project copy `.claude/scripts/maestro-channel-write-guard.cjs` denies it. **Any test
+that installs the runtime and then exercises the guard must run that project copy**, not the plugin
+script, or it asserts against a copy that has stood down. The four
 end-to-end cases in `test/core/install.test.ts` run the **real** `plugins/maestro/scripts/*.js`
 against a real install: the plugin stands down for an installed project (and the project's own copy
 then logs exactly once), still runs for a Maestro project with no local install, runs again after a

@@ -6,10 +6,10 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups, **30 files** today: 12 scripts, 9 libs,
-`maestro-session-cleanup.cjs`, and the 8 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
+Everything lands under `<project>/.claude/`. Three groups, **31 files** today: 12 scripts, 9 libs,
+`maestro-session-cleanup.cjs`, and the 9 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
 `scripts/maestro-epic.cjs` and `scripts/lib/maestro-epic.cjs`; `113` added `maestro-session-name`, and
-the post-mortem hook joined the same list.) `test/core/install.test.ts` and `parity.test.ts` pin the
+the post-mortem hook joined the same list; `121` added `maestro-channel-write-guard`.) `test/core/install.test.ts` and `parity.test.ts` pin the
 set; count from `STATIC_ASSETS` in `install.ts`, not from here.
 
 | Group                                               | Destination                        | Note                                                                                                          |
@@ -40,10 +40,10 @@ against the asset's **destination** (the copied layout, not the plugin's), and a
 entry copies it. Static rather than a spawn, precisely because the failing branch sits behind a
 caught exception.
 
-**The `.js` → `.cjs` rename is load-bearing.** The eight `HOOK_SCRIPTS`
+**The `.js` → `.cjs` rename is load-bearing.** The nine `HOOK_SCRIPTS`
 (`maestro-inject-agent-context`, `maestro-subagent-log`, `maestro-session-log`,
 `maestro-validate-tasks`, `maestro-step0`, `maestro-enable-task-routing` (`047`),
-`maestro-post-mortem-context`, `maestro-session-name` (`113`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
+`maestro-post-mortem-context`, `maestro-session-name` (`113`), `maestro-channel-write-guard` (`121`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
 a module type. Inside a project the same file may sit under `"type": "module"`, which makes node
 parse their `require()` as ESM and fail the hook **on every tool call**. Scripts already named
 `.cjs` in the plugin are copied under their existing names. Add a hook script to the wrong list and
@@ -57,7 +57,7 @@ them is not an asset copy but a **sync**: `syncProjectHandoffs()` materialises
 `syncedFrom{version,hash}` in `maestro.json`'s `handoffs` slice, and leaves an edited file alone.
 The shipped floor is `SEED_HANDOFFS`, a constant bundled into `lib/maestro-session.cjs`, so it
 needs no file on disk to answer. Consequence for this manifest: an install's file count dropped
-from ~37 to 17 (30 today after later additions), and adding a handoff pair no longer touches
+from ~37 to 17 (31 today after later additions), and adding a handoff pair no longer touches
 `shippedRuntimeId` — it is a seed edit plus a `build:plugin-libs`.
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
@@ -112,11 +112,12 @@ It is also the one hook script with **no arbitration guard**: since `064` both c
 
 ## Hooks — `HOOK_REGISTRATIONS`
 
-Sixteen entries (`113`), written into the project's `.claude/settings.json`. They mirror the
-plugin's `hooks.json` **except for the plugin-only `maestro-channel-write-guard.js`**
-(`PreToolUse`, `Write|Edit|MultiEdit|NotebookEdit`, `078`/`082`), which is in neither
-`HOOK_SCRIPTS` nor `HOOK_REGISTRATIONS` and is never copied into a project — so it has no
-arbitration guard and cannot be turned off by a project-local install:
+Seventeen entries (`121`), written into the project's `.claude/settings.json`. They mirror the
+plugin's `hooks.json` one-for-one. `maestro-channel-write-guard` (`PreToolUse`,
+`CHANNEL_GUARD_MATCHER` = `Write|Edit|MultiEdit|NotebookEdit`, `078`/`082`) was missing until `121`:
+a project running a forked or user-tier `reviewer` with the plugin disabled had nothing confining
+its writes, since those agents carry no `disallowedTools`. It is now in `HOOK_SCRIPTS` too, and the
+plugin copy stands down when the project registers it:
 
 | Event                 | Matcher      | Script                             |
 | --------------------- | ------------ | ---------------------------------- |
@@ -135,6 +136,7 @@ arbitration guard and cannot be turned off by a project-local install:
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |
 | `PreToolUse`    | `.*`         | `maestro-session-log.cjs`          |
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
+| `PreToolUse`    | `Write\|Edit\|MultiEdit\|NotebookEdit` | `maestro-channel-write-guard.cjs` (`121`) |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
 `id` is `<Event>:<script>`, unique because a script is registered at most once per event

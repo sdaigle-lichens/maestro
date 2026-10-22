@@ -304,6 +304,8 @@ const HOOK_REGISTRATIONS = [
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
+  // `121`: the channel write guard — see install.ts's HOOK_SCRIPTS for why it is project-local too.
+  nodeHook("PreToolUse", "Write|Edit|MultiEdit|NotebookEdit", "maestro-channel-write-guard.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
@@ -408,6 +410,9 @@ const HOOK_SCRIPTS = [
   "maestro-post-mortem-context",
   // Records and applies the deterministic session name `maestro[-mgr]-<id8>` (113).
   "maestro-session-name",
+  // Confines the reviewer/refactor agents and meeting participants; refuses worktree-run writes
+  // into the main checkout (078/082/121).
+  "maestro-channel-write-guard",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the
