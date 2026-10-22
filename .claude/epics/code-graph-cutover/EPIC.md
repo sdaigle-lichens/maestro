@@ -399,4 +399,29 @@ gate is in its prompt.
     patch, and 028 is done but not yet committed. Maestro: always pass `--bump`.
   - `.claude/maestro.json` `runtimeVersion` 0.12.2 → 0.12.3 is the runtime picking up plugin
     0.12.3 (from 115), not the worker's edit.
+- The user asked for 119 to be committed (74a1e0b).
+- code-graph 0.3.21 (028) committed (55a23a7), not pushed. A blocked stamp exits 9 with the lines
+  to apply; `--print` computes without writing. The gap contract is unchanged. Next: 030, then 029.
+- Queued 120: a full review of maestro-architecture, claude-session-bridge and agents-view, the
+  three never fully read. It carries a manual precondition (code-graph with 029 installed), and the
+  user will start it once that ships. It uses 029's changed-files list, `--reviewed`, and an
+  explicit `--bump` throughout.
+- code-graph 0.3.22 (030) committed (7011b96), not pushed. A repo-level stamp with no `--bump`
+  refuses over an existing version.
+- code-graph 0.3.23 (029) committed (bc86d8c), not pushed. Per-file changed counts in
+  `skills status <skill>`; the stamp-only warning has a `--reviewed` override. Known limit: the
+  first re-stamp after a skill is created gives no warning. All code-graph tickets 003–030 are done,
+  and the contract is unchanged. Task 120's precondition now names 0.3.23.
+- 120 done (r014, acked) on code-graph 0.3.23.
+  - agents-view 1.15: several fixes.
+  - claude-session-bridge 2.5: one fix; everything else verified.
+  - maestro-architecture 1.25: stale lifecycle steps, the hook count, renamed functions.
+  - Repo list at v1.32. No stamp warnings, and exit 9 was applied verbatim.
+  - Manager check: all 16 concepts and the list are at 0 commits, 0 changed/stale and
+    0 unextracted.
+  - Worker finding: install.ts:319-326 says HOOK_REGISTRATIONS mirrors hooks.json one-for-one, but
+    `maestro-channel-write-guard.js` is plugin-only. Per hooks.md, that guard is the only thing
+    stopping reviewer/refactor from editing code. So a project-local install without the plugin
+    may leave them unconfined. Possibly more than a stale comment; awaiting the user's decision.
+- Every concept skill has now had a full review (118–120).
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

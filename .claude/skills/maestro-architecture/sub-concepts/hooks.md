@@ -31,14 +31,17 @@ entries launched a web form and blocked the prompt until a result file appeared,
 
 ## Two copies of every script
 
-**Every one of these scripts exists in two places, and neither copy updates on its own.** The eight
+**Every one of these scripts exists in two places, and neither copy updates on its own.** The ten
 hook scripts above (`maestro-step0.js`, `maestro-enable-task-routing.js` (`047`),
-`maestro-post-mortem-context.js`, `maestro-inject-agent-context.js`, `maestro-subagent-log.js`,
-`maestro-session-log.js`, `maestro-validate-tasks.js`, `maestro-session-cleanup.sh`) run from
+`maestro-post-mortem-context.js`, `maestro-session-name.js` (`113`), `maestro-inject-agent-context.js`,
+`maestro-subagent-log.js`, `maestro-session-log.js`, `maestro-channel-write-guard.js` (`078`),
+`maestro-validate-tasks.js`, `maestro-session-cleanup.sh`) run from
 `${CLAUDE_PLUGIN_ROOT}/scripts/` — which resolves into the **version-keyed marketplace cache**, so
 an edit reaches a project only after a `plugin.json` version bump and re-pull. The installer also
-copies them into `<project>/.claude/scripts/` as `.cjs`, and those copies only refresh on
-(re)install or `/maestro-update`. `maestro-set-session-workflow.cjs`,
+copies nine of them into `<project>/.claude/scripts/` as `.cjs`, and those copies only refresh on
+(re)install or `/maestro-update`. **`maestro-channel-write-guard.js` is plugin-only**: it is not in
+`HOOK_REGISTRATIONS` or the static assets, so a project that has the hooks only locally has no
+write confinement for the reviewer and refactor agents. `maestro-set-session-workflow.cjs`,
 `maestro-render-orchestrator.cjs`, `maestro-task-status.cjs` and `maestro-step1-gates.cjs` (`032`)
 exist **only** as project copies. Both staleness rules: `updating-maestro`.
 

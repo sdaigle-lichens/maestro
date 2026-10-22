@@ -36,10 +36,11 @@ fork that cannot happen. See `workflow-view`'s picker/fork note.
 
 Every fork — same-name or renamed — writes a provenance record to
 `<projectRoot>/.claude/agent-forks.json` (`AgentForkRecord`: `sourceTier: "user" | "plugin"`,
-`sourcePlugin`, `pluginVersion`, `templateBodyHash`, `templateBody`, `forkedAt`), **never** into the
-agent's own frontmatter beyond the rename — `agent-fork.ts`'s header explains why (Maestro's own
-bookkeeping doesn't belong in a file format it doesn't own, same argument as the description
-exception among the write paths). `hashAgentBody` strips **both** the `name:` and the `description:`
+`sourcePlugin`, `pluginVersion`, `templateBodyHash`, `templateBody`, `forkedAt`, plus the optional
+`acknowledgedFrom` that "Keep as fork" sets), **never** into the agent's own frontmatter beyond the
+rename — `AgentForkRecord`'s doc comment in `contracts.ts` explains why (Maestro's own bookkeeping
+doesn't belong in a file Claude Code itself reads, same argument as the description exception among
+the write paths). `hashAgentBody` strips **both** the `name:` and the `description:`
 frontmatter lines (and their continuations) before hashing, so neither editing the description after
 forking nor renaming the fork at creation marks it as diverged. The `name:` half is `031`'s
 correction: `forkAgent` rewrites exactly that line on a renamed fork, so a description-only

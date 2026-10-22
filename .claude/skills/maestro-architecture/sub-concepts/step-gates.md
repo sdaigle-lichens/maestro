@@ -124,9 +124,9 @@ page is still unbuilt; until then, hand-editing `maestro.json` is the only other
 
 ## The post-mortem prompt is NOT part of that mechanism (`049`)
 
-Despite sitting back to back with the `046` gate line in Step 4. `maestro-step4-gate.cjs`'s
-task-routing suggestion is script-injected and gated on `use_maestro_tasks`; the sentence directly
-under it — asking once whether to run `/maestro-post-mortem` when the session needed a major review
+Despite sitting right after the `046` gate line (Step 4 ends with it; the post-mortem is Step 5).
+`maestro-step4-gate.cjs`'s task-routing suggestion is script-injected and gated on
+`use_maestro_tasks`; the question in Step 5 — asking once whether to run `/maestro-post-mortem` when the session needed a major review
 fix, a mid-task refactor, or didn't land correctly on the first pass — is plain, always-on template
 prose in the same `Maestro:STEPS` region: no script, no `maestro.json` field, reaches every project
 on install/update regardless of any setting. It also carries its own gate in prose, not code: skip
