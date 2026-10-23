@@ -604,5 +604,15 @@
     "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
+  },
+  "122-stop-the-channel-write-guard-from-failing-open-when-the-project-copy-can-t-run.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
   }
 }

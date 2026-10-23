@@ -1083,7 +1083,7 @@ describe("the installed hooks actually run", () => {
       expect(denied(run(".claude/channels/scribe/reviewer.1.md"))).toBe("allow");
     });
 
-    it("the plugin's copy stands down once the project registers its own, and runs for an uninstalled one", async () => {
+    it("the plugin's copy keeps denying once the project registers its own (122: exempt from stand-down)", async () => {
       const pluginGuard = path.join(PLUGIN_ROOT, "scripts", "maestro-channel-write-guard.js");
       const payload = (root: string) => ({
         hook_event_name: "PreToolUse",
@@ -1105,7 +1105,7 @@ describe("the installed hooks actually run", () => {
       const installed = makeProject("guard-installed");
       writeConfig(installed, defaultish);
       await installRuntime(installed, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
-      expect(runPlugin(installed)).toBe("");
+      expect(denied(runPlugin(installed))).toBe("deny");
     });
   });
 

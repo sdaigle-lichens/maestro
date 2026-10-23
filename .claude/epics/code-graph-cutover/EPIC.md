@@ -439,5 +439,43 @@ gate is in its prompt.
     `/maestro-update` here. `pnpm verify` fails in the sandbox only at the turbo test step (tmp
     dir); the same steps pass with `--env-mode=loose`. There's no negative control against
     pre-fix code.
+- Second merge review (`/tmp/claude-1000/merge-review-delta.md`): R1, R3–R5 and R7–R9 are fixed
+  and re-measured. R2 is accepted. R6 is half done (nothing retires `concept-skills@maestro`).
+  The 121 tests fail 8/10 on pre-fix code, so the negative control now exists.
+  - New R10: the plugin guard stands down whenever the project registers it, so a missing project
+    script or `lib/` makes the guard fail open. Queued 122 (no stand-down for the guard, a broken-copy
+    test, a general hooks.json parity test, 0.12.5). It must land before push.
+  - Queued 123: TMPDIR passthrough in turbo.json (code-graph 5b19298) and the test temp-home leak
+    (849 dirs).
+  - User decisions:
+    - N1 (reviewer/refactor keep Bash, which the guard doesn't watch): document it only, added
+      to 122. A post-mortem catching a Bash write is the trigger for a stronger guard.
+    - R6's remaining half is deferred. Every maestro project is on this machine, so when we
+      get there the user gives their `~/gits` paths and the manager fixes them directly.
+    - N2/N3 (code-graph `skills status` wording, `--summary` without `--json`) were sent to
+      code-graph's manager.
+  - code-graph's reply:
+    - N2 became code-graph ticket 031, not yet scheduled. It labels the git list "since stamp
+      (git)" and adds an unextracted section (working tree vs last extract).
+    - N3 needs no change: `--summary` implies `--json`, as documented.
+    - Code-graph offered a size budget or check for the bundle (R2). The user declined, so
+      there is no budget.
+  - code-graph 0.3.24 (031) committed (4197383, bookkeeping in b7b64d3), not pushed. It closes
+    N2. `skills status <skill>` now labels the git list `since stamp <sha8> (git):` and adds an
+    `unextracted (working tree vs last extract):` section. `unextracted.files` is in the JSON,
+    and `--summary` and the contracts are unchanged. Nothing for maestro to change.
+- 122 done (r016, acked). The plugin copy of the guard no longer stands down, which closes R10.
+  The Bash gap is documented in the guard header and in hooks.md. New
+  `hook-registration-parity.test.ts` compares hooks.json with both installers, in both
+  directions. Plugin 0.12.5.
+  - Manager check: 213/213 in 7 suites (guard, parity ×2, install, worktree, team-meeting ×2);
+    concepts at 0 unextracted.
+  - The worker's mutation check (restoring the stand-down) failed 6 tests. The parity test
+    wasn't mutation-checked.
+  - The comments in hook-arbitration.ts and install.ts still claim every hook stands down;
+    added to 123.
+  - The parity test's reverse direction would flag a legitimate project-only hook (none exist
+    today). Fine as is.
+  - claude.test.ts "cancels a running invocation" flaked once under load.
 - Every concept skill has now had a full review (118–120).
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

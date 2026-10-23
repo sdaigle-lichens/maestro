@@ -116,8 +116,8 @@ Seventeen entries (`121`), written into the project's `.claude/settings.json`. T
 plugin's `hooks.json` one-for-one. `maestro-channel-write-guard` (`PreToolUse`,
 `CHANNEL_GUARD_MATCHER` = `Write|Edit|MultiEdit|NotebookEdit`, `078`/`082`) was missing until `121`:
 a project running a forked or user-tier `reviewer` with the plugin disabled had nothing confining
-its writes, since those agents carry no `disallowedTools`. It is now in `HOOK_SCRIPTS` too, and the
-plugin copy stands down when the project registers it:
+its writes, since those agents carry no `disallowedTools`. It is now in `HOOK_SCRIPTS` too; unlike
+the other hooks here the plugin copy does **not** stand down for it (`122`, see hook-arbitration):
 
 | Event                 | Matcher      | Script                             |
 | --------------------- | ------------ | ---------------------------------- |

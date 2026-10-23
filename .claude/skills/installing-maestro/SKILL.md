@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.1"
-  last-update: 110f5d7cf22d3612c3b5de58e07cc6235672c26f
+  version: "2.2"
+  last-update: 3011339b642af48993619a529bc32716cdf334f0
 ---
 
 # Installing Maestro
@@ -112,7 +112,7 @@ refuses cleanly. Both write nothing; only the shape differs.
 | `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`     | 40    | `061`'s addition — a `STATIC_ASSET`, not a hook. See the skill-discovery sub-concept. |
 | `plugins/maestro/scripts/maestro-post-mortem-context.js`, `maestro-session-name.js` | 130, 84 | The other two dual-registered `HOOK_SCRIPTS` (post-mortem context, see `task-queue`; `113`'s deterministic session names, see `maestro-architecture`). Both are in `HOOK_REGISTRATIONS` and renamed `.cjs` on copy. |
 | `plugins/maestro/scripts/maestro-epic.cjs`, `maestro-workflow-spec.cjs`, `maestro-resume-target.cjs` | — | Orchestrator- or skill-invoked `STATIC_ASSETS` (`084`, `063`, `039`), not hooks. |
-| `plugins/maestro/hooks/hooks.json` | — | **One-for-one with `HOOK_REGISTRATIONS`.** `maestro-channel-write-guard.js` (`PreToolUse`, `Write\|Edit\|MultiEdit\|NotebookEdit`) was plugin-only until `121`; it is now a `HOOK_SCRIPTS` entry and registered by the install too (`CHANNEL_GUARD_MATCHER`), so the plugin's copy stands down in a project that installed it. |
+| `plugins/maestro/hooks/hooks.json` | — | **One-for-one with `HOOK_REGISTRATIONS`.** `maestro-channel-write-guard.js` (`PreToolUse`, `Write\|Edit\|MultiEdit\|NotebookEdit`) was plugin-only until `121`; it is now a `HOOK_SCRIPTS` entry and registered by the install too (`CHANNEL_GUARD_MATCHER`). Unlike the other dual-registered hooks its plugin copy does **not** stand down (`122`; fail-closed confinement hook). |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 369   | The published skills that drive the terminal path (184 + 100 + 85).                           |
 
 Supporting: `config-usable.ts` (`maestroConfigRefusal`, `096`; re-exported by
@@ -135,7 +135,8 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   hook-arbitration sub-concept before changing `HOOK_REGISTRATIONS` or how `hasHook()` matches. A
   hook the plugin registers that is not in `HOOK_REGISTRATIONS` would have no project copy to
   arbitrate and always run from the plugin; none exists today — `maestro-channel-write-guard.js` was
-  the last, closed by `121`. Keep `hooks.json` and `HOOK_REGISTRATIONS` identical.
+  the last, closed by `121`. (It is also registered by the install, but deliberately never stands
+  down — `122`.) Keep `hooks.json` and `HOOK_REGISTRATIONS` identical.
 - **The install writes HOOKS into `settings.json` and nothing else — no `permissions` block, ever.**
   `032` needed a permission grant and still didn't break this, putting it in the orchestrator
   template's frontmatter as `allowed-tools`. A permissions entry is a claim on the user's

@@ -1,6 +1,6 @@
 // `121`: the channel write guard's project-local registration, held equal across the app's
 // HOOK_REGISTRATIONS, the plugin's maestro-install.js and hooks.json; removed by both uninstallers;
-// and the plugin copy's stand-down proven end to end (real scripts, temp projects, HOME pinned,
+// and (122) the plugin copy shown NOT to stand down, end to end (real scripts, temp projects, HOME pinned,
 // CLAUDE_CODE_SESSION_ID deleted).
 
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
@@ -160,25 +160,45 @@ describe("channel write guard registration (121)", () => {
   });
 });
 
-describe("channel write guard arbitration (121)", () => {
-  it("a terminal-installed project: plugin copy stands down, project copy denies", () => {
+describe("channel write guard is exempt from stand-down (122)", () => {
+  it("a terminal-installed intact project: both copies deny, each exactly once, with no side effects", () => {
     const root = project("term");
     pluginInstall(root);
     const target = path.join(root, "src", "app.ts");
-    expect(runPluginGuard(root, target)).toBe("");
-    expect(decision(runProjectGuard(root, root, target))).toBe("deny");
+    const before = fs.readdirSync(root, { recursive: true }).sort();
+    const outs = [runPluginGuard(root, target), runProjectGuard(root, root, target)];
+    for (const out of outs) {
+      expect(decision(out)).toBe("deny");
+      expect(JSON.parse(out).hookSpecificOutput.hookEventName).toBe("PreToolUse");
+    }
+    expect(fs.readdirSync(root, { recursive: true }).sort()).toEqual(before);
   });
 
-  it("after uninstall the plugin copy takes over again", async () => {
-    const root = project("back");
-    await appInstall(root);
+  it("the project script is missing: the project copy cannot run, the plugin copy still denies", () => {
+    const root = project("no-script");
+    pluginInstall(root);
+    fs.rmSync(path.join(root, ".claude", "scripts", `${SCRIPT}.cjs`));
     const target = path.join(root, "src", "app.ts");
-    expect(runPluginGuard(root, target)).toBe("");
-    await uninstallRuntime(root, { pluginRoot: PLUGIN_ROOT });
+    expect(() => runProjectGuard(root, root, target)).toThrow();
     expect(decision(runPluginGuard(root, target))).toBe("deny");
   });
 
-  it("a guard registered only in settings.local.json also makes the plugin copy stand down", () => {
+  it("the project lib/ is missing: the project copy cannot run, the plugin copy still denies", () => {
+    const root = project("no-lib");
+    pluginInstall(root);
+    fs.rmSync(path.join(root, ".claude", "scripts", "lib"), { recursive: true, force: true });
+    const target = path.join(root, "src", "app.ts");
+    expect(() => runProjectGuard(root, root, target)).toThrow();
+    expect(decision(runPluginGuard(root, target))).toBe("deny");
+  });
+
+  it("the plugin copy still allows a reviewer payload write under .claude/channels/", () => {
+    const root = project("channels");
+    pluginInstall(root);
+    expect(runPluginGuard(root, path.join(root, ".claude", "channels", "scribe", "r.1.md"))).toBe("");
+  });
+
+  it("a guard registered only in settings.local.json does not silence the plugin copy", () => {
     const root = project("local");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
     fs.writeFileSync(
@@ -191,7 +211,7 @@ describe("channel write guard arbitration (121)", () => {
         },
       })
     );
-    expect(runPluginGuard(root, path.join(root, "src", "app.ts"))).toBe("");
+    expect(decision(runPluginGuard(root, path.join(root, "src", "app.ts")))).toBe("deny");
   });
 
   it("an unparseable project settings.json does not silence the plugin copy", () => {
@@ -201,16 +221,13 @@ describe("channel write guard arbitration (121)", () => {
     expect(decision(runPluginGuard(root, path.join(root, "src", "app.ts")))).toBe("deny");
   });
 
-  it("a symlinked cwd: the project copy still enforces and the plugin copy still stands down", async () => {
+  it("a symlinked cwd: both copies still enforce", async () => {
     const real = project("real");
     await appInstall(real);
     const link = path.join(tmp, "link");
     fs.symlinkSync(real, link, "dir");
     const viaLink = path.join(link, "src", "app.ts");
-    // The plugin copy is given the symlinked cwd: it must still see the project's registration.
-    expect(runPluginGuard(link, viaLink)).toBe("");
-    // The project copy runs from its real path but is told the symlinked cwd: it must not mistake
-    // itself for the plugin's copy (the failure would be silence = allow).
+    expect(decision(runPluginGuard(link, viaLink))).toBe("deny");
     expect(decision(runProjectGuard(real, link, viaLink))).toBe("deny");
     expect(decision(runProjectGuard(real, link, path.join(link, ".claude", "channels", "scribe", "r.1.md")))).toBe(
       "allow"
