@@ -477,5 +477,15 @@ gate is in its prompt.
   - The parity test's reverse direction would flag a legitimate project-only hook (none exist
     today). Fine as is.
   - claude.test.ts "cancels a running invocation" flaked once under load.
+- 122 committed (a0f6dea) after the user's `/maestro-update` (runtime 0.12.5).
+- 123 done (r017, acked). turbo.json passes TMPDIR through, and the temp-HOME cleanup moved to
+  `afterAll`. The stand-down comments name the guard exception; the bundles didn't change
+  (comments are stripped), so there's no bump and the plugin stays 0.12.5. 231 leaked dirs found,
+  none deleted.
+  - Manager check: an uncached `turbo run test --force` in the sandbox passed 2144/2144 with no
+    env override, and left 0 new `maestro-test-home-*` dirs across 113 files.
+  - Worker finding: the SubagentStop hook reported "NO HANDOFF line" for subagents that ended with
+    a SubagentHandback tool call whose report did contain `HANDOFF: success`. A possible false
+    positive in the handoff check; the user decides whether to make it a ticket.
 - Every concept skill has now had a full review (118–120).
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

@@ -611,7 +611,7 @@
     "epic": "code-graph-cutover"
   },
   "123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
   }

@@ -14,7 +14,8 @@
 //
 //   What the registrations this file writes then MEAN to the plugin's own copy of the same hooks
 //   is hook-arbitration.ts: the plugin's copy stands down for any hook the project registers here,
-//   so both being installed is a precedence rule and not the double-firing it used to be.
+//   so both being installed is a precedence rule and not the double-firing it used to be. The one
+//   exception is the channel write guard (task 122): the plugin's copy of it never stands down.
 //
 // Three rules this file exists to enforce:
 //
@@ -380,8 +381,9 @@ export type { HookCommand, HookEntry, Settings } from "./hook-arbitration.js";
  * `settingsRegisterScript` is shared with the runtime guard in hook-arbitration.ts on purpose: the
  * installer uses it so a re-quoted command doesn't get a duplicate entry that fires the hook twice,
  * and the plugin's copy of a hook uses the same test to decide the project owns that hook and stand
- * down. Two answers to "is this script registered here?" that could disagree would put those two
- * mechanisms at odds.
+ * down (except the channel write guard, task 122, whose plugin copy never stands down). Two
+ * answers to "is this script registered here?" that could disagree would put those two mechanisms
+ * at odds.
  */
 function hasHook(settings: Settings, reg: HookRegistration): boolean {
   return settingsRegisterScript(settings, reg.event, reg.script);

@@ -249,6 +249,20 @@
       "id": "r016",
       "at": "2026-10-23T15:52:35.509Z",
       "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r017",
+      "task": "123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md",
+      "file": "inbox/r017-123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md",
+      "at": "2026-10-23T16:15:05.071Z",
+      "from": "maestro-2e1cb206"
+    },
+    {
+      "kind": "ack",
+      "id": "r017",
+      "at": "2026-10-23T16:16:13.726Z",
+      "by": "manager-code-graph-merge"
     }
   ]
 }
