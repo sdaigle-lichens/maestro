@@ -487,5 +487,22 @@ gate is in its prompt.
   - Worker finding: the SubagentStop hook reported "NO HANDOFF line" for subagents that ended with
     a SubagentHandback tool call whose report did contain `HANDOFF: success`. A possible false
     positive in the handoff check; the user decides whether to make it a ticket.
+- 123 committed (863ff60). On the user's approval, the 231 leaked temp-home dirs were deleted
+  (0 remain).
+- Queued 124 for this branch: the NO HANDOFF false positive. `handoff-label.ts` (087) already
+  recovers labels from SubagentHandback calls, so 124 first finds why that recovery misses, using
+  a real transcript, then fixes it with a negative-controlled test and plugin 0.12.6.
+- 124 done (r018, acked). The cause was a race: SubagentStop fires before Claude Code flushes the
+  final SubagentHandback tool_use to the agent transcript. The new `awaitHandback` re-reads every
+  100 ms for up to 3 s. 14 new tests (one end-to-end case fails with the old single read); full
+  suite 2158; plugin 0.12.6. A hand-back slower than 3 s is still flagged `missing`.
+  - Manager check: the handoff and parity suites pass 100/100, and the session bundle still has no
+    `node:sqlite` (count 0).
+  - Docs: plugin-libs-parity didn't list 124's four new bundle exports; added, stamped 2.2. The
+    stand-down comments 123 edited in hook-arbitration.ts and install.ts touch installing-maestro and
+    updating-maestro. Reviewed, both docs still accurate, so stamped 2.3 with `--reviewed`
+    (exit 9, lines applied by hand). Extract/apply ran for all three; every concept is at 0
+    unextracted. maestro-architecture and plugin-libs-parity each keep 1 stale enriched vertex,
+    left for lazy enrichment.
 - Every concept skill has now had a full review (118–120).
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.

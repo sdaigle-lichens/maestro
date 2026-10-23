@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.1"
-  last-update: 110f5d7cf22d3612c3b5de58e07cc6235672c26f
+  version: "2.2"
+  last-update: 863ff60fdbcc76a204b05bc079a3e20da3b937f4
 ---
 
 # Core ↔ plugin parity
@@ -163,6 +163,10 @@ only and every hook already requires this bundle" argument:
   `noteEntrance`, `titleFor`, `storedName`, `storedSessionName`, `rederiveSessionName`), read by
   `maestro-session-name.js`, `maestro-task-status.cjs claim` and `maestro-epic.cjs`. `fs`/`path`
   only; the grep is still `0`.
+- `124` — `awaitHandback`, `hasHandbackCall`, `HANDBACK_WAIT_MS` and `HANDBACK_POLL_MS` from
+  `handoff-label.ts`, used by the SubagentStop hook to keep re-reading a transcript that Claude
+  Code hasn't finished writing. `fs`-free (the reader and the sleep are passed in); the grep is
+  still `0`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

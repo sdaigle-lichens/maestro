@@ -163,7 +163,16 @@ export {
   CHANNEL_ONLY_AGENTS,
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
-export { lastHandoffLabel, sendMessageHandoff, handbackHandoff, HANDBACK_TOOLS } from "../handoff-label.js";
+export {
+  lastHandoffLabel,
+  sendMessageHandoff,
+  handbackHandoff,
+  hasHandbackCall,
+  awaitHandback,
+  HANDBACK_TOOLS,
+  HANDBACK_WAIT_MS,
+  HANDBACK_POLL_MS,
+} from "../handoff-label.js";
 
 // Does a final message agree with itself — report verdict vs HANDOFF line (`083`)? Read by the
 // SubagentStop hook. `fs`-free. `087` adds the third issue, a route expecting a payload whose

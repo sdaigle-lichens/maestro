@@ -614,5 +614,10 @@
     "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
+  },
+  "124-find-why-the-subagentstop-hook-still-flags-no-handoff-line-for-subagenthandback-reports-and-fix-it.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
   }
 }

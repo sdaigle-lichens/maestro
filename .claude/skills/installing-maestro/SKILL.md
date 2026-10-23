@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.2"
-  last-update: 3011339b642af48993619a529bc32716cdf334f0
+  version: "2.3"
+  last-update: 863ff60fdbcc76a204b05bc079a3e20da3b937f4
 ---
 
 # Installing Maestro

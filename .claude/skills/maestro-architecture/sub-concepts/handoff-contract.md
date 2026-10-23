@@ -99,6 +99,18 @@ end with a `SubagentHandback({message})` call, and then the `SubagentStop` paylo
 (`SubagentHandback`, `SendMessage`). Trap: `078` matched `SendMessage` only, so in task 084 every
 agent was flagged `missing` while each had ended `HANDOFF: success`.
 
+**The transcript is read early, so the hook waits for it (`124`).** Even with the tool name right,
+every hand-back agent of task 123 was still flagged `missing`. The parser was fine: Claude Code fires
+`SubagentStop` **before** it flushes the agent's final `SubagentHandback` `tool_use` line to
+`agent_transcript_path` (probed live: the hook read the file one assistant turn short, with no
+hand-back call in it, and the complete file held the line moments later; the payload does carry
+`agent_transcript_path`, just no `last_assistant_message`). So the single read of `087` found nothing.
+`awaitHandback` (`core/handoff-label.ts`) re-reads every `HANDBACK_POLL_MS` (100 ms) for up to
+`HANDBACK_WAIT_MS` (3 s) until a hand-back call appears (`hasHandbackCall`), then judges it as before.
+It stops early once any call is present — a labelless one is a real `missing` — or the file cannot be
+read, so only an agent that ended with plain text and no label pays the full wait. The sleep and read
+are injected; the hook script supplies `fs` and a `setTimeout` promise.
+
 ### A payload route must be written (`087`)
 
 The third issue kind, `missing_payload` (`checkPayload` in `handoff-check.ts`): the `HANDOFF:` label

@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -22,7 +22,7 @@ import {
 import { writeConfig, readConfig } from "../../src/core/config.js";
 import { compareRuntimeVersions, runtimeNeedsRefresh } from "../../src/core/runtime-version.js";
 import { checkPayload } from "../../src/core/handoff-check.js";
-import { handbackHandoff } from "../../src/core/handoff-label.js";
+import { handbackHandoff, hasHandbackCall, awaitHandback } from "../../src/core/handoff-label.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -627,6 +627,154 @@ describe("SubagentHandback hand-backs are read, not flagged missing (087 item 3)
     });
     expect(handbackHandoff(viaSend)).toContain("HANDOFF: tests failed");
     expect(handbackHandoff(handbackTranscript("no line here"))).toBeNull();
+  });
+});
+
+// ── 3b. 124: SubagentStop fires before the hand-back line is flushed ──────────────────────────────
+
+// Measured live (Claude Code 2.1.309): the SubagentStop hook read the agent's transcript one turn
+// short — everything up to the "handing back" text turn, no SubagentHandback tool_use yet — and the
+// complete file (same path) held it moments later. The parser was always right; the read was early.
+describe("a hand-back not yet flushed when SubagentStop fires is waited for (124)", () => {
+  const REPORT = 'Done.\n```json\n{ "verdict": "SUCCESS" }\n```\nHANDOFF: success';
+  const full = handbackTranscript(REPORT);
+  // lines 0-1 only: the transcript as the hook first saw it (reminder + text turn, no tool_use).
+  const partial = full.split("\n").slice(0, 2).join("\n") + "\n";
+  const noSleep = () => Promise.resolve();
+
+  it("the early read alone finds no label (the 123 symptom)", () => {
+    expect(handbackHandoff(partial)).toBeNull();
+    expect(hasHandbackCall(partial)).toBe(false);
+  });
+
+  it("re-reads until the tool_use lands and recovers the label", async () => {
+    let reads = 0;
+    const got = await awaitHandback(() => (++reads < 4 ? partial : full), noSleep);
+    expect(got).toContain("HANDOFF: success");
+    expect(reads).toBe(4);
+  });
+
+  it("gives up after the bounded wait when the call never appears", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, partial), noSleep, 300, 100)).toBeNull();
+    expect(reads).toBe(4);
+  });
+
+  it("does not wait once a call is present, even a labelless one", async () => {
+    let reads = 0;
+    const labelless = handbackTranscript("no line here");
+    expect(await awaitHandback(() => (reads++, labelless), noSleep)).toBeNull();
+    expect(reads).toBe(1);
+  });
+
+  it("stops at once when the transcript cannot be read", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, null), noSleep)).toBeNull();
+    expect(reads).toBe(1);
+  });
+
+  it("the real hook waits for a transcript still being written (123 end to end)", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-124-late.jsonl");
+    fs.writeFileSync(transcript, partial);
+    subagentStart(root, "backend", "b1");
+    writePayload(root, "test", "backend");
+    // The flush lands ~0.6s after the hook starts reading, from another process (the hook is
+    // run synchronously, so a timer in this one would never fire).
+    const writer = spawn(
+      process.execPath,
+      ["-e", "setTimeout(() => require('fs').writeFileSync(process.argv[1], process.argv[2]), 600)", transcript, full],
+      { stdio: "ignore" }
+    );
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    writer.kill();
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(handoffEntry(root, "b1")).toMatchObject({ status: "success", label: "success" });
+    expect(handoffEntry(root, "b1").handoff_issue).toBeUndefined();
+  });
+
+  it("the real hook still recovers a transcript that is complete on first read", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-124.jsonl");
+    fs.writeFileSync(transcript, full);
+    subagentStart(root, "backend", "b1");
+    writePayload(root, "test", "backend");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(handoffEntry(root, "b1")).toMatchObject({ status: "success", label: "success" });
+  });
+
+  const sendMessageLine = (text: string) =>
+    JSON.stringify({
+      type: "assistant",
+      message: { content: [{ type: "tool_use", name: "SendMessage", input: { to: "main", message: text } }] },
+    });
+
+  it("a SendMessage hand-back that lands late is waited for too", async () => {
+    let reads = 0;
+    const got = await awaitHandback(
+      () => (++reads < 3 ? partial : partial + sendMessageLine("x\nHANDOFF: tests failed") + "\n"),
+      noSleep
+    );
+    expect(got).toContain("HANDOFF: tests failed");
+    expect(reads).toBe(3);
+  });
+
+  it("a half-written last line (malformed JSON) is not a call and keeps waiting", async () => {
+    const truncated = full.split("\n").slice(0, 3).join("\n") + "\n" + full.split("\n")[2].slice(0, 80);
+    expect(hasHandbackCall(truncated)).toBe(true); // line 2 complete, truncated tail ignored
+    const torn = partial + full.split("\n")[2].slice(0, 80); // only the torn tool_use line
+    expect(hasHandbackCall(torn)).toBe(false);
+    let reads = 0;
+    const got = await awaitHandback(() => (++reads < 3 ? torn : full), noSleep);
+    expect(got).toContain("HANDOFF: success");
+    expect(reads).toBe(3);
+  });
+
+  it("garbage lines and prose that merely name the tool are not a call", () => {
+    const prose = JSON.stringify({
+      type: "assistant",
+      message: { content: [{ type: "text", text: "I will call SubagentHandback next" }] },
+    });
+    expect(hasHandbackCall("not json SubagentHandback\n" + prose + "\n{\n")).toBe(false);
+    expect(hasHandbackCall(JSON.stringify({ content: "SubagentHandback" }))).toBe(false);
+  });
+
+  it("with several hand-back calls the last labelled one wins", () => {
+    const two = full + sendMessageLine("later\nHANDOFF: tests failed") + "\n";
+    expect(handbackHandoff(two)).toContain("HANDOFF: tests failed");
+  });
+
+  it("a zero or negative wait still reads once", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, partial), noSleep, 0, 100)).toBeNull();
+    expect(reads).toBe(1);
+    reads = 0;
+    expect(await awaitHandback(() => (reads++, partial), noSleep, -5, 100)).toBeNull();
+    expect(reads).toBe(1);
+  });
+
+  it("the real hook gives up after the cap when the flush never lands, and flags missing", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-124-never.jsonl");
+    fs.writeFileSync(transcript, partial);
+    subagentStart(root, "backend", "b1");
+    const t0 = Date.now();
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    const took = Date.now() - t0;
+    expect(r.code, r.stderr).toBe(0);
+    expect(r.stdout).toContain("handoff problem (missing)");
+    expect(took).toBeGreaterThanOrEqual(2800);
+    expect(took).toBeLessThan(9000);
+  }, 20000);
+
+  it("the real hook does not delay when the transcript file is unreadable", async () => {
+    const root = await installed();
+    subagentStart(root, "backend", "b1");
+    const t0 = Date.now();
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: path.join(tmp, "nope.jsonl") });
+    expect(r.code, r.stderr).toBe(0);
+    expect(Date.now() - t0).toBeLessThan(2500);
   });
 });
 
