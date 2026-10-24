@@ -28,4 +28,9 @@ export {
   showEpic,
   formatEpic,
   formatInboxEntry,
+  DEFAULT_SPAWN_CAP,
+  workerNameFor,
+  launchCommandFor,
+  readyTasks,
+  formatReady,
 } from "../epics.js";

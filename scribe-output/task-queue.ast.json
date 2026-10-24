@@ -434,6 +434,24 @@
       }
     },
     {
+      "_key": "335af66abc36f49a90289999fb1dd3c6",
+      "displayKey": "task-queue::function::readyTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readyTasks",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 581,
+      "end_line": 619,
+      "signature": "function readyTasks(projectRoot: string, slug: string, cap: number = DEFAULT_SPAWN_CAP): EpicReadyView",
+      "contentHash": "f28ba571c164cca901f3aabdfc7a6e83a7f6f3268afbdcc2140b67aa0070c6c9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "352bd17c43a8926046c504b19ba90646",
       "displayKey": "task-queue::function::isValidEpicSlug",
       "concept": "task-queue",
@@ -488,6 +506,24 @@
       }
     },
     {
+      "_key": "39e16b1f603661de2b3e7159deec0315",
+      "displayKey": "task-queue::function::formatReady",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatReady",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 622,
+      "end_line": 636,
+      "signature": "function formatReady(view: EpicReadyView): string",
+      "contentHash": "4ba3b5d229e12671f756f0e803a6789c06a1a61bd89daa0591347fe86f3998fb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "39eaccc58f06270d5cc88ab682f9e539",
       "displayKey": "task-queue::type-def::EpicInboxEntry",
       "concept": "task-queue",
@@ -516,6 +552,24 @@
       "end_line": 305,
       "signature": "export interface TaskQueueTailEvents {",
       "contentHash": "3a547b01a1f0283a7b83b07c9abf1bad5389a5d690727ff51e35708ecf35ef9b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "456a6a173e259f146e1f8263b0c8123a",
+      "displayKey": "task-queue::type-def::EpicReadyView",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicReadyView",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 538,
+      "end_line": 551,
+      "signature": "export interface EpicReadyView {",
+      "contentHash": "7860fe26644e764a4fd7c157cc33d980769c15771b4371afe83ab4baf3d3ea18",
       "status": "live",
       "ast": {},
       "agent": {
@@ -668,6 +722,24 @@
       }
     },
     {
+      "_key": "5295e01fc222d1a67b3db7c548feeff0",
+      "displayKey": "task-queue::function::shellQuote",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "shellQuote",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 563,
+      "end_line": 565,
+      "signature": "function shellQuote(value: string): string",
+      "contentHash": "2f1ac593f6cfde5f023fe78d902bc4ccafc52da449387a648ffab10fe8fc851f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "5341839d6016bc10fb5df403fac3f8f2",
       "displayKey": "task-queue::function::linkTasks",
       "concept": "task-queue",
@@ -786,6 +858,24 @@
       "end_line": 56,
       "signature": "function ensureClaimsDir(tasksDir: string): string",
       "contentHash": "24360ab3ced7723e71f8dc962ee4a865618b195323f932872c52b212cf66d69f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "66e97c0dd0efd4cb150ada77e873b6da",
+      "displayKey": "task-queue::function::launchCommandFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "launchCommandFor",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 568,
+      "end_line": 571,
+      "signature": "function launchCommandFor(name: string, filename: string): string",
+      "contentHash": "6eec1e0df02a492622c093849e394d22400ff5618f2d95f4de798de87dd0e59f",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1082,6 +1172,24 @@
       }
     },
     {
+      "_key": "8aff328aa76edad60ccaa3058291b274",
+      "displayKey": "task-queue::type-def::SpawnableTask",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "SpawnableTask",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 528,
+      "end_line": 536,
+      "signature": "export interface SpawnableTask {",
+      "contentHash": "2a3feca775fa7509950d3cbdbced67de1d4b40273f0fd6ee085573d3ca82f11e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "8b0f6670e3b9c37d4ee54a13446c669c",
       "displayKey": "task-queue::function::reportCommandFor",
       "concept": "task-queue",
@@ -1160,8 +1268,8 @@
       "type": "function",
       "name": "formatInboxEntry",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 525,
-      "end_line": 529,
+      "start_line": 639,
+      "end_line": 643,
       "signature": "function formatInboxEntry(entry: EpicInboxEntry & { path: string }): string",
       "contentHash": "3bcb0a13bb0423caf887d560553bc0a937f8ddccf49e71262d3f4206e1c782e7",
       "status": "live",
@@ -1250,8 +1358,8 @@
       "type": "function",
       "name": "formatCrossEpicEdge",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 531,
-      "end_line": 536,
+      "start_line": 645,
+      "end_line": 650,
       "signature": "function formatCrossEpicEdge(edge: CrossEpicEdge): string",
       "contentHash": "06b376ce4882a8cc2aa27486cbf8d5d00f8eb66e400c312caab8408ebcdbeb01",
       "status": "live",
@@ -1856,14 +1964,32 @@
       }
     },
     {
+      "_key": "f60a7bd4e8a4df59b85bc4405c2e5c6d",
+      "displayKey": "task-queue::function::workerNameFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "workerNameFor",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 557,
+      "end_line": 561,
+      "signature": "function workerNameFor(slug: string, filename: string): string",
+      "contentHash": "231a2b728d920d3fa0cc9c1f3e7564fcc2d349776960664c6944dec7845ba05d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "fdcd71d5576eafd0aa689b4471560b91",
       "displayKey": "task-queue::function::formatEpic",
       "concept": "task-queue",
       "type": "function",
       "name": "formatEpic",
       "filepath": "apps/maestro/src/core/epics.ts",
-      "start_line": 539,
-      "end_line": 558,
+      "start_line": 653,
+      "end_line": 672,
       "signature": "function formatEpic(view: EpicView): string",
       "contentHash": "aa20f078c12cfaccf34bb84f3c816d1b12b65d40646d78e3668179d0e7f82623",
       "status": "live",
@@ -2013,19 +2139,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 433,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "14f5c2a010dfa5ed864e707472bd2e0c",
-      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
-      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 539,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2318,6 +2431,19 @@
       }
     },
     {
+      "_key": "2872b64fdc58355dc09f6f82a96d3ded",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/9a6e62d6960395654e07c09fa4477c13",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 670,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "28a2d47c57a5a9e73ec33791bc770fad",
       "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
       "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
@@ -2429,6 +2555,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 499,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "30a5a69f6b75eee612c62ebb26e47966",
+      "_from": "vertices/39e16b1f603661de2b3e7159deec0315",
+      "_to": "vertices/456a6a173e259f146e1f8263b0c8123a",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 622,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2604,6 +2743,19 @@
       }
     },
     {
+      "_key": "43f5556ec4ca67e68ee04520a1266436",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/8dc681797a2b576708884a4f930325e6",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 668,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4553c0f1c8b392f4a20bbdc024a7cb1b",
       "_from": "vertices/627a9bbeefce5d5fadb7a59592a35a1d",
       "_to": "vertices/4b98ee0e98ae5c84a328efefd73871df",
@@ -2682,6 +2834,19 @@
       }
     },
     {
+      "_key": "51351b820d66f65ad1265354c8056cd1",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 582,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "51d42911218a00ba7230ea27e8413c4c",
       "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
       "_to": "vertices/540f0b68de78d81852395d53e079208c",
@@ -2702,6 +2867,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "563c4074fd2ef3eb618cf2879d9a35db",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 653,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3085,13 +3263,13 @@
       }
     },
     {
-      "_key": "8f87b31a541f4b257d645c92e17c2639",
-      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
-      "_to": "vertices/9a6e62d6960395654e07c09fa4477c13",
+      "_key": "9186552997ba3e5dc281a408c074b8c7",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/f60a7bd4e8a4df59b85bc4405c2e5c6d",
       "type": "calls",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 556,
+      "line": 609,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3189,6 +3367,19 @@
       }
     },
     {
+      "_key": "9c458cd117ab771e16ae67e0d3878ad9",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 586,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "9ceb28d0286b531c75e46169e363a51d",
       "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
       "_to": "vertices/4e735a1964d429efa4a2d04cf64679e0",
@@ -3248,6 +3439,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 262,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a3a92b51888431c62f1bc5e18d0b100d",
+      "_from": "vertices/66e97c0dd0efd4cb150ada77e873b6da",
+      "_to": "vertices/5295e01fc222d1a67b3db7c548feeff0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 570,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3326,6 +3530,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 291,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a9f6423d31e99eb5e78926fef549020c",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/66e97c0dd0efd4cb150ada77e873b6da",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 614,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3430,6 +3647,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 188,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ba7ef76c0eea891770f9e86282082422",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/456a6a173e259f146e1f8263b0c8123a",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 591,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3560,19 +3790,6 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 320,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c2451fcf15869de09b057160cbe2f953",
-      "_from": "vertices/9a6e62d6960395654e07c09fa4477c13",
-      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 531,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3930,6 +4147,19 @@
       }
     },
     {
+      "_key": "df51cfee479008dafdd15511c581a806",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 587,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "dfa9b31e6e3da2655425861f6b13b7b2",
       "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
       "_to": "vertices/daf86c154fac5e3f51109bbd3cb38bd8",
@@ -3982,19 +4212,6 @@
       }
     },
     {
-      "_key": "e54b24d8221ecdbc711f5bac36a5b2cc",
-      "_from": "vertices/8dc681797a2b576708884a4f930325e6",
-      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
-      "type": "has-type",
-      "concept": "task-queue",
-      "crosses_concept": false,
-      "line": 525,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e686022f8b59cee489002dcd8c9c7a45",
       "_from": "vertices/a21165036ad1c3400f13f71e6d9ee77f",
       "_to": "vertices/0badc33a242eccf12edf799a03ddd499",
@@ -4002,6 +4219,32 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e768e6a1541b986f25ccdb3429daa34e",
+      "_from": "vertices/8dc681797a2b576708884a4f930325e6",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 639,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e7bb6122008e3308d47548e933cc0951",
+      "_from": "vertices/9a6e62d6960395654e07c09fa4477c13",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 645,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4112,13 +4355,13 @@
       }
     },
     {
-      "_key": "ed6ec10743cc7ba8c8b8ffaf37ddba8d",
-      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
-      "_to": "vertices/8dc681797a2b576708884a4f930325e6",
-      "type": "calls",
+      "_key": "eb0d0e7d9ee4f260637421875e65db59",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/456a6a173e259f146e1f8263b0c8123a",
+      "type": "has-type",
       "concept": "task-queue",
       "crosses_concept": false,
-      "line": 554,
+      "line": 581,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4171,6 +4414,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 325,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f4674ea080c0209356c742b6ab3daf48",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 587,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4270,15 +4526,15 @@
   ],
   "skill": {
     "path": ".claude/skills/task-queue/SKILL.md",
-    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"2.0\"\n  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view (Open/Closed filter, claim badge, Copy prompt, Run with Claude via `claude.preview` + the confirmation dialog, Close, Delete); owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/renderer/src/utils/maestro-tasks.ts` | Thin `window.maestro.tasks` wrappers: `getMaestroTasks`, `closeMaestroTask`, `deleteMaestroTask` (each close/delete returns the full recomputed list). |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
-    "contentHash": "sha256:f37de49d1db04793d6ff69114e09344f2c5ccdef9e5af11bcaa41f83fe02824e"
+    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"2.0\"\n  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`), the manager's spawn list `readyTasks` (`125`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`); spawns workers in herdr tabs from `ready` (`125`). |\n| `plugins/maestro/skills/maestro-install/references/herdr.md` | The user-facing herdr setup guide the manager's fallback points to (`125`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, rebuild with `build:plugin-libs`, copy the libs over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view (Open/Closed filter, claim badge, Copy prompt, Run with Claude via `claude.preview` + the confirmation dialog, Close, Delete); owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/renderer/src/utils/maestro-tasks.ts` | Thin `window.maestro.tasks` wrappers: `getMaestroTasks`, `closeMaestroTask`, `deleteMaestroTask` (each close/delete returns the full recomputed list). |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic; `125`: `ready`, the manager's spawn list.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
+    "contentHash": "sha256:fffc20da0cb1cbf4fb5389d251deb32ffb22ef5bb54c30944b013cef46aa2bfc"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.21",
-    "extracted_at": "2026-10-21T19:02:25.414Z",
+    "extractor_version": "code-graph@0.3.24",
+    "extracted_at": "2026-10-24T14:58:31.186Z",
     "files": {
       "apps/maestro/src/core/claims.ts": "sha256:51b78e57db31159c49f90c6db135ced4959269921144b08340ad09409b4e1e8c",
-      "apps/maestro/src/core/epics.ts": "sha256:9596bf622f15dcb0cf041603cdce6e53518c0283f31c8026015f361e0171b41d",
+      "apps/maestro/src/core/epics.ts": "sha256:169aed866a5a13902590be3824a853dad3551e7b66c74f0eb4dcc079eef43add",
       "apps/maestro/src/core/success-path.ts": "sha256:f1aab1123ed0b851916d6f7379988bc6f5f0d921319ff111bfee2ea0f35df1d4",
       "apps/maestro/src/core/tasks.ts": "sha256:c0f796132c86df27e172aaa1f28e8ded38d188334d4e23709176a99c1d1690d7",
       "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx": "sha256:95dc9de847e877098f9e43c2ceea58425618f73e9cfe63c74df01218cbf39b23",

@@ -619,5 +619,22 @@
     "status": "done",
     "blockedBy": [],
     "epic": "code-graph-cutover"
+  },
+  "125-manager-spawns-worker-sessions-in-herdr.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
+  },
+  "126-human-review-asks-with-an-approve-request-changes-picker.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
+  },
+  "127-install-and-update-offer-the-sandbox-allow-list-with-a-herdr-opt-in.md": {
+    "status": "ready",
+    "blockedBy": [
+      "125-manager-spawns-worker-sessions-in-herdr.md"
+    ],
+    "epic": "autonomous-workers"
   }
 }

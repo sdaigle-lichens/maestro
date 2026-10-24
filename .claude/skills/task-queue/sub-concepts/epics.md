@@ -10,8 +10,8 @@ resumable `maestro-manager` session. A task in no epic behaves exactly as before
 CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership and the report inbox.
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
-remove-worker | of | report --task | note | reports | ack` (`085` added `note` and `list`'s manager and
-backlog columns; `100` added `of`). Callers never see the lock, the file layout or the id
+remove-worker | of | ready | report --task | note | reports | ack` (`085` added `note` and `list`'s manager and
+backlog columns; `100` added `of`; `125` added `ready`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -111,6 +111,35 @@ through that epic's inbox, never through a message alone.
 `SendMessage` (lost while the receiver is down); a project-wide bus (a second inbox); auto-detecting
 file overlap.
 
+## Spawning workers: `ready` (`125`)
+
+`ready <slug> [--cap <n>] [--json]` is the manager's spawn list (`readyTasks`, `formatReady`). The
+`maestro-manager` skill runs it, then opens one herdr tab per `[spawn]` task (`herdr tab create`,
+`herdr pane run <launch command>`, then `add-worker --task`); without herdr, or outside a herdr pane
+(`HERDR_ENV` not `1`), or with `herdr status server` not printing `status: running`, it prints the
+commands instead. The CLI itself never touches herdr.
+
+Each unfinished epic task (tracker `epic === slug`, oldest first) lands in exactly one bucket:
+
+| Bucket | Rule |
+| --- | --- |
+| `running` | A **live** claim (`readClaims` → `live`). Wins over a recorded worker. |
+| `pending` | A worker recorded with `add-worker --task` and no live claim: spawned, not started, or its claim aged out. |
+| `ready` | Tracker `ready` **and** every `blockedBy` entry the tracker knows is `done` — a hand-edited stale `ready` never spawns a blocked task. Blockers in other epics or none count too. |
+
+`slots = max(0, cap − running − pending)`; the text marks the first `slots` ready tasks `[spawn]`,
+the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an integer ≥ 1.
+
+- **`pending` is the double-spawn guard.** Without it a worker that has not claimed yet looks ready
+  and a second one is spawned for the same task. A worker that never starts holds its slot until
+  `remove-worker`.
+- **Names and commands are derived, not stored.** `workerNameFor` → `<slug>-<NNN>` (or
+  `<slug>-<basename>` with no number); `launchCommandFor` →
+  `claude -n '<name>' '/maestro .claude/maestro-tasks/<task.md>'`, POSIX single-quoted. The
+  `maestro-session-name` hook keeps a `claude -n` name (`113`).
+- **`cwd` is `mainCheckoutRoot`**, so run from a worktree it still prints the main checkout as the
+  launch directory.
+
 ## Tests
 
 `apps/maestro/test/core/epics-cli.test.ts` spawns the installed commands against temp projects:
@@ -121,3 +150,5 @@ manager, no-epic report, and `maestro-write-tasks.cjs --epic`. `085`'s `cross-ep
 writing nothing; held-open stdin exiting promptly on a refused route; a note to a manager-less epic
 acked once after resume; cross-epic `blockedBy` edges in both directions; separate, never-reused
 `n`/`r` counters; the sender unable to ack; concurrent note and report writers keeping every entry.
+`125`'s `ready` block: the three buckets, dead claims, stale `ready`, cross-epic blockers, the cap
+and its clamp, unnumbered worker names, the main checkout from a worktree, bad `--cap`/unknown epic.

@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.2"
-  last-update: 863ff60fdbcc76a204b05bc079a3e20da3b937f4
+  version: "2.3"
+  last-update: 620acb086bee20c7b74e53ad627335a6ec79ff7c
 ---
 
 # Core ↔ plugin parity
@@ -89,7 +89,9 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
 `maestro-agent-fork`, `maestro-rule-move` (`081`), `maestro-skill-lists` (`089`: `resolveSkillLists`, behind both Step-1/end-skills scripts) and `maestro-epic` (`084`: epics, the report
 inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and
-`formatInboxEntry`; copied into projects, fs/path only, no `node:sqlite`).
+`formatInboxEntry`; `125`: the spawn list, adding `DEFAULT_SPAWN_CAP`, `workerNameFor`,
+`launchCommandFor`, `readyTasks` and `formatReady`; copied into projects, fs/path only, no
+`node:sqlite`).
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.

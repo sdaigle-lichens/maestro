@@ -832,6 +832,249 @@ describe("cross-epic notes", () => {
   });
 });
 
+describe("ready: the manager's spawn list (125)", () => {
+  function writeBlocked(root: string, name: string, blockers: string[]) {
+    fs.mkdirSync(tasksDir(root), { recursive: true });
+    const refs = blockers.length ? blockers.map((b) => `- \`${b}\``).join("\n") : "None";
+    fs.writeFileSync(path.join(tasksDir(root), name), `# ${name}\n\n## Blocked by\n\n${refs}\n`);
+  }
+
+  type ReadyJson = {
+    slug: string;
+    cwd: string;
+    cap: number;
+    slots: number;
+    ready: Array<{ filename: string; worker: string; command: string; relativePath: string }>;
+    running: Array<{ filename: string; sessionName: string | null }>;
+    pending: Array<{ filename: string; worker: string }>;
+  };
+  const ready = (root: string, extra: string[] = []): ReadyJson =>
+    JSON.parse(epic(root, ["ready", "e1", "--json", ...extra]).stdout);
+
+  it("lists ready tasks, never blocked, claimed, done or other-epic ones", async () => {
+    const root = await installed();
+    writeBlocked(root, "001-free.md", []);
+    writeBlocked(root, "002-claimed.md", []);
+    writeBlocked(root, "003-blocked.md", ["001-free.md"]);
+    writeBlocked(root, "004-done.md", []);
+    writeBlocked(root, "005-after-done.md", ["004-done.md"]);
+    writeBlocked(root, "006-other-epic.md", []);
+    writeBlocked(root, "007-no-epic.md", []);
+    expect(status(root, ["sync"]).code).toBe(0);
+    expect(status(root, ["done", "004-done.md"]).code).toBe(0);
+    epic(root, ["create", "e1"]);
+    epic(root, ["create", "e2"]);
+    epic(root, ["link", "e1", "001-free.md", "002-claimed.md", "003-blocked.md", "004-done.md", "005-after-done.md"]);
+    epic(root, ["link", "e2", "006-other-epic.md"]);
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "002-claimed.md", "--name", "worker-one"], SESSION_A).code).toBe(0);
+
+    const view = ready(root);
+    expect(view.ready.map((t) => t.filename)).toEqual(["001-free.md", "005-after-done.md"]);
+    expect(view.running).toEqual([{ filename: "002-claimed.md", sessionName: "worker-one" }]);
+    expect(view.pending).toEqual([]);
+    expect(view.cap).toBe(5);
+    expect(view.slots).toBe(4);
+    expect(fs.realpathSync(view.cwd)).toBe(fs.realpathSync(root));
+    expect(view.ready[0]).toEqual({
+      filename: "001-free.md",
+      relativePath: ".claude/maestro-tasks/001-free.md",
+      worker: "e1-001",
+      command: "claude -n 'e1-001' '/maestro .claude/maestro-tasks/001-free.md'",
+    });
+
+    const text = epic(root, ["ready", "e1"]).stdout;
+    expect(text).toContain("2 ready, unclaimed task(s); 1 running");
+    expect(text).toContain("claude -n 'e1-001' '/maestro .claude/maestro-tasks/001-free.md'");
+    expect(text).toContain('002-claimed.md  running in session "worker-one"');
+    expect(text).not.toContain("003-blocked.md");
+  });
+
+  it("a dead claim does not hide a ready task, and closing its blocker makes a blocked task ready", async () => {
+    const root = await installed();
+    writeBlocked(root, "001-a.md", []);
+    writeBlocked(root, "002-b.md", ["001-a.md"]);
+    expect(status(root, ["sync"]).code).toBe(0);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "001-a.md"], SESSION_A).code).toBe(0);
+    expect(ready(root).ready).toEqual([]);
+
+    // The claiming session ended: its directory is gone, so the claim is dead.
+    fs.rmSync(path.join(root, ".claude", "maestro_sessions", SESSION_A), { recursive: true, force: true });
+    expect(ready(root).ready.map((t) => t.filename)).toEqual(["001-a.md"]);
+
+    expect(status(root, ["done", "001-a.md"]).code).toBe(0);
+    expect(ready(root).ready.map((t) => t.filename)).toEqual(["002-b.md"]);
+  });
+
+  it("a task recorded on a spawned worker that has not claimed it yet is pending, not ready, and takes a slot", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    expect(epic(root, ["add-worker", "e1", "e1-001", "--task", "001-a.md"]).code).toBe(0);
+
+    const view = ready(root, ["--cap", "2"]);
+    expect(view.pending).toEqual([{ filename: "001-a.md", worker: "e1-001" }]);
+    expect(view.ready.map((t) => t.filename)).toEqual(["002-b.md"]);
+    expect(view.slots).toBe(1);
+    expect(epic(root, ["ready", "e1"]).stdout).toContain('001-a.md  spawned as "e1-001", not claimed yet');
+
+    // Removing the worker (it never started) makes the task ready again.
+    epic(root, ["remove-worker", "e1", "e1-001"]);
+    expect(ready(root).ready.map((t) => t.filename)).toEqual(["001-a.md", "002-b.md"]);
+  });
+
+  it("the cap limits the free slots, and the text marks which tasks wait for one", async () => {
+    const names = ["001-a.md", "002-b.md", "003-c.md"];
+    const root = await withTasks(...names);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", ...names]);
+    liveSession(root, SESSION_A);
+    status(root, ["claim", "001-a.md", "--name", "w1"], SESSION_A);
+
+    const view = ready(root, ["--cap", "2"]);
+    expect(view.ready.map((t) => t.filename)).toEqual(["002-b.md", "003-c.md"]);
+    expect(view.slots).toBe(1);
+    const text = epic(root, ["ready", "e1", "--cap", "2"]).stdout;
+    expect(text).toContain('002-b.md  worker "e1-002"  [spawn]');
+    expect(text).toContain('003-c.md  worker "e1-003"  [waits for a slot]');
+
+    expect(ready(root, ["--cap", "1"]).slots).toBe(0);
+  });
+
+  it("a stale 'ready' in the tracker never spawns a task whose blocker is not done", async () => {
+    const root = await installed();
+    writeBlocked(root, "001-a.md", []);
+    writeBlocked(root, "002-b.md", ["001-a.md"]);
+    expect(status(root, ["sync"]).code).toBe(0);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    // Hand-edit the tracker so 002 claims to be ready while its blocker 001 is still open.
+    const tracker = statusJson(root);
+    expect(tracker["002-b.md"].blockedBy).toEqual(["001-a.md"]);
+    tracker["002-b.md"].status = "ready";
+    fs.writeFileSync(path.join(tasksDir(root), "status.json"), JSON.stringify(tracker, null, 2));
+
+    expect(ready(root).ready.map((t) => t.filename)).toEqual(["001-a.md"]);
+  });
+
+  it("a blocker in another epic (or in none) blocks until it is done", async () => {
+    const root = await installed();
+    writeBlocked(root, "001-other.md", []);
+    writeBlocked(root, "002-loose.md", []);
+    writeBlocked(root, "003-mine.md", ["001-other.md", "002-loose.md"]);
+    expect(status(root, ["sync"]).code).toBe(0);
+    epic(root, ["create", "e1"]);
+    epic(root, ["create", "e2"]);
+    epic(root, ["link", "e2", "001-other.md"]);
+    epic(root, ["link", "e1", "003-mine.md"]);
+
+    expect(ready(root).ready).toEqual([]);
+    expect(status(root, ["done", "001-other.md"]).code).toBe(0);
+    expect(ready(root).ready).toEqual([]);
+    expect(status(root, ["done", "002-loose.md"]).code).toBe(0);
+    expect(ready(root).ready.map((t) => t.filename)).toEqual(["003-mine.md"]);
+  });
+
+  it("a live claim wins over a recorded worker (running, not pending), and a done task is listed nowhere", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "001-a.md", "--name", "e1-001"], SESSION_A).code).toBe(0);
+    expect(epic(root, ["add-worker", "e1", "e1-001", "--task", "001-a.md"]).code).toBe(0);
+    // A worker recorded with the path form of --task still matches its task.
+    expect(epic(root, ["add-worker", "e1", "e1-002", "--task", ".claude/maestro-tasks/002-b.md"]).code).toBe(0);
+
+    let view = ready(root);
+    expect(view.running).toEqual([{ filename: "001-a.md", sessionName: "e1-001" }]);
+    expect(view.pending).toEqual([{ filename: "002-b.md", worker: "e1-002" }]);
+    expect(view.ready).toEqual([]);
+    expect(view.slots).toBe(3);
+
+    expect(status(root, ["done", "001-a.md"], SESSION_A).code).toBe(0);
+    expect(status(root, ["done", "002-b.md"], SESSION_A).code).toBe(0);
+    view = ready(root);
+    expect(view).toMatchObject({ running: [], pending: [], ready: [], slots: 5 });
+  });
+
+  it("the default cap is 5: a sixth ready task waits, and slots never go below 0", async () => {
+    const names = ["001-a.md", "002-b.md", "003-c.md", "004-d.md", "005-e.md", "006-f.md"];
+    const root = await withTasks(...names);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", ...names]);
+
+    const view = ready(root);
+    expect(view.cap).toBe(5);
+    expect(view.slots).toBe(5);
+    expect(view.ready).toHaveLength(6);
+    const text = epic(root, ["ready", "e1"]).stdout;
+    expect(text).toContain('005-e.md  worker "e1-005"  [spawn]');
+    expect(text).toContain('006-f.md  worker "e1-006"  [waits for a slot]');
+    expect(text.match(/\[spawn\]/g)).toHaveLength(5);
+
+    // Over the cap: 1 running + 1 pending against a cap of 1 clamps to 0, never -1.
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "001-a.md", "--name", "w1"], SESSION_A).code).toBe(0);
+    expect(epic(root, ["add-worker", "e1", "e1-002", "--task", "002-b.md"]).code).toBe(0);
+    const over = ready(root, ["--cap", "1"]);
+    expect(over.slots).toBe(0);
+    expect(epic(root, ["ready", "e1", "--cap", "1"]).stdout).not.toContain("[spawn]");
+  });
+
+  it("names a worker for a task without a number after its basename", async () => {
+    const root = await withTasks("cleanup.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "cleanup.md"]);
+    expect(ready(root).ready[0]).toMatchObject({
+      worker: "e1-cleanup",
+      command: "claude -n 'e1-cleanup' '/maestro .claude/maestro-tasks/cleanup.md'",
+    });
+  });
+
+  it("run from a linked worktree, it prints the main checkout as the launch directory", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    execFileSync("git", ["-c", "user.email=t@t", "-c", "user.name=t", "commit", "-q", "--allow-empty", "-m", "init"], {
+      cwd: root,
+    });
+    const wt = path.join(tmp, "wt");
+    execFileSync("git", ["worktree", "add", "-q", wt], { cwd: root });
+
+    const res = spawnSync(
+      "node",
+      [path.join(root, ".claude", "scripts", "maestro-epic.cjs"), "ready", "e1", "--json"],
+      {
+        encoding: "utf8",
+        cwd: wt,
+        env: env(wt, SESSION_A),
+      }
+    );
+    expect(res.stderr).toBe("");
+    expect(res.status).toBe(0);
+    const view = JSON.parse(res.stdout) as ReadyJson;
+    expect(fs.realpathSync(view.cwd)).toBe(fs.realpathSync(root));
+    expect(view.ready.map((t) => t.filename)).toEqual(["001-a.md"]);
+  });
+
+  it("refuses a bad cap and an unknown epic", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1"]);
+    for (const cap of ["0", "-1", "two", "1.5"]) {
+      const r = epic(root, ["ready", "e1", "--cap", cap]);
+      expect(r.code).toBe(1);
+      expect(r.stderr).toContain("--cap");
+    }
+    const none = epic(root, ["ready", "nope"]);
+    expect(none.code).toBe(1);
+    expect(none.stderr).toContain('no epic "nope"');
+    expect(epic(root, ["ready"]).code).toBe(1);
+  });
+});
+
 describe("to-maestro-tasks linking", () => {
   const writer = (root: string, args: string[]) =>
     spawnSync("node", [path.join(PLUGIN_ROOT, "scripts", "maestro-write-tasks.cjs"), ...args], {
