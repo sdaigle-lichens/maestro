@@ -53,7 +53,12 @@ side column.
 
 6. **On success** the script prints `{ ok, mode, workflow, createdInstances, issues, render }`.
    Report which steps and conditions were added or removed (against step 2's spec), any newly
-   created instances, and any `issues` / `render.issues` as non-blocking warnings.
+   created instances, and any `issues` / `render.issues` as non-blocking warnings. If
+   `render.reason` is `sandbox-blocked`, the workflow was saved but the sandbox refused the
+   handoff-table write: run `render.command` once, exactly as printed (it works when the user has
+   allowed it, see
+   [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md)). If
+   that is refused too, give the user `! <render.command>` to run. Never retry the update.
 
 ## Notes
 

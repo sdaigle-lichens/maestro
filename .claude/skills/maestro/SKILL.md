@@ -47,6 +47,8 @@ node .claude/scripts/maestro-set-session-workflow.cjs "<workflow name>" [--task 
 | Documentation | @scribe |
 | Review | @reviewer |
 | Tests | @test → @reviewer → @scribe |
+| Backend | @backend → human review → @test → @reviewer → @scribe |
+| Frontend | @frontend → human review → @test → @reviewer → @scribe |
 <!-- Maestro:HANDOFFS:END -->
 
 ### Step 3 — Execute the workflow
