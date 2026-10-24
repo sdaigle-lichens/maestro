@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.3"
-  last-update: 863ff60fdbcc76a204b05bc079a3e20da3b937f4
+  version: "2.4"
+  last-update: 1b62cf9055efc9cc71d127180cd8eb07d4956ec2
 ---
 
 # Installing Maestro
@@ -112,6 +112,7 @@ refuses cleanly. Both write nothing; only the shape differs.
 | `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`     | 40    | `061`'s addition — a `STATIC_ASSET`, not a hook. See the skill-discovery sub-concept. |
 | `plugins/maestro/scripts/maestro-post-mortem-context.js`, `maestro-session-name.js` | 130, 84 | The other two dual-registered `HOOK_SCRIPTS` (post-mortem context, see `task-queue`; `113`'s deterministic session names, see `maestro-architecture`). Both are in `HOOK_REGISTRATIONS` and renamed `.cjs` on copy. |
 | `plugins/maestro/scripts/maestro-epic.cjs`, `maestro-workflow-spec.cjs`, `maestro-resume-target.cjs` | — | Orchestrator- or skill-invoked `STATIC_ASSETS` (`084`, `063`, `039`), not hooks. |
+| `plugins/maestro/scripts/maestro-sandbox-allow.cjs` | 314 | Not part of the install: the sandbox allow-list the `maestro-install`/`maestro-update` skills dry-run (step 5 / step 6) and `maestro-uninstall` `--remove`s. Writes only `.claude/settings.local.json`, and only when the **user** runs the printed `applyCommand` — never the session. `--herdr` (`127`) is an explicit opt-in adding herdr's socket (`allowWrite`; `allowUnixSockets` unless `allowAllUnixSockets` is effectively `true`) and a herdr binary under `$HOME` (`allowRead`). Plain `--apply` leaves earlier herdr entries alone; plain `--remove` takes them too; `--remove --herdr` takes only them. |
 | `plugins/maestro/hooks/hooks.json` | — | **One-for-one with `HOOK_REGISTRATIONS`.** `maestro-channel-write-guard.js` (`PreToolUse`, `Write\|Edit\|MultiEdit\|NotebookEdit`) was plugin-only until `121`; it is now a `HOOK_SCRIPTS` entry and registered by the install too (`CHANNEL_GUARD_MATCHER`). Unlike the other dual-registered hooks its plugin copy does **not** stand down (`122`; fail-closed confinement hook). |
 | `plugins/maestro/skills/maestro-{install,update,uninstall}/` | 369   | The published skills that drive the terminal path (184 + 100 + 85).                           |
 
@@ -141,6 +142,11 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   `032` needed a permission grant and still didn't break this, putting it in the orchestrator
   template's frontmatter as `allowed-tools`. A permissions entry is a claim on the user's
   project-wide configuration that a hook registration is not. See the manifest sub-concept.
+- **The skills must run `maestro-install.js` unquoted, on one line:**
+  `node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js . …` (`127`). The allow-list's
+  `excludedCommands` entry (`node <plugin>/scripts/maestro-install.js *`) matches the literal command
+  text, so the old quoted `"${CLAUDE_SKILL_DIR}/../../scripts/…"` form, or a `\` line break, runs
+  sandboxed and fails with `EPERM` on `.claude/settings.json` / `.claude/skills/`.
 - **A script dropped from the manifest must be listed in `RETIRED_HOOK_SCRIPTS`.** Removing it from
   `HOOK_REGISTRATIONS`/`runtimeAssets` only stops new installs getting it; an already-installed
   project keeps the `settings.json` entry and the file, firing at a script nothing refreshes. Install

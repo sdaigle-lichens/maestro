@@ -1,0 +1,72 @@
+{
+  "slug": "autonomous-workers",
+  "created_at": "2026-10-24T13:22:19.133Z",
+  "manager": {
+    "name": "herdr-manager",
+    "set_at": "2026-10-24T14:09:56.459Z"
+  },
+  "workers": [
+    {
+      "name": "maestro-fa8c8c5e",
+      "task": "125-manager-spawns-worker-sessions-in-herdr.md",
+      "added_at": "2026-10-24T13:22:52.148Z"
+    },
+    {
+      "name": "maestro-5337fc9f",
+      "task": "126-human-review-asks-with-an-approve-request-changes-picker.md",
+      "added_at": "2026-10-24T13:22:53.504Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "126-human-review-asks-with-an-approve-request-changes-picker.md",
+      "file": "inbox/r001-126-human-review-asks-with-an-approve-request-changes-picker.md",
+      "at": "2026-10-24T13:37:28.214Z",
+      "from": "maestro-5337fc9f"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-10-24T13:37:47.049Z",
+      "by": "maestro-mgr-59ab262e"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "125-manager-spawns-worker-sessions-in-herdr.md",
+      "file": "inbox/r002-125-manager-spawns-worker-sessions-in-herdr.md",
+      "at": "2026-10-24T15:00:15.296Z",
+      "from": "maestro-fa8c8c5e"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-10-24T15:00:27.540Z",
+      "by": "herdr-manager"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "128-test-the-epic-ready-list-against-an-apostrophe-filename-and-claim-liveness-edges.md",
+      "file": "inbox/r003-128-test-the-epic-ready-list-against-an-apostrophe-filename-and-claim-liveness-edges.md",
+      "at": "2026-10-24T15:33:29.860Z",
+      "from": "autonomous-workers-128"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "at": "2026-10-24T15:33:53.828Z",
+      "by": "herdr-manager"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "127-install-and-update-offer-the-sandbox-allow-list-with-a-herdr-opt-in.md",
+      "file": "inbox/r004-127-install-and-update-offer-the-sandbox-allow-list-with-a-herdr-opt-in.md",
+      "at": "2026-10-24T16:08:30.960Z",
+      "from": "autonomous-workers-127"
+    }
+  ]
+}

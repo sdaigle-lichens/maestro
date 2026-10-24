@@ -39,7 +39,14 @@ function project(settings?: object | string): { root: string; settingsPath: stri
 }
 
 function run(root: string, ...flags: string[]) {
-  const res = spawnSync("node", [SCRIPT, root, ...flags], { encoding: "utf8", env: pinnedEnv(home) });
+  return runEnv({}, root, ...flags);
+}
+
+function runEnv(extra: NodeJS.ProcessEnv, root: string, ...flags: string[]) {
+  const res = spawnSync(process.execPath, [SCRIPT, root, ...flags], {
+    encoding: "utf8",
+    env: pinnedEnv(home, extra),
+  });
   return { code: res.status ?? -1, out: JSON.parse(res.stdout), stderr: res.stderr };
 }
 
@@ -120,5 +127,271 @@ describe("maestro-sandbox-allow.cjs", () => {
     expect(code).toBe(1);
     expect(out.ok).toBe(false);
     expect(fs.readFileSync(settingsPath, "utf8")).toBe("{ not json");
+  });
+});
+
+// The --herdr opt-in. Each case gets its own HOME (the user-level settings.json is one of the files
+// allowAllUnixSockets is read from) with a fake executable `herdr` in $HOME/.local/bin, put first on
+// PATH because the developer's real herdr may sit on the ambient one.
+describe("maestro-sandbox-allow.cjs --herdr", () => {
+  type Change = { kind: string; value: string };
+  let h = 0;
+
+  function herdrHome(opts: { bin?: "home" | "outside" | "none"; userSettings?: object } = {}) {
+    const hh = path.join(tmp, `herdr-home-${h}`);
+    const outside = path.join(tmp, `herdr-outside-${h++}`);
+    fs.mkdirSync(path.join(hh, ".claude"), { recursive: true });
+    fs.mkdirSync(outside, { recursive: true });
+    if (opts.userSettings)
+      fs.writeFileSync(path.join(hh, ".claude", "settings.json"), JSON.stringify(opts.userSettings));
+    const where = opts.bin ?? "home";
+    const binDir = where === "home" ? path.join(hh, ".local", "bin") : outside;
+    if (where !== "none") {
+      fs.mkdirSync(binDir, { recursive: true });
+      fs.writeFileSync(path.join(binDir, "herdr"), "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    }
+    // "none": PATH holds only an empty dir; the script is spawned via process.execPath, so no node on PATH needed.
+    const PATH = where === "none" ? outside : `${binDir}${path.delimiter}${process.env.PATH}`;
+    return {
+      home: hh,
+      env: { HOME: hh, PATH },
+      socket: path.join(hh, ".config", "herdr", "herdr.sock"),
+      binary: path.join(binDir, "herdr"),
+    };
+  }
+
+  const values = (cs: Change[], kind: string) => cs.filter((c) => c.kind === kind).map((c) => c.value);
+
+  it("the default list has no herdr entry, dry run or --apply, even with herdr on PATH under HOME", () => {
+    const hh = herdrHome();
+    const { root, settingsPath } = project();
+
+    const dry = runEnv(hh.env, root);
+    expect(dry.code).toBe(0);
+    expect(dry.out.herdr.optIn).toBe(false);
+    expect(dry.out.herdr.binary).toBe(hh.binary); // found, yet not offered
+    expect(JSON.stringify(dry.out.entries)).not.toMatch(/herdr/);
+    expect(JSON.stringify(dry.out.added)).not.toMatch(/herdr/);
+    expect(dry.out.applyCommand).not.toMatch(/--herdr/);
+    expect(dry.out.removeCommand).not.toMatch(/--herdr/);
+
+    expect(runEnv(hh.env, root, "--apply").code).toBe(0);
+    const text = fs.readFileSync(settingsPath, "utf8");
+    expect(text).not.toMatch(/herdr/);
+    const s = JSON.parse(text);
+    expect(s.sandbox.network).toBeUndefined();
+    expect(s.sandbox.filesystem.allowWrite).toBeUndefined();
+    expect(s.sandbox.filesystem.allowRead).toBeUndefined();
+  });
+
+  it("--herdr dry run lists the socket and binary entries, absolute, and writes nothing", () => {
+    const hh = herdrHome();
+    const { root, settingsPath } = project();
+    const { code, out } = runEnv(hh.env, root, "--herdr");
+
+    expect(code).toBe(0);
+    expect(out.dryRun).toBe(true);
+    expect(out.upToDate).toBe(false);
+    expect(out.added).toEqual(
+      expect.arrayContaining([
+        { kind: "allowWrite", value: hh.socket },
+        { kind: "allowRead", value: hh.binary },
+        { kind: "allowUnixSockets", value: hh.socket },
+        { kind: "excludedCommands", value: INSTALLER_ENTRY },
+      ])
+    );
+    for (const c of out.added as Change[]) expect(c.value.startsWith("~")).toBe(false);
+    expect(path.isAbsolute(hh.socket)).toBe(true);
+    // the binary only, never its directory
+    expect(values(out.added, "allowRead")).toEqual([hh.binary]);
+    expect(out.herdr).toEqual({ optIn: true, binary: hh.binary, socket: hh.socket, allowAllUnixSockets: false });
+    expect(out.applyCommand).toBe(`node ${SCRIPT} ${root} --apply --herdr`);
+    expect(out.removeCommand).toBe(`node ${SCRIPT} ${root} --remove --herdr`);
+    const allowWrite = (out.entries as { kind: string; why: string }[]).find((e) => e.kind === "allowWrite");
+    expect(allowWrite?.why).toMatch(/sandbox escape/);
+    expect(fs.existsSync(settingsPath)).toBe(false);
+  });
+
+  it("--apply --herdr writes the herdr entries beside the base list; re-runs are up to date", () => {
+    const hh = herdrHome();
+    const { root, settingsPath } = project({ sandbox: { enabled: true } });
+    expect(runEnv(hh.env, root, "--apply", "--herdr").code).toBe(0);
+
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.enabled).toBe(true);
+    expect(s.sandbox.filesystem.allowWrite).toEqual([hh.socket]);
+    expect(s.sandbox.filesystem.allowRead).toEqual([hh.binary]);
+    expect(s.sandbox.network.allowUnixSockets).toEqual([hh.socket]);
+    expect(s.sandbox.excludedCommands).toContain(INSTALLER_ENTRY);
+    expect(s.sandbox.filesystem.denyWrite).toEqual([path.join(root, ".claude", "scripts")]);
+    expect(s.permissions.deny).toEqual(["Edit(/.claude/scripts/**)"]);
+
+    expect(runEnv(hh.env, root, "--herdr").out.upToDate).toBe(true);
+
+    // A plain --apply neither re-adds nor strips the herdr entries.
+    const before = fs.readFileSync(settingsPath, "utf8");
+    const plainDry = runEnv(hh.env, root);
+    expect(plainDry.out.upToDate).toBe(true);
+    expect(plainDry.out.removed).toEqual([]);
+    expect(runEnv(hh.env, root, "--apply").code).toBe(0);
+    expect(fs.readFileSync(settingsPath, "utf8")).toBe(before);
+  });
+
+  it.each([
+    ["settings.local.json", "local"],
+    ["project .claude/settings.json", "project"],
+    ["HOME/.claude/settings.json", "user"],
+  ] as const)("allowAllUnixSockets: true in %s skips the allowUnixSockets entry", (_label, where) => {
+    const flag = { sandbox: { network: { allowAllUnixSockets: true } } };
+    const hh = herdrHome(where === "user" ? { userSettings: flag } : {});
+    const { root, settingsPath } = project(where === "local" ? flag : undefined);
+    if (where === "project") fs.writeFileSync(path.join(root, ".claude", "settings.json"), JSON.stringify(flag));
+
+    const dry = runEnv(hh.env, root, "--herdr");
+    expect(dry.out.herdr.allowAllUnixSockets).toBe(true);
+    expect(values(dry.out.added, "allowUnixSockets")).toEqual([]);
+    expect(dry.out.entries.some((e: Change) => e.kind === "allowUnixSockets")).toBe(false);
+
+    expect(runEnv(hh.env, root, "--apply", "--herdr").code).toBe(0);
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.filesystem.allowWrite).toEqual([hh.socket]);
+    expect(s.sandbox.filesystem.allowRead).toEqual([hh.binary]);
+    expect(s.sandbox.network?.allowUnixSockets).toBeUndefined();
+    if (where === "local") expect(s.sandbox.network.allowAllUnixSockets).toBe(true);
+    else expect(s.sandbox.network).toBeUndefined();
+    expect(runEnv(hh.env, root, "--herdr").out.upToDate).toBe(true);
+  });
+
+  it("allowAllUnixSockets is read by precedence: a local false beats a user true", () => {
+    const hh = herdrHome({ userSettings: { sandbox: { network: { allowAllUnixSockets: true } } } });
+    const { root } = project({ sandbox: { network: { allowAllUnixSockets: false } } });
+    fs.writeFileSync(
+      path.join(root, ".claude", "settings.json"),
+      JSON.stringify({ sandbox: { network: { allowAllUnixSockets: true } } })
+    );
+    const { out } = runEnv(hh.env, root, "--herdr");
+    expect(out.herdr.allowAllUnixSockets).toBe(false);
+    expect(values(out.added, "allowUnixSockets")).toEqual([hh.socket]);
+  });
+
+  it("a non-boolean allowAllUnixSockets does not count as true", () => {
+    const hh = herdrHome();
+    const { root } = project({ sandbox: { network: { allowAllUnixSockets: "true" } } });
+    const { out } = runEnv(hh.env, root, "--herdr");
+    expect(out.herdr.allowAllUnixSockets).toBe(false);
+    expect(values(out.added, "allowUnixSockets")).toEqual([hh.socket]);
+  });
+
+  it("an existing socket entry under allowAllUnixSockets: true is kept by --apply --herdr and taken by --remove --herdr", () => {
+    const hh = herdrHome();
+    const { root, settingsPath } = project();
+    // Written by an earlier --apply --herdr, before allowAllUnixSockets was turned on.
+    fs.writeFileSync(
+      settingsPath,
+      JSON.stringify({ sandbox: { network: { allowAllUnixSockets: true, allowUnixSockets: [hh.socket] } } })
+    );
+
+    const applied = runEnv(hh.env, root, "--apply", "--herdr");
+    expect(applied.out.removed).toEqual([]);
+    expect(readSettings(settingsPath).sandbox.network.allowUnixSockets).toEqual([hh.socket]);
+
+    const removed = runEnv(hh.env, root, "--remove", "--herdr");
+    expect(values(removed.out.removed, "allowUnixSockets")).toEqual([hh.socket]);
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.network).toEqual({ allowAllUnixSockets: true });
+  });
+
+  it("--remove --herdr takes out only the herdr entries, leaving base, user entries and allowAllUnixSockets", () => {
+    const hh = herdrHome();
+    const userSock = "~/.config/herdr/herdr.sock";
+    const { root, settingsPath } = project({
+      sandbox: { filesystem: { allowWrite: [userSock, "/data/out"] } },
+    });
+    runEnv(hh.env, root, "--apply", "--herdr");
+    const afterApply = readSettings(settingsPath);
+    expect(afterApply.sandbox.filesystem.allowWrite).toEqual([userSock, "/data/out", hh.socket]);
+
+    const preview = runEnv(hh.env, root, "--remove", "--herdr", "--dry-run");
+    expect(preview.out.removed).toHaveLength(3);
+    expect(readSettings(settingsPath)).toEqual(afterApply);
+
+    expect(runEnv(hh.env, root, "--remove", "--herdr").code).toBe(0);
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.filesystem.allowWrite).toEqual([userSock, "/data/out"]);
+    expect(s.sandbox.filesystem.allowRead).toBeUndefined();
+    expect(s.sandbox.network).toBeUndefined(); // emptied, so pruned
+    expect(s.sandbox.excludedCommands).toContain(INSTALLER_ENTRY);
+    expect(s.sandbox.filesystem.denyWrite).toEqual([path.join(root, ".claude", "scripts")]);
+    expect(s.permissions.deny).toEqual(["Edit(/.claude/scripts/**)"]);
+    expect(JSON.stringify(s)).not.toContain(hh.socket);
+    expect(runEnv(hh.env, root, "--remove", "--herdr").out.upToDate).toBe(true);
+  });
+
+  it("--remove --herdr keeps allowAllUnixSockets and prunes an emptied filesystem block", () => {
+    const hh = herdrHome();
+    const { root, settingsPath } = project({ model: "opus", sandbox: { network: { allowAllUnixSockets: true } } });
+    runEnv(hh.env, root, "--apply", "--herdr");
+    runEnv(hh.env, root, "--remove");
+    expect(readSettings(settingsPath)).toEqual({ model: "opus", sandbox: { network: { allowAllUnixSockets: true } } });
+
+    // Only the herdr half, with nothing else in filesystem: the block disappears.
+    const p2 = project({ sandbox: { enabled: true } });
+    runEnv(hh.env, p2.root, "--apply", "--herdr");
+    const s0 = readSettings(p2.settingsPath);
+    s0.sandbox.filesystem = {
+      allowWrite: s0.sandbox.filesystem.allowWrite,
+      allowRead: s0.sandbox.filesystem.allowRead,
+    };
+    fs.writeFileSync(p2.settingsPath, JSON.stringify(s0));
+    runEnv(hh.env, p2.root, "--remove", "--herdr");
+    const s = readSettings(p2.settingsPath);
+    expect(s.sandbox.filesystem).toBeUndefined();
+    expect(s.sandbox.network).toBeUndefined();
+    expect(s.sandbox.enabled).toBe(true);
+  });
+
+  it("a plain --remove after --apply --herdr restores the file's pre-apply content", () => {
+    const hh = herdrHome();
+    const original = { model: "opus", sandbox: { enabled: true, excludedCommands: ["gh *"] } };
+    const { root, settingsPath } = project(original);
+    runEnv(hh.env, root, "--apply", "--herdr");
+
+    const preview = runEnv(hh.env, root, "--remove", "--dry-run");
+    expect(preview.out.removed).toHaveLength(11); // 8 base + allowWrite, allowRead, allowUnixSockets
+
+    expect(runEnv(hh.env, root, "--remove").code).toBe(0);
+    expect(readSettings(settingsPath)).toEqual(original);
+  });
+
+  it.each(["outside", "none"] as const)("herdr %s HOME: no allowRead entry, socket entries still added", (bin) => {
+    const hh = herdrHome({ bin });
+    const { root, settingsPath } = project();
+    const dry = runEnv(hh.env, root, "--herdr");
+    expect(dry.out.herdr.binary).toBe(bin === "none" ? null : hh.binary);
+    expect(values(dry.out.added, "allowRead")).toEqual([]);
+    expect(values(dry.out.added, "allowWrite")).toEqual([hh.socket]);
+    expect(values(dry.out.added, "allowUnixSockets")).toEqual([hh.socket]);
+
+    runEnv(hh.env, root, "--apply", "--herdr");
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.filesystem.allowRead).toBeUndefined();
+    expect(s.sandbox.filesystem.allowWrite).toEqual([hh.socket]);
+  });
+
+  it("skips a non-executable herdr or a herdr directory on PATH, like command -v", () => {
+    const hh = herdrHome({ bin: "none" });
+    const dirFirst = path.join(hh.home, "a");
+    const noExec = path.join(hh.home, "b");
+    const real = path.join(hh.home, "c");
+    fs.mkdirSync(path.join(dirFirst, "herdr"), { recursive: true });
+    fs.mkdirSync(noExec, { recursive: true });
+    fs.writeFileSync(path.join(noExec, "herdr"), "#!/bin/sh\n", { mode: 0o644 });
+    fs.mkdirSync(real, { recursive: true });
+    fs.writeFileSync(path.join(real, "herdr"), "#!/bin/sh\n", { mode: 0o755 });
+    const PATH = [dirFirst, noExec, real].join(path.delimiter);
+
+    const { out } = runEnv({ ...hh.env, PATH }, project().root, "--herdr");
+    expect(out.herdr.binary).toBe(path.join(real, "herdr"));
+    expect(values(out.added, "allowRead")).toEqual([path.join(real, "herdr")]);
   });
 });

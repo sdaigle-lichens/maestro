@@ -631,7 +631,7 @@
     "epic": "autonomous-workers"
   },
   "127-install-and-update-offer-the-sandbox-allow-list-with-a-herdr-opt-in.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "125-manager-spawns-worker-sessions-in-herdr.md"
     ],

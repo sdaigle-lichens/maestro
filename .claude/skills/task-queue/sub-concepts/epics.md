@@ -117,7 +117,9 @@ file overlap.
 `maestro-manager` skill runs it, then opens one herdr tab per `[spawn]` task (`herdr tab create`,
 `herdr pane run <launch command>`, then `add-worker --task`); without herdr, or outside a herdr pane
 (`HERDR_ENV` not `1`), or with `herdr status server` not printing `status: running`, it prints the
-commands instead. The CLI itself never touches herdr.
+commands instead. The CLI itself never touches herdr. Under the Bash sandbox the herdr calls need
+the opt-in `maestro-sandbox-allow.cjs --herdr` entries (`127`; offered by install and update, never
+default, since `herdr pane run` escapes the sandbox) — see `installing-maestro`.
 
 Each unfinished epic task (tracker `epic === slug`, oldest first) lands in exactly one bucket:
 

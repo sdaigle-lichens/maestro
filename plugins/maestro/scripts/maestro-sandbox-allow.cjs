@@ -6,6 +6,7 @@
 //   node maestro-sandbox-allow.cjs [projectDir] --apply              # merge the entries into settings.local.json
 //   node maestro-sandbox-allow.cjs [projectDir] --remove             # take them back out
 //   node maestro-sandbox-allow.cjs [projectDir] --remove --dry-run   # what --remove would take out
+//   add --herdr to any of these for the herdr opt-in (below); `--remove --herdr` takes out only that
 //
 // Run by /maestro-install and /maestro-update (dry run) and /maestro-uninstall (--remove). --apply
 // and --remove write .claude/settings.local.json, which a sandboxed command can never write, so the
@@ -20,13 +21,25 @@
 //     rewrite maestro-render-orchestrator.cjs and then run its own code through the exclusion.
 //     Install and update still refresh the scripts, because they run excluded themselves.
 //
+// --herdr (an explicit opt-in, never part of the default list) lets /maestro-manager drive herdr:
+//   - sandbox.filesystem.allowWrite: herdr's socket, $HOME/.config/herdr/herdr.sock (connecting to
+//     a Unix socket needs write access to it).
+//   - sandbox.filesystem.allowRead: the herdr binary PATH resolves to, only when it is under $HOME
+//     (the Linux sandbox hides the home directory otherwise); the binary, never its directory.
+//   - sandbox.network.allowUnixSockets: the socket, only when the effective settings do not already
+//     set sandbox.network.allowAllUnixSockets: true. Claude Code honours this list on macOS only.
+//   It is a sandbox escape: `herdr pane run` runs any command outside the sandbox. Paths are
+//   written absolute; the herdr CLI's socket-API commands touch nothing under ~/.config/herdr but
+//   the socket (checked with strace on herdr 0.9.5).
+//
 // Entries are recognised as ours by their exact text (plus any older plugin path for the installer,
 // which changes with every plugin version), so --apply replaces stale ones and --remove never
-// touches an entry the user wrote.
+// touches an entry the user wrote. A plain --apply leaves earlier herdr entries alone; a plain
+// --remove takes them out along with the rest.
 //
 // Prints one JSON object:
 //   { ok, mode, dryRun, settingsPath, sandboxEnabled, upToDate, added, removed, entries, broadEntries,
-//     applyCommand, removeCommand }
+//     herdr: { optIn, binary, socket, allowAllUnixSockets }, applyCommand, removeCommand }
 // Exit 0, except 1 when settings.local.json exists but does not parse (nothing is written then).
 
 const fs = require("fs");
@@ -76,7 +89,7 @@ function parseArgs(argv) {
   // Without --apply / --remove nothing is written; `--remove --dry-run` previews a removal.
   const dryRun = flags.has("--dry-run") || !(flags.has("--apply") || flags.has("--remove"));
   const projectDir = path.resolve(positional[0] || process.env.CLAUDE_PROJECT_DIR || process.cwd());
-  return { mode, dryRun, projectDir };
+  return { mode, dryRun, projectDir, herdr: flags.has("--herdr") };
 }
 
 function readJson(file) {
@@ -88,8 +101,9 @@ function readJson(file) {
   }
 }
 
-// true / false when some settings file says so, null when none we could read does.
-function sandboxEnabled(projectDir) {
+// The boolean at `keys` in the highest-precedence settings file that sets one, or null when none we
+// could read does (local, then project, then user; managed settings are not consulted).
+function effectiveBool(projectDir, keys) {
   const files = [
     path.join(projectDir, ".claude", "settings.local.json"),
     path.join(projectDir, ".claude", "settings.json"),
@@ -102,13 +116,62 @@ function sandboxEnabled(projectDir) {
     } catch {
       continue; // unreadable from inside the sandbox
     }
-    const enabled = r.ok && r.value && r.value.sandbox && r.value.sandbox.enabled;
-    if (typeof enabled === "boolean") return enabled;
+    let v = r.ok ? r.value : null;
+    for (const k of keys) v = v && typeof v === "object" ? v[k] : undefined;
+    if (typeof v === "boolean") return v;
   }
   return null;
 }
 
-function wanted(projectDir) {
+// The first executable `herdr` on PATH, like `command -v herdr`, or null.
+function findOnPath(name) {
+  for (const dir of (process.env.PATH || "").split(path.delimiter)) {
+    if (!dir) continue;
+    const file = path.join(dir, name);
+    try {
+      fs.accessSync(file, fs.constants.X_OK);
+      if (fs.statSync(file).isFile()) return path.resolve(file);
+    } catch {
+      // not here
+    }
+  }
+  return null;
+}
+
+const underHome = (file) => {
+  const rel = path.relative(os.homedir(), file);
+  return rel !== "" && !rel.startsWith("..") && !path.isAbsolute(rel);
+};
+
+function herdrInfo(projectDir) {
+  const binary = findOnPath("herdr");
+  return {
+    socket: path.join(os.homedir(), ".config", "herdr", "herdr.sock"),
+    binary,
+    readBinary: binary && underHome(binary) ? binary : null,
+    allowAllUnixSockets: effectiveBool(projectDir, ["sandbox", "network", "allowAllUnixSockets"]) === true,
+  };
+}
+
+const ESCAPE = "a sandbox escape: any sandboxed command can then run anything unsandboxed through `herdr pane run`";
+
+// Every herdr entry the opt-in can write, by kind. `all` adds the allowUnixSockets entry even when
+// allowAllUnixSockets makes it unnecessary, so --remove still recognises one an earlier run wrote.
+function herdrEntries(h, all) {
+  const out = {
+    allowWrite: [{ value: h.socket, why: `lets herdr's CLI connect to its socket; ${ESCAPE}` }],
+    allowRead: h.readBinary
+      ? [{ value: h.readBinary, why: "the herdr binary, which the Linux sandbox hides under your home directory" }]
+      : [],
+    allowUnixSockets:
+      all || !h.allowAllUnixSockets
+        ? [{ value: h.socket, why: "lets sandboxed commands open herdr's socket (honoured on macOS)" }]
+        : [],
+  };
+  return out;
+}
+
+function baseEntries(projectDir) {
   const scriptsDir = path.join(projectDir, ".claude", "scripts");
   return {
     excludedCommands: EXCLUDED,
@@ -122,17 +185,38 @@ function wanted(projectDir) {
   };
 }
 
+// `want`: the entries this run should leave present (empty for --remove). `known`: the entries this
+// run recognises as its own, so it may take them out.
+function decide(projectDir, mode, herdr, h) {
+  const base = baseEntries(projectDir);
+  const empty = (o) => Object.fromEntries(Object.keys(o).map((k) => [k, []]));
+  if (mode === "remove") {
+    const known = herdr ? herdrEntries(h, true) : { ...base, ...herdrEntries(h, true) };
+    return { want: empty(known), known };
+  }
+  const want = herdr ? { ...base, ...herdrEntries(h, false) } : base;
+  return { want, known: want };
+}
+
 const list = (obj, key) => (Array.isArray(obj[key]) ? obj[key] : []);
 
-function isOurs(kind, value, want) {
-  if (want[kind].some((w) => w.value === value)) return true;
+function isOurs(kind, value, known) {
+  if (known[kind].some((w) => w.value === value)) return true;
   return kind === "excludedCommands" && STALE_INSTALLER.test(value);
 }
 
+const CHAINS = {
+  excludedCommands: ["sandbox"],
+  denyWrite: ["sandbox", "filesystem"],
+  allowWrite: ["sandbox", "filesystem"],
+  allowRead: ["sandbox", "filesystem"],
+  allowUnixSockets: ["sandbox", "network"],
+  deny: ["permissions"],
+};
+
 // The (parent object, key) each kind lives under, created on demand when `create` is set.
 function slot(settings, kind, create) {
-  const chain =
-    kind === "excludedCommands" ? ["sandbox"] : kind === "denyWrite" ? ["sandbox", "filesystem"] : ["permissions"];
+  const chain = CHAINS[kind];
   let obj = settings;
   for (const k of chain) {
     if (!obj[k] || typeof obj[k] !== "object") {
@@ -144,15 +228,15 @@ function slot(settings, kind, create) {
   return obj;
 }
 
-function plan(settings, mode, want) {
+function plan(settings, { want, known }) {
   const added = [];
   const removed = [];
-  for (const kind of Object.keys(want)) {
+  for (const kind of Object.keys(known)) {
     const parent = slot(settings, kind, false);
     const current = parent ? list(parent, kind) : [];
-    const targets = mode === "remove" ? [] : want[kind].map((w) => w.value);
+    const targets = want[kind].map((w) => w.value);
     for (const v of current) {
-      if (isOurs(kind, v, want) && !targets.includes(v)) removed.push({ kind, value: v });
+      if (isOurs(kind, v, known) && !targets.includes(v)) removed.push({ kind, value: v });
     }
     for (const v of targets) {
       if (!current.includes(v)) added.push({ kind, value: v });
@@ -164,7 +248,9 @@ function plan(settings, mode, want) {
 // Drop the containers a removal emptied, deepest first, so --remove leaves no `{}` behind.
 function pruneEmpty(settings) {
   const empty = (o) => o && typeof o === "object" && !Array.isArray(o) && Object.keys(o).length === 0;
-  if (settings.sandbox && empty(settings.sandbox.filesystem)) delete settings.sandbox.filesystem;
+  for (const k of ["filesystem", "network"]) {
+    if (settings.sandbox && empty(settings.sandbox[k])) delete settings.sandbox[k];
+  }
   for (const k of ["sandbox", "permissions"]) if (empty(settings[k])) delete settings[k];
 }
 
@@ -182,7 +268,7 @@ function applyPlan(settings, { added, removed }) {
 }
 
 function main() {
-  const { mode, dryRun, projectDir } = parseArgs(process.argv.slice(2));
+  const { mode, dryRun, projectDir, herdr } = parseArgs(process.argv.slice(2));
   const settingsPath = path.join(projectDir, ".claude", "settings.local.json");
   const read = readJson(settingsPath);
   if (!read.ok) {
@@ -192,8 +278,9 @@ function main() {
     process.exit(1);
   }
   const settings = read.value && typeof read.value === "object" ? read.value : {};
-  const want = wanted(projectDir);
-  const changes = plan(settings, mode, want);
+  const h = herdrInfo(projectDir);
+  const { want, known } = decide(projectDir, mode, herdr, h);
+  const changes = plan(settings, { want, known });
   const upToDate = changes.added.length === 0 && changes.removed.length === 0;
 
   if (!dryRun && !upToDate) {
@@ -209,14 +296,17 @@ function main() {
       mode,
       dryRun,
       settingsPath,
-      sandboxEnabled: sandboxEnabled(projectDir),
+      sandboxEnabled: effectiveBool(projectDir, ["sandbox", "enabled"]),
       upToDate,
       added: changes.added,
       removed: changes.removed,
-      entries: Object.entries(want).flatMap(([kind, ws]) => ws.map((w) => ({ kind, ...w }))),
+      entries: Object.entries(mode === "remove" ? known : want).flatMap(([kind, ws]) =>
+        ws.map((w) => ({ kind, ...w }))
+      ),
       broadEntries: exclusions.filter((v) => BROAD.test(v)),
-      applyCommand: `node ${SELF} ${projectDir} --apply`,
-      removeCommand: `node ${SELF} ${projectDir} --remove`,
+      herdr: { optIn: herdr, binary: h.binary, socket: h.socket, allowAllUnixSockets: h.allowAllUnixSockets },
+      applyCommand: `node ${SELF} ${projectDir} --apply${herdr ? " --herdr" : ""}`,
+      removeCommand: `node ${SELF} ${projectDir} --remove${herdr ? " --herdr" : ""}`,
     }) + "\n"
   );
 }

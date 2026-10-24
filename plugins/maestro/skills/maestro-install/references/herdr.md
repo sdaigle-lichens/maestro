@@ -49,8 +49,21 @@ The manager drives herdr through its CLI (`herdr tab create`, `herdr pane run`),
 herdr server over a Unix socket at `~/.config/herdr/herdr.sock`. If Claude Code's Bash sandbox is
 on, it blocks that socket, and the manager falls back to printing the launch commands for you to run.
 
-To let the manager reach it, add the socket to your **user** settings (`~/.claude/settings.json`),
-not the project's, because the path is in your home directory. Edit the file yourself:
+**Letting the sandbox reach this socket is a sandbox escape.** `herdr pane run` runs any command it
+is given outside the sandbox, so once the socket is reachable, any sandboxed command can run
+anything unsandboxed. Leave it blocked unless you accept that.
+
+The simplest way is the allow-list script's opt-in, which `/maestro-install` and `/maestro-update`
+offer when herdr is on your `PATH`: it writes the entries below into this project's
+`.claude/settings.local.json`, with absolute paths, and `--remove --herdr` takes them out again.
+See [`sandbox.md`](sandbox.md#the-herdr-opt-in---herdr-a-sandbox-escape):
+
+```bash
+! node <plugin root>/scripts/maestro-sandbox-allow.cjs <project> --apply --herdr
+```
+
+To do it by hand instead, add the socket to your **user** settings (`~/.claude/settings.json`), not
+the project's, because the path is in your home directory. Edit the file yourself:
 
 ```json
 {
@@ -63,7 +76,9 @@ not the project's, because the path is in your home directory. Edit the file you
 ```
 
 If `sandbox.network.allowAllUnixSockets` is already `true` in your settings, you don't need this
-`allowUnixSockets` entry.
+`allowUnixSockets` entry. Claude Code honours `allowUnixSockets` on macOS only; on Linux its
+seccomp filter blocks every Unix socket unless `allowAllUnixSockets` is `true` (or the filter is
+not installed).
 
 On Linux, if your sandbox also hides your home directory, add two more entries:
 

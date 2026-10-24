@@ -73,7 +73,7 @@ reports via `priorReportSeeds` from `lib/maestro-report-defaults.cjs`, handoffs 
 ## A third implementation: the skill's own prose (`053`)
 
 The two rows above are both **code** — a differential test can compare their output byte for byte.
-`maestro-install/SKILL.md`'s step 2 (steps were renumbered when a committed-or-ignored step 1 was added; the rest of this section says "step 1/3/4" for the old numbering, i.e. now 2/4/5) is a third rendering of `detect.ts`'s `detectImplAgents()`, and
+`maestro-install/SKILL.md`'s step 2 (steps were renumbered when a committed-or-ignored step 1 was added; the rest of this section says "step 1/3/4" for the old numbering, i.e. now 2/4/6, after `127` inserted the sandbox allow-list as step 5) is a third rendering of `detect.ts`'s `detectImplAgents()`, and
 it is **prose**, read and applied by a live session with no test able to run it. It has to reach the
 same verdict as the other two for the same repository, and nothing enforces that but a human (or an
 agent) rereading both sides after a `detect.ts` change.

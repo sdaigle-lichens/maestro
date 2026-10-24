@@ -15,10 +15,11 @@ place the refresh procedure is written down.
    (idempotent — skips settings and gitignore if already present):
 
    ```bash
-   node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js" .
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js .
    ```
 
-   This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
+   Run it in exactly this form, unquoted: the sandbox allow-list's `excludedCommands` entry
+   (step 6) matches this literal command text. This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
    the plugin's `plugin.json` version into `maestro.json`'s `runtimeVersion` — the field the Step 0
    check compares against.
 
@@ -90,16 +91,46 @@ place the refresh procedure is written down.
    see [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
    commands you run yourself with `!`."*
 
-6. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+6. **Check the sandbox allow-list**, which writes nothing:
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-sandbox-allow.cjs .
+   ```
+
+   It prints JSON with `sandboxEnabled`, `upToDate`, `entries` (each `kind`, `value`, `why`),
+   `broadEntries`, `applyCommand` and `removeCommand`. Its installer entry carries the plugin's
+   versioned path, so after every plugin update it is no longer up to date.
+
+   - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
+   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive. Run the
+     dry run again with `--herdr` appended. If that run's `upToDate` is `true` the opt-in is already
+     in place: don't ask. Otherwise ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
+     worker sessions in herdr by itself? This is a sandbox escape: any sandboxed command can then
+     run anything unsandboxed through `herdr pane run`. Without it the manager prints the
+     `claude -n ...` commands for you to run."* Options: `No (Recommended)`, `Yes, add the herdr
+     entries`. No answer or herdr not on PATH means No. On Yes, use the `--herdr` run's output
+     below: its `applyCommand` adds the herdr entries along with the rest.
+   - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
+     `value` with its `why`, point to
+     [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md), and
+     ask them to run `! <applyCommand>` themselves, the printed command verbatim. **Never run
+     `--apply` yourself**: a sandboxed command can never write a settings file, and what runs
+     outside the sandbox is the user's choice. If `broadEntries` is non-empty, say those wide
+     patterns can be deleted by hand once the narrow entries are in.
+   - **`upToDate` and no herdr opt-in chosen:** say nothing about it.
+
+7. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged), any dangling skill references step 4 found, and step 5's herdr line if any.
+   none had diverged), any dangling skill references step 4 found, step 5's herdr line if any, and
+   step 6's `! <applyCommand>` if one is still to run.
 
 ## Notes
 
 - Run each command exactly as written, one per call: sandbox exclude rules match the command text.
-- An `EPERM` on `.claude/skills/maestro/SKILL.md` is the sandbox. Don't retry; give the user the
-  exclude rules `node *maestro-install.js*` and `node *maestro-render-orchestrator.cjs*` (or a `!`
-  run of the failed command). Never edit sandbox settings yourself.
+- An `EPERM` on `.claude/skills/maestro/SKILL.md` or `.claude/settings.json` is the sandbox. Don't
+  retry; give the user a `!` run of the failed command, and point to
+  [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md) for the
+  allow-list step 6 offers. Never edit sandbox settings yourself.
 - `maestro.json` is the source of truth. The `SubagentStart` hook reads it at runtime, so subagent
   skill injection is current even between updates — only the handoff table needs re-rendering.
 - If `/maestro` fails to start on a long-installed project, the cause is usually stale

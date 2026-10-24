@@ -9,8 +9,8 @@ disable-model-invocation: true
 One-time setup of Maestro for a project, entirely from a Claude session: scaffold the orchestrator, seed the config, render the handoff table. Nothing here needs the desktop app, a browser, or Docker.
 
 ```
-maestro-install:  committed or ignored? → analyze repo → confirm project tags → offer local skills → scaffold + seed → render → offer herdr → report
-                  (git check-ignore)     (impl agents)    (catalog + consent)     (best-fit + consent)  (maestro-install.js)  (maestro-render-orchestrator.cjs)  (command -v herdr)
+maestro-install:  committed or ignored? → analyze repo → confirm project tags → offer local skills → offer sandbox allow-list → scaffold + seed → render → offer herdr → report
+                  (git check-ignore)     (impl agents)    (catalog + consent)     (best-fit + consent)  (maestro-sandbox-allow.cjs) (maestro-install.js)  (maestro-render-orchestrator.cjs)  (command -v herdr)
 ```
 
 **When to prefer the desktop app.** `apps/maestro`'s `/install` route does the same install without a session, and its `/workflows` canvas is the only comfortable way to *edit* the graph — this skill seeds a sensible starting graph, it does not let you draw one. Use this skill when there is no desktop app on the machine, or when the user is already in a terminal and wants Maestro on without leaving it.
@@ -29,7 +29,7 @@ $ARGUMENTS
 
    - **Exit 0 (this project's `.claude` folder is already git-ignored): skip the question**, treat the answer as `ignored`, and move on.
    - Not a git repo (the command exits 128): skip the question, use `committed` (omit the flag); there is nothing to ignore.
-   - Otherwise ask **one `AskUserQuestion`**: *"Install Maestro committed (shared with everyone who clones this repo, the default) or ignored (only on this clone; `.claude/` is added to `.git/info/exclude`, which is never committed)?"* Options: `Committed (Recommended)`, `Ignored — keep Maestro out of the repo`. Record the answer as `ignoreMode` (`committed` or `ignored`) for step 5. A non-interactive install means `committed`.
+   - Otherwise ask **one `AskUserQuestion`**: *"Install Maestro committed (shared with everyone who clones this repo, the default) or ignored (only on this clone; `.claude/` is added to `.git/info/exclude`, which is never committed)?"* Options: `Committed (Recommended)`, `Ignored — keep Maestro out of the repo`. Record the answer as `ignoreMode` (`committed` or `ignored`) for step 6. A non-interactive install means `committed`.
 
 2. **Analyze the repository to pick the implementation agent(s).** Inspect the project to decide which bundled agent(s) build the application code in the seeded workflows' happy path — matching `detect.ts`'s `detectImplAgents()` exactly, so a session-driven install and the app's deterministic detection reach the same chain for the same repository. Read `package.json` (plus framework configs and directory layout — `src/components`, `src/routes`, `server/`, `api/`, `requirements.txt`, `go.mod`, `Cargo.toml`, etc.) and classify:
 
@@ -70,7 +70,7 @@ $ARGUMENTS
      - **Catalog >4 entries** → `AskUserQuestion` caps options at 4, so fall back to coarse consent: `Use the detected tags (backend, frontend) as-is (Recommended)`, `Customize — add or remove tags`, `Skip — I'll tag it on /maestro afterward`. Mention any `detectedNotInCatalog` category in the Customize description. If they customize, accept a **plain-text, comma-separated reply naming every tag that should end up recorded** — say so explicitly ("reply with the full list, e.g. `backend, frontend, data` — more than one is expected"), because a freeform reply *replaces* the detected set rather than adding to it.
      - Empty catalog → skip the question silently. (Reading it above self-seeds it, so this is theoretical.)
 
-   - **Assemble the result.** If the user accepted an add-offer, add the category for real **before** step 5, so the installer's own intersection sees a live entry instead of dropping it:
+   - **Assemble the result.** If the user accepted an add-offer, add the category for real **before** step 6, so the installer's own intersection sees a live entry instead of dropping it:
 
      ```bash
      node -e "
@@ -112,7 +112,7 @@ $ARGUMENTS
      "
      ```
 
-     Never fails the install — `{}` just means every skill falls through to best-fit. A skill counts as covered only if one of its tags matches a *seeded* agent — and which agents are seeded is chain-dependent, per `seededAgentNames()`: the detected `implAgents` plus `test`/`reviewer`/`refactor`/`scribe` for an application chain, but the detected `implAgents` plus only `reviewer`/`scribe` for the `infra`-only chain (no `test`, no `refactor` — see step 5's note). A `mobile` tag on a backend-only repo routes nowhere, and neither does a `test`/`refactor` tag on an infra-only repo.
+     Never fails the install — `{}` just means every skill falls through to best-fit. A skill counts as covered only if one of its tags matches a *seeded* agent — and which agents are seeded is chain-dependent, per `seededAgentNames()`: the detected `implAgents` plus `test`/`reviewer`/`refactor`/`scribe` for an application chain, but the detected `implAgents` plus only `reviewer`/`scribe` for the `infra`-only chain (no `test`, no `refactor` — see step 6's note). A `mobile` tag on a backend-only repo routes nowhere, and neither does a `test`/`refactor` tag on an infra-only repo.
 
    - **Best-fit map the remaining skills** to the single seeded agent each most helps, choosing among seeded agents only. **Drop** anything not clearly relevant — don't force a match. A `react`/`styling` skill → `frontend`; `react-testing-library` → `test`; `changelog` → `scribe`.
 
@@ -128,14 +128,44 @@ $ARGUMENTS
 
    - **Assemble the skill map**: `{ "<agent>": ["<skillId>", …] }` from the confirmed best-fit mapping only — omit already-tagged skills (the installer adds those itself) and agents with no skills. Attached skills seed as **referenced** (loaded only if the task calls for it), never as loaded; promoting one is a canvas edit.
 
-5. **Scaffold and seed.**
+5. **Offer the sandbox allow-list.** Claude Code's Bash sandbox always refuses writes to
+   `.claude/settings*.json` and `.claude/skills/`, so under it the next two steps, and later
+   `/maestro-update` and task worktrees, fail with `EPERM`. `maestro-sandbox-allow.cjs` lets
+   exactly those Maestro commands run outside the sandbox. Run its dry run, which writes nothing:
 
    ```bash
-   node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-install.js" . \
-     --impl-agents "backend,frontend" \
-     --project-tags "backend,frontend" \
-     --skill-map '{"frontend":["react"],"test":["react-testing-library"]}'
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-sandbox-allow.cjs .
    ```
+
+   It prints JSON with `sandboxEnabled`, `upToDate`, `entries` (each `kind`, `value`, `why`),
+   `applyCommand` and `removeCommand`.
+
+   - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
+   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive. Run the
+     dry run again with `--herdr` appended. If that run's `upToDate` is `true` the opt-in is already
+     in place: don't ask. Otherwise ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
+     worker sessions in herdr by itself? This is a sandbox escape: any sandboxed command can then
+     run anything unsandboxed through `herdr pane run`. Without it the manager prints the
+     `claude -n ...` commands for you to run."* Options: `No (Recommended)`, `Yes, add the herdr
+     entries`. No answer, a non-interactive install, or herdr not on PATH all mean No. On Yes, use
+     the `--herdr` run's output below: its `applyCommand` adds the herdr entries along with the rest.
+   - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
+     `value` with its `why`, point to [`references/sandbox.md`](references/sandbox.md), and ask
+     them to run `! <applyCommand>` themselves, the printed command verbatim. **Never run
+     `--apply` yourself**: a sandboxed command can never write a settings file, and what runs
+     outside the sandbox is the user's choice. Continue with step 6 whether or not they run it.
+   - **`upToDate` and no herdr opt-in chosen:** say nothing about it.
+
+6. **Scaffold and seed.** Run the installer in exactly this form, on one line, unquoted: the
+   allow-list's `excludedCommands` entry matches this literal command text.
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js . --impl-agents "backend,frontend" --project-tags "backend,frontend" --skill-map '{"frontend":["react"],"test":["react-testing-library"]}'
+   ```
+
+   If it fails with `EPERM` / "Operation not permitted" on `.claude/settings.json` or
+   `.claude/skills/`, that is the sandbox: don't retry, give the user the same command prefixed
+   with `!` to run themselves, and continue from its JSON output.
 
    `--ignore-mode "<committed|ignored>"` is the answer from step 1 (omit it, or pass `committed`, for the committed install; pass `ignored` for an ignored one, including when step 1 found `.claude` already ignored). The other three flags are optional and affect only a **fresh** seed. Omit `--skill-map` when empty, `--project-tags` when step 3 recorded nothing, `--impl-agents` only if step 2 genuinely couldn't decide (the seed then falls back to `backend`). The installer unions the skill map with what it reads from the tags store — the two add up rather than overriding — and intersects `--project-tags` against the live catalog itself, so this step's confirmation need not be perfectly in sync with the store.
 
@@ -151,42 +181,43 @@ $ARGUMENTS
 
    If the project's `.claude/maestro.json` is not valid JSON or not version 3, the script exits 1 with `{"ok": false, "refused": "config", "reason": ...}` and has written **nothing**. Relay `reason` to the user verbatim (they fix the file by hand or move it aside) and stop; do not retry or delete the file.
 
-   On success it prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `ignoreMode`, `wroteGitExclude`, `gitExcludePath`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 6.
+   On success it prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `ignoreMode`, `wroteGitExclude`, `gitExcludePath`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 7.
 
    `orchestratorSkill.action` says what happened to `SKILL.md`: `installed` (copied whole), `synced` (managed regions refreshed; `.regions` lists which), `unchanged`, or `migrated` — the installed skill predated the region markers, so it was backed up to `SKILL.md.bak` (path in `.backup`) and replaced. On `migrated`, **tell the user** and offer to re-apply any custom prose from the `.bak` file *outside* the managed regions before deleting it.
 
-6. **Render the orchestrator's handoff table** from the config that now exists:
+7. **Render the orchestrator's handoff table** from the config that now exists:
 
    ```bash
    node .claude/scripts/maestro-render-orchestrator.cjs
    ```
 
-   This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 5 — the renderer reads `maestro.json`, and on a fresh install step 5 is what creates it. Report the workflow → success-path rows it produces.
+   This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 6 — the renderer reads `maestro.json`, and on a fresh install step 6 is what creates it. Report the workflow → success-path rows it produces.
 
-7. **Offer herdr, once.** herdr is optional: it lets `/maestro-manager` start an epic's worker
+8. **Offer herdr, once.** herdr is optional: it lets `/maestro-manager` start an epic's worker
    sessions in herdr tabs instead of the user opening each one. Run `command -v herdr`.
-   - **Found:** don't ask. Mention it in step 8, and that `herdr integration install claude` is in
-     the guide if they have not run it yet.
+   - **Found:** don't ask (step 5 covers its sandbox opt-in). Mention it in step 9, and
+     that `herdr integration install claude` is in the guide if they have not run it yet.
    - **Not found, interactive install:** ask **one `AskUserQuestion`**: *"Set up herdr, so
      /maestro-manager can start epic worker sessions for you? It is optional."* Options:
      `Show me how`, `Not now`. On `Show me how`, point to the guide,
      [`references/herdr.md`](references/herdr.md), and give its two commands, telling the user to
      run them themselves with `!` (they change things outside the project, so you never run them):
-     `! curl -fsSL https://herdr.dev/install.sh | sh` and `! herdr integration install claude`,
-     plus the guide's sandbox entries: the socket `~/.config/herdr/herdr.sock` and, on Linux with a
-     hidden home directory, the herdr binary in `allowRead`. On `Not now`, say nothing more
-     about it: `/maestro-update` prints one reminder line and never asks again.
-   - **Non-interactive install:** don't ask; mention the guide in one line in step 8.
+     `! curl -fsSL https://herdr.dev/install.sh | sh` and `! herdr integration install claude`.
+     Under the sandbox, add that once herdr is installed `/maestro-update` offers its sandbox
+     opt-in (the guide's step 3). On `Not now`, say nothing more about it: `/maestro-update` prints
+     one reminder line and never asks again.
+   - **Non-interactive install:** don't ask; mention the guide in one line in step 9.
 
-8. **Confirm the install.** Summarise:
+9. **Confirm the install.** Summarise:
    - what happened to the orchestrator skill (`orchestratorSkill.action`, including a `migrated` backup) and whether any retired hook was removed (`hooksRemoved`);
    - whether `maestro.json` was seeded (`seededConfig`) and with which implementation chain, or was left alone;
    - when `skillListsSeeded` is not `null`, **say what it seeded** (`start_skills`, `end_skills` and/or removed `gates`) and that the lists can be changed on the Maestro desktop app's `/maestro` page, so the user is not surprised that `/to-maestro-tasks` now runs `confidence-check`;
    - the recorded project tags, **plural** — report the whole list (e.g. "tagged as `backend, frontend`"), never just one — or that none were recorded, editable afterward from `/maestro`;
-   - the rendered success paths from step 6;
+   - the rendered success paths from step 7;
+   - the sandbox allow-list from step 5, in one line: the `! <applyCommand>` still to run, or nothing when it was up to date or the sandbox is off;
    - the ignore mode (`ignoreMode`): for `ignored`, that `.claude/` is now in the clone-local `gitExcludePath` (`wroteGitExclude` says whether this run added it) and nothing was added to the committed `.gitignore`, so teammates see no Maestro files. The line sits under a `# Maestro (added by maestro-install)` marker, which is what lets `/maestro-uninstall --purge` remove exactly that line later (a `.claude/` entry the user wrote themselves is never touched);
    - that they invoke the orchestrator by running `/maestro`;
-   - herdr, from step 7, in one line: found, or the guide at
+   - herdr, from step 8, in one line: found, or the guide at
      [`references/herdr.md`](references/herdr.md) if they want it later;
    - that the graph is edited in the **Maestro desktop app** (`/workflows` for the canvas, `/rules` for rule placement) or by hand-editing `maestro.json` then running `/maestro-update`; and that `/maestro-uninstall` removes Maestro.
 

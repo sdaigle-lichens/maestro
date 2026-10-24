@@ -23,5 +23,6 @@ Make maestro-install and maestro-update offer the Maestro sandbox allow-list bui
 
 - `125-manager-spawns-worker-sessions-in-herdr.md`
 
-Also needs branch `feat/sandbox-allow-list` (maestro-sandbox-allow.cjs and the sandbox reference)
-merged first; it is not a queue task, so check `git log` for it before starting.
+Branch `feat/sandbox-allow-list` (maestro-sandbox-allow.cjs and the sandbox reference) is merged
+into feat/use-code-graph (`2c95bae`), at plugin 0.12.9. This task bumps to 0.12.10, in plugin.json
+and `.claude/maestro.json` runtimeVersion, unless a later merge has taken it.

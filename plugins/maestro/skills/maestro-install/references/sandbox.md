@@ -40,10 +40,25 @@ the sandbox. If you copy files into `.claude/scripts/` by hand, run the copy wit
 `/maestro-update` notices that it no longer matches and asks you to re-run `--apply`, which
 replaces the old entry.
 
-**Deliberately not covered: herdr.** `/maestro-manager` talks to herdr over its socket, and
-`herdr pane run` runs any command it is given. Allowing that socket, or excluding herdr commands,
-lets any sandboxed command run anything outside the sandbox. It stays a separate, manual opt-in in
-[`herdr.md`](herdr.md). Without it, the manager prints the `claude -n …` commands for you to run.
+## The herdr opt-in (`--herdr`), a sandbox escape
+
+The default list never includes herdr. `/maestro-manager` talks to herdr over its socket, and
+`herdr pane run` runs any command it is given, so letting the sandbox reach that socket lets **any**
+sandboxed command run anything outside the sandbox. Only add it if you accept that. Without it, the
+manager prints the `claude -n …` commands for you to run.
+
+`--herdr` adds, with absolute paths:
+
+| Entry | Added when | Why |
+| --- | --- | --- |
+| `sandbox.filesystem.allowWrite`: `$HOME/.config/herdr/herdr.sock` | always | connecting to a Unix socket needs write access to it |
+| `sandbox.filesystem.allowRead`: the herdr binary | `command -v herdr` resolves under `$HOME` | the Linux sandbox hides your home directory; the binary only, never its directory |
+| `sandbox.network.allowUnixSockets`: the socket | your settings do not already set `sandbox.network.allowAllUnixSockets: true` | Claude Code honours this list on macOS only; on Linux only `allowAllUnixSockets` opens Unix sockets |
+
+The herdr CLI's socket commands read nothing else under `~/.config/herdr`, so nothing more is
+added. `/maestro-install` and `/maestro-update` offer the opt-in only when herdr is on your `PATH`,
+defaulting to No. `--remove --herdr` takes out only the herdr entries; a plain `--remove` takes out
+everything, herdr included, and a plain `--apply` leaves herdr entries alone.
 
 ## Running it
 
@@ -56,6 +71,7 @@ own entries by their exact text. An entry you wrote yourself is never changed or
 node <plugin root>/scripts/maestro-sandbox-allow.cjs .                      # preview, writes nothing
 ! node <plugin root>/scripts/maestro-sandbox-allow.cjs <project> --apply     # add or refresh
 ! node <plugin root>/scripts/maestro-sandbox-allow.cjs <project> --remove    # take them all out
+! node <plugin root>/scripts/maestro-sandbox-allow.cjs <project> --apply --herdr   # also the herdr opt-in
 ```
 
 The preview prints one JSON object. `added` and `removed` are what `--apply` would change,

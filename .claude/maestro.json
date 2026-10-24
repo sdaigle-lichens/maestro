@@ -1135,7 +1135,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.12.9",
+  "runtimeVersion": "0.12.10",
   "reports": {
     "backend": {
       "id": "backend",
