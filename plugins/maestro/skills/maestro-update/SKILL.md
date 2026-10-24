@@ -84,9 +84,15 @@ place the refresh procedure is written down.
    `/maestro-install` (it is user-only) so the defaults are written. When both are empty, say nothing
    about it beyond "no dangling skill references".
 
-5. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+5. **Check for herdr**, which writes nothing: `command -v herdr`. Found: say nothing about it.
+   Missing: add exactly one line to the report, never a question, and never more than once per
+   run: *"herdr is not installed (optional: it lets /maestro-manager start epic worker sessions);
+   see [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
+   commands you run yourself with `!`."*
+
+6. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged), and any dangling skill references step 4 found.
+   none had diverged), any dangling skill references step 4 found, and step 5's herdr line if any.
 
 ## Notes
 

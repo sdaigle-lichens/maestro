@@ -521,6 +521,120 @@ export function showEpic(projectRoot: string, slug: string): EpicView {
   };
 }
 
+/** How many workers the manager's spawn step runs at once unless told otherwise (`125`). */
+export const DEFAULT_SPAWN_CAP = 5;
+
+/** A task the manager may spawn a worker session for, with the name and command to use. */
+export interface SpawnableTask {
+  filename: string;
+  /** `.claude/maestro-tasks/<filename>`, relative to the main checkout. */
+  relativePath: string;
+  /** The session name to give the worker (`claude -n`), which its claim and the epic record. */
+  worker: string;
+  /** The exact launch command, run from the main checkout. */
+  command: string;
+}
+
+export interface EpicReadyView {
+  slug: string;
+  /** The main checkout: where every worker is launched. */
+  cwd: string;
+  cap: number;
+  /** Unfinished epic tasks a live session has claimed. */
+  running: Array<{ filename: string; sessionName: string | null }>;
+  /** Unfinished epic tasks recorded on a worker (add-worker --task) with no live claim yet. */
+  pending: Array<{ filename: string; worker: string }>;
+  /** Ready (no unfinished blocker), unclaimed and not pending, oldest first. */
+  ready: SpawnableTask[];
+  /** `cap` minus running and pending, never below 0: how many of `ready` may be spawned now. */
+  slots: number;
+}
+
+/**
+ * The session name a spawned worker gets: `<slug>-<NNN>` from the task's number, else
+ * `<slug>-<basename>`. A name given with `claude -n` is kept by the session-name hook (`113`).
+ */
+export function workerNameFor(slug: string, filename: string): string {
+  const base = path.basename(filename).replace(/\.md$/, "");
+  const num = /^(\d+)-/.exec(base);
+  return `${slug}-${num ? num[1] : base}`;
+}
+
+function shellQuote(value: string): string {
+  return `'${value.replace(/'/g, `'\\''`)}'`;
+}
+
+/** `claude -n <name> '/maestro .claude/maestro-tasks/<task.md>'`, quoted for a POSIX shell. */
+export function launchCommandFor(name: string, filename: string): string {
+  const rel = path.posix.join(".claude", "maestro-tasks", path.basename(filename));
+  return `claude -n ${shellQuote(name)} ${shellQuote(`/maestro ${rel}`)}`;
+}
+
+/**
+ * The manager's spawn list (`125`): the epic's tasks that are ready and that no session has
+ * claimed. Ready means the tracker says `ready` AND every blocker the tracker knows is done, so a
+ * stale `ready` never spawns a blocked task. A task recorded on a worker but not claimed yet is
+ * `pending`, not ready: the worker was spawned and has not started, or its claim aged out while it
+ * waits on the user. Listing it as ready would spawn a second worker for it. Done tasks are never
+ * listed anywhere.
+ */
+export function readyTasks(projectRoot: string, slug: string, cap: number = DEFAULT_SPAWN_CAP): EpicReadyView {
+  const state = readEpicState(projectRoot, slug);
+  if (!state) throw new Error(`no epic "${slug}"`);
+  if (!Number.isInteger(cap) || cap < 1) throw new Error(`the cap must be a whole number of at least 1, not "${cap}"`);
+  const root = mainCheckoutRoot(projectRoot);
+  const tracker = readTaskTracker(root);
+  const claims = readClaims(root, tasksDirFor(root));
+  const workerOf = new Map<string, string>();
+  for (const w of state.workers) if (w.task) workerOf.set(path.basename(w.task), w.name);
+
+  const view: EpicReadyView = { slug, cwd: root, cap, running: [], pending: [], ready: [], slots: 0 };
+  const own = Object.keys(tracker)
+    .filter((f) => tracker[f].epic === slug && tracker[f].status !== "done")
+    .sort((a, b) => a.localeCompare(b));
+  for (const filename of own) {
+    const claim = claims.get(filename);
+    if (claim?.live) {
+      view.running.push({ filename, sessionName: claim.sessionName ?? null });
+      continue;
+    }
+    const worker = workerOf.get(filename);
+    if (worker) {
+      view.pending.push({ filename, worker });
+      continue;
+    }
+    const entry = tracker[filename];
+    const unblocked = entry.blockedBy.every((b) => !tracker[b] || tracker[b].status === "done");
+    if (entry.status !== "ready" || !unblocked) continue;
+    const name = workerNameFor(slug, filename);
+    view.ready.push({
+      filename,
+      relativePath: path.posix.join(".claude", "maestro-tasks", filename),
+      worker: name,
+      command: launchCommandFor(name, filename),
+    });
+  }
+  view.slots = Math.max(0, cap - view.running.length - view.pending.length);
+  return view;
+}
+
+/** Plain-text rendering of `readyTasks`: what to spawn now, what waits for a free slot. */
+export function formatReady(view: EpicReadyView): string {
+  const lines = [
+    `Epic ${view.slug}: ${view.ready.length} ready, unclaimed task(s); ${view.running.length} running, ` +
+      `${view.pending.length} spawned but not claimed yet; cap ${view.cap}, ${view.slots} slot(s) free`,
+    `  launch from: ${view.cwd}`,
+  ];
+  view.ready.forEach((t, i) => {
+    const tag = i < view.slots ? "spawn" : "waits for a slot";
+    lines.push(`  ${t.filename}  worker "${t.worker}"  [${tag}]`, `    ${t.command}`);
+  });
+  for (const r of view.running)
+    lines.push(`  ${r.filename}  running in session ${r.sessionName ? `"${r.sessionName}"` : "(unnamed)"}`);
+  for (const p of view.pending) lines.push(`  ${p.filename}  spawned as "${p.worker}", not claimed yet`);
+  return lines.join("\n");
+}
+
 /** One unacknowledged inbox line, as `formatEpic` and the CLI's `reports` print it. */
 export function formatInboxEntry(entry: EpicInboxEntry & { path: string }): string {
   if (entry.kind === "note")
