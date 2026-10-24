@@ -152,3 +152,8 @@ acked once after resume; cross-epic `blockedBy` edges in both directions; separa
 `n`/`r` counters; the sender unable to ack; concurrent note and report writers keeping every entry.
 `125`'s `ready` block: the three buckets, dead claims, stale `ready`, cross-epic blockers, the cap
 and its clamp, unnumbered worker names, the main checkout from a worktree, bad `--cap`/unknown epic.
+`128` adds: apostrophe filenames (numbered and unnumbered), whose printed command is run through a
+real `sh -c` with a stub `claude` first on `PATH` recording argv (`shellArgv`); and claim liveness
+judged by the session log's mtime (`fs.utimesSync`), not `claimed_at` — an old claim with a fresh log
+stays `running`, a log idle past the cap comes back `ready` (reaped on read) or `pending` with a
+recorded worker.

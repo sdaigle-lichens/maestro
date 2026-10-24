@@ -1073,6 +1073,131 @@ describe("ready: the manager's spawn list (125)", () => {
     expect(none.stderr).toContain('no epic "nope"');
     expect(epic(root, ["ready"]).code).toBe(1);
   });
+
+  // `128`: the printed launch command is run by a real POSIX shell, so prove the quoting by running
+  // it — a stub `claude` first on PATH writes every argv entry it receives, NUL-separated.
+  function shellArgv(command: string): string[] {
+    const bin = path.join(tmp, "stub-bin");
+    const out = path.join(tmp, "argv.bin");
+    fs.mkdirSync(bin, { recursive: true });
+    const stub = path.join(bin, "claude");
+    fs.writeFileSync(stub, `#!/bin/sh\nfor a in "$@"; do printf '%s\\0' "$a"; done > "$ARGV_OUT"\n`);
+    fs.chmodSync(stub, 0o755);
+    fs.rmSync(out, { force: true });
+    const res = spawnSync("sh", ["-c", command], {
+      encoding: "utf8",
+      env: { PATH: `${bin}:${process.env.PATH ?? ""}`, ARGV_OUT: out, HOME: tmp },
+    });
+    expect(res.stderr).toBe("");
+    expect(res.status).toBe(0);
+    const raw = fs.readFileSync(out, "utf8");
+    expect(raw.endsWith("\0")).toBe(true);
+    return raw.slice(0, -1).split("\0");
+  }
+
+  it("a task filename with an apostrophe launches with the exact argv through a real shell (128)", async () => {
+    const names = ["009-don't-panic.md", "it's-o'clock.md"];
+    const root = await withTasks(...names);
+    epic(root, ["create", "e1"]);
+    expect(epic(root, ["link", "e1", ...names]).code).toBe(0);
+
+    const view = ready(root);
+    expect(view.ready.map((t) => t.filename)).toEqual(names);
+    const [numbered, unnumbered] = view.ready;
+    // The unnumbered one carries its apostrophes into the worker NAME too, so both argv parts are tested.
+    expect(unnumbered.worker).toBe("e1-it's-o'clock");
+
+    expect(shellArgv(numbered.command)).toEqual(["-n", "e1-009", "/maestro .claude/maestro-tasks/009-don't-panic.md"]);
+    expect(shellArgv(unnumbered.command)).toEqual([
+      "-n",
+      "e1-it's-o'clock",
+      "/maestro .claude/maestro-tasks/it's-o'clock.md",
+    ]);
+
+    // The plain-text rendering prints the same command, and it runs the same way.
+    const text = epic(root, ["ready", "e1"]).stdout;
+    const printed = text
+      .split("\n")
+      .map((l) => l.trim())
+      .filter((l) => l.startsWith("claude -n "));
+    expect(printed).toEqual([numbered.command, unnumbered.command]);
+    expect(shellArgv(printed[1])).toEqual(["-n", "e1-it's-o'clock", "/maestro .claude/maestro-tasks/it's-o'clock.md"]);
+  });
+
+  // `128`: liveness is the session log's mtime against the idle cap, never the claim's age.
+  const MIN = 60 * 1000;
+  const sessionLog = (root: string, id: string) => path.join(root, ".claude", "maestro_sessions", id, "log.jsonl");
+  const claimFile = (root: string, f: string) => path.join(tasksDir(root), "claims", `${f}.json`);
+  function ageClaim(root: string, filename: string, msAgo: number) {
+    const c = JSON.parse(fs.readFileSync(claimFile(root, filename), "utf8"));
+    c.claimed_at = new Date(Date.now() - msAgo).toISOString();
+    fs.writeFileSync(claimFile(root, filename), JSON.stringify(c));
+  }
+  function touchLog(root: string, id: string, msAgo: number) {
+    const t = new Date(Date.now() - msAgo);
+    fs.utimesSync(sessionLog(root, id), t, t);
+  }
+
+  it("an old claimed_at with a session log touched within the idle cap is running, never ready (128)", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "001-a.md", "--name", "e1-001"], SESSION_A).code).toBe(0);
+    ageClaim(root, "001-a.md", 6 * 60 * MIN); // claimed six hours ago
+
+    for (const logAge of [0, 14 * MIN]) {
+      touchLog(root, SESSION_A, logAge);
+      const view = ready(root);
+      expect(view.running).toEqual([{ filename: "001-a.md", sessionName: "e1-001" }]);
+      expect(view.ready.map((t) => t.filename)).toEqual(["002-b.md"]);
+      expect(view.pending).toEqual([]);
+      expect(view.slots).toBe(4);
+      // Reading it did not reap a live claim.
+      expect(fs.existsSync(claimFile(root, "001-a.md"))).toBe(true);
+    }
+    expect(epic(root, ["ready", "e1"]).stdout).toContain('001-a.md  running in session "e1-001"');
+  });
+
+  it("a session log idle past the cap is not running: the task comes back ready (128)", async () => {
+    const root = await withTasks("001-a.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md"]);
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "001-a.md", "--name", "e1-001"], SESSION_A).code).toBe(0);
+    // A fresh claimed_at does not keep an idle session alive.
+    touchLog(root, SESSION_A, 16 * MIN);
+
+    const view = ready(root);
+    expect(view.running).toEqual([]);
+    expect(view.pending).toEqual([]);
+    expect(view.ready.map((t) => t.filename)).toEqual(["001-a.md"]);
+    expect(view.slots).toBe(5);
+    // The dead claim was reaped on read, so a later touch of the log does not resurrect it.
+    expect(fs.existsSync(claimFile(root, "001-a.md"))).toBe(false);
+    touchLog(root, SESSION_A, 0);
+    expect(ready(root).ready.map((t) => t.filename)).toEqual(["001-a.md"]);
+  });
+
+  it("a session log idle past the cap with a worker recorded for the task is pending, not ready (128)", async () => {
+    const root = await withTasks("001-a.md", "002-b.md");
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    expect(epic(root, ["add-worker", "e1", "e1-001", "--task", "001-a.md"]).code).toBe(0);
+    liveSession(root, SESSION_A);
+    expect(status(root, ["claim", "001-a.md", "--name", "e1-001"], SESSION_A).code).toBe(0);
+    expect(ready(root).running).toEqual([{ filename: "001-a.md", sessionName: "e1-001" }]);
+
+    touchLog(root, SESSION_A, 16 * MIN);
+    const view = ready(root, ["--cap", "2"]);
+    expect(view.running).toEqual([]);
+    expect(view.pending).toEqual([{ filename: "001-a.md", worker: "e1-001" }]);
+    expect(view.ready.map((t) => t.filename)).toEqual(["002-b.md"]);
+    expect(view.slots).toBe(1);
+    expect(epic(root, ["ready", "e1", "--cap", "2"]).stdout).toContain(
+      '001-a.md  spawned as "e1-001", not claimed yet'
+    );
+  });
 });
 
 describe("to-maestro-tasks linking", () => {

@@ -636,5 +636,10 @@
       "125-manager-spawns-worker-sessions-in-herdr.md"
     ],
     "epic": "autonomous-workers"
+  },
+  "128-test-the-epic-ready-list-against-an-apostrophe-filename-and-claim-liveness-edges.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
   }
 }
