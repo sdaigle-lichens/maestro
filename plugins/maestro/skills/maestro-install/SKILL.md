@@ -9,8 +9,8 @@ disable-model-invocation: true
 One-time setup of Maestro for a project, entirely from a Claude session: scaffold the orchestrator, seed the config, render the handoff table. Nothing here needs the desktop app, a browser, or Docker.
 
 ```
-maestro-install:  committed or ignored? → analyze repo → confirm project tags → offer local skills → scaffold + seed → render → report
-                  (git check-ignore)     (impl agents)    (catalog + consent)     (best-fit + consent)  (maestro-install.js)  (maestro-render-orchestrator.cjs)
+maestro-install:  committed or ignored? → analyze repo → confirm project tags → offer local skills → scaffold + seed → render → offer herdr → report
+                  (git check-ignore)     (impl agents)    (catalog + consent)     (best-fit + consent)  (maestro-install.js)  (maestro-render-orchestrator.cjs)  (command -v herdr)
 ```
 
 **When to prefer the desktop app.** `apps/maestro`'s `/install` route does the same install without a session, and its `/workflows` canvas is the only comfortable way to *edit* the graph — this skill seeds a sensible starting graph, it does not let you draw one. Use this skill when there is no desktop app on the machine, or when the user is already in a terminal and wants Maestro on without leaving it.
@@ -163,7 +163,22 @@ $ARGUMENTS
 
    This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 5 — the renderer reads `maestro.json`, and on a fresh install step 5 is what creates it. Report the workflow → success-path rows it produces.
 
-7. **Confirm the install.** Summarise:
+7. **Offer herdr, once.** herdr is optional: it lets `/maestro-manager` start an epic's worker
+   sessions in herdr tabs instead of the user opening each one. Run `command -v herdr`.
+   - **Found:** don't ask. Mention it in step 8, and that `herdr integration install claude` is in
+     the guide if they have not run it yet.
+   - **Not found, interactive install:** ask **one `AskUserQuestion`**: *"Set up herdr, so
+     /maestro-manager can start epic worker sessions for you? It is optional."* Options:
+     `Show me how`, `Not now`. On `Show me how`, point to the guide,
+     [`references/herdr.md`](references/herdr.md), and give its two commands, telling the user to
+     run them themselves with `!` (they change things outside the project, so you never run them):
+     `! curl -fsSL https://herdr.dev/install.sh | sh` and `! herdr integration install claude`,
+     plus the guide's sandbox entries: the socket `~/.config/herdr/herdr.sock` and, on Linux with a
+     hidden home directory, the herdr binary in `allowRead`. On `Not now`, say nothing more
+     about it: `/maestro-update` prints one reminder line and never asks again.
+   - **Non-interactive install:** don't ask; mention the guide in one line in step 8.
+
+8. **Confirm the install.** Summarise:
    - what happened to the orchestrator skill (`orchestratorSkill.action`, including a `migrated` backup) and whether any retired hook was removed (`hooksRemoved`);
    - whether `maestro.json` was seeded (`seededConfig`) and with which implementation chain, or was left alone;
    - when `skillListsSeeded` is not `null`, **say what it seeded** (`start_skills`, `end_skills` and/or removed `gates`) and that the lists can be changed on the Maestro desktop app's `/maestro` page, so the user is not surprised that `/to-maestro-tasks` now runs `confidence-check`;
@@ -171,6 +186,8 @@ $ARGUMENTS
    - the rendered success paths from step 6;
    - the ignore mode (`ignoreMode`): for `ignored`, that `.claude/` is now in the clone-local `gitExcludePath` (`wroteGitExclude` says whether this run added it) and nothing was added to the committed `.gitignore`, so teammates see no Maestro files. The line sits under a `# Maestro (added by maestro-install)` marker, which is what lets `/maestro-uninstall --purge` remove exactly that line later (a `.claude/` entry the user wrote themselves is never touched);
    - that they invoke the orchestrator by running `/maestro`;
+   - herdr, from step 7, in one line: found, or the guide at
+     [`references/herdr.md`](references/herdr.md) if they want it later;
    - that the graph is edited in the **Maestro desktop app** (`/workflows` for the canvas, `/rules` for rule placement) or by hand-editing `maestro.json` then running `/maestro-update`; and that `/maestro-uninstall` removes Maestro.
 
    **Rules are not seeded.** The `rules` slice starts empty: placing rule files is `maestro-apply-rules.js`'s job and the desktop app's `/rules` route authors the assignments. A terminal-only user can hand-write `rules` entries and run that script directly.

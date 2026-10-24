@@ -1,6 +1,6 @@
 ---
 name: maestro-manager
-description: "Coordinates one epic: related Maestro tasks that several /maestro sessions work on at once. Opens or resumes the epic, finds the live sessions by name, then loops on worker reports: acknowledges each, rewires or adds tickets with to-maestro-tasks, offers maestro-post-mortem or a maestro-team-meeting, messages the sibling sessions affected, and notifies other epics' managers through a durable cross-epic note. Use when the user wants to manage, coordinate, open or resume an epic, asks a session to manage a set of tasks, a worker session sends a report to its manager, or another epic's manager sends a note."
+description: "Coordinates one epic: related Maestro tasks that several /maestro sessions work on at once. Opens or resumes the epic, finds the live sessions by name, spawns workers for ready, unclaimed tasks in herdr tabs (up to 5 at once; without herdr it prints the claude -n commands to run), then loops on worker reports: acknowledges each, rewires or adds tickets with to-maestro-tasks, offers maestro-post-mortem or a maestro-team-meeting, messages the sibling sessions affected, and notifies other epics' managers through a durable cross-epic note. Use when the user wants to manage, coordinate, open or resume an epic, asks a session to manage a set of tasks, a worker session sends a report to its manager, or another epic's manager sends a note."
 ---
 
 # Maestro Manager
@@ -44,6 +44,64 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
    recorded wins over the one you type.
 4. Handle every unacknowledged report and note, oldest first: reports through the loop below, notes
    as in **Other epics**.
+5. Run **Spawning workers** below for the tasks no session is working on yet.
+
+## Spawning workers
+
+You start the epic's worker sessions yourself instead of the user opening one per task. Each worker
+is a normal named `/maestro` session in its own herdr tab; you start it and record it, nothing more.
+
+1. **List what can start:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>`
+   (add `--cap <n>` only when the user asked for a different limit; the default is 5). It prints the
+   ready tasks no session has claimed, oldest first, each with its worker name and exact launch
+   command, marked `[spawn]` while a slot is free and `[waits for a slot]` after that. Running
+   tasks and tasks already spawned but not claimed yet count against the cap and are never listed
+   as ready. Nothing marked `[spawn]`: say so and stop.
+2. **Check for herdr**, in this order, one command per call. Any check failing means the
+   **fallback** below:
+   1. `command -v herdr`. Nothing found: fallback.
+   2. `test "${HERDR_ENV:-}" = 1`, which checks that this session runs inside a herdr pane. herdr's
+      own agent guidance says never to control a herdr session from outside herdr. So when
+      `HERDR_ENV` isn't `1`, use the fallback even if a herdr server is running, and tell the user to
+      start a Claude session inside herdr and run `/maestro-manager` there to have workers spawned.
+      Never create a workspace to work around this.
+   3. `herdr status server`, then read its output. The server is running only when the output
+      contains the line `status: running`. Anything else (`status: not running`, an error, a socket
+      the sandbox blocks) means the fallback. Never go by the exit code, because the command exits 0
+      even when the server is down.
+3. **Ask once**, naming the `[spawn]` tasks and their worker names, whether to start them now. Never
+   spawn more than the `[spawn]` lines, and never more than the user agreed to.
+4. **For each task you start**, one command per call, in this order:
+   1. `herdr tab create --workspace "$HERDR_WORKSPACE_ID" --cwd "<launch from>" --label "<worker name>" --no-focus`,
+      with the `launch from` directory `ready` printed. `HERDR_WORKSPACE_ID` is the manager's own
+      workspace (herdr sets it in every pane it manages), so workers land beside the manager. Take
+      the pane id from the JSON output's `result.root_pane.pane_id`, never from an example or the
+      sidebar order.
+   2. `herdr pane run <pane id> "<launch command>"`, the launch command exactly as `ready` printed it
+      (`claude -n '<worker name>' '/maestro .claude/maestro-tasks/<task.md>'`).
+   3. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<worker name>" --task <task.md>`.
+      Recording it is what keeps a second worker from being spawned for the same task before the
+      first one claims it.
+
+   If a herdr command fails part way, stop spawning, record nothing for that task, and use the
+   fallback for it and the rest.
+5. **Tell the user** which workers started, that each worker's permission prompts and reviews appear
+   in its own herdr tab (herdr's sidebar shows the ones that are blocked on them), and that you never
+   answer them on a worker's behalf.
+
+**Fallback (no herdr, not running inside herdr, or the server is unreachable).** Do not fail and do
+not try to install or start it. Print the
+launch command of each `[spawn]` task exactly as `ready` printed it, with the directory to run it
+from, and tell the user to run each one in its own terminal. Then point to the herdr setup guide,
+[`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), and say the
+user installs herdr and runs `herdr integration install claude` themselves with `!`, since both
+change things outside the project. Record a worker with `add-worker` only once the user says they
+started it.
+
+**A spawned worker that never claims its task** is listed by `ready` as "spawned as ..., not claimed
+yet" and keeps its slot. If its name has no live `ListAgents` entry, ask the user whether it failed
+to start; on yes, `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" remove-worker <slug> "<worker name>"`
+frees the task for the next spawn.
 
 ## The loop
 
@@ -66,6 +124,10 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
 4. **Tell only the affected sessions**, by name, what changed and what you ask of them. Never edit a
    task a worker is running without telling it. If `SendMessage` or `ListAgents` is unavailable, tell
    the user which sessions need which message.
+5. **Offer the next task.** A finished task frees its slot and may have unblocked others: run
+   `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>` again and, when a task is
+   marked `[spawn]`, offer to start it through **Spawning workers** (steps 2 to 5). Only `[spawn]`
+   tasks, so the cap still holds; offer, never spawn without the user's yes.
 
 ## Applying team-meeting changes
 
