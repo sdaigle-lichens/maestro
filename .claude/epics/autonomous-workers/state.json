@@ -67,6 +67,26 @@
       "file": "inbox/r004-127-install-and-update-offer-the-sandbox-allow-list-with-a-herdr-opt-in.md",
       "at": "2026-10-24T16:08:30.960Z",
       "from": "autonomous-workers-127"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-10-24T18:09:16.618Z",
+      "by": "herdr-manager"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "129-sandbox-allow-list-offer-run-it-before-the-update-installer-and-stop-re-asking-the-herdr-opt-in.md",
+      "file": "inbox/r005-129-sandbox-allow-list-offer-run-it-before-the-update-installer-and-stop-re-asking-the-herdr-opt-in.md",
+      "at": "2026-10-24T18:53:17.383Z",
+      "from": "autonomous-workers-129"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-10-24T18:53:28.669Z",
+      "by": "herdr-manager"
     }
   ]
 }

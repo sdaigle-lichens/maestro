@@ -11,7 +11,42 @@ place the refresh procedure is written down.
 
 ## Workflow
 
-1. **Refresh the runtime scripts and the orchestrator skill body** by re-running the installer
+1. **Check the sandbox allow-list first**, which writes nothing. It comes before the installer
+   because the installer's `excludedCommands` entry carries the plugin's versioned path: right
+   after a plugin update the old entry is stale and the installer can fail on a sandbox write
+   before the user is ever offered the fix.
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-sandbox-allow.cjs .
+   ```
+
+   It prints JSON with `sandboxEnabled`, `upToDate`, `entries` (each `kind`, `value`, `why`),
+   `broadEntries`, `herdr.present`, `applyCommand` and `removeCommand`. Its installer entry
+   carries the plugin's versioned path, so after every plugin update it is no longer up to date.
+
+   - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
+   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive.
+     `herdr.present` is `true` when every herdr entry is already in place (a hand-written `~` form
+     counts): then don't ask, whatever `upToDate` says. Otherwise ask **one `AskUserQuestion`**:
+     *"Also let /maestro-manager start worker sessions in herdr by itself? This is a sandbox
+     escape: any sandboxed command can then run anything unsandboxed through `herdr pane run`.
+     Without it the manager prints the `claude -n ...` commands for you to run."* Options:
+     `No (Recommended)`, `Yes, add the herdr entries`. No answer or herdr not on PATH means No. On
+     Yes, run the dry run again with `--herdr` appended and use its output below: its
+     `applyCommand` adds the herdr entries along with the rest.
+   - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
+     `value` with its `why`, point to
+     [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md), and
+     ask them to run `! <applyCommand>` themselves, the printed command verbatim. **Never run
+     `--apply` yourself**: a sandboxed command can never write a settings file, and what runs
+     outside the sandbox is the user's choice. If `broadEntries` is non-empty, say those wide
+     patterns can be deleted by hand once the narrow entries are in. Continue with step 2 whether
+     or not they run it.
+   - **`herdr.unparseableSettings` is non-empty:** tell the user which settings files do not parse
+     and that `allowAllUnixSockets` was read as unset from them.
+   - **`upToDate` and no herdr opt-in chosen:** say nothing about it.
+
+2. **Refresh the runtime scripts and the orchestrator skill body** by re-running the installer
    (idempotent — skips settings and gitignore if already present):
 
    ```bash
@@ -19,7 +54,7 @@ place the refresh procedure is written down.
    ```
 
    Run it in exactly this form, unquoted: the sandbox allow-list's `excludedCommands` entry
-   (step 6) matches this literal command text. This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
+   (step 1) matches this literal command text. This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
    the plugin's `plugin.json` version into `maestro.json`'s `runtimeVersion` — the field the Step 0
    check compares against.
 
@@ -49,7 +84,7 @@ place the refresh procedure is written down.
      (`.claude/skills/maestro/SKILL.md.bak`) and the template replaced it. **Say so explicitly** and
      offer to re-apply any custom prose from the `.bak` outside the managed regions before deleting it.
 
-2. **Run the renderer**, after step 1 — a `migrated` sync leaves the handoff table at its
+3. **Run the renderer**, after step 2 — a `migrated` sync leaves the handoff table at its
    placeholder, and this restores it from each workflow's derived success path:
 
    ```bash
@@ -59,7 +94,7 @@ place the refresh procedure is written down.
    If it reports `maestro/SKILL.md not found`, the orchestrator was never installed. Stop and ask
    the user to run `/maestro-install` — it is user-only, so you can't invoke it yourself.
 
-3. **List forked agents that have fallen behind their template.** `list` writes nothing; it reports
+4. **List forked agents that have fallen behind their template.** `list` writes nothing; it reports
    one line per forked agent and names the ones that differ:
 
    ```bash
@@ -69,7 +104,7 @@ place the refresh procedure is written down.
    If it names any, see `references/forked-agents.md` for showing the diff and applying the user's
    `update` / `keep` / `detach` decision.
 
-4. **Check for skill references that no longer resolve.** `maestro.json` names skills by id, and an id
+5. **Check for skill references that no longer resolve.** `maestro.json` names skills by id, and an id
    can dangle when the plugin that supplied it is uninstalled or not enabled for this project, or
    when the skill was deleted. This writes nothing and always exits 0:
 
@@ -85,44 +120,16 @@ place the refresh procedure is written down.
    `/maestro-install` (it is user-only) so the defaults are written. When both are empty, say nothing
    about it beyond "no dangling skill references".
 
-5. **Check for herdr**, which writes nothing: `command -v herdr`. Found: say nothing about it.
+6. **Check for herdr**, which writes nothing: `command -v herdr`. Found: say nothing about it.
    Missing: add exactly one line to the report, never a question, and never more than once per
    run: *"herdr is not installed (optional: it lets /maestro-manager start epic worker sessions);
    see [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
    commands you run yourself with `!`."*
 
-6. **Check the sandbox allow-list**, which writes nothing:
-
-   ```bash
-   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-sandbox-allow.cjs .
-   ```
-
-   It prints JSON with `sandboxEnabled`, `upToDate`, `entries` (each `kind`, `value`, `why`),
-   `broadEntries`, `applyCommand` and `removeCommand`. Its installer entry carries the plugin's
-   versioned path, so after every plugin update it is no longer up to date.
-
-   - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
-   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive. Run the
-     dry run again with `--herdr` appended. If that run's `upToDate` is `true` the opt-in is already
-     in place: don't ask. Otherwise ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
-     worker sessions in herdr by itself? This is a sandbox escape: any sandboxed command can then
-     run anything unsandboxed through `herdr pane run`. Without it the manager prints the
-     `claude -n ...` commands for you to run."* Options: `No (Recommended)`, `Yes, add the herdr
-     entries`. No answer or herdr not on PATH means No. On Yes, use the `--herdr` run's output
-     below: its `applyCommand` adds the herdr entries along with the rest.
-   - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
-     `value` with its `why`, point to
-     [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md), and
-     ask them to run `! <applyCommand>` themselves, the printed command verbatim. **Never run
-     `--apply` yourself**: a sandboxed command can never write a settings file, and what runs
-     outside the sandbox is the user's choice. If `broadEntries` is non-empty, say those wide
-     patterns can be deleted by hand once the narrow entries are in.
-   - **`upToDate` and no herdr opt-in chosen:** say nothing about it.
-
 7. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged), any dangling skill references step 4 found, step 5's herdr line if any, and
-   step 6's `! <applyCommand>` if one is still to run.
+   none had diverged), any dangling skill references step 5 found, step 6's herdr line if any, and
+   step 1's `! <applyCommand>` if one is still to run.
 
 ## Notes
 
@@ -130,7 +137,7 @@ place the refresh procedure is written down.
 - An `EPERM` on `.claude/skills/maestro/SKILL.md` or `.claude/settings.json` is the sandbox. Don't
   retry; give the user a `!` run of the failed command, and point to
   [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md) for the
-  allow-list step 6 offers. Never edit sandbox settings yourself.
+  allow-list step 1 offers. Never edit sandbox settings yourself.
 - `maestro.json` is the source of truth. The `SubagentStart` hook reads it at runtime, so subagent
   skill injection is current even between updates — only the handoff table needs re-rendering.
 - If `/maestro` fails to start on a long-installed project, the cause is usually stale

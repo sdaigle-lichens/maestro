@@ -641,5 +641,10 @@
     "status": "done",
     "blockedBy": [],
     "epic": "autonomous-workers"
+  },
+  "129-sandbox-allow-list-offer-run-it-before-the-update-installer-and-stop-re-asking-the-herdr-opt-in.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
   }
 }

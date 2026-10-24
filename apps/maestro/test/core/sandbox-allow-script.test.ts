@@ -204,7 +204,14 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     expect(path.isAbsolute(hh.socket)).toBe(true);
     // the binary only, never its directory
     expect(values(out.added, "allowRead")).toEqual([hh.binary]);
-    expect(out.herdr).toEqual({ optIn: true, binary: hh.binary, socket: hh.socket, allowAllUnixSockets: false });
+    expect(out.herdr).toEqual({
+      optIn: true,
+      present: false,
+      binary: hh.binary,
+      socket: hh.socket,
+      allowAllUnixSockets: false,
+      unparseableSettings: [],
+    });
     expect(out.applyCommand).toBe(`node ${SCRIPT} ${root} --apply --herdr`);
     expect(out.removeCommand).toBe(`node ${SCRIPT} ${root} --remove --herdr`);
     const allowWrite = (out.entries as { kind: string; why: string }[]).find((e) => e.kind === "allowWrite");
@@ -309,10 +316,11 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     });
     runEnv(hh.env, root, "--apply", "--herdr");
     const afterApply = readSettings(settingsPath);
-    expect(afterApply.sandbox.filesystem.allowWrite).toEqual([userSock, "/data/out", hh.socket]);
+    // the hand-written ~ socket entry already counts: no absolute duplicate is written
+    expect(afterApply.sandbox.filesystem.allowWrite).toEqual([userSock, "/data/out"]);
 
     const preview = runEnv(hh.env, root, "--remove", "--herdr", "--dry-run");
-    expect(preview.out.removed).toHaveLength(3);
+    expect(preview.out.removed).toHaveLength(2); // allowRead, allowUnixSockets
     expect(readSettings(settingsPath)).toEqual(afterApply);
 
     expect(runEnv(hh.env, root, "--remove", "--herdr").code).toBe(0);
@@ -376,6 +384,106 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     const s = readSettings(settingsPath);
     expect(s.sandbox.filesystem.allowRead).toBeUndefined();
     expect(s.sandbox.filesystem.allowWrite).toEqual([hh.socket]);
+  });
+
+  it("hand-written ~ herdr entries count as present: no duplicate on --apply --herdr, kept by --remove", () => {
+    const hh = herdrHome();
+    const tilde = {
+      allowWrite: ["~/.config/herdr/herdr.sock"],
+      allowRead: ["~/.local/bin/herdr"],
+      allowUnixSockets: ["~/.config/herdr/herdr.sock"],
+    };
+    const { root, settingsPath } = project({
+      sandbox: {
+        filesystem: { allowWrite: tilde.allowWrite, allowRead: tilde.allowRead },
+        network: { allowUnixSockets: tilde.allowUnixSockets },
+      },
+    });
+
+    const dry = runEnv(hh.env, root, "--herdr");
+    expect(dry.out.herdr.present).toBe(true);
+    for (const kind of ["allowWrite", "allowRead", "allowUnixSockets"]) expect(values(dry.out.added, kind)).toEqual([]);
+    expect(dry.out.removed).toEqual([]);
+    // the plain run reports it too, which is what the skills read
+    expect(runEnv(hh.env, root).out.herdr.present).toBe(true);
+
+    expect(runEnv(hh.env, root, "--apply", "--herdr").code).toBe(0);
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.filesystem.allowWrite).toEqual(tilde.allowWrite);
+    expect(s.sandbox.filesystem.allowRead).toEqual(tilde.allowRead);
+    expect(s.sandbox.network.allowUnixSockets).toEqual(tilde.allowUnixSockets);
+
+    expect(runEnv(hh.env, root, "--remove", "--herdr").out.removed).toEqual([]);
+    const after = readSettings(settingsPath);
+    expect(after.sandbox.filesystem.allowWrite).toEqual(tilde.allowWrite);
+    expect(after.sandbox.filesystem.allowRead).toEqual(tilde.allowRead);
+    expect(after.sandbox.network.allowUnixSockets).toEqual(tilde.allowUnixSockets);
+  });
+
+  it("herdr.present is false until every herdr entry is there, and ignores the stale installer entry", () => {
+    const hh = herdrHome();
+    const { root } = project({
+      sandbox: { filesystem: { allowWrite: [hh.socket] } },
+    });
+    expect(runEnv(hh.env, root, "--herdr").out.herdr.present).toBe(false);
+
+    const full = project({
+      sandbox: {
+        excludedCommands: ["node /old/cache/maestro/0.1.0/scripts/maestro-install.js *"],
+        filesystem: { allowWrite: [hh.socket], allowRead: [hh.binary] },
+        network: { allowUnixSockets: [hh.socket] },
+      },
+    });
+    const out = runEnv(hh.env, full.root).out;
+    expect(out.upToDate).toBe(false); // the installer entry is stale
+    expect(out.herdr.present).toBe(true); // yet the herdr entries are all there
+  });
+
+  it("a herdr symlink under HOME pointing outside HOME is allowed as the link path, never the target", () => {
+    const hh = herdrHome({ bin: "none" });
+    const target = path.join(tmp, "elsewhere-herdr");
+    fs.writeFileSync(target, "#!/bin/sh\nexit 0\n", { mode: 0o755 });
+    const binDir = path.join(hh.home, ".local", "bin");
+    fs.mkdirSync(binDir, { recursive: true });
+    const link = path.join(binDir, "herdr");
+    fs.symlinkSync(target, link);
+    const env = { HOME: hh.home, PATH: binDir };
+
+    const { root, settingsPath } = project();
+    const dry = runEnv(env, root, "--herdr");
+    expect(dry.code).toBe(0);
+    expect(dry.out.herdr.binary).toBe(link);
+    expect(values(dry.out.added, "allowRead")).toEqual([link]);
+
+    runEnv(env, root, "--apply", "--herdr");
+    const s = readSettings(settingsPath);
+    expect(s.sandbox.filesystem.allowRead).toEqual([link]);
+    expect(JSON.stringify(s)).not.toContain(target);
+    expect(runEnv(env, root, "--herdr").out.upToDate).toBe(true);
+  });
+
+  it.each([
+    ["project .claude/settings.json", "project"],
+    ["HOME/.claude/settings.json", "user"],
+  ] as const)("an unparseable %s is reported, not guessed at, and does not crash", (_label, where) => {
+    const hh = herdrHome();
+    const { root } = project();
+    const bad =
+      where === "project"
+        ? path.join(root, ".claude", "settings.json")
+        : path.join(hh.home, ".claude", "settings.json");
+    fs.mkdirSync(path.dirname(bad), { recursive: true });
+    fs.writeFileSync(bad, "{ not json");
+
+    const { code, out } = runEnv(hh.env, root, "--herdr");
+    expect(code).toBe(0);
+    expect(out.ok).toBe(true);
+    expect(out.herdr.allowAllUnixSockets).toBe(false);
+    expect(out.herdr.unparseableSettings).toHaveLength(1);
+    expect(out.herdr.unparseableSettings[0].file).toBe(bad);
+    expect(out.herdr.unparseableSettings[0].error).toMatch(/JSON/i);
+    expect(values(out.added, "allowUnixSockets")).toEqual([hh.socket]);
+    expect(fs.readFileSync(bad, "utf8")).toBe("{ not json");
   });
 
   it("skips a non-executable herdr or a herdr directory on PATH, like command -v", () => {

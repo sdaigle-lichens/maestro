@@ -18,6 +18,9 @@ In:
   is merged (`2c95bae`, 0.12.9); 127 takes 0.12.10.
 - 128 (r002 follow-up): tests for `ready`: an apostrophe in a task filename through a real shell,
   and claim liveness at the idle-cap edges.
+- 129 (r004 follow-up): maestro-update offers the allow-list before its installer; the herdr opt-in
+  is not re-asked when herdr entries exist, including hand-written `~` ones; tests for a symlinked
+  herdr binary and an unparseable settings file.
 
 Out:
 - The setup-claude-guardrails allow-rule suggestions: ai-dev-tools task 001, tracked in that repo.

@@ -141,19 +141,22 @@ $ARGUMENTS
    `applyCommand` and `removeCommand`.
 
    - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
-   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive. Run the
-     dry run again with `--herdr` appended. If that run's `upToDate` is `true` the opt-in is already
-     in place: don't ask. Otherwise ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
+   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive. Read
+     `herdr.present` from the dry run: when it is `true` every herdr entry is already in place (a
+     hand-written `~` form counts), so don't ask, whatever `upToDate` says. Otherwise ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
      worker sessions in herdr by itself? This is a sandbox escape: any sandboxed command can then
      run anything unsandboxed through `herdr pane run`. Without it the manager prints the
      `claude -n ...` commands for you to run."* Options: `No (Recommended)`, `Yes, add the herdr
-     entries`. No answer, a non-interactive install, or herdr not on PATH all mean No. On Yes, use
-     the `--herdr` run's output below: its `applyCommand` adds the herdr entries along with the rest.
+     entries`. No answer, a non-interactive install, or herdr not on PATH all mean No. On Yes, run
+     the dry run again with `--herdr` appended and use its output below: its `applyCommand` adds the
+     herdr entries along with the rest.
    - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
      `value` with its `why`, point to [`references/sandbox.md`](references/sandbox.md), and ask
      them to run `! <applyCommand>` themselves, the printed command verbatim. **Never run
      `--apply` yourself**: a sandboxed command can never write a settings file, and what runs
      outside the sandbox is the user's choice. Continue with step 6 whether or not they run it.
+   - **`herdr.unparseableSettings` is non-empty:** tell the user which settings files do not parse
+     and that `allowAllUnixSockets` was read as unset from them.
    - **`upToDate` and no herdr opt-in chosen:** say nothing about it.
 
 6. **Scaffold and seed.** Run the installer in exactly this form, on one line, unquoted: the

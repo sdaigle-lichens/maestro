@@ -39,7 +39,9 @@
 //
 // Prints one JSON object:
 //   { ok, mode, dryRun, settingsPath, sandboxEnabled, upToDate, added, removed, entries, broadEntries,
-//     herdr: { optIn, binary, socket, allowAllUnixSockets }, applyCommand, removeCommand }
+//     herdr: { optIn, present, binary, socket, allowAllUnixSockets, unparseableSettings },
+//     applyCommand, removeCommand }
+//   herdr.present: every herdr entry is already in settings.local.json, `~/...` or absolute alike.
 // Exit 0, except 1 when settings.local.json exists but does not parse (nothing is written then).
 
 const fs = require("fs");
@@ -103,7 +105,8 @@ function readJson(file) {
 
 // The boolean at `keys` in the highest-precedence settings file that sets one, or null when none we
 // could read does (local, then project, then user; managed settings are not consulted).
-function effectiveBool(projectDir, keys) {
+// A file that exists but does not parse is skipped (never guessed at) and pushed onto `problems`.
+function effectiveBool(projectDir, keys, problems) {
   const files = [
     path.join(projectDir, ".claude", "settings.local.json"),
     path.join(projectDir, ".claude", "settings.json"),
@@ -116,6 +119,7 @@ function effectiveBool(projectDir, keys) {
     } catch {
       continue; // unreadable from inside the sandbox
     }
+    if (!r.ok && problems) problems.push({ file, error: r.error });
     let v = r.ok ? r.value : null;
     for (const k of keys) v = v && typeof v === "object" ? v[k] : undefined;
     if (typeof v === "boolean") return v;
@@ -145,11 +149,14 @@ const underHome = (file) => {
 
 function herdrInfo(projectDir) {
   const binary = findOnPath("herdr");
+  const unparseableSettings = [];
+  const allowAll = effectiveBool(projectDir, ["sandbox", "network", "allowAllUnixSockets"], unparseableSettings);
   return {
+    unparseableSettings,
     socket: path.join(os.homedir(), ".config", "herdr", "herdr.sock"),
     binary,
     readBinary: binary && underHome(binary) ? binary : null,
-    allowAllUnixSockets: effectiveBool(projectDir, ["sandbox", "network", "allowAllUnixSockets"]) === true,
+    allowAllUnixSockets: allowAll === true,
   };
 }
 
@@ -198,6 +205,14 @@ function decide(projectDir, mode, herdr, h) {
   return { want, known: want };
 }
 
+// `~` and `~/x` as the absolute path under HOME; anything else (and non-strings) unchanged.
+function expandHome(v) {
+  if (typeof v !== "string") return v;
+  if (v === "~") return os.homedir();
+  if (v.startsWith("~/")) return path.join(os.homedir(), v.slice(2));
+  return v;
+}
+
 const list = (obj, key) => (Array.isArray(obj[key]) ? obj[key] : []);
 
 function isOurs(kind, value, known) {
@@ -238,8 +253,10 @@ function plan(settings, { want, known }) {
     for (const v of current) {
       if (isOurs(kind, v, known) && !targets.includes(v)) removed.push({ kind, value: v });
     }
+    // A hand-written `~/x` and the absolute `$HOME/x` are one entry: never add the second.
+    const have = current.map(expandHome);
     for (const v of targets) {
-      if (!current.includes(v)) added.push({ kind, value: v });
+      if (!have.includes(expandHome(v))) added.push({ kind, value: v });
     }
   }
   return { added, removed };
@@ -282,6 +299,11 @@ function main() {
   const { want, known } = decide(projectDir, mode, herdr, h);
   const changes = plan(settings, { want, known });
   const upToDate = changes.added.length === 0 && changes.removed.length === 0;
+  // Whether the herdr entries alone are all in place (in either `~` or absolute form), judged before
+  // this run writes anything. The skills decide the opt-in question from this, not from upToDate,
+  // which a plugin update makes false through the versioned installer entry.
+  const herdrWant = herdrEntries(h, false);
+  const herdrPresent = plan(settings, { want: herdrWant, known: herdrWant }).added.length === 0;
 
   if (!dryRun && !upToDate) {
     applyPlan(settings, changes);
@@ -304,7 +326,15 @@ function main() {
         ws.map((w) => ({ kind, ...w }))
       ),
       broadEntries: exclusions.filter((v) => BROAD.test(v)),
-      herdr: { optIn: herdr, binary: h.binary, socket: h.socket, allowAllUnixSockets: h.allowAllUnixSockets },
+      herdr: {
+        optIn: herdr,
+        present: herdrPresent,
+        binary: h.binary,
+        socket: h.socket,
+        allowAllUnixSockets: h.allowAllUnixSockets,
+        // Settings files that exist but do not parse; allowAllUnixSockets is read as unset from them.
+        unparseableSettings: h.unparseableSettings,
+      },
       applyCommand: `node ${SELF} ${projectDir} --apply${herdr ? " --herdr" : ""}`,
       removeCommand: `node ${SELF} ${projectDir} --remove${herdr ? " --herdr" : ""}`,
     }) + "\n"
