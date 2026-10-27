@@ -1321,6 +1321,19 @@
       }
     },
     {
+      "_key": "114e11a7e47eb33cc6667ffedba068f2",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "14515344b15ab50b8edf2109be39b3d1",
       "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
       "_to": "vertices/4890d35e3dd858670a52172e9c75e91f",
@@ -1406,6 +1419,19 @@
       "concept": "workflow-view",
       "crosses_concept": false,
       "line": 37,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "28d2256be90d3429d89eafc500aff3bd",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/9dc1dc9912ba659049d2b5e406a12a73",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 246,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1893,6 +1919,19 @@
       }
     },
     {
+      "_key": "8fef23612a71181e47c5a08e940627fa",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/844ea79ac8da3a736aba76c7c2fb9d2d",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 119,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "92ede0138ec0e057b06c64f88b655930",
       "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
       "_to": "vertices/671ac9e2ed15982e82bf91d1ac9abb4c",
@@ -1952,6 +1991,19 @@
       "concept": "workflow-view",
       "crosses_concept": false,
       "line": 867,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a071199fecb0ed31630457da5aacded4",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/c9bdc3e682c20ef5a444782cce68d2c9",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 254,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2023,6 +2075,32 @@
       }
     },
     {
+      "_key": "acf8894cceb47fd11c273d88fa370069",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/07a9b67f6726cdbd40868cde05a82dcc",
+      "type": "mounts",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 250,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ad628a9d338dcabbb552cbc30ec9fb23",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 171,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ae6da90f0dc26b6a1b81babcc63f46ef",
       "_from": "vertices/7ce2307b6a34b31ee9dc2b3fc2dffa6b",
       "_to": "vertices/d2168e45d12aa452dbae25336e9a5357",
@@ -2030,6 +2108,19 @@
       "concept": "workflow-view",
       "crosses_concept": false,
       "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "afe1302074410c78aab871c54e68e153",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 267,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2153,6 +2244,19 @@
       }
     },
     {
+      "_key": "c6740e445ccb7021d84a9609b858e3e8",
+      "_from": "vertices/c50ac026bdc36fe55360d145dc350b6f",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 112,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c9f9ffda65d62054ca2fbf8e756f8c1f",
       "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
       "_to": "vertices/0af234c70ff964d65cab8b0455557909",
@@ -2218,6 +2322,32 @@
       }
     },
     {
+      "_key": "d6129af29395b46c4a876e0e51076b2f",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d8153ae58571b75abcfb28ffd7579ecc",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/4ed91bdb454c255b0b48086a5e9a926a",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 141,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "dc8ad3182e2605d0d838cb4ae88edc20",
       "_from": "vertices/6e0b21968a292285466d1906e4a8aed6",
       "_to": "vertices/ac1affae1c5204c0000eeff0c3f46ebb",
@@ -2225,6 +2355,19 @@
       "concept": "workflow-view",
       "crosses_concept": false,
       "line": 887,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dcb2bccbc86b84d99e1be5af8cf45411",
+      "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 119,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2400,6 +2543,19 @@
       }
     },
     {
+      "_key": "fe6ee5e9221861735ab7d2b3a2020c8e",
+      "_from": "vertices/2074e2a62d458c406e71dba4724c0c71",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "workflow-view",
+      "crosses_concept": true,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ffb29e7b7017b97b87848f2d513cceee",
       "_from": "vertices/1a59ec845b7212a2fd789a9db8fb2a10",
       "_to": "vertices/344152f976dc3bf1ab699aff5ac50878",
@@ -2419,8 +2575,8 @@
     "contentHash": "sha256:8935f8ef0bb412a0d7bddd5323b332057ee8af4d6ffa1e8b57e36565e9b0452a"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.20",
-    "extracted_at": "2026-10-21T18:27:43.077Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:42:38.401Z",
     "files": {
       "apps/maestro/src/core/canvas-layout.ts": "sha256:9512e546812cf1b7abf6ceba14af3a5195621af1181b1dc754281ccf078f9025",
       "apps/maestro/src/core/workflow-spec.ts": "sha256:c26033f1a19364381726bde924cb0f3916436f2a9782e34749803d47690d3403",

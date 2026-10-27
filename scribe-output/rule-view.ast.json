@@ -617,6 +617,71 @@
       }
     },
     {
+      "_key": "1811f09cbaca6b89da071aea9713332c",
+      "_from": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 115,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "18c169886225f5cc3aba49fb5cf51f02",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/4ed91bdb454c255b0b48086a5e9a926a",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1cd3006b4f4c95abb97a1b469622c2f1",
+      "_from": "vertices/36c7c963e51591b8008040b95a584575",
+      "_to": "vertices/baa8e42d7e638974c81eb55ca503543b",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2669aea5929dbd4142484ba6418331d3",
+      "_from": "vertices/00bef7d95b7bbb74c5c7fae56af87d8b",
+      "_to": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 203,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3292bc984d6bf4fbf633b485d106eb40",
+      "_from": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 109,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "397ab015108c7e00f4ce5d6982c685b8",
       "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
       "_to": "vertices/72c7a2a04eac9e802055c386ad5d598c",
@@ -656,6 +721,45 @@
       }
     },
     {
+      "_key": "445af3691731c013a862a57593d6f1e9",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/cfe4313c1fed3f2bf25a43ba59fca491",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 215,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b6399b0b23877f2ba1430d3411ea5b6",
+      "_from": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "_to": "vertices/3932ce0b7d5a8155966f1fb284ef4d95",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 111,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57e62185a69593fc4869e8caba9caa57",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/cfe4313c1fed3f2bf25a43ba59fca491",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 185,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "5d759e5050377f98c2a6e9baf0b20581",
       "_from": "vertices/fe18edb6cca91a0f8ffa60185a136278",
       "_to": "vertices/8386b27703c603228c998e222304e39e",
@@ -669,6 +773,19 @@
       }
     },
     {
+      "_key": "66d7b002534ede6741a2e91d929dd04b",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 175,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "679ac6bdd9c73339e745ab1a2ab7749a",
       "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
       "_to": "vertices/0c9721cdfbaea08e6e8bf805f24fd2dd",
@@ -676,6 +793,19 @@
       "concept": "rule-view",
       "crosses_concept": false,
       "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a00f5ce0a7160f2edb1db09d67ca46c",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 124,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -812,6 +942,19 @@
       }
     },
     {
+      "_key": "cc3ee8a7e8a184bf4b63b938161a5e5f",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "cda2dac846568fa5933d901fa468e153",
       "_from": "vertices/72c7a2a04eac9e802055c386ad5d598c",
       "_to": "vertices/cfa502f79a466c0cc715dce38d22826c",
@@ -896,8 +1039,8 @@
     "contentHash": "sha256:31f7de5f0a759029a52a4df5856566ddffb8818761f8a2d8d31a7f1ebd23f2a4"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.20",
-    "extracted_at": "2026-10-21T18:28:09.772Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:42:28.918Z",
     "files": {
       "apps/maestro/src/core/rule-move.ts": "sha256:085f7af46b35db0873c250cdf36ff08fb93a5900b080144369e6b89ccb1f8a05",
       "apps/maestro/src/core/rules.ts": "sha256:c549904f48d697afba095cb2d63a4b4b908a0477a0e245f491e6bc2dc7eb7b1b",

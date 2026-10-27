@@ -3415,6 +3415,19 @@
       }
     },
     {
+      "_key": "a7d450ce74a0a64bb664a94f73591dfc",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/80706e1b2fbf48d24a3cab78189101b7",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": true,
+      "line": 26,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ab180d45f84cd9646b5a729edf2d927f",
       "_from": "vertices/3ee3b0dac7f1470a7bcfaeea536148e2",
       "_to": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
@@ -3435,6 +3448,32 @@
       "concept": "maestro-config-model",
       "crosses_concept": false,
       "line": 25,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ae3291c07503bfb10ede082b63a2a2be",
+      "_from": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "_to": "vertices/fe18edb6cca91a0f8ffa60185a136278",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": true,
+      "line": 27,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b1cd4a972fbd961834ab21a0e199ecc1",
+      "_from": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "maestro-config-model",
+      "crosses_concept": true,
+      "line": 39,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3512,8 +3551,8 @@
     "contentHash": "sha256:8d7d3469eb1016363a646783ce37e7ad310ae8899a3df473a0d45f0d3cf7480f"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.21",
-    "extracted_at": "2026-10-21T19:03:50.131Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:42:12.178Z",
     "files": {
       "apps/maestro/src/core/config-usable.ts": "sha256:5c737f4eabdc2bdb4d4caf95cb3016b09ffe2b66c0e1d4654b1314866bee929a",
       "apps/maestro/src/core/config-validate.ts": "sha256:d54d8f25928bba6b14d42d1ff355b882d49c32f638804d58ce8bb2b6d9cd33cb",

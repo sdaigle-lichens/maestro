@@ -1171,6 +1171,19 @@
       }
     },
     {
+      "_key": "dbf5dc9138ca11ea5f7f4dedd77b44f1",
+      "_from": "vertices/6a060de4b9930f96fedc6f9665f95641",
+      "_to": "vertices/f1ef897429a2c832d99043c93bf31839",
+      "type": "uses-hook",
+      "concept": "docs-view",
+      "crosses_concept": true,
+      "line": 48,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "dc0ab6f5648406809350edf25968270b",
       "_from": "vertices/bd6481c7b7d9405daa01c1f69a1ade54",
       "_to": "vertices/ec2f0c634159495bc01d54ddc947979b",
@@ -1294,8 +1307,8 @@
     "contentHash": "sha256:2664dd4c62142bb92afc8e2ea1ca53140270e929c615a677fe893f322f1a097b"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.21",
-    "extracted_at": "2026-10-21T19:03:25.711Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:41:31.364Z",
     "files": {
       "apps/maestro/src/core/docs.ts": "sha256:99dc0a00033eb40e92760d6835f0050d9c9cd075676654bb0b0bcbe471093925",
       "apps/maestro/src/core/global-docs.ts": "sha256:fc2c4a341e2fce9780f2cffaed8fdf274e34bd8af1f8e7fa4b8b9717768432c1",

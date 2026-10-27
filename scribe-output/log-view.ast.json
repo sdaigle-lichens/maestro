@@ -2055,6 +2055,19 @@
       }
     },
     {
+      "_key": "0e1f2ad900a3178ab7bb275bfce1579a",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 81,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "0ee7c4ec0d0855ce6d66b8d06d4c803a",
       "_from": "vertices/2fb68c02e449330c45e2a40bab629f03",
       "_to": "vertices/f1d24054b6e7d07543803236881987e5",
@@ -2263,6 +2276,19 @@
       }
     },
     {
+      "_key": "2be48ab4ad279bfa32581b50f2029fa5",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "2bfd10557a358d5fcdc50ebdd7d7916c",
       "_from": "vertices/350498509edc630746dc847aef4feaf3",
       "_to": "vertices/329c638aa28dc3c0ac533ac20d3e088d",
@@ -2335,6 +2361,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "31520ad861ed8ee74e32d8bbf7ca12f3",
+      "_from": "vertices/effc4a76e7d123f77add781588091749",
+      "_to": "vertices/54c8adae47cf50a1d3aac72cf374024c",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 125,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2601,6 +2640,19 @@
       }
     },
     {
+      "_key": "50463ff9c238b68df231092deee0b446",
+      "_from": "vertices/effc4a76e7d123f77add781588091749",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "529e810c624b1603d058b7a7f297b1b3",
       "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
       "_to": "vertices/9e575613dc7779c423243e9b943607bf",
@@ -2809,6 +2861,19 @@
       }
     },
     {
+      "_key": "6f8adbaa6bf9afb6e1d6dc8c6ada3f04",
+      "_from": "vertices/9ef41792862e5f4f2e725c3adb3420c3",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "7198b586173d001ba3d8bb83e294c30b",
       "_from": "vertices/3d5b7001eb0ff315c2de60a370c630c8",
       "_to": "vertices/b6ca8f2a7649d9beb1e89836bc00cbac",
@@ -2816,6 +2881,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "71adf66c69b2a0e0b94176bf6474d03f",
+      "_from": "vertices/effc4a76e7d123f77add781588091749",
+      "_to": "vertices/5d48574614173fca559dc213ad018bde",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 124,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2939,6 +3017,19 @@
       }
     },
     {
+      "_key": "7ecaf44fda80c669a46ad4fde58c8855",
+      "_from": "vertices/ed79cb7459c601cf198f5f08f1475f1a",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 22,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "80d6016c29b4b4392430c103e8b033b9",
       "_from": "vertices/350498509edc630746dc847aef4feaf3",
       "_to": "vertices/4d46133ba50014f803ae270538af7fe1",
@@ -3024,6 +3115,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8c03ff4fcfc8feb36872fd1f2ecc2209",
+      "_from": "vertices/effc4a76e7d123f77add781588091749",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 130,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3167,6 +3271,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9c1477d806ac46b5cb2dba2a4a1012ba",
+      "_from": "vertices/5253d68343f6883c42ef4a12a241f982",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 266,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3472,6 +3589,19 @@
       }
     },
     {
+      "_key": "beab847a36ccecb96e3f3418a66b4ea3",
+      "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 37,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "bf6eac5386466e96f0b72689f6f1e793",
       "_from": "vertices/d12389eace3f41b805aa13680669abcc",
       "_to": "vertices/a07e1cea6591aea66172fa75fb241643",
@@ -3602,6 +3732,19 @@
       }
     },
     {
+      "_key": "cde50e1c2fa184447b433643d5a46015",
+      "_from": "vertices/9ef41792862e5f4f2e725c3adb3420c3",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 22,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ce01813c136ebbbe6a5fa7c2263bf8b5",
       "_from": "vertices/8ddeb9e44e21d6ed01c086dae38806ae",
       "_to": "vertices/d2e0a9ecde6c7a5c23efc23a5a295f28",
@@ -3648,6 +3791,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 88,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d6ffaac84480acdba848cdb13c18152d",
+      "_from": "vertices/ed79cb7459c601cf198f5f08f1475f1a",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 21,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3713,6 +3869,32 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 30,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "de75a66f052afa36eca3739206b860f9",
+      "_from": "vertices/ba42c1153e59f18b4165e4511c45d560",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 47,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "df599b6b97bb87a3ddcf5a67871247d1",
+      "_from": "vertices/5253d68343f6883c42ef4a12a241f982",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": true,
+      "line": 254,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3998,8 +4180,8 @@
     "contentHash": "sha256:0a89fdc4d0c7d046b4a485d6012e4c8a166615643245d471ad5e5f3cb00c5dca"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.20",
-    "extracted_at": "2026-10-21T18:27:55.987Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:42:02.509Z",
     "files": {
       "apps/maestro/src/core/agent-runs.ts": "sha256:3d88951ed3d496e0224e3426f717f00fc3b0ccfb894ec37a1ee4faa3ad4712c5",
       "apps/maestro/src/core/session-log.ts": "sha256:215e104f764d11f46ec7e9efa42fe0c485909cfd0212174e9f88f5c3c17b84e2",

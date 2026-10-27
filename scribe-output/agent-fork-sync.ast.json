@@ -832,6 +832,19 @@
   ],
   "edges": [
     {
+      "_key": "00bad9f52d5309af638ecdc05d2ffe03",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/0e9eacb74e36c646492bc0d3dbc2765c",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "0407bac96b7d75eafc846453645fe04b",
       "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
       "_to": "vertices/836a243c84c3d31b6c1d0dff4319962e",
@@ -839,6 +852,45 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 290,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "052ad00dd9e8c0e2447f4c8ea5467512",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 60,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "08689264c7417253e5051098433e0cd7",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 143,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0975466641473aff34a060a2b0ab64ab",
+      "_from": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "_to": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 120,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -884,6 +936,19 @@
       }
     },
     {
+      "_key": "18ef6191378981d85f13a32b86c7bc99",
+      "_from": "vertices/6a0bac3128df2cc68c29369791c5c0d1",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "193c77423317adbfb96b59c30e4c53a8",
       "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
       "_to": "vertices/1496be54902f6b518632961e18971703",
@@ -891,6 +956,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 130,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1c879935dc5b7d243fe5c691e730859f",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/bfb45f208675551e962eeabd798fdfa6",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 85,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -917,6 +995,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 172,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2202f4ce42f3acbde7c76c3b6d460e51",
+      "_from": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "_to": "vertices/f1780510e3d0f7bf0e10e00a76ac2604",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 110,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1027,6 +1118,58 @@
       }
     },
     {
+      "_key": "388690b4121503a5e536b7abb454478b",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "391c468595751b557edf2d60547f1376",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 144,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "39fc7c44a49e22ff7905274670950f61",
+      "_from": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b0988cf13fc3c47425e1462d54e6c5b",
+      "_from": "vertices/62035e896fe860e8060e62d4c011a745",
+      "_to": "vertices/5b4d085440f083d0831f97f8a64a4f4d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 49,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "3e2405e1c761c8a1c1780ed272de4837",
       "_from": "vertices/1eb68970e872a662792e56aff596b776",
       "_to": "vertices/459229df587eaddc1681dd0f4b22bcef",
@@ -1047,6 +1190,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 191,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3ec340fc2dffa46d61d5e057599fa46a",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/344392dce815444fee2f3d2e58557c4b",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 78,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1112,6 +1268,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b1842bbb6796fdd737b0150c9025377",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 110,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1190,6 +1359,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "522cae13ba9f003025577b18d216de59",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/c702ab00d65d319b646688e854b27ff8",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 79,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1287,6 +1469,19 @@
       }
     },
     {
+      "_key": "6392a044b8abf424cd710d410f09c6cf",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/55c0ac48f563ecb11e68a3e7f88b1449",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 222,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "67c88a1dfce3fe8d19fc6bccef213724",
       "_from": "vertices/ca45bb7825ee37699fbd59193c896948",
       "_to": "vertices/5b0f9bdbc5e05ce9846c9e8ae3410cd6",
@@ -1294,6 +1489,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "67d1256184241e8b69283514e0284300",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/16392c2398b71c8f480e7086b03b11b6",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 88,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1320,6 +1528,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 142,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "80b3403845d0124ad5804641900b34d2",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/4c7f9e337ce1ff2b56404b92de2e678d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 84,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1463,6 +1684,19 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 245,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a549e7ed901f0729567dbe224b80029a",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/9b979db004714ae05249b619e2a5c91c",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 64,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1755,6 +1989,19 @@
       }
     },
     {
+      "_key": "d39d4ae3877c9bb6c390a02473c52054",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/944e45decbac4f89e031b658076d29c9",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "db36d1cc395cefa9d65f8405fa2b8e37",
       "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
       "_to": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
@@ -1859,6 +2106,19 @@
       }
     },
     {
+      "_key": "e98876a23bb65aa2eb871a5d48a4e009",
+      "_from": "vertices/c4523bcf9863894cdd9782b00e121da0",
+      "_to": "vertices/63c36a6d4bf97574985bd98246b72e9c",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "eb9012a61f3223ab15428b715a258844",
       "_from": "vertices/1eb68970e872a662792e56aff596b776",
       "_to": "vertices/f78776a12dff2253241e704586e76809",
@@ -1866,6 +2126,32 @@
       "concept": "agent-fork-sync",
       "crosses_concept": false,
       "line": 132,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed7cc2160683d15391b48d2f4c7a2707",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/5b4d085440f083d0831f97f8a64a4f4d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f019a99f362bed1258ae19f7866b3883",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/37d992912413a0aaa2247870abc5b035",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 81,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1911,6 +2197,32 @@
       }
     },
     {
+      "_key": "f8dd28e8681bdc9b21373a8a5639e38a",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/9b9933180dea860455840206d51a6335",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fafbcfb02f4159add524cd4299a80f66",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/f42c6ec785267f1f7ae2e01ff46767f8",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "fc1f30c6b06e82c34c4e49c950447ed5",
       "_from": "vertices/d929b22a96aa5bdddff3fecc1f3fe963",
       "_to": "vertices/d94f81c08b550da2899a9c307664f6db",
@@ -1930,8 +2242,8 @@
     "contentHash": "sha256:fdb440296f39619b0b1737462c344dfcc60f66e86cd123876f346fc9cc668bce"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.21",
-    "extracted_at": "2026-10-21T19:03:01.739Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:40:49.598Z",
     "files": {
       "apps/maestro/src/core/agent-fork-record.ts": "sha256:e54e516c54b51adfa14dcc8dd841dae8f8216c10dc86432ee106663d091631cd",
       "apps/maestro/src/core/agent-fork.ts": "sha256:3b591d48d078ff533a31995aa8c3d2ccc9f782881bf85e8967e7495c23f65747",

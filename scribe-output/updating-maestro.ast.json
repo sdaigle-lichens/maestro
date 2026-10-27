@@ -876,6 +876,32 @@
       }
     },
     {
+      "_key": "05ea638c3a126f1abac4d44c21f764cd",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/f65eef14ef01202500fd43ed1d5f97dd",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 859,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "064520547bf66a73e567e7865497be55",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 736,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "087821ba135cd20cd11e8aaff1b29d18",
       "_from": "vertices/5f4269aa6e5bd842cf62d738c5245451",
       "_to": "vertices/5d57ef47cb1b148f203af5d037f00cee",
@@ -980,6 +1006,32 @@
       }
     },
     {
+      "_key": "18154d978250ef3f252d4071c7ae35b8",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/9bb13c9ca14d3b6c61ea93e4a50f899b",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 849,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1970d9142bcd23bcc14d8f2b930711a2",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 791,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "1e71f1965b6c07e0a39bd2d69608204e",
       "_from": "vertices/2c77fafeedaaabb7ea40c9acb7ed3356",
       "_to": "vertices/6e453334fd4063b327f150e71b2b12b4",
@@ -987,6 +1039,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1ead28b57fadc061f7317d21a8455784",
+      "_from": "vertices/fef63b5cc7d8ad533053996c8de80519",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 55,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1084,6 +1149,19 @@
       }
     },
     {
+      "_key": "2b81a6ac3bceca5ce483cb1f8b10605e",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/0c3b74f7adbccfa69b6100b81cb85e43",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 853,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "2c1bb6eb8e0f0e40c509a818eadaec23",
       "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
       "_to": "vertices/69197352ff8d6877379f9e19a77c91ae",
@@ -1123,6 +1201,19 @@
       }
     },
     {
+      "_key": "355fa4c4250b87c7f722d68112e3de6e",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/4c7f9e337ce1ff2b56404b92de2e678d",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 796,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "361779f54ef09529ee224906d5da999b",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/55df5c4558a23113515b5a5177a87693",
@@ -1130,6 +1221,32 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 779,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "37f66c436e42570f00ae5f8e1e37db3d",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/852b8f82f2f5f34c946476d2c5f8927f",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 832,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "39015a03492c2f705fca83df0e67dd02",
+      "_from": "vertices/fef63b5cc7d8ad533053996c8de80519",
+      "_to": "vertices/692e9c673342adb40250659d472a5782",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 62,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1214,6 +1331,19 @@
       }
     },
     {
+      "_key": "464711a9f018145f8b5f4ccb9f2851e7",
+      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
+      "_to": "vertices/3932ce0b7d5a8155966f1fb284ef4d95",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 959,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "48ac0691d4dc03ff51fe0a6ce2deceab",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1266,6 +1396,32 @@
       }
     },
     {
+      "_key": "4ba4d7c381b246aea464bf72205e6cd4",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 684,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4c3703efface40abb4348296f4f0adeb",
+      "_from": "vertices/fef63b5cc7d8ad533053996c8de80519",
+      "_to": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4e94c63441dcc07614bcbecbd44f27ae",
       "_from": "vertices/7924a3a3e9d59d62037630d26aa6a0f5",
       "_to": "vertices/75e6a7398e6688016450a9deffab4ce2",
@@ -1279,6 +1435,19 @@
       }
     },
     {
+      "_key": "4fa234dbefc0d2eacd3b8691ca8d80df",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 816,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "51aa8fd5db52101d5e37d504b785ffd8",
       "_from": "vertices/fef63b5cc7d8ad533053996c8de80519",
       "_to": "vertices/08f1412534a816c5900a9e3ad31de06b",
@@ -1286,6 +1455,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 52,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "52cafdeb4e1ee1e22c4113e2df3c9190",
+      "_from": "vertices/ca746d6d6d7c711e4b92e4c7ea762a7d",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 23,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1325,6 +1507,45 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 92,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6340e30fb411c820e8a31e3deb55f78d",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 859,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6390cc15711fd9a1fc59d03c05ba8cdd",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/3932ce0b7d5a8155966f1fb284ef4d95",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 668,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "63a46368513dbe1765c7bfa963ce512c",
+      "_from": "vertices/fef63b5cc7d8ad533053996c8de80519",
+      "_to": "vertices/692e9c673342adb40250659d472a5782",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 49,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1396,6 +1617,19 @@
       }
     },
     {
+      "_key": "6e9b1414ae77195904c36934ace404bd",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/0387739a797064f4d4da9d3b90764e33",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 812,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "6ebb6625ef6de39b66f37521255906be",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "_to": "vertices/b69160d43445f6b4c17a9812b1429749",
@@ -1422,6 +1656,19 @@
       }
     },
     {
+      "_key": "721987d7dc2466dbb90ad3d1dd81950e",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 819,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "73a86bf888a0e9f4b4e6f54f8fca2940",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/9b36c290c5bc96838005735d037ec4cc",
@@ -1435,6 +1682,32 @@
       }
     },
     {
+      "_key": "747f3694d47ea3f9c52b008e5c4474a6",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/46c8a0c87287d19fa73ac2568daa6dd1",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 801,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "788c1d101e3f3d772ac90a2575dbd7a2",
+      "_from": "vertices/fc80fe5613a2a1c9a56414dfc6ac5184",
+      "_to": "vertices/8c2529013ec8528f4ebbc1a46f672f65",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "7908953fdeb14de7cf88456f2f678359",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "_to": "vertices/df3bd742b233d8802249d8473023c506",
@@ -1442,6 +1715,58 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 624,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79b8e3e8ab530ab4a7c7665c9269a8e4",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 834,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7a14587686adecebc649033066196355",
+      "_from": "vertices/80706e1b2fbf48d24a3cab78189101b7",
+      "_to": "vertices/08a355a8c9c746e0100642c0cccb6944",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 59,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7d3e64e64acb07c98eb5c7400336ae3d",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/fe568468efe23b2f1bae778df344a610",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 645,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7dddd7b08808f5728486adcf9aacdd2b",
+      "_from": "vertices/02d9bb262b75e59d6f112eff9df383f1",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 959,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1474,6 +1799,19 @@
       }
     },
     {
+      "_key": "8bfaec39cb84d0db37d2c2385f967928",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/a80eb5e039fd645c63f83619f908069d",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 738,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "8c09f1b77622a9a09f4629e7b9f4ff55",
       "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
       "_to": "vertices/9b109fc9476ed533484e56ad22efda4a",
@@ -1481,6 +1819,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 766,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8c112e4846c300ba3310bf9ba97207e8",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/37d992912413a0aaa2247870abc5b035",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 795,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1591,6 +1942,19 @@
       }
     },
     {
+      "_key": "9aae3db246e411292a28bc4e66fca3ba",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/557e4a4e0b58bb5e9c1ad6c88935dd80",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 792,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "9c1c38c5a8089c47b38f8079f4aef823",
       "_from": "vertices/e70a5c80079b260b34dcc42760bc13f5",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1598,6 +1962,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 134,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9c70cefd4e8286f76d7f2d40c6be9246",
+      "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 668,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1643,6 +2020,19 @@
       }
     },
     {
+      "_key": "aaa141601eba5ab9a41c9e28fbf233b0",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 830,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ab8524e25724717e0c7942123ee96895",
       "_from": "vertices/e70a5c80079b260b34dcc42760bc13f5",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1650,6 +2040,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 138,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ac62b1eea0dc4bd1e120ae6bb0df2e6f",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 802,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1708,6 +2111,19 @@
       }
     },
     {
+      "_key": "b89a17451716a975c8938ebea3ab75e3",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 832,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "bedcfddd075b3bf1fc0f61e69151a154",
       "_from": "vertices/7f1499a60a91cdee078c68390f4443d5",
       "_to": "vertices/871a07e971fa0a569baa33ea22a25ae0",
@@ -1721,6 +2137,19 @@
       }
     },
     {
+      "_key": "bf19f315618fbb1872ac5fde46da29cf",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/3932ce0b7d5a8155966f1fb284ef4d95",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 830,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "bf50f5494849b2cbc6017465eef4124d",
       "_from": "vertices/69197352ff8d6877379f9e19a77c91ae",
       "_to": "vertices/5f4269aa6e5bd842cf62d738c5245451",
@@ -1728,6 +2157,19 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 661,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c58a81ed36ed5ac41e9e478ab901d57d",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/852b8f82f2f5f34c946476d2c5f8927f",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 816,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1767,6 +2209,45 @@
       "concept": "updating-maestro",
       "crosses_concept": false,
       "line": 62,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "deee853f0b3ceae6d65dddd01678cfc4",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/72ea91b586fb967caa96e3fbe1fb1d5f",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 844,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e3481a3b885e4d5f360ce25e9e76af91",
+      "_from": "vertices/fef63b5cc7d8ad533053996c8de80519",
+      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e3809341f29e63dd42663c071d23d551",
+      "_from": "vertices/80706e1b2fbf48d24a3cab78189101b7",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 52,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1862,6 +2343,32 @@
       "agent": {
         "authored_by": null
       }
+    },
+    {
+      "_key": "f5b2e36d9ed24506f0f4045ae07eb4c8",
+      "_from": "vertices/08bcdecfb2f040e5be17e2e2922065f0",
+      "_to": "vertices/e40495a205b64a6ab5442973869876fa",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 798,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ff62110c177fa6deb4d5ad8d82ea661d",
+      "_from": "vertices/1c2acf2fcbb88fe426f1cd7d6ec729e1",
+      "_to": "vertices/fe568468efe23b2f1bae778df344a610",
+      "type": "calls",
+      "concept": "updating-maestro",
+      "crosses_concept": true,
+      "line": 518,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
     }
   ],
   "skill": {
@@ -1870,8 +2377,8 @@
     "contentHash": "sha256:c4704e606de7cbc67ddbfb0ea042e501c2fb8c99e070456c8b1d2c9102ec2b8f"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.24",
-    "extracted_at": "2026-10-23T19:34:40.166Z",
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:40:32.544Z",
     "files": {
       "apps/maestro/src/core/hook-arbitration.ts": "sha256:b72fcb953d62be854407e7795be866c3397e6a16360b905dc66b85b4e0f48ab5",
       "apps/maestro/src/core/install.ts": "sha256:cc83a06e923ef8dae1ba7a36079f61875761e2921b95cc8d4a07ccdb43cb61e8",
