@@ -506,3 +506,32 @@ gate is in its prompt.
     left for lazy enrichment.
 - Every concept skill has now had a full review (118–120).
 - `merge-proposal.md` and `plan.md` were deleted on the user's approval.
+- Eval suite for code-graph-retrieval handed to code-graph's manager; it shipped in code-graph
+  0.3.25 (77fc68c). There's no maestro ticket. Coming next from code-graph:
+  - 033 (0.3.26): a retrieval trigger fix. Any SessionStart hook only adds context, never blocks,
+    never writes, and stays silent without `scribe.config.json`. Shipped in ec90f21. Manager check:
+    `graph-context.cjs` only checks whether the config exists, and has a 5 s timeout. Its context
+    line reaches the main session, but maestro's subagents rely on the reworded skill description.
+  - 034 (likely 0.3.27): cross-concept edges. The first re-extract after it rewrites our
+    `scribe-output/*.ast.json`. Commit that alone. A changed vertex `contentHash` is a bug: report it
+    to code-graph's manager. Shipped in 0.3.27 (9aa13af). All 16 re-extracted and applied: 15 files gained
+    `crosses_concept` edges plus a new extractor version and timestamp; global-stores gained no edge
+    and stayed byte-identical; 0 vertices changed. Committed in 32add96 (14 concepts) and 3814a30
+    (agents-view with its SKILL.md fix), the pin for code-graph's 039.
+    The two `skill.contentHash` changes (installing-maestro, plugin-libs-parity) come from earlier
+    SKILL.md stamps.
+  - 035: code-graph benchmarks itself on a read-only snapshot of maestro at b323aa7, entirely inside
+    code-graph. We sent it the subagent models (builders inherit Opus 5.5; test and scribe are pinned
+    to Haiku 5.5) and seven real lookups from tasks 121–124.
+  - 035 found that agents-view's SKILL.md frontmatter was invalid YAML: an unescaped
+    "Copy into the project" inside a double-quoted description. Fixed by escaping the quotes;
+    stamped 1.16, extracted and applied.
+  - 035 was set aside and its 0.3.28 bump reverted. The only paid run was invalid: every Bash call
+    failed on apply-seccomp, so code-graph never returned output. The one result that held: the
+    retrieval skill loads even when a concept skill already names the files, costing about 34–51%
+    more on those questions. Ticket 037 narrows that trigger and ships as 0.3.28.
+  - 0.3.28 shipped (c4267f6): retrieval now skips itself when a loaded concept skill already names
+    the file or symbol. No re-extract is needed. A valid cost measurement waits on code-graph 038
+    (a `claude -p` runner) and 039 (maestro impact and cross questions), which needs a pinned
+    maestro sha. The best pin is the commit that holds the 0.3.27 re-extract, since it has the
+    cross-concept edges.
