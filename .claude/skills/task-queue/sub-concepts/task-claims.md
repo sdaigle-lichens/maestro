@@ -69,6 +69,19 @@ session, below), the orchestrator runs
   it tells the user and the orchestrator must not fall back to the main checkout.
 - A worktree and its branch are **never auto-removed or merged by themselves**; `done` just reports
   branch + path to the user.
+- **Dependencies (`135`).** A fresh worktree has no `node_modules`, and the agent sandbox cannot
+  install. `worktree` and `freeform-check` therefore end by printing a `STOP:` notice when the new
+  worktree has a `package.json` but no installed `node_modules` (a directory holding only dot-files
+  such as pnpm's run-state does not count; a package entry or `.modules.yaml`/`.package-lock.json`/
+  `.yarn-integrity` does). The notice tells the orchestrator not to dispatch `@test`/`@reviewer` and
+  gives the command the **user** runs as `! <cmd>`. Nothing is installed or linked. The package
+  manager comes from the lockfile (`pnpm-lock.yaml`, `package-lock.json`, `yarn.lock`,
+  `bun.lock`/`bun.lockb`); with none, or lockfiles of several managers, the notice gives guidance
+  and **no guessed command**. No `package.json` means no notice.
+- **`done` refuses** (exit 1, nothing marked) while the session's worktree still lacks dependencies,
+  printing the same notice; re-run `done` after the user installs. Logic: `worktree-deps.ts`
+  (`detectPackageManager`, `dependencyStatus`, `missingDependenciesNotice`), bundled into
+  `maestro-session.cjs`; plugin `maestro` 0.13.3.
 
 ### Freeform session presence (`098`)
 

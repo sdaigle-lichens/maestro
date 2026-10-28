@@ -59,6 +59,11 @@
 //       queue (status.json, claims/) stays in the main checkout either way. A worktree path or branch
 //       that already exists is reported, never reused or overwritten. Never merges, pushes or removes.
 //
+//       `135`: both `worktree` and `freeform-check` then check the worktree for installed dependencies
+//       (a package.json with no node_modules). When missing they print a STOP notice with the exact
+//       install command for the user (package manager from the lockfile; unknown/ambiguous gets
+//       guidance, never a guessed command). Re-run the same command to confirm. `done` refuses while
+//       the session's worktree still lacks them. Nothing is installed or linked.
 //   node maestro-task-status.cjs freeform-check
 //       The same decision for a freeform /maestro run (no task file) (`098`, `103`). Another live session
 //       (a task claim, or a freeform run) means THIS session gets its own worktree
@@ -102,6 +107,7 @@ const {
   SESSION_WORKTREE_NAME,
   CLAIM_IDLE_CAP_MS,
   storedName,
+  missingDependenciesNotice,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -326,7 +332,8 @@ function freeformCheck(sessionId) {
   const existing = readWorktreePointer(path.join(projectDir, ".claude"), sessionId);
   if (existing) {
     process.stdout.write(
-      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n`
+      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n` +
+        existingWorktreeNotice(existing.path)
     );
     return;
   }
@@ -386,7 +393,8 @@ function setupWorktree(filename, sessionId) {
   const existing = readWorktreePointer(claudeDir, sessionId);
   if (existing) {
     process.stdout.write(
-      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n`
+      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n` +
+        existingWorktreeNotice(existing.path)
     );
     return;
   }
@@ -493,6 +501,15 @@ function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointe
       `and never edit the main checkout (${projectDir}). The task queue and .claude/ channels stay in the main checkout (${projectDir}/.claude/...). ` +
       "If edits there are denied, ask the user to allow the worktree directory (/add-dir).\n"
   );
+  // `135`: a fresh checkout has no installed dependencies; stop with the user's install command.
+  const notice = missingDependenciesNotice(wtPath);
+  if (notice) process.stdout.write(notice);
+}
+
+// `135`: the reminder printed when a worktree is (re)confirmed, so re-running `worktree` after the
+// user's install is how the orchestrator verifies it. Empty when the dependencies are in place.
+function existingWorktreeNotice(wtPath) {
+  return missingDependenciesNotice(wtPath) || "";
 }
 
 // ── finishing a worktree task (`076`) ───────────────────────────────────────
@@ -982,6 +999,14 @@ try {
           `(${pending.map((s) => `"${s.label}"`).join(", ")}). Nothing was marked done. Finish them — a human review stops for the user's approval — ` +
           'and mark each one with `plan-step "<label>" done`, then run `done` again.\n'
       );
+      process.exit(1);
+    }
+    // `135`: a task whose worktree has no installed dependencies cannot have been tested there.
+    const doneSession = ownSessionId();
+    const doneWorktree = doneSession ? readWorktreePointer(path.join(projectDir, ".claude"), doneSession) : null;
+    const doneNotice = doneWorktree ? missingDependenciesNotice(doneWorktree.path) : null;
+    if (doneNotice) {
+      process.stdout.write(`Maestro tasks: done REFUSED — nothing was marked done. ${doneNotice}`);
       process.exit(1);
     }
     const { map, marked } = markDone(projectDir, filename);
