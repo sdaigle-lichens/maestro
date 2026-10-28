@@ -130,6 +130,13 @@ export interface MaestroConfigV3 {
    * per-agent totals. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader.
    */
   metrics?: { recent_runs?: number };
+  /**
+   * The model epic worker sessions launch with: an alias (`sonnet`, `opus`, `haiku`) or a full
+   * model id. When set, the launch commands `maestro-epic.cjs ready` prints carry `--model <value>`.
+   * Absent, empty or non-string means "the user's default model" and the command is unchanged.
+   * `resolveWorkerModel` in `config.ts` is the one reader.
+   */
+  worker_model?: string;
 }
 
 export interface MaestroWorkflowsSlice {
@@ -155,6 +162,11 @@ export interface MaestroSkillListsSlice {
 
 export interface MaestroTaskRoutingSlice {
   use_maestro_tasks: boolean;
+}
+
+/** The `worker-model` slice: writes only `worker_model`. `undefined` or blank removes the key. */
+export interface MaestroWorkerModelSlice {
+  worker_model?: string;
 }
 
 /**

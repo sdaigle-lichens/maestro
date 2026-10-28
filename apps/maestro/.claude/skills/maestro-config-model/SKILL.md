@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, code-graph's concept-skill state). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "2.0"
-  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
+  version: "2.1"
+  last-update: 2b3d116471aa0482a15578ba7d36e3446c8b1852
 ---
 
 # Maestro config model (v3)
@@ -31,22 +31,23 @@ entry point the IPC layer calls.
 | `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks}`, `end_skills.{maestro}`. Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |
 | `gates`                                 | **Legacy, no longer read** (`092`), and no longer a field of `MaestroConfigV3` — only a leftover key in an old file. The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |
 | `metrics?`                              | `{ recent_runs? }` (`080`) — how many finished runs stay as full records in `.claude/maestro-metrics/metrics.json`. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader. No slice writes it. |
+| `worker_model?`                         | Model epic worker sessions launch with (alias or full id). Trimmed; blank deletes the key. Sole reader `resolveWorkerModel` (`config.ts`); `launchCommandFor` (`epics.ts`) turns it into `--model '<value>'` in `maestro-epic.cjs ready`. Written only by the `worker-model` slice (IPC `data:worker-model` / `project:worker-model:set`, `WorkerModelCard` on `/maestro`). |
 | `use_maestro_tasks?`                    | A SIBLING of the skill lists, not nested in them (`046`) — the orchestrator's optional Step 4 nudge toward `/to-maestro-tasks`. **Absent means off**.                               |
 
 ## Slice merges are the load-bearing rule
 
-Saves never write the whole file. `ConfigSlice` is a union of exactly five shapes — `workflows`,
-`rules`, `project-tags`, `skill-lists`, `task-routing` (`046`) — and `mergeSlice` copies only that slice's
+Saves never write the whole file. `ConfigSlice` is a union of exactly six shapes — `workflows`,
+`rules`, `project-tags`, `skill-lists`, `task-routing` (`046`), `worker-model` — and `mergeSlice` copies only that slice's
 fields onto the current config. The comment on it is explicit about why: **this separation is the
 reason `/workflows` saves can't clobber `/rules` assignments and vice versa, and widening any branch
 to write another's fields reintroduces that bug.** Adding a field means deciding which slice owns
 it, not appending to whichever save path is nearest.
 
-**`mergeSlice` has five explicit `sliceType` tests and no `else`, on purpose** (`032`, `046`). It
+**`mergeSlice` has six explicit `sliceType` tests and no `else`, on purpose** (`032`, `046`). It
 used to end in a catch-all `else` that happened to mean `project-tags`; that is a latent instance of
 exactly the clobbering bug the function's own header warns about, because the _next_ slice added
 would have silently inherited the previous one's write. `046`'s `task-routing` arm writes only
-`use_maestro_tasks`. A sixth slice must add a sixth test — being forgotten should be a no-op, never
+`use_maestro_tasks`. A seventh slice must add a seventh test — being forgotten should be a no-op, never
 a wrong write.
 
 **`reports` and `handoffs` have no `mergeSlice` arm at all, and that is not an omission.** They are

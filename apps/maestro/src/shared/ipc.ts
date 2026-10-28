@@ -26,6 +26,7 @@ import type {
   MaestroRulesSlice,
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
+  MaestroWorkerModelSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -161,6 +162,7 @@ export type {
   MaestroRulesSlice,
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
+  MaestroWorkerModelSlice,
   MaestroProjectTagsSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
@@ -381,12 +383,22 @@ export interface TaskRoutingData {
   useMaestroTasks: boolean;
 }
 
+/**
+ * What the worker-model field needs: the project's `worker_model` (`134`), which the epic tooling
+ * turns into `--model <value>` on every worker launch command it prints.
+ */
+export interface WorkerModelData {
+  /** Resolved via `resolveWorkerModel`, never raw: unset, blank or non-string reads back as "". */
+  workerModel: string;
+}
+
 export type SaveInput =
   | { sliceType: "workflows"; slice: MaestroWorkflowsSlice }
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
   | { sliceType: "skill-lists"; slice: MaestroSkillListsSlice }
-  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
+  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice }
+  | { sliceType: "worker-model"; slice: MaestroWorkerModelSlice };
 
 export const IPC = {
   projectGet: "project:get",
@@ -431,6 +443,12 @@ export const IPC = {
   // slice and returns what was saved. Also no second cross-slice write, same reasoning as the skill lists.
   taskRoutingData: "data:task-routing",
   taskRoutingSet: "project:task-routing:set",
+
+  // The worker-model setting (`134`): the model epic worker sessions launch with. `data:worker-model`
+  // reads the resolved value ("" when unset or no project is open); `project:worker-model:set` saves
+  // the `worker-model` slice (blank clears it) and returns the resolved value that was stored.
+  workerModelData: "data:worker-model",
+  workerModelSet: "project:worker-model:set",
 
   // The /agents page. `reportGet` resolves what's in effect for one agent (project override, else
   // global default, else none) — the SAME resolution `report-resolution.ts` gives the
@@ -755,6 +773,14 @@ export interface MaestroApi {
        */
       set(value: boolean): Promise<boolean>;
     };
+    workerModel: {
+      /**
+       * Set the OPEN project's `worker_model` — the model epic worker sessions launch with. A blank
+       * or whitespace-only value clears the setting. Saves the `worker-model` slice and nothing else
+       * and returns the resolved value stored ("" when cleared). Rejects when no project is open.
+       */
+      set(value: string): Promise<string>;
+    };
     tags: {
       /**
        * Toggle the OPEN project's `project_tags` to exactly `tags` — `/maestro`'s post-install
@@ -829,6 +855,11 @@ export interface MaestroApi {
      * exactly what `maestro-step4-gate.cjs` resolves them to as well.
      */
     taskRouting(): Promise<TaskRoutingData>;
+    /**
+     * The open project's RESOLVED `worker_model`. Never rejects — no project open, or an
+     * unset/blank/non-string value, reads back as "".
+     */
+    workerModel(): Promise<WorkerModelData>;
   };
   config: {
     save(input: SaveInput): Promise<SaveResult>;

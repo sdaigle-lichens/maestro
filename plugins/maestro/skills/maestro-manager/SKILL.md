@@ -84,7 +84,11 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
       the pane id from the JSON output's `result.root_pane.pane_id`, never from an example or the
       sidebar order.
    2. `herdr pane run <pane id> "<launch command>"`, the launch command exactly as `ready` printed it
-      (`claude -n '<worker name>' '/maestro .claude/maestro-tasks/<task.md>'`).
+      (`claude -n '<worker name>' '/maestro .claude/maestro-tasks/<task.md>'`). When the project's
+      `.claude/maestro.json` sets the optional `worker_model` (an alias such as `sonnet`, `opus` or
+      `haiku`, or a full model id; edited on the app's `/maestro` page), `ready` adds
+      `--model '<worker_model>'` to every launch command, so workers start on that model instead of
+      the manager's. Unset, the command is unchanged. Never add or edit the flag yourself.
    3. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<worker name>" --task <task.md>`.
       Recording it is what keeps a second worker from being spawned for the same task before the
       first one claims it.

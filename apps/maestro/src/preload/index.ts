@@ -38,6 +38,9 @@ const api: MaestroApi = {
     taskRouting: {
       set: (value) => ipcRenderer.invoke(IPC.taskRoutingSet, value),
     },
+    workerModel: {
+      set: (value) => ipcRenderer.invoke(IPC.workerModelSet, value),
+    },
   },
   data: {
     workflows: () => ipcRenderer.invoke(IPC.workflowsData),
@@ -59,6 +62,7 @@ const api: MaestroApi = {
     projectTags: () => ipcRenderer.invoke(IPC.projectTagsData),
     skillLists: () => ipcRenderer.invoke(IPC.skillListsData),
     taskRouting: () => ipcRenderer.invoke(IPC.taskRoutingData),
+    workerModel: () => ipcRenderer.invoke(IPC.workerModelData),
   },
   config: {
     save: (input: SaveInput) => ipcRenderer.invoke(IPC.configSave, input),

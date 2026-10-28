@@ -22,6 +22,7 @@ const hooks = [
 ];
 
 // Mutable so the picker round-trips within a browser session, like a save to maestro.json would.
+let workerModel = "";
 let skillLists = {
   start_skills: {
     maestro: ["confidence-check"],
@@ -85,9 +86,16 @@ export const maestroInstall = {
       ],
     }),
     taskRouting: async () => ({ useMaestroTasks: true }),
+    workerModel: async () => ({ workerModel }),
   },
   // Merged into `project` by index.ts, which already holds `project.get`.
   project: {
+    workerModel: {
+      set: async (next: string) => {
+        workerModel = next.trim();
+        return workerModel;
+      },
+    },
     skillLists: {
       set: async (next: typeof skillLists) => {
         skillLists = next;

@@ -784,6 +784,83 @@ function TaskRoutingCard({ viewedRoot }: { viewedRoot: string }) {
   );
 }
 
+/**
+ * The post-install worker-model section (`134`): the optional `worker_model` in `maestro.json`, which
+ * the epic tooling turns into `--model <value>` on every worker launch command it prints. Free text —
+ * an alias (sonnet, opus, haiku) or a full model id — so there is no picker. Unlike the checkbox cards
+ * above, a text field cannot save on every keystroke, so it has a Save button (and saves on Enter).
+ * A blank value clears the setting, which restores the user's default model.
+ */
+function WorkerModelCard({ viewedRoot }: { viewedRoot: string }) {
+  const [saved, setSaved] = useState<string | null>(null);
+  const [draft, setDraft] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    void callMain(() => window.maestro.data.workerModel()).then((res) => {
+      if (cancelled || !res.ok) return;
+      setSaved(res.value.workerModel);
+      setDraft(res.value.workerModel);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [viewedRoot]);
+
+  if (saved === null) return null;
+
+  const dirty = draft.trim() !== saved;
+
+  const save = async () => {
+    if (!dirty || busy) return;
+    setBusy(true);
+    try {
+      const res = await callMain(() => window.maestro.project.workerModel.set(draft));
+      if (!res.ok) {
+        toast(<>Could not save worker model: {res.error}</>, { variant: "error" });
+        return;
+      }
+      setSaved(res.value);
+      setDraft(res.value);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated">
+      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
+        <SparkleIcon size={12} /> Worker model
+      </div>
+      <p className="text-[12px] text-maestro-muted m-0">
+        The model epic worker sessions launch with, added as <span className="font-mono">--model</span> to every worker
+        command <span className="font-mono">maestro-manager</span> prints. An alias such as{" "}
+        <span className="font-mono">sonnet</span>, <span className="font-mono">opus</span> or{" "}
+        <span className="font-mono">haiku</span>, or a full model id. Leave it blank to use your default model. Saved to{" "}
+        <span className="font-mono">.claude/maestro.json</span>.
+      </p>
+      <div className="flex items-center gap-2">
+        <input
+          type="text"
+          aria-label="Worker model"
+          value={draft}
+          disabled={busy}
+          placeholder="Default model"
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") void save();
+          }}
+          className="flex-1 px-2 py-1 rounded border border-maestro bg-maestro text-[12px] font-mono"
+        />
+        <Button variant="primary" loading={busy} disabled={busy || !dirty} onClick={() => void save()}>
+          Save
+        </Button>
+      </div>
+    </div>
+  );
+}
+
 /** `oldestAgeMs` in the words `/maestro` shows beside a lane — never sub-hour, this is a backlog view. */
 function formatAge(ms: number): string {
   const hours = ms / (60 * 60 * 1000);
@@ -1158,6 +1235,7 @@ function InstallPage() {
           {status?.installed && viewedRoot && <SkillListsCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           {status?.installed && viewedRoot && <TaskRoutingCard key={viewedRoot} viewedRoot={viewedRoot} />}
+          {status?.installed && viewedRoot && <WorkerModelCard key={viewedRoot} viewedRoot={viewedRoot} />}
 
           <div className="flex items-center gap-2">
             <Button
