@@ -155,6 +155,16 @@ export {
   type WorktreePointer,
 } from "../worktree.js";
 
+// A worktree starts with no installed dependencies: detect the package manager and stop with the
+// install command for the user (`135`). `fs`/`path` only.
+export {
+  detectPackageManager,
+  installCommand,
+  dependencyStatus,
+  missingDependenciesNotice,
+  type PackageManager,
+} from "../worktree-deps.js";
+
 // Channel-only writes for the reviewer and refactor agents (`078`) and SendMessage hand-back
 // recovery. `fs`/`path` only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
 export {

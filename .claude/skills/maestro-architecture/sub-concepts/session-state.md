@@ -157,6 +157,11 @@ unreadable or dangling pointer falls back to the given `claudeDir`.
   session holds a claim (see `task-queue` claims). A freeform run (no task file) gets the same
   isolation from `freeform-check` (`103`): branch `freeform-<id>`, and the pointer carries
   `freeform: true` with `task` = that branch name.
+- **Dependencies (`135`).** A new worktree has no `node_modules` and the agent cannot install, so
+  `worktree`/`freeform-check` print a `STOP:` notice (from `worktree-deps.ts`) naming the user's
+  install command, picked from the lockfile (no guess when unknown or ambiguous); template Step 2
+  tells the orchestrator to stop and not dispatch `@test`/`@reviewer`. `done` refuses while the
+  session worktree still lacks dependencies. Details: `task-queue` claims.
 - **Cleanup touches two dirs.** `removeSessionState`, `sweepStaleSessions` and `deleteSession` use
   `sessionDirsFor`, removing both the worktree's and the main checkout's session dir. The worktree
   and branch themselves are **never** removed automatically; only an explicit
