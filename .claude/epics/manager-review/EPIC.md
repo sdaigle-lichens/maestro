@@ -41,6 +41,11 @@ Out:
 - **Review rounds are counted by `plan.loopbacks`** (task 130): `plan-step <label> pending` increments
   it, and each round gets its own file (`<task>.review.md`, `<task>.review-2.md`, ...). The
   orchestrator always records its path with `plan`, because the human-review gate hook reads it.
-  Task 132's round number and redirect cap should reuse this counter, not add a second one.
+  `plan.loopbacks` counts every loop-back (a test loop-back too), so it numbers review files but is
+  not a count of manager redirects. Task 132's "2 redirects then escalate" cap must count manager
+  redirects for the ticket specifically (e.g. recorded by `review-request`), not read `plan.loopbacks`.
+- **The human-review gate fails open** when a session has no plan, no active_task or bad state
+  (task 130). Whether Claude Code honours a deny on `AskUserQuestion` is not covered by tests; it
+  needs one live check.
 - **Placement:** `manager_review` is recommended right after implementation (`default`) or after the
   test plan (`tdd`), before `@reviewer` and `human_review`.

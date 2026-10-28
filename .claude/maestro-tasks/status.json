@@ -648,7 +648,7 @@
     "epic": "autonomous-workers"
   },
   "130-human-review-always-shows-its-summary.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
   },
