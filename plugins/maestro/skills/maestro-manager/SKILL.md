@@ -59,7 +59,13 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
    as ready. Nothing marked `[spawn]`: say so and stop.
 2. **Check for herdr**, in this order, one command per call. Any check failing means the
    **fallback** below:
-   1. `command -v herdr`. Nothing found: fallback.
+   1. `command -v herdr`. Nothing found: fallback. The Bash sandbox hides the binary unless the
+      project's `allowRead` lists it, so before the install guidance run
+      `test "${HERDR_ENV:-}" = 1`. When it is `1`, herdr is installed and you are inside it, just
+      blocked by the sandbox: use the fallback, and tell the user *"herdr is running, but this
+      project's sandbox can't see it; run /maestro-update, which offers the `--herdr` sandbox
+      entries"*, not the install guidance. Only when `HERDR_ENV` isn't `1` either is herdr treated
+      as not installed.
    2. `test "${HERDR_ENV:-}" = 1`, which checks that this session runs inside a herdr pane. herdr's
       own agent guidance says never to control a herdr session from outside herdr. So when
       `HERDR_ENV` isn't `1`, use the fallback even if a herdr server is running, and tell the user to
@@ -92,7 +98,8 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
 **Fallback (no herdr, not running inside herdr, or the server is unreachable).** Do not fail and do
 not try to install or start it. Print the
 launch command of each `[spawn]` task exactly as `ready` printed it, with the directory to run it
-from, and tell the user to run each one in its own terminal. Then point to the herdr setup guide,
+from, and tell the user to run each one in its own terminal. When the cause was `HERDR_ENV=1` with a
+hidden binary, stop there: the `/maestro-update` message above replaces the install guidance. Otherwise point to the herdr setup guide,
 [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), and say the
 user installs herdr and runs `herdr integration install claude` themselves with `!`, since both
 change things outside the project. Record a worker with `add-worker` only once the user says they

@@ -39,9 +39,13 @@
 //
 // Prints one JSON object:
 //   { ok, mode, dryRun, settingsPath, sandboxEnabled, upToDate, added, removed, entries, broadEntries,
-//     herdr: { optIn, present, binary, socket, allowAllUnixSockets, unparseableSettings },
+//     herdr: { optIn, present, binary, socket, socketExists, herdrEnv, settingsEntries, inUse,
+//              allowAllUnixSockets, unparseableSettings },
 //     applyCommand, removeCommand }
 //   herdr.present: every herdr entry is already in settings.local.json, `~/...` or absolute alike.
+//   herdr.socketExists / herdrEnv (HERDR_ENV=1) / settingsEntries (herdr entries already in the
+//   project's settings files) are the evidence this sandboxed process can see; inUse is true when
+//   any holds. `binary: null` alone never means herdr is not installed: the sandbox hides it.
 // Exit 0, except 1 when settings.local.json exists but does not parse (nothing is written then).
 
 const fs = require("fs");
@@ -147,13 +151,50 @@ const underHome = (file) => {
   return rel !== "" && !rel.startsWith("..") && !path.isAbsolute(rel);
 };
 
+// The herdr entries already in the project's settings files (local, then shared), as
+// `{ file, kind, value }`. An entry is herdr's when it is the socket or a path ending in `/herdr`
+// (`~` forms included). A file that cannot be read or parsed contributes nothing.
+function herdrSettingsEntries(projectDir, socket) {
+  const found = [];
+  for (const name of ["settings.local.json", "settings.json"]) {
+    const file = path.join(projectDir, ".claude", name);
+    let value = null;
+    try {
+      const r = readJson(file);
+      value = r.ok ? r.value : null;
+    } catch {
+      continue; // unreadable from inside the sandbox
+    }
+    for (const kind of ["allowWrite", "allowRead", "allowUnixSockets"]) {
+      const parent = value && typeof value === "object" ? slot(value, kind, false) : null;
+      for (const v of parent ? list(parent, kind) : []) {
+        const abs = expandHome(v);
+        if (typeof abs === "string" && (abs === socket || path.basename(abs) === "herdr")) {
+          found.push({ file, kind, value: v });
+        }
+      }
+    }
+  }
+  return found;
+}
+
 function herdrInfo(projectDir) {
   const binary = findOnPath("herdr");
   const unparseableSettings = [];
   const allowAll = effectiveBool(projectDir, ["sandbox", "network", "allowAllUnixSockets"], unparseableSettings);
+  const socket = path.join(os.homedir(), ".config", "herdr", "herdr.sock");
+  let socketExists = false;
+  try {
+    socketExists = fs.existsSync(socket);
+  } catch {
+    // hidden from the sandbox
+  }
   return {
     unparseableSettings,
-    socket: path.join(os.homedir(), ".config", "herdr", "herdr.sock"),
+    socket,
+    socketExists,
+    herdrEnv: process.env.HERDR_ENV === "1",
+    settingsEntries: herdrSettingsEntries(projectDir, socket),
     binary,
     readBinary: binary && underHome(binary) ? binary : null,
     allowAllUnixSockets: allowAll === true,
@@ -331,6 +372,12 @@ function main() {
         present: herdrPresent,
         binary: h.binary,
         socket: h.socket,
+        // The evidence this process can see. A hidden binary (`binary: null`) is not proof herdr is
+        // missing: the sandbox hides it unless allowRead lists it. `inUse` is any of the three.
+        socketExists: h.socketExists,
+        herdrEnv: h.herdrEnv,
+        settingsEntries: h.settingsEntries,
+        inUse: h.herdrEnv || h.socketExists || h.settingsEntries.length > 0,
         allowAllUnixSockets: h.allowAllUnixSockets,
         // Settings files that exist but do not parse; allowAllUnixSockets is read as unset from them.
         unparseableSettings: h.unparseableSettings,

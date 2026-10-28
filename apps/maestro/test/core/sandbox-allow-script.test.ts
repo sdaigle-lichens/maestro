@@ -154,7 +154,7 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     const PATH = where === "none" ? outside : `${binDir}${path.delimiter}${process.env.PATH}`;
     return {
       home: hh,
-      env: { HOME: hh, PATH },
+      env: { HOME: hh, PATH, HERDR_ENV: "" }, // never inherit the developer's own herdr pane
       socket: path.join(hh, ".config", "herdr", "herdr.sock"),
       binary: path.join(binDir, "herdr"),
     };
@@ -209,6 +209,10 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
       present: false,
       binary: hh.binary,
       socket: hh.socket,
+      socketExists: false,
+      herdrEnv: false,
+      settingsEntries: [],
+      inUse: false,
       allowAllUnixSockets: false,
       unparseableSettings: [],
     });
@@ -217,6 +221,31 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     const allowWrite = (out.entries as { kind: string; why: string }[]).find((e) => e.kind === "allowWrite");
     expect(allowWrite?.why).toMatch(/sandbox escape/);
     expect(fs.existsSync(settingsPath)).toBe(false);
+  });
+
+  it("reports herdr evidence even when the binary is hidden (binary null)", () => {
+    const hh = herdrHome({ bin: "none" });
+    const { root } = project();
+
+    const none = runEnv(hh.env, root).out.herdr;
+    expect(none).toMatchObject({ binary: null, socketExists: false, herdrEnv: false, inUse: false });
+
+    const env = runEnv({ ...hh.env, HERDR_ENV: "1" }, root).out.herdr;
+    expect(env).toMatchObject({ binary: null, herdrEnv: true, inUse: true });
+
+    fs.mkdirSync(path.dirname(hh.socket), { recursive: true });
+    fs.writeFileSync(hh.socket, "");
+    expect(runEnv(hh.env, root).out.herdr).toMatchObject({ socketExists: true, inUse: true });
+  });
+
+  it("reports herdr entries already in the project's settings", () => {
+    const hh = herdrHome({ bin: "none" });
+    const { root } = project({ sandbox: { filesystem: { allowRead: ["~/.local/bin/herdr", "/other"] } } });
+    const herdr = runEnv(hh.env, root).out.herdr;
+    expect(herdr.settingsEntries).toEqual([
+      { file: path.join(root, ".claude", "settings.local.json"), kind: "allowRead", value: "~/.local/bin/herdr" },
+    ]);
+    expect(herdr.inUse).toBe(true);
   });
 
   it("--apply --herdr writes the herdr entries beside the base list; re-runs are up to date", () => {
