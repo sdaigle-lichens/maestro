@@ -10,7 +10,46 @@
       "name": "manager-review-130",
       "task": "130-human-review-always-shows-its-summary.md",
       "added_at": "2026-10-28T16:38:29.570Z"
+    },
+    {
+      "name": "manager-review-133",
+      "task": "133-detect-herdr-reliably-under-the-sandbox.md",
+      "added_at": "2026-10-28T16:47:23.379Z"
+    },
+    {
+      "name": "manager-review-134",
+      "task": "134-configurable-model-for-epic-worker-sessions.md",
+      "added_at": "2026-10-28T17:19:53.599Z"
     }
   ],
-  "log": []
+  "log": [
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "133-detect-herdr-reliably-under-the-sandbox.md",
+      "file": "inbox/r001-133-detect-herdr-reliably-under-the-sandbox.md",
+      "at": "2026-10-28T17:02:45.002Z",
+      "from": "manager-review-133"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-10-28T17:03:05.351Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "130-human-review-always-shows-its-summary.md",
+      "file": "inbox/r002-130-human-review-always-shows-its-summary.md",
+      "at": "2026-10-28T17:21:32.770Z",
+      "from": "manager-review-130"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-10-28T17:21:54.966Z",
+      "by": "maestro-mgr-3a4fd839"
+    }
+  ]
 }

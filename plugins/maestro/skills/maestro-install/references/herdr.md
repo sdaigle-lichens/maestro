@@ -54,7 +54,8 @@ is given outside the sandbox, so once the socket is reachable, any sandboxed com
 anything unsandboxed. Leave it blocked unless you accept that.
 
 The simplest way is the allow-list script's opt-in, which `/maestro-install` and `/maestro-update`
-offer when herdr is on your `PATH`: it writes the entries below into this project's
+offer when herdr is in use (`HERDR_ENV=1`, its socket exists, or a herdr entry is already in your
+sandbox settings) or its binary is found: it writes the entries below into this project's
 `.claude/settings.local.json`, with absolute paths, and `--remove --herdr` takes them out again.
 See [`sandbox.md`](sandbox.md#the-herdr-opt-in---herdr-a-sandbox-escape):
 
@@ -83,7 +84,10 @@ not installed).
 On Linux, if your sandbox also hides your home directory, add two more entries:
 
 - **The herdr binary itself**, to `sandbox.filesystem.allowRead`. Without it, `command -v herdr`
-  finds nothing inside the sandbox and the manager falls back. Add just the binary, not the whole
+  finds nothing inside the sandbox and the manager falls back. A failed `command -v herdr` there
+  does not mean herdr is not installed: when you are running inside herdr (`HERDR_ENV=1`),
+  `/maestro-update` says *"herdr is running, but this project's sandbox can't see it"* and gives the
+  `--herdr` command instead of install steps. Add just the binary, not the whole
   directory it is in, for example `"allowRead": ["~/.local/bin/herdr"]` (use the path that
   `! command -v herdr` prints).
 - **The socket**, to `sandbox.filesystem.allowWrite`: `"allowWrite": ["~/.config/herdr/herdr.sock"]`.

@@ -149,6 +149,10 @@ only and every hook already requires this bundle" argument:
   `readProjectHandoff`) and `runtime-version.ts` (`compareRuntimeVersions`, `runtimeNeedsRefresh`).
   The global handoff tier is passed **in** as a reader, so the sqlite bundle stays out; the grep is
   still `0`.
+- `130` — the human-review gate (`checkHumanReview`, `currentReviewRound`, `reviewFileName`,
+  `isReviewFile`, `HUMAN_REVIEW_LABEL`, from `human-review-gate.ts`, backing
+  `maestro-human-review-gate.js`). It imports nothing (the file probe is passed in); keep the
+  `node:sqlite` grep at `0`. `tasks.ts` inlines the same `.review(-N).md` pattern to skip review files.
 - `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,
   `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by
   `maestro-team-meeting.cjs`. `fs`/`path` only.

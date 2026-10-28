@@ -138,18 +138,27 @@ $ARGUMENTS
    ```
 
    It prints JSON with `sandboxEnabled`, `upToDate`, `entries` (each `kind`, `value`, `why`),
-   `applyCommand` and `removeCommand`.
+   `applyCommand`, `removeCommand` and a `herdr` object. The Bash sandbox hides the herdr binary
+   unless `allowRead` lists it, so a failed `command -v herdr` never means herdr is not installed:
+   read `herdr.inUse` (true when `HERDR_ENV=1` (`herdr.herdrEnv`), the herdr socket exists
+   (`herdr.socketExists`), or a herdr entry is already in the project's sandbox settings
+   (`herdr.settingsEntries`)) and `herdr.binary` instead of re-deriving them.
 
    - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
-   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive. Read
+   - **herdr opt-in, whenever `herdr.inUse` is `true` or `herdr.binary` is non-null** and the
+     session is interactive. Read
      `herdr.present` from the dry run: when it is `true` every herdr entry is already in place (a
-     hand-written `~` form counts), so don't ask, whatever `upToDate` says. Otherwise ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
+     hand-written `~` form counts), so don't ask, whatever `upToDate` says. Otherwise, when
+     `herdr.binary` is null, first say *"herdr is running, but this project's sandbox can't see
+     it"*, then ask **one `AskUserQuestion`**: *"Also let /maestro-manager start
      worker sessions in herdr by itself? This is a sandbox escape: any sandboxed command can then
      run anything unsandboxed through `herdr pane run`. Without it the manager prints the
      `claude -n ...` commands for you to run."* Options: `No (Recommended)`, `Yes, add the herdr
-     entries`. No answer, a non-interactive install, or herdr not on PATH all mean No. On Yes, run
-     the dry run again with `--herdr` appended and use its output below: its `applyCommand` adds the
-     herdr entries along with the rest.
+     entries`. No answer, a non-interactive install, or no herdr evidence at all all mean No. On Yes,
+     run the dry run again with `--herdr` appended and use its output below: its `applyCommand`
+     adds the herdr entries along with the rest. On a non-interactive install where herdr is in use
+     but its binary is hidden, still print the message with the exact `--herdr` apply command
+     (`applyCommand` with ` --herdr` appended) for the user to run with `!`.
    - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
      `value` with its `why`, point to [`references/sandbox.md`](references/sandbox.md), and ask
      them to run `! <applyCommand>` themselves, the printed command verbatim. **Never run
@@ -197,10 +206,14 @@ $ARGUMENTS
    This rewrites the `Maestro:HANDOFFS` region of `.claude/skills/maestro/SKILL.md` with one row per workflow and its derived success path. Run it **after** step 6 — the renderer reads `maestro.json`, and on a fresh install step 6 is what creates it. Report the workflow → success-path rows it produces.
 
 8. **Offer herdr, once.** herdr is optional: it lets `/maestro-manager` start an epic's worker
-   sessions in herdr tabs instead of the user opening each one. Run `command -v herdr`.
-   - **Found:** don't ask (step 5 covers its sandbox opt-in). Mention it in step 9, and
-     that `herdr integration install claude` is in the guide if they have not run it yet.
-   - **Not found, interactive install:** ask **one `AskUserQuestion`**: *"Set up herdr, so
+   sessions in herdr tabs instead of the user opening each one. Use step 5's `herdr` object if it ran
+   (otherwise run `command -v herdr` and check `HERDR_ENV`); a failed `command -v herdr` alone never
+   means "not installed".
+   - **In use or found** (`herdr.inUse` is `true` or `herdr.binary` is non-null): don't ask (step 5
+     covers its sandbox opt-in). Mention it in step 9, and that `herdr integration install claude`
+     is in the guide if they have not run it yet. When the binary is hidden, say *"herdr is running,
+     but this project's sandbox can't see it"* and point to step 5's `--herdr` apply command.
+   - **No evidence at all, interactive install:** ask **one `AskUserQuestion`**: *"Set up herdr, so
      /maestro-manager can start epic worker sessions for you? It is optional."* Options:
      `Show me how`, `Not now`. On `Show me how`, point to the guide,
      [`references/herdr.md`](references/herdr.md), and give its two commands, telling the user to

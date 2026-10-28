@@ -21,18 +21,26 @@ place the refresh procedure is written down.
    ```
 
    It prints JSON with `sandboxEnabled`, `upToDate`, `entries` (each `kind`, `value`, `why`),
-   `broadEntries`, `herdr.present`, `applyCommand` and `removeCommand`. Its installer entry
-   carries the plugin's versioned path, so after every plugin update it is no longer up to date.
+   `broadEntries`, `herdr.present`, `herdr.inUse` (with the evidence behind it: `herdr.herdrEnv`,
+   `herdr.socketExists`, `herdr.settingsEntries`, and `herdr.binary`), `applyCommand` and
+   `removeCommand`. Its installer entry carries the plugin's versioned path, so after every plugin
+   update it is no longer up to date.
+
+   The Bash sandbox hides the herdr binary unless `allowRead` lists it, so `command -v herdr`
+   failing never means herdr is not installed. Read `herdr.inUse` (true when `HERDR_ENV=1`, the
+   herdr socket exists, or a herdr entry is already in the project's sandbox settings) instead of
+   re-deriving it.
 
    - **`sandboxEnabled` is `false`:** skip this step silently, the herdr opt-in included.
-   - **herdr opt-in, only when `command -v herdr` finds it** and the session is interactive.
-     `herdr.present` is `true` when every herdr entry is already in place (a hand-written `~` form
-     counts): then don't ask, whatever `upToDate` says. Otherwise ask **one `AskUserQuestion`**:
+   - **herdr opt-in, whenever `herdr.inUse` is `true` or `herdr.binary` is non-null** and the
+     session is interactive. `herdr.present` is `true` when every herdr entry is already in place
+     (a hand-written `~` form counts): then don't ask, whatever `upToDate` says. Otherwise ask
+     **one `AskUserQuestion`**:
      *"Also let /maestro-manager start worker sessions in herdr by itself? This is a sandbox
      escape: any sandboxed command can then run anything unsandboxed through `herdr pane run`.
      Without it the manager prints the `claude -n ...` commands for you to run."* Options:
-     `No (Recommended)`, `Yes, add the herdr entries`. No answer or herdr not on PATH means No. On
-     Yes, run the dry run again with `--herdr` appended and use its output below: its
+     `No (Recommended)`, `Yes, add the herdr entries`. No answer, or no herdr evidence at all,
+     means No. On Yes, run the dry run again with `--herdr` appended and use its output below: its
      `applyCommand` adds the herdr entries along with the rest.
    - **Not `upToDate` (in the run you are using):** show the user each entry of `entries` as
      `value` with its `why`, point to
@@ -120,11 +128,19 @@ place the refresh procedure is written down.
    `/maestro-install` (it is user-only) so the defaults are written. When both are empty, say nothing
    about it beyond "no dangling skill references".
 
-6. **Check for herdr**, which writes nothing: `command -v herdr`. Found: say nothing about it.
-   Missing: add exactly one line to the report, never a question, and never more than once per
-   run: *"herdr is not installed (optional: it lets /maestro-manager start epic worker sessions);
-   see [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
-   commands you run yourself with `!`."*
+6. **Check for herdr**, which writes nothing. Use step 1's `herdr` object (rerun the dry run if
+   step 1 was skipped); a failed `command -v herdr` alone never means "not installed", because the
+   sandbox hides the binary. Add at most one line to the report, never a question, and never more
+   than once per run:
+   - **`herdr.binary` is non-null:** say nothing about it.
+   - **`herdr.binary` is null but `herdr.inUse` is `true`:** *"herdr is running, but this project's
+     sandbox can't see it. To let it, run `! <applyCommand with --herdr>`"* (step 1's
+     `applyCommand` with ` --herdr` appended when it lacks it). Say nothing when `herdr.present` is
+     `true` (the entries are in, and the binary is simply outside this sandbox's reach).
+   - **No evidence at all** (`herdr.inUse` is `false` and `herdr.binary` is null): *"herdr is not
+     installed (optional: it lets /maestro-manager start epic worker sessions); see
+     [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
+     commands you run yourself with `!`."*
 
 7. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
