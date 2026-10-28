@@ -15,6 +15,8 @@ In:
   (a fix found while running this epic; task 133).
 - A maestro.json setting for the model epic worker sessions launch with (task 134).
 - Task worktrees starting with dependencies ready (task 135; found in 133 and 134).
+- One command to refresh this repo's mirrors and rendered orchestrator (task 136; the sandbox gap
+  hit in 130, 131 and 132).
 
 Out:
 
