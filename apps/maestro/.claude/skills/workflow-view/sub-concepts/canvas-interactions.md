@@ -7,12 +7,12 @@ Every interaction below computes the next nodes/edges and calls `pushChange` →
   (`findSuccessTerminalId`), then opens the Add step modal anchored at the terminal so the new step
   extends the path.
 - **Add step** (bottom `+` on every node) — `openAddStep(nodeId)` opens the **Add step modal**: a
-  segmented **Agent / Skill / Human Review** picker. For Agent it renders the shared `InstancePicker`
+  segmented **Agent / Skill / Human Review / Manager Review** picker (`addStepType`). For Agent it renders the shared `InstancePicker`
   (`src/renderer/src/components/instance-picker.tsx`) — a **Reuse instance / New instance** toggle.
   Reuse lists unplaced instances whose agent is not already placed; New takes a subagent + instance
   name + an `InstanceSkillPicker` (check to select a skill — referenced by default — then a per-row
   Loaded/Ref toggle). Skill picks one `availableSkills` id for a standalone `type: "skill"` step.
-  Human Review needs no extra input. Confirming calls `confirmAddStep()` → for Agent,
+  Human Review and Manager Review need no extra input (id `human_review-N` / `manager_review-N`, next free N via `utils/review-nodes.ts`). Confirming calls `confirmAddStep()` → for Agent,
   `resolveInstanceFromPicker` to get/create the instance; it places the node at `y + INSERT_ROW_HEIGHT` below the source, and adds a
   `success` edge `source.bottom → new.top`. State: `addStepSourceId`, `addStepType`,
   `addStepPicker`; reset by `resetAddStep()`.
@@ -52,7 +52,7 @@ Every interaction below computes the next nodes/edges and calls `pushChange` →
   reuse list and `resolveInstanceFromPicker`.
 - **Manual wiring** — `onConnect`: dragging from a `left`/`right` handle makes a condition edge; from
   `bottom` makes a success edge.
-- **Delete** — an agent node is deleted from the 🗑 in its instance panel; human-review and skill
+- **Delete** — an agent node is deleted from the 🗑 in its instance panel; human-review, manager-review and skill
   nodes from their `⋮` kebab (the skill kebab also has **Change skill**). `deleteNode` removes the
   node and every incident edge (the instance definition stays in `workflow_instances`). Conditions:
   the 🗑 in the condition panel, or the checklist + **Delete** button in an instance panel's

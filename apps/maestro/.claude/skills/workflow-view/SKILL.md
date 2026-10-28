@@ -121,7 +121,7 @@ The three shapes the canvas maps onto directly:
 ```ts
 MaestroInstanceV3 { name, agent, loaded_skills: string[], referenced_skills: string[] }  // referenced by name from agent nodes
 MaestroWorkflowV3 { name, nodes: MaestroNodeV3[], edges: MaestroEdgeV3[] }               // one per entry in the top selector; success_path is DERIVED, never stored
-MaestroNodeV3     { id, type: "agent"|"human_review"|"skill", instance?, skill?, position? }
+MaestroNodeV3     { id, type: "agent"|"human_review"|"manager_review"|"skill", instance?, skill?, position? }
 MaestroEdgeV3     { from, to, kind: "success"|"condition", label?, sourceHandle?, targetHandle? }
 ```
 

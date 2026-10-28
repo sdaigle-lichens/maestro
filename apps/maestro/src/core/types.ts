@@ -20,7 +20,7 @@ export interface MaestroInstanceV3 {
 
 export interface MaestroNodeV3 {
   id: string;
-  type: "agent" | "human_review" | "skill";
+  type: "agent" | "human_review" | "manager_review" | "skill";
   /** agent nodes only; references MaestroInstanceV3.name */
   instance?: string;
   /** skill nodes only; the skill id run inline by the orchestrator */

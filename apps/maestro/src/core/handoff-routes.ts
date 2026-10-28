@@ -24,7 +24,7 @@ export interface HandoffRoute {
   sender: string;
   /**
    * The agent that receives it, BARE — or null when the edge leads nowhere an agent can be
-   * reached (a dangling edge, or a condition edge into a `human_review` node). A null receiver is
+   * reached (a dangling edge, or a condition edge into a `human_review`/`manager_review` node). A null receiver is
    * still a real route: the orchestrator can emit the HANDOFF line, there is just no protocol to
    * attach to it.
    */
@@ -38,7 +38,7 @@ export interface HandoffRoute {
  *
  * Two resolution rules, both inherited verbatim from the hook:
  *
- *   - a SUCCESS edge resolves THROUGH non-agent nodes (`human_review`, a `skill` node) by
+ *   - a SUCCESS edge resolves THROUGH non-agent nodes (`human_review`, `manager_review`, a `skill` node) by
  *     following that node's own success edge onward, so a review step between two agents doesn't
  *     hide the handoff behind it;
  *   - a CONDITION edge does not — it means "this specific thing happened", and silently rerouting
