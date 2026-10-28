@@ -164,6 +164,8 @@ const HOOK_SCRIPTS = [
   // hooks only from this install (a forked `reviewer`, a `~/.claude/agents` copy, the plugin
   // disabled) would otherwise run them with nothing confining their writes.
   "maestro-channel-write-guard",
+  // Denies AskUserQuestion at a human review until that round's review file exists (`130`).
+  "maestro-human-review-gate",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -368,6 +370,7 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
   nodeHook("PreToolUse", CHANNEL_GUARD_MATCHER, "maestro-channel-write-guard.cjs"),
+  nodeHook("PreToolUse", "AskUserQuestion", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 

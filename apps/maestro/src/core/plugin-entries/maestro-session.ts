@@ -163,6 +163,15 @@ export {
   CHANNEL_ONLY_AGENTS,
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
+// The human-review summary gate (`130`): `fs`/`path` only.
+export {
+  checkHumanReview,
+  currentReviewRound,
+  reviewFileName,
+  isReviewFile,
+  HUMAN_REVIEW_LABEL,
+  type HumanReviewVerdict,
+} from "../human-review-gate.js";
 export {
   lastHandoffLabel,
   sendMessageHandoff,

@@ -90,10 +90,13 @@ function writeStatusMap(dir: string, statusMap: StatusMap): void {
 function listTaskFiles(dir: string): string[] {
   try {
     // Numbered files sort lexicographically into their topological run order.
-    return fs
-      .readdirSync(dir)
-      .filter((f) => f.endsWith(".md"))
-      .sort((a, b) => a.localeCompare(b));
+    return (
+      fs
+        .readdirSync(dir)
+        // `130`: `<task>.review.md` files sit beside the tasks but are not tasks.
+        .filter((f) => f.endsWith(".md") && !/\.review(-\d+)?\.md$/.test(f))
+        .sort((a, b) => a.localeCompare(b))
+    );
   } catch {
     return [];
   }
