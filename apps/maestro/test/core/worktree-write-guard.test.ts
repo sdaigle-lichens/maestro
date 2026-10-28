@@ -197,10 +197,8 @@ describe("merge conflict on a generated lib names the resolution (082)", () => {
     });
 
     expect(run.status).toBe(1);
-    expect(run.stdout).toContain("pnpm --filter maestro build:plugin-libs");
-    expect(run.stdout).toContain(
-      "cp plugins/maestro/scripts/lib/maestro-scratch-lib.cjs .claude/scripts/lib/maestro-scratch-lib.cjs"
-    );
+    expect(run.stdout).toContain("run `pnpm refresh:runtime`");
+    expect(run.stdout).not.toContain("cp plugins/maestro/scripts/lib/");
   });
 
   it("gives no mirror-copy hint when a hand-written file (or the hand-maintained maestro-tasks.cjs) also conflicts", async () => {

@@ -630,25 +630,18 @@ const SANDBOX_DENIAL =
 // hand-maintained maestro-tasks.cjs) or in this repo's tracked MIRROR of one
 // (.claude/scripts/lib/*.cjs) is never resolved by hand-merging the bundle text. Two tasks that both
 // rebuilt the same lib always collide there. The fix is mechanical: resolve the TypeScript source
-// conflicts first, rebuild the plugin libs, then copy each plugin lib over its mirror.
+// conflicts first, then `pnpm refresh:runtime` rebuilds the plugin libs and copies each over its mirror.
 function generatedLibResolution(conflicts) {
-  const kinds = conflicts.map((f) => {
+  const generated = conflicts.every((f) => {
     const m = /^(plugins\/maestro|\.claude)\/scripts\/lib\/([^/]+\.cjs)$/.exec(f);
-    if (!m || m[2] === "maestro-tasks.cjs") return null;
-    return { file: f, name: m[2], mirror: m[1] === ".claude" };
+    return m && m[2] !== "maestro-tasks.cjs";
   });
-  if (!conflicts.length || kinds.some((k) => k === null)) return null;
-  const mirrors = kinds.filter((k) => k.mirror);
+  if (!conflicts.length || !generated) return null;
   return (
     "Every conflicting file is a generated plugin lib or its tracked mirror, so do NOT edit the bundle text. Resolve like this in the worktree:\n" +
     "  1. resolve any conflict in apps/maestro/src/core/** first (none listed here means the sources merged cleanly);\n" +
-    "  2. rebuild the libs: `pnpm --filter maestro build:plugin-libs`;\n" +
-    (mirrors.length
-      ? "  3. copy each plugin lib over its mirror: " +
-        mirrors.map((k) => `\`cp plugins/maestro/scripts/lib/${k.name} .claude/scripts/lib/${k.name}\``).join(", ") +
-        ";\n"
-      : "  3. (no mirror conflicted, but copy any changed lib over its .claude/scripts/lib/ mirror anyway);\n") +
-    "  4. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
+    "  2. run `pnpm refresh:runtime` (rebuilds the libs and copies each over its .claude/scripts/lib/ mirror; a sandboxed agent hands the user `! pnpm refresh:runtime`);\n" +
+    "  3. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
   );
 }
 
