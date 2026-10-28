@@ -11,6 +11,8 @@ In:
 - A review file per review round and a gate hook so a human review never asks without its summary.
 - A new `manager_review` node type in the workflow graph, the canvas and the validation.
 - The worker ↔ manager review protocol: request, verdicts, rounds, escalation, fallback.
+- Reliable herdr detection under the sandbox in maestro-update, maestro-install and maestro-manager
+  (a fix found while running this epic; task 133).
 
 Out:
 

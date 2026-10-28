@@ -664,5 +664,10 @@
       "131-add-the-manager-review-workflow-node.md"
     ],
     "epic": "manager-review"
+  },
+  "133-detect-herdr-reliably-under-the-sandbox.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "manager-review"
   }
 }
