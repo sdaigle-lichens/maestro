@@ -17,11 +17,13 @@ description: Invariants for everything under plugins/<name>/ — it ships to tha
 - `plugins/maestro/scripts/lib/*.cjs` (except `maestro-tasks.cjs`) are **generated** from
   `apps/maestro/src/core/plugin-entries/*.ts`. Never hand-edit them — edit the TypeScript source and
   run `pnpm --filter maestro build:plugin-libs`.
-- After rebuilding the libs, refresh this repo's tracked mirrors and prove parity before handing off:
-  copy each changed lib in `install.ts`'s `STATIC_ASSETS` from `plugins/maestro/scripts/lib/` over
-  `.claude/scripts/lib/` (likewise a changed `.js`/`.cjs` plugin script over its `.claude/scripts/`
-  copy), then run `pnpm --filter maestro exec vitest run test/core/parity.test.ts` — it checks every
-  `.claude/scripts/` asset in `runtimeAssets()` and names the `cp` for a stale one. The mirrors stay
+- After a plugin change, refresh this repo's tracked copies with the one command `pnpm refresh:runtime`
+  (rebuilds the libs, copies every changed lib and plugin script over its `.claude/scripts/` mirror,
+  re-syncs the rendered orchestrator's HANDOFFS and STEPS, merges the `.claude/settings.json` hooks;
+  idempotent). A sandboxed agent cannot write those paths: it hands the user exactly
+  `! pnpm refresh:runtime`. `maestro-render-orchestrator.cjs` alone does NOT refresh STEPS. Then prove
+  parity with `pnpm --filter maestro exec vitest run test/core/parity.test.ts` — it checks every
+  `.claude/scripts/` asset in `runtimeAssets()` and the STEPS region, and names the command. The mirrors stay
   tracked on purpose; when two branches both rebuild a lib, `maestro-task-status.cjs merge` names the
   resolution (rebuild, copy, parity test) instead of leaving a hand-merge of bundle text.
 - A hook script committed as `.js` under `plugins/maestro/scripts/` is copied into a project as

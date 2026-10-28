@@ -137,6 +137,7 @@ the other hooks here the plugin copy does **not** stand down for it (`122`, see 
 | `PreToolUse`    | `.*`         | `maestro-session-log.cjs`          |
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
 | `PreToolUse`    | `Write\|Edit\|MultiEdit\|NotebookEdit` | `maestro-channel-write-guard.cjs` (`121`) |
+| `PreToolUse`    | `AskUserQuestion\|SendMessage` | `maestro-human-review-gate.cjs` (`130`, `132`) |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
 `id` is `<Event>:<script>`, unique because a script is registered at most once per event

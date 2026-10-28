@@ -217,14 +217,23 @@ This repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin
 `plugins/maestro/scripts/lib/`, so a rebuild leaves the mirrors stale and `parity.test.ts`'s
 "plugin-lib project mirror parity (066)" fails. After every rebuild:
 
-1. `cp plugins/maestro/scripts/lib/<name>.cjs .claude/scripts/lib/<name>.cjs` for each lib in
-   `STATIC_ASSETS` that changed (and the plugin script copies, e.g. `maestro-task-status.cjs`);
+1. **`pnpm refresh:runtime`** (`scripts/refresh-runtime.mjs`) — one idempotent command that rebuilds
+   the libs, runs `maestro-install.js .` (copies every `runtimeAssets()` file over its
+   `.claude/scripts/` mirror, re-syncs the STEPS/PRINCIPLES regions of the rendered
+   `.claude/skills/maestro/SKILL.md`, merges the hook registrations into `.claude/settings.json`) and
+   then re-renders the HANDOFFS table. A sandboxed agent cannot write those paths, so it hands the
+   user exactly `! pnpm refresh:runtime` instead of hand-built `cp` lines;
 2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.
+
+**`maestro-render-orchestrator.cjs` alone does NOT refresh STEPS.** It rewrites only the HANDOFFS
+table; STEPS comes from the template via `maestro-install.js`. Giving the user the render script as
+the re-sync step cost task 132 a second round-trip. `parity.test.ts` fails with a message naming
+`pnpm refresh:runtime` for a stale mirror, a stale bundle or a stale STEPS region.
 
 Since `087` that test covers **every** `.claude/scripts/` asset in `runtimeAssets()` — hand-written
 scripts and hook scripts (with the `.js` → `.cjs` rename) as well as libs — via
 `test/helpers/mirror-parity.ts` (`staleMirrors`, `describeStale`). A stale or missing mirror fails
-and the message is the `cp plugins/maestro/<src> <dest>` that fixes it. Task 084's stale
+and the message names `pnpm refresh:runtime` as the fix. Task 084's stale
 `maestro-epic.cjs` passed the old lib-only check.
 
 **Decision (`082`): the mirrors stay tracked.** Untracking them would leave a fresh clone without a

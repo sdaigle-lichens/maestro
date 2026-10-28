@@ -12,6 +12,10 @@ that machinery. The `maestro` plugin
 under `plugins/maestro/` is the runtime half — its `scripts/lib/*.cjs` files are generated from
 `apps/maestro/src/core/plugin-entries/*.ts` via `apps/maestro/scripts/build-plugin-libs.mjs`. Run
 that after editing a `plugin-entries/*.ts` source, or the plugin's hooks silently run stale code.
+To refresh everything this repo tracks after a plugin change (libs, `.claude/scripts` mirrors, the
+rendered orchestrator's HANDOFFS and STEPS, the settings hooks) run `pnpm refresh:runtime`; a sandboxed
+agent cannot write those paths and hands the user exactly `! pnpm refresh:runtime`.
+`maestro-render-orchestrator.cjs` alone does not refresh STEPS.
 
 See `apps/maestro/CLAUDE.md` for the app's own architecture, `.claude/skills/maestro-architecture/`
 for how the runtime behaves in a session, and `plugins/maestro/skills/maestro-{install,update,uninstall}/`

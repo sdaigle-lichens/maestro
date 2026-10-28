@@ -162,8 +162,11 @@ Every `scripts/lib/*.cjs` except `maestro-tasks.cjs` (`maestro-session`, `maestr
 `.cjs` directly is overwritten on the next build; edit the TypeScript source and rebuild. They are
 committed because a project installs them by file copy, so they must exist in the repo. A rebuilt
 lib that is in `STATIC_ASSETS` must also be copied over this repo's own `.claude/scripts/lib/`
-mirror (`parity.test.ts` names the `cp`; see `.claude/rules/plugin-publishing.md`) — a second place
-a change can go stale.
+mirror — a second place a change can go stale. `pnpm refresh:runtime` does the whole refresh in
+order (rebuild libs, `maestro-install.js .` for the mirrors, the rendered orchestrator's STEPS and the
+settings hooks, then the HANDOFFS render) and is idempotent; `parity.test.ts` names it when anything
+is stale, and a sandboxed agent hands the user `! pnpm refresh:runtime`. `maestro-render-orchestrator.cjs`
+alone does NOT refresh STEPS (see `.claude/rules/plugin-publishing.md`).
 
 **`032` is the worked example of forgetting.** It changed `seed.ts` to emit a `gates` block, but
 `seed.ts` is a `plugin-entries` source, so until `build:plugin-libs` was re-run the terminal
