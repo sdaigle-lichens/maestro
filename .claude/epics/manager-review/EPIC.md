@@ -13,6 +13,7 @@ In:
 - The worker ↔ manager review protocol: request, verdicts, rounds, escalation, fallback.
 - Reliable herdr detection under the sandbox in maestro-update, maestro-install and maestro-manager
   (a fix found while running this epic; task 133).
+- A maestro.json setting for the model epic worker sessions launch with (task 134).
 
 Out:
 
@@ -37,5 +38,14 @@ Out:
 - **Human review keeps `AskUserQuestion`** (it gives herdr its "input needed" state). The digest
   (~15 lines, ending with the review file path) goes in the `Approve` option's `preview`; the full
   summary is printed above the question too (herdr scrollback works while the dialog is open).
+- **Review rounds are counted by `plan.loopbacks`** (task 130): `plan-step <label> pending` increments
+  it, and each round gets its own file (`<task>.review.md`, `<task>.review-2.md`, ...). The
+  orchestrator always records its path with `plan`, because the human-review gate hook reads it.
+  `plan.loopbacks` counts every loop-back (a test loop-back too), so it numbers review files but is
+  not a count of manager redirects. Task 132's "2 redirects then escalate" cap must count manager
+  redirects for the ticket specifically (e.g. recorded by `review-request`), not read `plan.loopbacks`.
+- **The human-review gate fails open** when a session has no plan, no active_task or bad state
+  (task 130). Whether Claude Code honours a deny on `AskUserQuestion` is not covered by tests; it
+  needs one live check.
 - **Placement:** `manager_review` is recommended right after implementation (`default`) or after the
   test plan (`tdd`), before `@reviewer` and `human_review`.
