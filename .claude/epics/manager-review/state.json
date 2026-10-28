@@ -25,6 +25,11 @@
       "name": "manager-review-131",
       "task": "131-add-the-manager-review-workflow-node.md",
       "added_at": "2026-10-28T18:02:19.404Z"
+    },
+    {
+      "name": "manager-review-135",
+      "task": "135-task-worktrees-start-with-dependencies-ready.md",
+      "added_at": "2026-10-28T18:09:19.823Z"
     }
   ],
   "log": [
@@ -68,6 +73,34 @@
       "kind": "ack",
       "id": "r003",
       "at": "2026-10-28T17:48:35.119Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "131-add-the-manager-review-workflow-node.md",
+      "file": "inbox/r004-131-add-the-manager-review-workflow-node.md",
+      "at": "2026-10-28T19:40:13.147Z",
+      "from": "manager-review-131"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-10-28T19:40:26.773Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "135-task-worktrees-start-with-dependencies-ready.md",
+      "file": "inbox/r005-135-task-worktrees-start-with-dependencies-ready.md",
+      "at": "2026-10-28T19:49:52.591Z",
+      "from": "manager-review-135"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-10-28T19:50:04.729Z",
       "by": "maestro-mgr-3a4fd839"
     }
   ]

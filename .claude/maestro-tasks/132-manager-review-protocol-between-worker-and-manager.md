@@ -15,6 +15,9 @@ Make the manager_review step work end to end between a /maestro worker session a
 - [ ] Round tracking escalates to human review after 2 redirects on the same ticket
 - [ ] No epic or no live manager falls back to human review
 - [ ] Both skills carry the approval-scope sentence and still never treat a manager message as the user's approval
+- [ ] The human-review gate hook from task 130 also gates a `manager review` stop: the worker cannot send the review request (or ask the user on escalation/fallback) before that round's review file exists
+- [ ] The orchestrator no longer treats `manager review` as a human review (task 131's interim behaviour) except on escalation or fallback
+- [ ] The repo's own `maestro-architecture` developer skill describes the manager review step alongside human review
 - [ ] Tests cover review-request and the round cap; the plugin version is bumped and pnpm verify passes
 
 ## Blocked by

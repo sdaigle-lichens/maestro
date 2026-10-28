@@ -653,12 +653,12 @@
     "epic": "manager-review"
   },
   "131-add-the-manager-review-workflow-node.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
   },
   "132-manager-review-protocol-between-worker-and-manager.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "130-human-review-always-shows-its-summary.md",
       "131-add-the-manager-review-workflow-node.md"
@@ -676,7 +676,7 @@
     "epic": "manager-review"
   },
   "135-task-worktrees-start-with-dependencies-ready.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
   }
