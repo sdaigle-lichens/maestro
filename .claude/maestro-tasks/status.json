@@ -646,5 +646,23 @@
     "status": "done",
     "blockedBy": [],
     "epic": "autonomous-workers"
+  },
+  "130-human-review-always-shows-its-summary.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "131-add-the-manager-review-workflow-node.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "132-manager-review-protocol-between-worker-and-manager.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "130-human-review-always-shows-its-summary.md",
+      "131-add-the-manager-review-workflow-node.md"
+    ],
+    "epic": "manager-review"
   }
 }
