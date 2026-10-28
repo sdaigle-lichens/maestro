@@ -213,6 +213,28 @@ inside a worker session, and only for a task that has an epic:
 Everything else (the tracker's `epic` field, the inbox, the write discipline, why session names,
 what counts as affecting another epic) is in `task-queue`'s `sub-concepts/epics.md`.
 
+## Live check
+
+Whether Claude Code honours the review gate's PreToolUse deny on `SendMessage` and `AskUserQuestion`
+was covered only by unit tests until the manager review step was run once for real in an epic worker
+session (task `137`). Observations, filled in after that run:
+
+- **Gate deny:** observed. The gate denied a `SendMessage` to the manager (`maestro-mgr-3a4fd839`)
+  sent before the round's review file existed. The denial named the missing review file path and the
+  exact `review-request` command to run next.
+- **Review-request line:** observed. The line, recorded with `maestro-epic.cjs review-request`
+  (`m001`, round 1), reached the manager's inbox; the send succeeded.
+- **Verdict:** observed. `redirect` (the manager chose it deliberately to exercise round 2). The
+  orchestrator followed the `manager requested direction change` edge back to @backend (resumed by
+  `agent_id`), reset @backend and the manager review stop to pending, and passed the manager's note
+  to @backend.
+- **Redirect loop:** confirmed. The round-2 request said "Round 2", quoted the manager's note and
+  used `.review-2.md` as its review file; `m002` got verdict `on-track`.
+- **Surprises:** @backend could not write its channel file from the worktree (permission
+  classifier), so the orchestrator wrote it as the worktree procedure describes (reported as an epic
+  finding). Expected, by design: the manager recorded the verdict itself, and whoever runs
+  `review-verdict` second gets the recorded verdict back ("already recorded").
+
 ## Things that bite
 
 Each sub-concept carries the traps specific to it. These cut across all of them:
