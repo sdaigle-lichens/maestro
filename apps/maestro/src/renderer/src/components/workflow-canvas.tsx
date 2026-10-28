@@ -1,6 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { MaestroWorkflowV3, MaestroNodeV3, MaestroEdgeV3, MaestroInstanceV3 } from "../utils/maestro";
-import { MANAGER_DIRECTION_CHANGE_LABEL, REVIEW_STYLE, nextReviewId, reviewRfType } from "../utils/review-nodes";
+import {
+  MANAGER_DIRECTION_CHANGE_LABEL,
+  REVIEW_STYLE,
+  nextReviewId,
+  reviewRfType,
+  type ReviewNodeType,
+} from "../utils/review-nodes";
+import AddStepKindChoice, { DEFAULT_REVIEW_TYPE, addStepNodeType, type AddStepKind } from "./add-step-kind-choice";
 import InstancePicker, {
   blankInstancePicker,
   resolveInstanceFromPicker,
@@ -1250,13 +1257,16 @@ export default function WorkflowCanvas({
   // ── Add step (per-node "+" button) ──────────────────────────────
 
   const [addStepSourceId, setAddStepSourceId] = useState<string | null>(null);
-  const [addStepType, setAddStepType] = useState<"agent" | "human_review" | "manager_review" | "skill">("agent");
+  const [addStepKind, setAddStepKind] = useState<AddStepKind>("agent");
+  const [addStepReviewType, setAddStepReviewType] = useState<ReviewNodeType>(DEFAULT_REVIEW_TYPE);
+  const addStepType = addStepNodeType(addStepKind, addStepReviewType);
   const [addStepPicker, setAddStepPicker] = useState<InstancePickerValue>(blankInstancePicker());
   const [addStepSkill, setAddStepSkill] = useState("");
 
   const resetAddStep = useCallback(() => {
     setAddStepSourceId(null);
-    setAddStepType("agent");
+    setAddStepKind("agent");
+    setAddStepReviewType(DEFAULT_REVIEW_TYPE);
     setAddStepPicker(blankInstancePicker());
     setAddStepSkill("");
   }, []);
@@ -1264,7 +1274,8 @@ export default function WorkflowCanvas({
   const openAddStep = useCallback(
     (sourceId: string) => {
       setAddStepSourceId(sourceId);
-      setAddStepType("agent");
+      setAddStepKind("agent");
+      setAddStepReviewType(DEFAULT_REVIEW_TYPE);
       const firstFree = availableAgents.find((a) => !placedAgentTypes.has(a));
       setAddStepPicker(blankInstancePicker(firstFree ?? ""));
       setAddStepSkill(availableSkills[0] ?? "");
@@ -1632,40 +1643,16 @@ export default function WorkflowCanvas({
       {/* Add step modal */}
       {addStepSourceId && (
         <div className="absolute inset-0 bg-black/30 z-20 flex items-center justify-center">
-          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-80 flex flex-col gap-3">
+          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-[28rem] max-w-[90%] flex flex-col gap-3">
             <div className="text-[13px] font-semibold text-maestro">Add step</div>
 
             {/* Type picker */}
-            <div className="flex rounded-lg overflow-hidden border border-maestro">
-              <button
-                type="button"
-                onClick={() => setAddStepType("agent")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "agent" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Agent
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddStepType("skill")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "skill" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Skill
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddStepType("human_review")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "human_review" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Human Review
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddStepType("manager_review")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "manager_review" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Manager Review
-              </button>
-            </div>
+            <AddStepKindChoice
+              kind={addStepKind}
+              reviewType={addStepReviewType}
+              onKindChange={setAddStepKind}
+              onReviewTypeChange={setAddStepReviewType}
+            />
 
             {/* Instance picker (only for agent type) */}
             {addStepType === "agent" && (
