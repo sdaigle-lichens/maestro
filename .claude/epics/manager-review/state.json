@@ -20,6 +20,11 @@
       "name": "manager-review-134",
       "task": "134-configurable-model-for-epic-worker-sessions.md",
       "added_at": "2026-10-28T17:19:53.599Z"
+    },
+    {
+      "name": "manager-review-131",
+      "task": "131-add-the-manager-review-workflow-node.md",
+      "added_at": "2026-10-28T18:02:19.404Z"
     }
   ],
   "log": [

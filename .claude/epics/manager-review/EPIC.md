@@ -14,6 +14,7 @@ In:
 - Reliable herdr detection under the sandbox in maestro-update, maestro-install and maestro-manager
   (a fix found while running this epic; task 133).
 - A maestro.json setting for the model epic worker sessions launch with (task 134).
+- Task worktrees starting with dependencies ready (task 135; found in 133 and 134).
 
 Out:
 

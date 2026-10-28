@@ -674,5 +674,10 @@
     "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
+  },
+  "135-task-worktrees-start-with-dependencies-ready.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "manager-review"
   }
 }

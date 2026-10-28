@@ -1135,7 +1135,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.13.0",
+  "runtimeVersion": "0.13.2",
   "reports": {
     "backend": {
       "id": "backend",
@@ -1266,5 +1266,6 @@
       }
     }
   },
-  "use_maestro_tasks": true
+  "use_maestro_tasks": true,
+  "worker_model": "sonnet"
 }
