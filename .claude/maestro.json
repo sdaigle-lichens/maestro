@@ -108,8 +108,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 900
@@ -169,13 +169,13 @@
         },
         {
           "from": "frontend",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "test",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -292,10 +292,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "backend",
           "kind": "condition",
-          "label": "human requested backend corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "left",
           "targetHandle": "top",
           "label_offset": {
@@ -304,10 +304,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "frontend",
           "kind": "condition",
-          "label": "human requested frontend corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "right",
           "targetHandle": "top",
           "label_offset": {
@@ -330,8 +330,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 310
@@ -393,13 +393,13 @@
         },
         {
           "from": "test",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "backend",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -499,10 +499,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "test",
           "kind": "condition",
-          "label": "human requested test corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "left",
           "targetHandle": "top",
           "label_offset": {
@@ -525,8 +525,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 280
@@ -552,13 +552,13 @@
         },
         {
           "from": "use-code-architecture-design-check",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "refactor",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -779,8 +779,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 580
@@ -833,13 +833,13 @@
         },
         {
           "from": "backend",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "test",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -928,10 +928,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "backend",
           "kind": "condition",
-          "label": "human requested backend corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "left",
           "targetHandle": "top",
           "label_offset": {
@@ -954,8 +954,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 400
@@ -1008,13 +1008,13 @@
         },
         {
           "from": "frontend",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "test",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -1103,10 +1103,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "frontend",
           "kind": "condition",
-          "label": "human requested frontend corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "left",
           "targetHandle": "top",
           "label_offset": {

@@ -17,6 +17,10 @@ In:
 - Task worktrees starting with dependencies ready (task 135; found in 133 and 134).
 - One command to refresh this repo's mirrors and rendered orchestrator (task 136; the sandbox gap
   hit in 130, 131 and 132).
+- A live check of the manager review step, now that this repo's workflows use it instead of human
+  review (task 137).
+- The add-step modal's step kinds become Agent, Skill and Review (Human by default, or Manager), in a
+  wider modal (task 138).
 
 Out:
 
