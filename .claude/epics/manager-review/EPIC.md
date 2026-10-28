@@ -21,6 +21,8 @@ In:
   review (task 137).
 - The add-step modal's step kinds become Agent, Skill and Review (Human by default, or Manager), in a
   wider modal (task 138).
+- Worktree agents writing their channel files without a classifier denial, via a project allow rule
+  (task 139; found again in 137).
 
 Out:
 

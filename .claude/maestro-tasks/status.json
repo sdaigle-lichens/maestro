@@ -686,11 +686,16 @@
     "epic": "manager-review"
   },
   "137-live-check-of-the-manager-review-step.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
   },
   "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md": {
     "status": "ready",
     "blockedBy": [],
     "epic": "manager-review"

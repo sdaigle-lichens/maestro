@@ -40,6 +40,14 @@
       "name": "manager-review-136",
       "task": "136-one-command-to-refresh-this-repo-s-mirrors-and-orchestrator.md",
       "added_at": "2026-10-28T21:34:31.878Z"
+    },
+    {
+      "name": "manager-review-137",
+      "added_at": "2026-10-28T23:06:19.456Z"
+    },
+    {
+      "name": "manager-review-138",
+      "added_at": "2026-10-28T23:06:20.300Z"
     }
   ],
   "log": [
@@ -139,6 +147,88 @@
       "kind": "ack",
       "id": "r007",
       "at": "2026-10-28T21:46:06.657Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m001",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/137-live-check-of-the-manager-review-step.review.md",
+      "at": "2026-10-28T23:09:56.744Z",
+      "from": "manager-review-137"
+    },
+    {
+      "kind": "verdict",
+      "id": "m001",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "verdict": "redirect",
+      "effective": "redirect",
+      "at": "2026-10-28T23:10:06.440Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m002",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "round": 2,
+      "file": ".claude/maestro-tasks/137-live-check-of-the-manager-review-step.review-2.md",
+      "at": "2026-10-28T23:10:47.489Z",
+      "from": "manager-review-137"
+    },
+    {
+      "kind": "review",
+      "id": "m003",
+      "task": "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/138-add-step-modal-three-step-kinds-with-a-review-type-choice.review.md",
+      "at": "2026-10-28T23:10:47.548Z",
+      "from": "manager-review-138"
+    },
+    {
+      "kind": "verdict",
+      "id": "m002",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-10-28T23:10:56.872Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "verdict",
+      "id": "m003",
+      "task": "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-10-28T23:11:03.362Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "file": "inbox/r008-137-live-check-of-the-manager-review-step.md",
+      "at": "2026-10-28T23:12:56.814Z",
+      "from": "manager-review-137"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "at": "2026-10-28T23:13:02.281Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r009",
+      "task": "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "file": "inbox/r009-138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "at": "2026-10-28T23:21:08.172Z",
+      "from": "manager-review-138"
+    },
+    {
+      "kind": "ack",
+      "id": "r009",
+      "at": "2026-10-28T23:21:13.974Z",
       "by": "maestro-mgr-3a4fd839"
     }
   ]

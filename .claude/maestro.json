@@ -314,6 +314,22 @@
             "x": 150,
             "y": 0
           }
+        },
+        {
+          "from": "test",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: a simple backend code fix found while testing",
+          "sourceHandle": "left",
+          "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: a simple frontend code fix found while testing",
+          "sourceHandle": "right",
+          "targetHandle": "top"
         }
       ]
     },
@@ -763,6 +779,22 @@
           "label": "frontend fix applied; re-run the tests",
           "sourceHandle": "left",
           "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: a simple backend code fix found while testing",
+          "sourceHandle": "left",
+          "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: a simple frontend code fix found while testing",
+          "sourceHandle": "right",
+          "targetHandle": "top"
         }
       ]
     },
@@ -938,6 +970,14 @@
             "x": -110,
             "y": 0
           }
+        },
+        {
+          "from": "test",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: a simple backend code fix found while testing",
+          "sourceHandle": "left",
+          "targetHandle": "top"
         }
       ]
     },
@@ -1113,6 +1153,14 @@
             "x": -110,
             "y": 0
           }
+        },
+        {
+          "from": "test",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: a simple frontend code fix found while testing",
+          "sourceHandle": "right",
+          "targetHandle": "top"
         }
       ]
     }
@@ -1263,6 +1311,20 @@
       "syncedFrom": {
         "version": 2,
         "hash": "f0a8b372a8237bde28a7bd89397bfbf156475f1b5bfb836ca027dfc5740ae146"
+      }
+    },
+    "test/backend": {
+      "id": "test/backend",
+      "syncedFrom": {
+        "version": 2,
+        "hash": "a6ad894f8f7aff72cd0f28d17f1669b322d2f7b318e4072ea1d8b4ca7e377c1a"
+      }
+    },
+    "test/frontend": {
+      "id": "test/frontend",
+      "syncedFrom": {
+        "version": 2,
+        "hash": "20ee63410cb19589b140a0f19cf538df7ed82161efa79178e2335445828bb8de"
       }
     }
   },
