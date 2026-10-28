@@ -632,7 +632,8 @@ export interface ConfigIssue {
  *
  * `steps` is the success chain, in order, EXCLUDING the implicit `main-session` entry node — each
  * entry is a step token in the same vocabulary `seed.ts`'s `linearWorkflow` already uses:
- * `"human_review-1"` (the one representable human-review node), `"skill:<id>"` (a skill node the
+ * `"human_review-1"` (the one representable human-review node), `"manager_review-<n>"` (a
+ * manager-review node), `"skill:<id>"` (a skill node the
  * orchestrator runs inline), or anything else (the `workflow_instances` name of an agent node —
  * created fresh, agent == name, when it doesn't exist yet and the agent it names is available).
  *

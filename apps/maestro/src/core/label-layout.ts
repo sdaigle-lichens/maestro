@@ -95,7 +95,7 @@ function padY(b: Box, pad: number): Box {
 
 function nodeBox(n: MaestroNodeV3, skillCount: SkillCount): Box {
   const { x, y } = n.position ?? { x: 0, y: 0 };
-  if (n.type === "human_review") return { x, y, w: HUMAN_W, h: HUMAN_H };
+  if (n.type === "human_review" || n.type === "manager_review") return { x, y, w: HUMAN_W, h: HUMAN_H };
   const skills = n.type === "agent" ? skillCount(n.instance ?? n.id) : 0;
   return { x, y, w: NODE_W, h: NODE_H + skills * SKILL_CHIP_H };
 }
