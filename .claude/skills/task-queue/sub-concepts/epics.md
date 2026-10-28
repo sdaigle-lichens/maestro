@@ -10,8 +10,8 @@ resumable `maestro-manager` session. A task in no epic behaves exactly as before
 CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership and the report inbox.
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
-remove-worker | of | ready | report --task | note | reports | ack` (`085` added `note` and `list`'s manager and
-backlog columns; `100` added `of`; `125` added `ready`). Callers never see the lock, the file layout or the id
+remove-worker | of | ready | report --task | note | review-request | review-verdict | reports | ack` (`085` added `note` and `list`'s manager and
+backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -83,6 +83,11 @@ through that epic's inbox, never through a message alone.
   recorded and the note waits for a resumed manager.
 - `ack` takes `rNNN` and `nNNN`; `show`/`reports` list unacknowledged reports and notes together,
   oldest first (`unacknowledgedReports` returns both, typed `EpicInboxEntry`).
+- `132`: `EpicInboxEntry` also covers a `review` entry (`mNNN`, `{task, round, file, at, from?}`,
+  `file` relative to the main checkout) from `review-request`. It is listed until a `verdict` log
+  entry (`{id, task, verdict, effective, capped?}`) names it or a newer request for the same ticket
+  supersedes it; `ack` refuses it. `m` is a third independent counter. The redirect cap and the
+  worker's side are in `maestro-architecture`'s **Manager review** section.
 - `show` adds **cross-epic dependencies**: tracker `blockedBy` edges with exactly one end in this
   epic (`blocked by` / `blocks`; the other side is another epic or no epic), blocker not done.
   `TrackerEntry` gained `blockedBy` for this.

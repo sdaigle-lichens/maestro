@@ -43,6 +43,7 @@ __export(maestro_session_exports, {
   HUMAN_REVIEW_LABEL: () => HUMAN_REVIEW_LABEL,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   MAIN_CHECKOUT_SHARED_DIRS: () => MAIN_CHECKOUT_SHARED_DIRS,
+  MANAGER_REVIEW_LABEL: () => MANAGER_REVIEW_LABEL,
   MEETING_DIR_NAME: () => MEETING_DIR_NAME,
   MEETING_LEFTOVERS_KEY: () => MEETING_LEFTOVERS_KEY,
   METRICS_DIR_NAME: () => METRICS_DIR_NAME,
@@ -79,6 +80,7 @@ __export(maestro_session_exports, {
   compactMetrics: () => compact,
   compareRuntimeVersions: () => compareRuntimeVersions,
   currentReviewRound: () => currentReviewRound,
+  currentReviewStop: () => currentReviewStop,
   dependencyStatus: () => dependencyStatus,
   detectPackageManager: () => detectPackageManager,
   dropResolvedMissingPayloads: () => dropResolvedMissingPayloads,
@@ -1403,7 +1405,11 @@ function checkChannelWrite(input) {
 
 // src/core/human-review-gate.ts
 var HUMAN_REVIEW_LABEL = "human review";
+var MANAGER_REVIEW_LABEL = "manager review";
 var REVIEW_FILE_PATTERN = /\.review(-\d+)?\.md$/;
+function isReviewStop(label) {
+  return label === HUMAN_REVIEW_LABEL || label === MANAGER_REVIEW_LABEL;
+}
 function isReviewFile(filename) {
   return REVIEW_FILE_PATTERN.test(filename);
 }
@@ -1411,27 +1417,49 @@ function reviewFileName(taskFile, round) {
   const base = taskFile.replace(/^.*[\\/]/, "").replace(/\.md$/, "");
   return round <= 1 ? `${base}.review.md` : `${base}.review-${round}.md`;
 }
-function currentReviewRound(plan) {
+function currentReviewStop(plan) {
   if (!plan || !Array.isArray(plan.steps)) return null;
   const steps = plan.steps;
   const next = steps.findIndex((s) => s && s.status !== "done");
-  if (next === -1 || steps[next].label !== HUMAN_REVIEW_LABEL) return null;
-  const doneReviews = steps.filter((s) => s && s.label === HUMAN_REVIEW_LABEL && s.status === "done").length;
+  if (next === -1) return null;
+  const label = steps[next].label;
+  if (!isReviewStop(label)) return null;
+  const doneReviews = steps.filter((s) => s && isReviewStop(s.label) && s.status === "done").length;
   const loopbacks = typeof plan.loopbacks === "number" && plan.loopbacks > 0 ? Math.floor(plan.loopbacks) : 0;
-  return 1 + loopbacks + doneReviews;
+  return { label, round: 1 + loopbacks + doneReviews };
 }
+function currentReviewRound(plan) {
+  return currentReviewStop(plan)?.round ?? null;
+}
+function bareRecipient(to) {
+  return typeof to === "string" ? to.replace(/\s*\[[^\]]*\]\s*$/, "").trim() : "";
+}
+var HUMAN_SECTIONS = "'## Changed' (files and areas), '## Did' (one line per agent), '## Deviations from the ticket' and, on a re-review, '## Corrections since the last round'";
+var BRIEF_SECTIONS = "'## Goal', '## Done', '## Deviations', '## Decisions', '## Touches' (files and modules by name, never a diff), '## Sibling impact' and '## Questions'";
 function checkHumanReview(input) {
-  if (input.toolName !== "AskUserQuestion") return { allow: true };
+  if (input.toolName !== "AskUserQuestion" && input.toolName !== "SendMessage") return { allow: true };
   const state = input.state;
   if (!state || typeof state.active_task !== "string" || !state.active_task) return { allow: true };
-  const round = currentReviewRound(state.plan);
-  if (round === null) return { allow: true };
+  const stop = currentReviewStop(state.plan);
+  if (stop === null) return { allow: true };
+  if (input.toolName === "SendMessage") {
+    if (stop.label !== MANAGER_REVIEW_LABEL) return { allow: true };
+    const manager = typeof input.managerName === "string" ? input.managerName.trim() : "";
+    if (!manager || bareRecipient(input.toolInput?.to) !== manager) return { allow: true };
+  }
+  const { round } = stop;
   const name = reviewFileName(state.active_task, round);
   const file = `${input.tasksDir.replace(/[\\/]+$/, "")}/${name}`;
   if (input.exists(file)) return { allow: true };
+  if (stop.label === MANAGER_REVIEW_LABEL) {
+    return {
+      allow: false,
+      reason: `Manager review round ${round}: the review file is missing. Write ${file} first, as the direction brief with the sections ${BRIEF_SECTIONS}. Then record it with \`node .claude/scripts/maestro-epic.cjs review-request --task "${state.active_task}" --file "${file}"\` and send the manager the one line it prints. On an escalation, or the fallback to human review (no epic, no live manager), the same file is the summary: print it above the question and put a digest of at most 15 lines in the Approve option's preview, ending with the review file's path (${file}).`
+    };
+  }
   return {
     allow: false,
-    reason: `Human review round ${round}: the review file is missing. Write ${file} first, with the sections '## Changed' (files and areas), '## Did' (one line per agent), '## Deviations from the ticket' and, on a re-review, '## Corrections since the last round'. Then print the full summary as text above the question and ask again, putting a digest of at most 15 lines (deviations, risks and open questions, changed-file count, corrections since last round) in the Approve option's preview, ending with the review file's path (${file}).`
+    reason: `Human review round ${round}: the review file is missing. Write ${file} first, with the sections ${HUMAN_SECTIONS}. Then print the full summary as text above the question and ask again, putting a digest of at most 15 lines (deviations, risks and open questions, changed-file count, corrections since last round) in the Approve option's preview, ending with the review file's path (${file}).`
   };
 }
 
@@ -2517,6 +2545,7 @@ function meetingNotice(meeting, agentType) {
   HUMAN_REVIEW_LABEL,
   LEGACY_SESSION_FILES,
   MAIN_CHECKOUT_SHARED_DIRS,
+  MANAGER_REVIEW_LABEL,
   MEETING_DIR_NAME,
   MEETING_LEFTOVERS_KEY,
   METRICS_DIR_NAME,
@@ -2553,6 +2582,7 @@ function meetingNotice(meeting, agentType) {
   compactMetrics,
   compareRuntimeVersions,
   currentReviewRound,
+  currentReviewStop,
   dependencyStatus,
   detectPackageManager,
   dropResolvedMissingPayloads,

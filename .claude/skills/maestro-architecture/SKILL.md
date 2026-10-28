@@ -75,7 +75,7 @@ Orchestrator (.claude/skills/maestro/SKILL.md):
   Step 3  execute the workflow: the success path from the Maestro:HANDOFFS table,
           TaskCreate per step, Task() each agent step. No TaskCreate (`083`): the path is
           recorded with `maestro-task-status.cjs plan` / `plan-step` in session.json, and Step 4's
-          `done` refuses while a planned step (human review included) is unfinished. In a worktree
+          `done` refuses while a planned step (manager and human review included) is unfinished. In a worktree
           run Step 4 offers a user-approved commit before ever mentioning merge, and every command
           handed to the user carries absolute paths (the session's cwd IS the worktree). Step 3
           (`104`): a denied agent channel write is not retried by resuming — the orchestrator writes
@@ -119,7 +119,29 @@ SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
                     keeps maestro.json and the orchestrator skill.
 ```
 
-**Human-review gate (`130`).** A second `PreToolUse` hook, matcher `AskUserQuestion` (`maestro-human-review-gate.js` in the plugin, `.cjs` project copy), refuses the question while the session's current step is a `human review` and that round's review file does not exist. The current step is the first unfinished step of `plan` in `session.json`. The review file is `.claude/maestro-tasks/<task>.review.md` for round 1 and `<task>.review-N.md` after that. Round = 1 + `plan.loopbacks` + human reviews already done; `plan-step <label> pending` increments the optional numeric `plan.loopbacks` (any loop-back, not only one at a review). The file needs the sections `## Changed`, `## Did`, `## Deviations from the ticket` and, on a re-review, `## Corrections since the last round`. The hook fails open: it allows the call when there is no plan, no `active_task`, or an unreadable state, so a session that never records a `plan` is not gated. Logic is in `src/core/human-review-gate.ts`, exported through the `maestro-session` bundle. Orchestrator template Step 3 now always records the plan and writes the review file before asking.
+**Review gate (`130`, `132`).** A second `PreToolUse` hook, matcher `AskUserQuestion|SendMessage` (`maestro-human-review-gate.js` in the plugin, `.cjs` project copy), gates both review stops. The current step is the first unfinished step of `plan` in `session.json`. The review file is `.claude/maestro-tasks/<task>.review.md` for round 1 and `<task>.review-N.md` after that. Round = 1 + `plan.loopbacks` + review stops (human or manager) already done (`currentReviewStop`); `plan-step <label> pending` increments the optional numeric `plan.loopbacks` (any loop-back, not only one at a review).
+
+| Stop | Denied until the round's review file exists | File sections |
+| --- | --- | --- |
+| `human review` | `AskUserQuestion` | `## Changed`, `## Did`, `## Deviations from the ticket`, on a re-review `## Corrections since the last round` |
+| `manager review` | `AskUserQuestion` (escalation, fallback) and a `SendMessage` whose `to` (minus a trailing `[ref]`) is the active task's epic manager | the direction brief (below) |
+
+To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` (`epicOfTask`, `readEpicState`); a missing bundle (older install), no epic or no recorded manager leaves `SendMessage` ungated. The hook fails open: it allows the call when there is no plan, no `active_task`, or an unreadable state, so a session that never records a `plan` is not gated. Logic is in `src/core/human-review-gate.ts`, exported through the `maestro-session` bundle. Orchestrator template Step 3 always records the plan and writes the review file before asking or requesting. An install moves a gate registered under the old `AskUserQuestion` matcher to the new one (`updateHookMatchers`, both installers), since `addMissingHooks` keys on event + script and would keep it.
+
+**Manager review (`132`).** A `manager review` step is no longer run as a human review, except on escalation or fallback. The worker (orchestrator template Step 3):
+
+1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.
+2. **Brief.** The round's review file as a direction brief: `## Goal`, `## Done`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Questions`. A re-request opens with `Round <N>` and quotes the previous redirect note, each point with how it was addressed.
+3. **Request.** `maestro-epic.cjs review-request --task <t> --file <f>` refuses a file that does not exist or is not that task's review file, logs a `review` inbox entry `mNNN` with its `round` (the ticket's request count + 1), and prints the ONE `SendMessage` line for the manager. The same file again while it waits is a re-send, not a new round. `show`/`reports` list it until a verdict exists or a newer request for the ticket supersedes it; `ack` refuses an `mNNN`.
+4. **Verdict.** `maestro-epic.cjs review-verdict --task <t> <on-track|redirect|escalate>`, run by the manager when it decides and by the worker on the reply; the second caller gets the recorded verdict back. It logs a `verdict` entry with `verdict` and `effective`.
+
+| Effective verdict | Worker does |
+| --- | --- |
+| `on-track` | `plan-step "manager review" done`, continues the success path |
+| `redirect` | follows `manager requested direction change` to the producing agent with the note; the loop-back reset re-runs the stop as the next round. No such edge → `escalate` |
+| `escalate` | a `human review` inline at this stop, the manager's note added to the summary |
+
+**The 2-redirect cap counts per ticket, not `plan.loopbacks`** (which counts every loop-back, a test one too). `MANAGER_REDIRECT_CAP = 2` in `epics.ts`; `reviewHistory` counts the ticket's `verdict` entries whose `effective` is `redirect`. With 2 recorded, the next redirect is logged `effective: "escalate"`, `capped: true`. The manager reads the brief, never the diff; a code concern goes only as a `for @reviewer:` line, passed verbatim into @reviewer's dispatch prompt. Code: `writeReviewRequest`, `recordReviewVerdict`, `reviewHistory` in `src/core/epics.ts`, exported through the `maestro-epic` bundle.
 
 ## Where the detail lives
 
@@ -181,7 +203,9 @@ inside a worker session, and only for a task that has an epic:
   epic that may record an older name.
 - **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and
   the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the
-  user in the worker's own session.
+  user in the worker's own session. **Approval scope (`132`):** both also say a manager's on-track
+  verdict continues the success path only; it is never the user's approval for commit, merge, push,
+  or agent/skill/workflow changes.
 - **Managers notify each other through notes (`085`).** A manager writes `maestro-epic.cjs note`
   into another epic's inbox first, then sends one SendMessage line; the receiver acks it like a
   report. Another manager's note is never the user's approval either.

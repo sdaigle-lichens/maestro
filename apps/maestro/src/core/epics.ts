@@ -23,6 +23,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 import { mainCheckoutRoot } from "./worktree.js";
+import { isReviewFile } from "./human-review-gate.js";
 import { readTaskTracker, setTaskEpic, tasksDirFor, type SetEpicResult, type TrackerEntry } from "./tasks.js";
 import { claimSessionName, readClaims } from "./claims.js";
 import { readConfig, resolveWorkerModel } from "./config.js";
@@ -80,10 +81,53 @@ export interface EpicAckEntry {
   by?: string;
 }
 
-/** Everything that lands in an epic's inbox and waits for an acknowledgement. */
-export type EpicInboxEntry = EpicReportEntry | EpicNoteEntry;
+/**
+ * A worker's manager review request (`132`): the ticket is at a `manager review` stop and its
+ * direction brief (a review file next to the task file) waits for the manager's verdict. It stays
+ * in the inbox until a verdict is recorded for it, or a newer request for the same ticket
+ * supersedes it.
+ */
+export interface EpicReviewEntry {
+  kind: "review";
+  /** `m001`, `m002`, ... unique within the epic. */
+  id: string;
+  task: string;
+  /** 1 for the ticket's first request, then one more per request: the round the re-request states. */
+  round: number;
+  /** The review file, relative to the main checkout (absolute when it lies outside it). */
+  file: string;
+  at: string;
+  from?: string;
+}
 
-export type EpicLogEntry = EpicReportEntry | EpicNoteEntry | EpicAckEntry;
+export type ReviewVerdict = "on-track" | "redirect" | "escalate";
+
+export const REVIEW_VERDICTS: readonly ReviewVerdict[] = ["on-track", "redirect", "escalate"];
+
+/**
+ * Manager redirects allowed per ticket (`132`). With this many already recorded, the next verdict
+ * that would redirect is recorded as an escalation to human review instead.
+ */
+export const MANAGER_REDIRECT_CAP = 2;
+
+/** The verdict on one review request. `effective` is what the worker acts on (the cap applied). */
+export interface EpicVerdictEntry {
+  kind: "verdict";
+  /** The review request's id (`mNNN`). */
+  id: string;
+  task: string;
+  verdict: ReviewVerdict;
+  effective: ReviewVerdict;
+  /** True when a redirect was turned into an escalation by MANAGER_REDIRECT_CAP. */
+  capped?: boolean;
+  at: string;
+  by?: string;
+}
+
+/** Everything that lands in an epic's inbox and waits for an acknowledgement (or, a review, a verdict). */
+export type EpicInboxEntry = EpicReportEntry | EpicNoteEntry | EpicReviewEntry;
+
+export type EpicLogEntry = EpicReportEntry | EpicNoteEntry | EpicReviewEntry | EpicAckEntry | EpicVerdictEntry;
 
 export interface EpicState {
   slug: string;
@@ -289,7 +333,7 @@ export function epicOfTask(projectRoot: string, filename: string): string | null
   return readTaskTracker(projectRoot)[path.basename(filename)]?.epic ?? null;
 }
 
-const INBOX_PREFIX: Record<EpicInboxEntry["kind"], string> = { report: "r", note: "n" };
+const INBOX_PREFIX: Record<EpicInboxEntry["kind"], string> = { report: "r", note: "n", review: "m" };
 
 /** The next id of `kind` in this epic: one past the highest ever used, so an id never repeats. */
 function nextInboxId(state: EpicState, kind: EpicInboxEntry["kind"]): string {
@@ -411,7 +455,7 @@ export function writeNote(projectRoot: string, toSlug: string, body: string, opt
 }
 
 function isInboxEntry(e: EpicLogEntry): e is EpicInboxEntry {
-  return e.kind === "report" || e.kind === "note";
+  return e.kind === "report" || e.kind === "note" || e.kind === "review";
 }
 
 /** Records an acknowledgement of a report (`rNNN`) or a note (`nNNN`). Idempotent; an unknown id is an error. */
@@ -422,18 +466,193 @@ export function acknowledgeReport(
   by?: string
 ): "acknowledged" | "already" {
   return updateState(projectRoot, slug, (s) => {
-    if (!s.log.some((e) => isInboxEntry(e) && e.id === id))
-      throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    const entry = s.log.find((e) => isInboxEntry(e) && e.id === id);
+    if (!entry) throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    if (entry.kind === "review")
+      throw new Error(
+        `"${id}" is a manager review request: answer it with \`review-verdict --task ${entry.task} <on-track|redirect|escalate>\`, not ack`
+      );
     if (s.log.some((e) => e.kind === "ack" && e.id === id)) return "already";
     s.log.push({ kind: "ack", id, at: now(), ...(by ? { by } : {}) });
     return "acknowledged";
   });
 }
 
-/** Reports and notes with no acknowledgement, oldest first. */
+/**
+ * Reports and notes with no acknowledgement, and review requests still waiting for a verdict, oldest
+ * first. A review request a newer request for the same ticket supersedes is no longer waiting.
+ */
 export function unacknowledgedReports(state: EpicState): EpicInboxEntry[] {
   const acked = new Set(state.log.filter((e) => e.kind === "ack").map((e) => e.id));
-  return state.log.filter((e): e is EpicInboxEntry => isInboxEntry(e) && !acked.has(e.id));
+  const decided = new Set(state.log.filter((e) => e.kind === "verdict").map((e) => e.id));
+  const latest = new Map<string, string>();
+  for (const e of state.log) if (e.kind === "review") latest.set(e.task, e.id);
+  return state.log.filter((e): e is EpicInboxEntry => {
+    if (!isInboxEntry(e)) return false;
+    if (e.kind === "review") return !decided.has(e.id) && latest.get(e.task) === e.id;
+    return !acked.has(e.id);
+  });
+}
+
+/** One ticket's manager review history in an epic (`132`). */
+export interface ReviewHistory {
+  requests: EpicReviewEntry[];
+  verdicts: EpicVerdictEntry[];
+  /** Verdicts whose effective outcome was a redirect: what MANAGER_REDIRECT_CAP counts. */
+  redirects: number;
+  /** The latest request, when no verdict has been recorded for it yet. */
+  open: EpicReviewEntry | null;
+}
+
+export function reviewHistory(state: EpicState, task: string): ReviewHistory {
+  const base = path.basename(task);
+  const requests = state.log.filter((e): e is EpicReviewEntry => e.kind === "review" && e.task === base);
+  const verdicts = state.log.filter((e): e is EpicVerdictEntry => e.kind === "verdict" && e.task === base);
+  const latest = requests.at(-1) ?? null;
+  return {
+    requests,
+    verdicts,
+    redirects: verdicts.filter((v) => v.effective === "redirect").length,
+    open: latest && !verdicts.some((v) => v.id === latest.id) ? latest : null,
+  };
+}
+
+export interface WrittenReviewRequest {
+  epic: string;
+  id: string;
+  task: string;
+  round: number;
+  /** Absolute path of the review file. */
+  file: string;
+  /** Manager session name to message, or null when none is recorded (the fallback: human review). */
+  manager: string | null;
+  /** Manager redirects already recorded on this ticket. */
+  redirects: number;
+  cap: number;
+  /** True when this exact request was already recorded and is still open (a re-send, not a new round). */
+  already: boolean;
+}
+
+/** Where a stored review file path points, absolute. */
+function reviewFilePath(root: string, file: string): string {
+  return path.isAbsolute(file) ? file : path.join(root, file);
+}
+
+/**
+ * The worker's review request at a `manager review` stop (`132`): log that `task`'s review file
+ * waits for the manager's verdict, numbered as the ticket's next round. Returns null when the task
+ * belongs to no epic (the worker falls back to human review). Refuses a review file that does not
+ * exist or is not one of this task's review files, so the request can never go out before the brief
+ * is written. Recording the same file again while its request is still open is a re-send: the
+ * existing request comes back with `already` and nothing is logged.
+ */
+export function writeReviewRequest(
+  projectRoot: string,
+  task: string,
+  file: string,
+  sender?: string
+): WrittenReviewRequest | null {
+  const base = path.basename(task);
+  const slug = epicOfTask(projectRoot, base);
+  if (!slug) return null;
+  if (!readEpicState(projectRoot, slug)) throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
+  const root = mainCheckoutRoot(projectRoot);
+  const abs = path.resolve(projectRoot, file);
+  const name = path.basename(abs);
+  if (!isReviewFile(name) || !name.startsWith(`${base.replace(/\.md$/, "")}.review`))
+    throw new Error(
+      `"${file}" is not a review file of "${base}" (expected ${base.replace(/\.md$/, "")}.review[-N].md)`
+    );
+  if (!fs.existsSync(abs)) throw new Error(`review file ${abs} does not exist: write the direction brief first`);
+  const rel = path.relative(root, abs);
+  const stored = rel.startsWith("..") || path.isAbsolute(rel) ? abs : rel.split(path.sep).join("/");
+  const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || undefined;
+  return updateState(projectRoot, slug, (s) => {
+    const history = reviewHistory(s, base);
+    const manager = s.manager?.name ?? null;
+    const common = { epic: slug, task: base, manager, redirects: history.redirects, cap: MANAGER_REDIRECT_CAP };
+    if (history.open && history.open.file === stored)
+      return { ...common, id: history.open.id, round: history.open.round, file: abs, already: true };
+    const id = nextInboxId(s, "review");
+    const round = history.requests.length + 1;
+    s.log.push({ kind: "review", id, task: base, round, file: stored, at: now(), ...(from ? { from } : {}) });
+    return { ...common, id, round, file: abs, already: false };
+  });
+}
+
+export interface RecordedVerdict {
+  epic: string;
+  id: string;
+  task: string;
+  round: number;
+  verdict: ReviewVerdict;
+  effective: ReviewVerdict;
+  capped: boolean;
+  /** Manager redirects on this ticket after this verdict. */
+  redirects: number;
+  cap: number;
+  /** True when the request already had a verdict; the recorded one is returned unchanged. */
+  already: boolean;
+}
+
+export function isReviewVerdict(value: unknown): value is ReviewVerdict {
+  return typeof value === "string" && (REVIEW_VERDICTS as readonly string[]).includes(value);
+}
+
+/**
+ * Record the verdict on `task`'s latest review request (`132`). Run by the manager when it decides,
+ * and by the worker when it receives the reply; whoever is second gets the recorded verdict back
+ * (`already`), so both act on the same outcome. The round cap is applied here: with
+ * MANAGER_REDIRECT_CAP redirects already recorded on the ticket, a redirect is recorded as an
+ * escalation (`capped`), and the worker runs a human review instead of looping back again.
+ */
+export function recordReviewVerdict(
+  projectRoot: string,
+  task: string,
+  verdict: ReviewVerdict,
+  by?: string
+): RecordedVerdict {
+  if (!isReviewVerdict(verdict))
+    throw new Error(`"${String(verdict)}" is not a verdict (one of ${REVIEW_VERDICTS.join(", ")})`);
+  const base = path.basename(task);
+  const slug = epicOfTask(projectRoot, base);
+  if (!slug) throw new Error(`task "${base}" belongs to no epic, so it has no manager review`);
+  return updateState(projectRoot, slug, (s) => {
+    const history = reviewHistory(s, base);
+    const latest = history.requests.at(-1);
+    if (!latest) throw new Error(`task "${base}" has no manager review request in epic "${slug}"`);
+    const common = { epic: slug, id: latest.id, task: base, round: latest.round, cap: MANAGER_REDIRECT_CAP };
+    const prior = history.verdicts.find((v) => v.id === latest.id);
+    if (prior)
+      return {
+        ...common,
+        verdict: prior.verdict,
+        effective: prior.effective,
+        capped: prior.capped === true,
+        redirects: history.redirects,
+        already: true,
+      };
+    const capped = verdict === "redirect" && history.redirects >= MANAGER_REDIRECT_CAP;
+    const effective: ReviewVerdict = capped ? "escalate" : verdict;
+    s.log.push({
+      kind: "verdict",
+      id: latest.id,
+      task: base,
+      verdict,
+      effective,
+      ...(capped ? { capped: true } : {}),
+      at: now(),
+      ...(by ? { by } : {}),
+    });
+    return {
+      ...common,
+      verdict,
+      effective,
+      capped,
+      redirects: history.redirects + (effective === "redirect" ? 1 : 0),
+      already: false,
+    };
+  });
 }
 
 export interface EpicTaskView {
@@ -456,6 +675,9 @@ export interface CrossEpicEdge {
   direction: "blocked-by-other" | "blocks-other";
 }
 
+/** An inbox entry as `showEpic` lists it: its absolute path, and for a review request the ticket's redirect count. */
+export type EpicInboxView = EpicInboxEntry & { path: string; redirects?: number };
+
 export interface EpicView {
   slug: string;
   dir: string;
@@ -463,7 +685,7 @@ export interface EpicView {
   manager: string | null;
   workers: EpicWorker[];
   tasks: EpicTaskView[];
-  unacknowledged: Array<EpicInboxEntry & { path: string }>;
+  unacknowledged: EpicInboxView[];
   crossEpic: CrossEpicEdge[];
 }
 
@@ -517,7 +739,11 @@ export function showEpic(projectRoot: string, slug: string): EpicView {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state).map((r) => ({ ...r, path: path.join(dir, r.file) })),
+    unacknowledged: unacknowledgedReports(state).map((r) =>
+      r.kind === "review"
+        ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects }
+        : { ...r, path: path.join(dir, r.file) }
+    ),
     crossEpic: crossEpicEdges(tracker, slug),
   };
 }
@@ -643,7 +869,15 @@ export function formatReady(view: EpicReadyView): string {
 }
 
 /** One unacknowledged inbox line, as `formatEpic` and the CLI's `reports` print it. */
-export function formatInboxEntry(entry: EpicInboxEntry & { path: string }): string {
+export function formatInboxEntry(entry: EpicInboxEntry & { path: string; redirects?: number }): string {
+  if (entry.kind === "review") {
+    const redirects = entry.redirects ?? 0;
+    const capNote = redirects >= MANAGER_REDIRECT_CAP ? ", a redirect now escalates to human review" : "";
+    return (
+      `${entry.id}  manager review round ${entry.round} for ${entry.task}${entry.from ? ` (${entry.from})` : ""}` +
+      `  redirects ${redirects}/${MANAGER_REDIRECT_CAP}${capNote}  ${entry.path}`
+    );
+  }
   if (entry.kind === "note")
     return `${entry.id}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
   return `${entry.id}  ${entry.task}  ${entry.path}`;
@@ -671,7 +905,7 @@ export function formatEpic(view: EpicView): string {
       : "";
     lines.push(`    ${t.filename}  [${t.status}]${who}`);
   }
-  lines.push(`  unacknowledged reports and notes (${view.unacknowledged.length}):`);
+  lines.push(`  unacknowledged reports, notes and review requests (${view.unacknowledged.length}):`);
   for (const r of view.unacknowledged) lines.push(`    ${formatInboxEntry(r)}`);
   lines.push(`  cross-epic dependencies (${view.crossEpic.length}):`);
   for (const e of view.crossEpic) lines.push(`    ${formatCrossEpicEdge(e)}`);

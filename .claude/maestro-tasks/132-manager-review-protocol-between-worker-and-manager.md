@@ -24,3 +24,12 @@ Make the manager_review step work end to end between a /maestro worker session a
 
 - `130-human-review-always-shows-its-summary.md`
 - `131-add-the-manager-review-workflow-node.md`
+
+## Post-Mortem
+
+- **Problem:** Agents could not refresh the tracked mirrors (`.claude/scripts/`), re-render the orchestrator (`.claude/skills/maestro/SKILL.md`) or update the `.claude/settings.json` matcher from the sandbox, so `pnpm verify` stayed red through @test and @reviewer, and the user had to run the steps by hand.
+  **Fix:** none
+- **Problem:** @backend handed the user `maestro-render-orchestrator.cjs` as the re-render step. It only rewrites the HANDOFFS table, not the STEPS region, so the template's changed text never reached the rendered orchestrator. It took a second user round-trip (`maestro-install.js .`) to fix.
+  **Fix:** none
+- **Problem:** @reviewer failed round 1 on a missing space in the `ack` refusal hint. @backend's first assertion on that text would not have caught the bug; @test tightened it in round 2.
+  **Fix:** none

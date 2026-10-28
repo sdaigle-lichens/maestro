@@ -173,13 +173,15 @@ export {
   CHANNEL_ONLY_AGENTS,
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
-// The human-review summary gate (`130`): `fs`/`path` only.
+// The review summary gate (`130`; manager review `132`): imports nothing.
 export {
   checkHumanReview,
   currentReviewRound,
+  currentReviewStop,
   reviewFileName,
   isReviewFile,
   HUMAN_REVIEW_LABEL,
+  MANAGER_REVIEW_LABEL,
   type HumanReviewVerdict,
 } from "../human-review-gate.js";
 export {

@@ -91,7 +91,7 @@
         ]
       },
       {
-        "matcher": "AskUserQuestion",
+        "matcher": "AskUserQuestion|SendMessage",
         "hooks": [
           {
             "type": "command",

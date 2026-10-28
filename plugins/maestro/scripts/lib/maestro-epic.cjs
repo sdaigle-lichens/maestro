@@ -35,6 +35,8 @@ var maestro_epic_exports = {};
 __export(maestro_epic_exports, {
   DEFAULT_SPAWN_CAP: () => DEFAULT_SPAWN_CAP,
   EPICS_DIR: () => EPICS_DIR,
+  MANAGER_REDIRECT_CAP: () => MANAGER_REDIRECT_CAP,
+  REVIEW_VERDICTS: () => REVIEW_VERDICTS,
   acknowledgeReport: () => acknowledgeReport,
   addWorker: () => addWorker,
   checkNoteRoute: () => checkNoteRoute,
@@ -44,6 +46,7 @@ __export(maestro_epic_exports, {
   formatEpic: () => formatEpic,
   formatInboxEntry: () => formatInboxEntry,
   formatReady: () => formatReady,
+  isReviewVerdict: () => isReviewVerdict,
   isValidEpicSlug: () => isValidEpicSlug,
   launchCommandFor: () => launchCommandFor,
   linkTasks: () => linkTasks,
@@ -51,8 +54,10 @@ __export(maestro_epic_exports, {
   listEpics: () => listEpics,
   readEpicState: () => readEpicState,
   readyTasks: () => readyTasks,
+  recordReviewVerdict: () => recordReviewVerdict,
   removeWorker: () => removeWorker,
   reportCommandFor: () => reportCommandFor,
+  reviewHistory: () => reviewHistory,
   setManager: () => setManager,
   showEpic: () => showEpic,
   taskClaimName: () => taskClaimName,
@@ -60,7 +65,8 @@ __export(maestro_epic_exports, {
   unlinkTasks: () => unlinkTasks,
   workerNameFor: () => workerNameFor,
   writeNote: () => writeNote,
-  writeReport: () => writeReport
+  writeReport: () => writeReport,
+  writeReviewRequest: () => writeReviewRequest
 });
 module.exports = __toCommonJS(maestro_epic_exports);
 
@@ -86,6 +92,12 @@ function mainCheckoutRoot(dir) {
   } catch {
     return dir;
   }
+}
+
+// src/core/human-review-gate.ts
+var REVIEW_FILE_PATTERN = /\.review(-\d+)?\.md$/;
+function isReviewFile(filename) {
+  return REVIEW_FILE_PATTERN.test(filename);
 }
 
 // src/core/tasks.ts
@@ -365,6 +377,8 @@ var INBOX_DIR = "inbox";
 var LOCK_DIR = ".lock";
 var LOCK_WAIT_MS = 5e3;
 var LOCK_STALE_MS = 15e3;
+var REVIEW_VERDICTS = ["on-track", "redirect", "escalate"];
+var MANAGER_REDIRECT_CAP = 2;
 var SLUG = /^[a-z0-9][a-z0-9-]{0,63}$/;
 function isValidEpicSlug(slug) {
   return SLUG.test(slug);
@@ -525,7 +539,7 @@ function taskClaimName(projectRoot, task) {
 function epicOfTask(projectRoot, filename) {
   return readTaskTracker(projectRoot)[import_node_path7.default.basename(filename)]?.epic ?? null;
 }
-var INBOX_PREFIX = { report: "r", note: "n" };
+var INBOX_PREFIX = { report: "r", note: "n", review: "m" };
 function nextInboxId(state, kind) {
   const used = state.log.filter((e) => e.kind === kind).map((e) => Number(e.id.slice(1)) || 0);
   return `${INBOX_PREFIX[kind]}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
@@ -607,12 +621,16 @@ ${from ? `- From session: ${from}
   });
 }
 function isInboxEntry(e) {
-  return e.kind === "report" || e.kind === "note";
+  return e.kind === "report" || e.kind === "note" || e.kind === "review";
 }
 function acknowledgeReport(projectRoot, slug, id, by) {
   return updateState(projectRoot, slug, (s) => {
-    if (!s.log.some((e) => isInboxEntry(e) && e.id === id))
-      throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    const entry = s.log.find((e) => isInboxEntry(e) && e.id === id);
+    if (!entry) throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    if (entry.kind === "review")
+      throw new Error(
+        `"${id}" is a manager review request: answer it with \`review-verdict --task ${entry.task} <on-track|redirect|escalate>\`, not ack`
+      );
     if (s.log.some((e) => e.kind === "ack" && e.id === id)) return "already";
     s.log.push({ kind: "ack", id, at: now(), ...by ? { by } : {} });
     return "acknowledged";
@@ -620,7 +638,103 @@ function acknowledgeReport(projectRoot, slug, id, by) {
 }
 function unacknowledgedReports(state) {
   const acked = new Set(state.log.filter((e) => e.kind === "ack").map((e) => e.id));
-  return state.log.filter((e) => isInboxEntry(e) && !acked.has(e.id));
+  const decided = new Set(state.log.filter((e) => e.kind === "verdict").map((e) => e.id));
+  const latest = /* @__PURE__ */ new Map();
+  for (const e of state.log) if (e.kind === "review") latest.set(e.task, e.id);
+  return state.log.filter((e) => {
+    if (!isInboxEntry(e)) return false;
+    if (e.kind === "review") return !decided.has(e.id) && latest.get(e.task) === e.id;
+    return !acked.has(e.id);
+  });
+}
+function reviewHistory(state, task) {
+  const base = import_node_path7.default.basename(task);
+  const requests = state.log.filter((e) => e.kind === "review" && e.task === base);
+  const verdicts = state.log.filter((e) => e.kind === "verdict" && e.task === base);
+  const latest = requests.at(-1) ?? null;
+  return {
+    requests,
+    verdicts,
+    redirects: verdicts.filter((v) => v.effective === "redirect").length,
+    open: latest && !verdicts.some((v) => v.id === latest.id) ? latest : null
+  };
+}
+function reviewFilePath(root, file) {
+  return import_node_path7.default.isAbsolute(file) ? file : import_node_path7.default.join(root, file);
+}
+function writeReviewRequest(projectRoot, task, file, sender) {
+  const base = import_node_path7.default.basename(task);
+  const slug = epicOfTask(projectRoot, base);
+  if (!slug) return null;
+  if (!readEpicState(projectRoot, slug)) throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
+  const root = mainCheckoutRoot(projectRoot);
+  const abs = import_node_path7.default.resolve(projectRoot, file);
+  const name = import_node_path7.default.basename(abs);
+  if (!isReviewFile(name) || !name.startsWith(`${base.replace(/\.md$/, "")}.review`))
+    throw new Error(
+      `"${file}" is not a review file of "${base}" (expected ${base.replace(/\.md$/, "")}.review[-N].md)`
+    );
+  if (!import_node_fs9.default.existsSync(abs)) throw new Error(`review file ${abs} does not exist: write the direction brief first`);
+  const rel = import_node_path7.default.relative(root, abs);
+  const stored = rel.startsWith("..") || import_node_path7.default.isAbsolute(rel) ? abs : rel.split(import_node_path7.default.sep).join("/");
+  const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || void 0;
+  return updateState(projectRoot, slug, (s) => {
+    const history = reviewHistory(s, base);
+    const manager = s.manager?.name ?? null;
+    const common = { epic: slug, task: base, manager, redirects: history.redirects, cap: MANAGER_REDIRECT_CAP };
+    if (history.open && history.open.file === stored)
+      return { ...common, id: history.open.id, round: history.open.round, file: abs, already: true };
+    const id = nextInboxId(s, "review");
+    const round = history.requests.length + 1;
+    s.log.push({ kind: "review", id, task: base, round, file: stored, at: now(), ...from ? { from } : {} });
+    return { ...common, id, round, file: abs, already: false };
+  });
+}
+function isReviewVerdict(value) {
+  return typeof value === "string" && REVIEW_VERDICTS.includes(value);
+}
+function recordReviewVerdict(projectRoot, task, verdict, by) {
+  if (!isReviewVerdict(verdict))
+    throw new Error(`"${String(verdict)}" is not a verdict (one of ${REVIEW_VERDICTS.join(", ")})`);
+  const base = import_node_path7.default.basename(task);
+  const slug = epicOfTask(projectRoot, base);
+  if (!slug) throw new Error(`task "${base}" belongs to no epic, so it has no manager review`);
+  return updateState(projectRoot, slug, (s) => {
+    const history = reviewHistory(s, base);
+    const latest = history.requests.at(-1);
+    if (!latest) throw new Error(`task "${base}" has no manager review request in epic "${slug}"`);
+    const common = { epic: slug, id: latest.id, task: base, round: latest.round, cap: MANAGER_REDIRECT_CAP };
+    const prior = history.verdicts.find((v) => v.id === latest.id);
+    if (prior)
+      return {
+        ...common,
+        verdict: prior.verdict,
+        effective: prior.effective,
+        capped: prior.capped === true,
+        redirects: history.redirects,
+        already: true
+      };
+    const capped = verdict === "redirect" && history.redirects >= MANAGER_REDIRECT_CAP;
+    const effective = capped ? "escalate" : verdict;
+    s.log.push({
+      kind: "verdict",
+      id: latest.id,
+      task: base,
+      verdict,
+      effective,
+      ...capped ? { capped: true } : {},
+      at: now(),
+      ...by ? { by } : {}
+    });
+    return {
+      ...common,
+      verdict,
+      effective,
+      capped,
+      redirects: history.redirects + (effective === "redirect" ? 1 : 0),
+      already: false
+    };
+  });
 }
 function crossEpicEdges(tracker, slug) {
   const edges = [];
@@ -661,7 +775,9 @@ function showEpic(projectRoot, slug) {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state).map((r) => ({ ...r, path: import_node_path7.default.join(dir, r.file) })),
+    unacknowledged: unacknowledgedReports(state).map(
+      (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path7.default.join(dir, r.file) }
+    ),
     crossEpic: crossEpicEdges(tracker, slug)
   };
 }
@@ -731,6 +847,11 @@ function formatReady(view) {
   return lines.join("\n");
 }
 function formatInboxEntry(entry) {
+  if (entry.kind === "review") {
+    const redirects = entry.redirects ?? 0;
+    const capNote = redirects >= MANAGER_REDIRECT_CAP ? ", a redirect now escalates to human review" : "";
+    return `${entry.id}  manager review round ${entry.round} for ${entry.task}${entry.from ? ` (${entry.from})` : ""}  redirects ${redirects}/${MANAGER_REDIRECT_CAP}${capNote}  ${entry.path}`;
+  }
   if (entry.kind === "note")
     return `${entry.id}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
   return `${entry.id}  ${entry.task}  ${entry.path}`;
@@ -751,7 +872,7 @@ function formatEpic(view) {
     const who = t.running ? ` \u2014 running in session ${t.running.sessionName ? `"${t.running.sessionName}"` : "(unnamed)"}` : "";
     lines.push(`    ${t.filename}  [${t.status}]${who}`);
   }
-  lines.push(`  unacknowledged reports and notes (${view.unacknowledged.length}):`);
+  lines.push(`  unacknowledged reports, notes and review requests (${view.unacknowledged.length}):`);
   for (const r of view.unacknowledged) lines.push(`    ${formatInboxEntry(r)}`);
   lines.push(`  cross-epic dependencies (${view.crossEpic.length}):`);
   for (const e of view.crossEpic) lines.push(`    ${formatCrossEpicEdge(e)}`);
@@ -761,6 +882,8 @@ function formatEpic(view) {
 0 && (module.exports = {
   DEFAULT_SPAWN_CAP,
   EPICS_DIR,
+  MANAGER_REDIRECT_CAP,
+  REVIEW_VERDICTS,
   acknowledgeReport,
   addWorker,
   checkNoteRoute,
@@ -770,6 +893,7 @@ function formatEpic(view) {
   formatEpic,
   formatInboxEntry,
   formatReady,
+  isReviewVerdict,
   isValidEpicSlug,
   launchCommandFor,
   linkTasks,
@@ -777,8 +901,10 @@ function formatEpic(view) {
   listEpics,
   readEpicState,
   readyTasks,
+  recordReviewVerdict,
   removeWorker,
   reportCommandFor,
+  reviewHistory,
   setManager,
   showEpic,
   taskClaimName,
@@ -786,5 +912,6 @@ function formatEpic(view) {
   unlinkTasks,
   workerNameFor,
   writeNote,
-  writeReport
+  writeReport,
+  writeReviewRequest
 });

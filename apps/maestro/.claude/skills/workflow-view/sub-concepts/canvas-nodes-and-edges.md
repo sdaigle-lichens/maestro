@@ -28,8 +28,8 @@ React Flow never remounts nodes.
   entry (`manager_review`, success-path label `manager review`); the node/rf-type mapping and id
   helpers live in `src/renderer/src/utils/review-nodes.ts`. Its condition `+` buttons offer one
   label, `manager requested direction change` (`MANAGER_DIRECTION_CHANGE_LABEL`), back to the
-  producing agent. Until the manager protocol exists the orchestrator template treats it as a human
-  review, but the human-review gate hook only gates the `human review` label.
+  producing agent. At runtime (`132`) the epic's manager gives the verdict, with a fallback to human
+  review; see `maestro-architecture`'s **Manager review** section. The review gate hook gates both labels.
 - `skillNode` — violet card rendering `/<skill>` for a standalone **skill step** (`type: "skill"`,
   carries a `skill` id, no instance). A `⋮` kebab offers **Change skill** / **Delete**, plus the
   bottom-center `+`. Like `human_review` it is a non-agent node: no instance, excluded from

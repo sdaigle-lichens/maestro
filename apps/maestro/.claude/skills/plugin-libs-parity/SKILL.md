@@ -90,8 +90,11 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 `maestro-agent-fork`, `maestro-rule-move` (`081`), `maestro-skill-lists` (`089`: `resolveSkillLists`, behind both Step-1/end-skills scripts) and `maestro-epic` (`084`: epics, the report
 inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and
 `formatInboxEntry`; `125`: the spawn list, adding `DEFAULT_SPAWN_CAP`, `workerNameFor`,
-`launchCommandFor`, `readyTasks` and `formatReady`; copied into projects, fs/path only, no
-`node:sqlite`).
+`launchCommandFor`, `readyTasks` and `formatReady`; `132`: manager review, adding
+`MANAGER_REDIRECT_CAP`, `REVIEW_VERDICTS`, `isReviewVerdict`, `reviewHistory`, `writeReviewRequest`
+and `recordReviewVerdict`, and pulling in `human-review-gate.ts`, which imports nothing;
+`maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from it; copied into projects,
+fs/path only, no `node:sqlite`).
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.
@@ -151,8 +154,9 @@ only and every hook already requires this bundle" argument:
   still `0`.
 - `130` — the human-review gate (`checkHumanReview`, `currentReviewRound`, `reviewFileName`,
   `isReviewFile`, `HUMAN_REVIEW_LABEL`, from `human-review-gate.ts`, backing
-  `maestro-human-review-gate.js`). It imports nothing (the file probe is passed in); keep the
-  `node:sqlite` grep at `0`. `tasks.ts` inlines the same `.review(-N).md` pattern to skip review files.
+  `maestro-human-review-gate.js`). `132` added `currentReviewStop` and `MANAGER_REVIEW_LABEL` (the
+  gate now covers `manager review` too). It imports nothing (the file probe and the manager's name
+  are passed in); keep the `node:sqlite` grep at `0`. `tasks.ts` inlines the same `.review(-N).md` pattern to skip review files.
 - `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,
   `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by
   `maestro-team-meeting.cjs`. `fs`/`path` only.

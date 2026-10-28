@@ -147,6 +147,11 @@ rather than editing code in its own context. The seeded `default`/`tdd` workflow
 automatically (`buildWorkflow` in `maestro.ts`: default → impl agent(s), split per-agent for
 fullstack; tdd → `@test`, since the human reviews the test plan before impl runs).
 
+A `manager review` node (`132`) is orchestrator-driven the same way: the verdict comes from the
+epic's manager session (`maestro-epic.cjs review-verdict`), not a `HANDOFF:` line, and a `redirect`
+follows its `manager requested direction change` edge to the producing agent. Mechanism: the
+**Manager review** section of this skill's `SKILL.md`.
+
 ## Things that bite
 
 - **Anything `.md` under `agents/` is discovered as an agent.** A frontmatter-less `.md` inside the

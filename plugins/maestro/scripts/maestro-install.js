@@ -306,8 +306,9 @@ const HOOK_REGISTRATIONS = [
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
   // `121`: the channel write guard — see install.ts's HOOK_SCRIPTS for why it is project-local too.
   nodeHook("PreToolUse", "Write|Edit|MultiEdit|NotebookEdit", "maestro-channel-write-guard.cjs"),
-  // `130`: denies AskUserQuestion at a human review until that round's review file exists.
-  nodeHook("PreToolUse", "AskUserQuestion", "maestro-human-review-gate.cjs"),
+  // `130`: denies AskUserQuestion at a human review until that round's review file exists; `132`:
+  // at a manager review, a SendMessage to the epic's manager too.
+  nodeHook("PreToolUse", "AskUserQuestion|SendMessage", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
@@ -343,6 +344,29 @@ function addMissingHooks(settings) {
     added.push(reg.id);
   }
   return added;
+}
+
+// Move each of our hooks registered under an older matcher to its current one, in place (`132`: the
+// review gate went from `AskUserQuestion` to `AskUserQuestion|SendMessage`). addMissingHooks skips
+// a script already registered on its event whatever the matcher, so without this a re-install keeps
+// the old one. An entry holding only our hook has its matcher rewritten; from a shared entry ours is
+// removed and addMissingHooks adds it back. Mirrors install.ts's updateHookMatchers. Returns the ids moved.
+function updateHookMatchers(settings) {
+  const moved = [];
+  for (const reg of HOOK_REGISTRATIONS) {
+    const entries = settings.hooks && settings.hooks[reg.event];
+    if (!Array.isArray(entries)) continue;
+    const ours = (h) => !!h && typeof h.command === "string" && h.command.includes(`.claude/scripts/${reg.script}`);
+    if (entries.some((e) => e && e.matcher === reg.matcher && Array.isArray(e.hooks) && e.hooks.some(ours))) continue;
+    for (const entry of entries) {
+      if (!entry || entry.matcher === reg.matcher || !Array.isArray(entry.hooks) || !entry.hooks.some(ours)) continue;
+      if (entry.hooks.every(ours)) entry.matcher = reg.matcher;
+      else entry.hooks = entry.hooks.filter((h) => !ours(h));
+      moved.push(reg.id);
+      break;
+    }
+  }
+  return moved;
 }
 
 // Strip every retired script's hook from `settings` in place. Returns the ids removed. A command is
@@ -390,8 +414,9 @@ function mergeSettings(settingsPath) {
     }
   }
   const hooksRemoved = removeRetiredHooks(settings);
+  const hooksMoved = updateHookMatchers(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksRemoved.length > 0 || hooksAdded.length > 0) {
+  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0) {
     ensureDir(path.dirname(settingsPath));
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   }

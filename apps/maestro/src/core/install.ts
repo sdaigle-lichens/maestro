@@ -370,7 +370,8 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
   nodeHook("PreToolUse", CHANNEL_GUARD_MATCHER, "maestro-channel-write-guard.cjs"),
-  nodeHook("PreToolUse", "AskUserQuestion", "maestro-human-review-gate.cjs"),
+  // `132`: also SendMessage, so a manager review request waits for that round's review file.
+  nodeHook("PreToolUse", "AskUserQuestion|SendMessage", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
@@ -410,6 +411,33 @@ function addMissingHooks(settings: Settings, regs: HookRegistration[] = HOOK_REG
     added.push(reg.id);
   }
   return added;
+}
+
+/**
+ * Move each of our hooks registered under an older matcher to its current one, in place (`132`:
+ * the review gate went from `AskUserQuestion` to `AskUserQuestion|SendMessage`). `addMissingHooks`
+ * skips a script already registered on its event whatever the matcher, so without this a re-install
+ * would keep the old one forever. An entry holding only our hook has its matcher rewritten; from an
+ * entry shared with other hooks ours is removed, and `addMissingHooks` adds it back. Returns the ids
+ * moved.
+ */
+function updateHookMatchers(settings: Settings, regs: HookRegistration[] = HOOK_REGISTRATIONS): string[] {
+  const moved: string[] = [];
+  for (const reg of regs) {
+    const entries = settings.hooks?.[reg.event];
+    if (!Array.isArray(entries)) continue;
+    const ours = (h: { command?: unknown } | null | undefined) =>
+      !!h && typeof h.command === "string" && h.command.includes(`.claude/scripts/${reg.script}`);
+    if (entries.some((e) => e && e.matcher === reg.matcher && Array.isArray(e.hooks) && e.hooks.some(ours))) continue;
+    for (const entry of entries) {
+      if (!entry || entry.matcher === reg.matcher || !Array.isArray(entry.hooks) || !entry.hooks.some(ours)) continue;
+      if (entry.hooks.every(ours)) entry.matcher = reg.matcher;
+      else entry.hooks = entry.hooks.filter((h) => !ours(h));
+      moved.push(reg.id);
+      break;
+    }
+  }
+  return moved;
 }
 
 /**
@@ -766,8 +794,10 @@ export async function installRuntime(
   ensureDir(path.join(projectRoot, ".claude", "scripts"));
 
   const hooksRemoved = removeRetiredHooks(settings);
+  const hooksMoved = updateHookMatchers(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksRemoved.length > 0 || hooksAdded.length > 0) writeJsonAtomic(settingsPath, settings);
+  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0)
+    writeJsonAtomic(settingsPath, settings);
   // The retired scripts themselves, after the settings write: a crash between the two leaves a
   // harmless unreferenced file, never a hook pointing at a file that is gone.
   const retiredScriptsRemoved: string[] = [];

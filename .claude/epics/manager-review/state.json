@@ -30,6 +30,11 @@
       "name": "manager-review-135",
       "task": "135-task-worktrees-start-with-dependencies-ready.md",
       "added_at": "2026-10-28T18:09:19.823Z"
+    },
+    {
+      "name": "manager-review-132",
+      "task": "132-manager-review-protocol-between-worker-and-manager.md",
+      "added_at": "2026-10-28T20:05:49.933Z"
     }
   ],
   "log": [
@@ -101,6 +106,20 @@
       "kind": "ack",
       "id": "r005",
       "at": "2026-10-28T19:50:04.729Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r006",
+      "task": "132-manager-review-protocol-between-worker-and-manager.md",
+      "file": "inbox/r006-132-manager-review-protocol-between-worker-and-manager.md",
+      "at": "2026-10-28T21:27:14.236Z",
+      "from": "manager-review-132"
+    },
+    {
+      "kind": "ack",
+      "id": "r006",
+      "at": "2026-10-28T21:27:28.690Z",
       "by": "maestro-mgr-3a4fd839"
     }
   ]

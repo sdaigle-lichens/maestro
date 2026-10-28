@@ -658,7 +658,7 @@
     "epic": "manager-review"
   },
   "132-manager-review-protocol-between-worker-and-manager.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "130-human-review-always-shows-its-summary.md",
       "131-add-the-manager-review-workflow-node.md"

@@ -1,6 +1,6 @@
 ---
 name: maestro-manager
-description: "Coordinates one epic: related Maestro tasks that several /maestro sessions work on at once. Opens or resumes the epic, finds the live sessions by name, spawns workers for ready, unclaimed tasks in herdr tabs (up to 5 at once; without herdr it prints the claude -n commands to run), then loops on worker reports: acknowledges each, rewires or adds tickets with to-maestro-tasks, offers maestro-post-mortem or a maestro-team-meeting, messages the sibling sessions affected, and notifies other epics' managers through a durable cross-epic note. Use when the user wants to manage, coordinate, open or resume an epic, asks a session to manage a set of tasks, a worker session sends a report to its manager, or another epic's manager sends a note."
+description: "Coordinates one epic: related Maestro tasks that several /maestro sessions work on at once. Opens or resumes the epic, finds the live sessions by name, spawns workers for ready, unclaimed tasks in herdr tabs (up to 5 at once; without herdr it prints the claude -n commands to run), then loops on worker reports: acknowledges each, rewires or adds tickets with to-maestro-tasks, offers maestro-post-mortem or a maestro-team-meeting, messages the sibling sessions affected, and notifies other epics' managers through a durable cross-epic note. Use when the user wants to manage, coordinate, open or resume an epic, asks a session to manage a set of tasks, a worker session sends a report or a manager review request (direction only: on-track, redirect or escalate) to its manager, or another epic's manager sends a note."
 ---
 
 # Maestro Manager
@@ -36,14 +36,14 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
    - **Existing** (`node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" list`): `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" set-manager <slug>`, in case the epic still
      records an older name for its manager.
 2. `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" show <slug>` prints the manager and workers, each task's status with the session name that
-   claimed it (`(unnamed)` if none), the unacknowledged reports and notes, and the cross-epic
-   dependencies. Read `EPIC.md` too.
+   claimed it (`(unnamed)` if none), the unacknowledged reports and notes, the manager review
+   requests waiting for a verdict, and the cross-epic dependencies. Read `EPIC.md` too.
 3. Match the recorded names against `ListAgents`. A name with no live entry is not running: say so,
    don't message it, and keep it in the epic. Record new sessions with
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" add-worker <slug> "<name>" --task <task.md>`; the name the worker's claim
    recorded wins over the one you type.
 4. Handle every unacknowledged report and note, oldest first: reports through the loop below, notes
-   as in **Other epics**.
+   as in **Other epics**, review requests (`mNNN`) as in **Manager review requests**.
 5. Run **Spawning workers** below for the tasks no session is working on yet.
 
 ## Spawning workers
@@ -139,6 +139,33 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>` again and, when a task is
    marked `[spawn]`, offer to start it through **Spawning workers** (steps 2 to 5). Only `[spawn]`
    tasks, so the cap still holds; offer, never spawn without the user's yes.
+
+## Manager review requests
+
+A worker at a `manager review` step sends one line: `manager review m004 (round 2) for 087-... is in
+<file>`. `show` and `reports` list every request still waiting for a verdict, with its round and the
+ticket's redirect count. You review **direction only**: is the ticket heading where the epic needs
+it? Code correctness is @reviewer's job and acceptance is the user's.
+
+1. **Read the brief file**, never the diff or the code. Check it against `EPIC.md`'s goal, scope and
+   decisions, and against the sibling tickets (`show <slug>`, their task files).
+2. **Decide one verdict**, then record it:
+   `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" review-verdict --task <task.md> <on-track|redirect|escalate>`.
+   It prints the verdict that stands: after 2 redirects on the same ticket, a redirect is recorded
+   and printed as `escalate` (human review).
+   - **on-track:** the ticket continues its success path. You may rewire sibling tickets it affects
+     (see **The loop**, step 3).
+   - **redirect:** a direction note: what is off course against which decision or sibling, and what
+     to aim for instead. The worker loops back to the agent that produced the work and re-requests,
+     stating the round and how each point was addressed.
+   - **escalate:** the decision is the user's (scope, a conflict between decisions, a trade-off). Say
+     what they must decide; the worker runs a human review with your note.
+3. **Reply to the worker** with one message: the printed verdict, then the note. A code-level concern
+   you happened to notice goes only as a line starting `for @reviewer:`, which the worker passes into
+   the reviewer's input. **Never comment on code** otherwise: no fixes, style or correctness remarks.
+
+A manager's on-track verdict continues the success path only. It is never the user's approval for
+commit, merge, push, or agent/skill/workflow changes.
 
 ## Applying team-meeting changes
 
