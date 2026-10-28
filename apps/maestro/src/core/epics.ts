@@ -25,6 +25,7 @@ import path from "node:path";
 import { mainCheckoutRoot } from "./worktree.js";
 import { readTaskTracker, setTaskEpic, tasksDirFor, type SetEpicResult, type TrackerEntry } from "./tasks.js";
 import { claimSessionName, readClaims } from "./claims.js";
+import { readConfig, resolveWorkerModel } from "./config.js";
 
 export const EPICS_DIR = path.join(".claude", "epics");
 const EPIC_FILE = "EPIC.md";
@@ -564,10 +565,15 @@ function shellQuote(value: string): string {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 
-/** `claude -n <name> '/maestro .claude/maestro-tasks/<task.md>'`, quoted for a POSIX shell. */
-export function launchCommandFor(name: string, filename: string): string {
+/**
+ * `claude -n <name> [--model <model>] '/maestro .claude/maestro-tasks/<task.md>'`, quoted for a
+ * POSIX shell. `model` is the project's `worker_model`; omitted or blank leaves the command as it
+ * was before the setting existed.
+ */
+export function launchCommandFor(name: string, filename: string, model?: string): string {
   const rel = path.posix.join(".claude", "maestro-tasks", path.basename(filename));
-  return `claude -n ${shellQuote(name)} ${shellQuote(`/maestro ${rel}`)}`;
+  const flag = model?.trim() ? ` --model ${shellQuote(model.trim())}` : "";
+  return `claude -n ${shellQuote(name)}${flag} ${shellQuote(`/maestro ${rel}`)}`;
 }
 
 /**
@@ -585,6 +591,7 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
   const root = mainCheckoutRoot(projectRoot);
   const tracker = readTaskTracker(root);
   const claims = readClaims(root, tasksDirFor(root));
+  const model = resolveWorkerModel(readConfig(root));
   const workerOf = new Map<string, string>();
   for (const w of state.workers) if (w.task) workerOf.set(path.basename(w.task), w.name);
 
@@ -611,7 +618,7 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
       filename,
       relativePath: path.posix.join(".claude", "maestro-tasks", filename),
       worker: name,
-      command: launchCommandFor(name, filename),
+      command: launchCommandFor(name, filename, model),
     });
   }
   view.slots = Math.max(0, cap - view.running.length - view.pending.length);

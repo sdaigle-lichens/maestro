@@ -15,6 +15,7 @@ import {
   readConfig,
   resolveSkillLists,
   resolveUseMaestroTasks,
+  resolveWorkerModel,
   blankConfig,
   defaultV3Config,
   seedSkillsFor,
@@ -147,6 +148,7 @@ import type {
   SkillListsData,
   MaestroSkillListsSlice,
   TaskRoutingData,
+  WorkerModelData,
   RulesData,
   SaveInput,
   UsageStatsPreview,
@@ -641,6 +643,14 @@ export function registerIpc(): void {
     return { useMaestroTasks: resolveUseMaestroTasks(readConfig(projectRoot)) };
   });
 
+  // The worker-model setting (`134`). Never rejects: no project open, or an unset/blank/non-string
+  // `worker_model`, resolves to "" via `resolveWorkerModel`.
+  ipcMain.handle(IPC.workerModelData, (): WorkerModelData => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) return { workerModel: "" };
+    return { workerModel: resolveWorkerModel(readConfig(projectRoot)) ?? "" };
+  });
+
   // ── the read-only surface folded in from help-server ──────────────────
   // Two loaders, four tabs and two doc views. help-server ran six server functions for the same
   // screens, two of which each re-read `installed_plugins.json` to compute their own `isInstalled`
@@ -746,6 +756,16 @@ export function registerIpc(): void {
     const resolved = resolveUseMaestroTasks({ version: 3, use_maestro_tasks: value } as MaestroConfigV3);
     await saveConfig(projectRoot, { sliceType: "task-routing", slice: { use_maestro_tasks: resolved } });
     return resolved;
+  });
+
+  // The worker-model setting. One slice write and nothing else. `mergeSlice` trims the value and
+  // deletes the key when blank; the resolved value is what the file now holds.
+  ipcMain.handle(IPC.workerModelSet, async (_e, value: string): Promise<string> => {
+    const projectRoot = currentRoot();
+    if (!projectRoot) throw new Error("No project is open.");
+    const resolved = resolveWorkerModel({ version: 3, worker_model: value } as MaestroConfigV3);
+    await saveConfig(projectRoot, { sliceType: "worker-model", slice: { worker_model: resolved } });
+    return resolved ?? "";
   });
 
   ipcMain.handle(IPC.projectTagsSet, async (_e, tags: string[]): Promise<string[]> => {

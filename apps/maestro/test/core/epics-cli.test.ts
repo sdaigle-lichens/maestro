@@ -890,6 +890,34 @@ describe("ready: the manager's spawn list (125)", () => {
     expect(text).not.toContain("003-blocked.md");
   });
 
+  it("worker_model in maestro.json adds a shell-quoted --model to every launch command (134)", async () => {
+    const root = await installed();
+    writeBlocked(root, "001-a.md", []);
+    writeBlocked(root, "002-b.md", []);
+    expect(status(root, ["sync"]).code).toBe(0);
+    epic(root, ["create", "e1"]);
+    epic(root, ["link", "e1", "001-a.md", "002-b.md"]);
+    const unset = ready(root).ready.map((t) => t.command);
+    expect(unset).toEqual([
+      "claude -n 'e1-001' '/maestro .claude/maestro-tasks/001-a.md'",
+      "claude -n 'e1-002' '/maestro .claude/maestro-tasks/002-b.md'",
+    ]);
+
+    const cfgPath = path.join(root, ".claude", "maestro.json");
+    const cfg = JSON.parse(fs.readFileSync(cfgPath, "utf8"));
+    fs.writeFileSync(cfgPath, JSON.stringify({ ...cfg, worker_model: "sonnet" }, null, 2));
+    expect(ready(root).ready.map((t) => t.command)).toEqual([
+      "claude -n 'e1-001' --model 'sonnet' '/maestro .claude/maestro-tasks/001-a.md'",
+      "claude -n 'e1-002' --model 'sonnet' '/maestro .claude/maestro-tasks/002-b.md'",
+    ]);
+    expect(epic(root, ["ready", "e1"]).stdout).toContain("--model 'sonnet'");
+
+    fs.writeFileSync(cfgPath, JSON.stringify({ ...cfg, worker_model: "x'; rm -rf ~ #" }, null, 2));
+    expect(ready(root).ready[0].command).toBe(
+      "claude -n 'e1-001' --model 'x'\\''; rm -rf ~ #' '/maestro .claude/maestro-tasks/001-a.md'"
+    );
+  });
+
   it("a dead claim does not hide a ready task, and closing its blocker makes a blocked task ready", async () => {
     const root = await installed();
     writeBlocked(root, "001-a.md", []);

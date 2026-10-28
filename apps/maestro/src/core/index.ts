@@ -54,6 +54,7 @@ export {
   writeConfig,
   mergeSlice,
   resolveUseMaestroTasks,
+  resolveWorkerModel,
   readAgentsAvailable,
   type ConfigSlice,
 } from "./config.js";
