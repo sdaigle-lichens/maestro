@@ -119,6 +119,8 @@ SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
                     keeps maestro.json and the orchestrator skill.
 ```
 
+**Human-review gate (`130`).** A second `PreToolUse` hook, matcher `AskUserQuestion` (`maestro-human-review-gate.js` in the plugin, `.cjs` project copy), refuses the question while the session's current step is a `human review` and that round's review file does not exist. The current step is the first unfinished step of `plan` in `session.json`. The review file is `.claude/maestro-tasks/<task>.review.md` for round 1 and `<task>.review-N.md` after that. Round = 1 + `plan.loopbacks` + human reviews already done; `plan-step <label> pending` increments the optional numeric `plan.loopbacks` (any loop-back, not only one at a review). The file needs the sections `## Changed`, `## Did`, `## Deviations from the ticket` and, on a re-review, `## Corrections since the last round`. The hook fails open: it allows the call when there is no plan, no `active_task`, or an unreadable state, so a session that never records a `plan` is not gated. Logic is in `src/core/human-review-gate.ts`, exported through the `maestro-session` bundle. Orchestrator template Step 3 now always records the plan and writes the review file before asking.
+
 ## Where the detail lives
 
 | Sub-concept | Covers |

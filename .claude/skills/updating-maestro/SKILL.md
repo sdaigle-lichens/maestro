@@ -138,6 +138,13 @@ Every bump this repo has argued about, with the reasoning that settled it —
 [version bump precedent](sub-concepts/version-bump-examples.md). Read it when a change feels like it
 might be a minor.
 
+`130` (`0.12.11 → 0.13.0`) is a recent worked example: a new hook script plus a `hooks.json` entry
+(`PreToolUse`, matcher `AskUserQuestion`), shipped as a minor because the ticket named the new hook
+registration as published surface. The event itself already existed, so a patch would also have been
+defensible; nothing reads the magnitude. A project-local install only gets the gate after a
+re-install (`maestro-install.js` / `/maestro-update`), since the project copy lives in
+`.claude/scripts/`.
+
 ### The frontmatter trap
 
 **`/maestro-update` re-syncs the orchestrator's managed regions. It never rewrites its
