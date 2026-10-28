@@ -56,7 +56,7 @@ manager prints the `claude -n …` commands for you to run.
 | `sandbox.network.allowUnixSockets`: the socket | your settings do not already set `sandbox.network.allowAllUnixSockets: true` | Claude Code honours this list on macOS only; on Linux only `allowAllUnixSockets` opens Unix sockets |
 
 The herdr CLI's socket commands read nothing else under `~/.config/herdr`, so nothing more is
-added. `/maestro-install` and `/maestro-update` offer the opt-in only when herdr is on your `PATH`,
+added. `/maestro-install` and `/maestro-update` offer the opt-in when herdr is in use (`HERDR_ENV=1`, its socket exists, or a herdr entry is already in your settings) or on your `PATH`,
 defaulting to No. `--remove --herdr` takes out only the herdr entries; a plain `--remove` takes out
 everything, herdr included, and a plain `--apply` leaves herdr entries alone.
 
