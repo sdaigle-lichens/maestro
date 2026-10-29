@@ -1,6 +1,6 @@
 {
   "name": "maestro",
-  "version": "0.13.6",
+  "version": "0.13.7",
   "description": "Maestro multi-agent orchestrator: install, update and run a project's workflow graph, hold a team meeting of its subagents (maestro-team-meeting), coordinate an epic of related tasks across sessions (maestro-manager), plus the skills the Maestro desktop app hands off to (create-skill, create-plugin, create-subagent, create-marketplace, manage-marketplace, update-skill-tags).",
   "author": {
     "name": "Samuel Daigle",

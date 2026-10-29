@@ -64,7 +64,9 @@ place the refresh procedure is written down.
    Run it in exactly this form, unquoted: the sandbox allow-list's `excludedCommands` entry
    (step 1) matches this literal command text. This overwrites the project-copied scripts in `.claude/scripts/` with the plugin's, and stamps
    the plugin's `plugin.json` version into `maestro.json`'s `runtimeVersion` — the field the Step 0
-   check compares against.
+   check compares against. It also adds the `Write(/.claude/channels/**)` allow rule to
+   `.claude/settings.json` when missing (`permissionsAdded` in its JSON summary), so subagents'
+   channel writes are not judged by the auto-mode classifier; a second run leaves settings unchanged.
 
    **It refuses a downgrade.** When `maestro.json`'s `runtimeVersion` is newer than this plugin's
    version, the installer writes nothing, exits 1 and prints

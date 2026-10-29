@@ -136,6 +136,20 @@ function removeMaestroHooks(settings) {
   return removed;
 }
 
+// Undo maestro-install.js's channel allow rule (`139`); mirrors uninstall.ts's removeChannelAllowRule.
+// Removes only the exact rule; allow/permissions are dropped only where WE emptied them.
+const CHANNEL_WRITE_ALLOW_RULE = "Write(/.claude/channels/**)";
+function removeChannelAllowRule(settings) {
+  const perms = settings.permissions;
+  if (!perms || typeof perms !== "object" || !Array.isArray(perms.allow)) return false;
+  if (!perms.allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return false;
+  const kept = perms.allow.filter((r) => r !== CHANNEL_WRITE_ALLOW_RULE);
+  if (kept.length > 0) perms.allow = kept;
+  else delete perms.allow;
+  if (Object.keys(perms).length === 0) delete settings.permissions;
+  return true;
+}
+
 // Removes the Maestro hooks (and any legacy `agent: "maestro"` from older installs)
 // from settings.json in one read/write. Returns which keys were touched.
 function cleanSettings(settingsPath) {
@@ -152,7 +166,8 @@ function cleanSettings(settingsPath) {
     removedAgentSetting = true;
   }
   const removedHooks = removeMaestroHooks(settings);
-  if (removedAgentSetting || removedHooks.length > 0) {
+  const removedRule = removeChannelAllowRule(settings);
+  if (removedAgentSetting || removedHooks.length > 0 || removedRule) {
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   }
   return { removedAgentSetting, removedHooks: removedHooks.length > 0 };

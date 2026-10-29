@@ -855,6 +855,8 @@ export interface InstallReport {
   scriptsWritten: string[];
   /** Hook ids added to the project's `.claude/settings.json`. */
   hooksAdded: string[];
+  /** Permission allow rules added to `.claude/settings.json` (`139`: the agent channel write rule). */
+  permissionsAdded?: string[];
   /** Hook ids of retired scripts removed from the project's `.claude/settings.json`. */
   hooksRemoved: string[];
   /** Project-relative paths of retired hook scripts deleted from `.claude/scripts/`. */

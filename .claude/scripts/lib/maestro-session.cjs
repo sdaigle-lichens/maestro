@@ -1624,7 +1624,7 @@ function payloadRoutes(projectDir, routes, readGlobal) {
 }
 function payloadRequirement(routes, opts) {
   if (routes.length === 0) return null;
-  const head = "REQUIRED before your HANDOFF line: write the payload for the route you take to that route's channel file. This is a step of the handoff, not a recommendation \u2014 the receiving agent starts from that file, and the stop hook checks it was written during THIS run. A missing payload is not skipped: the orchestrator resumes you to write it before the next agent is dispatched. When nothing applies, still write the file, containing an empty JSON object (`{}`).";
+  const head = "REQUIRED before your HANDOFF line: write the payload for the route you take to that route's channel file. This is a step of the handoff, not a recommendation \u2014 the receiving agent starts from that file, and the stop hook checks it was written during THIS run. A missing payload is not skipped: the orchestrator resumes you to write it before the next agent is dispatched. When nothing applies, still write the file, containing an empty JSON object (`{}`). Create the file with the Write tool, which creates the folder too; do not run mkdir in Bash.";
   if (opts.withShapes) {
     const blocks = routes.map(
       (r) => `Route \`HANDOFF: ${r.label}\` \u2192 \`${r.receiver}\` \u2014 write this to \`${r.channelFile}\`:

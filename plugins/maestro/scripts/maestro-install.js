@@ -403,7 +403,31 @@ function removeRetiredHooks(settings) {
   return removed;
 }
 
-// Merge every missing hook registration into settings.json, preserving all other keys.
+// The permission allow rule for agent channel writes (`139`); mirrors install.ts's
+// CHANNEL_WRITE_ALLOW_RULE / addChannelAllowRule. The classifier intermittently denied a worktree
+// agent's write into the main checkout's .claude/channels/; an allow rule is evaluated before it.
+// A single leading slash anchors the pattern to the settings file's project root.
+const CHANNEL_WRITE_ALLOW_RULE = "Write(/.claude/channels/**)";
+
+// Add the rule to permissions.allow in place unless present. Returns the rules added. A non-object
+// permissions or non-array allow is the user's and is left alone.
+function addChannelAllowRule(settings) {
+  const permissions = settings.permissions;
+  if (
+    permissions !== undefined &&
+    (permissions === null || typeof permissions !== "object" || Array.isArray(permissions))
+  )
+    return [];
+  const perms = permissions || {};
+  if (perms.allow !== undefined && !Array.isArray(perms.allow)) return [];
+  const allow = perms.allow || [];
+  if (allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return [];
+  perms.allow = [...allow, CHANNEL_WRITE_ALLOW_RULE];
+  settings.permissions = perms;
+  return [CHANNEL_WRITE_ALLOW_RULE];
+}
+
+// Merge every missing hook registration and the channel allow rule into settings.json, preserving all other keys.
 function mergeSettings(settingsPath) {
   let settings = {};
   if (fs.existsSync(settingsPath)) {
@@ -416,11 +440,12 @@ function mergeSettings(settingsPath) {
   const hooksRemoved = removeRetiredHooks(settings);
   const hooksMoved = updateHookMatchers(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0) {
+  const permissionsAdded = addChannelAllowRule(settings);
+  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0) {
     ensureDir(path.dirname(settingsPath));
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   }
-  return { hooksAdded, hooksRemoved };
+  return { hooksAdded, hooksRemoved, permissionsAdded };
 }
 
 // The hook scripts the plugin runs as `.js`, copied into the project as `.cjs` — see
@@ -909,7 +934,7 @@ function main() {
       scriptsWritten.push(asset.dest);
     }
 
-    const { hooksAdded, hooksRemoved } = mergeSettings(path.join(claudeDir, "settings.json"));
+    const { hooksAdded, hooksRemoved, permissionsAdded } = mergeSettings(path.join(claudeDir, "settings.json"));
     // After the settings write: a crash between the two leaves a harmless unreferenced file, never
     // a hook pointing at a file that is gone.
     const retiredScriptsRemoved = [];
@@ -983,6 +1008,7 @@ function main() {
         orchestratorSkill,
         scriptsWritten,
         hooksAdded,
+        permissionsAdded,
         hooksRemoved,
         retiredScriptsRemoved,
         wroteRepoGitignore,

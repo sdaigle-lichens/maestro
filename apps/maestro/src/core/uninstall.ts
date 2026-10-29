@@ -51,6 +51,7 @@ import {
   installStatus,
   projectPath,
   readSettings,
+  removeChannelAllowRule,
   requirePluginRoot,
   runtimeAssets,
   settingsPathFor,
@@ -381,7 +382,8 @@ export async function uninstallRuntime(projectRoot: string, options: UninstallOp
     delete settings.agent;
     legacyAgentSettingRemoved = true;
   }
-  if (hooksRemoved.length > 0 || legacyAgentSettingRemoved) {
+  const channelRuleRemoved = removeChannelAllowRule(settings);
+  if (hooksRemoved.length > 0 || legacyAgentSettingRemoved || channelRuleRemoved) {
     // A settings.json with nothing left in it once our hooks are gone is one the install created;
     // deleting it is what makes a purge leave the tree as it found it. Guarded on the object being
     // provably empty, so no key of the user's can be lost this way.
