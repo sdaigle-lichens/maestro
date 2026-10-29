@@ -58,6 +58,14 @@ export const SESSION_TASKS_NAME = "tasks.json";
  * worktree's own `.claude/maestro_sessions/<id>/`, and every path built here follows this pointer.
  */
 export const SESSION_WORKTREE_NAME = "worktree.json";
+/**
+ * `141`: touched every minute by the session heartbeat (`session-heartbeat.ts`) while the session's
+ * Claude Code process is alive, and set to mtime 0 when it is gone. Its mtime is what `isSessionLive`
+ * reads when it exists. Not in {@link SessionPaths} on purpose: build it with `path.join(dir, …)`.
+ */
+export const SESSION_HEARTBEAT_NAME = "heartbeat";
+/** `141`: the pid of the one heartbeat process that owns this session; a newer one overwrites it. */
+export const SESSION_HEARTBEAT_PID_NAME = "heartbeat.pid";
 
 /** The environment variable the no-stdin callers resolve from. */
 export const SESSION_ID_ENV = "CLAUDE_CODE_SESSION_ID";

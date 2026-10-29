@@ -56,7 +56,8 @@ The eight plugin hook scripts that have a project twin and stand down — `maest
 `maestro-subagent-log.js`, `maestro-validate-tasks.js`, `maestro-inject-agent-context.js`,
 `maestro-step0.js`, `maestro-enable-task-routing.js`, `maestro-post-mortem-context.js`,
 `maestro-session-name.js` — each call `projectOwnsHook` right after resolving `cwd` and `exit 0`
-when it is true. `maestro-channel-write-guard.js` is the ninth `HOOK_SCRIPTS` entry (since `121`) and
+when it is true. `maestro-human-review-gate.js` (`130`) and `maestro-session-heartbeat.js` (`141`)
+stand down the same way. `maestro-channel-write-guard.js` is the ninth `HOOK_SCRIPTS` entry (since `121`) and
 **does not call it** — see below. `projectOwnsHook` reaches the eight through the
 `maestro-session.cjs` bundle (`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm
 --filter maestro build:plugin-libs` — see `plugin-libs-parity`.

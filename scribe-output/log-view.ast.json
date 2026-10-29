@@ -110,6 +110,60 @@
       }
     },
     {
+      "_key": "0dad75caa5ed7f163f445871b3ef2e2f",
+      "displayKey": "log-view::function::detectPackageManager",
+      "concept": "log-view",
+      "type": "function",
+      "name": "detectPackageManager",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 28,
+      "end_line": 34,
+      "signature": "function detectPackageManager(dir: string): PackageManagerDetection",
+      "contentHash": "d6a1bda963f37ba448788d67d28a19ce976ee5c225462384ac0583782b3cf11e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0eeb8bf786e7a3da955e8d02efb4ecd9",
+      "displayKey": "log-view::type-def::DependencyStatus",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "DependencyStatus",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 51,
+      "end_line": 54,
+      "signature": "export type DependencyStatus =",
+      "contentHash": "dd243a12d1af584fb2c2d1787cd4fd3e150ffe7243313a1c4bea2880ff05512a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "109b276db7a41864809a85c1b149d3b6",
+      "displayKey": "log-view::function::installCommand",
+      "concept": "log-view",
+      "type": "function",
+      "name": "installCommand",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 37,
+      "end_line": 49,
+      "signature": "function installCommand(manager: PackageManager, dir: string): string",
+      "contentHash": "7c90968892ffb5263d0c164a0a7810dc27f0c8b8e8d1897c056f1d8af20b4b81",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "1176677e67ce2b094686a1e3c4c24ae5",
       "displayKey": "log-view::type-def::SessionLogCardsProps",
       "concept": "log-view",
@@ -408,6 +462,24 @@
       "end_line": 151,
       "signature": "function SessionLogDetail({ instance, cwd }: SessionLogDetailProps): import(\"react/jsx-runtime\").JSX.Element",
       "contentHash": "a489b67ac07701311cee0c8860e672967a93b633cb5bb8d82a45d1a55ae079ab",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3c875ee9a781d548a2429ccf0d521039",
+      "displayKey": "log-view::type-def::PackageManager",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "PackageManager",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 12,
+      "end_line": 12,
+      "signature": "export type PackageManager = \"pnpm\" | \"npm\" | \"yarn\" | \"bun\";",
+      "contentHash": "d98a9791cb0916facd15e0c73906c1e7d3f343f84c102f57bfee18be8f203b25",
       "status": "live",
       "ast": {},
       "agent": {
@@ -776,6 +848,24 @@
       }
     },
     {
+      "_key": "603a026ece5b322b6bd36591fc469558",
+      "displayKey": "log-view::function::dependencyStatus",
+      "concept": "log-view",
+      "type": "function",
+      "name": "dependencyStatus",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 78,
+      "end_line": 84,
+      "signature": "function dependencyStatus(dir: string): DependencyStatus",
+      "contentHash": "c4edd9ac1521e507fefb514b9b543197a1fead22e282c4d35ca0bbd61a0d7ad6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "63eeef2165c71bec1087a0f73c9bb81a",
       "displayKey": "log-view::function::formatTokenWindow",
       "concept": "log-view",
@@ -1092,6 +1182,24 @@
       "end_line": 227,
       "signature": "function receivedCount(inst: Instance): number",
       "contentHash": "84128e2ce9e6339772afc58032207aad8241863216490f01a80cb67b04b438c1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9b42abe37362d5cc1b9329edecc6a307",
+      "displayKey": "log-view::type-def::PackageManagerDetection",
+      "concept": "log-view",
+      "type": "type-def",
+      "name": "PackageManagerDetection",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 22,
+      "end_line": 25,
+      "signature": "export type PackageManagerDetection =",
+      "contentHash": "f49c66fb6c9e60acbd3abbc8e78a445bf380bb60d33ffe34f0427ba9daef7a5d",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1766,6 +1874,42 @@
       }
     },
     {
+      "_key": "ec3110f9e43b38629220d249827115d0",
+      "displayKey": "log-view::function::missingDependenciesNotice",
+      "concept": "log-view",
+      "type": "function",
+      "name": "missingDependenciesNotice",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 90,
+      "end_line": 107,
+      "signature": "function missingDependenciesNotice(dir: string): string | null",
+      "contentHash": "744925b0c8140a395515b9bd6baefc256b07b037b5372a54dc359d4b1f4060dd",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ec77dcb000cb61e4d20af678bc9219b1",
+      "displayKey": "log-view::function::hasInstalledModules",
+      "concept": "log-view",
+      "type": "function",
+      "name": "hasInstalledModules",
+      "filepath": "apps/maestro/src/core/worktree-deps.ts",
+      "start_line": 63,
+      "end_line": 71,
+      "signature": "function hasInstalledModules(nodeModules: string): boolean",
+      "contentHash": "ea31bd8587dbdab5b234ad16ba2b43769c1bb6fb02e4d721aa67b3a375bc066d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "ed79cb7459c601cf198f5f08f1475f1a",
       "displayKey": "log-view::function::newestSessionLog",
       "concept": "log-view",
@@ -2094,6 +2238,19 @@
       }
     },
     {
+      "_key": "1367e944c54a3cc471294a926ce68b28",
+      "_from": "vertices/603a026ece5b322b6bd36591fc469558",
+      "_to": "vertices/109b276db7a41864809a85c1b149d3b6",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "16b4d57ca6d77c680c819b22e0e9e63a",
       "_from": "vertices/275d0934f260c1dadacd22d675e39450",
       "_to": "vertices/7706ea193554a74cffb16ed461212cb9",
@@ -2114,6 +2271,19 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1a051267b38a0aa00eb69fe913d6b420",
+      "_from": "vertices/0dad75caa5ed7f163f445871b3ef2e2f",
+      "_to": "vertices/9b42abe37362d5cc1b9329edecc6a307",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 28,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3056,6 +3226,19 @@
       }
     },
     {
+      "_key": "81dc223e713adf364e1f08d35a6bdcbb",
+      "_from": "vertices/ec3110f9e43b38629220d249827115d0",
+      "_to": "vertices/603a026ece5b322b6bd36591fc469558",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "83d512b387f01bd7fae7afb6d00e4975",
       "_from": "vertices/2fb68c02e449330c45e2a40bab629f03",
       "_to": "vertices/f1d24054b6e7d07543803236881987e5",
@@ -3115,6 +3298,32 @@
       "concept": "log-view",
       "crosses_concept": false,
       "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8a3a1fc0c68320bfbd35f7de2002e996",
+      "_from": "vertices/109b276db7a41864809a85c1b149d3b6",
+      "_to": "vertices/3c875ee9a781d548a2429ccf0d521039",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 37,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8bde33db43588380ead1bbb99a2319cf",
+      "_from": "vertices/603a026ece5b322b6bd36591fc469558",
+      "_to": "vertices/0dad75caa5ed7f163f445871b3ef2e2f",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 81,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3589,6 +3798,19 @@
       }
     },
     {
+      "_key": "bc3e66d24abd08b3cd35bb98557c9eff",
+      "_from": "vertices/603a026ece5b322b6bd36591fc469558",
+      "_to": "vertices/0eeb8bf786e7a3da955e8d02efb4ecd9",
+      "type": "has-type",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "beab847a36ccecb96e3f3418a66b4ea3",
       "_from": "vertices/dc7bd37fa99d4afeb09898f42948bc58",
       "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
@@ -4057,6 +4279,19 @@
       }
     },
     {
+      "_key": "eeda605396b0e193ab681ebfb99edb91",
+      "_from": "vertices/603a026ece5b322b6bd36591fc469558",
+      "_to": "vertices/ec77dcb000cb61e4d20af678bc9219b1",
+      "type": "calls",
+      "concept": "log-view",
+      "crosses_concept": false,
+      "line": 80,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "efc1f9733dd89215043e90215c531e1e",
       "_from": "vertices/3de2d60d24c4292da3e0475a331b67b7",
       "_to": "vertices/45f609817d57c7220490f505c2f348da",
@@ -4176,15 +4411,16 @@
   ],
   "skill": {
     "path": "apps/maestro/.claude/skills/log-view/SKILL.md",
-    "body": "---\nname: log-view\ndescription: \"Explains how the /session-log view in the Maestro desktop app is built end-to-end: a tab bar (065) grouping one tab per LIVE SESSION by project — current project plus every recent one, not just the open one — above the thin left step list, the center framed log pane, and the right Input/Process/Output detail panel; how log entries map to Instance segments within whichever tab is selected; how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender; how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`); how an ended session keeps a greyed, capped, evictable tab instead of vanishing; how a project being forgotten forces a full tab-bar reset rather than a per-session end; and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the log each tab reads — which since `064` is the PER-SESSION .claude/maestro_sessions/<session_id>/log.jsonl, one fixed file per session for its whole life, discovered across the current-plus-recent project allow-list by tailSessionLogs() (065) rather than resolved by mtime. Use when the user is working inside apps/maestro and asks how the session-log view or its tabs work, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log or a tab is empty, why a tab disappeared or greyed out, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`).\"\nmetadata:\n  type: concept-skill\n  version: \"3.0\"\n  last-update: bbb69aba5cc3b304f8b672198781663c2b38866f\n---\n\n# Log View\n\nThe `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. Since `065` it shows **one tab per live session, across every project the app knows about** (the current project plus the recent-projects list) — not just the open one. Each tab reads its own `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`) and, once selected, presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three; switching tabs swaps which session's entries those three panes render, without touching the other tabs' state.\n\nSince `075` there is also a **top-level tab bar above all of that** (`WorktreeTabBar`): \"Main checkout\" (everything above) plus one tab per linked git worktree of the open project that has a session log. Each worktree tab renders its own session tab bar + three panes over only that worktree's sessions, from its own tail, and shows an explicit removed / no-log notice instead of ever falling back to the main log. Worktree tabs are not retargeted on a project switch.\n\nThis is the **read side** of the Maestro runtime: it displays what the hook scripts write. See the `maestro-architecture` skill for the full HANDOFF routing contract, and the `workflow-view` skill for the sibling `/workflows` authoring view.\n\n| Sub-concept | Covers |\n| --- | --- |\n| [`sub-concepts/log-entry-schema.md`](sub-concepts/log-entry-schema.md) | The `SessionLogEntry` JSONL shape per `kind`, the derived `Instance`, and the skills-triage audit (`offeredSkills` vs `skillsTriage` vs `unaccountedSkills`). |\n| [`sub-concepts/instance-correlation.md`](sub-concepts/instance-correlation.md) | How `buildInstances` segments by `origin` and correlates `input`/`offeredSkills`/`delivered` by `agent_id` bounded to a `(p, h)` log window (`042`, `039`, `037`). |\n| [`sub-concepts/hook-writers.md`](sub-concepts/hook-writers.md) | The write side: the three hook scripts, their entry formats, `hooks.json` registration, SessionEnd cleanup, and why status needs `maestro-subagent-log.js`. |\n| [`sub-concepts/tailing-and-tabs.md`](sub-concepts/tailing-and-tabs.md) | `tailSessionLogs` vs the legacy single-session tail (`064`/`065`), the poll loop, `tails` vs `logSubscribers` (`038`), the `reduceSessionLog`/`pickSelection` tab state machine, and **worktree tabs** (`075`): `resolveWorktreeRoot`, the per-(window, tab) `worktreeTabs` registry, `skipSession`, `WorktreeLogProvider`, live/no-log/removed states. |\n| [`sub-concepts/panes.md`](sub-concepts/panes.md) | What each of the three panes renders: icons, colors, badges, and the detail panel's sections. |\n\n## Layout\n\n```\n┌──────────────────────────────── TopNav (top-nav.tsx) ────────────────────────────────┐\n│ Workflows | Rules | Session Log                                                  ☀    │\n├────────────────────────────────── SessionLogTabs (065) ──────────────────────────────┤\n│ [● proj-a Sep 29 10:02 / title] [● proj-a Sep 29 10:14 (ended) / title ✕] …   [Clean up sessions] │\n├────────────┬─────────────────────────────────────┬──────────────────────────────────┤\n│ Left       │ Center — SessionLogView              │ Right — SessionLogDetail          │\n│ Cards      │ (session-log-view.tsx)               │ (session-log-detail.tsx)          │\n│ (cards.tsx)│                                      │                                   │\n│            │  Agents Flow                 ● live  │  Logs: Backend (1)                │\n│ Workflow   │                                      │                                   │\n│            │  ┌────────────────────────────────┐  │  Input                            │\n│ ✓ Main Ses │  │ Main Session                   │  │  Create a button component…       │\n│ ✓ Backend  │  │ - calling `backend` agent      │  │  Delivered from @scribe  channel   │\n│ ✓ Human R  │  │ - …                            │  │  Process                          │\n│ ✗ Test     │  └────────────────────────────────┘  │  - [Backend]: read file `…`       │\n│ ✓ Backend  │                                      │  - [Backend]: wrote file `…`      │\n│ ✓ Test     │  ┌════════════════════════════════┐  │  - …                              │\n│ ⚠ Reviewer │  ║ Backend (1)  ⤓1     «green»    ║  │                                   │\n│ ✓ Scribe   │  ║ - calling backend agent        ║  │  Output                           │\n│            │  ║ - [Backend]: read file `…`     ║  │  Created a button component …     │\n│            │  ║ - [Backend]: wrote file `…`    ║  │                                   │\n│            │  └════════════════════════════════┘  │                                   │\n│            │                                      │                                   │\n│            │  ┌────────────────────────────────┐  │                                   │\n│            │  │ Human Review                   │  │                                   │\n│            │  │ - …                            │  │                                   │\n│            │  └────────────────────────────────┘  │                                   │\n│            │                                      │                                   │\n└────────────┴─────────────────────────────────────┴──────────────────────────────────┘\n   180px                     1fr                                320px\n   (defaults: both side panes drag-resize via `usePanelResize` — left 140-400px, right 240-1120px)\n```\n\n**No workflow selector and no YAML preview toggle** — TopNav is rendered bare (no `workflowSelector` or `onPreviewToggle` props). The **tab bar** (`session-log-tabs.tsx`, `065`) sits above the three panes: one tab per session, ordered by project (current first, then recents in `project:get` order; roots de-duplicated by `orderSessions`) then start time. Each tab shows **project name, start date + time and a title** (line 2), truncated with the full text in the tooltip. Title priority: **(1) the session's active maestro task name** (H1 of the `active_task` file in `session.json`, else its filename), **(2) the `claude --resume` title** from the Claude transcript (user rename > AI title > summary), **(3) a renderer-derived title** (`sessionTitle`: first dispatch's message, else agent, else origin, else `Session <id8>`). Resolved by `src/core/session-title.ts` via `sessions:titles`, re-queried on session-set change and every 30s. An **ended** session's tab stays, dimmed with an \"(ended)\" label. The **✕ button appears on any tab that is not running** — ended, or listed by `sessions:deletable` (a crashed session never emits `end`, so its tab stays \"live\" but is deletable) — and it **deletes the session directory** (see Deleting stale sessions), not just the tab. Worktree tabs pass no `onDelete`, so their session tabs never show a ✕. A **Clean up sessions** button (`clean-sessions-button.tsx`) runs the same sweep as app start: icon only, pinned at the tab bar's right end (the tabs' `actions` slot, outside the scrolling tabs, as tall as a tab), and with its label in the empty state, which has no tab bar. When there are no tracked sessions in any known project, the whole three-pane layout is replaced by an **empty state**: a centred `ScrollIcon` + \"No live sessions in any known project\" message (\"A tab appears here while a Maestro session is running, in this project or a recent one.\") + a `● live / ○ connecting…` indicator.\n\n## Data flow\n\n```\nApp-wide (src/renderer/src/routes/__root.tsx)\n  <SessionLogProvider>  (src/renderer/src/utils/session-log-context.tsx)\n    └── window.maestro.log.subscribe({ onInit, onEntry, onEnd, onReset })\n          MAIN process (src/main/ipc.ts) owns ONE poll loop per window:\n          tailSessionLogs(allowedProjectRoots, …) walks every session dir\n          under every project in the current+recent allow-list and pushes,\n          per (projectRoot, sessionId):\n          `log:init` / `log:entry` / `log:end` — `log:reset` is untagged\n          and means \"drop everything\" (see sub-concepts/tailing-and-tabs.md)\n          state: Map<sessionKey, SessionRecord> (keyed by `${projectRoot}::${sessionId}`)\n                                     │\n          reduceSessionLog(prev, event) — the ONE pure fold, unit-tested alone\n          (see sub-concepts/tailing-and-tabs.md)\n                                     │\n       ┌─────────────────────────────┘\n       ▼\nSessionLogPage (src/renderer/src/routes/session-log.tsx)\n  const { sessions, connected, dismiss } = useSessionLog()   // sessions: SessionRecord[]\n  owns: project state, `deletable` (sessions:deletable, 30s), `titles` (sessions:titles, 30s),\n        handleDelete, and `view` (\"main\" or a worktree path) — NOT selection\n  view === \"main\" → <SessionLogPanes sessions=… empty={mainEmpty} tabActions=<CleanSessionsButton iconOnly/> />\n  view === worktree → <WorktreeView> → the same SessionLogPanes over that tab's sessions\n       │\n       ▼\nSessionLogPanes (components/session-log-panes.tsx) — one instance per view, so state is per view\n  selectedKey state, kept stable by:\n    useEffect(() => pickSelection(sessions, selectedKey))    // the OTHER pure function\n  selected = sessions.find(sessionKey(s) === selectedKey)\n  instances = useMemo(() => selected ? buildInstances(selected.entries) : [])  → Instance[]\n  activeId state (which step is selected; reset to null when the tab changes)\n  cwd = selected?.projectRoot ?? fallbackRoot   // the TAB's own project, not the open one\n       │\n       ├──▶ SessionLogTabs (065, above the 3 panes)\n       │      one tab per session, ordered by orderSessions(), onSelect(key) → setSelectedKey\n       │      onDelete(projectRoot, sessionId) → the route's handleDelete → sessions.delete(...)\n       │        (non-running tabs; `not-found` → dismiss(...) just drops the tab)\n       │\n       ├──▶ SessionLogCards (left) / SessionLogView (center) / SessionLogDetail (right)\n       │      render `instances` + `activeInstance` — see sub-concepts/panes.md\n       │\n       └── sessions.length === 0 → renders the `empty` node instead (\"no live sessions in\n           any known project\" for main; a notice for a worktree — see Layout)\n\nTopNav (every Maestro page): \"● Session Log\" dot driven by useSessionLog().connected\n```\n\nThe upstream writers that produce those entries — `maestro-session-log.js` (PreToolUse),\n`maestro-subagent-log.js` (SubagentStart/Stop), `maestro-inject-agent-context.js` (SubagentStart,\n`channel_delivery`) and `maestro-session-cleanup.sh` (SessionEnd) — are in\n[`sub-concepts/hook-writers.md`](sub-concepts/hook-writers.md). All four append to **one file per\nClaude Code session** since `064` — including every subagent a run spawns, which is what makes\n`agent_id` correlation possible at all.\n\n## File-by-file map\n\nRenderer paths are relative to `apps/maestro/`.\n\n| Concern                                                                                                                        | File                                                                                  |\n| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |\n| Route: `view` switch, delete confirm, `deletable`/`titles` polling, main empty state, `WorktreeView` + removed/no-log notices   | `src/renderer/src/routes/session-log.tsx`                                             |\n| **Tab bar** — one tab per session (project, date/time, title), ended dimming, ✕ delete on non-running tabs (`065`, `068`)      | `src/renderer/src/components/session-log-tabs.tsx`                                    |\n| **Clean up sessions button** — runs `sessions:clean`, toasts the removed count                                          | `src/renderer/src/components/clean-sessions-button.tsx`                               |\n| **Stale-session sweep + explicit delete** — `sweepStaleSessions`, `deleteSession`, `listDeletableSessions` (`068`)            | `session-sweep.ts` in `apps/maestro/src/core/`                                        |\n| **Sweep / delete / title IPC decisions** — `composeAllowedRoots`, `titlesForRefs`, `sweepAndRetarget`, `deleteAndRetarget`; `main/ipc.ts` only injects project state and the retarget callback (`070`; tests `test/core/session-ipc.test.ts`) | `session-ipc.ts` in `apps/maestro/src/core/` |\n| **Tab title resolution** — task H1 > `claude --resume` transcript title (`068`)                                               | `session-title.ts` in `apps/maestro/src/core/`                                        |\n| **Top-level view switch** — \"Main checkout\" + one tab per worktree with a log (`075`) | `src/renderer/src/components/worktree-tab-bar.tsx` |\n| **`SessionLogPanes`** — session tab bar + resizable 3-pane grid, tab selection (`pickSelection`), `activeId`, scroll-sync, `buildInstances`, for a given `SessionRecord[]`; the main view and each worktree view render their own instance (`075`) | `src/renderer/src/components/session-log-panes.tsx` |\n| **`WorktreeLogProvider`** / `useWorktreeLog()` / pure `reduceWorktreeTabs` — worktree-tab state, separate from `SessionLogProvider` (`075`; tests `test/renderer/worktree-log-context.test.ts`) | `src/renderer/src/utils/worktree-log-context.tsx` |\n| **Worktree listing + viewing-root gate** — `parseWorktreeList`, `listWorktrees`, `linkedWorktrees`, `samePath`, `resolveWorktreeRoot` (`075`) | `worktree-list.ts` in `apps/maestro/src/core/` |\n| **Per-(window, tab) tail registry** — `createWorktreeTabs`, `describeWorktrees`, `worktreeHasLog`, removed/no-log/live state (`075`; tests `test/core/worktree-tabs.test.ts`, `worktree-isolation.test.ts`) | `worktree-tabs.ts` in `apps/maestro/src/core/` |\n| Left step list with status icons (CheckCircleIcon/XCircleIcon/WarningIcon)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |\n| **Context-usage badge + detail header line** (`ContextUsageBadge`, `ContextUsageLine`) | `src/renderer/src/components/context-usage.tsx` |\n| Center framed log pane, click-to-select, live indicator, per-section anchors                                                   | `src/renderer/src/components/session-log-view.tsx`                                    |\n| Right detail panel: Input/Process/Output sections                                                                              | `src/renderer/src/components/session-log-detail.tsx`                                  |\n| **The tail itself** — one poll loop per window, `tailSessionLogs(allowedProjectRoots, …)` walks every session across the current+recent allow-list and pushes `log:init`/`log:entry`/`log:end` per (projectRoot, sessionId); `tails` (running watchers) and `logSubscribers` (who asked, `038`) are separate sets | `src/main/ipc.ts` (`startTail`, `retargetTails`, `allowedProjectRoots`)               |\n| **Worktree IPC** — `worktree-log:list/open/close` (invoke) and `worktree-log:init/entry/end/state` (push, `projectRoot` = worktree root); `worktreeTabs` map + `skipSession` wiring in `startTail` | `src/main/ipc.ts`, `src/shared/ipc.ts` (`IPC.worktreeLog*`, `IPC_EVENTS.worktreeLog*`, `window.maestro.worktreeLog`) |\n| The typed channel contract — `log:init`/`log:entry`/`log:end` now carry `{projectRoot, sessionId, …}`; `log:reset` stays untagged and means \"drop everything\" | `src/shared/ipc.ts` (`SessionLogInitEvent`/`SessionLogEntryEvent`/`SessionLogEndEvent`, `log:subscribe`, `log:unsubscribe`) |\n| App-wide subscriber: `SessionLogProvider`, `useSessionLog()`, the keyed `Map<sessionKey, SessionRecord>`, the pure `reduceSessionLog`/`pickSelection` | `src/renderer/src/utils/session-log-context.tsx`                                      |\n| `parseLogLines` + `readSessionLog` + legacy single-session `tailSessionLog`/`sessionLogFileFor` (kept for `test/core/session-log.test.ts`'s differential coverage; no longer what `/session-log`'s live tail uses) + the current `tailSessionLogs` (`065`) | `session-log.ts` in `apps/maestro/src/core/`                                          |\n| The `SessionLogEntry` shape crossing the wire                                                                                  | `contracts.ts` in `apps/maestro/src/core/`, re-exported by `src/shared/ipc.ts`        |\n| Pure transforms `buildInstances` + `humanizeLog` + `parseSkillsTriage` + `unaccountedSkills` + `Instance`/`SkillsTriage` types | `src/renderer/src/utils/session-log.ts`                                               |\n| Top bar — nav links incl. `ScrollText` + global `●` live dot                                                                   | `src/renderer/src/components/top-nav.tsx`                                             |\n| `titleFromName` — origin string → display name                                                                                 | `src/renderer/src/utils/text.ts` (re-export of `src/core/text.ts`)                    |\n| Status colors (`text-maestro-success/danger/warning`, `border-maestro-*-strong`)                                               | `packages/styles/theme.inputs.css`                                                    |\n| Worktree-path helpers the pointer relies on (`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`) | `worktree.ts` in `apps/maestro/src/core/` (write guard: `worktree-write-guard.ts`, not a log concern) |\n| Loop-back resume target from the log — `agentRunsFromLog`, `hasCompletedRun`, `resumeTarget` (`039`); skips `meeting`/`owner_run` entries | `agent-runs.ts` in `apps/maestro/src/core/`                                           |\n| **Writer — tool-call entries** (PreToolUse, matcher `.*`)                                                                      | `plugins/maestro/scripts/maestro-session-log.js`                             |\n| **Writer — dispatch + handoff entries** (SubagentStart/Stop, matcher `.*`)                                                     | `plugins/maestro/scripts/maestro-subagent-log.js`                            |\n| **Writer — `channel_delivery` entries** (SubagentStart, matcher `.*`)                                                          | `plugins/maestro/scripts/maestro-inject-agent-context.js`                    |\n| The read-only `pendingLanes()` — `/maestro`'s undrained-backlog view, NOT this route's data (`037`)                            | `handoff-channels.ts` in `apps/maestro/src/core/`                             |\n| Shared append helper (`appendSessionLog`, `readStdin`)                                                                         | `plugins/maestro/scripts/lib/maestro-session.cjs`                            |\n| Hook registration (all three hooks registered here)                                                                            | `plugins/maestro/hooks/hooks.json`                                           |\n| Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`)               |\n| Path resolution + session-id validation (`sessionLogFileFor`, `sessionPathsFor`, `listSessionIds`)                             | `session-log.ts` / `session-paths.ts` in `apps/maestro/src/core/`                     |\n\n## Things that bite\n\n- **The log is ephemeral.** Deleted at SessionEnd by `maestro-session-cleanup.sh` — but only on a *final* end: `endSessionState` keeps the directory for a resumable `reason` (`prompt_input_exit`, `other`, `resume`; `077`), so that session's tab does not grey out and stays \"live\" until it is swept or deleted. Sessions that end without SessionEnd (crash, kill) are removed by the `068` sweep / ✕ instead. The desktop window outlives any session, so an empty page is the normal between-sessions state, not an error. The file only exists during and immediately after an active Maestro session.\n- **Status comes exclusively from the SubagentStop handoff entry.** If `maestro-subagent-log.js` is not registered, all steps will have `status: null` and default to green checkmarks. If a real workflow agent (has an `agent_type`) exits without a parseable `HANDOFF:` line (crash, force-stop, broken Maestro contract), the status will be `\"unknown\"` (shown as yellow warning icon). A `SubagentStop` with **no `agent_type`** is instead logged as `kind:\"transition\"` (a neutral grey card) — a boundary that isn't a workflow handoff, not a failed agent, so it deliberately does **not** show a yellow warning.\n- **`channels:pending` (the `/maestro` backlog view) is a DIFFERENT read of a DIFFERENT thing.** This route shows deliveries that already happened, reconstructed from the append-only log; `/maestro`'s `pendingLanes()` (`src/core/handoff-channels.ts`) shows undelivered files still sitting in `.claude/channels/`. Neither reads the other's data source, and neither writes anything — see `maestro-architecture` for the channel file lifecycle and `agents-view` for where a route's channel path (`.claude/channels/<receiver>/<sender>.1.md`) is surfaced as a label.\n\n## Deleting stale session directories (`068`)\n\nA session that ends without SessionEnd leaves its directory (and a tab) forever. Two paths remove it, both in `src/core/session-sweep.ts`, framework-free, sharing one rule: **delete only on positive evidence of abandonment; ambiguous = live.**\n\n| Path | Trigger | Idle cap |\n| --- | --- | --- |\n| `sweepStaleSessions(roots)` | app start (`registerIpc`) and the Clean up sessions button (`sessions:clean`, resolves to the removed count; 0 is normal) | **24h** (`SESSION_SWEEP_IDLE_CAP_MS`) |\n| `deleteSession(roots, root, id)` / `listDeletableSessions(roots)` | the tab ✕ (`sessions:delete`, `sessions:deletable`) | **15 min** (`SESSION_DELETE_IDLE_CAP_MS` = `CLAIM_IDLE_CAP_MS`) — an explicit user action, so shorter |\n\n**Confirm before deleting a non-ended tab.** The 15-minute rule cannot tell a crash from a session parked on a long human review. So in the renderer (`session-log.tsx`, `handleDelete`) a tab whose status is not `ended` gets a `window.confirm` (\"may still be waiting for input\") before `sessions:delete` is called; ended tabs delete immediately. The backend rule is unchanged.\n\n- **Liveness = last activity**: newest mtime of the directory and its direct children (`log.jsonl`, `session.json`, `tasks.json`). Task claims need no extra check (a live claim is within 15 min, inside both windows).\n- **Never deleted** (\"cannot tell\" = live): invalid session id, a symlink (never followed), the caller's own `CLAUDE_CODE_SESSION_ID`, any stat/readdir error, a future mtime (clock skew), a fresh empty directory. `deleteSession` also refuses roots outside `allowedProjectRoots()`; its reasons are `invalid | not-found | running | own-session | failed`.\n- **Why 24h for the sweep**: deleting destroys `session.json` of a session possibly parked for hours on human review; a crash leftover is as removable a day later.\n- **After a removal main calls `retargetTails()`** (`logReset` + fresh `init` burst) so the swept session has **no tab at all**. Without it `tailSessionLogs` would report the vanished directory as a per-session `end` and leave a greyed tab.\n- **`dedupeProjectRoots`** (`session-log.ts`, exported via `core/index.ts`) collapses roots that resolve to the same real path (trailing slash, symlink, current project also in recents). `allowedProjectRoots()` and `tailSessionLogs` both use it; without it one session directory is discovered under two roots and shows as two tabs.\n- Only session directories are swept — legacy flat files and `.gitignore` in `maestro_sessions/` are untouched.\n",
-    "contentHash": "sha256:0a89fdc4d0c7d046b4a485d6012e4c8a166615643245d471ad5e5f3cb00c5dca"
+    "body": "---\nname: log-view\ndescription: \"Explains how the /session-log view in the Maestro desktop app is built end-to-end: a tab bar (065) grouping one tab per LIVE SESSION by project — current project plus every recent one, not just the open one — above the thin left step list, the center framed log pane, and the right Input/Process/Output detail panel; how log entries map to Instance segments within whichever tab is selected; how channel_delivery entries (`037`) attach to the RECEIVING instance rather than the sender; how a resumed agent's two cards (`039`) are each correlated to their own run by bounding every agent_id lookup by log position (`042`); how an ended session keeps a greyed, capped, evictable tab instead of vanishing; how a project being forgotten forces a full tab-bar reset rather than a per-session end; and how the maestro-session-log.js / maestro-subagent-log.js / maestro-inject-agent-context.js hooks write the log each tab reads — which since `064` is the PER-SESSION .claude/maestro_sessions/<session_id>/log.jsonl, one fixed file per session for its whole life, discovered across the current-plus-recent project allow-list by tailSessionLogs() (065) rather than resolved by mtime. Use when the user is working inside apps/maestro and asks how the session-log view or its tabs work, how cards/instances are derived, where SUCCESS/FAILURE comes from, why the log or a tab is empty, why a tab disappeared or greyed out, why a step has no status icon, how dispatch/handoff entries are produced by the hooks, why a delivered channel payload does or doesn't show up on the right card, or how a resumed agent's (`039`) two cards each get their own run's input/offeredSkills/deliveries (`042`).\"\nmetadata:\n  type: concept-skill\n  version: \"3.0\"\n  last-update: bbb69aba5cc3b304f8b672198781663c2b38866f\n---\n\n# Log View\n\nThe `/session-log` route (`src/renderer/src/routes/session-log.tsx`) is a **read-only debugger** for Maestro workflow sessions. Since `065` it shows **one tab per live session, across every project the app knows about** (the current project plus the recent-projects list) — not just the open one. Each tab reads its own `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`) and, once selected, presents it in three panes: a **thin left step list** (step names with status icons), a **center framed log** (humanized tool calls per step in rounded bordered sections), and a **right detail panel** (Input/Process/Output for the selected step). Clicking a step in any pane selects it across all three; switching tabs swaps which session's entries those three panes render, without touching the other tabs' state.\n\nSince `075` there is also a **top-level tab bar above all of that** (`WorktreeTabBar`): \"Main checkout\" (everything above) plus one tab per linked git worktree of the open project that has a session log. Each worktree tab renders its own session tab bar + three panes over only that worktree's sessions, from its own tail, and shows an explicit removed / no-log notice instead of ever falling back to the main log. Worktree tabs are not retargeted on a project switch.\n\nThis is the **read side** of the Maestro runtime: it displays what the hook scripts write. See the `maestro-architecture` skill for the full HANDOFF routing contract, and the `workflow-view` skill for the sibling `/workflows` authoring view.\n\n| Sub-concept | Covers |\n| --- | --- |\n| [`sub-concepts/log-entry-schema.md`](sub-concepts/log-entry-schema.md) | The `SessionLogEntry` JSONL shape per `kind`, the derived `Instance`, and the skills-triage audit (`offeredSkills` vs `skillsTriage` vs `unaccountedSkills`). |\n| [`sub-concepts/instance-correlation.md`](sub-concepts/instance-correlation.md) | How `buildInstances` segments by `origin` and correlates `input`/`offeredSkills`/`delivered` by `agent_id` bounded to a `(p, h)` log window (`042`, `039`, `037`). |\n| [`sub-concepts/hook-writers.md`](sub-concepts/hook-writers.md) | The write side: the three hook scripts, their entry formats, `hooks.json` registration, SessionEnd cleanup, and why status needs `maestro-subagent-log.js`. |\n| [`sub-concepts/tailing-and-tabs.md`](sub-concepts/tailing-and-tabs.md) | `tailSessionLogs` vs the legacy single-session tail (`064`/`065`), the poll loop, `tails` vs `logSubscribers` (`038`), the `reduceSessionLog`/`pickSelection` tab state machine, and **worktree tabs** (`075`): `resolveWorktreeRoot`, the per-(window, tab) `worktreeTabs` registry, `skipSession`, `WorktreeLogProvider`, live/no-log/removed states. |\n| [`sub-concepts/panes.md`](sub-concepts/panes.md) | What each of the three panes renders: icons, colors, badges, and the detail panel's sections. |\n\n## Layout\n\n```\n┌──────────────────────────────── TopNav (top-nav.tsx) ────────────────────────────────┐\n│ Workflows | Rules | Session Log                                                  ☀    │\n├────────────────────────────────── SessionLogTabs (065) ──────────────────────────────┤\n│ [● proj-a Sep 29 10:02 / title] [● proj-a Sep 29 10:14 (ended) / title ✕] …   [Clean up sessions] │\n├────────────┬─────────────────────────────────────┬──────────────────────────────────┤\n│ Left       │ Center — SessionLogView              │ Right — SessionLogDetail          │\n│ Cards      │ (session-log-view.tsx)               │ (session-log-detail.tsx)          │\n│ (cards.tsx)│                                      │                                   │\n│            │  Agents Flow                 ● live  │  Logs: Backend (1)                │\n│ Workflow   │                                      │                                   │\n│            │  ┌────────────────────────────────┐  │  Input                            │\n│ ✓ Main Ses │  │ Main Session                   │  │  Create a button component…       │\n│ ✓ Backend  │  │ - calling `backend` agent      │  │  Delivered from @scribe  channel   │\n│ ✓ Human R  │  │ - …                            │  │  Process                          │\n│ ✗ Test     │  └────────────────────────────────┘  │  - [Backend]: read file `…`       │\n│ ✓ Backend  │                                      │  - [Backend]: wrote file `…`      │\n│ ✓ Test     │  ┌════════════════════════════════┐  │  - …                              │\n│ ⚠ Reviewer │  ║ Backend (1)  ⤓1     «green»    ║  │                                   │\n│ ✓ Scribe   │  ║ - calling backend agent        ║  │  Output                           │\n│            │  ║ - [Backend]: read file `…`     ║  │  Created a button component …     │\n│            │  ║ - [Backend]: wrote file `…`    ║  │                                   │\n│            │  └════════════════════════════════┘  │                                   │\n│            │                                      │                                   │\n│            │  ┌────────────────────────────────┐  │                                   │\n│            │  │ Human Review                   │  │                                   │\n│            │  │ - …                            │  │                                   │\n│            │  └────────────────────────────────┘  │                                   │\n│            │                                      │                                   │\n└────────────┴─────────────────────────────────────┴──────────────────────────────────┘\n   180px                     1fr                                320px\n   (defaults: both side panes drag-resize via `usePanelResize` — left 140-400px, right 240-1120px)\n```\n\n**No workflow selector and no YAML preview toggle** — TopNav is rendered bare (no `workflowSelector` or `onPreviewToggle` props). The **tab bar** (`session-log-tabs.tsx`, `065`) sits above the three panes: one tab per session, ordered by project (current first, then recents in `project:get` order; roots de-duplicated by `orderSessions`) then start time. Each tab shows **project name, start date + time and a title** (line 2), truncated with the full text in the tooltip. Title priority: **(1) the session's active maestro task name** (H1 of the `active_task` file in `session.json`, else its filename), **(2) the `claude --resume` title** from the Claude transcript (user rename > AI title > summary), **(3) a renderer-derived title** (`sessionTitle`: first dispatch's message, else agent, else origin, else `Session <id8>`). Resolved by `src/core/session-title.ts` via `sessions:titles`, re-queried on session-set change and every 30s. An **ended** session's tab stays, dimmed with an \"(ended)\" label. The **✕ button appears on any tab that is not running** — ended, or listed by `sessions:deletable` (a crashed session never emits `end`, so its tab stays \"live\" but is deletable) — and it **deletes the session directory** (see Deleting stale sessions), not just the tab. Worktree tabs pass no `onDelete`, so their session tabs never show a ✕. A **Clean up sessions** button (`clean-sessions-button.tsx`) runs the same sweep as app start: icon only, pinned at the tab bar's right end (the tabs' `actions` slot, outside the scrolling tabs, as tall as a tab), and with its label in the empty state, which has no tab bar. When there are no tracked sessions in any known project, the whole three-pane layout is replaced by an **empty state**: a centred `ScrollIcon` + \"No live sessions in any known project\" message (\"A tab appears here while a Maestro session is running, in this project or a recent one.\") + a `● live / ○ connecting…` indicator.\n\n## Data flow\n\n```\nApp-wide (src/renderer/src/routes/__root.tsx)\n  <SessionLogProvider>  (src/renderer/src/utils/session-log-context.tsx)\n    └── window.maestro.log.subscribe({ onInit, onEntry, onEnd, onReset })\n          MAIN process (src/main/ipc.ts) owns ONE poll loop per window:\n          tailSessionLogs(allowedProjectRoots, …) walks every session dir\n          under every project in the current+recent allow-list and pushes,\n          per (projectRoot, sessionId):\n          `log:init` / `log:entry` / `log:end` — `log:reset` is untagged\n          and means \"drop everything\" (see sub-concepts/tailing-and-tabs.md)\n          state: Map<sessionKey, SessionRecord> (keyed by `${projectRoot}::${sessionId}`)\n                                     │\n          reduceSessionLog(prev, event) — the ONE pure fold, unit-tested alone\n          (see sub-concepts/tailing-and-tabs.md)\n                                     │\n       ┌─────────────────────────────┘\n       ▼\nSessionLogPage (src/renderer/src/routes/session-log.tsx)\n  const { sessions, connected, dismiss } = useSessionLog()   // sessions: SessionRecord[]\n  owns: project state, `deletable` (sessions:deletable, 30s), `titles` (sessions:titles, 30s),\n        handleDelete, and `view` (\"main\" or a worktree path) — NOT selection\n  view === \"main\" → <SessionLogPanes sessions=… empty={mainEmpty} tabActions=<CleanSessionsButton iconOnly/> />\n  view === worktree → <WorktreeView> → the same SessionLogPanes over that tab's sessions\n       │\n       ▼\nSessionLogPanes (components/session-log-panes.tsx) — one instance per view, so state is per view\n  selectedKey state, kept stable by:\n    useEffect(() => pickSelection(sessions, selectedKey))    // the OTHER pure function\n  selected = sessions.find(sessionKey(s) === selectedKey)\n  instances = useMemo(() => selected ? buildInstances(selected.entries) : [])  → Instance[]\n  activeId state (which step is selected; reset to null when the tab changes)\n  cwd = selected?.projectRoot ?? fallbackRoot   // the TAB's own project, not the open one\n       │\n       ├──▶ SessionLogTabs (065, above the 3 panes)\n       │      one tab per session, ordered by orderSessions(), onSelect(key) → setSelectedKey\n       │      onDelete(projectRoot, sessionId) → the route's handleDelete → sessions.delete(...)\n       │        (non-running tabs; `not-found` → dismiss(...) just drops the tab)\n       │\n       ├──▶ SessionLogCards (left) / SessionLogView (center) / SessionLogDetail (right)\n       │      render `instances` + `activeInstance` — see sub-concepts/panes.md\n       │\n       └── sessions.length === 0 → renders the `empty` node instead (\"no live sessions in\n           any known project\" for main; a notice for a worktree — see Layout)\n\nTopNav (every Maestro page): \"● Session Log\" dot driven by useSessionLog().connected\n```\n\nThe upstream writers that produce those entries — `maestro-session-log.js` (PreToolUse),\n`maestro-subagent-log.js` (SubagentStart/Stop), `maestro-inject-agent-context.js` (SubagentStart,\n`channel_delivery`) and `maestro-session-cleanup.sh` (SessionEnd) — are in\n[`sub-concepts/hook-writers.md`](sub-concepts/hook-writers.md). All four append to **one file per\nClaude Code session** since `064` — including every subagent a run spawns, which is what makes\n`agent_id` correlation possible at all.\n\n## File-by-file map\n\nRenderer paths are relative to `apps/maestro/`.\n\n| Concern                                                                                                                        | File                                                                                  |\n| ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------- |\n| Route: `view` switch, delete confirm, `deletable`/`titles` polling, main empty state, `WorktreeView` + removed/no-log notices   | `src/renderer/src/routes/session-log.tsx`                                             |\n| **Tab bar** — one tab per session (project, date/time, title), ended dimming, ✕ delete on non-running tabs (`065`, `068`)      | `src/renderer/src/components/session-log-tabs.tsx`                                    |\n| **Clean up sessions button** — runs `sessions:clean`, toasts the removed count                                          | `src/renderer/src/components/clean-sessions-button.tsx`                               |\n| **Stale-session sweep + explicit delete** — `sweepStaleSessions`, `deleteSession`, `listDeletableSessions` (`068`)            | `session-sweep.ts` in `apps/maestro/src/core/`                                        |\n| **Sweep / delete / title IPC decisions** — `composeAllowedRoots`, `titlesForRefs`, `sweepAndRetarget`, `deleteAndRetarget`; `main/ipc.ts` only injects project state and the retarget callback (`070`; tests `test/core/session-ipc.test.ts`) | `session-ipc.ts` in `apps/maestro/src/core/` |\n| **Tab title resolution** — task H1 > `claude --resume` transcript title (`068`)                                               | `session-title.ts` in `apps/maestro/src/core/`                                        |\n| **Top-level view switch** — \"Main checkout\" + one tab per worktree with a log (`075`) | `src/renderer/src/components/worktree-tab-bar.tsx` |\n| **`SessionLogPanes`** — session tab bar + resizable 3-pane grid, tab selection (`pickSelection`), `activeId`, scroll-sync, `buildInstances`, for a given `SessionRecord[]`; the main view and each worktree view render their own instance (`075`) | `src/renderer/src/components/session-log-panes.tsx` |\n| **`WorktreeLogProvider`** / `useWorktreeLog()` / pure `reduceWorktreeTabs` — worktree-tab state, separate from `SessionLogProvider` (`075`; tests `test/renderer/worktree-log-context.test.ts`) | `src/renderer/src/utils/worktree-log-context.tsx` |\n| **Worktree listing + viewing-root gate** — `parseWorktreeList`, `listWorktrees`, `linkedWorktrees`, `samePath`, `resolveWorktreeRoot` (`075`) | `worktree-list.ts` in `apps/maestro/src/core/` |\n| **Per-(window, tab) tail registry** — `createWorktreeTabs`, `describeWorktrees`, `worktreeHasLog`, removed/no-log/live state (`075`; tests `test/core/worktree-tabs.test.ts`, `worktree-isolation.test.ts`) | `worktree-tabs.ts` in `apps/maestro/src/core/` |\n| Left step list with status icons (CheckCircleIcon/XCircleIcon/WarningIcon)                                                           | `src/renderer/src/components/session-log-cards.tsx`                                   |\n| **Context-usage badge + detail header line** (`ContextUsageBadge`, `ContextUsageLine`) | `src/renderer/src/components/context-usage.tsx` |\n| Center framed log pane, click-to-select, live indicator, per-section anchors                                                   | `src/renderer/src/components/session-log-view.tsx`                                    |\n| Right detail panel: Input/Process/Output sections                                                                              | `src/renderer/src/components/session-log-detail.tsx`                                  |\n| **The tail itself** — one poll loop per window, `tailSessionLogs(allowedProjectRoots, …)` walks every session across the current+recent allow-list and pushes `log:init`/`log:entry`/`log:end` per (projectRoot, sessionId); `tails` (running watchers) and `logSubscribers` (who asked, `038`) are separate sets | `src/main/ipc.ts` (`startTail`, `retargetTails`, `allowedProjectRoots`)               |\n| **Worktree IPC** — `worktree-log:list/open/close` (invoke) and `worktree-log:init/entry/end/state` (push, `projectRoot` = worktree root); `worktreeTabs` map + `skipSession` wiring in `startTail` | `src/main/ipc.ts`, `src/shared/ipc.ts` (`IPC.worktreeLog*`, `IPC_EVENTS.worktreeLog*`, `window.maestro.worktreeLog`) |\n| The typed channel contract — `log:init`/`log:entry`/`log:end` now carry `{projectRoot, sessionId, …}`; `log:reset` stays untagged and means \"drop everything\" | `src/shared/ipc.ts` (`SessionLogInitEvent`/`SessionLogEntryEvent`/`SessionLogEndEvent`, `log:subscribe`, `log:unsubscribe`) |\n| App-wide subscriber: `SessionLogProvider`, `useSessionLog()`, the keyed `Map<sessionKey, SessionRecord>`, the pure `reduceSessionLog`/`pickSelection` | `src/renderer/src/utils/session-log-context.tsx`                                      |\n| `parseLogLines` + `readSessionLog` + legacy single-session `tailSessionLog`/`sessionLogFileFor` (kept for `test/core/session-log.test.ts`'s differential coverage; no longer what `/session-log`'s live tail uses) + the current `tailSessionLogs` (`065`) | `session-log.ts` in `apps/maestro/src/core/`                                          |\n| The `SessionLogEntry` shape crossing the wire                                                                                  | `contracts.ts` in `apps/maestro/src/core/`, re-exported by `src/shared/ipc.ts`        |\n| Pure transforms `buildInstances` + `humanizeLog` + `parseSkillsTriage` + `unaccountedSkills` + `Instance`/`SkillsTriage` types | `src/renderer/src/utils/session-log.ts`                                               |\n| Top bar — nav links incl. `ScrollText` + global `●` live dot                                                                   | `src/renderer/src/components/top-nav.tsx`                                             |\n| `titleFromName` — origin string → display name                                                                                 | `src/renderer/src/utils/text.ts` (re-export of `src/core/text.ts`)                    |\n| Status colors (`text-maestro-success/danger/warning`, `border-maestro-*-strong`)                                               | `packages/styles/theme.inputs.css`                                                    |\n| Worktree-path helpers the pointer relies on (`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`) | `worktree.ts` in `apps/maestro/src/core/` (write guard: `worktree-write-guard.ts`, not a log concern) |\n| Loop-back resume target from the log — `agentRunsFromLog`, `hasCompletedRun`, `resumeTarget` (`039`); skips `meeting`/`owner_run` entries | `agent-runs.ts` in `apps/maestro/src/core/`                                           |\n| **Writer — tool-call entries** (PreToolUse, matcher `.*`)                                                                      | `plugins/maestro/scripts/maestro-session-log.js`                             |\n| **Writer — dispatch + handoff entries** (SubagentStart/Stop, matcher `.*`)                                                     | `plugins/maestro/scripts/maestro-subagent-log.js`                            |\n| **Writer — `channel_delivery` entries** (SubagentStart, matcher `.*`)                                                          | `plugins/maestro/scripts/maestro-inject-agent-context.js`                    |\n| The read-only `pendingLanes()` — `/maestro`'s undrained-backlog view, NOT this route's data (`037`)                            | `handoff-channels.ts` in `apps/maestro/src/core/`                             |\n| Shared append helper (`appendSessionLog`, `readStdin`)                                                                         | `plugins/maestro/scripts/lib/maestro-session.cjs`                            |\n| Hook registration (all three hooks registered here)                                                                            | `plugins/maestro/hooks/hooks.json`                                           |\n| Source file (ephemeral, append-only, gitignored)                                                                               | `<projectRoot>/.claude/maestro_sessions/<session_id>/log.jsonl` (`064`)               |\n| Path resolution + session-id validation (`sessionLogFileFor`, `sessionPathsFor`, `listSessionIds`)                             | `session-log.ts` / `session-paths.ts` in `apps/maestro/src/core/`                     |\n\n## Things that bite\n\n- **The log is ephemeral.** Deleted at SessionEnd by `maestro-session-cleanup.sh` — but only on a *final* end: `endSessionState` keeps the directory for a resumable `reason` (`prompt_input_exit`, `other`, `resume`; `077`), so that session's tab does not grey out and stays \"live\" until it is swept or deleted. Sessions that end without SessionEnd (crash, kill) are removed by the `068` sweep / ✕ instead. The desktop window outlives any session, so an empty page is the normal between-sessions state, not an error. The file only exists during and immediately after an active Maestro session.\n- **Status comes exclusively from the SubagentStop handoff entry.** If `maestro-subagent-log.js` is not registered, all steps will have `status: null` and default to green checkmarks. If a real workflow agent (has an `agent_type`) exits without a parseable `HANDOFF:` line (crash, force-stop, broken Maestro contract), the status will be `\"unknown\"` (shown as yellow warning icon). A `SubagentStop` with **no `agent_type`** is instead logged as `kind:\"transition\"` (a neutral grey card) — a boundary that isn't a workflow handoff, not a failed agent, so it deliberately does **not** show a yellow warning.\n- **`channels:pending` (the `/maestro` backlog view) is a DIFFERENT read of a DIFFERENT thing.** This route shows deliveries that already happened, reconstructed from the append-only log; `/maestro`'s `pendingLanes()` (`src/core/handoff-channels.ts`) shows undelivered files still sitting in `.claude/channels/`. Neither reads the other's data source, and neither writes anything — see `maestro-architecture` for the channel file lifecycle and `agents-view` for where a route's channel path (`.claude/channels/<receiver>/<sender>.1.md`) is surfaced as a label.\n\n## Deleting stale session directories (`068`)\n\nA session that ends without SessionEnd leaves its directory (and a tab) forever. Two paths remove it, both in `src/core/session-sweep.ts`, framework-free, sharing one rule: **delete only on positive evidence of abandonment; ambiguous = live.**\n\n| Path | Trigger | Idle cap |\n| --- | --- | --- |\n| `sweepStaleSessions(roots)` | app start (`registerIpc`) and the Clean up sessions button (`sessions:clean`, resolves to the removed count; 0 is normal) | **24h** (`SESSION_SWEEP_IDLE_CAP_MS`) |\n| `deleteSession(roots, root, id)` / `listDeletableSessions(roots)` | the tab ✕ (`sessions:delete`, `sessions:deletable`) | **15 min** (`SESSION_DELETE_IDLE_CAP_MS` = `CLAIM_IDLE_CAP_MS`) — an explicit user action, so shorter |\n\n**Confirm before deleting a non-ended tab.** The 15-minute rule cannot tell a crash from a session parked on a long human review. So in the renderer (`session-log.tsx`, `handleDelete`) a tab whose status is not `ended` gets a `window.confirm` (\"may still be waiting for input\") before `sessions:delete` is called; ended tabs delete immediately. The backend rule is unchanged.\n\n- **Liveness = last activity**: newest mtime of the directory and its direct children (`log.jsonl`, `session.json`, `tasks.json`, and since `141` `heartbeat`). Task claims need no extra check (a live claim has a `heartbeat` within 3 min or, without one, a log within 15 min, inside both windows), so an open session waiting on the user is never deletable or swept.\n- **Never deleted** (\"cannot tell\" = live): invalid session id, a symlink (never followed), the caller's own `CLAUDE_CODE_SESSION_ID`, any stat/readdir error, a future mtime (clock skew), a fresh empty directory. `deleteSession` also refuses roots outside `allowedProjectRoots()`; its reasons are `invalid | not-found | running | own-session | failed`.\n- **Why 24h for the sweep**: deleting destroys `session.json` of a session possibly parked for hours on human review; a crash leftover is as removable a day later.\n- **After a removal main calls `retargetTails()`** (`logReset` + fresh `init` burst) so the swept session has **no tab at all**. Without it `tailSessionLogs` would report the vanished directory as a per-session `end` and leave a greyed tab.\n- **`dedupeProjectRoots`** (`session-log.ts`, exported via `core/index.ts`) collapses roots that resolve to the same real path (trailing slash, symlink, current project also in recents). `allowedProjectRoots()` and `tailSessionLogs` both use it; without it one session directory is discovered under two roots and shows as two tabs.\n- Only session directories are swept — legacy flat files and `.gitignore` in `maestro_sessions/` are untouched.\n",
+    "contentHash": "sha256:47c0097ce976a69cca82d9515a44427e2430021bafe9a24fb0c512a4619dd803"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.27",
-    "extracted_at": "2026-10-26T18:42:02.509Z",
+    "extractor_version": "code-graph@0.3.28",
+    "extracted_at": "2026-10-29T02:40:40.875Z",
     "files": {
       "apps/maestro/src/core/agent-runs.ts": "sha256:3d88951ed3d496e0224e3426f717f00fc3b0ccfb894ec37a1ee4faa3ad4712c5",
       "apps/maestro/src/core/session-log.ts": "sha256:215e104f764d11f46ec7e9efa42fe0c485909cfd0212174e9f88f5c3c17b84e2",
+      "apps/maestro/src/core/worktree-deps.ts": "sha256:187409556070103af7decf37c0cf1f2f6785543b7600c71af7d596286310aae6",
       "apps/maestro/src/core/worktree-list.ts": "sha256:1be195b697a83b31209cc12dc69d30919ce2c1833af125bd4ec3ca84b54254e5",
       "apps/maestro/src/core/worktree-tabs.ts": "sha256:e33af3101a134931a598533da6ec9b18435649a02990061dd3da51936d4d6796",
       "apps/maestro/src/core/worktree-write-guard.ts": "sha256:e6e1c94257d74f33fbf2d17dc558e23cd133768a3167b97fd9c53819d03fa688",

@@ -23,9 +23,10 @@
 //      appended on every tool call; `session.json` / `tasks.json` are rewritten on workflow
 //      steps; the directory mtime moves when a file is created or removed);
 //
-// Task claims (`066`) need no separate check: a claim is live only while its session's log is
-// within 15 minutes, which is strictly inside rule 3's window, so a live claim can never coexist
-// with a candidate directory.
+// Task claims (`066`) need no separate check: a claim is live only while its session's heartbeat
+// (`141`, touched every minute while the session is open) is within 3 minutes or, with no heartbeat,
+// its log is within 15 minutes. Either file counts as activity under rule 3, so a live claim can
+// never coexist with a candidate directory — an open session waiting on the user is never swept.
 //
 // "Cannot tell" = live. Any of these keep the directory: a stat/readdir error, an mtime in the future (clock skew), an empty directory whose own mtime is fresh
 // (a session that has just started and not logged yet), a directory the sweep cannot read.

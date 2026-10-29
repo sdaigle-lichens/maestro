@@ -106,6 +106,8 @@ const {
   isFreeformBranch,
   SESSION_WORKTREE_NAME,
   CLAIM_IDLE_CAP_MS,
+  HEARTBEAT_STALE_MS,
+  SESSION_HEARTBEAT_NAME,
   storedName,
   missingDependenciesNotice,
   pendingResumeDeliveries,
@@ -202,11 +204,20 @@ function readClaimFile(filePath) {
   }
 }
 
-// Live iff the claiming session's directory still exists AND its log.jsonl was modified within
-// CLAIM_IDLE_CAP_MS. A missing directory (clean SessionEnd) is dead immediately.
+// Live iff the claiming session's directory still exists AND (`141`): when it holds a `heartbeat`
+// file, that file's mtime is within HEARTBEAT_STALE_MS (a present-but-stale heartbeat is dead even
+// with a fresh log); otherwise its log.jsonl was modified within CLAIM_IDLE_CAP_MS. A missing
+// directory (clean SessionEnd) is dead immediately. Same rule as isSessionLive in claims.ts.
 function isSessionLive(sessionId, now) {
   const paths = sessionPathsFor(path.join(projectDir, ".claude"), sessionId);
   if (!paths || !fs.existsSync(paths.dir)) return false;
+  let heartbeat = null;
+  try {
+    heartbeat = fs.statSync(path.join(paths.dir, SESSION_HEARTBEAT_NAME));
+  } catch {
+    // No heartbeat file: a runtime predating it — fall back to the log rule below.
+  }
+  if (heartbeat) return now - heartbeat.mtimeMs <= HEARTBEAT_STALE_MS;
   try {
     const stat = fs.statSync(paths.log);
     return now - stat.mtimeMs <= CLAIM_IDLE_CAP_MS;

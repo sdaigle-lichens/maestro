@@ -299,6 +299,8 @@ const HOOK_REGISTRATIONS = [
   nodeHook("PreToolUse", "Skill", "maestro-session-name.cjs"),
   nodeHook("UserPromptSubmit", "", "maestro-session-name.cjs"),
   nodeHook("SessionStart", "", "maestro-session-name.cjs"),
+  // `141`: the session heartbeat (claim liveness while the session waits on the user).
+  nodeHook("SessionStart", "", "maestro-session-heartbeat.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
@@ -467,6 +469,8 @@ const HOOK_SCRIPTS = [
   "maestro-channel-write-guard",
   // Blocks AskUserQuestion at a human review until the round's review file exists (130).
   "maestro-human-review-gate",
+  // SessionStart: spawns the detached session heartbeat that keeps an open session's claim live (141).
+  "maestro-session-heartbeat",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the

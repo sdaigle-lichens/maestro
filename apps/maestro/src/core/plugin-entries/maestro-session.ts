@@ -43,6 +43,8 @@ export {
   SESSION_STATE_NAME,
   SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME,
+  SESSION_HEARTBEAT_NAME,
+  SESSION_HEARTBEAT_PID_NAME,
   readWorktreePointer,
   sessionDirsFor,
   SESSION_ID_ENV,
@@ -63,6 +65,26 @@ export {
   type SessionIdSource,
 } from "../session-paths.js";
 
+// The session heartbeat (`141`): the detached process `maestro-session-heartbeat.js` spawns at
+// SessionStart, and the rule claims read from it. `fs`/`path` only (the script runs the non-Linux
+// `ps` fallback itself) — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  heartbeatVerdict,
+  heartbeatIntervalMs,
+  heartbeatTargets,
+  heartbeatTick,
+  writeHeartbeatPid,
+  isProcessAlive,
+  processInfo,
+  parsePsLine,
+  watchedPid,
+  parentProbe,
+  type HeartbeatTargets,
+  type HeartbeatTickInput,
+  type HeartbeatTickResult,
+  type ProcessInfo,
+} from "../session-heartbeat.js";
+
 // Agent channels (`036`) — lanes, stamps, retire, sweep. `fs`/`path` only, so this costs nothing
 // against the "no node:sqlite in maestro-session.cjs" property below.
 export {
@@ -76,6 +98,9 @@ export {
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
   CLAIM_IDLE_CAP_MS,
+  HEARTBEAT_INTERVAL_MS,
+  HEARTBEAT_STALE_MS,
+  HEARTBEAT_INTERVAL_ENV,
   unstampedFilesOf,
   isGapReport,
   acknowledgeGaps,

@@ -37,6 +37,26 @@ export const CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1000;
  */
 export const CLAIM_IDLE_CAP_MS = 15 * 60 * 1000;
 
+/**
+ * How often the session heartbeat (`141`, `session-heartbeat.ts`) touches the session's
+ * `heartbeat` file while the Claude Code process that started it is alive. Overridable for tests
+ * through {@link HEARTBEAT_INTERVAL_ENV}.
+ */
+export const HEARTBEAT_INTERVAL_MS = 60 * 1000;
+
+/**
+ * A session whose `heartbeat` file exists but is older than this is DEAD for claims and the
+ * worktree decision, however fresh its `log.jsonl` is (`141`). Three missed ticks of
+ * {@link HEARTBEAT_INTERVAL_MS}: a closed or crashed session frees its claim within about a minute
+ * (the heartbeat zeroes the file when it sees its parent gone) or at most this long (the heartbeat
+ * itself was killed). A session with NO heartbeat file falls back to the `CLAIM_IDLE_CAP_MS` log
+ * rule, so a project whose runtime predates the heartbeat keeps the old behaviour.
+ */
+export const HEARTBEAT_STALE_MS = 3 * 60 * 1000;
+
+/** Environment variable overriding {@link HEARTBEAT_INTERVAL_MS} (milliseconds), for tests. */
+export const HEARTBEAT_INTERVAL_ENV = "MAESTRO_HEARTBEAT_INTERVAL_MS";
+
 const CHANNELS_DIR_NAME = "channels";
 const CONSUMED_DIR_NAME = ".consumed";
 /** The scribe's lane — the only one whose skill-gap reports outlive their delivery (`112`). */

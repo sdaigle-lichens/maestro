@@ -52,3 +52,17 @@ function hookEnv(root: string, sessionId: string | null): NodeJS.ProcessEnv {
 (every caller must degrade and still exit 0). Deleting is how you get it. The general rule behind
 all three: **an ambient environment variable that changes where a spawned process writes must be
 set or deleted by the test, never inherited.**
+
+## A hook that leaves a detached process behind (`141`)
+
+`spawnSync` covers one-shot hooks. `maestro-session-heartbeat` instead spawns a **detached,
+long-lived** watcher and exits; `test/core/session-heartbeat-cli.test.ts` is the worked example.
+
+- **Track and `SIGKILL` every detached pid in `afterEach`.** They are not children of the test, so
+  nothing reaps them; a leaked one keeps writing into a later test's tmp project.
+- **Kill a stand-in parent, then `await` its `'exit'`.** An unreaped zombie still passes
+  `process.kill(pid, 0)`, so the watcher would think its parent alive.
+- **Treat `/proc/<pid>/stat` state `Z` (or `X`) as dead** for reparented children the test cannot reap.
+- **Poll with a deadline** (`until(label, fn, timeoutMs)`), never a fixed sleep.
+- **Each sandboxed Bash call has its own PID namespace**: a leftover process cannot be inspected
+  with `ps` from a later call, so clean up inside the test, not afterwards by hand.

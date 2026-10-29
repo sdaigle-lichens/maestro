@@ -71,8 +71,8 @@ __export(maestro_epic_exports, {
 module.exports = __toCommonJS(maestro_epic_exports);
 
 // src/core/epics.ts
-var import_node_fs9 = __toESM(require("node:fs"), 1);
-var import_node_path7 = __toESM(require("node:path"), 1);
+var import_node_fs10 = __toESM(require("node:fs"), 1);
+var import_node_path8 = __toESM(require("node:path"), 1);
 
 // src/core/worktree.ts
 var import_node_fs = __toESM(require("node:fs"), 1);
@@ -101,12 +101,12 @@ function isReviewFile(filename) {
 }
 
 // src/core/tasks.ts
-var import_node_fs7 = __toESM(require("node:fs"), 1);
-var import_node_path5 = __toESM(require("node:path"), 1);
+var import_node_fs8 = __toESM(require("node:fs"), 1);
+var import_node_path6 = __toESM(require("node:path"), 1);
 
 // src/core/claims.ts
-var import_node_fs6 = __toESM(require("node:fs"), 1);
-var import_node_path4 = __toESM(require("node:path"), 1);
+var import_node_fs7 = __toESM(require("node:fs"), 1);
+var import_node_path5 = __toESM(require("node:path"), 1);
 
 // src/core/session-paths.ts
 var import_node_fs2 = __toESM(require("node:fs"), 1);
@@ -116,6 +116,7 @@ var SESSION_LOG_NAME = "log.jsonl";
 var SESSION_STATE_NAME = "session.json";
 var SESSION_TASKS_NAME = "tasks.json";
 var SESSION_WORKTREE_NAME = "worktree.json";
+var SESSION_HEARTBEAT_NAME = "heartbeat";
 var SESSION_ID_RE = /^[A-Za-z0-9_-]{1,128}$/;
 function isValidSessionId(id) {
   return typeof id === "string" && SESSION_ID_RE.test(id);
@@ -168,21 +169,36 @@ var MAX_TAIL_BYTES = 4 * 1024 * 1024;
 // src/core/handoff-channels.ts
 var CHANNEL_AGE_CAP_MS = 14 * 24 * 60 * 60 * 1e3;
 var CLAIM_IDLE_CAP_MS = 15 * 60 * 1e3;
+var HEARTBEAT_INTERVAL_MS = 60 * 1e3;
+var HEARTBEAT_STALE_MS = 3 * 60 * 1e3;
+
+// src/core/session-heartbeat.ts
+var import_node_fs6 = __toESM(require("node:fs"), 1);
+var import_node_path4 = __toESM(require("node:path"), 1);
+function heartbeatVerdict(dir, now2 = Date.now()) {
+  let mtimeMs;
+  try {
+    mtimeMs = import_node_fs6.default.statSync(import_node_path4.default.join(dir, SESSION_HEARTBEAT_NAME)).mtimeMs;
+  } catch {
+    return null;
+  }
+  return now2 - mtimeMs <= HEARTBEAT_STALE_MS;
+}
 
 // src/core/claims.ts
 var CLAIMS_DIR_NAME = "claims";
 function claimsDirFor(tasksDir) {
-  return import_node_path4.default.join(tasksDir, CLAIMS_DIR_NAME);
+  return import_node_path5.default.join(tasksDir, CLAIMS_DIR_NAME);
 }
 function claimPathFor(tasksDir, filename) {
-  return import_node_path4.default.join(claimsDirFor(tasksDir), `${import_node_path4.default.basename(filename)}.json`);
+  return import_node_path5.default.join(claimsDirFor(tasksDir), `${import_node_path5.default.basename(filename)}.json`);
 }
 function nameOf(claim) {
   return typeof claim.session_name === "string" && claim.session_name ? { sessionName: claim.session_name } : {};
 }
 function readClaimFile(filePath) {
   try {
-    const data = JSON.parse(import_node_fs6.default.readFileSync(filePath, "utf8"));
+    const data = JSON.parse(import_node_fs7.default.readFileSync(filePath, "utf8"));
     if (data && typeof data === "object" && typeof data.session_id === "string" && typeof data.claimed_at === "string") {
       return data;
     }
@@ -198,9 +214,11 @@ function claimSessionName(tasksDir, filename) {
 function isSessionLive(claudeDir, sessionId, now2 = Date.now()) {
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return false;
-  if (!import_node_fs6.default.existsSync(paths.dir)) return false;
+  if (!import_node_fs7.default.existsSync(paths.dir)) return false;
+  const heartbeat = heartbeatVerdict(paths.dir, now2);
+  if (heartbeat !== null) return heartbeat;
   try {
-    const stat = import_node_fs6.default.statSync(paths.log);
+    const stat = import_node_fs7.default.statSync(paths.log);
     return now2 - stat.mtimeMs <= CLAIM_IDLE_CAP_MS;
   } catch {
     return false;
@@ -208,17 +226,17 @@ function isSessionLive(claudeDir, sessionId, now2 = Date.now()) {
 }
 function listClaimFiles(dir) {
   try {
-    return import_node_fs6.default.readdirSync(dir).filter((f) => f.endsWith(".json"));
+    return import_node_fs7.default.readdirSync(dir).filter((f) => f.endsWith(".json"));
   } catch {
     return [];
   }
 }
 function readClaims(projectRoot, tasksDir, now2 = Date.now()) {
-  const claudeDir = import_node_path4.default.join(projectRoot, ".claude");
+  const claudeDir = import_node_path5.default.join(projectRoot, ".claude");
   const dir = claimsDirFor(tasksDir);
   const out = /* @__PURE__ */ new Map();
   for (const fileName of listClaimFiles(dir)) {
-    const filePath = import_node_path4.default.join(dir, fileName);
+    const filePath = import_node_path5.default.join(dir, fileName);
     const claim = readClaimFile(filePath);
     if (!claim) continue;
     const filename = fileName.slice(0, -".json".length);
@@ -226,7 +244,7 @@ function readClaims(projectRoot, tasksDir, now2 = Date.now()) {
     out.set(filename, { sessionId: claim.session_id, claimedAt: claim.claimed_at, live, ...nameOf(claim) });
     if (!live) {
       try {
-        import_node_fs6.default.rmSync(filePath, { force: true });
+        import_node_fs7.default.rmSync(filePath, { force: true });
       } catch {
       }
     }
@@ -235,10 +253,10 @@ function readClaims(projectRoot, tasksDir, now2 = Date.now()) {
 }
 
 // src/core/tasks.ts
-var TASKS_SUBDIR = import_node_path5.default.join(".claude", "maestro-tasks");
+var TASKS_SUBDIR = import_node_path6.default.join(".claude", "maestro-tasks");
 var STATUS_FILE = "status.json";
 function tasksDirFor(projectRoot) {
-  return import_node_path5.default.join(mainCheckoutRoot(projectRoot), TASKS_SUBDIR);
+  return import_node_path6.default.join(mainCheckoutRoot(projectRoot), TASKS_SUBDIR);
 }
 function parseBlockedBy(content) {
   const start = content.search(/^##\s+Blocked by\s*$/m);
@@ -251,34 +269,34 @@ function parseBlockedBy(content) {
 }
 function readStatusMap(dir) {
   try {
-    const data = JSON.parse(import_node_fs7.default.readFileSync(import_node_path5.default.join(dir, STATUS_FILE), "utf8"));
+    const data = JSON.parse(import_node_fs8.default.readFileSync(import_node_path6.default.join(dir, STATUS_FILE), "utf8"));
     return data && typeof data === "object" ? data : {};
   } catch {
     return {};
   }
 }
 function writeStatusMap(dir, statusMap) {
-  import_node_fs7.default.mkdirSync(dir, { recursive: true });
+  import_node_fs8.default.mkdirSync(dir, { recursive: true });
   const ordered = {};
   for (const k of Object.keys(statusMap).sort((a, b) => a.localeCompare(b))) {
     ordered[k] = statusMap[k];
   }
-  const target = import_node_path5.default.join(dir, STATUS_FILE);
+  const target = import_node_path6.default.join(dir, STATUS_FILE);
   const tmp = `${target}.${process.pid}.tmp`;
-  import_node_fs7.default.writeFileSync(tmp, `${JSON.stringify(ordered, null, 2)}
+  import_node_fs8.default.writeFileSync(tmp, `${JSON.stringify(ordered, null, 2)}
 `);
-  import_node_fs7.default.renameSync(tmp, target);
+  import_node_fs8.default.renameSync(tmp, target);
 }
 function listTaskFiles(dir) {
   try {
-    return import_node_fs7.default.readdirSync(dir).filter((f) => f.endsWith(".md") && !/\.review(-\d+)?\.md$/.test(f)).sort((a, b) => a.localeCompare(b));
+    return import_node_fs8.default.readdirSync(dir).filter((f) => f.endsWith(".md") && !/\.review(-\d+)?\.md$/.test(f)).sort((a, b) => a.localeCompare(b));
   } catch {
     return [];
   }
 }
 function readFileSafe(dir, filename) {
   try {
-    return import_node_fs7.default.readFileSync(import_node_path5.default.join(dir, filename), "utf8");
+    return import_node_fs8.default.readFileSync(import_node_path6.default.join(dir, filename), "utf8");
   } catch {
     return "";
   }
@@ -304,7 +322,7 @@ function setTaskEpic(projectRoot, filenames, epic) {
   const changed = [];
   const missing = [];
   for (const raw of filenames) {
-    const name = import_node_path5.default.basename(raw);
+    const name = import_node_path6.default.basename(raw);
     if (!files.has(name)) {
       missing.push(name);
       continue;
@@ -332,10 +350,10 @@ function readTaskTracker(projectRoot) {
 }
 
 // src/core/config.ts
-var import_node_fs8 = __toESM(require("node:fs"), 1);
-var import_node_path6 = __toESM(require("node:path"), 1);
+var import_node_fs9 = __toESM(require("node:fs"), 1);
+var import_node_path7 = __toESM(require("node:path"), 1);
 function maestroJsonPath(projectRoot) {
-  return import_node_path6.default.join(projectRoot, ".claude", "maestro.json");
+  return import_node_path7.default.join(projectRoot, ".claude", "maestro.json");
 }
 function blankConfig() {
   return {
@@ -349,14 +367,14 @@ function blankConfig() {
 }
 function readJsonSafe(p) {
   try {
-    return JSON.parse(import_node_fs8.default.readFileSync(p, "utf8"));
+    return JSON.parse(import_node_fs9.default.readFileSync(p, "utf8"));
   } catch {
     return null;
   }
 }
 function readConfig(projectRoot) {
   const p = maestroJsonPath(projectRoot);
-  if (!import_node_fs8.default.existsSync(p)) return null;
+  if (!import_node_fs9.default.existsSync(p)) return null;
   const parsed = readJsonSafe(p);
   if (!parsed) return blankConfig();
   return parsed.version === 3 ? parsed : blankConfig();
@@ -370,7 +388,7 @@ function resolveWorkerModel(cfg) {
 }
 
 // src/core/epics.ts
-var EPICS_DIR = import_node_path7.default.join(".claude", "epics");
+var EPICS_DIR = import_node_path8.default.join(".claude", "epics");
 var EPIC_FILE = "EPIC.md";
 var STATE_FILE = "state.json";
 var INBOX_DIR = "inbox";
@@ -385,7 +403,7 @@ function isValidEpicSlug(slug) {
 }
 function epicDirFor(projectRoot, slug) {
   if (!isValidEpicSlug(slug)) return null;
-  return import_node_path7.default.join(mainCheckoutRoot(projectRoot), EPICS_DIR, slug);
+  return import_node_path8.default.join(mainCheckoutRoot(projectRoot), EPICS_DIR, slug);
 }
 function now() {
   return (/* @__PURE__ */ new Date()).toISOString();
@@ -394,16 +412,16 @@ function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 function withLock(dir, fn) {
-  const lock = import_node_path7.default.join(dir, LOCK_DIR);
+  const lock = import_node_path8.default.join(dir, LOCK_DIR);
   const start = Date.now();
   for (; ; ) {
     try {
-      import_node_fs9.default.mkdirSync(lock);
+      import_node_fs10.default.mkdirSync(lock);
       break;
     } catch (err) {
       if (err.code !== "EEXIST") throw err;
       try {
-        if (Date.now() - import_node_fs9.default.statSync(lock).mtimeMs > LOCK_STALE_MS) import_node_fs9.default.rmSync(lock, { recursive: true, force: true });
+        if (Date.now() - import_node_fs10.default.statSync(lock).mtimeMs > LOCK_STALE_MS) import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
       } catch {
       }
       if (Date.now() - start > LOCK_WAIT_MS) throw new Error(`epic is locked by another writer (${lock})`);
@@ -413,14 +431,14 @@ function withLock(dir, fn) {
   try {
     return fn();
   } finally {
-    import_node_fs9.default.rmSync(lock, { recursive: true, force: true });
+    import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
   }
 }
 function readEpicState(projectRoot, slug) {
   const dir = epicDirFor(projectRoot, slug);
   if (!dir) return null;
   try {
-    const data = JSON.parse(import_node_fs9.default.readFileSync(import_node_path7.default.join(dir, STATE_FILE), "utf8"));
+    const data = JSON.parse(import_node_fs10.default.readFileSync(import_node_path8.default.join(dir, STATE_FILE), "utf8"));
     if (!data || typeof data !== "object") return null;
     const s = data;
     return {
@@ -435,15 +453,15 @@ function readEpicState(projectRoot, slug) {
   }
 }
 function writeEpicState(dir, state) {
-  const target = import_node_path7.default.join(dir, STATE_FILE);
+  const target = import_node_path8.default.join(dir, STATE_FILE);
   const tmp = `${target}.${process.pid}.tmp`;
-  import_node_fs9.default.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}
+  import_node_fs10.default.writeFileSync(tmp, `${JSON.stringify(state, null, 2)}
 `);
-  import_node_fs9.default.renameSync(tmp, target);
+  import_node_fs10.default.renameSync(tmp, target);
 }
 function updateState(projectRoot, slug, fn) {
   const dir = epicDirFor(projectRoot, slug);
-  if (!dir || !import_node_fs9.default.existsSync(import_node_path7.default.join(dir, STATE_FILE))) throw new Error(`no epic "${slug}"`);
+  if (!dir || !import_node_fs10.default.existsSync(import_node_path8.default.join(dir, STATE_FILE))) throw new Error(`no epic "${slug}"`);
   return withLock(dir, () => {
     const state = readEpicState(projectRoot, slug);
     if (!state) throw new Error(`epic "${slug}" has an unreadable ${STATE_FILE}`);
@@ -458,12 +476,12 @@ function createEpic(projectRoot, slug, options = {}) {
     throw new Error(
       `"${slug}" is not a valid epic name (lowercase letters, digits and dashes, starting with a letter or digit)`
     );
-  if (import_node_fs9.default.existsSync(import_node_path7.default.join(dir, STATE_FILE))) throw new Error(`epic "${slug}" already exists`);
-  import_node_fs9.default.mkdirSync(import_node_path7.default.join(dir, INBOX_DIR), { recursive: true });
+  if (import_node_fs10.default.existsSync(import_node_path8.default.join(dir, STATE_FILE))) throw new Error(`epic "${slug}" already exists`);
+  import_node_fs10.default.mkdirSync(import_node_path8.default.join(dir, INBOX_DIR), { recursive: true });
   const goal = options.goal?.trim() || "_State the goal of this epic._";
-  const epicMd = import_node_path7.default.join(dir, EPIC_FILE);
-  if (!import_node_fs9.default.existsSync(epicMd)) {
-    import_node_fs9.default.writeFileSync(
+  const epicMd = import_node_path8.default.join(dir, EPIC_FILE);
+  if (!import_node_fs10.default.existsSync(epicMd)) {
+    import_node_fs10.default.writeFileSync(
       epicMd,
       `# Epic: ${slug}
 
@@ -493,8 +511,8 @@ _Record decisions here as the manager makes them._
 }
 function listEpics(projectRoot) {
   try {
-    const root = import_node_path7.default.join(mainCheckoutRoot(projectRoot), EPICS_DIR);
-    return import_node_fs9.default.readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory() && import_node_fs9.default.existsSync(import_node_path7.default.join(root, e.name, STATE_FILE))).map((e) => e.name).sort();
+    const root = import_node_path8.default.join(mainCheckoutRoot(projectRoot), EPICS_DIR);
+    return import_node_fs10.default.readdirSync(root, { withFileTypes: true }).filter((e) => e.isDirectory() && import_node_fs10.default.existsSync(import_node_path8.default.join(root, e.name, STATE_FILE))).map((e) => e.name).sort();
   } catch {
     return [];
   }
@@ -534,10 +552,10 @@ function unlinkTasks(projectRoot, tasks) {
   return setTaskEpic(projectRoot, tasks, null);
 }
 function taskClaimName(projectRoot, task) {
-  return claimSessionName(tasksDirFor(mainCheckoutRoot(projectRoot)), import_node_path7.default.basename(task));
+  return claimSessionName(tasksDirFor(mainCheckoutRoot(projectRoot)), import_node_path8.default.basename(task));
 }
 function epicOfTask(projectRoot, filename) {
-  return readTaskTracker(projectRoot)[import_node_path7.default.basename(filename)]?.epic ?? null;
+  return readTaskTracker(projectRoot)[import_node_path8.default.basename(filename)]?.epic ?? null;
 }
 var INBOX_PREFIX = { report: "r", note: "n", review: "m" };
 function nextInboxId(state, kind) {
@@ -545,7 +563,7 @@ function nextInboxId(state, kind) {
   return `${INBOX_PREFIX[kind]}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
 }
 function writeReport(projectRoot, task, body, sender) {
-  const base = import_node_path7.default.basename(task);
+  const base = import_node_path8.default.basename(task);
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
   const root = mainCheckoutRoot(projectRoot);
@@ -555,7 +573,7 @@ function writeReport(projectRoot, task, body, sender) {
     throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   return updateState(projectRoot, slug, (s) => {
     const id = nextInboxId(s, "report");
-    const rel = import_node_path7.default.posix.join(INBOX_DIR, `${id}-${base.replace(/\.md$/, "")}.md`);
+    const rel = import_node_path8.default.posix.join(INBOX_DIR, `${id}-${base.replace(/\.md$/, "")}.md`);
     const at = now();
     const header = `# Report ${id}: ${base}
 
@@ -564,15 +582,15 @@ function writeReport(projectRoot, task, body, sender) {
 ${from ? `- From session: ${from}
 ` : ""}
 `;
-    import_node_fs9.default.mkdirSync(import_node_path7.default.join(dir, INBOX_DIR), { recursive: true });
-    import_node_fs9.default.writeFileSync(import_node_path7.default.join(dir, rel), `${header}${body.trim()}
+    import_node_fs10.default.mkdirSync(import_node_path8.default.join(dir, INBOX_DIR), { recursive: true });
+    import_node_fs10.default.writeFileSync(import_node_path8.default.join(dir, rel), `${header}${body.trim()}
 `);
     s.log.push({ kind: "report", id, task: base, file: rel, at, ...from ? { from } : {} });
-    return { epic: slug, id, file: import_node_path7.default.join(dir, rel), manager: s.manager?.name ?? null };
+    return { epic: slug, id, file: import_node_path8.default.join(dir, rel), manager: s.manager?.name ?? null };
   });
 }
 function reportCommandFor(projectRoot, task, sessionName) {
-  const base = import_node_path7.default.basename(task);
+  const base = import_node_path8.default.basename(task);
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
   const manager = readEpicState(projectRoot, slug)?.manager?.name;
@@ -595,7 +613,7 @@ function writeNote(projectRoot, toSlug, body, options) {
   if (!body.trim()) throw new Error("the note is empty");
   return updateState(projectRoot, toSlug, (s) => {
     const id = nextInboxId(s, "note");
-    const rel = import_node_path7.default.posix.join(INBOX_DIR, `${id}-from-${fromEpic}.md`);
+    const rel = import_node_path8.default.posix.join(INBOX_DIR, `${id}-from-${fromEpic}.md`);
     const at = now();
     const header = `# Note ${id} from epic ${fromEpic}
 
@@ -605,8 +623,8 @@ ${from ? `- From session: ${from}
 ` : ""}- Written: ${at}
 
 `;
-    import_node_fs9.default.mkdirSync(import_node_path7.default.join(dir, INBOX_DIR), { recursive: true });
-    import_node_fs9.default.writeFileSync(import_node_path7.default.join(dir, rel), `${header}${body.trim()}
+    import_node_fs10.default.mkdirSync(import_node_path8.default.join(dir, INBOX_DIR), { recursive: true });
+    import_node_fs10.default.writeFileSync(import_node_path8.default.join(dir, rel), `${header}${body.trim()}
 `);
     s.log.push({
       kind: "note",
@@ -617,7 +635,7 @@ ${from ? `- From session: ${from}
       file: rel,
       at
     });
-    return { epic: toSlug, id, file: import_node_path7.default.join(dir, rel), manager: s.manager?.name ?? null };
+    return { epic: toSlug, id, file: import_node_path8.default.join(dir, rel), manager: s.manager?.name ?? null };
   });
 }
 function isInboxEntry(e) {
@@ -648,7 +666,7 @@ function unacknowledgedReports(state) {
   });
 }
 function reviewHistory(state, task) {
-  const base = import_node_path7.default.basename(task);
+  const base = import_node_path8.default.basename(task);
   const requests = state.log.filter((e) => e.kind === "review" && e.task === base);
   const verdicts = state.log.filter((e) => e.kind === "verdict" && e.task === base);
   const latest = requests.at(-1) ?? null;
@@ -660,23 +678,23 @@ function reviewHistory(state, task) {
   };
 }
 function reviewFilePath(root, file) {
-  return import_node_path7.default.isAbsolute(file) ? file : import_node_path7.default.join(root, file);
+  return import_node_path8.default.isAbsolute(file) ? file : import_node_path8.default.join(root, file);
 }
 function writeReviewRequest(projectRoot, task, file, sender) {
-  const base = import_node_path7.default.basename(task);
+  const base = import_node_path8.default.basename(task);
   const slug = epicOfTask(projectRoot, base);
   if (!slug) return null;
   if (!readEpicState(projectRoot, slug)) throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   const root = mainCheckoutRoot(projectRoot);
-  const abs = import_node_path7.default.resolve(projectRoot, file);
-  const name = import_node_path7.default.basename(abs);
+  const abs = import_node_path8.default.resolve(projectRoot, file);
+  const name = import_node_path8.default.basename(abs);
   if (!isReviewFile(name) || !name.startsWith(`${base.replace(/\.md$/, "")}.review`))
     throw new Error(
       `"${file}" is not a review file of "${base}" (expected ${base.replace(/\.md$/, "")}.review[-N].md)`
     );
-  if (!import_node_fs9.default.existsSync(abs)) throw new Error(`review file ${abs} does not exist: write the direction brief first`);
-  const rel = import_node_path7.default.relative(root, abs);
-  const stored = rel.startsWith("..") || import_node_path7.default.isAbsolute(rel) ? abs : rel.split(import_node_path7.default.sep).join("/");
+  if (!import_node_fs10.default.existsSync(abs)) throw new Error(`review file ${abs} does not exist: write the direction brief first`);
+  const rel = import_node_path8.default.relative(root, abs);
+  const stored = rel.startsWith("..") || import_node_path8.default.isAbsolute(rel) ? abs : rel.split(import_node_path8.default.sep).join("/");
   const from = sender?.trim() || claimSessionName(tasksDirFor(root), base) || void 0;
   return updateState(projectRoot, slug, (s) => {
     const history = reviewHistory(s, base);
@@ -696,7 +714,7 @@ function isReviewVerdict(value) {
 function recordReviewVerdict(projectRoot, task, verdict, by) {
   if (!isReviewVerdict(verdict))
     throw new Error(`"${String(verdict)}" is not a verdict (one of ${REVIEW_VERDICTS.join(", ")})`);
-  const base = import_node_path7.default.basename(task);
+  const base = import_node_path8.default.basename(task);
   const slug = epicOfTask(projectRoot, base);
   if (!slug) throw new Error(`task "${base}" belongs to no epic, so it has no manager review`);
   return updateState(projectRoot, slug, (s) => {
@@ -771,19 +789,19 @@ function showEpic(projectRoot, slug) {
   return {
     slug,
     dir,
-    goalFile: import_node_path7.default.join(dir, EPIC_FILE),
+    goalFile: import_node_path8.default.join(dir, EPIC_FILE),
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
     unacknowledged: unacknowledgedReports(state).map(
-      (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path7.default.join(dir, r.file) }
+      (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path8.default.join(dir, r.file) }
     ),
     crossEpic: crossEpicEdges(tracker, slug)
   };
 }
 var DEFAULT_SPAWN_CAP = 5;
 function workerNameFor(slug, filename) {
-  const base = import_node_path7.default.basename(filename).replace(/\.md$/, "");
+  const base = import_node_path8.default.basename(filename).replace(/\.md$/, "");
   const num = /^(\d+)-/.exec(base);
   return `${slug}-${num ? num[1] : base}`;
 }
@@ -791,7 +809,7 @@ function shellQuote(value) {
   return `'${value.replace(/'/g, `'\\''`)}'`;
 }
 function launchCommandFor(name, filename, model) {
-  const rel = import_node_path7.default.posix.join(".claude", "maestro-tasks", import_node_path7.default.basename(filename));
+  const rel = import_node_path8.default.posix.join(".claude", "maestro-tasks", import_node_path8.default.basename(filename));
   const flag = model?.trim() ? ` --model ${shellQuote(model.trim())}` : "";
   return `claude -n ${shellQuote(name)}${flag} ${shellQuote(`/maestro ${rel}`)}`;
 }
@@ -804,7 +822,7 @@ function readyTasks(projectRoot, slug, cap = DEFAULT_SPAWN_CAP) {
   const claims = readClaims(root, tasksDirFor(root));
   const model = resolveWorkerModel(readConfig(root));
   const workerOf = /* @__PURE__ */ new Map();
-  for (const w of state.workers) if (w.task) workerOf.set(import_node_path7.default.basename(w.task), w.name);
+  for (const w of state.workers) if (w.task) workerOf.set(import_node_path8.default.basename(w.task), w.name);
   const view = { slug, cwd: root, cap, running: [], pending: [], ready: [], slots: 0 };
   const own = Object.keys(tracker).filter((f) => tracker[f].epic === slug && tracker[f].status !== "done").sort((a, b) => a.localeCompare(b));
   for (const filename of own) {
@@ -824,7 +842,7 @@ function readyTasks(projectRoot, slug, cap = DEFAULT_SPAWN_CAP) {
     const name = workerNameFor(slug, filename);
     view.ready.push({
       filename,
-      relativePath: import_node_path7.default.posix.join(".claude", "maestro-tasks", filename),
+      relativePath: import_node_path8.default.posix.join(".claude", "maestro-tasks", filename),
       worker: name,
       command: launchCommandFor(name, filename, model)
     });

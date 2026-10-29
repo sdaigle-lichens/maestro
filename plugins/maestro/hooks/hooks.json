@@ -62,6 +62,11 @@
             "type": "command",
             "command": "node",
             "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-name.js"]
+          },
+          {
+            "type": "command",
+            "command": "node",
+            "args": ["${CLAUDE_PLUGIN_ROOT}/scripts/maestro-session-heartbeat.js"]
           }
         ]
       }

@@ -106,6 +106,14 @@ it imports is inlined into the bundle. Reaching into a module that touches Elect
 or a third-party dependency is how an entry stops being buildable — or worse, builds and fails at
 hook time in a project with no dependencies installed.
 
+**Built-ins are allowed, but `node:child_process` is not, in a core module the app's preview path
+reaches.** `claims.ts` and everything it imports sit in `claude-preview.ts`'s import graph, and
+`test/isolation.test.ts` (a reviewed allow-list of `src/core`/`src/main` files importing
+`child_process`) plus `test/core/claude.test.ts`'s "spawns nothing" walk fail the moment one does.
+When a hook needs a process spawn (`141`'s macOS `ps` fallback), put the spawn in the hook script
+under `plugins/maestro/scripts/` and keep a pure parser in core (`parsePsLine`), or pass the
+spawner in as a port.
+
 **Eight of the seventeen are also COPIED into projects, which widens what a rename breaks (`035`).** A
 bundle runs from the marketplace cache _and_, if it is in `install.ts`'s `STATIC_ASSETS`, from
 `<project>/.claude/scripts/lib/` — where the copy is a snapshot that only a re-install refreshes.
@@ -177,6 +185,13 @@ only and every hook already requires this bundle" argument:
   `handoff-label.ts`, used by the SubagentStop hook to keep re-reading a transcript that Claude
   Code hasn't finished writing. `fs`-free (the reader and the sleep are passed in); the grep is
   still `0`.
+- `141` — all of `session-heartbeat.ts` (`heartbeatVerdict`, `heartbeatTick`, `heartbeatTargets`,
+  `heartbeatIntervalMs`, `writeHeartbeatPid`, `isProcessAlive`, `processInfo`, `parsePsLine`,
+  `watchedPid`, `parentProbe`) plus `HEARTBEAT_INTERVAL_MS`/`HEARTBEAT_STALE_MS`/
+  `HEARTBEAT_INTERVAL_ENV` and `SESSION_HEARTBEAT_NAME`/`SESSION_HEARTBEAT_PID_NAME`, read by
+  `maestro-session-heartbeat.js` and `maestro-task-status.cjs`. `fs`/`path` only (it reads `/proc`,
+  never spawns); the grep is still `0`. `maestro-epic` also rebuilt, because `claims.ts` now
+  imports `session-heartbeat.ts`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

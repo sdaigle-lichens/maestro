@@ -48,6 +48,7 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 | `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
 | `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |
+| `apps/maestro/src/core/session-heartbeat.ts` | `141`: `heartbeatVerdict` (the liveness rule `isSessionLive` applies first), `heartbeatTick` and the process probes behind the detached watcher that `plugins/maestro/scripts/maestro-session-heartbeat.js` (SessionStart) spawns. See [Claims](sub-concepts/task-claims.md#the-session-heartbeat-141). |
 | `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |
 | `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`), the manager's spawn list `readyTasks` (`125`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |
 | `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |

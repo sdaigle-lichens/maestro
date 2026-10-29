@@ -6,10 +6,11 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups, **31 files** today: 12 scripts, 9 libs,
-`maestro-session-cleanup.cjs`, and the 9 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
+Everything lands under `<project>/.claude/`. Three groups, **33 files** today: 12 scripts, 9 libs,
+`maestro-session-cleanup.cjs`, and the 11 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
 `scripts/maestro-epic.cjs` and `scripts/lib/maestro-epic.cjs`; `113` added `maestro-session-name`, and
-the post-mortem hook joined the same list; `121` added `maestro-channel-write-guard`.) `test/core/install.test.ts` and `parity.test.ts` pin the
+the post-mortem hook joined the same list; `121` added `maestro-channel-write-guard`; `130`
+`maestro-human-review-gate`; `141` `maestro-session-heartbeat`.) `test/core/install.test.ts` and `parity.test.ts` pin the
 set; count from `STATIC_ASSETS` in `install.ts`, not from here.
 
 | Group                                               | Destination                        | Note                                                                                                          |
@@ -40,10 +41,11 @@ against the asset's **destination** (the copied layout, not the plugin's), and a
 entry copies it. Static rather than a spawn, precisely because the failing branch sits behind a
 caught exception.
 
-**The `.js` → `.cjs` rename is load-bearing.** The nine `HOOK_SCRIPTS`
+**The `.js` → `.cjs` rename is load-bearing.** The eleven `HOOK_SCRIPTS`
 (`maestro-inject-agent-context`, `maestro-subagent-log`, `maestro-session-log`,
 `maestro-validate-tasks`, `maestro-step0`, `maestro-enable-task-routing` (`047`),
-`maestro-post-mortem-context`, `maestro-session-name` (`113`), `maestro-channel-write-guard` (`121`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
+`maestro-post-mortem-context`, `maestro-session-name` (`113`), `maestro-channel-write-guard` (`121`),
+`maestro-human-review-gate` (`130`), `maestro-session-heartbeat` (`141`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
 a module type. Inside a project the same file may sit under `"type": "module"`, which makes node
 parse their `require()` as ESM and fail the hook **on every tool call**. Scripts already named
 `.cjs` in the plugin are copied under their existing names. Add a hook script to the wrong list and
@@ -131,6 +133,7 @@ the other hooks here the plugin copy does **not** stand down for it (`122`, see 
 | `PreToolUse`          | `Skill`      | `maestro-session-name.cjs` (`113`) |
 | `UserPromptSubmit`    | _(none)_     | `maestro-session-name.cjs` (`113`) |
 | `SessionStart`        | _(none)_     | `maestro-session-name.cjs` (`113`) |
+| `SessionStart`        | _(none)_     | `maestro-session-heartbeat.cjs` (`141`) |
 | `SubagentStart` | `.*`         | `maestro-inject-agent-context.cjs` |
 | `SubagentStart` | `.*`         | `maestro-subagent-log.cjs`         |
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |

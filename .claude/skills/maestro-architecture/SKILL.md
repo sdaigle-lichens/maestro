@@ -147,7 +147,7 @@ To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` 
 
 | Sub-concept | Covers |
 | --- | --- |
-| `sub-concepts/hooks.md` | Every hook: event, matcher, script, exact effect. Why there is no `SessionStart`. The two copies of every script and which one wins. The Step 0 traps. |
+| `sub-concepts/hooks.md` | Every hook: event, matcher, script, exact effect. Why the container-era `SessionStart` is gone and what the two current ones (`113` name, `141` heartbeat) do. The two copies of every script and which one wins. The Step 0 traps. |
 | `sub-concepts/session-state.md` | `maestro.json` and the per-session directory (`064`): the file table, `log.jsonl`'s entry kinds, and how a caller resolves which session it is. |
 | `sub-concepts/session-end-reasons.md` | Which SessionEnd `reason` values keep the session directory (resumable) and which remove it, how they were observed, and the one rule both cleanup twins share (`077`). |
 | `sub-concepts/handoff-contract.md` | The four blocks `SubagentStart` injects, the three-tier `handoff_details` resolution, and what the orchestrator does with a `HANDOFF:` line. |

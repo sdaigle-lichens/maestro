@@ -10,6 +10,7 @@ session**, since `064`:
     log.jsonl             <- was maestro_session.log.jsonl
     session.json          <- was maestro_session.json  { workflow, generated_instances, run_id }
     tasks.json            <- was maestro_session_tasks.json
+    heartbeat, heartbeat.pid  <- `141`, claim liveness (see the file table)
 ```
 
 Before this, all three were one fixed file per project, and two sessions against the same project
@@ -67,6 +68,7 @@ is created on disk for a rejected id, which is what makes rejecting cost nothing
 | `maestro.json` | `<project>/.claude/maestro.json` | **Source of truth** (`version: 3`). Every hook + the renderer read this. `success_path` is **not** stored here. | App + skill (byte-identical) | Committed; edited via canvas or by hand (+ `/maestro-update`) |
 | `session.json` | `<project>/.claude/maestro_sessions/<id>/session.json` | Ephemeral session state: `{ workflow, generated_instances, run_id }` — `run_id` is per **session** since `064`, not per project. Tells `maestro-inject-agent-context.js` which workflow is active. | `maestro-set-session-workflow.cjs`, `maestro-inject-agent-context.js` | Ephemeral; **gitignored**; this session's directory deleted at its own `SessionEnd` |
 | `log.jsonl` | `<project>/.claude/maestro_sessions/<id>/log.jsonl` | Ephemeral **append-only** log — see entry kinds below. | `maestro-session-log.js` (PreToolUse) + `maestro-subagent-log.js` (SubagentStart/Stop) + `maestro-inject-agent-context.js` (SubagentStart) | Ephemeral; **gitignored**; this session's directory deleted at its own `SessionEnd` |
+| `heartbeat`, `heartbeat.pid` | `<project>/.claude/maestro_sessions/<id>/` | `141`: claim liveness. `heartbeat`'s **mtime** is the signal (fresh within 3 min = live; zeroed when `claude` exits); `heartbeat.pid` names the one watcher process that owns the session. Not the log: since `141` the log is only the fallback heartbeat. See `task-queue` claims. | the detached watcher `maestro-session-heartbeat.js` (SessionStart) spawns | Ephemeral; **gitignored**; removed with the directory |
 | `tasks.json` | `<project>/.claude/maestro_sessions/<id>/tasks.json` | Ephemeral task-coverage tracker: `{ steps: ["@backend", "human review", ...] }`. Records which success-path steps already have a `TaskCreate` in this session. Read-modify-write is safe (only the main orchestrator calls `TaskCreate`, no parallel race). | `maestro-validate-tasks.js` (PostToolUse) | Ephemeral; **gitignored**; this session's directory deleted at its own `SessionEnd` |
 
 `success_path` is derived by `successPathSteps` in `lib/maestro-session.cjs` — never persisted in
