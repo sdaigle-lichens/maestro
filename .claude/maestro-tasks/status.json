@@ -696,8 +696,12 @@
     "epic": "manager-review"
   },
   "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
+  },
+  "141-a-session-waiting-on-the-user-keeps-its-claim-live.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
