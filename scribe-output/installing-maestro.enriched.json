@@ -2,6 +2,153 @@
   "concept": "installing-maestro",
   "vertices": [
     {
+      "_key": "003dc6fc45745e55e31be371e6399970",
+      "purpose": "Returns the path of a project's .claude/settings.json.",
+      "inputs": [
+        "projectRoot: absolute project directory"
+      ],
+      "outputs": [
+        "string: path to .claude/settings.json under projectRoot"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "project-local"
+      ],
+      "sig_seen": "function settingsPathFor(projectRoot: string): string",
+      "hash_seen": "60bc3c6c47e24001b267c6e7e6368e0a81c5633228e491d7051395dce1622b28"
+    },
+    {
+      "_key": "1077dfc89dfa425f1a690bd2d8e080a3",
+      "purpose": "Type shape of a Claude Code settings file as far as hook arbitration needs it: a hooks map from event name to HookEntry lists.",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-registration"
+      ],
+      "sig_seen": "export interface Settings {",
+      "hash_seen": "cdd65cff4418f5d3893940bcb4cd656582b858a34327da5d7039bf29f71235fb"
+    },
+    {
+      "_key": "134bf25fa146a430476df16faf3c48eb",
+      "purpose": "Renders one labelled status row in the install report card with a check or cross icon, a label and a detail line.",
+      "inputs": [
+        "ok: whether the check passed",
+        "label: row title",
+        "detail: row description node"
+      ],
+      "outputs": [
+        "JSX row element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install-report-card"
+      ],
+      "sig_seen": "function Row({ ok, label, detail }: { ok: boolean; label: string; detail: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "b643d1dd99f0455794306ace60da60ffec8591c4a42b9e571321fd007a369ad1"
+    },
+    {
+      "_key": "204e1008b61e8e771b9d30b16bf2543b",
+      "purpose": "Lists the Markdown files a project has materialized in a given directory (reports or handoffs) so a purge or uninstall can report them as left behind.",
+      "inputs": [
+        "projectRoot: project to scan",
+        "relDir: project-relative directory such as .claude/reports"
+      ],
+      "outputs": [
+        "MaterializedFilesFinding {dir, files} with files relative to dir; empty list when the directory is absent"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "uninstall",
+        "purge",
+        "materialized-files"
+      ],
+      "sig_seen": "function findMaterializedFiles(projectRoot: string, relDir: string): MaterializedFilesFinding",
+      "hash_seen": "00ba5ed8dff0929071d882e610b3c2db536360c6221a52c327276791b91aefef"
+    },
+    {
+      "_key": "21bc17fd1d0af38101af2e3d9f0d0af6",
+      "purpose": "Installs or re-installs Maestro's runtime into a project: refuses first on an unparseable settings file or unusable maestro.json, then copies changed scripts, rewrites settings hooks and the channel allow rule, removes retired scripts, seeds maestro.json on first install, fills missing skill lists, stamps the runtime version, syncs reports and handoffs, and returns a report with the final status.",
+      "inputs": [
+        "projectRoot: absolute project directory",
+        "pluginRoot: shipped plugin root",
+        "reportsDbPath: optional global reports store path",
+        "projectTagsDbPath: optional project-tags store path",
+        "handoffsDbPath: optional global handoffs store path"
+      ],
+      "outputs": [
+        "Promise<InstallReport>: scriptsWritten, hooksAdded, hooksRemoved, permissionsAdded, configSeeded, skillListsSeeded, runtimeVersion, reportsSync, handoffsSync, configIssues, configRefusal, unchanged, warnings, status"
+      ],
+      "cross_concept_refs": [
+        "maestro-config-model",
+        "agent-fork-sync",
+        "global-stores"
+      ],
+      "document_ref": null,
+      "tags": [
+        "project-local",
+        "merge-not-clobber",
+        "idempotent",
+        "preflight-refusal",
+        "hook-registration",
+        "permissions-allow"
+      ],
+      "sig_seen": "function installRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport>",
+      "hash_seen": "22192f0ec33f613562437e82cd76df74733e634a929501f3b0231ee51a0c61cb"
+    },
+    {
+      "_key": "26991b6c7c98226564ccfc8d3aa1c1ad",
+      "purpose": "Creates a directory recursively if it does not already exist.",
+      "inputs": [
+        "dir: directory path"
+      ],
+      "outputs": [
+        "void; side effect creates the directory"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function ensureDir(dir: string): void",
+      "hash_seen": "db31de156a427534ccb60f7844c92568425e7c791268a14087f800f9cf64f042"
+    },
+    {
+      "_key": "35e27725e81cdd4bbc249d74ca1fe8ad",
+      "purpose": "Tests whether two paths name the same directory after resolving symlinks, falling back to a plain resolve when a path does not exist.",
+      "inputs": [
+        "a: first path",
+        "b: second path"
+      ],
+      "outputs": [
+        "boolean: true if the real paths are equal"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "symlink-safe-paths"
+      ],
+      "sig_seen": "function samePath(a: string, b: string): boolean",
+      "hash_seen": "5cb25e7884e9dc2084b0e52372c5b23abfb85211e74346ab94d7a97b697e0547"
+    },
+    {
+      "_key": "39c6c779cecbbb4ded462cf8577e4ccb",
+      "purpose": "Reads and JSON-parses a file, returning it as a plain object, or null if the file is missing, unparseable, or not an object.",
+      "inputs": [
+        "file: path to a JSON file"
+      ],
+      "outputs": [
+        "Record<string, unknown> parsed object, or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function readJson(file: string): Record<string, unknown> | null",
+      "hash_seen": "439e7ece8c767bf9495b38ea7533f8c7072fc42b04bad6c62afc529cb0daeff5"
+    },
+    {
       "_key": "3bd146b6e708d7be054b2adcd23355bf",
       "purpose": "Names the eight Claude Code hook events the install can register.",
       "inputs": [],
@@ -15,7 +162,900 @@
       ],
       "sig_seen": "export type HookEvent =",
       "hash_seen": "d037650b3849fef9d11999293a520735913d0d5c18e7a080845da8b9be7c6589"
+    },
+    {
+      "_key": "3f5f641aca07d173e1bd9728cb218c2c",
+      "purpose": "Computes the hex SHA-256 digest of a string or buffer, used to decide whether an installed file already matches the shipped one.",
+      "inputs": [
+        "data: string or Buffer"
+      ],
+      "outputs": [
+        "string: hex-encoded SHA-256 digest"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "idempotent",
+        "staleness"
+      ],
+      "sig_seen": "function sha256(data: string | Buffer): string",
+      "hash_seen": "f32047b6f384056b8279f02cfdb4d7b1b71d5bdd3132d1cdb7964f64cc619dcf"
+    },
+    {
+      "_key": "443311fb3734a1cf6bd8a417e8313d7e",
+      "purpose": "Reads a project's settings.json as an object, returning an empty object when the file is absent and throwing (writing nothing) when it exists but is not a valid JSON object.",
+      "inputs": [
+        "settingsPath: path to settings.json"
+      ],
+      "outputs": [
+        "Settings: parsed object, or {} when the file does not exist"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "merge-not-clobber",
+        "preflight-refusal"
+      ],
+      "sig_seen": "function readSettings(settingsPath: string): Settings",
+      "hash_seen": "a0bab745829004c8ade1593c8c510be7ac9a503a38ad9677c658a182c6dfa0ed"
+    },
+    {
+      "_key": "4b169b1254313e69eb29bc3b61e0c83e",
+      "purpose": "Reports whether a settings object already registers a given hook registration, by delegating to settingsRegisterScript so install and runtime agree on what 'registered' means.",
+      "inputs": [
+        "settings: parsed project settings.json",
+        "reg: HookRegistration (event, matcher, script, command)"
+      ],
+      "outputs": [
+        "boolean: true when the script's basename is already registered for that event"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-registration",
+        "idempotent"
+      ],
+      "sig_seen": "function hasHook(settings: Settings, reg: HookRegistration): boolean",
+      "hash_seen": "758d8a52b7402ba6262db6f9aad6626551819d7bfa551d53c16cda10c1a759d0"
+    },
+    {
+      "_key": "57a14fe42936740a1482b82ba62628b0",
+      "purpose": "Reports whether a settings object already registers a given script basename on a given event, matching by substring so re-quoted commands still count.",
+      "inputs": [
+        "settings: parsed settings object",
+        "event: hook event name",
+        "script: script basename to look for"
+      ],
+      "outputs": [
+        "boolean: true if any command on that event contains the script name"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-registration",
+        "idempotent-install"
+      ],
+      "sig_seen": "function settingsRegisterScript(settings: Settings, event: string, script: string): boolean",
+      "hash_seen": "8c827c0084d883bc0f199c949befc21a464c10a80e2b3fed91cea34e0151b6f4"
+    },
+    {
+      "_key": "5a31b562d3c9d5243d39d441bfba253d",
+      "purpose": "Re-installs the project's runtime on project selection, but only when the project's stamped runtimeVersion is behind the shipped one and the project already has an install; never installs fresh.",
+      "inputs": [
+        "projectRoot: project to check",
+        "pluginRoot: optional plugin root (required via requirePluginRoot)",
+        "reportsDbPath, projectTagsDbPath, handoffsDbPath: optional sqlite store paths forwarded to installRuntime"
+      ],
+      "outputs": [
+        "InstallReport from installRuntime when a refresh ran",
+        "null when the config is missing, non-v3, not newer-than-needed, or the project is not installed"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "staleness",
+        "refresh",
+        "runtime-version",
+        "project-local-install"
+      ],
+      "sig_seen": "function refreshStaleRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport | null>",
+      "hash_seen": "e5f2ab7d78e5b00e7275a17e542b59256914d1b3442a9a1faa6c182f9132e30a"
+    },
+    {
+      "_key": "6b39af5581b3ae69b78adde55509b56e",
+      "purpose": "Builds the read-only uninstall plan shown to the user before removal: hook registrations, session files, the legacy agent setting, purge targets, task and materialized-file findings, and whether settings.json is unreadable.",
+      "inputs": [
+        "projectRoot: project root",
+        "pluginRoot: optional plugin root"
+      ],
+      "outputs": [
+        "UninstallPlan with hooks, sessionFiles, purgeFiles, purgeRemovesConfig, maestroTasks, materializedReports, materializedHandoffs, empty, settingsUnreadable"
+      ],
+      "cross_concept_refs": [
+        "task-queue"
+      ],
+      "document_ref": null,
+      "tags": [
+        "uninstall",
+        "purge",
+        "two-level-uninstall"
+      ],
+      "sig_seen": "function uninstallPlan(projectRoot: string, pluginRoot?: string): UninstallPlan",
+      "hash_seen": "96bf72920ec58670673aa6e86608f1f8e8abb058a3540990a3da20708111eace"
+    },
+    {
+      "_key": "7d50339cdfa93068d8ffb9169e871944",
+      "purpose": "Joins a manifest destination (slash-separated, relative to the project) onto the project root as a platform path.",
+      "inputs": [
+        "projectRoot: absolute project directory",
+        "dest: slash-separated manifest path such as .claude/scripts/x.cjs"
+      ],
+      "outputs": [
+        "string: absolute platform path inside projectRoot"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "project-local",
+        "manifest"
+      ],
+      "sig_seen": "function projectPath(projectRoot: string, dest: string): string",
+      "hash_seen": "8b30392325aee3a0382ec8bf4a5e088cb1c1e3015630650a7dcc4a1898e1f5f8"
+    },
+    {
+      "_key": "80dcc20be00cb8ab5565cfd996a13d3a",
+      "purpose": "Computes the installed state of a project against the shipped runtime (missing or out-of-date scripts, unregistered hooks, out-of-date orchestrator skill, version stamp) and reports whether the project is stale, without writing anything.",
+      "inputs": [
+        "projectRoot: absolute project directory",
+        "pluginRoot: shipped plugin root, required via requirePluginRoot"
+      ],
+      "outputs": [
+        "Promise<InstallStatus>: installed, stale, scriptsMissing, scriptsOutOfDate, hooksMissing, orchestratorSkillOutOfDate, appBehind, runtime digests, settingsUnreadable"
+      ],
+      "cross_concept_refs": [
+        "maestro-config-model"
+      ],
+      "document_ref": null,
+      "tags": [
+        "staleness",
+        "project-local",
+        "idempotent"
+      ],
+      "sig_seen": "function installStatus(projectRoot: string, pluginRoot?: string): Promise<InstallStatus>",
+      "hash_seen": "d631e5db7d08e5c1e2f2674c616bd3baddac8594048edd34087f678347d7a1e9"
+    },
+    {
+      "_key": "841af118914da1a73622e77a4cf367e0",
+      "purpose": "Reads the version field from the shipped plugin's .claude-plugin/plugin.json, which is the runtimeVersion a fresh install or refresh stamps into maestro.json.",
+      "inputs": [
+        "pluginRoot: optional explicit plugin root"
+      ],
+      "outputs": [
+        "string: the plugin.json version"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "runtime-version"
+      ],
+      "sig_seen": "function shippedRuntimeVersion(pluginRoot?: string): string",
+      "hash_seen": "216886202d5caefa613b07fb18772c2ba420015d7ff80ce8080447480a3ed6cc"
+    },
+    {
+      "_key": "8b1a2ef4a1a7765dccbe0f9070b3a90e",
+      "purpose": "Removes Maestro's runtime from a project: unregisters its hooks and channel allow rule, deletes session files and claims, and on purge also deletes the purge targets and optionally the maestro-tasks directory; preflights the plugin root and settings.json before the first deletion and is idempotent.",
+      "inputs": [
+        "projectRoot: project root",
+        "options: {purge, deleteMaestroTasks, pluginRoot}"
+      ],
+      "outputs": [
+        "UninstallReport with hooksRemoved, sessionFilesRemoved, purged, maestroTasksDeleted, dirsPruned, configKept, materialized findings, noop, warnings, status"
+      ],
+      "cross_concept_refs": [
+        "task-queue",
+        "maestro-config-model"
+      ],
+      "document_ref": null,
+      "tags": [
+        "uninstall",
+        "purge",
+        "two-level-uninstall",
+        "settings-merge",
+        "idempotent"
+      ],
+      "sig_seen": "function uninstallRuntime(projectRoot: string, options: UninstallOptions = {}): Promise<UninstallReport>",
+      "hash_seen": "404c27a125e65f770f38d8871a47bfd280d53a21cb9b28ea061969dc2bcc9ec2"
+    },
+    {
+      "_key": "936777ef272dc838fcb690a73822ac45",
+      "purpose": "Decides whether a running hook copy should stand down because the project's own settings.json or settings.local.json registers its project-local twin on the event, never true for the project's own copy.",
+      "inputs": [
+        "scriptPath: running script path",
+        "cwd: project directory from the hook payload",
+        "event: optional hook_event_name"
+      ],
+      "outputs": [
+        "boolean: true if the project owns the hook and this copy should yield"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-arbitration",
+        "symlink-safe-paths"
+      ],
+      "sig_seen": "function projectOwnsHook(scriptPath: string, cwd: string, event?: string): boolean",
+      "hash_seen": "e1a3d4764117b253c4d452ecef66439cda2f36175c228aaf88fbecb6cdc2fb56"
+    },
+    {
+      "_key": "99f065c7ed9d05c8716b090f249c73d8",
+      "purpose": "Returns the plugin root directory, falling back to the default location, and throws an error telling the user to set MAESTRO_PLUGIN_ROOT when none can be found.",
+      "inputs": [
+        "pluginRoot: optional explicit plugin root"
+      ],
+      "outputs": [
+        "string: the resolved plugin root directory"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [],
+      "sig_seen": "function requirePluginRoot(pluginRoot?: string): string",
+      "hash_seen": "d4e272ccc8d60472ca1c435b1e5d42f945f8ceab8decc01af99de8247576db57"
+    },
+    {
+      "_key": "ac8ce0f0c43d84d8b86dea05f4f5ca6b",
+      "purpose": "Computes the ordered, de-duplicated list of existing project files a purge would delete, most consequential first (maestro.json and orchestrator skill before scripts and handoff templates), without deleting anything.",
+      "inputs": [
+        "projectRoot: project root",
+        "pluginRoot: optional plugin root used to read the runtime asset manifest"
+      ],
+      "outputs": [
+        "string[] of project-relative paths that exist now"
+      ],
+      "cross_concept_refs": [
+        "maestro-config-model"
+      ],
+      "document_ref": null,
+      "tags": [
+        "purge",
+        "uninstall",
+        "manifest"
+      ],
+      "sig_seen": "function purgeTargets(projectRoot: string, pluginRoot?: string): string[]",
+      "hash_seen": "8bbd92a05dd2130542f380d3d37282f3966e1223cd478d8a4dec963e4774f3fd"
+    },
+    {
+      "_key": "ba86c53e751e29f5136c5af1866904bc",
+      "purpose": "Moves an existing hook registration onto the current matcher when an older install registered the same script under a previous matcher, so the hook fires under the matcher it now declares.",
+      "inputs": [
+        "settings: parsed project settings.json (mutated in place)",
+        "regs: HookRegistration list, defaulting to HOOK_REGISTRATIONS"
+      ],
+      "outputs": [
+        "string[]: ids of the registrations whose matcher was moved"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-registration",
+        "merge-not-clobber"
+      ],
+      "sig_seen": "function updateHookMatchers(settings: Settings, regs: HookRegistration[] = HOOK_REGISTRATIONS): string[]",
+      "hash_seen": "ce335b377fe9269f3672057d22b02f7a023fe67ac1e3a6a3fcb7e98a6639fce6"
+    },
+    {
+      "_key": "cd90b0a703ef8cf8f666c20680fc9c0b",
+      "purpose": "Parses a semver-like runtime version string (optional leading v, optional prerelease) into core numeric parts and prerelease tag, or null when it is not a string or does not match.",
+      "inputs": [
+        "v: unknown value to parse as a version string"
+      ],
+      "outputs": [
+        "Parsed {core: [major, minor, patch], pre} or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "runtime-version",
+        "staleness"
+      ],
+      "sig_seen": "function parse(v: unknown): Parsed | null",
+      "hash_seen": "f5596724b42623c6214158e202fa19d4c630a3140b864825cccce8e32b061cd2"
+    },
+    {
+      "_key": "cfc79d315d9e81658ddcc0ec5dab5bc4",
+      "purpose": "Adds the single channel-write permission allow rule to settings.permissions.allow in place, unless already present, leaving every other key alone and refusing to repair non-object or non-array shapes.",
+      "inputs": [
+        "settings: parsed project settings.json (mutated in place)"
+      ],
+      "outputs": [
+        "string[]: the rules added (empty when already present or the shape is the user's own)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "permissions-allow",
+        "merge-not-clobber",
+        "idempotent"
+      ],
+      "sig_seen": "function addChannelAllowRule(settings: Settings): string[]",
+      "hash_seen": "58652d2cd09b4a1f2af5d87923d6537c3fc85d7f5b1033e53a10d5d7b45914a5"
+    },
+    {
+      "_key": "d388997d856b6224edd9fed9ac188f42",
+      "purpose": "Type shape of a single hook command entry (type and command string) as it appears in a Claude Code settings hooks array.",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-registration"
+      ],
+      "sig_seen": "export interface HookCommand {",
+      "hash_seen": "1dcdbff63747d885ad912310eeeeed6c45542e15994f8160797cd39ebeaea256"
+    },
+    {
+      "_key": "d4a2da2c00dcff26b6aa1eace361af48",
+      "purpose": "Returns the list of runtime assets an install writes, currently a copy of the static asset manifest and ignoring the plugin root argument.",
+      "inputs": [
+        "_pluginRoot: unused optional plugin root"
+      ],
+      "outputs": [
+        "RuntimeAsset[]: a fresh copy of STATIC_ASSETS"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "asset-manifest"
+      ],
+      "sig_seen": "function runtimeAssets(_pluginRoot?: string): RuntimeAsset[]",
+      "hash_seen": "a332e955fe5e42583641df1290f88dccc49eb773c98b495374d5e0d39855d588"
+    },
+    {
+      "_key": "d5c01552774f840d8c84065c790e0913",
+      "purpose": "Type shape of a hook matcher entry: an optional matcher plus a list of HookCommand objects, as stored under one event in settings.json.",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-registration"
+      ],
+      "sig_seen": "export interface HookEntry {",
+      "hash_seen": "0d86414d399903232bc269efdda505346cc4863bf02ec7dd31123b034d5147bd"
+    },
+    {
+      "_key": "d605c33b852857456542b71bccb79af5",
+      "purpose": "Recursively lists every file under a project-relative directory as sorted project-relative paths with forward slashes; returns an empty list if the directory is absent.",
+      "inputs": [
+        "projectRoot: project root",
+        "dir: project-relative directory to walk"
+      ],
+      "outputs": [
+        "sorted string[] of project-relative file paths"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "uninstall",
+        "purge"
+      ],
+      "sig_seen": "function filesUnder(projectRoot: string, dir: string): string[]",
+      "hash_seen": "cb398c8692e279df838cfabefb183ebba9030dc33ce682d7beaac8f16da278c0"
+    },
+    {
+      "_key": "d86ff7d43084a36fa7e050a5be3b6bce",
+      "purpose": "Renders a warning or error note banner with an icon and message text, used to surface install or uninstall caveats in the route.",
+      "inputs": [
+        "variant: 'warn' or 'error' tone",
+        "children: note content"
+      ],
+      "outputs": [
+        "JSX note element"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install-report-card"
+      ],
+      "sig_seen": "function Note({ variant, children }: { variant: \"warn\" | \"error\"; children: React.ReactNode }): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "ca0236cadfdc888302f554489cafbe48339bb9d58f7f57c80bda63810d9a57c4"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "_key": "012a3a139e81cc7afbf5be3c66ccbf19",
+      "reason": "uninstallPlan calls projectPath at line 334 to test which session files exist."
+    },
+    {
+      "_key": "01a0fcde478b6c4e21be6b8a73508674",
+      "reason": "purgeTargets calls maestroJsonPath at line 266 to make maestro.json the first, most consequential purge target."
+    },
+    {
+      "_key": "01efbbdad9ca81fdb12a40610c96e41f",
+      "reason": "installRuntime writes the seeded maestro.json on a first install with no config."
+    },
+    {
+      "_key": "0266e9cc67d30f44db84b20be078e8f3",
+      "reason": "uninstallRuntime calls writeJsonAtomic at line 391 to write the trimmed settings.json back atomically."
+    },
+    {
+      "_key": "0298f46875185868dd1d0b301ec77e01",
+      "reason": "shippedRuntimeVersion resolves the plugin root through requirePluginRoot before reading the manifest."
+    },
+    {
+      "_key": "02a5b70380d2985a4d225db73eb48083",
+      "reason": "uninstallPlan calls maestroHookIds at line 332 to list the Maestro hook registrations the uninstall would remove."
+    },
+    {
+      "_key": "098d0a273c11ed9ee14980d84b819134",
+      "reason": "installRuntime resolves each retired script's path before removing it."
+    },
+    {
+      "_key": "0bea6c365979b260545aea887b15c690",
+      "reason": "installRuntime builds the default v3 config that a first install seeds."
+    },
+    {
+      "_key": "0d60d0c8a1047043977e2a3f080a77b6",
+      "reason": "installRuntime detects which implementation agents the repo has, to seed the config."
+    },
+    {
+      "_key": "0edd4fea3d573ff8979a9f7e45d134c2",
+      "reason": "findMaterializedFiles calls filesUnder at line 116 to enumerate the files under the directory."
+    },
+    {
+      "_key": "1155dfa46d4df1ed6c56bbe290d32ec5",
+      "reason": "installRuntime hashes the shipped script bytes to skip files already current."
+    },
+    {
+      "_key": "14990ee0ad3469fa06acc30c2e062c31",
+      "reason": "addChannelAllowRule mutates the shared Settings shape passed in."
+    },
+    {
+      "_key": "156fdf90e2944c25116b26c00615afa1",
+      "reason": "installRuntime ensures the repo-root .gitignore carries the Maestro block."
+    },
+    {
+      "_key": "15fde11d7b3991a043e2d4b787aea694",
+      "reason": "installRuntime returns a refusal report, writing nothing, when maestro.json is unusable."
+    },
+    {
+      "_key": "1766443f62e2b5be475980fe1564d646",
+      "reason": "findMaterializedFiles calls projectPath at line 111 to resolve the absolute directory before checking existence."
+    },
+    {
+      "_key": "1ccb5bd37808c4a8459a48b3a97c0957",
+      "reason": "installRuntime builds the skill map for the seeded agents from skill tags."
+    },
+    {
+      "_key": "22dcc6b0e1e482e4cc77072b37ada675",
+      "reason": "projectOwnsHook computes the project-local twin name by calling projectTwinName."
+    },
+    {
+      "_key": "28a08246e40611c31c6959702bde43f7",
+      "reason": "uninstallRuntime calls findMaterializedFiles at line 457 to report report files left behind in the result."
+    },
+    {
+      "_key": "2ac2f051b89c1cd3aa8a5ca6e34caa8e",
+      "reason": "uninstallPlan calls findMaterializedFiles at line 347 to report leftover report files under .claude/reports."
+    },
+    {
+      "_key": "2d67073a22afe8ebe602a82199700461",
+      "reason": "installRuntime adds the channel-write allow rule to the settings it writes."
+    },
+    {
+      "_key": "30f7e8e0984645dfb56b00b9b97d2e13",
+      "reason": "uninstallPlan calls maestroJsonPath at line 345 to decide whether a purge would remove the config."
+    },
+    {
+      "_key": "35ffbdbd8a579ab8f9731d7a28ca6c28",
+      "reason": "uninstallRuntime calls removeMaestroHooks at line 379 to strip Maestro's hook registrations from settings."
+    },
+    {
+      "_key": "39a812d1f9817bf113c2b7a6bf75dc09",
+      "reason": "uninstallRuntime calls maestroJsonPath at line 444 to name the config file in the could-not-delete warning."
+    },
+    {
+      "_key": "39b0724580fd2ae30d3c09ef1b20a26a",
+      "reason": "installStatus resolves each manifest asset's destination path with projectPath."
+    },
+    {
+      "_key": "3c01e7315e55b17ef4dc1c9af41e9e8d",
+      "reason": "installRuntime writes back the config with filled-in skill lists on a re-install of an older config."
+    },
+    {
+      "_key": "40ae13ad7c2351ab924a572d032a5359",
+      "reason": "purgeTargets calls orchestratorSkillPath at line 269 to add the .bak file the installer leaves when migrating the skill."
+    },
+    {
+      "_key": "412fbdc2bf56ce46dc438d7493d9d4d4",
+      "reason": "installRuntime ensures the destination directory exists before copying a script."
+    },
+    {
+      "_key": "443e8b27cfe78ab6f45328e1b74e2070",
+      "reason": "uninstallRuntime calls readSettings at line 377 to load settings.json as a preflight before any deletion."
+    },
+    {
+      "_key": "45c0f8e6c24ad49163eb709d7c003400",
+      "reason": "uninstallRuntime calls purgeTargets at line 375 to compute the purge list during preflight."
+    },
+    {
+      "_key": "48c0612a9af2089688bb40a2fefa90e0",
+      "reason": "installStatus compares the stamped runtime version with the shipped one to detect an app-behind project."
+    },
+    {
+      "_key": "498ea57ea3ce50454e1a2ecf0e6ac5f9",
+      "reason": "uninstallPlan calls findMaestroTasks at line 346 to report the task files that a purge would leave or touch."
+    },
+    {
+      "_key": "49ba5f31dee4fa8723ac6a61af7f9a8f",
+      "reason": "hasHook takes its settings parameter typed as the shared Settings shape from hook-arbitration."
+    },
+    {
+      "_key": "4bb6b7fd9b693e8e5795cb7d648ab867",
+      "reason": "installRuntime finds the repo root to place the .gitignore block."
+    },
+    {
+      "_key": "4c1eede15439c4625ac3cb0d14205fbc",
+      "reason": "installRuntime requires a resolvable plugin root before any write."
+    },
+    {
+      "_key": "4c7df61beef4c4132bf7f99d187ccb89",
+      "reason": "installStatus locates maestro.json to read its runtimeVersion stamp."
+    },
+    {
+      "_key": "4f4fed78d872132bc4f6cff899f07672",
+      "reason": "uninstallPlan calls findMaterializedFiles at line 348 to report leftover handoff files under .claude/handoffs."
+    },
+    {
+      "_key": "4f84175a51e0fb5fe3aed78da1fb68cd",
+      "reason": "refreshStaleRuntime calls runtimeNeedsRefresh at line 1055 to decide, semantically, whether the project's stamped runtime is behind the shipped one."
+    },
+    {
+      "_key": "551971d1b9d2b58361e26d20f64c2a19",
+      "reason": "installStatus checks whether maestro.json exists for the configFile flag."
+    },
+    {
+      "_key": "5673a4c0f7f8f93786f602e9686344a0",
+      "reason": "uninstallRuntime calls maestroJsonPath at line 456 to report whether the config file was kept."
+    },
+    {
+      "_key": "571b3176e3f18bd38419425dd70d8889",
+      "reason": "installStatus resolves the installed destination of each asset to hash it."
+    },
+    {
+      "_key": "5779ebaee2038a926a66062a9206ae00",
+      "reason": "installRuntime reads the existing config safely to decide whether a skill-list fill is needed."
+    },
+    {
+      "_key": "59b2327ae08d64ddc3c2d3e7198023f5",
+      "reason": "projectOwnsHook declares a Settings-typed variable when parsing each project settings file."
+    },
+    {
+      "_key": "5a803fb7109a99c9716976dd34ead3cf",
+      "reason": "runtimeAssets is declared to return RuntimeAsset[] entries."
+    },
+    {
+      "_key": "5bdeee448234eeae087d6de8428b843e",
+      "reason": "installRuntime reads the shipped runtime version it is about to stamp."
+    },
+    {
+      "_key": "5e7545b6a18408a8512e70bedb2050e1",
+      "reason": "installRuntime reports duplicate agent types in the config as configIssues without repairing them."
+    },
+    {
+      "_key": "6023bccc754fc04aed723f633f0eb1e3",
+      "reason": "installRuntime fills missing start and end skill lists with the seed defaults on a re-install."
+    },
+    {
+      "_key": "609eb19ddaea2c6ae83248a4335012df",
+      "reason": "updateHookMatchers iterates HookRegistration entries from the manifest."
+    },
+    {
+      "_key": "63fd08c63851ede215818aac27222dda",
+      "reason": "installRuntime locates the orchestrator skill path it installs into."
+    },
+    {
+      "_key": "649316db9813f60514e3365bb7662a2c",
+      "reason": "installStatus locates the project's orchestrator skill file."
+    },
+    {
+      "_key": "659c7b8e970a3c4b398d2a6bfcf88304",
+      "reason": "installRuntime stamps the shipped runtimeVersion into maestro.json last, after the files it describes are on disk."
+    },
+    {
+      "_key": "697cfe8bc3476e46cb0c626a1b77ea52",
+      "reason": "installRuntime removes hook registrations for retired scripts from settings."
+    },
+    {
+      "_key": "6d6dcdc8d03582f115bb61e4674d8a76",
+      "reason": "refreshStaleRuntime calls installStatus at line 1056 to confirm the project already has an install before refreshing it."
+    },
+    {
+      "_key": "6dcb0dd5fe3ae53ad46aed907cd84553",
+      "reason": "uninstallRuntime calls projectPath at line 418 to resolve each purge target before removing it."
+    },
+    {
+      "_key": "6f95129b4f3ba5b850d2c948c6b533f9",
+      "reason": "uninstallRuntime calls projectPath at line 397 to resolve each session file before removing it."
+    },
+    {
+      "_key": "7201bf695a73a643a04fbbca97818e61",
+      "reason": "installStatus uses hasHook to split hook registrations into registered and missing."
+    },
+    {
+      "_key": "730f3a63c5210fd97f804179be77ee2d",
+      "reason": "settingsRegisterScript takes a Settings parameter, so it references that type."
+    },
+    {
+      "_key": "7537733a447930ba518fdfd198afaf89",
+      "reason": "requirePluginRoot falls back to defaultPluginRoot when no explicit root is passed."
+    },
+    {
+      "_key": "75b2efea8a045a7bd74f45492caad9ca",
+      "reason": "purgeTargets calls maestroJsonPath at line 265 to build the project-relative path of the config file."
+    },
+    {
+      "_key": "76b0280cf1774c92516e2162ff185b11",
+      "reason": "installRuntime reads the global agent types to seed the config's agent attributes."
+    },
+    {
+      "_key": "7ae16f46b2f387441b431ea2d8702caa",
+      "reason": "installStatus declares its settings local as the shared Settings type."
+    },
+    {
+      "_key": "7b644c89f058cc7584e60140165421c8",
+      "reason": "installRuntime takes the manifest of files to copy from runtimeAssets."
+    },
+    {
+      "_key": "7e98aad3db864a1a5943f40fc3f67d5a",
+      "reason": "readSettings returns the shared Settings type."
+    },
+    {
+      "_key": "85d1a06222502c7be5919ae08c6c9f65",
+      "reason": "uninstallPlan calls readSettings at line 327 to read settings.json and find the Maestro hooks."
+    },
+    {
+      "_key": "8887a89f051a45d4a62ef51825654ecf",
+      "reason": "parse is annotated to return the Parsed type declared in runtime-version.ts."
+    },
+    {
+      "_key": "8e854ff9bc5a63a5a68635fa1cdf96af",
+      "reason": "refreshStaleRuntime calls shippedRuntimeVersion at line 1051 to get the version this app ships to compare against."
+    },
+    {
+      "_key": "8f2926991e614d28d03a6cc1a104873d",
+      "reason": "uninstallRuntime calls settingsPathFor at line 376 to locate the settings.json it edits."
+    },
+    {
+      "_key": "910f6d2395974d8bdcfacb7560a4e3b0",
+      "reason": "refreshStaleRuntime calls maestroJsonPath at line 1048 to locate maestro.json for the raw parse."
+    },
+    {
+      "_key": "92db17d3d73b424b433cae6a7d223e7d",
+      "reason": "purgeTargets calls filesUnder at line 272 to sweep app-installed scripts in .claude/scripts."
+    },
+    {
+      "_key": "94d29001aacbdbe0379c990a858023d0",
+      "reason": "uninstallRuntime is annotated to take the UninstallOptions type at line 365."
+    },
+    {
+      "_key": "978f824e7858124ee6763bc4b9be0063",
+      "reason": "refreshStaleRuntime calls requirePluginRoot at line 1042 to refuse when no plugin root is available."
+    },
+    {
+      "_key": "9a2f227915b2280bfa96cf8193f4dda3",
+      "reason": "purgeTargets calls filesUnder at line 273 to include the handoff templates directory in the purge list."
+    },
+    {
+      "_key": "9ce3e21a42a2781de76061e22003b5fd",
+      "reason": "installRuntime adds any missing hook registrations to settings."
+    },
+    {
+      "_key": "9e66291672b70e9e4b6dccc07633b7cf",
+      "reason": "projectOwnsHook calls samePath to detect when the running script is already the project's own copy."
+    },
+    {
+      "_key": "9ee569246eac4af1096ffecfcf1e0a95",
+      "reason": "projectOwnsHook casts the parsed JSON to Settings before checking its hooks map."
+    },
+    {
+      "_key": "9f98c160125c338d5efac5c99ead3cb7",
+      "reason": "installRuntime reads the global skill tags to build the seed skill map."
+    },
+    {
+      "_key": "a2c230ac9e1c16d60d5fc2766ad6f2e5",
+      "reason": "refreshStaleRuntime calls installRuntime at line 1058 to perform the actual refresh copy once all gates pass."
+    },
+    {
+      "_key": "a3d69684560152d69a5087ed7e3020dd",
+      "reason": "installStatus resolves the project's settings.json path before reading it."
+    },
+    {
+      "_key": "a57badde08b218f7aba59ecea7babad8",
+      "reason": "installStatus hashes installed and shipped script bytes to find out-of-date files."
+    },
+    {
+      "_key": "a6475df65a2477b7cd39f5010712bfac",
+      "reason": "uninstallRuntime calls requirePluginRoot at line 374 so it refuses before any deletion when the plugin root is missing."
+    },
+    {
+      "_key": "a6a3e910abbdb398e67295de871a9cca",
+      "reason": "installRuntime checks an existing maestro.json with maestroConfigRefusal before writing anything."
+    },
+    {
+      "_key": "a8b9f9c0af6a65245969c98eb92b2f8a",
+      "reason": "installStatus computes the shipped runtime digest over the manifest."
+    },
+    {
+      "_key": "aa693586c7111230c4a18099c8d11bce",
+      "reason": "uninstallRuntime calls projectPath at line 426 to resolve the maestro-tasks directory for the opt-in delete."
+    },
+    {
+      "_key": "af052b773081ce30bb92efcd2fd9a637",
+      "reason": "installRuntime moves hook matchers that an older install registered under a previous matcher."
+    },
+    {
+      "_key": "b154a079024c7e2e168ad5e5083a9533",
+      "reason": "uninstallRuntime calls installStatus at line 436 to report the post-uninstall install state."
+    },
+    {
+      "_key": "b33cea429b762e9f9363a869b88ab765",
+      "reason": "uninstallPlan calls settingsPathFor at line 327 to locate the project's settings.json."
+    },
+    {
+      "_key": "b389092a6af9397f13ac34822ff71bdc",
+      "reason": "installRuntime adds any missing skill lists to an existing config on a re-install."
+    },
+    {
+      "_key": "b4ae7d6bfaf08b2904090c5531497179",
+      "reason": "installStatus computes the installed runtime digest over the same manifest."
+    },
+    {
+      "_key": "b69f37e592120156fc61bc62c5acc91f",
+      "reason": "uninstallRuntime calls pruneEmptyDirs at line 434 to remove directories emptied by the removal."
+    },
+    {
+      "_key": "b86ad446011340de16f2d07efbcbc763",
+      "reason": "installRuntime reads the existing config to decide whether this is a first install."
+    },
+    {
+      "_key": "b8e2a3be05f4acc587a8023b86629161",
+      "reason": "installRuntime fetches the seed skill list for the project to seed or fill skill lists."
+    },
+    {
+      "_key": "bab090bf228a824ee2b3d1da65a5df23",
+      "reason": "installStatus reads maestro.json safely to get its runtimeVersion stamp."
+    },
+    {
+      "_key": "bb2be36c5a800aaa741147805b3604bf",
+      "reason": "installRuntime resolves the maestro.json path to check, read and write it."
+    },
+    {
+      "_key": "c290859541438444622fea701cc77ac5",
+      "reason": "installRuntime resolves each asset's destination path before copying it."
+    },
+    {
+      "_key": "c4d115d5c1c1cc22729057be922cce5a",
+      "reason": "readSettings casts the parsed object to the shared Settings type after validation."
+    },
+    {
+      "_key": "c75823da60373bca4899be13e24cc1a3",
+      "reason": "installRuntime lists the agent names the first-install seed should include."
+    },
+    {
+      "_key": "c7b841893b2673564dde1ebd6ab984ed",
+      "reason": "installStatus reads the version the shipped runtime stamps, for the app-behind comparison."
+    },
+    {
+      "_key": "c8ac0a224286fa324ae9d93e2fa9cf1c",
+      "reason": "installRuntime reads settings.json as a preflight before any write."
+    },
+    {
+      "_key": "cb222c312679e3d1f60e3bb713143251",
+      "reason": "purgeTargets calls projectPath at line 278 to test whether each candidate exists before listing it."
+    },
+    {
+      "_key": "cb4ec7dc448b06981a2b306745c234f8",
+      "reason": "uninstallRuntime calls findMaterializedFiles at line 458 to report handoff files left behind in the result."
+    },
+    {
+      "_key": "cc706557cd2afd591d5a1dab80d45b02",
+      "reason": "purgeTargets calls runtimeAssets at line 270 so the purge list covers every destination in the install manifest."
+    },
+    {
+      "_key": "cde8b1479771584813aa55a9304469a8",
+      "reason": "installRuntime resolves the maestro.json path to read it for the skill-list fill."
+    },
+    {
+      "_key": "d14a67ec4c3e8e5fdc8c876f11562224",
+      "reason": "installRuntime computes the final installed status to return in its report."
+    },
+    {
+      "_key": "d52fad0d77b406a376b06feeb9adeb2b",
+      "reason": "installStatus compares the installed orchestrator skill with the template's managed regions to detect drift."
+    },
+    {
+      "_key": "da518fb58fae468ec5b31b02b1fbd4a3",
+      "reason": "installRuntime ensures the destination directory exists before copying a script."
+    },
+    {
+      "_key": "de298bd8ecc0628f3e31adcad406faa7",
+      "reason": "installRuntime syncs project handoffs from the global handoffs tier."
+    },
+    {
+      "_key": "e132e060e76340668d84532b5f9f0e86",
+      "reason": "uninstallPlan is annotated to use the Settings type from hook-arbitration.ts at line 324."
+    },
+    {
+      "_key": "e215f1759b716e668fdcf96524ab181e",
+      "reason": "installRuntime installs the orchestrator skill from the template."
+    },
+    {
+      "_key": "e366ca67cef637d77df56d5415b98bcd",
+      "reason": "uninstallRuntime calls removeChannelAllowRule at line 385 to drop the one permissions rule the install added."
+    },
+    {
+      "_key": "e3672a566b83060511f7906b8253d78b",
+      "reason": "installRuntime syncs project reports from the global default tier."
+    },
+    {
+      "_key": "e38018f734f801f56f11be9c36daaa88",
+      "reason": "filesUnder calls projectPath at line 231 to resolve the absolute directory it walks."
+    },
+    {
+      "_key": "e3f6b96a6a9a755e540c08168fbd46e5",
+      "reason": "hasHook delegates the registration test to settingsRegisterScript so install and runtime share one definition of registered."
+    },
+    {
+      "_key": "e7f0d2b5e84caaa0679a9c0cdd77c587",
+      "reason": "hasHook's reg parameter is typed as HookRegistration from the manifest."
+    },
+    {
+      "_key": "e8c967a15081ace987db202a89b7ef47",
+      "reason": "installStatus takes the manifest from runtimeAssets to know which files to check."
+    },
+    {
+      "_key": "e92f1239f7f5ecabaebeb3771afdc745",
+      "reason": "installStatus requires a resolvable plugin root before it can compare anything."
+    },
+    {
+      "_key": "ea6a7f33eae41105cb0ecb1630272f4e",
+      "reason": "projectOwnsHook calls settingsRegisterScript to check whether the project registers the twin on an event."
+    },
+    {
+      "_key": "eb8c3348e75cb8e60f8e34cbfd00b32b",
+      "reason": "installRuntime writes settings.json atomically so a crash cannot leave it truncated."
+    },
+    {
+      "_key": "edee86defb276a82227a4e853c03395e",
+      "reason": "installStatus reads settings.json, catching a parse failure as settingsUnreadable."
+    },
+    {
+      "_key": "eecba320d28b418f1f6a9d9d3902ecc2",
+      "reason": "installRuntime resolves the settings.json path for its preflight and its write."
+    },
+    {
+      "_key": "effa1c3ee89f02a66ce6fe14a956c1c1",
+      "reason": "installRuntime reads the project-tags catalog to decide which seeded tags are recorded."
+    },
+    {
+      "_key": "f01bea0014ea213f6130258286fb98f3",
+      "reason": "refreshStaleRuntime calls readJsonSafe at line 1048 to parse maestro.json without the blank-on-corrupt fallback."
+    },
+    {
+      "_key": "f0c52c8f0fbbfd00200104d7d21914f7",
+      "reason": "uninstallPlan calls purgeTargets at line 337 to list the files a purge would delete."
+    },
+    {
+      "_key": "f139652c41a57684c86e876e5e92d19c",
+      "reason": "updateHookMatchers mutates the shared Settings shape passed in."
+    },
+    {
+      "_key": "f39613692a75a5ba9946b37db0ffb27d",
+      "reason": "installRuntime reads the per-agent project tags to seed agent attributes."
+    },
+    {
+      "_key": "f4745c8c8b0d048094c6bec11e22847f",
+      "reason": "uninstallRuntime calls projectPath at line 410 to resolve the claims directory before removing it."
+    }
+  ]
 }

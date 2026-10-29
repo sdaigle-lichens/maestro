@@ -41,6 +41,32 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
    command; for the cause, the fix, and why the flag is off limits, see
    `references/electron-sandbox-setup.md`.
 
+3. **Inside a Claude Code session with the Bash sandbox (macOS), launch and probe in two calls.**
+   Electron aborts at startup in the sandbox (`bootstrap_check_in ... Permission denied (1100)`),
+   so the user has put the exact launch command in `sandbox.excludedCommands`. Measured working
+   pattern, from the repo root, never with `cd`:
+
+   1. **Launch** the excluded command alone in a Bash call with `run_in_background: true`. No
+      pipe, `cd`, `$(...)`, `2>&1` or second command, or the call stays sandboxed and aborts:
+
+      ```bash
+      apps/maestro/node_modules/.bin/electron apps/maestro --remote-debugging-port=9431
+      ```
+
+      The listed entry ends in `*`, so extra flags such as `--user-data-dir=/tmp/claude-<uid>/udd`
+      are fine; a different port or path is not, and needs the user to add an entry. Build first
+      (`pnpm --filter maestro build`): it loads `out/`.
+   2. **Probe** in a separate, sandboxed call: `node /tmp/claude-<uid>/probe.mjs`. It must attach,
+      not launch: `waitForTarget(9431)` then `Cdp.connect(target.webSocketDebuggerUrl)`, then
+      `openProjectAt`, `waitFor`, `geometry`, `dragNode` as below. `withApp` cannot be used here:
+      it spawns Electron from inside Node, which stays sandboxed and aborts. The probe reaches
+      `127.0.0.1` only with `sandbox.network.allowLocalBinding: true`; "connection refused"
+      right away means that setting is missing, so tell the user.
+   3. **Stop** the app with `TaskStop` on the background task when done. Never retry with
+      `--no-sandbox`, and never widen the exclusion to `electron *`.
+
+   Outside the Bash sandbox (a plain terminal), `withApp` below works as written.
+
 ## Quick start
 
 Write the probe in the scratchpad and import the harness by absolute path. It has no dependencies

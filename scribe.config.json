@@ -216,8 +216,8 @@
     }
   },
   "skills": {
-    "version": "1.33",
-    "last_update": "a733966595fc098b8895addbf04dd8878fd5024b",
+    "version": "1.34",
+    "last_update": "1fac55ee297de777db667b61f670fa7e0a08687c",
     "agents": [
       "backend",
       "frontend",

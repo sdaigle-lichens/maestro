@@ -26,8 +26,8 @@
       "type": "function",
       "name": "buildUpdateSkillTagsHandoff",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 292,
-      "end_line": 306,
+      "start_line": 297,
+      "end_line": 311,
       "signature": "function buildUpdateSkillTagsHandoff(projectRoot: string, state: string): HandoffContext",
       "contentHash": "c7f02c928b1d4fe33c8d0ed931fbe22b3c94ce0e9e6928bb0dbce732179f2e7e",
       "status": "live",
@@ -206,8 +206,8 @@
       "type": "function",
       "name": "buildHandoff",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 358,
-      "end_line": 372,
+      "start_line": 363,
+      "end_line": 377,
       "signature": "function buildHandoff(projectRoot: string, request: CreateRequest, opts: ResolveOptions): HandoffContext",
       "contentHash": "93ce22fb18af8ef765966d35ddca07129724df9245edf5db8b200c61175f0c15",
       "status": "live",
@@ -368,8 +368,8 @@
       "type": "function",
       "name": "buildUpdateSkillTags",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 256,
-      "end_line": 290,
+      "start_line": 261,
+      "end_line": 295,
       "signature": "function buildUpdateSkillTags(projectRoot: string): Promise<BuiltRequest>",
       "contentHash": "99228e9dad392b4ed3a0be6bbf29102e8e6bb4e3ee5d08a2918deccb34f4071e",
       "status": "live",
@@ -404,8 +404,8 @@
       "type": "function",
       "name": "readScopeFor",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 428,
-      "end_line": 454,
+      "start_line": 433,
+      "end_line": 459,
       "signature": "function readScopeFor(projectRoot: string, cwd: string, targets: ClaudeWriteTarget[], settings: SettingsPort | undefined): Promise<ClaudeReadScope>",
       "contentHash": "49bf7a7593425ac1a92bb59c92db7c3a8bafd8f1f7be463314357d327d2b329f",
       "status": "live",
@@ -476,8 +476,8 @@
       "type": "function",
       "name": "scaffoldedState",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 326,
-      "end_line": 347,
+      "start_line": 331,
+      "end_line": 352,
       "signature": "function scaffoldedState(target: string): string",
       "contentHash": "f2f54c9d0506a10eb4e62f634593f85121137a8ab41984e77dfe7995a986f63d",
       "status": "live",
@@ -800,10 +800,10 @@
       "type": "function",
       "name": "projectSkillsForTagging",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 228,
-      "end_line": 241,
+      "start_line": 229,
+      "end_line": 246,
       "signature": "function projectSkillsForTagging(projectRoot: string): Promise<{ id: string; description: string; projectTags: string[]; agentTypes: string[]; }[]>",
-      "contentHash": "4f65da7a45d50c7d2e97487b747b0bcd35140461354944a0f17b42cc073ce614",
+      "contentHash": "d82f706cc6bef962ed88c227697e9c895dfed5145cebf18894b26f91a9a829b4",
       "status": "live",
       "ast": {},
       "agent": {
@@ -836,8 +836,8 @@
       "type": "function",
       "name": "previewClaudeRun",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 466,
-      "end_line": 545,
+      "start_line": 471,
+      "end_line": 550,
       "signature": "function previewClaudeRun(projectRoot: string, request: ClaudeRequest, opts: PreviewOptions = {}): Promise<ClaudePreview>",
       "contentHash": "a44ee2811721ecbd7f272a90625d26707a8961c102765cddaf4ee0dd9a534331",
       "status": "live",
@@ -872,8 +872,8 @@
       "type": "function",
       "name": "skillTagsRow",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 244,
-      "end_line": 248,
+      "start_line": 249,
+      "end_line": 253,
       "signature": "function skillTagsRow(s: { id: string; description: string; projectTags: string[]; agentTypes: string[] }): string",
       "contentHash": "5eeaf609dfc409d1f611af12e75b8f2c47761b729effc3686a35d155d9ccbfff",
       "status": "live",
@@ -908,8 +908,8 @@
       "type": "function",
       "name": "buildCreate",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 125,
-      "end_line": 217,
+      "start_line": 126,
+      "end_line": 218,
       "signature": "function buildCreate(projectRoot: string, request: CreateRequest, opts: ResolveOptions): BuiltRequest",
       "contentHash": "c6583b86180bebd277006da7af9b6edcccf14ba9f4adcbde8164e51b5dc7c9e9",
       "status": "live",
@@ -926,8 +926,8 @@
       "type": "function",
       "name": "build",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 380,
-      "end_line": 417,
+      "start_line": 385,
+      "end_line": 422,
       "signature": "function build(projectRoot: string, request: ClaudeRequest, opts: ResolveOptions): Promise<BuiltRequest>",
       "contentHash": "ba11255243a3f1ddb72e6f36026beeeb0f43a86b713732a4fae4257473c3a696",
       "status": "live",
@@ -1034,8 +1034,8 @@
       "type": "type-def",
       "name": "PreviewOptions",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 61,
-      "end_line": 63,
+      "start_line": 62,
+      "end_line": 64,
       "signature": "export interface PreviewOptions extends ResolveOptions {",
       "contentHash": "2506ea0972c2737e842d16be87c5f86261a99492e7aa774b9074fdef73329171",
       "status": "live",
@@ -1340,8 +1340,8 @@
       "type": "type-def",
       "name": "BuiltRequest",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 85,
-      "end_line": 97,
+      "start_line": 86,
+      "end_line": 98,
       "signature": "interface BuiltRequest {",
       "contentHash": "c16d756150adbf315dfbdcebe193d8092d89980537d59981ffffd9f99c4b394a",
       "status": "live",
@@ -1415,6 +1415,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 285,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0278e43b92602fc7e6046a7dc7299f7b",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/dbef9a3cffafa739114822a905bf6196",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 482,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1499,32 +1512,6 @@
       }
     },
     {
-      "_key": "14abf17eff848c42fb94d2cb85b7b810",
-      "_from": "vertices/4535e9c42f1c3f96f6359782bebab02e",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 446,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "15726260f180a6e4aa0637463bc7b6f0",
-      "_from": "vertices/a22e814206eb85adf36923616063a839",
-      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 388,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "15a74e32143ab77841145296938186f0",
       "_from": "vertices/163d493ce6ff100694c10739b4d5dbe4",
       "_to": "vertices/387f1b6219dc2584a4fc972775d66831",
@@ -1545,6 +1532,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "19d1dd8ec8ad93eb287651e993395284",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 388,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1577,13 +1577,26 @@
       }
     },
     {
-      "_key": "1ee43c485b6b5751c389b32f9e9610eb",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/b809bb24b2077044f24c48bb67275199",
+      "_key": "1e1a94e447250ba3e2c71984568a92be",
+      "_from": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
       "type": "calls",
       "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 520,
+      "crosses_concept": false,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1eb2f6ea54122ef95f103a26352e2c37",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/4535e9c42f1c3f96f6359782bebab02e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 485,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1642,19 +1655,6 @@
       }
     },
     {
-      "_key": "2bc55329a6e49bfffe9bbbd4ebd28a21",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/4535e9c42f1c3f96f6359782bebab02e",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 480,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2fcee8bcd298167d21edcde552e987e0",
       "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
       "_to": "vertices/163d493ce6ff100694c10739b4d5dbe4",
@@ -1688,6 +1688,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 12,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "35b7ba39e1514075138d5c0a04a5a4db",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 385,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1733,32 +1746,6 @@
       }
     },
     {
-      "_key": "4728f184fe13cbec144a5433ab05afd7",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/ba0f8f34eb9f842a92e1a2c105aabf7b",
-      "type": "has-type",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 469,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "4aabbcc55d7ad4ba3a9b1b5836d20556",
-      "_from": "vertices/a22e814206eb85adf36923616063a839",
-      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
-      "type": "has-type",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 380,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4dff863b1569b200e3bcb10051d4121c",
       "_from": "vertices/adcb01833dd10884aedc4f47610412c3",
       "_to": "vertices/ce90ab1ee794960a5883c9c29546f119",
@@ -1766,6 +1753,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4e54bbd1d5cda24acb8e92dc68ad42e1",
+      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "_to": "vertices/7f47f99e5226754f0f4b1676defb7215",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 262,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1785,26 +1785,13 @@
       }
     },
     {
-      "_key": "523cd7fd3f9194f27606b5d1cfc42879",
+      "_key": "50c1e52678011eb93db327b6dff6adbb",
       "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/dbef9a3cffafa739114822a905bf6196",
+      "_to": "vertices/2078213ec65b9598b9030f222a48ee26",
       "type": "calls",
       "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 477,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5261d8360de553972f24447160f08d25",
-      "_from": "vertices/4535e9c42f1c3f96f6359782bebab02e",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 444,
+      "crosses_concept": false,
+      "line": 499,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1850,6 +1837,19 @@
       }
     },
     {
+      "_key": "56e672a5d574e9f9edb26e22c48bcbef",
+      "_from": "vertices/2078213ec65b9598b9030f222a48ee26",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 364,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "5738c8f8ee8ff0ee3e00501d38307e09",
       "_from": "vertices/1865a92a04f8359d22a868f79c048bad",
       "_to": "vertices/5c677576c2fac029bb060bce8bcdcab8",
@@ -1870,6 +1870,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 452,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "59d597849df87d55c61d79a34e99a27c",
+      "_from": "vertices/4535e9c42f1c3f96f6359782bebab02e",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 451,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -1928,6 +1941,19 @@
       }
     },
     {
+      "_key": "61ef875b88a1064ab3fa4debd9ef135d",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 393,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "6359da9f6e271481a2fb5b57a96855b5",
       "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
       "_to": "vertices/95b97fd4b56f4f03a543e6ddead1b79c",
@@ -1941,13 +1967,13 @@
       }
     },
     {
-      "_key": "639555e7f3df945d051d53bcf98a8685",
-      "_from": "vertices/2078213ec65b9598b9030f222a48ee26",
-      "_to": "vertices/4d59a285ae37ab1d26f927c755a3e3c7",
-      "type": "calls",
+      "_key": "64fcadb437697954a0c6ff53554379b1",
+      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
+      "type": "has-type",
       "concept": "create-skills-architecture",
       "crosses_concept": false,
-      "line": 367,
+      "line": 261,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2000,6 +2026,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6c97c5ab7509e462e3c7d322d701f6d6",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/ba0f8f34eb9f842a92e1a2c105aabf7b",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 474,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2084,6 +2123,19 @@
       }
     },
     {
+      "_key": "721d9dd26767f090e5cba9a07331123a",
+      "_from": "vertices/7f47f99e5226754f0f4b1676defb7215",
+      "_to": "vertices/96b471fcf6e7c87f9209810b7f2ef07e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 238,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "733840f2b2f22f550be0b9e12566d3f8",
       "_from": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
       "_to": "vertices/692e9c673342adb40250659d472a5782",
@@ -2091,19 +2143,6 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 14,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "735428aea17f2c020a48d2ee8cd450a0",
-      "_from": "vertices/a22e814206eb85adf36923616063a839",
-      "_to": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 413,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2123,6 +2162,19 @@
       }
     },
     {
+      "_key": "7514fa0694db7f32b0d515cf0a91b6fa",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/09c6f4ae4663b1d8143b2a13e3c45a7e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 497,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "77236dab07e44d46f52eeec2bc543bf4",
       "_from": "vertices/09dd649bc5d4a7d2313c21a58c573fff",
       "_to": "vertices/5237f1ba56fb1b5f046051aa3abc24ae",
@@ -2130,6 +2182,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 347,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "77577ad67633443e0c0e8e287f5210ce",
+      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
+      "_to": "vertices/0387739a797064f4d4da9d3b90764e33",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 274,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2162,19 +2227,6 @@
       }
     },
     {
-      "_key": "7a582679180ddb29b19b88b789f991b3",
-      "_from": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
-      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
-      "type": "has-type",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 125,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "7e1dbb7c98d37986817e9a0fedde8e1b",
       "_from": "vertices/8651a43ccbafbb06df7f40783906bbcc",
       "_to": "vertices/59aca55a94da530637fd003921f1a722",
@@ -2182,6 +2234,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 178,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7f5dc8a68da95330573f66fd4fc611c8",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/b809bb24b2077044f24c48bb67275199",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 525,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2214,19 +2279,6 @@
       }
     },
     {
-      "_key": "8127b301f3aca0e798df481f86168a48",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/2078213ec65b9598b9030f222a48ee26",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 494,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "82e3d56e278335a346898b21b1f470c3",
       "_from": "vertices/19e145d272b4f7c0179a397bdf9720f6",
       "_to": "vertices/4218fac052601287d75403e333c3ff24",
@@ -2253,13 +2305,13 @@
       }
     },
     {
-      "_key": "84ea9e66ce94e8087739307019dfd9ad",
+      "_key": "84e67386b16fcab8f989fbad8efd5d69",
       "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
       "_to": "vertices/a22e814206eb85adf36923616063a839",
       "type": "calls",
       "concept": "create-skills-architecture",
       "crosses_concept": false,
-      "line": 472,
+      "line": 477,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2273,19 +2325,6 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 156,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8877f9e65a33ff388c7a591f9f5ac95b",
-      "_from": "vertices/a22e814206eb85adf36923616063a839",
-      "_to": "vertices/394309bb3b5d5289bb3fd31ae291a020",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 383,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2344,19 +2383,6 @@
       }
     },
     {
-      "_key": "91af50577520a29977e30c1a8a07c191",
-      "_from": "vertices/4535e9c42f1c3f96f6359782bebab02e",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 435,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "921645b661644efcbab242a719100cec",
       "_from": "vertices/1fc5231d2ac83a31b4879f887f211506",
       "_to": "vertices/ce8ef89de772741c8aa3f0b7d0ff9b1e",
@@ -2409,26 +2435,13 @@
       }
     },
     {
-      "_key": "9804183296c46e8d97d833fa77b14def",
-      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
-      "_to": "vertices/0387739a797064f4d4da9d3b90764e33",
+      "_key": "97ef5b050f7212ed9bf7dd731a336110",
+      "_from": "vertices/4535e9c42f1c3f96f6359782bebab02e",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
       "type": "calls",
       "concept": "create-skills-architecture",
       "crosses_concept": true,
-      "line": 269,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "9892ed8ef88089b90fbdcb41bdfbbd99",
-      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
-      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
-      "type": "has-type",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 256,
+      "line": 440,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2500,19 +2513,6 @@
       }
     },
     {
-      "_key": "a0a03e3ae46ecc8d92e44e36657373b5",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/53db7fa679af6fb9fbaffcee2f191a5c",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 512,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "a17700f8a8e9c6dbeb084c422bcd4ce6",
       "_from": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
       "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
@@ -2559,6 +2559,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 602,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a61f6cd5a5139cb3f7ed4d973542614c",
+      "_from": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "_to": "vertices/f2d78bb50176aa22d939253ee03fcc47",
+      "type": "has-type",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 126,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2630,6 +2643,19 @@
       }
     },
     {
+      "_key": "af4f421ad94e52e968fe88a180678615",
+      "_from": "vertices/7f47f99e5226754f0f4b1676defb7215",
+      "_to": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 233,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "b11d92a5055f553619c2f0e428cb9caf",
       "_from": "vertices/dad8adbfecadc2e83ee0cd9ae4329e72",
       "_to": "vertices/ede699e3897be368e7e13ed773099afa",
@@ -2637,19 +2663,6 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 14,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b1cbe5eac0de6f29c30b0cd96ee8e688",
-      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
-      "_to": "vertices/09c6f4ae4663b1d8143b2a13e3c45a7e",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 492,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2695,13 +2708,13 @@
       }
     },
     {
-      "_key": "bb706d59eb4dde714b2f03803a260a1c",
+      "_key": "ba8f0b4b82bbc6b6754bf4c1403be78d",
       "_from": "vertices/7f47f99e5226754f0f4b1676defb7215",
-      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "_to": "vertices/db869e66636077043ea03ca0b8ce570e",
       "type": "calls",
       "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 231,
+      "crosses_concept": true,
+      "line": 236,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2825,6 +2838,19 @@
       }
     },
     {
+      "_key": "cb01c9a50a8f3250a3e00441e3b87d4e",
+      "_from": "vertices/7f47f99e5226754f0f4b1676defb7215",
+      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 232,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "cbbf10dfac230394610e4850c8ade6cb",
       "_from": "vertices/d4f096f39d0d6d5183ebbb3478855980",
       "_to": "vertices/29ef9cf2c6b012abd51bd41a27f1af52",
@@ -2851,6 +2877,19 @@
       }
     },
     {
+      "_key": "d11bcb4c5ef36421a0a9dbf88b385eae",
+      "_from": "vertices/4535e9c42f1c3f96f6359782bebab02e",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 449,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d32f6e9f7c5ccc1f3df50587f47b2eca",
       "_from": "vertices/f4af348f8ba8feae667dc7af20f85a83",
       "_to": "vertices/5baf09e90a5261a1a631d513dcb8d4ee",
@@ -2858,6 +2897,19 @@
       "concept": "create-skills-architecture",
       "crosses_concept": false,
       "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d75a891de171f75ff641c180292b09c8",
+      "_from": "vertices/a22e814206eb85adf36923616063a839",
+      "_to": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 418,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2877,32 +2929,6 @@
       }
     },
     {
-      "_key": "d880bf4de08690a4be096b4116bd286e",
-      "_from": "vertices/7f47f99e5226754f0f4b1676defb7215",
-      "_to": "vertices/1fa2e90c672132b3a71e5748c20d0647",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": true,
-      "line": 232,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d90c189b5d8b698e1066084e4b40eddd",
-      "_from": "vertices/2078213ec65b9598b9030f222a48ee26",
-      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 359,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "da3458a12405f9b5438d5b1016cd8c02",
       "_from": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
       "_to": "vertices/1d335b19aa77b37f52fac215de6e92c6",
@@ -2916,19 +2942,6 @@
       }
     },
     {
-      "_key": "db86ec87b3648761b9d81afb960703e3",
-      "_from": "vertices/a047fe6b3966434c16e09a33fd6ff57e",
-      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 126,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "dd6917b692527522cfc643c221708b02",
       "_from": "vertices/309cdd41bc5087908a5e56e8eca97fe7",
       "_to": "vertices/95b97fd4b56f4f03a543e6ddead1b79c",
@@ -2936,19 +2949,6 @@
       "concept": "create-skills-architecture",
       "crosses_concept": true,
       "line": 78,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "ddb50401af3ffd26726effa17d0ce41b",
-      "_from": "vertices/394309bb3b5d5289bb3fd31ae291a020",
-      "_to": "vertices/7f47f99e5226754f0f4b1676defb7215",
-      "type": "calls",
-      "concept": "create-skills-architecture",
-      "crosses_concept": false,
-      "line": 257,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3111,6 +3111,19 @@
       }
     },
     {
+      "_key": "f5436f2c39fb6e18014549db49015dc7",
+      "_from": "vertices/874395bcf53c7b766b2811b70760fb44",
+      "_to": "vertices/53db7fa679af6fb9fbaffcee2f191a5c",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": true,
+      "line": 517,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f7124d78f06e2315cbc8d2d9c79d19ef",
       "_from": "vertices/7d7210b958ac7003a5b92aea0b437bb0",
       "_to": "vertices/d38082a439b1f5d65f36d070c4bbec3c",
@@ -3163,6 +3176,19 @@
       }
     },
     {
+      "_key": "fa4a88dbc983979d8d7a1de59874ace0",
+      "_from": "vertices/2078213ec65b9598b9030f222a48ee26",
+      "_to": "vertices/4d59a285ae37ab1d26f927c755a3e3c7",
+      "type": "calls",
+      "concept": "create-skills-architecture",
+      "crosses_concept": false,
+      "line": 372,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "fc58b33013fb03eed7aa5e681633b681",
       "_from": "vertices/adcb01833dd10884aedc4f47610412c3",
       "_to": "vertices/7e65596ae48a834d1911bfaf60398426",
@@ -3208,10 +3234,10 @@
     "contentHash": "sha256:a147b5ef8f38c2ef3510cd5f9f95f5de70067cdb84dccc2326ea2b08364fde7b"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.27",
-    "extracted_at": "2026-10-26T18:41:20.849Z",
+    "extractor_version": "code-graph@0.3.28",
+    "extracted_at": "2026-10-29T22:08:14.072Z",
     "files": {
-      "apps/maestro/src/core/claude-preview.ts": "sha256:5c37f03feb249b32959cf11f496767769b59f48bd80cdc334b38e5047054bee1",
+      "apps/maestro/src/core/claude-preview.ts": "sha256:7563e9ebc87f00bfb4a297a1ceb0736d7c6ee5b14dbf1b21e9af7905e0268031",
       "apps/maestro/src/core/scaffold.ts": "sha256:ddf76a1c01daa063f5a61afd6dd15828e3174b3aabf0d658d4461401abdb40ee",
       "apps/maestro/src/renderer/src/components/create-result.tsx": "sha256:00e94ddad7f87c6ba0eacb925084a1052c4bd335eb2c703499d128295e95fd3a",
       "apps/maestro/src/renderer/src/components/create-shell.tsx": "sha256:af789b474726e8903aa4c4eb3d9741ba58c984234b0f8b309884e1a17effcbbd",

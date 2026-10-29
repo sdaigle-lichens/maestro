@@ -20,6 +20,25 @@
       "hash_seen": "fcd492525e25a8a6cd3205b85c40accf13f9651616682c9512ffda0caa4b386a"
     },
     {
+      "_key": "0c030394bf7b0d306056206f01085c16",
+      "purpose": "Looks up which epic a task belongs to in the task tracker, returning null when it belongs to none.",
+      "inputs": [
+        "projectRoot: the project root",
+        "filename: the task file name"
+      ],
+      "outputs": [
+        "epic slug string or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "epic",
+        "tracker"
+      ],
+      "sig_seen": "function epicOfTask(projectRoot: string, filename: string): string | null",
+      "hash_seen": "98eddd1fc5a4577a31de358652cbcca42c49679e50621cf58a400473ceb2a84c"
+    },
+    {
       "_key": "0dc7bd142d696f521309be415905428a",
       "purpose": "Returns the epic directory under the main checkout for a slug, or null when the slug is not a valid epic slug.",
       "inputs": [
@@ -36,6 +55,41 @@
       ],
       "sig_seen": "function epicDirFor(projectRoot: string, slug: string): string | null",
       "hash_seen": "1e8a6b7ef29736a8e7e6e8f1bb705dcb85d2e1ffca94251865f47db8b71e20c4"
+    },
+    {
+      "_key": "122da9810ef945f109dce0989b5fd3e6",
+      "purpose": "Renderer wrapper that asks the main process for the current list of maestro tasks.",
+      "inputs": [],
+      "outputs": [
+        "Promise of MaestroTask array"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "ipc",
+        "renderer"
+      ],
+      "sig_seen": "function getMaestroTasks(): Promise<MaestroTask[]>",
+      "hash_seen": "fbbc26317306ba559199e1bff3569d20746a44dba1614a1c278b93bef3a0e667"
+    },
+    {
+      "_key": "125b0a7c2dcb4d0939f998016f73f7cf",
+      "purpose": "Produces the next inbox id of a given kind (report, note or review) for an epic, one past the highest id ever used so ids never repeat.",
+      "inputs": [
+        "state: the epic state",
+        "kind: report, note or review"
+      ],
+      "outputs": [
+        "id string such as r003"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "epic",
+        "report-inbox"
+      ],
+      "sig_seen": "function nextInboxId(state: EpicState, kind: EpicInboxEntry[\"kind\"]): string",
+      "hash_seen": "cf23725c49d9515da74c853a9cdd0d72d3b5792049dd938602e32496f46252cd"
     },
     {
       "_key": "12e51def13197d29aaa18fdbb4321f7b",
@@ -75,6 +129,49 @@
       ],
       "sig_seen": "function buildStatusMap(dir: string, files: string[], doneSet: Set<string>, previous: StatusMap = {}): StatusMap",
       "hash_seen": "ca111289f0dc2dffaebd162360db23e831b441e5ae47a18604e5001eeef604bf"
+    },
+    {
+      "_key": "335af66abc36f49a90289999fb1dd3c6",
+      "purpose": "Computes an epic's spawn list: tasks that are running (live claim), pending (worker assigned), or ready (status ready with every blockedBy task done), plus free worker slots under the spawn cap.",
+      "inputs": [
+        "projectRoot: the project root",
+        "slug: the epic slug",
+        "cap: maximum concurrent workers, at least 1"
+      ],
+      "outputs": [
+        "EpicReadyView with running, pending, ready lists and slots count"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "epic",
+        "ready",
+        "blockedBy",
+        "claims",
+        "cascade"
+      ],
+      "sig_seen": "function readyTasks(projectRoot: string, slug: string, cap: number = DEFAULT_SPAWN_CAP): EpicReadyView",
+      "hash_seen": "b73277d084ade7902db6146e02e5f3d5ade7675be3b3b5c1bdf99f0e79176ac3"
+    },
+    {
+      "_key": "3538e1408c267711a69ab51161744377",
+      "purpose": "Collects one task's review requests and verdicts from an epic's log, counting redirects and identifying any review still open without a verdict.",
+      "inputs": [
+        "state: the epic state",
+        "task: the task file path or name"
+      ],
+      "outputs": [
+        "ReviewHistory with requests, verdicts, redirects count and open request or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "epic",
+        "review",
+        "human-review"
+      ],
+      "sig_seen": "function reviewHistory(state: EpicState, task: string): ReviewHistory",
+      "hash_seen": "29413fabf0cb3c14882a9d74da3bcf93f706fe803f6579c9ef1e03a0113e7266"
     },
     {
       "_key": "35ec0e141b5a8822363510c51e9604aa",
@@ -169,6 +266,24 @@
       "hash_seen": "ddc00feb47c83d99c84caec22507354bccbde9469b8295ddbe7d7bb96b3fb0e5"
     },
     {
+      "_key": "4f778e78a0d4ef3071efed32f696c208",
+      "purpose": "Returns the session name recorded on a task's claim file, or null when there is no claim or the claim is unnamed.",
+      "inputs": [
+        "tasksDir: the maestro-tasks directory",
+        "filename: the task file name"
+      ],
+      "outputs": [
+        "session name string or null"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims"
+      ],
+      "sig_seen": "function claimSessionName(tasksDir: string, filename: string): string | null",
+      "hash_seen": "5b1e546cb3d122bf6a0c8d1e7c5eb3fbcb2f7702953533eca7a0e46ed786d9a0"
+    },
+    {
       "_key": "53c2dc3252dea6e963f79032a744c8c7",
       "purpose": "Sets or clears the epic field on the status.json entries for the named task files, writing nothing if any name is unknown.",
       "inputs": [
@@ -189,40 +304,60 @@
     },
     {
       "_key": "540f0b68de78d81852395d53e079208c",
-      "purpose": "Lists the .md files in a tasks directory, sorted with localeCompare so numbered files come out in their run order.",
+      "purpose": "Lists the .md task files in a tasks directory, skipping review files, sorted with localeCompare so numbered files come out in run order.",
       "inputs": [
-        "dir: tasks directory"
+        "dir: the tasks directory"
       ],
       "outputs": [
-        "sorted array of .md filenames; empty array if the directory cannot be read"
+        "array of task file names, empty on read error"
       ],
       "cross_concept_refs": [],
       "document_ref": null,
       "tags": [
-        "numbered-files"
+        "task-files",
+        "ordering"
       ],
       "sig_seen": "function listTaskFiles(dir: string): string[]",
-      "hash_seen": "93f778d35627d7f52a676378688cad1f098796ffb67af51aff7a4f2eb93dab24"
+      "hash_seen": "760a16d8dad852e418340f65d219dc2cbf5fe745712251bf92f2dea2a9c65bdc"
     },
     {
-      "_key": "759f9da661dccfa9ab5ab30b4cbc50be",
-      "purpose": "Reports whether a claiming session still counts as live, based on how recently its session log was modified.",
+      "_key": "627a9bbeefce5d5fadb7a59592a35a1d",
+      "purpose": "Creates the per-tasks-directory claims folder if missing and drops a .gitignore containing '*' inside it so claim files are never committed.",
       "inputs": [
-        "claudeDir: the .claude directory path",
-        "sessionId: id of the session holding the claim",
-        "now: current time in epoch ms (defaults to Date.now())"
+        "tasksDir: the maestro-tasks directory whose claims folder is ensured"
       ],
       "outputs": [
-        "true when the session directory exists and its log mtime is within CLAIM_IDLE_CAP_MS of now, otherwise false"
+        "the absolute path of the claims directory"
       ],
       "cross_concept_refs": [],
       "document_ref": null,
       "tags": [
         "claims",
-        "liveness"
+        "gitignore"
+      ],
+      "sig_seen": "function ensureClaimsDir(tasksDir: string): string",
+      "hash_seen": "24360ab3ced7723e71f8dc962ee4a865618b195323f932872c52b212cf66d69f"
+    },
+    {
+      "_key": "759f9da661dccfa9ab5ab30b4cbc50be",
+      "purpose": "Reports whether a claiming session still counts as live, using its heartbeat verdict when present and otherwise how recently its session log was modified.",
+      "inputs": [
+        "claudeDir: the .claude directory",
+        "sessionId: the claiming session",
+        "now: current time in ms"
+      ],
+      "outputs": [
+        "boolean liveness verdict"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims",
+        "liveness",
+        "heartbeat"
       ],
       "sig_seen": "function isSessionLive(claudeDir: string, sessionId: string, now: number = Date.now()): boolean",
-      "hash_seen": "6a0167775b6814b70eacf4ccff6d281c13e2759ee0351a890ebb31cab08f3f6d"
+      "hash_seen": "f8d3486b24b28a0b8c86f6b64473a9029a91f4ce5f1479b7153f9278a3588e72"
     },
     {
       "_key": "77cb22333b4b2f151862b2cc65bc70ed",
@@ -349,6 +484,25 @@
       "hash_seen": "e5317e15824322ff719f5ca8ba39f11a588d42fd4e8c90346c107721bfcabdad"
     },
     {
+      "_key": "975dd676396984b68a7edbc1401e8ffd",
+      "purpose": "Renderer wrapper that permanently deletes one task file through the main process and returns the full recomputed task list.",
+      "inputs": [
+        "data.filename: the task file name"
+      ],
+      "outputs": [
+        "Promise of recomputed MaestroTask array"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "ipc",
+        "renderer",
+        "cascade"
+      ],
+      "sig_seen": "function deleteMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]>",
+      "hash_seen": "0a3cc4f5e4b98a4b33e3a0aedca51382b0ebb0fc8629de83c1f7b777c92b7100"
+    },
+    {
       "_key": "980dcb86fef33c2d55e4c66b334e6b77",
       "purpose": "Returns the task queue directory under the main checkout root, so a call made from inside a git worktree still resolves to the main checkout's queue.",
       "inputs": [
@@ -432,6 +586,25 @@
       ],
       "sig_seen": "function extractPostMortemSection(content: string): string | null",
       "hash_seen": "6992dd7e471ac89b2dd19901c8d3dd86a5ce6073fd02105cf7cf2094d5307113"
+    },
+    {
+      "_key": "b775c126adce5d288f20d2cf379996fa",
+      "purpose": "Removes a task's claim file if one exists, ignoring errors, so a finished or deleted task leaves no claim behind.",
+      "inputs": [
+        "tasksDir: the maestro-tasks directory",
+        "filename: the task file name"
+      ],
+      "outputs": [
+        "none (void)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "claims",
+        "cleanup"
+      ],
+      "sig_seen": "function deleteClaimIfAny(tasksDir: string, filename: string): void",
+      "hash_seen": "48eece2fc7db41f28c4fb5c3b82f4830f9031891ca5602efb142bbd0bddd17d0"
     },
     {
       "_key": "d8ff7806335d0f2e4754f451e5acfb32",
@@ -524,6 +697,25 @@
       ],
       "sig_seen": "function closeTask(projectRoot: string, filename: string): MaestroTask[]",
       "hash_seen": "50cf92fe78dc0c4e872d91550e41d4100ac26b0b2c067fdc8b0d69ea8b5bcae9"
+    },
+    {
+      "_key": "f0e6e0ce829f9ba2613e24eabddf6855",
+      "purpose": "Renderer wrapper that marks one task done through the main process and returns the full recomputed task list, since closing can unblock dependents.",
+      "inputs": [
+        "data.filename: the task file name"
+      ],
+      "outputs": [
+        "Promise of recomputed MaestroTask array"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "ipc",
+        "renderer",
+        "cascade"
+      ],
+      "sig_seen": "function closeMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]>",
+      "hash_seen": "097b8534b0f2374945cff37da499429a1a861a862ff8c808917cc25de179e5b1"
     }
   ],
   "edges": [
@@ -548,12 +740,20 @@
       "reason": "updateState runs its read-modify-write inside withLock so the epic directory is locked while state changes."
     },
     {
+      "_key": "0fc65262b797ecbf7d7db052a87c8b11",
+      "reason": "reviewHistory filters the log for EpicVerdictEntry items, so the type is referenced."
+    },
+    {
       "_key": "115fb9248fdd0e5a56f75bb0d22e2e10",
       "reason": "claimTask calls ensureClaimsDir to make sure the claims directory exists before writing."
     },
     {
       "_key": "118f6d8552d4321557389edef1bf3c95",
       "reason": "buildStatusMap calls parseBlockedBy on each task file's text to get its blockedBy list."
+    },
+    {
+      "_key": "17416f36d60b2e72166f85af81159545",
+      "reason": "readyTasks uses tasksDirFor to find the task directory under the main checkout."
     },
     {
       "_key": "184d307698c60d2a448d5b6f595d5bbf",
@@ -564,8 +764,16 @@
       "reason": "deleteTask extracts the Post-Mortem section to archive it to postmortems.log."
     },
     {
+      "_key": "1a3df386c684e384f3efe123e9a22155",
+      "reason": "nextInboxId takes an EpicState parameter, so its type is referenced here."
+    },
+    {
       "_key": "1b6ab93e1650dd95636906ba60f8db50",
       "reason": "closeTask rebuilds the status map with the closed file added to the done set."
+    },
+    {
+      "_key": "1c463f52eebc4520123a768caa20140a",
+      "reason": "isSessionLive asks the heartbeat verdict first, so a live heartbeat decides liveness before the log mtime fallback."
     },
     {
       "_key": "1d798f9b2f694e104d1278a814b58d18",
@@ -578,6 +786,10 @@
     {
       "_key": "20b9f666c9766fbb4983ebab3601f66c",
       "reason": "The map entry whose epic field is set or cleared is typed as StatusEntry."
+    },
+    {
+      "_key": "219097e8b7800a7e6299e92df2680c14",
+      "reason": "isSessionLive resolves the session's directory and log paths through sessionPathsFor before checking them."
     },
     {
       "_key": "23f7970806664492aa44e808e2082756",
@@ -616,6 +828,14 @@
       "reason": "closeTask resolves the tasks directory from the project root."
     },
     {
+      "_key": "30538a0048080e1c03c218c551642d75",
+      "reason": "readyTasks resolves the main checkout root before reading tracker and claims, so it sees the shared queue."
+    },
+    {
+      "_key": "32191fd6d49e2bc2af4478bfe25cfeec",
+      "reason": "readyTasks reads the task tracker for each task's status, epic and blockedBy list."
+    },
+    {
       "_key": "33a42f2e567ab0093a0ec8d7467827ba",
       "reason": "When the filename is not a known task file, deleteTask returns the unchanged queue via tasksFromFiles."
     },
@@ -626,6 +846,10 @@
     {
       "_key": "3819b1d83dfbd802ec6f00532df21402",
       "reason": "nameOf takes a ClaimFile as its parameter type."
+    },
+    {
+      "_key": "3a962f3e7344965ff09d457c58fff8a5",
+      "reason": "readyTasks names the worker for each ready task via workerNameFor."
     },
     {
       "_key": "3ef397e2ca5ca70d5f596ac8d16825ba",
@@ -644,8 +868,24 @@
       "reason": "listTasks reads status.json to pass as the status map."
     },
     {
+      "_key": "425f41e2deba58f1d347370e29cc3383",
+      "reason": "readyTasks returns the EpicReadyView type, so the type is referenced."
+    },
+    {
+      "_key": "43708a1958b92312eb2e0582ff4fc965",
+      "reason": "reviewHistory returns the ReviewHistory type, so the type is referenced."
+    },
+    {
+      "_key": "478f3ea1610d16f706e6f2c71132657d",
+      "reason": "readyTasks resolves the worker model from the project config to build launch commands."
+    },
+    {
       "_key": "48319b3e993e348924fa2c88c8439a01",
       "reason": "readClaims calls readClaimFile to parse each claim file it lists."
+    },
+    {
+      "_key": "4e0731feb576b2e319b4cd3bc60f0bc6",
+      "reason": "readyTasks loads the epic state to get its workers and to reject unknown slugs."
     },
     {
       "_key": "4fe28aa92dcd1df2615cab7279e70035",
@@ -680,6 +920,10 @@
       "reason": "closeTask loads claims for the refreshed queue it returns."
     },
     {
+      "_key": "69f0f720ee27e110dc71245153efb3e0",
+      "reason": "claimSessionName computes the claim file path for the task via claimPathFor before reading it."
+    },
+    {
       "_key": "6ae91ce1d7f1eace06dc2fe19d622da8",
       "reason": "claimTask declares ClaimResult as its return type at line 177."
     },
@@ -696,6 +940,10 @@
       "reason": "closeTask removes the closed task's claim file."
     },
     {
+      "_key": "76329dadbaee60a0d85e2daf9650f5e8",
+      "reason": "readyTasks reads the project config so the worker model can be resolved."
+    },
+    {
       "_key": "764bd90d9b4ef3d056ad97929947fc85",
       "reason": "readClaims calls nameOf to attach the optional sessionName to each returned claim."
     },
@@ -706,6 +954,10 @@
     {
       "_key": "7ab36281cfd521b9941bbea1ac46d4a2",
       "reason": "updateState calls epicDirFor to find the directory it locks and writes to."
+    },
+    {
+      "_key": "7fd27bf2de29e35724fe8e0dde1e6c3b",
+      "reason": "deleteClaimIfAny uses claimPathFor to locate the claim file it removes."
     },
     {
       "_key": "8dc11c570ce6f858ac0836c6d2ac2899",
@@ -740,16 +992,36 @@
       "reason": "releaseTask calls claimPathFor to locate the claim file for the task."
     },
     {
+      "_key": "a6d6913b38a5b3aa420f0d100029ec73",
+      "reason": "readyTasks builds each ready task's launch command via launchCommandFor."
+    },
+    {
+      "_key": "a78fb2fb08538f0ce3af74fb5760f225",
+      "reason": "reviewHistory filters the log for EpicReviewEntry items, so the type is referenced."
+    },
+    {
       "_key": "a7c30fcb91ded3b83849607bbdc5761f",
       "reason": "When the filename is not a known task file, closeTask returns the unchanged queue via tasksFromFiles."
+    },
+    {
+      "_key": "a82374fe040727a34f54471119bfb34f",
+      "reason": "nextInboxId takes its kind from EpicInboxEntry, so its type is referenced here."
     },
     {
       "_key": "a86f07a0f72bbf757d8a381380bd187f",
       "reason": "deleteTask builds the returned queue from the remaining files via tasksFromFiles."
     },
     {
+      "_key": "ae9f8d2dcb73ac94f83833d7083af51f",
+      "reason": "readyTasks reads the live claims so running tasks are excluded from the ready list."
+    },
+    {
       "_key": "af573527107c43113e62bb7e05ca3772",
       "reason": "readTaskTracker reads the status map to project into tracker records."
+    },
+    {
+      "_key": "b14f1c6a0e8d012dda17f90717dae0b3",
+      "reason": "readyTasks initialises its view typed as EpicReadyView."
     },
     {
       "_key": "b1bbdc86a03e4c2fc717a19a3189b2b3",
@@ -758,6 +1030,10 @@
     {
       "_key": "b94e468727b3a51e623f9c0946781e02",
       "reason": "claimTask calls nameOf to attach the existing holder's session name to the already-claimed result."
+    },
+    {
+      "_key": "ba2601daf3ef96a144cdbbe4577886ee",
+      "reason": "ensureClaimsDir calls claimsDirFor to resolve the directory it creates."
     },
     {
       "_key": "bd76bf7ce7e3c7e16d1a1941dfeb5993",
@@ -772,6 +1048,10 @@
       "reason": "readClaims uses the TaskClaim type in the Map it builds at line 143."
     },
     {
+      "_key": "c1222c2bd223e22b9e9f8794b577c38b",
+      "reason": "epicOfTask reads the task tracker through readTaskTracker to find the task's epic field."
+    },
+    {
       "_key": "c1dd814a096df97676cfedb978b72134",
       "reason": "The events parameter is typed as Partial of TaskQueueTailEvents."
     },
@@ -782,6 +1062,10 @@
     {
       "_key": "c3ea59dd4b84c1e474d8a6b56d10d923",
       "reason": "claimTask calls isSessionLive to decide whether an existing claim blocks the new one."
+    },
+    {
+      "_key": "c673b4fa48e9f8f220939ff3cdd82afd",
+      "reason": "reviewHistory takes an EpicState parameter, so the type is referenced."
     },
     {
       "_key": "c6783abbadc51d8c60319d8c96b9f5bd",
@@ -830,6 +1114,10 @@
     {
       "_key": "dfa9b31e6e3da2655425861f6b13b7b2",
       "reason": "updateState calls writeEpicState to persist the mutated state after fn returns."
+    },
+    {
+      "_key": "e0fb77a853ef26dc42680738a662fec2",
+      "reason": "claimSessionName reads the claim file through readClaimFile to get the recorded session name."
     },
     {
       "_key": "e3706497318aa83211b8242b750d3753",

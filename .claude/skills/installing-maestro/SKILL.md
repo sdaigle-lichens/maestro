@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json carries hooks and exactly one permissions rule (the channel Write allow), or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.5"
-  last-update: 36af091203282a4987c88ea31ec5a69655f1450f
+  version: "2.6"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Installing Maestro
@@ -174,7 +174,7 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   sub-concept.
 - **Changing the asset list makes every installed project stale exactly once.** `031` added two,
   `032` one, `033` **removed ~23**, `035` two, `046` one, and more since (`063`, `084`, `089`, `113`;
-  the manifest is 31 files now, 12 scripts + 9 libs + the cleanup + 9 hook scripts; `121` added the channel guard) — `shippedRuntimeId` moved each time and
+  the manifest is 33 files now, 12 scripts + 9 libs + the cleanup + 11 hook scripts; `121` added the channel guard, `130` the review gate, `141` the heartbeat) — `shippedRuntimeId` moved each time and
   every project reported stale on its next check and re-copied. Expected, and the only way a runtime
   file ever arrives or leaves, but worth saying out loud because "everything went stale after my
   change" reads like a bug. The digest is over the **manifest**, so this fires whether or not any

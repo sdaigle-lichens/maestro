@@ -98,8 +98,8 @@
       "type": "type-def",
       "name": "SessionSweepOptions",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 57,
-      "end_line": 63,
+      "start_line": 58,
+      "end_line": 64,
       "signature": "export interface SessionSweepOptions {",
       "contentHash": "b5dac737089ebdff2c36d5edd548402a875d88ee7d638ea17c7ed373e799ca81",
       "status": "live",
@@ -116,8 +116,8 @@
       "type": "function",
       "name": "endSessionState",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 313,
-      "end_line": 316,
+      "start_line": 321,
+      "end_line": 324,
       "signature": "function endSessionState(claudeDir: string, sessionId: unknown, reason: unknown): string[]",
       "contentHash": "68588c0ee4335cad02fda7daf602fcdcede4b1cefd9b983b6a0e8e4717f34873",
       "status": "live",
@@ -134,8 +134,8 @@
       "type": "function",
       "name": "listDeletableSessions",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 189,
-      "end_line": 203,
+      "start_line": 190,
+      "end_line": 204,
       "signature": "function listDeletableSessions(allowedRoots: string[], options: SessionSweepOptions = {}): SessionRef[]",
       "contentHash": "dfd31f2f4e47dab2d3084c8245b73d8fc5d0283ea95403e66ed0fd4cb64d033d",
       "status": "live",
@@ -308,6 +308,24 @@
       }
     },
     {
+      "_key": "0f82ab3e2b7b59ec720084ff8622320c",
+      "displayKey": "claude-session-bridge::type-def::HeartbeatTickResult",
+      "concept": "claude-session-bridge",
+      "type": "type-def",
+      "name": "HeartbeatTickResult",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 96,
+      "end_line": 96,
+      "signature": "export type HeartbeatTickResult = \"continue\" | \"stop\";",
+      "contentHash": "a5614e0bb89291ae02d03017536142e33c2b88654b2a9a8722431887047a473f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "0fceb765f5d4980625702d5c7e6d9455",
       "displayKey": "claude-session-bridge::function::spendLabel",
       "concept": "claude-session-bridge",
@@ -368,8 +386,8 @@
       "type": "type-def",
       "name": "SessionRef",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 150,
-      "end_line": 153,
+      "start_line": 151,
+      "end_line": 154,
       "signature": "export interface SessionRef {",
       "contentHash": "b39b5406ef8c331826a2644e4115d23a52f993163f4e09ee9474aca685f36a45",
       "status": "live",
@@ -530,8 +548,8 @@
       "type": "type-def",
       "name": "SessionSweepResult",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 65,
-      "end_line": 70,
+      "start_line": 66,
+      "end_line": 71,
       "signature": "export interface SessionSweepResult {",
       "contentHash": "325b0373e7c70baf3839b471df477baed4e7b4b95004e61783790c206bb6c857",
       "status": "live",
@@ -696,6 +714,24 @@
       "end_line": 51,
       "signature": "function claudeHome(env: Record<string, string | undefined>): string",
       "contentHash": "e461fa60839ffed792c7ceeaf616d1d037549b5d760072f624cc81842ead4845",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "25d5b732e8fca81195524597013cdd84",
+      "displayKey": "claude-session-bridge::function::isDir",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "isDir",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 98,
+      "end_line": 104,
+      "signature": "function isDir(p: string): boolean",
+      "contentHash": "5f9ffeb160ac7991a5e3b1cedf73f3211e19df492f5a693f3a92e7ceab37bd9f",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1124,8 +1160,8 @@
       "type": "function",
       "name": "buildUpdateSkillTags",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 256,
-      "end_line": 290,
+      "start_line": 261,
+      "end_line": 295,
       "signature": "function buildUpdateSkillTags(projectRoot: string): Promise<BuiltRequest>",
       "contentHash": "99228e9dad392b4ed3a0be6bbf29102e8e6bb4e3ee5d08a2918deccb34f4071e",
       "status": "live",
@@ -1146,6 +1182,24 @@
       "end_line": 323,
       "signature": "function applyUpdateSkillTagsIfAny(webContentsId: number, entry: LiveSession, text: string): void",
       "contentHash": "88f431ad1e79e6e61d1daefa908e59f75234532a8e7c1ae1958abf853f1646e1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3b4a730474fdcdafcc3b488d47668616",
+      "displayKey": "claude-session-bridge::type-def::ProcessInfo",
+      "concept": "claude-session-bridge",
+      "type": "type-def",
+      "name": "ProcessInfo",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 162,
+      "end_line": 168,
+      "signature": "export interface ProcessInfo {",
+      "contentHash": "32c4324fb79f0b5d0fd941e8313b8610a742cd58eee7c557e5189e85e19a20d7",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1268,8 +1322,8 @@
       "type": "function",
       "name": "isResumableEnd",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 304,
-      "end_line": 306,
+      "start_line": 312,
+      "end_line": 314,
       "signature": "function isResumableEnd(reason: unknown): boolean",
       "contentHash": "cf71bcf4030b461d2676e7fbe582ecfd563499a63693c5470d3aa6ee8fa7541f",
       "status": "live",
@@ -1394,8 +1448,8 @@
       "type": "function",
       "name": "previewClaudeRun",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 466,
-      "end_line": 545,
+      "start_line": 471,
+      "end_line": 550,
       "signature": "function previewClaudeRun(projectRoot: string, request: ClaudeRequest, opts: PreviewOptions = {}): Promise<ClaudePreview>",
       "contentHash": "a44ee2811721ecbd7f272a90625d26707a8961c102765cddaf4ee0dd9a534331",
       "status": "live",
@@ -1604,6 +1658,24 @@
       }
     },
     {
+      "_key": "4d573b5340a98ffe17a51606b085c03c",
+      "displayKey": "claude-session-bridge::function::writeHeartbeatPid",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "writeHeartbeatPid",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 74,
+      "end_line": 81,
+      "signature": "function writeHeartbeatPid(pidFile: string, pid: number): boolean",
+      "contentHash": "746a574035ed7be7dff78ee3d60267400c79ea60c86860f7906125c2a4dfbcc5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "4e1d9c29dce67068ad1abf4a89581b25",
       "displayKey": "claude-session-bridge::type-def::ClaudeRunDeps",
       "concept": "claude-session-bridge",
@@ -1646,8 +1718,8 @@
       "type": "function",
       "name": "resolveSessionId",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 112,
-      "end_line": 121,
+      "start_line": 120,
+      "end_line": 129,
       "signature": "function resolveSessionId(payload?: SessionIdSource | null, env: SessionIdEnv = process.env as SessionIdEnv): string | null",
       "contentHash": "b4744f99220c0781cf9a16015e47bb58b4a360210793c58fadcc74eefaecc0cb",
       "status": "live",
@@ -1682,8 +1754,8 @@
       "type": "function",
       "name": "scaffoldedState",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 326,
-      "end_line": 347,
+      "start_line": 331,
+      "end_line": 352,
       "signature": "function scaffoldedState(target: string): string",
       "contentHash": "f2f54c9d0506a10eb4e62f634593f85121137a8ab41984e77dfe7995a986f63d",
       "status": "live",
@@ -1772,8 +1844,8 @@
       "type": "function",
       "name": "listSessionIds",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 218,
-      "end_line": 229,
+      "start_line": 226,
+      "end_line": 237,
       "signature": "function listSessionIds(claudeDir: string): string[]",
       "contentHash": "1e1ff18de002f355efb2c4cded5aab9aaa0c71c5a327ddac6d39f4170623b723",
       "status": "live",
@@ -1790,8 +1862,8 @@
       "type": "type-def",
       "name": "DeleteSessionResult",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 147,
-      "end_line": 148,
+      "start_line": 148,
+      "end_line": 149,
       "signature": "export type DeleteSessionResult =",
       "contentHash": "e25a42c1f9661ec3dabcbc6c1186b5ecb1b2004425d8a66e3fb26122d8044fe1",
       "status": "live",
@@ -1844,10 +1916,28 @@
       "type": "type-def",
       "name": "PreviewOptions",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 61,
-      "end_line": 63,
+      "start_line": 62,
+      "end_line": 64,
       "signature": "export interface PreviewOptions extends ResolveOptions {",
       "contentHash": "2506ea0972c2737e842d16be87c5f86261a99492e7aa774b9074fdef73329171",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5b01c14c86605440771073001f072d6f",
+      "displayKey": "claude-session-bridge::function::parentProbe",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "parentProbe",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 220,
+      "end_line": 228,
+      "signature": "function parentProbe(pid: number, infoOf: (pid: number) => ProcessInfo | null = processInfo): () => boolean",
+      "contentHash": "9cbcf300e1fbc0a4c8385a328a2ce79078aa2e15faa7d9ce041cec6c57b35ceb",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1928,6 +2018,24 @@
       }
     },
     {
+      "_key": "625c9b92ae25adfb1872dd883d191aa6",
+      "displayKey": "claude-session-bridge::function::isProcessAlive",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "isProcessAlive",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 152,
+      "end_line": 160,
+      "signature": "function isProcessAlive(pid: number): boolean",
+      "contentHash": "51e492aad4e57e48683600a92e1d62b8a907691368072ada4c63992498e73222",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "634699a42cf68a25196f9c5f4f4e12c2",
       "displayKey": "claude-session-bridge::function::resumeSession",
       "concept": "claude-session-bridge",
@@ -1982,14 +2090,32 @@
       }
     },
     {
+      "_key": "641ac33ec854180aea309ad65e51556d",
+      "displayKey": "claude-session-bridge::function::heartbeatIntervalMs",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "heartbeatIntervalMs",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 52,
+      "end_line": 55,
+      "signature": "function heartbeatIntervalMs(env: Record<string, string | undefined> = process.env): number",
+      "contentHash": "74cb0fef5b73c5debcde5380fe10faeff445e4ac660e1175b54ccd430a2a5fa5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "6444f89a18b44e3227f1c9f46caea8c5",
       "displayKey": "claude-session-bridge::function::build",
       "concept": "claude-session-bridge",
       "type": "function",
       "name": "build",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 380,
-      "end_line": 417,
+      "start_line": 385,
+      "end_line": 422,
       "signature": "function build(projectRoot: string, request: ClaudeRequest, opts: ResolveOptions): Promise<BuiltRequest>",
       "contentHash": "ba11255243a3f1ddb72e6f36026beeeb0f43a86b713732a4fae4257473c3a696",
       "status": "live",
@@ -2180,6 +2306,24 @@
       }
     },
     {
+      "_key": "6e5b68f1e1a15333d30d02973cbdcd30",
+      "displayKey": "claude-session-bridge::function::heartbeatTick",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "heartbeatTick",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 129,
+      "end_line": 147,
+      "signature": "function heartbeatTick(input: HeartbeatTickInput): HeartbeatTickResult",
+      "contentHash": "84a15aabfc13f0360f72c8ddc7fe8c589ddeee300a563d799a064d25d5b4323c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "6ea2dbe1d89d6bddac5283c5f0a4ccbc",
       "displayKey": "claude-session-bridge::function::readScopeFor",
       "concept": "claude-session-bridge",
@@ -2294,8 +2438,8 @@
       "type": "function",
       "name": "sessionDirsFor",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 265,
-      "end_line": 284,
+      "start_line": 273,
+      "end_line": 292,
       "signature": "function sessionDirsFor(claudeDir: string, sessionId: unknown): string[]",
       "contentHash": "01919b3cb3281f8fd2b0293440e964472265b396d3cb4d0e825f5729a6d2a3b6",
       "status": "live",
@@ -2402,10 +2546,28 @@
       "type": "function",
       "name": "readScopeFor",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 428,
-      "end_line": 454,
+      "start_line": 433,
+      "end_line": 459,
       "signature": "function readScopeFor(projectRoot: string, cwd: string, targets: ClaudeWriteTarget[], settings: SettingsPort | undefined): Promise<ClaudeReadScope>",
       "contentHash": "49bf7a7593425ac1a92bb59c92db7c3a8bafd8f1f7be463314357d327d2b329f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "79b5e1d5d6d40e3c7e59d269f6677f39",
+      "displayKey": "claude-session-bridge::function::processInfo",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "processInfo",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 175,
+      "end_line": 190,
+      "signature": "function processInfo(pid: number): ProcessInfo | null",
+      "contentHash": "e0032d2fd7f07ea4f85123e59e8f0668cc037510edfd87448120a5f6f21f8810",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2564,8 +2726,8 @@
       "type": "function",
       "name": "buildUpdateSkillTagsHandoff",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 292,
-      "end_line": 306,
+      "start_line": 297,
+      "end_line": 311,
       "signature": "function buildUpdateSkillTagsHandoff(projectRoot: string, state: string): HandoffContext",
       "contentHash": "c7f02c928b1d4fe33c8d0ed931fbe22b3c94ce0e9e6928bb0dbce732179f2e7e",
       "status": "live",
@@ -2582,8 +2744,8 @@
       "type": "type-def",
       "name": "BuiltRequest",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 85,
-      "end_line": 97,
+      "start_line": 86,
+      "end_line": 98,
       "signature": "interface BuiltRequest {",
       "contentHash": "c16d756150adbf315dfbdcebe193d8092d89980537d59981ffffd9f99c4b394a",
       "status": "live",
@@ -2636,8 +2798,8 @@
       "type": "function",
       "name": "buildHandoff",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 358,
-      "end_line": 372,
+      "start_line": 363,
+      "end_line": 377,
       "signature": "function buildHandoff(projectRoot: string, request: CreateRequest, opts: ResolveOptions): HandoffContext",
       "contentHash": "93ce22fb18af8ef765966d35ddca07129724df9245edf5db8b200c61175f0c15",
       "status": "live",
@@ -2744,8 +2906,8 @@
       "type": "function",
       "name": "isValidSessionId",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 102,
-      "end_line": 104,
+      "start_line": 110,
+      "end_line": 112,
       "signature": "function isValidSessionId(id: unknown): boolean",
       "contentHash": "c42308b111df4a0890b430ac7e182161bed11bfcf86c9ad9f3551685ad6bb97b",
       "status": "live",
@@ -2864,6 +3026,24 @@
       }
     },
     {
+      "_key": "8b7db1aecd6fe195d46bf5667100b7a5",
+      "displayKey": "claude-session-bridge::function::heartbeatTargets",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "heartbeatTargets",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 65,
+      "end_line": 71,
+      "signature": "function heartbeatTargets(claudeDir: string, sessionId: string): HeartbeatTargets",
+      "contentHash": "b8010e9f9c219c043fa69655304d4ccdbb8e27325c54ec737cc8ecbffb6766ae",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "8c69ede2f0270a67491b6a308bab560b",
       "displayKey": "claude-session-bridge::function::hasMaestroConfig",
       "concept": "claude-session-bridge",
@@ -2906,10 +3086,28 @@
       "type": "function",
       "name": "ensureSessionPaths",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 205,
-      "end_line": 215,
+      "start_line": 213,
+      "end_line": 223,
       "signature": "function ensureSessionPaths(claudeDir: string, payload?: SessionIdSource | null, env?: SessionIdEnv): SessionPaths | null",
       "contentHash": "5fb3fe290fc20979f1991ffca3acd18fa186c123952173d3e36a82b9bf6d6416",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8f16653867af683af0a883cb538890e5",
+      "displayKey": "claude-session-bridge::function::parsePsLine",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "parsePsLine",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 193,
+      "end_line": 196,
+      "signature": "function parsePsLine(out: string): ProcessInfo | null",
+      "contentHash": "3d9597890dbbd33a77d0351e7a5638c24901b7c392a817629aeb795437cafbac",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2978,8 +3176,8 @@
       "type": "function",
       "name": "sweepStaleSessions",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 108,
-      "end_line": 130,
+      "start_line": 109,
+      "end_line": 131,
       "signature": "function sweepStaleSessions(projectRoots: string[], options: SessionSweepOptions = {}): SessionSweepResult",
       "contentHash": "f3a0e6c9c0a0f0280f11a394373d7354a78cf98f4ad4d492f9dc5f8023c22c08",
       "status": "live",
@@ -3050,8 +3248,8 @@
       "type": "function",
       "name": "effectiveClaudeDir",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 149,
-      "end_line": 152,
+      "start_line": 157,
+      "end_line": 160,
       "signature": "function effectiveClaudeDir(claudeDir: string, id: string): string",
       "contentHash": "7c53ee05649bbc70a89afccf8b7b8e028d63f8515360ebf3b69a303ade070594",
       "status": "live",
@@ -3090,6 +3288,24 @@
       "end_line": 37,
       "signature": "export interface ResolveOptions {",
       "contentHash": "febf77ffcbafe4bb3757f55ff4b281f8c37bf1c38b501538e69eb4cc5cd0d84b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "98efe348f565a3effeb9679a84e6a3c4",
+      "displayKey": "claude-session-bridge::function::heartbeatVerdict",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "heartbeatVerdict",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 41,
+      "end_line": 49,
+      "signature": "function heartbeatVerdict(dir: string, now: number = Date.now()): boolean | null",
+      "contentHash": "b166458d235309c44f04ed54c3d59c9dd23ec581e1e4c191fec370f95f126c0c",
       "status": "live",
       "ast": {},
       "agent": {
@@ -3338,8 +3554,8 @@
       "type": "function",
       "name": "lastActivityMs",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 73,
-      "end_line": 87,
+      "start_line": 74,
+      "end_line": 88,
       "signature": "function lastActivityMs(dir: string): number | null",
       "contentHash": "ba4468a9f83696d1fc9c40714c1228e1e23cd7cff43ec45e11fb34da85a8d23a",
       "status": "live",
@@ -3374,8 +3590,8 @@
       "type": "function",
       "name": "isAbandoned",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 90,
-      "end_line": 102,
+      "start_line": 91,
+      "end_line": 103,
       "signature": "function isAbandoned(dir: string, now: number, idleCapMs: number): boolean",
       "contentHash": "ea6f98b4b2415e6f7335686b8c40f8da68392e058826eacbb876435d05d972e1",
       "status": "live",
@@ -3392,8 +3608,8 @@
       "type": "function",
       "name": "ensureSessionsRoot",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 192,
-      "end_line": 198,
+      "start_line": 200,
+      "end_line": 206,
       "signature": "function ensureSessionsRoot(claudeDir: string): string",
       "contentHash": "55c7f40596aa041f7e288d39f52b2fe424222429eb288698662abd77e71e1a07",
       "status": "live",
@@ -3440,16 +3656,34 @@
       }
     },
     {
+      "_key": "ac1b585055e7f6830e2ca5a4a5775b72",
+      "displayKey": "claude-session-bridge::function::watchedPid",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "watchedPid",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 206,
+      "end_line": 214,
+      "signature": "function watchedPid(startPid: number, infoOf: (pid: number) => ProcessInfo | null = processInfo): number",
+      "contentHash": "9ab8fe23ad7f23e01366796b8b359a7cc05fec4f380692a6a45e5721196ebf49",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "ac779399e2c1c633879b0766fce6c956",
       "displayKey": "claude-session-bridge::function::projectSkillsForTagging",
       "concept": "claude-session-bridge",
       "type": "function",
       "name": "projectSkillsForTagging",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 228,
-      "end_line": 241,
+      "start_line": 229,
+      "end_line": 246,
       "signature": "function projectSkillsForTagging(projectRoot: string): Promise<{ id: string; description: string; projectTags: string[]; agentTypes: string[]; }[]>",
-      "contentHash": "4f65da7a45d50c7d2e97487b747b0bcd35140461354944a0f17b42cc073ce614",
+      "contentHash": "d82f706cc6bef962ed88c227697e9c895dfed5145cebf18894b26f91a9a829b4",
       "status": "live",
       "ast": {},
       "agent": {
@@ -3518,8 +3752,8 @@
       "type": "function",
       "name": "sessionPathsFor",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 159,
-      "end_line": 169,
+      "start_line": 167,
+      "end_line": 177,
       "signature": "function sessionPathsFor(claudeDir: string, id: unknown): SessionPaths | null",
       "contentHash": "f4cccd7ab219a440f4ca1a4dbf723d9eda03a5330b66f18920dea14fe1f54686",
       "status": "live",
@@ -3644,8 +3878,8 @@
       "type": "type-def",
       "name": "SessionPaths",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 89,
-      "end_line": 99,
+      "start_line": 97,
+      "end_line": 107,
       "signature": "export interface SessionPaths {",
       "contentHash": "cfb33e19f1f1265e1c40ebab1b4305dfcc0487fd00cf296a60065c20d0b4f3a0",
       "status": "live",
@@ -3698,8 +3932,8 @@
       "type": "function",
       "name": "skillTagsRow",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 244,
-      "end_line": 248,
+      "start_line": 249,
+      "end_line": 253,
       "signature": "function skillTagsRow(s: { id: string; description: string; projectTags: string[]; agentTypes: string[] }): string",
       "contentHash": "5eeaf609dfc409d1f611af12e75b8f2c47761b729effc3686a35d155d9ccbfff",
       "status": "live",
@@ -3770,8 +4004,8 @@
       "type": "function",
       "name": "deleteSession",
       "filepath": "apps/maestro/src/core/session-sweep.ts",
-      "start_line": 155,
-      "end_line": 186,
+      "start_line": 156,
+      "end_line": 187,
       "signature": "function deleteSession(allowedRoots: string[], projectRoot: string, sessionId: string, options: SessionSweepOptions = {}): DeleteSessionResult",
       "contentHash": "230107920bb1567fc59ebc95319f046a72db2abc1fcd66d37f45f242c53414e9",
       "status": "live",
@@ -4022,8 +4256,8 @@
       "type": "type-def",
       "name": "SessionIdEnv",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 84,
-      "end_line": 86,
+      "start_line": 92,
+      "end_line": 94,
       "signature": "export interface SessionIdEnv {",
       "contentHash": "dee75d39713343a3e3d783a6611020653694ad9c9c5ec36dda64635050665b15",
       "status": "live",
@@ -4062,6 +4296,24 @@
       "end_line": 89,
       "signature": "function handoffSeed(handoff: HandoffContext, prompt: string): string",
       "contentHash": "b811d9b1c68f90c123858eb7b56259126386d8aacab1c990183481862513106d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c318cd238dd7ad9ae57951c5850915e3",
+      "displayKey": "claude-session-bridge::type-def::HeartbeatTargets",
+      "concept": "claude-session-bridge",
+      "type": "type-def",
+      "name": "HeartbeatTargets",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 58,
+      "end_line": 63,
+      "signature": "export interface HeartbeatTargets {",
+      "contentHash": "6f07a25d725ceb511836b0219b578edc0d15e971d3c705c9df0766614be128e4",
       "status": "live",
       "ast": {},
       "agent": {
@@ -4250,6 +4502,24 @@
       }
     },
     {
+      "_key": "cbfaa66d83023f0e653b550496bd0ec0",
+      "displayKey": "claude-session-bridge::function::stamp",
+      "concept": "claude-session-bridge",
+      "type": "function",
+      "name": "stamp",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 107,
+      "end_line": 116,
+      "signature": "function stamp(dir: string, atMs: number): void",
+      "contentHash": "40f478452853b6eadd855abc5035b8d56ad63d68dc1294348aa0a01632c2c34d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "ccb699b979c5158bc6936809641debcd",
       "displayKey": "claude-session-bridge::type-def::DerivedUsage",
       "concept": "claude-session-bridge",
@@ -4382,8 +4652,8 @@
       "type": "function",
       "name": "readWorktreePointer",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 133,
-      "end_line": 146,
+      "start_line": 141,
+      "end_line": 154,
       "signature": "function readWorktreePointer(claudeDir: string, id: unknown): WorktreePointer | null",
       "contentHash": "f60c6f2e705165f6e4d752c344d0f005b2e660af29d15a3c963169f0d0a08b31",
       "status": "live",
@@ -4580,8 +4850,8 @@
       "type": "function",
       "name": "removeSessionState",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 239,
-      "end_line": 256,
+      "start_line": 247,
+      "end_line": 264,
       "signature": "function removeSessionState(claudeDir: string, sessionId: unknown): string[]",
       "contentHash": "34f459ca78121a79a8b96b8eb0a21b50af3acaf587474789d4bef85f14e8c9b0",
       "status": "live",
@@ -4634,8 +4904,8 @@
       "type": "type-def",
       "name": "SessionIdSource",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 79,
-      "end_line": 81,
+      "start_line": 87,
+      "end_line": 89,
       "signature": "export interface SessionIdSource {",
       "contentHash": "ce2d3a0edccad88e606ff0a4eb5657450e010771de9969c738d503f4d1f7f75b",
       "status": "live",
@@ -4778,8 +5048,8 @@
       "type": "function",
       "name": "resolveSessionPaths",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 175,
-      "end_line": 181,
+      "start_line": 183,
+      "end_line": 189,
       "signature": "function resolveSessionPaths(claudeDir: string, payload?: SessionIdSource | null, env?: SessionIdEnv): SessionPaths | null",
       "contentHash": "e96c8b6ab0f46dfa97ecba29f14efa85ffd4e1d0c23944e1248a23a932ae04d2",
       "status": "live",
@@ -4922,10 +5192,28 @@
       "type": "function",
       "name": "sessionsRoot",
       "filepath": "apps/maestro/src/core/session-paths.ts",
-      "start_line": 124,
-      "end_line": 126,
+      "start_line": 132,
+      "end_line": 134,
       "signature": "function sessionsRoot(claudeDir: string): string",
       "contentHash": "f90d0d5d4b008ea8557285dbdee40a9310831878c5a72f159364e85d727ef796",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ef7706269aff033d2b3747899c0d54c9",
+      "displayKey": "claude-session-bridge::type-def::HeartbeatTickInput",
+      "concept": "claude-session-bridge",
+      "type": "type-def",
+      "name": "HeartbeatTickInput",
+      "filepath": "apps/maestro/src/core/session-heartbeat.ts",
+      "start_line": 83,
+      "end_line": 94,
+      "signature": "export interface HeartbeatTickInput {",
+      "contentHash": "01ab1e9d81b8859cf623029b97472cbc63a5e5de1be6ec858444afeb0fea9205",
       "status": "live",
       "ast": {},
       "agent": {
@@ -4940,8 +5228,8 @@
       "type": "function",
       "name": "buildCreate",
       "filepath": "apps/maestro/src/core/claude-preview.ts",
-      "start_line": 125,
-      "end_line": 217,
+      "start_line": 126,
+      "end_line": 218,
       "signature": "function buildCreate(projectRoot: string, request: CreateRequest, opts: ResolveOptions): BuiltRequest",
       "contentHash": "c6583b86180bebd277006da7af9b6edcccf14ba9f4adcbde8164e51b5dc7c9e9",
       "status": "live",
@@ -5273,32 +5561,6 @@
       }
     },
     {
-      "_key": "0065a985b9b5c6c10e9ba183c3a3dfcd",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/7f1c410c68da76c5daec2408e2a9a605",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 492,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "0225594668a7971d2a63d0469779f851",
-      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 120,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "02c53909bc1e4d302335f90c0df2697c",
       "_from": "vertices/854d84d9fd238d6a562b8a3e85b50b4a",
       "_to": "vertices/61c53298ce2133911ea0804af1c3e527",
@@ -5306,19 +5568,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 515,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "03061cf6ef45f57d4355d0ce7a38b84c",
-      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
-      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 208,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5358,6 +5607,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 81,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "03af22d1277e3eff7b3ddb098d4b9bbb",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/15534ffa5b6a404f5be8d906aed877ec",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 114,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5416,6 +5678,19 @@
       }
     },
     {
+      "_key": "062b045e038d5b31aeffe0e8f1b488ac",
+      "_from": "vertices/ac779399e2c1c633879b0766fce6c956",
+      "_to": "vertices/96b471fcf6e7c87f9209810b7f2ef07e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 238,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "0654987d92a77bcfe2d33ca50ba3c6cb",
       "_from": "vertices/3f2173d56b67e32b21dd3ef76f3a35d8",
       "_to": "vertices/9d170b6e037b23f663ef5fd7fb6aaa1f",
@@ -5462,6 +5737,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "09549a9331756ad2b8d6fdbf2c779557",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/a5ce3bb776ca52b244d6e515420adc89",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 178,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5533,19 +5821,6 @@
       }
     },
     {
-      "_key": "0cc42cf76cd30a1f9f7f261ab03ac8f2",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 179,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "0d06ef1595ba0af74fd3e1a85ae3305b",
       "_from": "vertices/7484e5526a45cf39f32caf6b76777eed",
       "_to": "vertices/2d6854080773ead660cbdfd758382613",
@@ -5566,6 +5841,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 105,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0d37631db4bb84f0468c0c718ace28cd",
+      "_from": "vertices/036055ff17063bf60bc0cb824a44bd4f",
+      "_to": "vertices/dbcfa74b008f1424556795e659e0a0ca",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 323,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5624,6 +5912,19 @@
       }
     },
     {
+      "_key": "0de12d8712da72a7d7316a18a36a367b",
+      "_from": "vertices/6e5b68f1e1a15333d30d02973cbdcd30",
+      "_to": "vertices/0f82ab3e2b7b59ec720084ff8622320c",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "0e20271610d7756f2b786df83d65ef09",
       "_from": "vertices/e47877180d42f074e23f92175d713152",
       "_to": "vertices/3d9fc72772280f4c004416737807fe89",
@@ -5644,6 +5945,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0f03c9eb9252114b662ed37847994c84",
+      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "_to": "vertices/96023f10da3ed6fbf82f57abc8387e07",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 169,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5689,13 +6003,13 @@
       }
     },
     {
-      "_key": "1157759fada2ed8664e9325ac62da0c2",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
-      "type": "has-type",
+      "_key": "12092f69aef6919e90e91a2534b98776",
+      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 111,
+      "line": 449,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5709,6 +6023,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 753,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "126fc1ec9fae76adad8a698ffe2fe5f9",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/0337ce360acafde83e359177cdb7b6c3",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 190,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5748,6 +6075,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 642,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "142bedea45150288ab52150c5e23ed3c",
+      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
+      "_to": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 218,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5858,19 +6198,6 @@
       }
     },
     {
-      "_key": "18cefd0c3e28d20c903b01d818c81bc9",
-      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
-      "_to": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 180,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "18f97bcc83bc29d6071e2a352bb15a69",
       "_from": "vertices/49141d2961cccd703defc2e744b0f3b9",
       "_to": "vertices/aff8b474a9e6a628954ed6077b139184",
@@ -5897,13 +6224,13 @@
       }
     },
     {
-      "_key": "19d01fd2b3fb6063473028385c750f26",
-      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
-      "_to": "vertices/de58e0eae1c35b7ac1876a4824299649",
-      "type": "has-type",
+      "_key": "19d3ab30af99c56e8cfd018dc68228fc",
+      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 113,
+      "line": 440,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5988,19 +6315,6 @@
       }
     },
     {
-      "_key": "1e8b9d6dd6b19ba66a61ba2f42ec12d5",
-      "_from": "vertices/dbcfa74b008f1424556795e659e0a0ca",
-      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 244,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "1fb0452e4e705b1793187e0ca900ec66",
       "_from": "vertices/d52cc387ea43b80b6d97dd8e257b83ab",
       "_to": "vertices/8c69ede2f0270a67491b6a308bab560b",
@@ -6008,19 +6322,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 238,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "203a4dd75881c9f0dcc4faf495c235fa",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/a5ce3bb776ca52b244d6e515420adc89",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 199,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6040,6 +6341,19 @@
       }
     },
     {
+      "_key": "20a61ec4543920ac02aee6c039f29d09",
+      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "21073475974b352821b0e98060d8273a",
       "_from": "vertices/89cd46ee5ce5cd78986dc9406f3d3dfc",
       "_to": "vertices/9b066380e7159bda10759a772a76e3e6",
@@ -6047,6 +6361,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 481,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "210d03e4fb0d0ec0ca2a8591efadca15",
+      "_from": "vertices/6e5b68f1e1a15333d30d02973cbdcd30",
+      "_to": "vertices/cbfaa66d83023f0e653b550496bd0ec0",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 145,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6157,6 +6484,19 @@
       }
     },
     {
+      "_key": "23875a0d71382140d677bfc9a7cd62ad",
+      "_from": "vertices/dbcfa74b008f1424556795e659e0a0ca",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 248,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "24625efd8a9b169984c30cc1926e8496",
       "_from": "vertices/a59cc6eed54675f62073dc8edbbdb945",
       "_to": "vertices/93fe6b023068fd787c9a86880112bd3f",
@@ -6177,6 +6517,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 672,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "25b67fafe51720963a1c24c0f325657d",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/10f980450c3e6cb47ed2025fa5ffda7d",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 194,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6209,6 +6562,19 @@
       }
     },
     {
+      "_key": "27b9b74f4548c5df53d1f7e7b149472b",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 123,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "28281c4130a4d0aa196479e0ebe69a51",
       "_from": "vertices/27dc09c73c0c5c0398e1396f78f38d2a",
       "_to": "vertices/3217359b54bda5f0edf4fc89dbc3e9f5",
@@ -6216,6 +6582,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 89,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "28dde47ebf5e0110b05747b2e0fed619",
+      "_from": "vertices/8201a5a2645c0de551dae7f627632d14",
+      "_to": "vertices/5092eb7921a6459a9cbb67eae323e28f",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 372,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2931d1c84ae238e60ad9004f3822df57",
+      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 128,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6261,19 +6653,6 @@
       }
     },
     {
-      "_key": "29f474ebffd40a00104c9718cf1590f9",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 198,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2a66af0cb592edcea1f89fb83d886d17",
       "_from": "vertices/dff4c31a3d716df20e755d674462e010",
       "_to": "vertices/a7aeb15203e27e437b2c684a68ce0da8",
@@ -6287,19 +6666,6 @@
       }
     },
     {
-      "_key": "2abf7118133a4e90ea22a105c294f123",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/5aaac27cda71ce6d44b0052d4752b112",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 469,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2aef0ee3aa879c7b867d5a5370485439",
       "_from": "vertices/09d2419205babcdf98022c0df938aaca",
       "_to": "vertices/9d5ea4134e123ac49411c5b0bcb4b83c",
@@ -6307,6 +6673,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2b3249e211bd118d0ea836b871f7e9db",
+      "_from": "vertices/ac1b585055e7f6830e2ca5a4a5775b72",
+      "_to": "vertices/3b4a730474fdcdafcc3b488d47668616",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 206,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6333,19 +6712,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 77,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "2babe8f6aec3c762c8b21ea3e128181f",
-      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
-      "_to": "vertices/a70583d6646987d19e07916a5a658d11",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 212,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6417,19 +6783,6 @@
       }
     },
     {
-      "_key": "2ce6483e992ba8a34f07aff154c51f2b",
-      "_from": "vertices/dbcfa74b008f1424556795e659e0a0ca",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 240,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2e805be5e4282a1cb93482b33e11f786",
       "_from": "vertices/bf197f6513dad5e092b6c7e6d1c64137",
       "_to": "vertices/37e42847e6dc45af564188562bb94262",
@@ -6443,13 +6796,13 @@
       }
     },
     {
-      "_key": "2f46d059b7ace41c4b823d2a06c8e1e1",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/0337ce360acafde83e359177cdb7b6c3",
-      "type": "has-type",
+      "_key": "2ec9632bd8debea7ae42e76529a76c48",
+      "_from": "vertices/37333e0e444ff1fbf945c19211ffd09a",
+      "_to": "vertices/ac779399e2c1c633879b0766fce6c956",
+      "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 108,
+      "line": 262,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6463,6 +6816,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1011,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "303718445c2a87507d955c6b44fc2b57",
+      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 274,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6508,19 +6874,6 @@
       }
     },
     {
-      "_key": "32570d0fcc1d56a073f60b6b5e1b50a8",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/561d3adc4617fec61381c2fb59334e21",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 160,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "326c9b992efb8ff81d8d80114982ed63",
       "_from": "vertices/09d2419205babcdf98022c0df938aaca",
       "_to": "vertices/b69f22224b3ef4096a5310e8be7f43e7",
@@ -6554,6 +6907,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "32c3773af6c5fe4edfd90fb1f02d7d55",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 120,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6606,6 +6972,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1060,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "33c73cca1a7d114a9d6701b014725947",
+      "_from": "vertices/d547d140cef49f9f93c91c03acdcb0c9",
+      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 145,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6677,19 +7056,6 @@
       }
     },
     {
-      "_key": "353f9a436648465956162c61d29d566f",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 164,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "357dc14b152ee3af9e349810062e4f3b",
       "_from": "vertices/93fb66338d9dc35873bf12f4aa379fd1",
       "_to": "vertices/2db6e7dad08560f407c2aa45eb654c1c",
@@ -6723,19 +7089,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 62,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "35b45c430bec122793be3370e32265f2",
-      "_from": "vertices/37333e0e444ff1fbf945c19211ffd09a",
-      "_to": "vertices/7f770ad371a097ab0d6add798ca35aa1",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 256,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6820,6 +7173,19 @@
       }
     },
     {
+      "_key": "387b66810df215bf12d300e6a8629a56",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/a5ce3bb776ca52b244d6e515420adc89",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "3892e16f344b59ca6275b7b4576b2aea",
       "_from": "vertices/283d1377587f33f78287062ea4b68944",
       "_to": "vertices/2bf472fd78a69d5767afca71e976897e",
@@ -6840,19 +7206,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 90,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "39d5720ade5c34035359eaf09d4c1274",
-      "_from": "vertices/96023f10da3ed6fbf82f57abc8387e07",
-      "_to": "vertices/d547d140cef49f9f93c91c03acdcb0c9",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 150,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6924,19 +7277,6 @@
       }
     },
     {
-      "_key": "3b471d9c842c1fac59e363b9af2010ab",
-      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "_to": "vertices/7f770ad371a097ab0d6add798ca35aa1",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 380,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "3bb7935c359fbfee76a8848833d14f04",
       "_from": "vertices/05bd68bae200221532170a905c3438d3",
       "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
@@ -6950,13 +7290,13 @@
       }
     },
     {
-      "_key": "3bdcafbcf8a38b7314d107664c82c0a5",
-      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
-      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "_key": "3bcb204fad36cf6d264204e366611691",
+      "_from": "vertices/8f16653867af683af0a883cb538890e5",
+      "_to": "vertices/3b4a730474fdcdafcc3b488d47668616",
       "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 114,
+      "line": 193,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6983,19 +7323,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 227,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "3c41be47c6d773c27dc6984f09119f8f",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 122,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7093,13 +7420,13 @@
       }
     },
     {
-      "_key": "41f87be70af302ca5610d7a652cde4b5",
-      "_from": "vertices/37333e0e444ff1fbf945c19211ffd09a",
-      "_to": "vertices/0387739a797064f4d4da9d3b90764e33",
+      "_key": "4289b068074530caba5a281a32f1ff9d",
+      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
       "type": "calls",
       "concept": "claude-session-bridge",
-      "crosses_concept": true,
-      "line": 269,
+      "crosses_concept": false,
+      "line": 169,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7109,6 +7436,19 @@
       "_key": "4307abc3e2130fe4eaca1f184d15e94e",
       "_from": "vertices/b3bafab2ac78f2d08b2d052bc76853fa",
       "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 167,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "43da9645cfc8420c52eb5f4159fc395f",
+      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "_to": "vertices/b4e54a40259fcd7525c3e7cc6c559fd2",
       "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
@@ -7197,6 +7537,19 @@
       }
     },
     {
+      "_key": "4618fdc52ea8448e8ce15818b1b48079",
+      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "_to": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 418,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4711aa90ab446652deb2211529b84d7d",
       "_from": "vertices/42a9215bfd6237199ad4382e74e09228",
       "_to": "vertices/32b13179f19183c440e97935d950260f",
@@ -7223,13 +7576,13 @@
       }
     },
     {
-      "_key": "47d8d67afb9cc7c85a0389f9228db5f4",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "type": "calls",
+      "_key": "4969170c7ed305bef8cf5c4d4c0f72e7",
+      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
+      "_to": "vertices/de58e0eae1c35b7ac1876a4824299649",
+      "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 480,
+      "line": 215,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7243,19 +7596,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 253,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "4a6fdbabc931d7fbd89e2677246a2c68",
-      "_from": "vertices/ac779399e2c1c633879b0766fce6c956",
-      "_to": "vertices/1fa2e90c672132b3a71e5748c20d0647",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": true,
-      "line": 232,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7288,19 +7628,6 @@
       }
     },
     {
-      "_key": "4c9697c464c6c8592e8a7590007b6729",
-      "_from": "vertices/d547d140cef49f9f93c91c03acdcb0c9",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 134,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4c9726594baca0bcfcf2d010d358d7e3",
       "_from": "vertices/677697c32a5a984cebeffc6f6d625534",
       "_to": "vertices/2984f65d757997012fe0015657c9f46a",
@@ -7327,19 +7654,6 @@
       }
     },
     {
-      "_key": "4d0f2afb16dc6f25bfe0fca605831deb",
-      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
-      "_to": "vertices/de58e0eae1c35b7ac1876a4824299649",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 177,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4dca7246b4f3840765cd6978514ad0b8",
       "_from": "vertices/7484e5526a45cf39f32caf6b76777eed",
       "_to": "vertices/ebffec6b4a5472894ebda1f5f5d74215",
@@ -7347,19 +7661,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 205,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "4dfc2a545037ae13c0cc5c0df566772f",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 192,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7379,13 +7680,13 @@
       }
     },
     {
-      "_key": "4e1bc0192c9a729f1156df610ce7b7d1",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "_key": "4e8b303061f6a700d0c06a3765a42992",
+      "_from": "vertices/d547d140cef49f9f93c91c03acdcb0c9",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 117,
+      "line": 142,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7405,19 +7706,6 @@
       }
     },
     {
-      "_key": "4f66d231a68620863f1e51adbb4cc6b4",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 472,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4fb9d9dc56c3deb24b5e871a43c70f39",
       "_from": "vertices/dff4c31a3d716df20e755d674462e010",
       "_to": "vertices/a7aeb15203e27e437b2c684a68ce0da8",
@@ -7425,6 +7713,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 157,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4feff170157ea3b79dd1be8f470cc1bf",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 169,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4fffff63a1fb7b99bf60ae88eedc8dcf",
+      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
+      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 216,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7444,13 +7758,13 @@
       }
     },
     {
-      "_key": "5094c4a4e11eaee032b0edd32a32ca3b",
-      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "_key": "513d9b6ec7e5a44ea0c43f44b2154220",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 435,
+      "line": 119,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7470,6 +7784,19 @@
       }
     },
     {
+      "_key": "52e0efea24a7105fbb957fd597dc2346",
+      "_from": "vertices/8201a5a2645c0de551dae7f627632d14",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 364,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "5311484265bda7d11cb50fae718873f6",
       "_from": "vertices/89cd46ee5ce5cd78986dc9406f3d3dfc",
       "_to": "vertices/9b066380e7159bda10759a772a76e3e6",
@@ -7477,32 +7804,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 477,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5318c079dfdab083e452a6646b0d08c0",
-      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
-      "_to": "vertices/b4e54a40259fcd7525c3e7cc6c559fd2",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 209,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5396c53951236ce54f8af8ff4929e5d5",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/10f980450c3e6cb47ed2025fa5ffda7d",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 189,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7535,6 +7836,19 @@
       }
     },
     {
+      "_key": "55bf3ad8ee55c385ed43c4e0274bc81d",
+      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 284,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "56616c06d83a5c574b42ff2e32bd398a",
       "_from": "vertices/150e61ca51281b96a85f45d848661f59",
       "_to": "vertices/9b066380e7159bda10759a772a76e3e6",
@@ -7555,19 +7869,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 193,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "572d782f23b4715e2bea1b13b9cdfe90",
-      "_from": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
-      "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 125,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7652,6 +7953,19 @@
       }
     },
     {
+      "_key": "5a540d41ffbbdeef4badcf3da20f0fb1",
+      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 188,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "5b31c0200f02a9d09cd6df83a580e152",
       "_from": "vertices/f318b950706c060d93c12ddfb5c8e2fc",
       "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
@@ -7665,19 +7979,6 @@
       }
     },
     {
-      "_key": "5b56085fd7ba8773e64f68e3c8ab6556",
-      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 161,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "5b56725bb7ea0e55fe9da212f97b5ba7",
       "_from": "vertices/324f457a93c071bb7a23fae7c96af9f9",
       "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
@@ -7685,32 +7986,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": true,
       "line": 522,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5bd87ea0b262f9ff5ece9057e112e4bd",
-      "_from": "vertices/54b573bd5a9e2bd39558531f82f68820",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 226,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5be98e43c322cc1b0b342faad786247d",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 119,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7756,19 +8031,6 @@
       }
     },
     {
-      "_key": "5dc09a6140a741f86b73698fffd6ad04",
-      "_from": "vertices/036055ff17063bf60bc0cb824a44bd4f",
-      "_to": "vertices/3fb586421bbb551a7d73abbdad3a1596",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 314,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "5df0922e8367f4aa876cf57c39689c68",
       "_from": "vertices/f318b950706c060d93c12ddfb5c8e2fc",
       "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
@@ -7802,6 +8064,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5fd567728a5241ca45f36e289b066a59",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/8201a5a2645c0de551dae7f627632d14",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 499,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7893,6 +8168,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 276,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "626a71ec12b9efe546434f12ff963c4f",
+      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
+      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 122,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8016,19 +8304,6 @@
       }
     },
     {
-      "_key": "653ca1934dd80f334d341fe226d65f45",
-      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
-      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 178,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "65d7a47311d119d7b9fdd09890b31afc",
       "_from": "vertices/89bdb94e3bfb1cf0ea5604a2b371ff48",
       "_to": "vertices/1e3fda5228241a214f6382e51285b26e",
@@ -8042,13 +8317,26 @@
       }
     },
     {
-      "_key": "67e777fec229513303ad29cfc32ccc19",
-      "_from": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
-      "_to": "vertices/7f770ad371a097ab0d6add798ca35aa1",
+      "_key": "65eff17f6ad9ef8e7642538e9cb621ea",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/53db7fa679af6fb9fbaffcee2f191a5c",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 517,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6786fa2b9463d099e4ec907a665fb2eb",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/0337ce360acafde83e359177cdb7b6c3",
       "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 125,
+      "line": 160,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8068,19 +8356,6 @@
       }
     },
     {
-      "_key": "68af4757a7dcfb179c06bc91739a9691",
-      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 444,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "68b47a4686e9d08476fe1011088a982d",
       "_from": "vertices/3d837240f413ede70b4a0d2a04f02969",
       "_to": "vertices/7a7a2d036983940616b57f54c63d3e3f",
@@ -8094,13 +8369,13 @@
       }
     },
     {
-      "_key": "6908a07716d149768fd34924a96f4dfc",
-      "_from": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
-      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
-      "type": "calls",
+      "_key": "69de5034e2ec966df3dd05c9d8f561bb",
+      "_from": "vertices/6e5b68f1e1a15333d30d02973cbdcd30",
+      "_to": "vertices/ef7706269aff033d2b3747899c0d54c9",
+      "type": "has-type",
       "concept": "claude-session-bridge",
-      "crosses_concept": true,
-      "line": 126,
+      "crosses_concept": false,
+      "line": 129,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8127,19 +8402,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 240,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "6c3cca38b7be0a27f509e4dcc7f60a6a",
-      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 267,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8237,19 +8499,6 @@
       }
     },
     {
-      "_key": "6f0d99f52d1b04ca998cee9c47278891",
-      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
-      "_to": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 210,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "6f0e79c428bfd450b6b1294ab27ba103",
       "_from": "vertices/15bf8123a47a2aa02eaeab2c8814acff",
       "_to": "vertices/64f384948bb22267c81105199ec99b91",
@@ -8302,39 +8551,13 @@
       }
     },
     {
-      "_key": "7056dab4811e94f0fef082765d91c0e5",
-      "_from": "vertices/8201a5a2645c0de551dae7f627632d14",
-      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": true,
-      "line": 359,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7079035bca6bbd011fe5d07d0eac1308",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/15534ffa5b6a404f5be8d906aed877ec",
+      "_key": "6fdc53c7dc6124a440fd3d1afa7143d9",
+      "_from": "vertices/8b7db1aecd6fe195d46bf5667100b7a5",
+      "_to": "vertices/c318cd238dd7ad9ae57951c5850915e3",
       "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 113,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "70eab4dd4baf82bba9875c6ab296b717",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 196,
+      "line": 65,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8348,19 +8571,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 301,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "72484b09e11232de1ebf19c9a4e5a77f",
-      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
-      "_to": "vertices/de58e0eae1c35b7ac1876a4824299649",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 207,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8419,19 +8629,6 @@
       }
     },
     {
-      "_key": "74f0933dbd30d700b39764e6c8dc705d",
-      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "_to": "vertices/b4e54a40259fcd7525c3e7cc6c559fd2",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 159,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "752aabac86d3e71e14b3d8c0d3b38a04",
       "_from": "vertices/f318b950706c060d93c12ddfb5c8e2fc",
       "_to": "vertices/815c69bc49dd68181ed9d1e53492f541",
@@ -8484,19 +8681,6 @@
       }
     },
     {
-      "_key": "76cc87ac2493ed4b397e44cc11b88486",
-      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 117,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "77590aaadb2dcfe4226776f92547dc8b",
       "_from": "vertices/42a9215bfd6237199ad4382e74e09228",
       "_to": "vertices/da6bef6a22d58a0c028c0db9f3b5ee62",
@@ -8530,6 +8714,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 168,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "77be0c03d43ce21c72fb018846ca9925",
+      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 451,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8588,6 +8785,19 @@
       }
     },
     {
+      "_key": "79102a7a9bca1534aec0ccc8eb660bce",
+      "_from": "vertices/5b01c14c86605440771073001f072d6f",
+      "_to": "vertices/3b4a730474fdcdafcc3b488d47668616",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 220,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "79bb8761139a7963954f8c38e44ab26b",
       "_from": "vertices/1568942ea3455033e30cf76533ec5c55",
       "_to": "vertices/e3c3b87e4e965b725441ebe6779cdbf9",
@@ -8621,6 +8831,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7b548ccf620c7d02e335ca47d6cdc6e2",
+      "_from": "vertices/8201a5a2645c0de551dae7f627632d14",
+      "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 363,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8744,6 +8967,19 @@
       }
     },
     {
+      "_key": "7ec1e0d67cf8af843cd13e3783156a97",
+      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 393,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "7f765863dd9b6d573d5006252ecbfe1c",
       "_from": "vertices/673cd8217aca212ca941466ee789acd4",
       "_to": "vertices/1140f10cefafc7877824f9e436ca6824",
@@ -8783,26 +9019,26 @@
       }
     },
     {
-      "_key": "83d1348e808af2e1dd716d58c28e2dfe",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/0337ce360acafde83e359177cdb7b6c3",
-      "type": "has-type",
+      "_key": "8330317b5fe38ae3d9c3a78305a0d704",
+      "_from": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 189,
+      "line": 234,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "8401f7ef3bee13e08733dc0f505b6b7f",
-      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "_key": "8371a37587e5b8d718039228dfa5b9b8",
+      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 160,
+      "line": 277,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8829,6 +9065,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1006,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "844d30df835e4c83bdd4421a1ab04be2",
+      "_from": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 229,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8868,19 +9117,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 265,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "866e6cb3dac7125b6c4734c8e021a12d",
-      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 276,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -8933,6 +9169,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 201,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8856bbf24a23edc58fcb615138a4836f",
+      "_from": "vertices/8b7db1aecd6fe195d46bf5667100b7a5",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 66,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9089,6 +9338,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 241,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8dea64f50be2a387466ec5335133e022",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/b809bb24b2077044f24c48bb67275199",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 525,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8f2d45eb14c632830065cb21c7bb16be",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/10f980450c3e6cb47ed2025fa5ffda7d",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 190,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9342,13 +9617,13 @@
       }
     },
     {
-      "_key": "9c091d9987de9d689ca23bd6f28f6adf",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/a5ce3bb776ca52b244d6e515420adc89",
-      "type": "calls",
+      "_key": "9ca1c0e6d4eadfd05a1e28bd2f172900",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/0337ce360acafde83e359177cdb7b6c3",
+      "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 177,
+      "line": 109,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9401,6 +9676,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 192,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9f1298011433b66023c58d2a385cbe16",
+      "_from": "vertices/8b7db1aecd6fe195d46bf5667100b7a5",
+      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 69,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9472,6 +9760,32 @@
       }
     },
     {
+      "_key": "a36cc572a5670a0df1c81bc2e1c59b6a",
+      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 275,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a36ec7ddbbf96f3317861c3e41084221",
+      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
+      "_to": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 188,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "a37c4199c13ce8f4c82913bef1d281d2",
       "_from": "vertices/841e91a14c1bb538ce17b25b8e830fc1",
       "_to": "vertices/51f91ef4a7bbf96923fdef392dd027c3",
@@ -9479,6 +9793,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1055,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a3b4bf7560d53adff39f213b5e65390b",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/5aaac27cda71ce6d44b0052d4752b112",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 474,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9550,19 +9877,6 @@
       }
     },
     {
-      "_key": "a881f9954e19643198ee82e3bffb03e2",
-      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 269,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "a88727ef2fd8ffe69df07a18a48e1372",
       "_from": "vertices/fe075a2cdb8309ca3dfa49a7f2566f8e",
       "_to": "vertices/e4fc91a97bf5dd8c8530485fa5c99643",
@@ -9589,32 +9903,6 @@
       }
     },
     {
-      "_key": "a909c674f066f30b6d06ed4a4a9d3978",
-      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
-      "_to": "vertices/10f980450c3e6cb47ed2025fa5ffda7d",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 193,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "a91157b5e6a3b0c6234bb1e12e259c36",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 118,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "a96a9d812c6719e4fa9d818d45858525",
       "_from": "vertices/8fa804055a3ce2561452139378ee08eb",
       "_to": "vertices/eb49e561e9797372b0c975e9126d3ea3",
@@ -9622,6 +9910,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 742,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a9d59cdb8a4e2a4e6d5954002064f6fc",
+      "_from": "vertices/37333e0e444ff1fbf945c19211ffd09a",
+      "_to": "vertices/7f770ad371a097ab0d6add798ca35aa1",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 261,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9667,6 +9968,19 @@
       }
     },
     {
+      "_key": "ac0e2dc215a08e26194ee9e4a4972309",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/561d3adc4617fec61381c2fb59334e21",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ac8cd4d5c4a23a7c350ff0e327bd0741",
       "_from": "vertices/673cd8217aca212ca941466ee789acd4",
       "_to": "vertices/64f384948bb22267c81105199ec99b91",
@@ -9674,6 +9988,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 216,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ad8a0d742eb4ce83b9f666e5ee02f3f7",
+      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
+      "_to": "vertices/b4e54a40259fcd7525c3e7cc6c559fd2",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 217,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9693,13 +10020,39 @@
       }
     },
     {
-      "_key": "adf6b551a9dafa9d9a45ff476d05b9aa",
-      "_from": "vertices/54b573bd5a9e2bd39558531f82f68820",
-      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
+      "_key": "ae1bab39eb6210fd406ef798cb68ce06",
+      "_from": "vertices/5b01c14c86605440771073001f072d6f",
+      "_to": "vertices/625c9b92ae25adfb1872dd883d191aa6",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 221,
+      "line": 223,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ae31d77ac23e6d4cfbd03262688554e3",
+      "_from": "vertices/4e8023411c26c9ff7c0bf85e1642bd7d",
+      "_to": "vertices/de58e0eae1c35b7ac1876a4824299649",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "af1f26a75fb4fa41f29d0b9fa9a325f0",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 165,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9719,19 +10072,6 @@
       }
     },
     {
-      "_key": "b07365b62454ba08b91553abe75b1acd",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/0337ce360acafde83e359177cdb7b6c3",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 159,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "b07b331ab934e9ce604ea949097c06be",
       "_from": "vertices/c85e77da2e12c1ae001c7029ce9ba1f5",
       "_to": "vertices/0b7de823e783d1ef4e6b6eef95736b5d",
@@ -9745,13 +10085,39 @@
       }
     },
     {
-      "_key": "b1524c33f402e30478d4c86809af4428",
-      "_from": "vertices/a5ce3bb776ca52b244d6e515420adc89",
-      "_to": "vertices/a560491fbc77be9a2c64030b15211c2d",
+      "_key": "b0a0dcecdce79c776962dea6ed64ddd0",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 98,
+      "line": 118,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b0a2fc2eea59fb444790fdf4fb08e74a",
+      "_from": "vertices/dbcfa74b008f1424556795e659e0a0ca",
+      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 252,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b2693518f256aeed2d9240f517beb4b5",
+      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
+      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 186,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9784,6 +10150,19 @@
       }
     },
     {
+      "_key": "b329c6eea7340680d4f77ba48514165d",
+      "_from": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
+      "_to": "vertices/8651a43ccbafbb06df7f40783906bbcc",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "b34e4b3c922ef4685d257fe2a86adfb0",
       "_from": "vertices/bf197f6513dad5e092b6c7e6d1c64137",
       "_to": "vertices/1094d5c6d3726448076e0f1d2e99009d",
@@ -9797,13 +10176,13 @@
       }
     },
     {
-      "_key": "b377b7467b81c6a9b9648df0a5877c5b",
-      "_from": "vertices/d547d140cef49f9f93c91c03acdcb0c9",
-      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
+      "_key": "b399b0774ea3fb741c3154ad60f1e365",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/a5ce3bb776ca52b244d6e515420adc89",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 137,
+      "line": 200,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9862,6 +10241,19 @@
       }
     },
     {
+      "_key": "b5eabe85e032c73ce83127af7c4b38e2",
+      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "_to": "vertices/7f770ad371a097ab0d6add798ca35aa1",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 385,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "b6b063a54d7fc22dd5b5ba34167c0557",
       "_from": "vertices/bf197f6513dad5e092b6c7e6d1c64137",
       "_to": "vertices/5c93b578dfc4b5632e4e881b3ba883d5",
@@ -9869,6 +10261,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": true,
       "line": 410,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b6bcfa41feee466325c7e49f348f57cc",
+      "_from": "vertices/79b5e1d5d6d40e3c7e59d269f6677f39",
+      "_to": "vertices/3b4a730474fdcdafcc3b488d47668616",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 175,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9901,32 +10306,6 @@
       }
     },
     {
-      "_key": "b817398ec3b00341738dc4d0c0bbf1a1",
-      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 380,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b8e773122615108eca691b05e16aad5a",
-      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": true,
-      "line": 388,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "b96a94d179a73ee6ac3cf0f87229b029",
       "_from": "vertices/324f457a93c071bb7a23fae7c96af9f9",
       "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
@@ -9934,19 +10313,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": true,
       "line": 537,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b98c6273428f13728f59c57ff6d74f96",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/a5ce3bb776ca52b244d6e515420adc89",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 120,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -9986,6 +10352,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 246,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ba9658ad7dc9e742fe3fc47ae3008832",
+      "_from": "vertices/96023f10da3ed6fbf82f57abc8387e07",
+      "_to": "vertices/d547d140cef49f9f93c91c03acdcb0c9",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 158,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10096,6 +10475,19 @@
       }
     },
     {
+      "_key": "bec0481564f7e9ea39a408e52dd01cec",
+      "_from": "vertices/ac779399e2c1c633879b0766fce6c956",
+      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 232,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "bf009356013cbe0b9170526fa8e2cc0b",
       "_from": "vertices/27dc09c73c0c5c0398e1396f78f38d2a",
       "_to": "vertices/363886d993b76c8b2991c90d3635b800",
@@ -10187,13 +10579,26 @@
       }
     },
     {
-      "_key": "c17a45fbbb8be89567c55be307a7a38b",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "_key": "c1700f9c3b7dbd480c404989f6f0a23d",
+      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "_to": "vertices/37333e0e444ff1fbf945c19211ffd09a",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 168,
+      "line": 388,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c280e98b43c0448b62d9494afaf8e84f",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 477,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10226,6 +10631,19 @@
       }
     },
     {
+      "_key": "c2ea013ff75597f918d6692394ad2a2c",
+      "_from": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
+      "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 126,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c305d189c7f61e698c6d5e992e7db4e9",
       "_from": "vertices/1140f10cefafc7877824f9e436ca6824",
       "_to": "vertices/fd8338f8fc9d6ad6f06f8e27e3e6bdbc",
@@ -10233,6 +10651,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c3678a33282aaf188be4dc4ca3f5f566",
+      "_from": "vertices/a5ce3bb776ca52b244d6e515420adc89",
+      "_to": "vertices/a560491fbc77be9a2c64030b15211c2d",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 99,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10330,13 +10761,13 @@
       }
     },
     {
-      "_key": "c75ea76d4132c671ae5794a6935177ae",
-      "_from": "vertices/ac779399e2c1c633879b0766fce6c956",
-      "_to": "vertices/62f2ff93d1ff08a3f7c4c6e4abcbba49",
+      "_key": "c732723659eec8d68bab54557b20c0a4",
+      "_from": "vertices/036055ff17063bf60bc0cb824a44bd4f",
+      "_to": "vertices/3fb586421bbb551a7d73abbdad3a1596",
       "type": "calls",
       "concept": "claude-session-bridge",
-      "crosses_concept": true,
-      "line": 231,
+      "crosses_concept": false,
+      "line": 322,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10363,19 +10794,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 154,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c876cf2a888e3180a82a2575365e0829",
-      "_from": "vertices/8201a5a2645c0de551dae7f627632d14",
-      "_to": "vertices/5092eb7921a6459a9cbb67eae323e28f",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 367,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10467,6 +10885,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 231,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ccc0d7da905723a86f18419084c4175a",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 112,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10577,19 +11008,6 @@
       }
     },
     {
-      "_key": "d1247a3ebd83755e59fd03be353e89a9",
-      "_from": "vertices/76ffdde05a8737d1d732f5bd90564c37",
-      "_to": "vertices/7de556a413a45bec73edddc1c2a717f1",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 446,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "d1e55a46e21fca7311622420f8624bcf",
       "_from": "vertices/ce35e7523353753e4e44e5a576989981",
       "_to": "vertices/b3bafab2ac78f2d08b2d052bc76853fa",
@@ -10616,6 +11034,32 @@
       }
     },
     {
+      "_key": "d28e78ac592bebea0e17a5c4ac4350a8",
+      "_from": "vertices/ac779399e2c1c633879b0766fce6c956",
+      "_to": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 233,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d2c648a89f66af4c0f3b7ecdfbdacb29",
+      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
+      "_to": "vertices/b4e54a40259fcd7525c3e7cc6c559fd2",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 187,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d352b6551721f3e969d7f840b56751a8",
       "_from": "vertices/c27db66d23032665f4740c8315201d6d",
       "_to": "vertices/511348fede4aba7617fc0425f29b534c",
@@ -10636,19 +11080,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1044,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d3e56bac6c2480a419e08e91cacba50d",
-      "_from": "vertices/71e24cdcb2c5c6867b693897574542b0",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 266,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10701,6 +11132,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 572,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d6b0d3bd926b86c7e225c1d9e1792d4e",
+      "_from": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
+      "_to": "vertices/7f770ad371a097ab0d6add798ca35aa1",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 126,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10772,6 +11216,19 @@
       }
     },
     {
+      "_key": "d8d8f5ed52d9a8951fbf0a58266a3b11",
+      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "_to": "vertices/863fda305e49865a7bb7022244e1bdc4",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 168,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d91c782a417cb71d72b9f5733071c02b",
       "_from": "vertices/0a7734befb41e620feff82db188d086e",
       "_to": "vertices/415eab97a5b471905e47726058935345",
@@ -10779,6 +11236,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 821,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d987d70e7df30fd31fdff20848f0d474",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/7f1c410c68da76c5daec2408e2a9a605",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 497,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -10928,6 +11398,19 @@
       }
     },
     {
+      "_key": "de29153573538c120eef3793e6d086c4",
+      "_from": "vertices/ac779399e2c1c633879b0766fce6c956",
+      "_to": "vertices/db869e66636077043ea03ca0b8ce570e",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 236,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "def86d16d2aaf2bcbc3ab781732ae1a0",
       "_from": "vertices/ad94fb0c8fb8d3c18d4c61e758e0ab72",
       "_to": "vertices/99cb72b2df922c1d9483d79354a452f5",
@@ -10954,26 +11437,26 @@
       }
     },
     {
-      "_key": "df6185b3be39509e83ef547db9653629",
-      "_from": "vertices/8201a5a2645c0de551dae7f627632d14",
-      "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
-      "type": "has-type",
+      "_key": "df44036f0162e093261b0a5a47b19c16",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/76ffdde05a8737d1d732f5bd90564c37",
+      "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 358,
+      "line": 485,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "df8bfbbb69a6f5c43caa84862a4d0885",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/dbef9a3cffafa739114822a905bf6196",
+      "_key": "dfba9bfb67fcf8eb38720c0d945739bd",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
       "type": "calls",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 477,
+      "line": 197,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11058,6 +11541,19 @@
       }
     },
     {
+      "_key": "e0cba082ee6350a493a8c1ef98148c5e",
+      "_from": "vertices/a70583d6646987d19e07916a5a658d11",
+      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 201,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e1892e9314743a9fa149ea9d4acc7118",
       "_from": "vertices/634699a42cf68a25196f9c5f4f4e12c2",
       "_to": "vertices/ba96631ccec0d3d0f41be3c5bfc000c7",
@@ -11136,19 +11632,6 @@
       }
     },
     {
-      "_key": "e2f95c137696c70b59282507813af7c2",
-      "_from": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "_to": "vertices/96023f10da3ed6fbf82f57abc8387e07",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 161,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e30c862699754bac35172fdf8f83819e",
       "_from": "vertices/001e1b2d4f459bca6cff66d5c4982ab6",
       "_to": "vertices/b9ad380668d439d6a70855525a512581",
@@ -11156,6 +11639,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e31b9a98ce261a083e34bfec77bc3045",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 193,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11201,45 +11697,6 @@
       }
     },
     {
-      "_key": "e48b1ea873f5e5b624db61951c29172a",
-      "_from": "vertices/37333e0e444ff1fbf945c19211ffd09a",
-      "_to": "vertices/ac779399e2c1c633879b0766fce6c956",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 257,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e52ee42ebb7f6599ee26871ed3322a19",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/8201a5a2645c0de551dae7f627632d14",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 494,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e5df30dbd0f30bad51cb0293a04d0d3d",
-      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 180,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e61f879bc158bfe271bad7f3b0fe8828",
       "_from": "vertices/f4b53e272b311dd407d2dc1a97e8e377",
       "_to": "vertices/3ea273b1cd957f26a724ce0e625cda55",
@@ -11273,6 +11730,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ea33aab42d26a341ab9ccba96757f878",
+      "_from": "vertices/6e5b68f1e1a15333d30d02973cbdcd30",
+      "_to": "vertices/cbfaa66d83023f0e653b550496bd0ec0",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 142,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11331,6 +11801,19 @@
       }
     },
     {
+      "_key": "ed42352684af8a9dd32998ee9e16c660",
+      "_from": "vertices/04550cb6f9ad4612830e58fcfb923024",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 199,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ed6498fe7e5b984b30a2ec5ab00cde9c",
       "_from": "vertices/8f22fb9c474bfce01d5f205c9841ba7b",
       "_to": "vertices/90acddcea2eb622e8c24c8471477c1a7",
@@ -11338,19 +11821,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 1665,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "ed748953c193c561b9e071b85ca678bd",
-      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "_to": "vertices/efe54e3c05fc51a0c2348e85eec52ad6",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 413,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11396,6 +11866,19 @@
       }
     },
     {
+      "_key": "eefe044278f16f9c967066a6521a8066",
+      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
+      "_to": "vertices/976648cfe9c3e63f8e394f2457c3cdb9",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 385,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ef5b4705b3bcd0ef961a4c2083c58b99",
       "_from": "vertices/ebc1abbaffa5599fb9805a05e2a9aa71",
       "_to": "vertices/c85e77da2e12c1ae001c7029ce9ba1f5",
@@ -11422,19 +11905,6 @@
       }
     },
     {
-      "_key": "f0fd9815d1e96a63a5e2874b59c70ba2",
-      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
-      "_to": "vertices/b4e54a40259fcd7525c3e7cc6c559fd2",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 179,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "f13b8797cd7de8ea10f06edc546e92eb",
       "_from": "vertices/15bf8123a47a2aa02eaeab2c8814acff",
       "_to": "vertices/8b2cd175873c750422664f9da5bd8488",
@@ -11442,6 +11912,32 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 338,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f15e380a6861a03875a4f3573c133f77",
+      "_from": "vertices/8e9dd15860c4057a537aa7cb5d943f3d",
+      "_to": "vertices/a70583d6646987d19e07916a5a658d11",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 220,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f15ed39b9494f501e23b034da1d32e31",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "type": "has-type",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 164,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11461,26 +11957,13 @@
       }
     },
     {
-      "_key": "f197b297934b2f54963430f751126c11",
-      "_from": "vertices/a70583d6646987d19e07916a5a658d11",
-      "_to": "vertices/ef7446e7bea44c7ef5c4bec607c09f38",
-      "type": "calls",
+      "_key": "f2790e79859b27b8e7e153735d7908b5",
+      "_from": "vertices/e4a0eaa8d1e4513bdfaaad306c312e3e",
+      "_to": "vertices/de58e0eae1c35b7ac1876a4824299649",
+      "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 193,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "f21a9aa7137c53598a3fb034b6e19d21",
-      "_from": "vertices/036055ff17063bf60bc0cb824a44bd4f",
-      "_to": "vertices/dbcfa74b008f1424556795e659e0a0ca",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 315,
+      "line": 185,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11513,13 +11996,13 @@
       }
     },
     {
-      "_key": "f39c0478277d56e7dd838e05814a980d",
-      "_from": "vertices/b9ad380668d439d6a70855525a512581",
-      "_to": "vertices/c045327fb146e0c9b6cf09a4f8a3b409",
+      "_key": "f34f970f803bc84063e85417132bfe65",
+      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
+      "_to": "vertices/15534ffa5b6a404f5be8d906aed877ec",
       "type": "has-type",
       "concept": "claude-session-bridge",
       "crosses_concept": false,
-      "line": 163,
+      "line": 109,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11604,6 +12087,19 @@
       }
     },
     {
+      "_key": "f5d8d694a908bd37dcf4b22b4e3201ae",
+      "_from": "vertices/b9ad380668d439d6a70855525a512581",
+      "_to": "vertices/71e24cdcb2c5c6867b693897574542b0",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f625cc00557ff462422a7764a78b81ad",
       "_from": "vertices/7484e5526a45cf39f32caf6b76777eed",
       "_to": "vertices/0b7de823e783d1ef4e6b6eef95736b5d",
@@ -11630,6 +12126,19 @@
       }
     },
     {
+      "_key": "f6b249991317ea594b963a1758a54e31",
+      "_from": "vertices/37333e0e444ff1fbf945c19211ffd09a",
+      "_to": "vertices/0387739a797064f4d4da9d3b90764e33",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": true,
+      "line": 274,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f709a5534b0d0d89ac46af50335f9993",
       "_from": "vertices/8b52b6e259f9b6161cb850056e79b30e",
       "_to": "vertices/273a02511f5beca2c58e1ee8f643bc65",
@@ -11637,19 +12146,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 116,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "f7197c0a7f860fcbe9a42f08876623a6",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/b809bb24b2077044f24c48bb67275199",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 520,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -11825,19 +12321,6 @@
       }
     },
     {
-      "_key": "fa8254371fc253da3ac797a121e684ff",
-      "_from": "vertices/6444f89a18b44e3227f1c9f46caea8c5",
-      "_to": "vertices/37333e0e444ff1fbf945c19211ffd09a",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 383,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "fadb19d42f9329059085805cd22c6ba9",
       "_from": "vertices/324f457a93c071bb7a23fae7c96af9f9",
       "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
@@ -11871,32 +12354,6 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 731,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "fba0f1be5aada2c812e6c6ea9ca24c77",
-      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
-      "_to": "vertices/53db7fa679af6fb9fbaffcee2f191a5c",
-      "type": "calls",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 512,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "fbc5f37b362fdb5a73f50c2a672d50fe",
-      "_from": "vertices/93787c04e4679e6f8dc0b53df6aeff96",
-      "_to": "vertices/15534ffa5b6a404f5be8d906aed877ec",
-      "type": "has-type",
-      "concept": "claude-session-bridge",
-      "crosses_concept": false,
-      "line": 108,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -12001,6 +12458,19 @@
       "concept": "claude-session-bridge",
       "crosses_concept": false,
       "line": 142,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fea25d2deace7d987a5c59e6711b7d5f",
+      "_from": "vertices/4466f6401b7d5fcc071e2304394dff8b",
+      "_to": "vertices/dbef9a3cffafa739114822a905bf6196",
+      "type": "calls",
+      "concept": "claude-session-bridge",
+      "crosses_concept": false,
+      "line": 482,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -12117,28 +12587,29 @@
     "contentHash": "sha256:0e711fcf14102debcf9203fb839da825924bef81e03f6ff1948eb48815e11d5a"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.27",
-    "extracted_at": "2026-10-26T18:41:09.555Z",
+    "extractor_version": "code-graph@0.3.28",
+    "extracted_at": "2026-10-29T22:08:12.217Z",
     "files": {
       "apps/maestro/src/core/agent-sdk.ts": "sha256:239f9064c289fff2811caa508b2955572790cb0963702fa100bbff649e616044",
       "apps/maestro/src/core/claude-cli.ts": "sha256:301a0f6339051f0d251226289f1d31fff0e937dbbf5b72bd006905a880e02ec8",
-      "apps/maestro/src/core/claude-preview.ts": "sha256:5c37f03feb249b32959cf11f496767769b59f48bd80cdc334b38e5047054bee1",
+      "apps/maestro/src/core/claude-preview.ts": "sha256:7563e9ebc87f00bfb4a297a1ceb0736d7c6ee5b14dbf1b21e9af7905e0268031",
       "apps/maestro/src/core/claude-run.ts": "sha256:6045993c1ac03b7afde5c933b58f0979e0bc89d8f3b7393c4f8684244c8cc855",
       "apps/maestro/src/core/claude-tokens.ts": "sha256:7b94a9da17587e44608076855da40ee20f355ab7d96604ac6c2181682f1f1000",
       "apps/maestro/src/core/permission-registry.ts": "sha256:8bcf542ad03a81a46d39d593ced0c47b5c3d15e156a447d4e97dab48f609c57b",
       "apps/maestro/src/core/read-scope.ts": "sha256:2957f750de355b2e3765e5d66a11024fbba58f774fc966bb1b5040264cf5f224",
       "apps/maestro/src/core/session-budget.ts": "sha256:367c03070276374e6354efebe25b01943de9faf47458f4e82825049da1117d33",
       "apps/maestro/src/core/session-handoff.ts": "sha256:9ee47b4587e9f1bf10248dac4d72913785274b52918c6d065d3427aaf4fb62bf",
+      "apps/maestro/src/core/session-heartbeat.ts": "sha256:b67a621035150d95eaaef84cefce071fbc7a6622ca88a0978cf8bde9c0603509",
       "apps/maestro/src/core/session-ipc.ts": "sha256:9812f6094f953e80e872b2da70914df3f56c1826c9381a87640a2470568168e9",
       "apps/maestro/src/core/session-log.ts": "sha256:215e104f764d11f46ec7e9efa42fe0c485909cfd0212174e9f88f5c3c17b84e2",
       "apps/maestro/src/core/session-name.ts": "sha256:cdbc471554d7e0b0c07840486b14b51f4138e9f737a5ed348936dec13851df2e",
-      "apps/maestro/src/core/session-paths.ts": "sha256:af761dc940939a0623cb6aed44349d78c0b3959cc788f65f43cfbfc19c2827a0",
+      "apps/maestro/src/core/session-paths.ts": "sha256:26c4376fe484b7268632e82a81f2be441283654ce3595eb4172c3dc1e9354797",
       "apps/maestro/src/core/session-permission.ts": "sha256:43b4da22bfc8fb7d967490f853bc99bf7f5cf8ede4b9b80820f8372d92ca87ab",
       "apps/maestro/src/core/session-question.ts": "sha256:a89732188a3cbef636df8519a5dfe40faef14940a4dfe57be4bfcc3510716473",
       "apps/maestro/src/core/session-resume.ts": "sha256:e79500f3d9ad8fe5ad4d14559a80f7ecd3a85b68f9411bc6de53b54d1c3de775",
       "apps/maestro/src/core/session-runtime.ts": "sha256:983430cac67cc15a4461ff6b101072e95e2f3a9ad6bc106ae40dbe64ab1097a4",
       "apps/maestro/src/core/session-scope.ts": "sha256:e1a0628a99b11150537ddb949d90873acc4dcb5a6f85b9f9b7fbd0948c11913c",
-      "apps/maestro/src/core/session-sweep.ts": "sha256:2c67c527797f9223d3aa6525ca4cb656ee4f73b3fb1a9002be4c773b4f979f92",
+      "apps/maestro/src/core/session-sweep.ts": "sha256:ca5cb18f5e0295bfaee5500f5431ac67b78a415c4e2bc1c5d9fd01cbf6c7d053",
       "apps/maestro/src/core/session-title.ts": "sha256:bbd5ff04e065541f9e3291a79b17db5f7aa329da3c39b1895191dd99b18fd9a6",
       "apps/maestro/src/core/session-usage.ts": "sha256:52c717bf9c7cbac6e6e6a2277fbcb98a608ec66c077ac82546abb8c7da0c1bb9",
       "apps/maestro/src/core/write-scope.ts": "sha256:3fe690ea30e77d2a0980380480a173aef4daa51be78d935d3b9a54eecbe4455e",

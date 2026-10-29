@@ -142,7 +142,9 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
   `remove-worker`.
 - **Names and commands are derived, not stored.** `workerNameFor` → `<slug>-<NNN>` (or
   `<slug>-<basename>` with no number); `launchCommandFor` →
-  `claude -n '<name>' '/maestro .claude/maestro-tasks/<task.md>'`, POSIX single-quoted. The
+  `claude -n '<name>' [--model '<m>'] '/maestro .claude/maestro-tasks/<task.md>'`, POSIX
+  single-quoted; `--model` is the project's `worker_model` (`134`, `resolveWorkerModel`), omitted
+  when unset. The
   `maestro-session-name` hook keeps a `claude -n` name (`113`).
 - **`cwd` is `mainCheckoutRoot`**, so run from a worktree it still prints the main checkout as the
   launch directory.

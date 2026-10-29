@@ -7,7 +7,7 @@ Every interaction below computes the next nodes/edges and calls `pushChange` →
   (`findSuccessTerminalId`), then opens the Add step modal anchored at the terminal so the new step
   extends the path.
 - **Add step** (bottom `+` on every node) — `openAddStep(nodeId)` opens the **Add step modal**: a
-  segmented **Agent / Skill / Human Review / Manager Review** picker (`addStepType`). For Agent it renders the shared `InstancePicker`
+  `AddStepKindChoice` (`add-step-kind-choice.tsx`, `138`): **Agent / Skill / Review** kinds (`addStepKind`), where Review adds a **Human / Manager** choice (`addStepReviewType`); `addStepNodeType` combines them into `addStepType`. For Agent it renders the shared `InstancePicker`
   (`src/renderer/src/components/instance-picker.tsx`) — a **Reuse instance / New instance** toggle.
   Reuse lists unplaced instances whose agent is not already placed; New takes a subagent + instance
   name + an `InstanceSkillPicker` (check to select a skill — referenced by default — then a per-row

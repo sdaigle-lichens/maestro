@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "2.3"
-  last-update: 863ff60fdbcc76a204b05bc079a3e20da3b937f4
+  version: "2.4"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -24,8 +24,8 @@ project-local (wins per hook)                 plugin-global (fallback / no-insta
 
 **Both being live is no longer a bug — it is a precedence rule.** The plugin's copy of a hook
 stands down when the project registers that same hook itself, arbitrated at runtime by
-`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by eight
-of the nine plugin hook scripts that have a project twin (`HOOK_SCRIPTS`). The ninth,
+`projectOwnsHook` in `apps/maestro/src/core/hook-arbitration.ts` and called by ten
+of the eleven plugin hook scripts that have a project twin (`HOOK_SCRIPTS`). The eleventh,
 `maestro-channel-write-guard.js`, is **exempt** (`122`): a confinement hook must fail closed, and
 standing down would fail open when the project copy can't run, so both copies always run. So the left column wins per hook, the right column covers any hook the project
 did not register, and neither the app nor this repo touches the user's global configuration to make

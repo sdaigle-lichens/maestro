@@ -2,6 +2,143 @@
   "concept": "updating-maestro",
   "vertices": [
     {
+      "_key": "08bcdecfb2f040e5be17e2e2922065f0",
+      "purpose": "Installs or refreshes the project-local Maestro runtime: copies changed scripts into .claude/scripts, renders the orchestrator skill, updates settings.json hooks and the channel allow rule, seeds maestro.json on first install, stamps runtimeVersion and syncs reports and handoffs, then returns an install report. Refuses before writing if maestro.json is not a parseable v3 config.",
+      "inputs": [
+        "projectRoot: project directory",
+        "pluginRoot: optional plugin directory",
+        "reportsDbPath, projectTagsDbPath, handoffsDbPath: optional store locations"
+      ],
+      "outputs": [
+        "InstallReport: scripts written, hooks added/removed, permissions added, config seeded, runtimeVersion, sync results, warnings and post-install status"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install",
+        "project-local-copies",
+        "idempotent",
+        "config-seed",
+        "runtime-version"
+      ],
+      "sig_seen": "function installRuntime(projectRoot: string, pluginRoot?: string, reportsDbPath?: string, projectTagsDbPath?: string, handoffsDbPath?: string): Promise<InstallReport>",
+      "hash_seen": "22192f0ec33f613562437e82cd76df74733e634a929501f3b0231ee51a0c61cb"
+    },
+    {
+      "_key": "0f06f1059a7f23206d45ea44e0f0d175",
+      "purpose": "Compares two filesystem paths after resolving symlinks on both sides, so the same directory reached through different spellings (e.g. /tmp vs /private/tmp) counts as equal.",
+      "inputs": [
+        "a: first path",
+        "b: second path"
+      ],
+      "outputs": [
+        "true when both paths resolve to the same real location, false otherwise"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-arbitration",
+        "symlink-safe-path"
+      ],
+      "sig_seen": "function samePath(a: string, b: string): boolean",
+      "hash_seen": "5cb25e7884e9dc2084b0e52372c5b23abfb85211e74346ab94d7a97b697e0547"
+    },
+    {
+      "_key": "2265c53e78ff698fc668a519c51eb4a4",
+      "purpose": "Computes the hex SHA-256 digest of a string or buffer; used to compare file content (never mtime) between the shipped and installed copies.",
+      "inputs": [
+        "data: string or Buffer"
+      ],
+      "outputs": [
+        "hex-encoded sha256 digest"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install",
+        "content-hash",
+        "staleness"
+      ],
+      "sig_seen": "function sha256(data: string | Buffer): string",
+      "hash_seen": "f32047b6f384056b8279f02cfdb4d7b1b71d5bdd3132d1cdb7964f64cc619dcf"
+    },
+    {
+      "_key": "3ba712bb1a0769553f65332ffcb882d2",
+      "purpose": "Returns the plugin root directory, falling back to the default location, and throws a user-facing error telling the caller to set MAESTRO_PLUGIN_ROOT when none can be found.",
+      "inputs": [
+        "pluginRoot: optional explicit plugin directory"
+      ],
+      "outputs": [
+        "the resolved plugin root path (throws when none exists)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install",
+        "plugin-root"
+      ],
+      "sig_seen": "function requirePluginRoot(pluginRoot?: string): string",
+      "hash_seen": "d4e272ccc8d60472ca1c435b1e5d42f945f8ceab8decc01af99de8247576db57"
+    },
+    {
+      "_key": "5e81ed592e7d7ae8e9c7206326ea588a",
+      "purpose": "Parses a version string of the form X.Y.Z with an optional prerelease tag into its numeric core and prerelease parts, rejecting anything else.",
+      "inputs": [
+        "v: value of unknown type expected to be a version string"
+      ],
+      "outputs": [
+        "{ core: [major, minor, patch], pre } or null when the input is not a valid version"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "runtime-version",
+        "semver"
+      ],
+      "sig_seen": "function parse(v: unknown): Parsed | null",
+      "hash_seen": "f5596724b42623c6214158e202fa19d4c630a3140b864825cccce8e32b061cd2"
+    },
+    {
+      "_key": "69197352ff8d6877379f9e19a77c91ae",
+      "purpose": "Reports whether a project's Maestro install is present, missing pieces, or stale: compares installed scripts and orchestrator skill against the shipped plugin, checks registered hooks, and detects a project stamped newer than the app (appBehind).",
+      "inputs": [
+        "projectRoot: project directory",
+        "pluginRoot: optional plugin directory"
+      ],
+      "outputs": [
+        "InstallStatus: installed flag, missing/out-of-date scripts, hooks registered/missing, runtime digests, stale flag, appBehind notice"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install-status",
+        "staleness",
+        "content-hash",
+        "downgrade-guard"
+      ],
+      "sig_seen": "function installStatus(projectRoot: string, pluginRoot?: string): Promise<InstallStatus>",
+      "hash_seen": "d631e5db7d08e5c1e2f2674c616bd3baddac8594048edd34087f678347d7a1e9"
+    },
+    {
+      "_key": "75e6a7398e6688016450a9deffab4ce2",
+      "purpose": "Reads the plugin.json version the app ships; this is the value a fresh install or refresh stamps into a project's maestro.json as runtimeVersion.",
+      "inputs": [
+        "pluginRoot: optional explicit plugin directory"
+      ],
+      "outputs": [
+        "the version string from .claude-plugin/plugin.json (throws if missing)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "runtime-version",
+        "install",
+        "version-bump"
+      ],
+      "sig_seen": "function shippedRuntimeVersion(pluginRoot?: string): string",
+      "hash_seen": "216886202d5caefa613b07fb18772c2ba420015d7ff80ce8080447480a3ed6cc"
+    },
+    {
       "_key": "78ee71e315944a08ab4c40bc00d076fb",
       "purpose": "Names the eight Claude Code hook events the install can register.",
       "inputs": [],
@@ -15,7 +152,362 @@
       ],
       "sig_seen": "export type HookEvent =",
       "hash_seen": "d037650b3849fef9d11999293a520735913d0d5c18e7a080845da8b9be7c6589"
+    },
+    {
+      "_key": "9b36c290c5bc96838005735d037ec4cc",
+      "purpose": "Creates a directory (and its parents) if it does not already exist.",
+      "inputs": [
+        "dir: directory path"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install",
+        "filesystem"
+      ],
+      "sig_seen": "function ensureDir(dir: string): void",
+      "hash_seen": "db31de156a427534ccb60f7844c92568425e7c791268a14087f800f9cf64f042"
+    },
+    {
+      "_key": "b69160d43445f6b4c17a9812b1429749",
+      "purpose": "Returns the path of the project's rendered orchestrator skill, .claude/skills/maestro/SKILL.md.",
+      "inputs": [
+        "projectRoot: project directory"
+      ],
+      "outputs": [
+        "absolute path to the orchestrator SKILL.md"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "orchestrator-skill",
+        "install"
+      ],
+      "sig_seen": "function orchestratorSkillPath(projectRoot: string): string",
+      "hash_seen": "6d98ae5d062e90ff4ebb8483d4b775bff08c50b1b43598be9388ba8917d7fde2"
+    },
+    {
+      "_key": "bc01c999064b014cf8581fac17ad95ae",
+      "purpose": "Joins a project-relative destination path written with forward slashes onto the project root using the platform separator.",
+      "inputs": [
+        "projectRoot: project directory",
+        "dest: slash-separated relative path"
+      ],
+      "outputs": [
+        "absolute path inside the project"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "install",
+        "filesystem"
+      ],
+      "sig_seen": "function projectPath(projectRoot: string, dest: string): string",
+      "hash_seen": "8b30392325aee3a0382ec8bf4a5e088cb1c1e3015630650a7dcc4a1898e1f5f8"
+    },
+    {
+      "_key": "e70a5c80079b260b34dcc42760bc13f5",
+      "purpose": "Decides whether a plugin-side copy of a hook script should stand down because the project registers the same hook in its own .claude settings files; the project's own copy never yields.",
+      "inputs": [
+        "scriptPath: the running script (__filename)",
+        "cwd: project root from the hook payload",
+        "event: optional hook_event_name to limit the check"
+      ],
+      "outputs": [
+        "true if the project's settings.json or settings.local.json registers this script's twin for the event(s), else false"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "hook-arbitration",
+        "project-local-hook",
+        "precedence"
+      ],
+      "sig_seen": "function projectOwnsHook(scriptPath: string, cwd: string, event?: string): boolean",
+      "hash_seen": "e1a3d4764117b253c4d452ecef66439cda2f36175c228aaf88fbecb6cdc2fb56"
     }
   ],
-  "edges": []
+  "edges": [
+    {
+      "_key": "04266c844e803b1cbca9344f3b37e324",
+      "reason": "installStatus calls orchestratorSkillPath at line 722 to locate the installed orchestrator skill."
+    },
+    {
+      "_key": "043aa4a14cd13165940a2271dc044fd2",
+      "reason": "installRuntime calls refusedReport at line 822 to return a refusal without writing when maestro.json is unparseable."
+    },
+    {
+      "_key": "09029afb15b636da0e5d90921601a4e2",
+      "reason": "installRuntime calls ensureDir at line 840 to create the destination directory before writing a script."
+    },
+    {
+      "_key": "0e77383fe762b5305af2d3d32def7eac",
+      "reason": "installStatus calls projectPath at line 712 to map each runtime asset's destination into the project."
+    },
+    {
+      "_key": "0ec6a155d0b515775478f1f6298459f9",
+      "reason": "installStatus calls projectPath at line 775 to locate each installed file when computing the installed runtime digest."
+    },
+    {
+      "_key": "126a24033b425479b1992b9b342c1ecb",
+      "reason": "installRuntime calls a config-reading helper at line 945 (readConfig or duplicateAgentTypes) to re-read maestro.json for the duplicate-agent-type report."
+    },
+    {
+      "_key": "1b05d6d701f4e669ea587f735307cd1e",
+      "reason": "installStatus calls shippedRuntimeVersion at line 752 to get the version the app ships for the downgrade comparison."
+    },
+    {
+      "_key": "1e5433138d81dc42c028385513a500b2",
+      "reason": "installRuntime calls readAllAgentProjectTags at line 882 to load per-agent project tags for the first-install seed."
+    },
+    {
+      "_key": "1f16f1d45542410bcc0d8267cd07d71a",
+      "reason": "projectOwnsHook calls settingsRegisterScript at line 145 to test whether a project settings event registers the twin script."
+    },
+    {
+      "_key": "20607e14c51d59d5bc338bc74f91672f",
+      "reason": "projectOwnsHook calls projectTwinName at line 132 to derive the project-side script name it looks for."
+    },
+    {
+      "_key": "266cd88d572bb99c02edfe13a59326cc",
+      "reason": "installRuntime calls readAllProjectTags at line 898 to load the project-tag catalog that gates detected categories."
+    },
+    {
+      "_key": "2b4b0eeaa5c39e86a4cc71908c9cb9b7",
+      "reason": "installRuntime calls projectPath at line 837 to map each asset's destination into the project."
+    },
+    {
+      "_key": "2ca87ac23acfc8096b54d3b0b2604e62",
+      "reason": "installRuntime calls syncProjectHandoffs at line 939 to sync handoff defaults into the project's config."
+    },
+    {
+      "_key": "2cc8dc6f7de873d1907b8e631c791e5a",
+      "reason": "requirePluginRoot calls defaultPluginRoot at line 96 as its fallback when no explicit root is given."
+    },
+    {
+      "_key": "323efa9bcb0852ca6fc60d49abb55c6e",
+      "reason": "installRuntime calls defaultV3Config at line 902 to build the first-install config seed."
+    },
+    {
+      "_key": "32a8416c546c4cb874f6bf386d2e937b",
+      "reason": "installRuntime calls seedSkillsFor at line 902 to provide the default start/end skill lists for the seeded config."
+    },
+    {
+      "_key": "32a8c50aa987ca5a7bb7e8041eb248bc",
+      "reason": "installStatus calls compareRuntimeVersions at line 754 to decide whether the project is newer than the shipped runtime."
+    },
+    {
+      "_key": "3d966f83605beb6ca050fa83883b8e20",
+      "reason": "installRuntime calls installStatus at line 947 to return the post-install status in the report."
+    },
+    {
+      "_key": "4030a0c553d3d5b0a95e5e79305979a4",
+      "reason": "installRuntime calls writeConfig at line 920 to save the config after filling missing skill lists."
+    },
+    {
+      "_key": "4599eb26aadb32485d3b4e880e9c7f6c",
+      "reason": "installRuntime calls settingsPathFor at line 813 to locate the project's settings.json."
+    },
+    {
+      "_key": "4a2a667f47e7a025f1ec2f7270494ac0",
+      "reason": "installStatus calls readJsonSafe at line 751 to read the stamped runtimeVersion from maestro.json."
+    },
+    {
+      "_key": "4c3533821c6e77f5b0b0e5d2934d08e8",
+      "reason": "installRuntime calls installOrchestratorSkill at line 827 to render the orchestrator SKILL.md from the template."
+    },
+    {
+      "_key": "4de153ac9bc7cfffbffee515e13c6794",
+      "reason": "installRuntime calls seedMissingSkillLists at line 918 to fill start/end skill lists missing from an existing config."
+    },
+    {
+      "_key": "4ee654c3c8b282c510a56dded848288e",
+      "reason": "installStatus calls hasHook at line 744 to check each hook registration in settings."
+    },
+    {
+      "_key": "53614aac192c595f5ec71df069b9c892",
+      "reason": "installRuntime calls readAllSkillTags at line 888 to load the skill tag store for the skill map."
+    },
+    {
+      "_key": "5a1b4b78f026ad27f8bea72e4efbe139",
+      "reason": "installRuntime calls detectImplAgents at line 878 to detect the implementation agents the repo needs on first install."
+    },
+    {
+      "_key": "5e900f3cc31f3fb8e2f0471fc3c33130",
+      "reason": "installRuntime calls ensureRepoRootGitignore at line 865 to update the repo-root .gitignore."
+    },
+    {
+      "_key": "5f1d95339aaab9b94f3bbefc59e5cc58",
+      "reason": "installRuntime calls updateHookMatchers at line 849 to move existing hook matchers to their current form in settings."
+    },
+    {
+      "_key": "7236cd2827420888ff44c87b02cf3547",
+      "reason": "installStatus types settings as Settings at line 734."
+    },
+    {
+      "_key": "732159b312836f6ab78e3822d1a79f0c",
+      "reason": "installRuntime calls a helper at line 930 (writeRuntimeVersion) to stamp runtimeVersion into maestro.json."
+    },
+    {
+      "_key": "79f4158da8a74c1d131aca1b23c4f9a1",
+      "reason": "installRuntime calls readConfig at line 877 to decide whether this is a first install with no config."
+    },
+    {
+      "_key": "7b25a736919ca3bad19351a0bb51e263",
+      "reason": "installRuntime calls seededAgentNames at line 884 to list the agent names the seed should include."
+    },
+    {
+      "_key": "7d64e567ca572ca186781dcdc1f30e0e",
+      "reason": "installRuntime calls readAllAgentTypes at line 881 to load each agent's type for the seed."
+    },
+    {
+      "_key": "7df3bfd6188de384bd707d4cf563dd09",
+      "reason": "installStatus calls maestroJsonPath at line 751 to find the config whose stamped version it compares."
+    },
+    {
+      "_key": "7ea9a4d6d72355d5d93f1f97ee78ed46",
+      "reason": "installRuntime calls maestroJsonPath at line 916 to locate the config before the skill-list repair."
+    },
+    {
+      "_key": "7f0c0fb0e8f462294b4cf9563df64380",
+      "reason": "installRuntime calls writeJsonAtomic at line 853 to write settings.json atomically after hook changes."
+    },
+    {
+      "_key": "7fbbcbb906c390c9df1f1a297e8c6035",
+      "reason": "installRuntime calls projectPath at line 859 to locate each retired script to delete."
+    },
+    {
+      "_key": "81bc10a3216b35e9a0f9b643b1e38968",
+      "reason": "installRuntime calls sha256 at line 839 to skip scripts whose installed copy already matches."
+    },
+    {
+      "_key": "847b0155edf86de1e57aa4f032e2d519",
+      "reason": "installRuntime calls skillMapFromTags at line 887 to build the skill-to-agent map for the seed."
+    },
+    {
+      "_key": "88f179bdd0511bb7a5ba5a3d67fcc087",
+      "reason": "installRuntime calls removeRetiredHooks at line 848 to drop hook registrations for retired scripts."
+    },
+    {
+      "_key": "893a336ad41ecdd29b722d4c565128a0",
+      "reason": "installRuntime calls ensureDir at line 846 to make sure .claude/scripts exists even when nothing needed copying."
+    },
+    {
+      "_key": "8a1dbaac9ce4871e50e7a72f236aafeb",
+      "reason": "installStatus calls syncManagedRegions at line 728 to detect whether the installed orchestrator skill differs from the template."
+    },
+    {
+      "_key": "8c3b7ba228f8746638f855ace9feae30",
+      "reason": "installStatus calls readSettings at line 737 to read the project's settings.json for hook checks."
+    },
+    {
+      "_key": "8d0d42e2870f3acc08faf8e91b5e6899",
+      "reason": "installRuntime calls a config-reading helper at line 945 (readConfig or duplicateAgentTypes) to re-read maestro.json for the duplicate-agent-type report."
+    },
+    {
+      "_key": "905212433448408cecca2a5cafc21e26",
+      "reason": "installStatus calls requirePluginRoot at line 706 to resolve the plugin directory it compares against."
+    },
+    {
+      "_key": "93c66665cfb624b86ac490953c6a6d28",
+      "reason": "installStatus calls settingsPathFor at line 733 to locate the project's settings.json."
+    },
+    {
+      "_key": "95db4ee3d795cb8ef25323c4dbca21a6",
+      "reason": "installRuntime calls maestroJsonPath at line 819 to locate maestro.json for the refusal preflight."
+    },
+    {
+      "_key": "97e6c2601045bc6b190a0fef4d401375",
+      "reason": "parse types its return value as Parsed at line 28."
+    },
+    {
+      "_key": "985c3736d34ee5a60a0fc684b1f65152",
+      "reason": "installStatus calls sha256 at line 717 to compare installed and shipped script content."
+    },
+    {
+      "_key": "98a93c074608e49813dbd995f9e6b37b",
+      "reason": "installRuntime calls requirePluginRoot at line 810 to resolve the plugin directory."
+    },
+    {
+      "_key": "99dc41dcb13b533428852c467000c203",
+      "reason": "installRuntime calls addMissingHooks at line 850 to register any Maestro hooks the project lacks."
+    },
+    {
+      "_key": "9a1e0adc0d7f755242a6258f33d959b6",
+      "reason": "projectOwnsHook calls samePath at line 130 to recognise when the running script is already the project's own copy."
+    },
+    {
+      "_key": "9aece7ed5dec4c27997372fd4ea5e580",
+      "reason": "installStatus calls runtimeDigest at line 774 to compute the installed runtime id from the project's copies."
+    },
+    {
+      "_key": "9c1c38c5a8089c47b38f8079f4aef823",
+      "reason": "projectOwnsHook types a local variable as Settings at line 134."
+    },
+    {
+      "_key": "9ea6d632c3a18ecc78fc57b97b69bf52",
+      "reason": "installRuntime calls runtimeAssets at line 825 to get the list of files to copy into the project."
+    },
+    {
+      "_key": "a1be63559ece12ed8df2c0a31e549874",
+      "reason": "installRuntime calls orchestratorSkillPath at line 829 to pick the destination of the rendered orchestrator skill."
+    },
+    {
+      "_key": "a3160b5884af288d240ae016528ac37f",
+      "reason": "installRuntime calls maestroConfigRefusal at line 821 to decide whether an existing maestro.json must block the install."
+    },
+    {
+      "_key": "a4616a1d04a3c4ddf2195d8f5ad031e2",
+      "reason": "installRuntime calls readSettings at line 814 to parse settings.json as a preflight before writing."
+    },
+    {
+      "_key": "ab8524e25724717e0c7942123ee96895",
+      "reason": "projectOwnsHook types the parsed settings as Settings at line 138."
+    },
+    {
+      "_key": "ac5f66db3975ffedc53592677824551d",
+      "reason": "installRuntime calls readJsonSafe at line 916 to read maestro.json raw when repairing skill lists."
+    },
+    {
+      "_key": "b4183bee1f4f15d917497aedbf815530",
+      "reason": "shippedRuntimeVersion calls requirePluginRoot at line 114 to resolve and validate the plugin directory before reading its manifest."
+    },
+    {
+      "_key": "b61d8db8f623781762934c01c0ea6a4e",
+      "reason": "installRuntime calls findRepoRoot at line 865 to locate the repository root for the .gitignore update."
+    },
+    {
+      "_key": "beab0edff6bd06a2b70740ee6cde85c5",
+      "reason": "installRuntime calls shippedRuntimeVersion at line 929 to get the version to stamp into maestro.json."
+    },
+    {
+      "_key": "c156bd4323c7008d409b0b713ed7c246",
+      "reason": "installStatus calls runtimeDigest at line 773 to compute the shipped runtime id from the plugin's files."
+    },
+    {
+      "_key": "c20fabdbc044fead7873c1aee040a00b",
+      "reason": "installRuntime calls syncProjectReports at line 935 to sync report defaults into the project's config."
+    },
+    {
+      "_key": "d64ea12057a444d8e2df1ab8412becbd",
+      "reason": "installRuntime calls addChannelAllowRule at line 851 to add the channel Write allow rule to settings."
+    },
+    {
+      "_key": "dcb1a37d5fb520a8948895639b3931d3",
+      "reason": "installStatus calls maestroJsonPath at line 767 to report whether maestro.json exists."
+    },
+    {
+      "_key": "dcf9fe008a42d41b3268618f380c10d7",
+      "reason": "installRuntime calls seedSkillsFor at line 918 to supply default skill lists for the repair."
+    },
+    {
+      "_key": "e44a42c2a5ecc7bec56107a3facc2cab",
+      "reason": "installStatus calls runtimeAssets at line 707 to get the list of files a project install must hold."
+    },
+    {
+      "_key": "ff95c52f45700f207098e61b6b1fc897",
+      "reason": "installRuntime calls writeConfig at line 905 to save the first-install seeded config."
+    }
+  ]
 }

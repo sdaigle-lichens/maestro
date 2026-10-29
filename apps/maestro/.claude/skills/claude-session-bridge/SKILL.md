@@ -3,8 +3,8 @@ name: claude-session-bridge
 description: "Explains how the Maestro desktop app runs Claude: the preview→token→run pipeline that is the app's whole security design, the live Agent SDK session in the pane, the four routes by which a tool call can be refused, and the pure modules that bound what a session may read, write, spend and ask (read-scope, write-scope, session-scope, session-budget, permission-registry, session-question, session-resume, session-handoff). Use when working inside apps/maestro and asking how a run is started, why a run was refused a read or a write, where a permission prompt comes from, how a budget ceiling is lifted, how a session resumes a terminal conversation, or why a module here must not import fs or child_process."
 metadata:
   type: concept-skill
-  version: "2.5"
-  last-update: 74a1e0b12230561f9c51516162adab9c7b3faa99
+  version: "2.6"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Claude session bridge
