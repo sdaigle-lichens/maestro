@@ -142,8 +142,8 @@ function skillDirIds(skillsDir) {
     return [];
   }
 }
-function readEnabledPlugins(projectRoot, homeDir = import_node_os.default.homedir()) {
-  const state = /* @__PURE__ */ new Map();
+function readSkillSettings(projectRoot, homeDir = import_node_os.default.homedir()) {
+  const out = { plugins: /* @__PURE__ */ new Map(), skillOverrides: {}, disableBundledSkills: false };
   const files = [
     import_node_path3.default.join(homeDir, ".claude", "settings.json"),
     import_node_path3.default.join(projectRoot, ".claude", "settings.json"),
@@ -151,10 +151,23 @@ function readEnabledPlugins(projectRoot, homeDir = import_node_os.default.homedi
   ];
   for (const file of files) {
     const json = readJson(file);
-    if (!isObject(json) || !isObject(json.enabledPlugins)) continue;
-    for (const [key, value] of Object.entries(json.enabledPlugins)) state.set(pluginName(key), value === true);
+    if (!isObject(json)) continue;
+    if (isObject(json.enabledPlugins)) {
+      for (const [key, value] of Object.entries(json.enabledPlugins)) {
+        if (typeof value === "boolean") out.plugins.set(pluginName(key), value);
+      }
+    }
+    if (isObject(json.skillOverrides)) {
+      for (const [key, value] of Object.entries(json.skillOverrides)) {
+        if (typeof value === "string") out.skillOverrides[key] = value;
+      }
+    }
+    if (typeof json.disableBundledSkills === "boolean") out.disableBundledSkills = json.disableBundledSkills;
   }
-  return Array.from(state, ([name, on]) => on ? name : "").filter(Boolean);
+  return out;
+}
+function namesWhere(plugins, on) {
+  return Array.from(plugins, ([name, v]) => v === on ? name : "").filter(Boolean);
 }
 function readInstalledPluginSkills(homeDir) {
   const out = {};
@@ -171,18 +184,47 @@ function readInstalledPluginSkills(homeDir) {
   return out;
 }
 function readSkillSources(projectRoot, homeDir = import_node_os.default.homedir()) {
+  const settings = readSkillSettings(projectRoot, homeDir);
   return {
     projectSkillIds: walkProjectSkillIds(projectRoot).map((e) => e.id),
     userSkillIds: skillDirIds(import_node_path3.default.join(homeDir, ".claude", "skills")),
-    enabledPlugins: readEnabledPlugins(projectRoot, homeDir),
-    installedPluginSkills: readInstalledPluginSkills(homeDir)
+    enabledPlugins: namesWhere(settings.plugins, true),
+    installedPluginSkills: readInstalledPluginSkills(homeDir),
+    disabledPlugins: namesWhere(settings.plugins, false),
+    skillOverrides: settings.skillOverrides,
+    disableBundledSkills: settings.disableBundledSkills
   };
+}
+var CLAUDE_CODE_BUNDLED_SKILLS = [
+  "artifact-capabilities",
+  "artifact-diagramming",
+  "batch",
+  "claude-api",
+  "code-review",
+  "dataviz",
+  "debug",
+  "fewer-permission-prompts",
+  "loop",
+  "run",
+  "run-skill-generator",
+  "simplify",
+  "update-config",
+  "verify"
+];
+function skillDisabledReason(sources, name, plugin) {
+  const keys = plugin ? [`${plugin}:${name}`, name] : [name];
+  const key = keys.find((k) => Object.prototype.hasOwnProperty.call(sources.skillOverrides, k));
+  if (key !== void 0 && sources.skillOverrides[key] === "off") return "skill-disabled";
+  if (plugin && sources.disabledPlugins.includes(plugin)) return "plugin-not-enabled";
+  return null;
 }
 function whyUnavailable(sources, id) {
   const colon = id.indexOf(":");
   if (colon > 0) {
     const plugin = id.slice(0, colon);
     const skill = id.slice(colon + 1);
+    const disabled = skillDisabledReason(sources, skill, plugin);
+    if (disabled) return disabled;
     const shipped = sources.installedPluginSkills[plugin];
     const enabled = sources.enabledPlugins.includes(plugin);
     if (!shipped && !enabled) return "plugin-not-installed";
@@ -190,8 +232,17 @@ function whyUnavailable(sources, id) {
     if (shipped && !shipped.includes(skill)) return "skill-not-in-plugin";
     return null;
   }
-  if (sources.projectSkillIds.includes(id) || sources.userSkillIds.includes(id)) return null;
-  if (Object.values(sources.installedPluginSkills).some((skills) => skills.includes(id))) return null;
+  if (sources.projectSkillIds.includes(id) || sources.userSkillIds.includes(id)) {
+    return skillDisabledReason(sources, id);
+  }
+  const shippers = Object.entries(sources.installedPluginSkills).filter(([, skills]) => skills.includes(id));
+  if (shippers.length > 0) {
+    const reasons = shippers.map(([plugin]) => skillDisabledReason(sources, id, plugin));
+    return reasons.includes(null) ? null : reasons[0];
+  }
+  if (CLAUDE_CODE_BUNDLED_SKILLS.includes(id)) {
+    return sources.disableBundledSkills ? "bundled-skills-disabled" : skillDisabledReason(sources, id);
+  }
   return "not-found";
 }
 function firstAvailableSkill(sources, candidates) {
@@ -278,6 +329,10 @@ function findStaleSkillRefs(projectRoot, cfg, homeDir) {
         return `"${d.id}" (${used}) names plugin "${d.id.split(":")[0]}", which is installed but not enabled for this project. Enable it, or remove the reference in the Maestro app.`;
       case "skill-not-in-plugin":
         return `"${d.id}" (${used}): the plugin is enabled but ships no such skill. Fix the id in the Maestro app.`;
+      case "skill-disabled":
+        return `"${d.id}" (${used}) is switched off by skillOverrides in this project's or the user's settings. Remove the override, or remove the reference in the Maestro app.`;
+      case "bundled-skills-disabled":
+        return `"${d.id}" (${used}) is a Claude Code built-in skill and disableBundledSkills is true in this project's or the user's settings. Unset it, or remove the reference in the Maestro app.`;
       default:
         return `"${d.id}" (${used}) is not a project, user or installed-plugin skill. Remove the reference in the Maestro app, or add the skill.`;
     }

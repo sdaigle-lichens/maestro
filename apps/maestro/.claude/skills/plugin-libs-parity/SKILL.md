@@ -85,7 +85,7 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed` (also re-exports `maestroConfigRefusal` from `config-usable.ts`, `096` — rebuild after editing that file), `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
-`maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check), `maestro-agent-sync` (`031`),
+`maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check; `142` adds the disable decision, `skillDisabledReason`/`isSkillListed`/`readDisableRules`, which `discoverSkills` also imports, so an edit here changes the app's skill lists too), `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
 `maestro-agent-fork`, `maestro-rule-move` (`081`), `maestro-skill-lists` (`089`: `resolveSkillLists`, behind both Step-1/end-skills scripts) and `maestro-epic` (`084`: epics, the report
 inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and

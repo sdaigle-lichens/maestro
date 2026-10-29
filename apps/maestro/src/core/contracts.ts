@@ -32,7 +32,13 @@ export type {
 import type { MaestroConfigV3, MaestroWorkflowV3 } from "./types.js";
 
 /** Why a skill id does not resolve — what a person would have to do about it. */
-export type UnavailableReason = "plugin-not-installed" | "plugin-not-enabled" | "skill-not-in-plugin" | "not-found";
+export type UnavailableReason =
+  | "plugin-not-installed"
+  | "plugin-not-enabled"
+  | "skill-not-in-plugin"
+  | "skill-disabled"
+  | "bundled-skills-disabled"
+  | "not-found";
 
 export interface DanglingSkillRef {
   id: string;

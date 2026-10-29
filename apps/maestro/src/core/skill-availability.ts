@@ -31,7 +31,16 @@ export interface SkillSources {
   enabledPlugins: string[];
   /** Skill ids each INSTALLED plugin ships, by plugin name. Enabled or not. */
   installedPluginSkills: Record<string, string[]>;
+  /** Plugin names whose merged `enabledPlugins` value is explicitly `false`. Absent is not disabled. */
+  disabledPlugins: string[];
+  /** Merged `skillOverrides` (key: skill name or `plugin:skill`, value as written, e.g. "off"). */
+  skillOverrides: Record<string, string>;
+  /** Merged `disableBundledSkills`: Claude Code's own built-in skills are switched off. */
+  disableBundledSkills: boolean;
 }
+
+/** What decides whether a skill is switched off. A subset of `SkillSources`. */
+export type DisableRules = Pick<SkillSources, "skillOverrides" | "disabledPlugins">;
 
 function readJson(file: string): unknown {
   try {
@@ -61,13 +70,21 @@ function skillDirIds(skillsDir: string): string[] {
   }
 }
 
+/** What the settings files say about skills, merged. */
+export interface SkillSettings {
+  /** `enabledPlugins` by plugin name: `true` on, `false` off, absent when never mentioned. */
+  plugins: Map<string, boolean>;
+  skillOverrides: Record<string, string>;
+  disableBundledSkills: boolean;
+}
+
 /**
- * Plugins whose `enabledPlugins` value is `true` in the project's `settings.json` /
- * `settings.local.json` or the user's `settings.json`. A later file overrides an earlier one, so a
- * project can switch off what the user switched on.
+ * The user's `settings.json`, then the project's `settings.json`, then its `settings.local.json`: a
+ * later file overrides an earlier one key by key, so a project can switch off what the user switched
+ * on and the reverse. An unreadable or malformed file, or a value of the wrong type, is skipped.
  */
-export function readEnabledPlugins(projectRoot: string, homeDir: string = os.homedir()): string[] {
-  const state = new Map<string, boolean>();
+export function readSkillSettings(projectRoot: string, homeDir: string = os.homedir()): SkillSettings {
+  const out: SkillSettings = { plugins: new Map(), skillOverrides: {}, disableBundledSkills: false };
   const files = [
     path.join(homeDir, ".claude", "settings.json"),
     path.join(projectRoot, ".claude", "settings.json"),
@@ -75,10 +92,29 @@ export function readEnabledPlugins(projectRoot: string, homeDir: string = os.hom
   ];
   for (const file of files) {
     const json = readJson(file);
-    if (!isObject(json) || !isObject(json.enabledPlugins)) continue;
-    for (const [key, value] of Object.entries(json.enabledPlugins)) state.set(pluginName(key), value === true);
+    if (!isObject(json)) continue;
+    if (isObject(json.enabledPlugins)) {
+      for (const [key, value] of Object.entries(json.enabledPlugins)) {
+        if (typeof value === "boolean") out.plugins.set(pluginName(key), value);
+      }
+    }
+    if (isObject(json.skillOverrides)) {
+      for (const [key, value] of Object.entries(json.skillOverrides)) {
+        if (typeof value === "string") out.skillOverrides[key] = value;
+      }
+    }
+    if (typeof json.disableBundledSkills === "boolean") out.disableBundledSkills = json.disableBundledSkills;
   }
-  return Array.from(state, ([name, on]) => (on ? name : "")).filter(Boolean);
+  return out;
+}
+
+/** Plugins whose merged `enabledPlugins` value is `true`. */
+export function readEnabledPlugins(projectRoot: string, homeDir: string = os.homedir()): string[] {
+  return namesWhere(readSkillSettings(projectRoot, homeDir).plugins, true);
+}
+
+function namesWhere(plugins: Map<string, boolean>, on: boolean): string[] {
+  return Array.from(plugins, ([name, v]) => (v === on ? name : "")).filter(Boolean);
 }
 
 function readInstalledPluginSkills(homeDir: string): Record<string, string[]> {
@@ -98,30 +134,98 @@ function readInstalledPluginSkills(homeDir: string): Record<string, string[]> {
 
 /** Read every source. `homeDir` is a parameter so a test can point it at a scratch directory. */
 export function readSkillSources(projectRoot: string, homeDir: string = os.homedir()): SkillSources {
+  const settings = readSkillSettings(projectRoot, homeDir);
   return {
     projectSkillIds: walkProjectSkillIds(projectRoot).map((e) => e.id),
     userSkillIds: skillDirIds(path.join(homeDir, ".claude", "skills")),
-    enabledPlugins: readEnabledPlugins(projectRoot, homeDir),
+    enabledPlugins: namesWhere(settings.plugins, true),
     installedPluginSkills: readInstalledPluginSkills(homeDir),
+    disabledPlugins: namesWhere(settings.plugins, false),
+    skillOverrides: settings.skillOverrides,
+    disableBundledSkills: settings.disableBundledSkills,
   };
 }
 
 export type { UnavailableReason };
 
 /**
+ * Claude Code's own built-in skills. `disableBundledSkills` switches them off; otherwise a reference
+ * to one resolves. Maestro lists none of them itself, so this only answers `whyUnavailable`.
+ *
+ * Source: the official commands reference (https://code.claude.com/docs/en/commands.md), which marks
+ * bundled skills "Skill". The docs never state the exact set `disableBundledSkills` hides, so this
+ * is deliberately conservative: only entries marked as bundled skills, and NOT `doctor` (typable
+ * even when the setting is on) nor the availability-dependent ones (design, design-sync, slides,
+ * claude-in-chrome, workflow-authoring). A real project, user or plugin skill with one of these
+ * names always wins in `whyUnavailable`, so it is never flagged as bundled.
+ */
+export const CLAUDE_CODE_BUNDLED_SKILLS = [
+  "artifact-capabilities",
+  "artifact-diagramming",
+  "batch",
+  "claude-api",
+  "code-review",
+  "dataviz",
+  "debug",
+  "fewer-permission-prompts",
+  "loop",
+  "run",
+  "run-skill-generator",
+  "simplify",
+  "update-config",
+  "verify",
+];
+
+/**
+ * Why a skill the project has SWITCHED OFF is not usable, or `null` when nothing switches it off.
+ * This is the one disable decision: the skill lists (`discoverSkills`) and the dangling-reference
+ * check both ask it, so they cannot disagree.
+ *
+ *  - `skillOverrides` set to "off", looked up as `plugin:name` first, then the bare `name`; the
+ *    first key present decides, so an explicit "on" beats an "off" on the other spelling;
+ *  - the owning plugin set to `false` in `enabledPlugins` ("plugin-not-enabled", as for a
+ *    plugin-qualified id).
+ *
+ * `plugin` is the plugin that ships the skill; omit it for a project or user skill.
+ */
+export function skillDisabledReason(sources: DisableRules, name: string, plugin?: string): UnavailableReason | null {
+  const keys = plugin ? [`${plugin}:${name}`, name] : [name];
+  const key = keys.find((k) => Object.prototype.hasOwnProperty.call(sources.skillOverrides, k));
+  if (key !== undefined && sources.skillOverrides[key] === "off") return "skill-disabled";
+  if (plugin && sources.disabledPlugins.includes(plugin)) return "plugin-not-enabled";
+  return null;
+}
+
+/** True when nothing in the settings switches `name` off. The list filter's question. */
+export function isSkillListed(sources: DisableRules, name: string, plugin?: string): boolean {
+  return skillDisabledReason(sources, name, plugin) === null;
+}
+
+/** Just the settings a list filter needs, without walking the skill directories. */
+export function readDisableRules(projectRoot: string, homeDir: string = os.homedir()): DisableRules {
+  const settings = readSkillSettings(projectRoot, homeDir);
+  return { skillOverrides: settings.skillOverrides, disabledPlugins: namesWhere(settings.plugins, false) };
+}
+
+/**
  * `null` when `id` resolves, otherwise why not.
  *
+ *  - a skill switched off (see `skillDisabledReason`) is unavailable with that reason even when it
+ *    exists on disk: it is what a reference must be flagged for rather than silently dropped.
  *  - `plugin:skill` resolves when that plugin is enabled and ships the skill. When the installed
  *    plugin list is unreadable the plugin being enabled is taken as enough — better a missed
  *    warning than a false one.
  *  - a bare id resolves as a project or user skill, or as a skill of any installed plugin (Claude
- *    Code resolves an unambiguous bare plugin skill name).
+ *    Code resolves an unambiguous bare plugin skill name), or as a Claude Code built-in skill
+ *    unless `disableBundledSkills`.
  */
 export function whyUnavailable(sources: SkillSources, id: string): UnavailableReason | null {
   const colon = id.indexOf(":");
   if (colon > 0) {
     const plugin = id.slice(0, colon);
     const skill = id.slice(colon + 1);
+    const disabled = skillDisabledReason(sources, skill, plugin);
+    if (disabled) return disabled;
     const shipped = sources.installedPluginSkills[plugin];
     const enabled = sources.enabledPlugins.includes(plugin);
     if (!shipped && !enabled) return "plugin-not-installed";
@@ -129,8 +233,17 @@ export function whyUnavailable(sources: SkillSources, id: string): UnavailableRe
     if (shipped && !shipped.includes(skill)) return "skill-not-in-plugin";
     return null;
   }
-  if (sources.projectSkillIds.includes(id) || sources.userSkillIds.includes(id)) return null;
-  if (Object.values(sources.installedPluginSkills).some((skills) => skills.includes(id))) return null;
+  if (sources.projectSkillIds.includes(id) || sources.userSkillIds.includes(id)) {
+    return skillDisabledReason(sources, id);
+  }
+  const shippers = Object.entries(sources.installedPluginSkills).filter(([, skills]) => skills.includes(id));
+  if (shippers.length > 0) {
+    const reasons = shippers.map(([plugin]) => skillDisabledReason(sources, id, plugin));
+    return reasons.includes(null) ? null : reasons[0];
+  }
+  if (CLAUDE_CODE_BUNDLED_SKILLS.includes(id)) {
+    return sources.disableBundledSkills ? "bundled-skills-disabled" : skillDisabledReason(sources, id);
+  }
   return "not-found";
 }
 
@@ -273,6 +386,10 @@ export function findStaleSkillRefs(projectRoot: string, cfg: unknown, homeDir?: 
         return `"${d.id}" (${used}) names plugin "${d.id.split(":")[0]}", which is installed but not enabled for this project. Enable it, or remove the reference in the Maestro app.`;
       case "skill-not-in-plugin":
         return `"${d.id}" (${used}): the plugin is enabled but ships no such skill. Fix the id in the Maestro app.`;
+      case "skill-disabled":
+        return `"${d.id}" (${used}) is switched off by skillOverrides in this project's or the user's settings. Remove the override, or remove the reference in the Maestro app.`;
+      case "bundled-skills-disabled":
+        return `"${d.id}" (${used}) is a Claude Code built-in skill and disableBundledSkills is true in this project's or the user's settings. Unset it, or remove the reference in the Maestro app.`;
       default:
         return `"${d.id}" (${used}) is not a project, user or installed-plugin skill. Remove the reference in the Maestro app, or add the skill.`;
     }

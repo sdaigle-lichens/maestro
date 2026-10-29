@@ -703,5 +703,13 @@
   "141-a-session-waiting-on-the-user-keeps-its-claim-live.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "142-hide-project-disabled-skills-from-the-maestro-app-s-skill-lists.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "143-keep-the-review-file-path-visible-in-every-approval-summary.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
