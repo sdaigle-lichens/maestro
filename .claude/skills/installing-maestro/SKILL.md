@@ -1,6 +1,6 @@
 ---
 name: installing-maestro
-description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json is hooks-only and never carries a permissions entry, or what --purge actually deletes."
+description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json carries hooks and exactly one permissions rule (the channel Write allow), or what --purge actually deletes."
 metadata:
   type: concept-skill
   version: "2.5"
@@ -139,10 +139,11 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   arbitrate and always run from the plugin; none exists today — `maestro-channel-write-guard.js` was
   the last, closed by `121`. (It is also registered by the install, but deliberately never stands
   down — `122`.) Keep `hooks.json` and `HOOK_REGISTRATIONS` identical.
-- **The install writes HOOKS into `settings.json` and nothing else — no `permissions` block, ever.**
-  `032` needed a permission grant and still didn't break this, putting it in the orchestrator
-  template's frontmatter as `allowed-tools`. A permissions entry is a claim on the user's
-  project-wide configuration that a hook registration is not. See the manifest sub-concept.
+- **The install writes HOOKS into `settings.json` and exactly one permission rule.** `032` kept its
+  grant out of settings (the orchestrator template's `allowed-tools`). The one exception is `139`'s
+  `Write(/.claude/channels/**)` in `permissions.allow` (`addChannelAllowRule`, both installers,
+  idempotent), added because a skill's `allowed-tools` cannot cover a subagent's writes. Do not add
+  a second rule without the same argument. See the manifest sub-concept.
 - **The skills must run `maestro-install.js` unquoted, on one line:**
   `node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js . …` (`127`). The allow-list's
   `excludedCommands` entry (`node <plugin>/scripts/maestro-install.js *`) matches the literal command

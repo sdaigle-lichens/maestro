@@ -76,6 +76,19 @@ written after the sender's `SubagentStop` is unstamped, so the receiver is told 
 having it inlined. The SubagentStart worktree block also tells worktree subagents their shell starts in
 the main checkout (use `pnpm --dir`, `git -C`, no `cd`). Test: `test/core/worktree-channel-delivery.test.ts`.
 
+**The allow rule (`139`).** Both installers add `Write(/.claude/channels/**)` to `permissions.allow` in
+the project's `.claude/settings.json` (`addChannelAllowRule`, idempotent, other keys and rules kept; a
+malformed `permissions` is left alone). Claude Code evaluates allow rules before the auto-mode
+classifier; one leading slash anchors the pattern to the settings file's project root, i.e. the main
+checkout, so it is portable (`//path` is absolute, a bare path is relative to the session's cwd). The
+payload instruction and the worktree block tell agents to create a channel file with `Write` (it makes
+the folder), never `mkdir` in Bash, which the rule does not cover. **Evidence is one clean run, not
+proof:** the denial was intermittent (tasks 101, 102, 137), so a worktree run with the rule in place
+whose channel writes were all allowed (task 139, via an equivalent absolute rule in
+`settings.local.json`) is consistent with the fix but cannot show it. The orchestrator-writes-it
+fallback above therefore stays, and `handoff-issues` drops a `missing_payload` whose files are in
+their lane stamped with this run's id (a resumed agent's earlier file) instead of reporting NO PAYLOAD.
+
 A skipped leftover stays in its lane, is reported as unstamped (mentioned, not inlined) and is aged
 out by `sweep()` like any other file. `unstampedFilesOf(projectDir, sender)` is the snapshot
 `closeMeeting` takes to build `meeting_leftovers`.

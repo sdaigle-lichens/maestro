@@ -90,7 +90,7 @@ export function payloadRequirement(routes: PayloadRoute[], opts: { withShapes: b
     "This is a step of the handoff, not a recommendation — the receiving agent starts from that file, and the stop " +
     "hook checks it was written during THIS run. A missing payload is not skipped: the orchestrator resumes you to " +
     "write it before the next agent is dispatched. When nothing applies, still write the file, containing an empty " +
-    "JSON object (`{}`).";
+    "JSON object (`{}`). Create the file with the Write tool, which creates the folder too; do not run mkdir in Bash.";
   if (opts.withShapes) {
     const blocks = routes.map(
       (r) => `Route \`HANDOFF: ${r.label}\` → \`${r.receiver}\` — write this to \`${r.channelFile}\`:\n\n${r.protocol}`

@@ -166,8 +166,8 @@ Two properties of how they are written:
 strips their `settings.json` entries and deletes the file, and uninstall/purge still match them.
 Today that is `bash-validation.sh`.
 
-**`hooks` is the only key either implementation writes into `settings.json`.** No `permissions`
-block, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
+**`hooks` is the only key either implementation writes into `settings.json`, save one `permissions.allow`
+rule (below).** No other `permissions` entry, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
 and did not. It needed a permission grant for the command Step 1 injects (an injected command whose
 check answers anything but `allow` aborts the invocation), and put it in the orchestrator
 **template's frontmatter** instead:
@@ -184,6 +184,15 @@ with it under `--purge`. See the uninstall sub-concept for what that removal lis
 
 Keep it that way: a permissions entry is a claim on the user's project-wide configuration that a hook
 registration is not.
+
+**The one exception (`139`): `permissions.allow` gets `Write(/.claude/channels/**)`.** A worktree
+run's subagents write handoff payloads into the main checkout's `.claude/channels/`, and the auto-mode
+classifier intermittently denied it; an allow rule is evaluated first, and `allowed-tools` on a skill
+does not cover a subagent's tool calls, so only settings can carry it. Both installers add it through
+`addChannelAllowRule` (merged into an existing `allow` list, skipped when present, left alone when
+`permissions` or `allow` has the wrong shape) and report it as `permissionsAdded`. The leading single
+slash anchors to the settings file's project root. Both uninstallers remove exactly that rule
+(`removeChannelAllowRule`), dropping `allow`/`permissions` only where they emptied them.
 
 ## The other two writes
 

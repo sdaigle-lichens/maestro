@@ -477,7 +477,8 @@ describe("installRuntime", () => {
     const settings = readSettings(root);
 
     expect(settings.model).toBe("opus");
-    expect(settings.permissions).toEqual({ allow: ["Bash(git status)"] });
+    // The user's rule survives and ours is appended after it (`139`).
+    expect(settings.permissions).toEqual({ allow: ["Bash(git status)", "Write(/.claude/channels/**)"] });
     expect(commandsFor(settings, "PreToolUse")).toContain("/usr/local/bin/my-guard.sh");
     expect(commandsFor(settings, "SessionEnd")).toContain("my-cleanup.sh");
     expect(commandsFor(settings, "Notification")).toEqual(["say hi"]);

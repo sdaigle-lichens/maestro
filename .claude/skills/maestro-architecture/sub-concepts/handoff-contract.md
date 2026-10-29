@@ -126,7 +126,8 @@ injected block (`payloadRequirement`) states the write as REQUIRED before the `H
 every pass — but a resume never sees it, since Claude Code drops a resume's `additionalContext`
 (`088`, see `agent-resume.md`). Receiving side (`088`): `maestro-resume-target.cjs` records a
 `missing_payload` issue (and prints `missing:`) when a loop-back's expected payload is not in the
-target's lane, whether the target is then resumed or cold.
+target's lane, whether the target is then resumed or cold. `handoff-issues` drops a `missing_payload`
+whose files sit in the lane stamped with this run's id (`139`, see `channels.md`).
 
 **It never sees the payload (`036`).** The sender wrote it straight to the receiver's channel file,
 and the receiver's own `SubagentStart` inlines it (a resumed receiver is instead handed the path, `088`) — the orchestrator's job is routing only. The one

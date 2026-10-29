@@ -170,5 +170,10 @@
         ]
       }
     ]
+  },
+  "permissions": {
+    "allow": [
+      "Write(/.claude/channels/**)"
+    ]
   }
 }

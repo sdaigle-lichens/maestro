@@ -414,6 +414,53 @@ function addMissingHooks(settings: Settings, regs: HookRegistration[] = HOOK_REG
 }
 
 /**
+ * The permission allow rule for agent channel writes (`139`). In a worktree run the subagents write
+ * their payloads into the MAIN checkout's `.claude/channels/`, and the auto-mode classifier
+ * intermittently denied that as a write to a shared resource. An explicit allow rule is evaluated
+ * before the classifier. A single leading slash anchors the pattern to the settings file's project
+ * root (the main checkout, where the session runs), so it is portable across machines; `//path`
+ * would be absolute and `path` alone would be relative to the session's working directory.
+ */
+export const CHANNEL_WRITE_ALLOW_RULE = "Write(/.claude/channels/**)";
+
+/**
+ * Add `CHANNEL_WRITE_ALLOW_RULE` to `permissions.allow` in place, unless it is already there. Every
+ * other key and rule survives. A non-object `permissions` or non-array `allow` is left alone (it is
+ * the user's, and not ours to repair). Returns the rules added.
+ */
+export function addChannelAllowRule(settings: Settings): string[] {
+  const permissions = settings.permissions;
+  if (
+    permissions !== undefined &&
+    (permissions === null || typeof permissions !== "object" || Array.isArray(permissions))
+  )
+    return [];
+  const perms = (permissions ?? {}) as { allow?: unknown };
+  if (perms.allow !== undefined && !Array.isArray(perms.allow)) return [];
+  const allow = (perms.allow ?? []) as unknown[];
+  if (allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return [];
+  perms.allow = [...allow, CHANNEL_WRITE_ALLOW_RULE];
+  settings.permissions = perms;
+  return [CHANNEL_WRITE_ALLOW_RULE];
+}
+
+/**
+ * Undo `addChannelAllowRule` in place (uninstall). Removes only the exact rule; `allow` and
+ * `permissions` are dropped only when WE emptied them, so nothing of the user's is tidied away.
+ * Returns whether the rule was removed.
+ */
+export function removeChannelAllowRule(settings: Settings): boolean {
+  const perms = settings.permissions as { allow?: unknown } | null | undefined;
+  if (!perms || typeof perms !== "object" || !Array.isArray(perms.allow)) return false;
+  if (!perms.allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return false;
+  const kept = perms.allow.filter((r) => r !== CHANNEL_WRITE_ALLOW_RULE);
+  if (kept.length > 0) perms.allow = kept;
+  else delete perms.allow;
+  if (Object.keys(perms).length === 0) delete settings.permissions;
+  return true;
+}
+
+/**
  * Move each of our hooks registered under an older matcher to its current one, in place (`132`:
  * the review gate went from `AskUserQuestion` to `AskUserQuestion|SendMessage`). `addMissingHooks`
  * skips a script already registered on its event whatever the matcher, so without this a re-install
@@ -796,7 +843,8 @@ export async function installRuntime(
   const hooksRemoved = removeRetiredHooks(settings);
   const hooksMoved = updateHookMatchers(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0)
+  const permissionsAdded = addChannelAllowRule(settings);
+  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0)
     writeJsonAtomic(settingsPath, settings);
   // The retired scripts themselves, after the settings write: a crash between the two leaves a
   // harmless unreferenced file, never a hook pointing at a file that is gone.
@@ -910,6 +958,7 @@ export async function installRuntime(
     orchestratorSkill,
     scriptsWritten,
     hooksAdded,
+    permissionsAdded,
     hooksRemoved,
     retiredScriptsRemoved,
     gitignoreUpdated,
@@ -921,6 +970,7 @@ export async function installRuntime(
       orchestratorSkill.action === "unchanged" &&
       scriptsWritten.length === 0 &&
       hooksAdded.length === 0 &&
+      permissionsAdded.length === 0 &&
       hooksRemoved.length === 0 &&
       retiredScriptsRemoved.length === 0 &&
       !gitignoreUpdated &&
@@ -947,6 +997,7 @@ async function refusedReport(projectRoot: string, root: string, refusal: ConfigR
     orchestratorSkill: { action: "unchanged", regions: [], backup: null },
     scriptsWritten: [],
     hooksAdded: [],
+    permissionsAdded: [],
     hooksRemoved: [],
     retiredScriptsRemoved: [],
     gitignoreUpdated: false,

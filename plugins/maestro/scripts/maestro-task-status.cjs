@@ -108,6 +108,8 @@ const {
   CLAIM_IDLE_CAP_MS,
   storedName,
   missingDependenciesNotice,
+  pendingResumeDeliveries,
+  dropResolvedMissingPayloads,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -901,8 +903,33 @@ function planShowCommand() {
 function handoffIssuesCommand() {
   const file = sessionStateFile();
   const state = file ? readSessionState(file) : {};
-  const issues = Array.isArray(state.handoff_issues) ? state.handoff_issues : [];
+  // A `missing_payload` whose files are all in their lane now, stamped with THIS run's id, is
+  // resolved (a resumed agent's earlier file still exists): reporting it sends the orchestrator after
+  // a file that is already there. Same check `maestro-resume-target.cjs` makes (`139`).
+  const recorded = Array.isArray(state.handoff_issues) ? state.handoff_issues : [];
+  let issues = recorded;
+  if (recorded.some((i) => i && i.kind === "missing_payload") && typeof state.run_id === "string" && state.run_id) {
+    try {
+      const present = [];
+      const receivers = new Set();
+      for (const i of recorded) {
+        if (!i || i.kind !== "missing_payload") continue;
+        for (const f of i.files || []) {
+          const m = /^\.claude\/channels\/([^/]+)\//.exec(f);
+          if (m) receivers.add(m[1]);
+        }
+      }
+      for (const r of receivers) present.push(...pendingResumeDeliveries(projectDir, r, state.run_id));
+      issues = dropResolvedMissingPayloads(recorded, present);
+    } catch {
+      issues = recorded;
+    }
+  }
   if (!issues.length) {
+    if (recorded.length) {
+      delete state.handoff_issues;
+      writeSessionState(file, state);
+    }
     process.stdout.write("Maestro handoffs: no problems recorded.\n");
     return;
   }
