@@ -12,7 +12,10 @@ import {
   currentReviewRound,
   reviewFileName,
   isReviewFile,
+  SUMMARY_PLACEMENT,
 } from "../../src/core/human-review-gate.js";
+import { findUpPluginRoot } from "../../src/core/install.js";
+import { fileURLToPath } from "node:url";
 import { sessionPathsFor } from "../../src/core/session-paths.js";
 import { listTasks } from "../../src/core/tasks.js";
 import { pinnedEnv } from "../helpers/env.js";
@@ -66,6 +69,69 @@ describe("checkHumanReview", () => {
     ]);
     expect(again.allow).toBe(false);
     if (!again.allow) expect(again.reason).toContain("130-foo.review-2.md");
+  });
+  it("143: puts the path first in the digest and the printed summary, never last, in human and manager review", () => {
+    const human = verdict("AskUserQuestion", { active_task: "130-foo.md", plan: atReview });
+    const mgrPlan = plan([step("@backend", "done"), step("manager review"), step("@test")]);
+    const manager = verdict("AskUserQuestion", { active_task: "130-foo.md", plan: mgrPlan });
+    for (const v of [human, manager]) {
+      expect(v.allow).toBe(false);
+      if (v.allow) continue;
+      expect(v.reason).toContain("as its first line");
+      expect(v.reason).toContain("preview with the review file's path as its first line");
+      expect(v.reason).toContain("its last line states that the full text is in the review file");
+      expect(v.reason).not.toMatch(/ending with the review file/);
+    }
+  });
+  it("143: the round 2+ file name sits in the first-line placement clause, in both review kinds", () => {
+    const loop = { active_task: "130-foo.md", plan: { ...atReview, loopbacks: 1 } };
+    const mgrLoop = {
+      active_task: "130-foo.md",
+      plan: { ...plan([step("@backend", "done"), step("manager review"), step("@test")]), loopbacks: 1 },
+    };
+    for (const state of [loop, mgrLoop]) {
+      const v = verdict("AskUserQuestion", state);
+      expect(v.allow).toBe(false);
+      if (v.allow) continue;
+      expect(v.reason).toContain(
+        `as text above the question with the review file's path (${tasksDir}/130-foo.review-2.md) as its first line`
+      );
+      expect(v.reason).not.toContain("130-foo.review.md");
+    }
+  });
+  it("143: the placement clause is the exported SUMMARY_PLACEMENT, verbatim, in both messages", () => {
+    const file = `${tasksDir}/130-foo.review.md`;
+    const human = verdict("AskUserQuestion", { active_task: "130-foo.md", plan: atReview });
+    const mgrPlan = plan([step("@backend", "done"), step("manager review"), step("@test")]);
+    const manager = verdict("AskUserQuestion", { active_task: "130-foo.md", plan: mgrPlan });
+    for (const v of [human, manager]) {
+      expect(v.allow).toBe(false);
+      if (!v.allow) expect(v.reason).toContain(SUMMARY_PLACEMENT(file));
+    }
+    // Nothing in the placement may put the path last.
+    expect(SUMMARY_PLACEMENT(file)).not.toMatch(/last line (is|being) the (review file|path)/);
+    expect(SUMMARY_PLACEMENT(file)).not.toMatch(/ending with/);
+  });
+  it("143: the orchestrator template and the gate say the same placement words", () => {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const root = findUpPluginRoot(here)!;
+    const template = fs.readFileSync(path.join(root, "templates", "maestro", "SKILL.md"), "utf8");
+    const bullet = template.match(/^- `human review` — .*$/m)?.[0] ?? "";
+    expect(bullet).not.toBe("");
+    const plain = bullet.replace(/`/g, "").replace("at most about 15", "at most 15");
+    const gate = SUMMARY_PLACEMENT("<FILE>").replace(" (<FILE>)", "");
+    // Each clause of the gate's wording (split at the parenthesised list, whose order differs) must
+    // appear word for word in the template, so editing one side alone fails here.
+    const clauses = [
+      "print the full summary as text above the question with the review file's path as its first line",
+      "putting a digest of at most 15 lines in the Approve option's preview with the review file's path as its first line",
+      "If the digest is shortened to fit, its last line states that the full text is in the review file.",
+    ];
+    for (const c of clauses) {
+      expect(gate).toContain(c);
+      expect(plain).toContain(c);
+    }
+    expect(plain).not.toMatch(/as the last line the review file's path/);
   });
   it("allows everything outside a human review", () => {
     expect(verdict("Write", { active_task: "130-foo.md", plan: atReview }).allow).toBe(true);

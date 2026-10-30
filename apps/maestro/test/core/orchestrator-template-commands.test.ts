@@ -150,7 +150,10 @@ describe("orchestrator template `human review` step kind (126)", () => {
     expect(violations(current.replace("**never bypassed**", "usually honoured"))).toContain(
       "hard stop: **never bypassed**"
     );
-    expect(violations(current.replace("; if it is unavailable or fails, ask in plain text instead", ""))).toEqual(
+    const fallback = "If it is unavailable or fails, ask in plain text instead. ";
+    // Guard the replace target so a future rewording cannot turn this into a vacuous no-op again.
+    expect(current).toContain(fallback);
+    expect(violations(current.replace(fallback, ""))).toEqual(
       expect.arrayContaining(["plain-text fallback", "fallback trigger: unavailable or fails"])
     );
   });

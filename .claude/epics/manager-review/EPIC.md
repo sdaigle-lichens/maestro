@@ -45,7 +45,7 @@ Out:
 - **Approval scope:** a manager's on-track verdict continues the success path only. It is never the
   user's approval for commit, merge, push, or agent/skill/workflow changes.
 - **Human review keeps `AskUserQuestion`** (it gives herdr its "input needed" state). The digest
-  (~15 lines, ending with the review file path) goes in the `Approve` option's `preview`; the full
+  (~15 lines, the review file path as its FIRST line, task 143) goes in the `Approve` option's `preview`; the full
   summary is printed above the question too (herdr scrollback works while the dialog is open).
 - **Review rounds are counted by `plan.loopbacks`** (task 130): `plan-step <label> pending` increments
   it, and each round gets its own file (`<task>.review.md`, `<task>.review-2.md`, ...). The

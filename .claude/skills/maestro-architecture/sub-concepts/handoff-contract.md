@@ -141,7 +141,9 @@ gets its own delivery.
 HANDOFF-driven.** A human-review node has no subagent, so nothing emits a `HANDOFF:` line for it.
 Instead the orchestrator itself, at the human-review hard stop, summarises the work and asks with
 `AskUserQuestion` (`Approve` / `Request changes`, corrections through its free-text option; plain
-text when `AskUserQuestion` is unavailable or fails), then reads the user's answer: on
+text when `AskUserQuestion` is unavailable or fails; the review file's path is the FIRST line of both
+the Approve preview digest and the printed summary, and a shortened digest ends by saying the full
+text is in the review file), then reads the user's answer: on
 approval it continues the success path; on a correction request it dispatches the change as a `Task`
 to the agent a `condition` edge points at (e.g. `human requested code corrections` → `@backend`),
 rather than editing code in its own context. The seeded `default`/`tdd` workflows wire these edges

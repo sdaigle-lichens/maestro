@@ -26,6 +26,18 @@ export const MANAGER_REVIEW_LABEL = "manager review";
 /** `<task>.review.md` for round 1, `<task>.review-<n>.md` from round 2. */
 export const REVIEW_FILE_PATTERN = /\.review(-\d+)?\.md$/;
 
+/**
+ * `143`: where the review file's path goes in an approval summary. The Approve preview is capped, so
+ * the path is the FIRST line of both the digest and the printed summary, never the last. The
+ * orchestrator template (`templates/maestro/SKILL.md`) carries the same words.
+ */
+export const SUMMARY_PLACEMENT = (file: string): string =>
+  `print the full summary as text above the question with the review file's path (${file}) as its first line, ` +
+  "and ask with AskUserQuestion, putting a digest of at most 15 lines in the Approve option's preview with the " +
+  "review file's path as its first line (then deviations, risks and open questions, changed-file count, " +
+  "corrections since last round). If the digest is shortened to fit, its last line states that the full text " +
+  "is in the review file.";
+
 export interface PlanStepLike {
   label?: unknown;
   status?: unknown;
@@ -129,17 +141,13 @@ export function checkHumanReview(input: {
         `with the sections ${BRIEF_SECTIONS}. Then record it with \`node .claude/scripts/maestro-epic.cjs ` +
         `review-request --task "${state.active_task}" --file "${file}"\` and send the manager the one line it ` +
         "prints. On an escalation, or the fallback to human review (no epic, no live manager), the same file is " +
-        "the summary: print it above the question and put a digest of at most 15 lines in the Approve option's " +
-        `preview, ending with the review file's path (${file}).`,
+        `the summary: ${SUMMARY_PLACEMENT(file)}`,
     };
   }
   return {
     allow: false,
     reason:
       `Human review round ${round}: the review file is missing. Write ${file} first, with the sections ` +
-      `${HUMAN_SECTIONS}. Then print the full summary as text above the ` +
-      "question and ask again, putting a digest of at most 15 lines (deviations, risks and open questions, " +
-      "changed-file count, corrections since last round) in the Approve option's preview, ending with the " +
-      `review file's path (${file}).`,
+      `${HUMAN_SECTIONS}. Then ${SUMMARY_PLACEMENT(file)}`,
   };
 }
