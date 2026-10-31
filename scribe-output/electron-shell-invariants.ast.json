@@ -4465,7 +4465,7 @@
       "apps/maestro/src/renderer/src/routes/__root.tsx": "sha256:82290be47f52e25a251edb8993431c902bedb1d7aaaa67f1aa1a9755a2559944",
       "apps/maestro/src/renderer/src/utils/call-main.ts": "sha256:7f88ce4c790edc6c04453dff5bd2652552bd0ae60e20afb2a9e7c0e7a472b14e",
       "apps/maestro/src/renderer/src/utils/project-context.tsx": "sha256:b0dcde35cc534905ec641716c51aaba41e43aab18fbbfd41530d8a0a2cdbbe6a",
-      "apps/maestro/src/shared/ipc.ts": "sha256:956c75dc3ffb949e516d0943ed83b605c45f030d0c48f6a52a8d3db510b344ca"
+      "apps/maestro/src/shared/ipc.ts": "sha256:7bcb2f4a1da6a41eceb522025633d9e2e41677cda92da3573c815919de710bc5"
     }
   }
 }

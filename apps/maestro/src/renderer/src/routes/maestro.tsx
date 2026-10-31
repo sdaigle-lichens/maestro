@@ -16,7 +16,6 @@ import {
   SparkleIcon,
   TagIcon,
   TrashIcon,
-  TrayIcon,
   WarningIcon,
   XIcon,
 } from "@phosphor-icons/react";
@@ -26,6 +25,7 @@ import { useProject } from "../utils/project-context";
 import { useInstall } from "../utils/install-context";
 import { useSkillRefs } from "../utils/skill-ref-context";
 import InstallReportCard from "../components/install-report-card";
+import ChannelLanes from "../components/channel-lanes";
 import SkillRefMark, { SkillRefNotice, SkillRefRecheck } from "../components/skill-ref-mark";
 import { getToolsData } from "../utils/tools";
 import type {
@@ -861,15 +861,6 @@ function WorkerModelCard({ viewedRoot }: { viewedRoot: string }) {
   );
 }
 
-/** `oldestAgeMs` in the words `/maestro` shows beside a lane — never sub-hour, this is a backlog view. */
-function formatAge(ms: number): string {
-  const hours = ms / (60 * 60 * 1000);
-  if (hours < 24) return `${Math.max(1, Math.round(hours))} hour${Math.round(hours) === 1 ? "" : "s"}`;
-  const days = hours / 24;
-  const rounded = days < 10 ? Math.round(days * 10) / 10 : Math.round(days);
-  return `${rounded} day${rounded === 1 ? "" : "s"}`;
-}
-
 /**
  * `037`'s entry point — every `.claude/channels/<scope>/<receiver>/` lane (`144`) still holding a
  * file, right now, plus any pre-`144` unscoped `.claude/channels/<receiver>/` lane, shown as
@@ -896,44 +887,7 @@ function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
 
   if (!lanes || lanes.length === 0) return null;
 
-  return (
-    <div
-      data-testid="maestro-channels"
-      data-lanes={lanes.length}
-      className="flex flex-col gap-3 p-4 rounded-lg border border-maestro bg-maestro-elevated"
-    >
-      <div className="text-[11px] font-semibold text-maestro-muted uppercase tracking-wide flex items-center gap-1.5">
-        <TrayIcon size={12} /> Channels
-      </div>
-      <p className="text-[12px] text-maestro-muted m-0">
-        Payloads waiting in <span className="font-mono">.claude/channels/</span> for an agent that hasn&rsquo;t consumed
-        them yet. A route with no workflow to it — like the scribe&rsquo;s skill gaps — simply queues here until that
-        agent is next invoked, which can be a later run.
-      </p>
-      <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
-        {lanes.map((lane) => (
-          <li
-            key={`${lane.scope ?? "legacy"}/${lane.receiver}`}
-            data-testid={`channel-lane-${lane.receiver}`}
-            data-scope={lane.scope ?? "legacy"}
-            className="text-[12px] flex flex-wrap items-baseline gap-x-1.5"
-          >
-            <span className="font-mono text-maestro">
-              {lane.scope ?? "legacy"}/{lane.receiver}
-            </span>
-            <span className="text-maestro-muted">{lane.count} pending</span>
-            <span className="text-maestro-muted">
-              {lane.stranded === 0
-                ? "— will be delivered this run"
-                : lane.current > 0
-                  ? `— ${lane.current} this run, ${lane.stranded} queued (oldest ${formatAge(lane.oldestAgeMs)})`
-                  : `— queued for ${lane.receiver}, from a previous run (oldest ${formatAge(lane.oldestAgeMs)})`}
-            </span>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <ChannelLanes lanes={lanes} />;
 }
 
 /**

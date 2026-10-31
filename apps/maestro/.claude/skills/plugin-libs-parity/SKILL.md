@@ -270,7 +270,9 @@ lives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, 
 `@repo/claude-fs` to this checkout's own `packages/` source. A new workspace import in a bundled
 module needs an alias there too.
 
-`maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the
+`maestro-session` also carries `retireScope` and `recordActiveTask` (`handoff-channels.ts`, `147`;
+`maestro-task-status.cjs claim` and `maestro-set-session-workflow.cjs --task` require them) and
+`checkWorktreeWrite` (`worktree-write-guard.ts`, now taking `channelScope`), which backs the
 worktree branch of `maestro-channel-write-guard.js` (a `HOOK_SCRIPTS` entry since `121`, so a copy
 lives at `.claude/scripts/maestro-channel-write-guard.cjs` and `parity.test.ts` checks it), and the worktree helpers from `worktree.ts`
 (`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`, …) — all still

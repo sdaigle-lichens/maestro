@@ -22,7 +22,7 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const SESSION_A = "sess-104-aaa";
 const SESSION_B = "sess-104-bbb";
-const B_SCOPE = "session-sess-104";
+const B_SCOPE = "task-002";
 
 let tmp: string;
 beforeEach(() => {
@@ -172,8 +172,7 @@ describe("SubagentStart worktree block (104)", () => {
     expect(out).toContain(`pnpm --dir ${wt}`);
     expect(out).toContain(`git -C ${wt}`);
     expect(out).toContain("Never `cd`");
-    // `144`: B's own scoped lane. setup() claims 002 but never records `active_task`
-    // (set-session-workflow --task), so B's scope is `session-<id8>`.
+    // `147`: B's own scoped lane. The claim of 002 records `active_task`, so B's scope is `task-002`.
     expect(out).toContain(`${root}/.claude/channels/${B_SCOPE}/ is denied`);
     expect(out).toContain("include the full payload");
     expect(out).toContain("before your HANDOFF: line");

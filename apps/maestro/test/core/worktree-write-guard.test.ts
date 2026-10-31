@@ -119,9 +119,10 @@ describe("worktree write guard (082)", () => {
 
     expect(runHook(wt, SESSION_B, path.join(wt, "src", "new-module.ts")).denied).toBe(false);
     expect(runHook(wt, SESSION_B, path.join(root, ".claude", "maestro-tasks", "002-b.md")).denied).toBe(false);
-    expect(runHook(wt, SESSION_B, path.join(root, ".claude", "channels", "frontend", "backend.1.md")).denied).toBe(
-      false
-    );
+    // `147`: B claimed 002, so its channel scope is `task-002`; the legacy unscoped root is refused.
+    expect(
+      runHook(wt, SESSION_B, path.join(root, ".claude", "channels", "task-002", "frontend", "backend.1.md")).denied
+    ).toBe(false);
     expect(runHook(wt, SESSION_B, path.join(root, ".claude", "maestro_sessions", SESSION_B, "x.json")).denied).toBe(
       false
     );

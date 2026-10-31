@@ -29,8 +29,21 @@ each other's payloads — 045's `test/backend.1.md` reached 048's `@test`.
   `handoff-channels.ts`, following a worktree pointer), never by an agent. The agent is told the exact
   scoped file by its injected route text (`payloadRoutes`), and `SubagentStart` adds a `Channel scope
   for this session: <scope>` line.
-- **`active_task` is set only by `maestro-set-session-workflow.cjs --task`.** A bare
-  `maestro-task-status.cjs claim` does not record it, so that session stays on `session-<id8>`.
+- **A claim sets the scope (`147`).** `maestro-task-status.cjs claim` calls `recordActiveTask`
+  (best effort, after the claim succeeds), which writes `active_task` to `session.json` (every other
+  key kept) so the session moves to `task-<NNN>`; `maestro-set-session-workflow.cjs --task` does the
+  same.
+- **A task switch retires the left scope (`147`).** When recording changes the scope,
+  `retireScope(projectDir, scope, ownSessionId)` moves every file in the old scope's lanes to
+  `.consumed/`. It skips scribe gap reports and does nothing when another session directory still
+  resolves to that scope, so it never takes a live session's payloads.
+- **The worktree guard confines every agent to its own scope (`147`).** `checkWorktreeWrite` takes
+  `channelScope`: in a worktree session, ANY caller (any agent, the main session) may write under
+  `.claude/channels/` (main checkout or worktree-local copy) only inside `<scope>/`. Another task's
+  lanes and the legacy unscoped layout are denied. `maestro-channel-write-guard` passes the scope.
+- **The `/maestro` ChannelsCard** (`components/channel-lanes.tsx`) renders one lane per
+  `<scope>/<receiver>` (`legacy` for the root layout) with `data-testid="channel-lane-<scope|legacy>/<receiver>"`,
+  unique per scope.
 - **Two session ids sharing their first 8 chars share a session scope.**
 - **Legacy root lanes** (`<receiver>/`, root `.consumed/`) are never delivered, resumed or
   acknowledged; `pendingLanes` reports them with `scope: null` (all stranded), `sweep` ages them out.

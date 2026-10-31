@@ -40,6 +40,10 @@
 //       clean SessionEnd) is reaped automatically before the attempt, so a
 //       crashed session's claim never blocks a fresh one.
 //
+//       A successful claim also records the task as this session's `active_task` (`147`), which sets
+//       its channel scope to `task-<NNN>`; if that changes the scope, the scope it left has its
+//       undelivered lane files retired (never a scope another live session owns).
+//
 //       The claim records the claiming session's NAME beside its id (`084`), because cross-session
 //       messages are addressed by name. Since `113` the CLI fills it in from the name the
 //       session-name hook stored (`maestro-<id8>`, or the user's custom title); `--name <session
@@ -113,6 +117,7 @@ const {
   pendingResumeDeliveries,
   dropResolvedMissingPayloads,
   isChannelScope,
+  recordActiveTask,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -1098,6 +1103,13 @@ try {
     const sessionName = storedName(path.join(projectDir, ".claude"), sessionId) || flagValue("--name");
     const result = claimTask(filename, sessionId, Date.now(), sessionName);
     if (result.outcome === "claimed") {
+      // `147`: a claim sets this session's channel scope (`task-<NNN>`) by recording active_task,
+      // retiring the scope it leaves. Best-effort: a failure must not lose the claim.
+      try {
+        recordActiveTask(projectDir, sessionId, filename);
+      } catch {
+        // The orchestrator's set-session-workflow --task still records it.
+      }
       process.stdout.write(
         `Maestro tasks: claimed "${filename}" for session ${sessionId}` +
           (sessionName ? ` (named "${sessionName}")` : " (unnamed)") +

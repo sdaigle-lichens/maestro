@@ -129,9 +129,9 @@ with the same `isSessionLive` rule as a claim (directory exists, then a fresh `h
 Nothing is written to `claims/` or `status.json`, so a freeform run can never appear as a task.
 
 **`active_task` also sets the channel scope (`144`).** `channelScopeOf` maps it to `task-<NNN>`;
-without it a session's lanes are `session-<id8>`. Only `maestro-set-session-workflow.cjs --task`
-records it — a bare `maestro-task-status.cjs claim` does not, so a claimed-but-unrecorded session
-writes its channel files under its session scope. See `maestro-architecture`'s `channels.md`.
+without it a session's lanes are `session-<id8>`. Since `147` a successful
+`maestro-task-status.cjs claim` records it too (`recordActiveTask`), as does
+`maestro-set-session-workflow.cjs --task`; switching task retires the previous scope's lanes. See `maestro-architecture`'s `channels.md`.
 
 - `liveForeignClaim` (used by `worktree`) falls through to `liveFreeformSession` after the claims, so
   a task session is told to isolate itself when a freeform session is live.

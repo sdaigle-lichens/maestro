@@ -71,9 +71,10 @@ long-lived** watcher and exits; `test/core/session-heartbeat-cli.test.ts` is the
 
 `test/core/channel-scope-collision.test.ts` is the worked example.
 
-- **Claim through `maestro-set-session-workflow.cjs <workflow> --task <file>`**, not just
-  `maestro-task-status.cjs claim`: only the former records `active_task`, so a bare claim leaves the
-  session on `session-<id8>` and the test silently exercises the wrong scope.
+- **A claim records `active_task` since `147`**, so `maestro-task-status.cjs claim` and
+  `maestro-set-session-workflow.cjs <workflow> --task <file>` both move the session to `task-<NNN>`
+  (and a switch retires the prior scope). A claim with no resolvable session id still leaves
+  `session-<id8>`. Worked examples: `test/core/channel-scope-gaps.test.ts`.
 - **A worktree session's `session.json` (and `run_id`) lives in the worktree's
   `.claude/maestro_sessions/<id>/`** (`074` pointer), while its hooks run with `CLAUDE_PROJECT_DIR`
   set to the main checkout. Read the run_id from the worktree root.

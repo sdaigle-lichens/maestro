@@ -1427,8 +1427,8 @@ export interface MaestroApi {
     reveal(target: string): Promise<void>;
   };
   /**
-   * `/maestro`'s Channels block (`037`) — every receiver lane in `.claude/channels/` holding at
-   * least one undelivered file, right now.
+   * `/maestro`'s Channels block (`037`) — every receiver lane in `.claude/channels/<scope>/`
+   * (`144`; plus any legacy unscoped one) holding at least one undelivered file, right now.
    *
    * READ-ONLY, and there is exactly one call because there is exactly one thing to ask: `036`'s
    * hooks are the only code that delivers (`SubagentStart`), retires (the same hook, by moving a

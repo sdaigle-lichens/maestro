@@ -291,6 +291,8 @@ export {
   readLane,
   retire,
   sweep,
+  retireScope,
+  recordActiveTask,
   pendingLanes,
   formatStampedContent,
   parseStampedContent,

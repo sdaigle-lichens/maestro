@@ -102,6 +102,8 @@ export {
   readLane,
   retire,
   sweep,
+  retireScope,
+  recordActiveTask,
   formatStampedContent,
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,

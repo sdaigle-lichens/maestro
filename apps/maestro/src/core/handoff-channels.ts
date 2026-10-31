@@ -534,6 +534,74 @@ export function sweep(
 }
 
 /**
+ * Retire the lanes of a scope this session is leaving (`147`) — the session switched task mid-run,
+ * so the old scope's undelivered files would otherwise sit until the 14-day age-out. Each file in
+ * every receiver lane of `scope` moves to `<scope>/.consumed/<receiver>/` (recoverable, aged out
+ * like any retired file). A stamped skill-gap report is left in place: it outlives delivery by
+ * design (`112`).
+ *
+ * Never touches a scope another session still owns: when any OTHER session directory's state
+ * resolves to `scope`, nothing is moved. Returns the paths retired.
+ */
+export function retireScope(projectDir: string, scope: string, ownSessionId: unknown): string[] {
+  if (!isChannelScope(scope)) return [];
+  const claudeDir = path.join(projectDir, ".claude");
+  for (const id of listSessionIds(claudeDir)) {
+    if (id === ownSessionId) continue;
+    const state = sessionPathsFor(claudeDir, id)?.state;
+    if (channelScopeFromState(readSession(state ?? null), id) === scope) return [];
+  }
+  const retired: string[] = [];
+  for (const receiver of listDirs(scopeRoot(projectDir, scope))) {
+    for (const entry of readLane(projectDir, scope, receiver)) {
+      if (isGapReport(entry)) continue;
+      try {
+        retire(projectDir, scope, receiver, entry);
+        retired.push(entry.path);
+      } catch {
+        // Left in the lane: the age-out still reaches it.
+      }
+    }
+  }
+  return retired;
+}
+
+/**
+ * Record `task` (a task-queue filename) as session `sessionId`'s `active_task` — which is what
+ * sets its channel scope to `task-<NNN>` (`147`: a claim must do this, not only
+ * `maestro-set-session-workflow.cjs --task`). When that changes the session's scope, the scope it
+ * left is retired via {@link retireScope}, after the new state is on disk. Every other key of
+ * `session.json` is preserved. `null` when `sessionId` is not valid.
+ */
+export function recordActiveTask(
+  projectDir: string,
+  sessionId: unknown,
+  task: string
+): { scope: string; priorScope: string; retired: string[] } | null {
+  const paths = sessionPathsFor(path.join(projectDir, ".claude"), sessionId);
+  if (!paths) return null;
+  const prior = readJsonObject(paths.state);
+  const priorScope = channelScopeFromState(prior, sessionId);
+  const next = { ...prior, active_task: path.basename(task) };
+  fs.mkdirSync(paths.dir, { recursive: true });
+  const tmp = paths.state + ".tmp";
+  fs.writeFileSync(tmp, JSON.stringify(next, null, 2));
+  fs.renameSync(tmp, paths.state);
+  const scope = channelScopeFromState(next, sessionId);
+  const retired = scope === priorScope ? [] : retireScope(projectDir, priorScope, sessionId);
+  return { scope, priorScope, retired };
+}
+
+function readJsonObject(p: string): Record<string, unknown> {
+  try {
+    const raw: unknown = JSON.parse(fs.readFileSync(p, "utf8"));
+    return raw && typeof raw === "object" && !Array.isArray(raw) ? (raw as Record<string, unknown>) : {};
+  } catch {
+    return {};
+  }
+}
+
+/**
  * Every `run_id` a live session directory currently holds (`064`). A lane file is "in flight" if it
  * belongs to ANY session running against this project, not just one — before `064` there could only
  * ever be one, so this read was a single file. An empty set means no session is active, which is
