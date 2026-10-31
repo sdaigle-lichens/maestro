@@ -51,7 +51,7 @@ function workflowToSpec(wf, _instances) {
   function tokenFor(nodeId) {
     const node = nodeById.get(nodeId);
     if (!node) return nodeId;
-    if (node.type === "human_review") return node.id;
+    if (node.type === "human_review" || node.type === "manager_review") return node.id;
     if (node.type === "skill") return `skill:${node.skill ?? node.id}`;
     return node.instance ?? node.id;
   }

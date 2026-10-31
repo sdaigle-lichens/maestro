@@ -10,8 +10,8 @@ resumable `maestro-manager` session. A task in no epic behaves exactly as before
 CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership and the report inbox.
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
-remove-worker | of | report --task | note | reports | ack` (`085` added `note` and `list`'s manager and
-backlog columns; `100` added `of`). Callers never see the lock, the file layout or the id
+remove-worker | of | ready | report --task | note | review-request | review-verdict | reports | ack` (`085` added `note` and `list`'s manager and
+backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -23,10 +23,16 @@ scheme.
   writes nothing).
 - **Session names, never addresses.** `state.json` stores the manager and worker NAMES. An address
   belongs to one process and changes on restart; the manager rediscovers live sessions by name with
-  `ListAgents` each time it opens or resumes. A restarted session keeps its conversation but not its
-  name and never re-runs the skill's opening steps, so the manager also compares its own name with
-  `show`'s recorded manager on every report or note and runs `set-manager` when they differ, before
-  `ack` (`102`).
+  `ListAgents` each time it opens or resumes.
+- **The CLI fills in the caller's own name (`113`).** Sessions are named from their id
+  (`maestro-<id8>`, `maestro-mgr-<id8>`, or a user-set custom title kept as is) by the
+  `maestro-session-name` hook, which re-applies it on restart, so a restarted session keeps its
+  name. `create --manager`, `set-manager` (name now optional), `report --from`, `note --from` and
+  `ack --by` record the caller's stored name (`ownName()` → `storedSessionName`) in preference to
+  the passed one, which is only a fallback. `add-worker`, run by the manager FOR a worker, prefers
+  the caller's stored name only when the caller is a worker and not this epic's manager, else the
+  `--task` claim's name (`taskClaimName`), else the typed name. This replaces `102`'s
+  compare-with-`ListAgents`-then-`set-manager` step before every ack.
 - **A failed send is not a gone manager (`102`).** `report` and `note` print a `sendFailedHint` after
   the "message the manager" line: on a failed `SendMessage`, run `ListAgents`; if exactly one session
   plausibly matches, ask the user before messaging it; never conclude the manager is gone from one
@@ -59,8 +65,8 @@ scheme.
 addresses (stale on restart); a hand-written CJS twin of `epics.ts` (a third parity pair; the lib is
 generated instead).
 
-**Claims:** `claim --name "<session name>"` stores `session_name` in the claim file; a nameless claim
-works and shows as `(unnamed)`. See [Claims](task-claims.md).
+**Claims:** `claim` stores `session_name` in the claim file, the stored session name first and
+`--name` only as a fallback (`113`); a nameless claim works and shows as `(unnamed)`. See [Claims](task-claims.md).
 
 ## Cross-epic notes (`085`)
 
@@ -77,6 +83,11 @@ through that epic's inbox, never through a message alone.
   recorded and the note waits for a resumed manager.
 - `ack` takes `rNNN` and `nNNN`; `show`/`reports` list unacknowledged reports and notes together,
   oldest first (`unacknowledgedReports` returns both, typed `EpicInboxEntry`).
+- `132`: `EpicInboxEntry` also covers a `review` entry (`mNNN`, `{task, round, file, at, from?}`,
+  `file` relative to the main checkout) from `review-request`. It is listed until a `verdict` log
+  entry (`{id, task, verdict, effective, capped?}`) names it or a newer request for the same ticket
+  supersedes it; `ack` refuses it. `m` is a third independent counter. The redirect cap and the
+  worker's side are in `maestro-architecture`'s **Manager review** section.
 - `show` adds **cross-epic dependencies**: tracker `blockedBy` edges with exactly one end in this
   epic (`blocked by` / `blocks`; the other side is another epic or no epic), blocker not done.
   `TrackerEntry` gained `blockedBy` for this.
@@ -105,6 +116,39 @@ through that epic's inbox, never through a message alone.
 `SendMessage` (lost while the receiver is down); a project-wide bus (a second inbox); auto-detecting
 file overlap.
 
+## Spawning workers: `ready` (`125`)
+
+`ready <slug> [--cap <n>] [--json]` is the manager's spawn list (`readyTasks`, `formatReady`). The
+`maestro-manager` skill runs it, then opens one herdr tab per `[spawn]` task (`herdr tab create`,
+`herdr pane run <launch command>`, then `add-worker --task`); without herdr, or outside a herdr pane
+(`HERDR_ENV` not `1`), or with `herdr status server` not printing `status: running`, it prints the
+commands instead. The CLI itself never touches herdr. Under the Bash sandbox the herdr calls need
+the opt-in `maestro-sandbox-allow.cjs --herdr` entries (`127`; offered by install and update, never
+default, since `herdr pane run` escapes the sandbox) — see `installing-maestro`.
+
+Each unfinished epic task (tracker `epic === slug`, oldest first) lands in exactly one bucket:
+
+| Bucket | Rule |
+| --- | --- |
+| `running` | A **live** claim (`readClaims` → `live`). Wins over a recorded worker. |
+| `pending` | A worker recorded with `add-worker --task` and no live claim: spawned, not started, or its claim aged out. |
+| `ready` | Tracker `ready` **and** every `blockedBy` entry the tracker knows is `done` — a hand-edited stale `ready` never spawns a blocked task. Blockers in other epics or none count too. |
+
+`slots = max(0, cap − running − pending)`; the text marks the first `slots` ready tasks `[spawn]`,
+the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an integer ≥ 1.
+
+- **`pending` is the double-spawn guard.** Without it a worker that has not claimed yet looks ready
+  and a second one is spawned for the same task. A worker that never starts holds its slot until
+  `remove-worker`.
+- **Names and commands are derived, not stored.** `workerNameFor` → `<slug>-<NNN>` (or
+  `<slug>-<basename>` with no number); `launchCommandFor` →
+  `claude -n '<name>' [--model '<m>'] '/maestro .claude/maestro-tasks/<task.md>'`, POSIX
+  single-quoted; `--model` is the project's `worker_model` (`134`, `resolveWorkerModel`), omitted
+  when unset. The
+  `maestro-session-name` hook keeps a `claude -n` name (`113`).
+- **`cwd` is `mainCheckoutRoot`**, so run from a worktree it still prints the main checkout as the
+  launch directory.
+
 ## Tests
 
 `apps/maestro/test/core/epics-cli.test.ts` spawns the installed commands against temp projects:
@@ -115,3 +159,10 @@ manager, no-epic report, and `maestro-write-tasks.cjs --epic`. `085`'s `cross-ep
 writing nothing; held-open stdin exiting promptly on a refused route; a note to a manager-less epic
 acked once after resume; cross-epic `blockedBy` edges in both directions; separate, never-reused
 `n`/`r` counters; the sender unable to ack; concurrent note and report writers keeping every entry.
+`125`'s `ready` block: the three buckets, dead claims, stale `ready`, cross-epic blockers, the cap
+and its clamp, unnumbered worker names, the main checkout from a worktree, bad `--cap`/unknown epic.
+`128` adds: apostrophe filenames (numbered and unnumbered), whose printed command is run through a
+real `sh -c` with a stub `claude` first on `PATH` recording argv (`shellArgv`); and claim liveness
+judged by the session log's mtime (`fs.utimesSync`), not `claimed_at` — an old claim with a fresh log
+stays `running`, a log idle past the cap comes back `ready` (reaped on read) or `pending` with a
+recorded worker.

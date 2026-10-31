@@ -188,7 +188,7 @@ describe("superseded seed migration", () => {
   let dir: string;
   let dbPath: string;
 
-  // The v1 backend body, verbatim — what a store seeded before the concept-skills feature holds.
+  // The v1 backend body, verbatim — what a store seeded before the concept-skill feature holds.
   const BACKEND_V1 =
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +
@@ -246,11 +246,11 @@ describe("superseded seed migration", () => {
     const row = readAgentReportDefault("backend", dbPath)!;
     expect(row.content).not.toContain('"conceptSkillGaps"');
     expect(row.content).not.toContain('"filesChanged"');
-    expect(row.content).toContain(".claude/channels/scribe/backend.1.md");
+    expect(row.content).toContain(".claude/channels/<scope>/scribe/backend.1.md"); // `144`: scoped lane
     expect(row.version).toBe(2);
   });
 
-  // `036`: an ALREADY-SEEDED store (one that opened between the concept-skills feature and this
+  // `036`: an ALREADY-SEEDED store (one that opened between the concept-skill feature and this
   // slice) carries the v2 body — with `conceptSkillGaps` still a report field — and must be carried
   // forward too. This is the assertion `036`'s own acceptance criteria calls for: against a store
   // seeded with the OLD bodies, not a fresh one.
@@ -262,7 +262,7 @@ describe("superseded seed migration", () => {
     const row = readAgentReportDefault("backend", dbPath)!;
     expect(row.content).not.toContain('"conceptSkillGaps"');
     expect(row.content).not.toContain('"filesChanged"');
-    expect(row.content).toContain(".claude/channels/scribe/backend.1.md");
+    expect(row.content).toContain(".claude/channels/<scope>/scribe/backend.1.md"); // `144`: scoped lane
     expect(row.version).toBe(2);
   });
 
@@ -369,11 +369,41 @@ describe("superseded seed migration (090: generic skill_gaps)", () => {
       expect(row.content).toContain('"skill_gaps"');
       expect(row.content).not.toContain("concept_skill_gaps");
       expect(row.content).not.toContain("concept skill");
-      expect(row.content).toContain(`.claude/channels/scribe/${agent}.1.md`);
+      expect(row.content).toContain(`.claude/channels/<scope>/scribe/${agent}.1.md`); // `144`: scoped lane
+      expect(row.content).not.toContain(`.claude/channels/scribe/`);
       expect(row.content).toContain("`HANDOFF:` line must agree"); // the 083 note survives
       expect(readAgentReportDefault(agent, dbPath)!.version).toBe(6); // idempotent
     }
   );
+
+  // `144`: the body that shipped between 090 and 144 names the UNSCOPED scribe lane, which is never
+  // delivered any more. A store holding it must upgrade to the scoped note. Verbatim copy, not imported.
+  const NOTE_090 = (subagent: string) =>
+    "If a skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
+    '`{ "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file.";
+  it.each(["backend", "frontend", "mobile", "infra"])(
+    "%s: a stored pre-144 body (unscoped gap lane) upgrades to the scoped lane and bumps the version",
+    (agent) => {
+      const pre144 = SHAPE(agent) + IMPL_TAIL + NOTE_090(agent) + "\n\n" + HANDOFF_NOTE;
+      expect(priorReportSeeds(agent)).toContain(pre144);
+      storeWith({ [agent]: pre144 });
+      const row = readAgentReportDefault(agent, dbPath)!;
+      expect(row.version).toBe(6);
+      expect(row.content).toContain(`.claude/channels/<scope>/scribe/${agent}.1.md`);
+      expect(row.content).toContain("channel scope named in your injected context");
+      expect(row.content).not.toContain(`.claude/channels/scribe/`);
+      expect(readAgentReportDefault(agent, dbPath)!.version).toBe(6);
+    }
+  );
+
+  it("test and scribe: the current seeds name only the scoped lane", () => {
+    const fresh = path.join(dir, "fresh.sqlite");
+    expect(readAgentReportDefault("test", fresh)!.content).toContain(".claude/channels/<scope>/scribe/test.1.md");
+    expect(readAgentReportDefault("test", fresh)!.content).not.toContain(".claude/channels/scribe/");
+    expect(readAgentReportDefault("scribe", fresh)!.content).not.toContain(".claude/channels/scribe/");
+  });
 
   it("test: a stored pre-090 body upgrades too", () => {
     storeWith({ test: preTest() });
@@ -400,6 +430,52 @@ describe("superseded seed migration (090: generic skill_gaps)", () => {
     expect(readAgentReportDefault("scribe", fresh)!.version).toBe(first.version);
     expect(priorReportSeeds("scribe")).not.toContain(first.content);
     expect(priorReportSeeds("test")).not.toContain(readAgentReportDefault("test", fresh)!.content);
+  });
+
+  // `114`: the scribe default gains its ending rule (SKILL_GAPS_HANDLED: then HANDOFF: success). The
+  // post-090 body — preScribe minus the conceptSkillsUpdated field and paragraph — must upgrade.
+  it("scribe: the post-090 body upgrades to one carrying the ending lines, gap line first", () => {
+    const post090 = preScribe
+      .replace('  "conceptSkillsUpdated": 0,\n', "")
+      .replace(/\n\n`conceptSkillsUpdated`[\s\S]*$/, "");
+    expect(priorReportSeeds("scribe")).toContain(post090);
+    storeWith({ scribe: post090 });
+    const row = readAgentReportDefault("scribe", dbPath)!;
+    expect(row.version).toBe(6);
+    expect(row.content.startsWith(post090)).toBe(true);
+    expect(row.content).toContain("`HANDOFF: success` when the documentation is done");
+    expect(row.content).toContain("`HANDOFF: partial`");
+    expect(row.content.indexOf("SKILL_GAPS_HANDLED:")).toBeGreaterThan(-1);
+    expect(row.content.indexOf("SKILL_GAPS_HANDLED:")).toBeLessThan(row.content.indexOf("`HANDOFF: <label>`"));
+    expect(readAgentReportDefault("scribe", dbPath)!.version).toBe(6);
+  });
+
+  // `114` (test): a pre-090 store skips straight past V1 — it must land on the body WITH the ending
+  // lines, not on the V1 body that is now itself a prior.
+  it("scribe: a pre-090 body upgrades straight to the current body, ending lines included", () => {
+    storeWith({ scribe: preScribe });
+    const row = readAgentReportDefault("scribe", dbPath)!;
+    const fresh = readAgentReportDefault("scribe", path.join(dir, "fresh.sqlite"))!;
+    expect(row.content).toBe(fresh.content);
+    expect(row.content).toContain("`HANDOFF: success` when the documentation is done");
+  });
+
+  // `114` (test): a project seeded from scratch gets the ending rule too, and the committed plugin
+  // bundle — what the hooks actually run — seeds the same body as the TypeScript source.
+  it("scribe: a fresh seed carries the ending lines, and the plugin bundle seeds the same body", async () => {
+    const fresh = readAgentReportDefault("scribe", path.join(dir, "fresh.sqlite"))!;
+    expect(fresh.content).toMatch(/SKILL_GAPS_HANDLED: <file>[\s\S]*`HANDOFF: <label>` — always last/);
+    expect(fresh.content).toContain("`done` or `complete` is not a label");
+    const { createRequire } = await import("node:module");
+    const require = createRequire(import.meta.url);
+    const bundle = require(
+      path.resolve(
+        path.dirname(new URL(import.meta.url).pathname),
+        "../../../../plugins/maestro/scripts/lib/maestro-report-defaults.cjs"
+      )
+    ) as { readAgentReportDefault: typeof readAgentReportDefault };
+    const fromBundle = bundle.readAgentReportDefault("scribe", path.join(dir, "bundle.sqlite"))!;
+    expect(fromBundle.content).toBe(fresh.content);
   });
 
   it("every seeded agent's pre-090 body is among its recorded priors", () => {

@@ -17,7 +17,6 @@ import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
-const GUARD = path.join(PLUGIN_ROOT, "scripts", "maestro-channel-write-guard.js");
 
 const SESSION_A = "sess-aaa-111";
 const SESSION_B = "sess-bbb-222";
@@ -84,7 +83,8 @@ async function worktreeRun(): Promise<{ root: string; wt: string }> {
 }
 
 function runHook(cwd: string, sessionId: string, filePath: string, agentType = "backend") {
-  const res = spawnSync("node", [GUARD], {
+  // The project's own copy: the plugin's stands down once the install registers the guard (121).
+  const res = spawnSync("node", [path.join(cwd, ".claude", "scripts", "maestro-channel-write-guard.cjs")], {
     encoding: "utf8",
     env: pinnedEnv(tmp, { CLAUDE_PROJECT_DIR: cwd, CLAUDE_CODE_SESSION_ID: sessionId }),
     input: JSON.stringify({
@@ -197,10 +197,8 @@ describe("merge conflict on a generated lib names the resolution (082)", () => {
     });
 
     expect(run.status).toBe(1);
-    expect(run.stdout).toContain("pnpm --filter maestro build:plugin-libs");
-    expect(run.stdout).toContain(
-      "cp plugins/maestro/scripts/lib/maestro-scratch-lib.cjs .claude/scripts/lib/maestro-scratch-lib.cjs"
-    );
+    expect(run.stdout).toContain("run `pnpm refresh:runtime`");
+    expect(run.stdout).not.toContain("cp plugins/maestro/scripts/lib/");
   });
 
   it("gives no mirror-copy hint when a hand-written file (or the hand-maintained maestro-tasks.cjs) also conflicts", async () => {

@@ -248,3 +248,27 @@ describe("maestro-workflow-spec.cjs to-spec (read-only)", () => {
     expect(fs.readFileSync(maestroJsonPath, "utf8")).toBe(before);
   });
 });
+
+describe("maestro-workflow-spec.cjs when the handoff-table write is refused", () => {
+  // A read-only SKILL.md stands in for the sandbox's EPERM/EROFS; root ignores the mode bits.
+  it.skipIf(process.getuid?.() === 0)(
+    "still saves the workflow and reports the render command to re-run instead of crashing",
+    () => {
+      makeProject(seedConfig());
+      fs.chmodSync(skillMdPath, 0o444);
+      const specPath = writeSpecFile({ name: "blocked-render", steps: ["backend"] });
+
+      const result = runCli(["create", "--spec-file", specPath]);
+
+      expect(result.status).toBe(0);
+      const summary = JSON.parse(result.stdout);
+      expect(summary.render).toEqual({
+        ok: false,
+        reason: "sandbox-blocked",
+        command: "node .claude/scripts/maestro-render-orchestrator.cjs .",
+      });
+      const after = JSON.parse(fs.readFileSync(maestroJsonPath, "utf8"));
+      expect(after.workflows.some((w: { name: string }) => w.name === "blocked-render")).toBe(true);
+    }
+  );
+});

@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: 9a92b6c620c588b8d59a298edf170345ddaa7593
+  version: "2.4"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Core ↔ plugin parity
@@ -24,8 +24,11 @@ Regenerate with `pnpm --filter maestro build:plugin-libs`.
 ## This fails quietly — the single most important fact here
 
 The build script's own header says it: **if it stops producing correct output, the committed `.cjs`
-files keep working and every test keeps passing.** The symptom is not a red suite; it is an edit to
-a source module that stops reaching the plugin while the hooks go on running the old behaviour.
+files keep working.** The symptom is an edit to a source module that stops reaching the plugin while
+the hooks go on running the old behaviour. Since `066` one test does catch a stale bundle —
+`parity.test.ts`'s "generated bundle freshness (066)" rebuilds into a scratch dir and diffs every
+committed lib — but it only fires if the suite is run, and it cannot notice a build that is wrong in
+a way both the fresh and the committed output share (a lost `"use strict"`, a dropped entry).
 
 So after changing anything in `plugin-entries/` or in a `src/core` module one of them pulls in,
 re-run the build and **read `git diff plugins/maestro/scripts/lib/`** rather than trusting green
@@ -82,11 +85,16 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 
 `maestro-session`, `maestro-skill-regions`, `maestro-seed` (also re-exports `maestroConfigRefusal` from `config-usable.ts`, `096` — rebuild after editing that file), `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
-`maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check), `maestro-agent-sync` (`031`),
+`maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check; `142` adds the disable decision, `skillDisabledReason`/`isSkillListed`/`readDisableRules`, which `discoverSkills` also imports, so an edit here changes the app's skill lists too), `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
 `maestro-agent-fork`, `maestro-rule-move` (`081`), `maestro-skill-lists` (`089`: `resolveSkillLists`, behind both Step-1/end-skills scripts) and `maestro-epic` (`084`: epics, the report
 inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and
-`formatInboxEntry`; copied into projects, fs/path only, no `node:sqlite`).
+`formatInboxEntry`; `125`: the spawn list, adding `DEFAULT_SPAWN_CAP`, `workerNameFor`,
+`launchCommandFor`, `readyTasks` and `formatReady`; `132`: manager review, adding
+`MANAGER_REDIRECT_CAP`, `REVIEW_VERDICTS`, `isReviewVerdict`, `reviewHistory`, `writeReviewRequest`
+and `recordReviewVerdict`, and pulling in `human-review-gate.ts`, which imports nothing;
+`maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from it; copied into projects,
+fs/path only, no `node:sqlite`).
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.
@@ -97,6 +105,14 @@ external (`node:fs`, `node:path`, `node:os`, `node:sqlite`, and their bare alias
 it imports is inlined into the bundle. Reaching into a module that touches Electron, the Agent SDK
 or a third-party dependency is how an entry stops being buildable — or worse, builds and fails at
 hook time in a project with no dependencies installed.
+
+**Built-ins are allowed, but `node:child_process` is not, in a core module the app's preview path
+reaches.** `claims.ts` and everything it imports sit in `claude-preview.ts`'s import graph, and
+`test/isolation.test.ts` (a reviewed allow-list of `src/core`/`src/main` files importing
+`child_process`) plus `test/core/claude.test.ts`'s "spawns nothing" walk fail the moment one does.
+When a hook needs a process spawn (`141`'s macOS `ps` fallback), put the spawn in the hook script
+under `plugins/maestro/scripts/` and keep a pure parser in core (`parsePsLine`), or pass the
+spawner in as a port.
 
 **Eight of the seventeen are also COPIED into projects, which widens what a rename breaks (`035`).** A
 bundle runs from the marketplace cache _and_, if it is in `install.ts`'s `STATIC_ASSETS`, from
@@ -144,6 +160,11 @@ only and every hook already requires this bundle" argument:
   `readProjectHandoff`) and `runtime-version.ts` (`compareRuntimeVersions`, `runtimeNeedsRefresh`).
   The global handoff tier is passed **in** as a reader, so the sqlite bundle stays out; the grep is
   still `0`.
+- `130` — the human-review gate (`checkHumanReview`, `currentReviewRound`, `reviewFileName`,
+  `isReviewFile`, `HUMAN_REVIEW_LABEL`, from `human-review-gate.ts`, backing
+  `maestro-human-review-gate.js`). `132` added `currentReviewStop` and `MANAGER_REVIEW_LABEL` (the
+  gate now covers `manager review` too). It imports nothing (the file probe and the manager's name
+  are passed in); keep the `node:sqlite` grep at `0`. `tasks.ts` inlines the same `.review(-N).md` pattern to skip review files.
 - `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,
   `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by
   `maestro-team-meeting.cjs`. `fs`/`path` only.
@@ -154,13 +175,37 @@ only and every hook already requires this bundle" argument:
   `retireResumeDeliveries`, `latestWorkflowHandoff`, `expectedLoopbackPayloads`,
   `missingLoopbackPayload`, `appendHandoffIssue`), read by `maestro-resume-target.cjs` and the
   SubagentStop hook. `fs`/`path` only; the grep is still `0`.
+- `112` — `isGapReport`, `acknowledgeGaps` and `parseGapsHandled` from `handoff-channels.ts`, read
+  by the SubagentStart delivery block and the SubagentStop hook. `fs`/`path` only.
+- `113` — all of `session-name.ts` (`sessionNameFor`, `entranceRoleFor`, `promptEntranceRole`,
+  `noteEntrance`, `titleFor`, `storedName`, `storedSessionName`, `rederiveSessionName`), read by
+  `maestro-session-name.js`, `maestro-task-status.cjs claim` and `maestro-epic.cjs`. `fs`/`path`
+  only; the grep is still `0`.
+- `124` — `awaitHandback`, `hasHandbackCall`, `HANDBACK_WAIT_MS` and `HANDBACK_POLL_MS` from
+  `handoff-label.ts`, used by the SubagentStop hook to keep re-reading a transcript that Claude
+  Code hasn't finished writing. `fs`-free (the reader and the sleep are passed in); the grep is
+  still `0`.
+- `141` — all of `session-heartbeat.ts` (`heartbeatVerdict`, `heartbeatTick`, `heartbeatTargets`,
+  `heartbeatIntervalMs`, `writeHeartbeatPid`, `isProcessAlive`, `processInfo`, `parsePsLine`,
+  `watchedPid`, `parentProbe`) plus `HEARTBEAT_INTERVAL_MS`/`HEARTBEAT_STALE_MS`/
+  `HEARTBEAT_INTERVAL_ENV` and `SESSION_HEARTBEAT_NAME`/`SESSION_HEARTBEAT_PID_NAME`, read by
+  `maestro-session-heartbeat.js` and `maestro-task-status.cjs`. `fs`/`path` only (it reads `/proc`,
+  never spawns); the grep is still `0`. `maestro-epic` also rebuilt, because `claims.ts` now
+  imports `session-heartbeat.ts`.
+- `144` — channel scopes from `handoff-channels.ts` (`channelScopeOf`, `channelScopeFromState`,
+  `channelRelPath`, `isChannelScope`, `NO_SESSION_SCOPE`, `consumedDir`, `pendingLanes`). Also an
+  **arity change**: every lane function (`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`,
+  `acknowledgeGaps`, `unstampedFilesOf`, `payloadRoutes`, `pendingResumeDeliveries`, `retireResumeDeliveries`,
+  `closeMeeting`, `closeOwnerRuns`) now takes a `scope` argument, so every hook calling one changed
+  in the same commit. The export-superset test can't catch a stale call shape — only a rebuild plus
+  the hook tests can. `fs`/`path` only; the grep is still `0`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any
 addition. The sqlite tier is a **separate** bundle, `maestro-handoff-defaults`, which
 `maestro-inject-agent-context.js` `require`s inside a try/catch — so on a `node` older than 22.5 the
 sqlite `require` fails and the seed still answers. The trap: `handoff-seeds.ts` imports **nothing**,
-and adding one store import to it moves 23 protocol bodies behind a `node` version check without
+and adding one store import to it moves 24 protocol bodies behind a `node` version check without
 failing a single test.
 
 **`maestro-workflow-spec` carries no `node:sqlite`-free requirement of its own.** It is `require`d
@@ -194,14 +239,23 @@ This repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin
 `plugins/maestro/scripts/lib/`, so a rebuild leaves the mirrors stale and `parity.test.ts`'s
 "plugin-lib project mirror parity (066)" fails. After every rebuild:
 
-1. `cp plugins/maestro/scripts/lib/<name>.cjs .claude/scripts/lib/<name>.cjs` for each lib in
-   `STATIC_ASSETS` that changed (and the plugin script copies, e.g. `maestro-task-status.cjs`);
+1. **`pnpm refresh:runtime`** (`scripts/refresh-runtime.mjs`) — one idempotent command that rebuilds
+   the libs, runs `maestro-install.js .` (copies every `runtimeAssets()` file over its
+   `.claude/scripts/` mirror, re-syncs the STEPS/PRINCIPLES regions of the rendered
+   `.claude/skills/maestro/SKILL.md`, merges the hook registrations into `.claude/settings.json`) and
+   then re-renders the HANDOFFS table. A sandboxed agent cannot write those paths, so it hands the
+   user exactly `! pnpm refresh:runtime` instead of hand-built `cp` lines;
 2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.
+
+**`maestro-render-orchestrator.cjs` alone does NOT refresh STEPS.** It rewrites only the HANDOFFS
+table; STEPS comes from the template via `maestro-install.js`. Giving the user the render script as
+the re-sync step cost task 132 a second round-trip. `parity.test.ts` fails with a message naming
+`pnpm refresh:runtime` for a stale mirror, a stale bundle or a stale STEPS region.
 
 Since `087` that test covers **every** `.claude/scripts/` asset in `runtimeAssets()` — hand-written
 scripts and hook scripts (with the `.js` → `.cjs` rename) as well as libs — via
 `test/helpers/mirror-parity.ts` (`staleMirrors`, `describeStale`). A stale or missing mirror fails
-and the message is the `cp plugins/maestro/<src> <dest>` that fixes it. Task 084's stale
+and the message names `pnpm refresh:runtime` as the fix. Task 084's stale
 `maestro-epic.cjs` passed the old lib-only check.
 
 **Decision (`082`): the mirrors stay tracked.** Untracking them would leave a fresh clone without a
@@ -217,7 +271,10 @@ lives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, 
 module needs an alias there too.
 
 `maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the
-worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
+worktree branch of `maestro-channel-write-guard.js` (a `HOOK_SCRIPTS` entry since `121`, so a copy
+lives at `.claude/scripts/maestro-channel-write-guard.cjs` and `parity.test.ts` checks it), and the worktree helpers from `worktree.ts`
+(`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`, …) — all still
+`fs`/`path` only.
 
 ## Why the build is so specific
 
@@ -241,8 +298,9 @@ worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
 | `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments.     |
 | `apps/maestro/src/core/plugin-entries/*.ts`    | The seventeen entry points — thin re-exports of `src/core`. |
 | `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.              |
-| `apps/maestro/test/core/parity.test.ts`        | Differential test against snapshotted legacy CJS.           |
-| `apps/maestro/test/core/avatar-parity.test.ts` | Same, for the avatar store.                                 |
+| `apps/maestro/test/core/parity.test.ts`        | Differential test vs legacy CJS, plus bundle freshness and mirror checks. |
+| `apps/maestro/test/core/avatar-parity.test.ts` | Unrelated drift check: avatar part ids vs the renderer manifest. |
+| `apps/maestro/test/helpers/mirror-parity.ts`   | `staleMirrors` / `describeStale`, behind the mirror checks. |
 
 ## Relationships
 
@@ -264,4 +322,4 @@ worktree branch of `maestro-channel-write-guard.js` (still `fs`/`path` only).
 ## Sub-concepts
 
 - [Parity tests](sub-concepts/parity-tests.md) — the snapshot baseline, why it is not the live file,
-  and the user-visible strings it freezes byte for byte.
+  the user-visible strings it freezes byte for byte, and the freshness/manifest/mirror blocks.

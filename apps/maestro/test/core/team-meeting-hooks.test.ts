@@ -143,10 +143,12 @@ const sessDir = (root: string, id = SESSION) => path.join(root, ".claude", "maes
 const statePath = (root: string, id = SESSION) => path.join(sessDir(root, id), "session.json");
 const meetingDir = (root: string, id = SESSION) => path.join(sessDir(root, id), "meeting");
 const readState = (root: string, id = SESSION) => JSON.parse(fs.readFileSync(statePath(root, id), "utf8"));
+/** `144`: SESSION claims no task, so its lanes live under `session-<first 8 chars of its id>`. */
+const SCOPE = "session-sess-mee";
 const lane = (root: string, receiver: string, sender: string) =>
-  path.join(root, ".claude", "channels", receiver, `${sender}.1.md`);
+  path.join(root, ".claude", "channels", SCOPE, receiver, `${sender}.1.md`);
 const consumed = (root: string, receiver: string, sender: string) =>
-  path.join(root, ".claude", "channels", ".consumed", receiver, `${sender}.1.md`);
+  path.join(root, ".claude", "channels", SCOPE, ".consumed", receiver, `${sender}.1.md`);
 
 function readLog(root: string, id = SESSION): Record<string, unknown>[] {
   const f = path.join(sessDir(root, id), "log.jsonl");
@@ -376,7 +378,9 @@ describe("leak 4 — SubagentStop never stamps a participant's channel file", ()
     expect(ctx).not.toContain(PAYLOAD);
     expect(ctx).not.toMatch(/Delivered to your channel/);
     expect(ctx).toMatch(/Waiting in your channel but NOT from this run/);
-    expect(ctx).toMatch(/from `backend`, [\d.]+d old \(unstamped\): `\.claude\/channels\/frontend\/backend\.1\.md`/);
+    expect(ctx).toMatch(
+      /from `backend`, [\d.]+d old \(unstamped\): `\.claude\/channels\/session-sess-mee\/frontend\/backend\.1\.md`/
+    );
     expect(fs.readFileSync(lane(root, "frontend", "backend"), "utf8")).toBe(PAYLOAD);
     expect(fs.existsSync(consumed(root, "frontend", "backend"))).toBe(false);
   });
@@ -413,7 +417,9 @@ describe("leak 4 — SubagentStop never stamps a participant's channel file", ()
     expect(ctx).not.toContain(PAYLOAD);
     expect(fs.readFileSync(lane(root, "frontend", "backend"), "utf8")).toBe(PAYLOAD);
     expect(readState(root).meeting_leftovers).toEqual([
-      expect.objectContaining({ path: expect.stringMatching(/channels[\\/]frontend[\\/]backend\.1\.md$/) }),
+      expect.objectContaining({
+        path: expect.stringMatching(/channels[\\/]session-sess-mee[\\/]frontend[\\/]backend\.1\.md$/),
+      }),
     ]);
   });
 
@@ -543,9 +549,9 @@ describe("leak 5 — a workflow agent resumed into a post-mortem meeting is no l
 
 describe("leak 6 — the write guard confines a participant to the meeting directory", () => {
   const guard = (root: string, agentType: string, file: string, tool = "Write", sessionId: string | null = SESSION) => {
-    // Plugin-only hook (hooks.json registers it from the plugin root; it is never copied into a
-    // project), so the plugin's own script is the real one.
-    const r = run(path.join(PLUGIN_SCRIPTS, "maestro-channel-write-guard.js"), [], root, sessionId, {
+    // The project's own copy: the install registers the guard (121), so the plugin's copy stands
+    // down for this project.
+    const r = run(path.join(root, ".claude", "scripts", "maestro-channel-write-guard.cjs"), [], root, sessionId, {
       cwd: root,
       hook_event_name: "PreToolUse",
       agent_type: agentType,
@@ -575,8 +581,8 @@ describe("leak 6 — the write guard confines a participant to the meeting direc
     const root = await installed();
     startMeetingFor(root, ["backend", "reviewer"]);
     const blocked: Array<[string, string, string?]> = [
-      ["backend", ".claude/channels/frontend/backend.1.md"],
-      ["reviewer", ".claude/channels/scribe/reviewer.1.md"], // even the reviewer's own lanes
+      ["backend", `.claude/channels/${SCOPE}/frontend/backend.1.md`],
+      ["reviewer", `.claude/channels/${SCOPE}/scribe/reviewer.1.md`], // even the reviewer's own lanes
       ["backend", path.join(root, "src", "a.ts")],
       ["backend", "src/a.ts", "MultiEdit"],
       ["backend", "nb.ipynb", "NotebookEdit"],
@@ -586,7 +592,10 @@ describe("leak 6 — the write guard confines a participant to the meeting direc
       // Raw strings: path.join would collapse the `..` before the guard ever saw it.
       ["backend", `${meetingDir(root)}/../session.json`],
       ["backend", `${meetingDir(root)}/round-1/../x.json`], // lands back inside — still refused
-      ["backend", ".claude/maestro_sessions/" + SESSION + "/meeting/../../../channels/frontend/backend.1.md"],
+      [
+        "backend",
+        ".claude/maestro_sessions/" + SESSION + "/meeting/../../../channels/" + SCOPE + "/frontend/backend.1.md",
+      ],
       ["backend", path.join(sessDir(root, OTHER), "meeting", "x.json")],
       ["backend", ""],
     ];
@@ -601,8 +610,8 @@ describe("leak 6 — the write guard confines a participant to the meeting direc
     const root = await installed();
     startMeetingFor(root, ["backend"]);
     // A symlink inside the meeting dir that points at a channel lane.
-    fs.mkdirSync(path.join(root, ".claude", "channels", "frontend"), { recursive: true });
-    fs.symlinkSync(path.join(root, ".claude", "channels", "frontend"), path.join(meetingDir(root), "evil"));
+    fs.mkdirSync(path.join(root, ".claude", "channels", SCOPE, "frontend"), { recursive: true });
+    fs.symlinkSync(path.join(root, ".claude", "channels", SCOPE, "frontend"), path.join(meetingDir(root), "evil"));
     expect(guard(root, "backend", path.join(meetingDir(root), "evil", "backend.1.md")).allow).toBe(false);
 
     // The meeting directory itself replaced by a symlink to somewhere outside.
@@ -697,7 +706,9 @@ describe("leak 6 — the write guard confines a participant to the meeting direc
     startMeetingFor(root, ["backend"]);
     // frontend is unrestricted; reviewer is channel-only; neither is confined to the meeting dir.
     expect(guard(root, "frontend", path.join(root, "src", "a.ts")).allow).toBe(true);
-    expect(guard(root, "reviewer", ".claude/channels/scribe/reviewer.1.md").allow).toBe(true);
+    expect(guard(root, "reviewer", `.claude/channels/${SCOPE}/scribe/reviewer.1.md`).allow).toBe(true);
+    // `144`: today's rules confine the reviewer to its own scope, not the legacy root.
+    expect(guard(root, "reviewer", ".claude/channels/scribe/reviewer.1.md").allow).toBe(false);
     const r = guard(root, "reviewer", path.join(root, "src", "a.ts"));
     expect(r.allow).toBe(false);
     expect(r.reason).not.toMatch(/team meeting/);
@@ -715,8 +726,8 @@ describe("leak 6 — the write guard confines a participant to the meeting direc
     startMeetingFor(root, ["backend", "reviewer"]);
     endMeetingFor(root);
     expect(guard(root, "backend", path.join(root, "src", "a.ts")).allow).toBe(true);
-    expect(guard(root, "backend", ".claude/channels/frontend/backend.1.md").allow).toBe(true);
-    expect(guard(root, "reviewer", ".claude/channels/scribe/reviewer.1.md").allow).toBe(true);
+    expect(guard(root, "backend", `.claude/channels/${SCOPE}/frontend/backend.1.md`).allow).toBe(true);
+    expect(guard(root, "reviewer", `.claude/channels/${SCOPE}/scribe/reviewer.1.md`).allow).toBe(true);
     const r = guard(root, "reviewer", path.join(root, "src", "a.ts"));
     expect(r.allow).toBe(false);
     expect(r.reason).not.toMatch(/team meeting/);

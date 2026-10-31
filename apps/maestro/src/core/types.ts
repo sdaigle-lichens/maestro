@@ -20,7 +20,7 @@ export interface MaestroInstanceV3 {
 
 export interface MaestroNodeV3 {
   id: string;
-  type: "agent" | "human_review" | "skill";
+  type: "agent" | "human_review" | "manager_review" | "skill";
   /** agent nodes only; references MaestroInstanceV3.name */
   instance?: string;
   /** skill nodes only; the skill id run inline by the orchestrator */
@@ -130,6 +130,13 @@ export interface MaestroConfigV3 {
    * per-agent totals. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader.
    */
   metrics?: { recent_runs?: number };
+  /**
+   * The model epic worker sessions launch with: an alias (`sonnet`, `opus`, `haiku`) or a full
+   * model id. When set, the launch commands `maestro-epic.cjs ready` prints carry `--model <value>`.
+   * Absent, empty or non-string means "the user's default model" and the command is unchanged.
+   * `resolveWorkerModel` in `config.ts` is the one reader.
+   */
+  worker_model?: string;
 }
 
 export interface MaestroWorkflowsSlice {
@@ -155,6 +162,11 @@ export interface MaestroSkillListsSlice {
 
 export interface MaestroTaskRoutingSlice {
   use_maestro_tasks: boolean;
+}
+
+/** The `worker-model` slice: writes only `worker_model`. `undefined` or blank removes the key. */
+export interface MaestroWorkerModelSlice {
+  worker_model?: string;
 }
 
 /**
@@ -217,6 +229,13 @@ export interface MaestroSession {
   generated_instances: string[];
   run_id?: string | null;
   /**
+   * The task-queue file this session runs (`NNN-slug.md`), recorded by
+   * `maestro-set-session-workflow.cjs --task`. Its numeric prefix names the session's channel scope
+   * (`task-NNN`, `144`); with none the scope is `session-<id8>` — see `channelScopeOf` in
+   * `handoff-channels.ts`.
+   */
+  active_task?: string | null;
+  /**
    * Present only while a team meeting runs in this session (`/maestro-team-meeting`). Its
    * `participants` get meeting-mode treatment from the hooks: no HANDOFF routing, no channel
    * delivery or stamping, log entries marked `meeting: true`, writes confined to the meeting
@@ -247,7 +266,22 @@ export interface MaestroSession {
   resume_deliveries?: Record<string, ResumeDelivery[]>;
   /** The orchestrator's own success-path tracker, the fallback when TaskCreate is unavailable (`083`). */
   plan?: SessionPlan | null;
+  /**
+   * This session's name for cross-session messages (`113`): `maestro-<id8>` / `maestro-mgr-<id8>`
+   * recorded by the first /maestro or /maestro-manager entrance, or the user's own custom title.
+   * Written by `session-name.ts` only; the epic and claim CLIs prefer it over a passed-in name.
+   */
+  session_name?: string;
+  /** Which entrance recorded `session_name` first. */
+  session_name_role?: SessionNameRole;
+  /** True when `session_name` is the user's own title (`--name`, `/rename`), not a derived one. */
+  session_name_custom?: boolean;
+  /** True once a hook applied `session_name` as the session title (UserPromptSubmit applies it once). */
+  session_name_applied?: boolean;
 }
+
+/** The two entrances that name a session (`113`). */
+export type SessionNameRole = "worker" | "manager";
 
 export interface MaestroOwnerRunsState {
   meeting_id: string;
@@ -261,7 +295,8 @@ export interface HandoffIssueRecord {
   agent: string;
   agent_id: string;
   /** `missing_payload` (`087`/`088`): a route's channel file was not written, or a loop-back's expected file is absent. */
-  kind: "missing" | "contradiction" | "missing_payload";
+  /** `unrouted` (`108`): a condition label the active workflow has no edge for. */
+  kind: "missing" | "contradiction" | "missing_payload" | "unrouted";
   verdict: "SUCCESS" | "FAIL" | null;
   label: string | null;
   message: string;
@@ -271,7 +306,7 @@ export interface HandoffIssueRecord {
 
 /** One channel file handed to a resumed agent by path (`088`). */
 export interface ResumeDelivery {
-  /** Project-relative, e.g. `.claude/channels/backend/reviewer.1.md`. */
+  /** Project-relative, e.g. `.claude/channels/task-144/backend/reviewer.1.md`. */
   file: string;
   sender: string;
   /** The session `run_id` the file was stamped with when it was handed over. */

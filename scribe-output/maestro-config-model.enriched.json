@@ -1,0 +1,76 @@
+{
+  "concept": "maestro-config-model",
+  "vertices": [
+    {
+      "_key": "5a3a3a7dece736bc5b19264afb59c493",
+      "purpose": "One handoff problem the SubagentStop hook recorded for the orchestrator to read, including unrouted labels.",
+      "inputs": [],
+      "outputs": [
+        "issue record with kind, label, message and files"
+      ],
+      "cross_concept_refs": [
+        "maestro-architecture"
+      ],
+      "document_ref": null,
+      "tags": [
+        "session-state",
+        "handoff-issue"
+      ],
+      "sig_seen": "export interface HandoffIssueRecord {",
+      "hash_seen": "cbd061197c033b49a17c957223351b142b413f35832b674873abef2317cf49d1"
+    },
+    {
+      "_key": "b0b1a8cf1c309ff83de6eed7691b2dbe",
+      "purpose": "Shape of a session's session.json: active workflow, run_id, meeting and owner-run state, unread handoff issues, resume deliveries, plan and the session's name.",
+      "inputs": [],
+      "outputs": [
+        "the per-session state record"
+      ],
+      "cross_concept_refs": [
+        "maestro-architecture"
+      ],
+      "document_ref": null,
+      "tags": [
+        "session-state"
+      ],
+      "sig_seen": "export interface MaestroSession {",
+      "hash_seen": "cf8bc9cc9cebd969cf8357631bb0cc0f95e3a60e6d918a3c6dbb17011cd64ae9"
+    },
+    {
+      "_key": "bf3475926dbeab90754e8f28b9874086",
+      "purpose": "One line of a session's log.jsonl: a dispatch, handoff, transition, channel delivery or phase marker with its optional context fill.",
+      "inputs": [],
+      "outputs": [
+        "log entry record"
+      ],
+      "cross_concept_refs": [
+        "log-view"
+      ],
+      "document_ref": null,
+      "tags": [
+        "session-log"
+      ],
+      "sig_seen": "export interface SessionLogEntry {",
+      "hash_seen": "2912bf30b8e8dcf49f536a7ddeffec58d6a706183cd8eadb347250d227d13436"
+    },
+    {
+      "_key": "da1963b60ab7d5d4e3c1a17e37aa013d",
+      "purpose": "A channel payload delivered to the receiving agent's own dispatch, or the scribe's acknowledgement of a gap report.",
+      "inputs": [],
+      "outputs": [
+        "delivery record with sender, receiver, content and via"
+      ],
+      "cross_concept_refs": [
+        "log-view"
+      ],
+      "document_ref": null,
+      "tags": [
+        "session-log",
+        "channels"
+      ],
+      "sig_seen": "export interface ChannelDelivery {",
+      "hash_seen": "7809b2ad4de02a8b3758192d03138d05790cc02ecdcd1e6224d483615fd8cca2"
+    }
+  ],
+  "edges": []
+}

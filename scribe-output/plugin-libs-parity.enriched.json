@@ -1,0 +1,25 @@
+{
+  "concept": "plugin-libs-parity",
+  "vertices": [
+    {
+      "_key": "719473e6712cfe0e67e38830c500942f",
+      "purpose": "Builds the hints telling a project with scribe.config.json or a legacy concept-skills list to install and enable the code-graph plugin, with the exact marketplace-add and install commands.",
+      "inputs": [
+        "projectRoot",
+        "sources: the enabled plugins"
+      ],
+      "outputs": [
+        "hint sentences"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "code-graph",
+        "skill-availability"
+      ],
+      "sig_seen": "function pluginSuggestions(projectRoot: string, sources: SkillSources): string[]",
+      "hash_seen": "52b2ae60f014878ba76ac3857f8d152a510f413fe69a9be3bb71fad4927ef5bf"
+    }
+  ],
+  "edges": []
+}

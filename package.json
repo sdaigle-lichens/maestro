@@ -10,6 +10,7 @@
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "verify": "pnpm lint && pnpm check && turbo run typecheck test",
+    "refresh:runtime": "node scripts/refresh-runtime.mjs",
     "format": "turbo run format && prettier --write plugins --ignore-path .prettierignore"
   },
   "devDependencies": {

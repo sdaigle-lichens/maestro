@@ -1,0 +1,282 @@
+{
+  "slug": "code-graph-cutover",
+  "created_at": "2026-10-14T02:02:09.698Z",
+  "manager": {
+    "name": "manager-code-graph-merge",
+    "set_at": "2026-10-19T12:36:31.109Z"
+  },
+  "workers": [
+    {
+      "name": "maestro-99",
+      "task": "105-accept-code-graph-s-design-check-alongside-concept-skills.md",
+      "added_at": "2026-10-15T11:48:27.022Z"
+    },
+    {
+      "name": "maestro-76",
+      "task": "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md",
+      "added_at": "2026-10-15T12:05:18.585Z"
+    },
+    {
+      "name": "maestro-a4",
+      "task": "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
+      "added_at": "2026-10-16T01:35:36.417Z"
+    },
+    {
+      "name": "maestro-d4",
+      "task": "110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md",
+      "added_at": "2026-10-16T22:13:30.406Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "105-accept-code-graph-s-design-check-alongside-concept-skills.md",
+      "file": "inbox/r001-105-accept-code-graph-s-design-check-alongside-concept-skills.md",
+      "at": "2026-10-15T12:01:19.524Z"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-10-15T12:01:32.572Z",
+      "by": "maestro-1c"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md",
+      "file": "inbox/r002-106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md",
+      "at": "2026-10-15T12:29:51.146Z",
+      "from": "maestro-76"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-10-15T12:30:04.168Z",
+      "by": "maestro-1c"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "107-remove-the-concept-skills-plugin-and-package.md",
+      "file": "inbox/r003-107-remove-the-concept-skills-plugin-and-package.md",
+      "at": "2026-10-15T13:00:31.473Z",
+      "from": "maestro-50"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "at": "2026-10-15T13:00:44.491Z",
+      "by": "maestro-1c"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
+      "file": "inbox/r004-109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md",
+      "at": "2026-10-16T01:34:36.642Z",
+      "from": "maestro-a4"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-10-16T01:35:36.582Z",
+      "by": "maestro-de"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md",
+      "file": "inbox/r005-110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md",
+      "at": "2026-10-16T21:58:10.853Z",
+      "from": "maestro-d4"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-10-16T22:13:30.826Z",
+      "by": "maestro-0c"
+    },
+    {
+      "kind": "report",
+      "id": "r006",
+      "task": "111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md",
+      "file": "inbox/r006-111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md",
+      "at": "2026-10-17T12:45:01.903Z",
+      "from": "maestro-94"
+    },
+    {
+      "kind": "ack",
+      "id": "r006",
+      "at": "2026-10-17T12:52:58.583Z",
+      "by": "maestro-cb"
+    },
+    {
+      "kind": "report",
+      "id": "r007",
+      "task": "112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md",
+      "file": "inbox/r007-112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md",
+      "at": "2026-10-19T22:35:28.652Z"
+    },
+    {
+      "kind": "ack",
+      "id": "r007",
+      "at": "2026-10-19T22:37:07.979Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md",
+      "file": "inbox/r008-114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md",
+      "at": "2026-10-20T02:05:18.146Z",
+      "from": "Scribe handoff label workflow routing"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "at": "2026-10-20T02:05:59.079Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r009",
+      "task": "115-give-maestro-s-code-graph-install-hint-the-exact-commands.md",
+      "file": "inbox/r009-115-give-maestro-s-code-graph-install-hint-the-exact-commands.md",
+      "at": "2026-10-21T16:08:06.906Z",
+      "from": "maestro-a92095d5"
+    },
+    {
+      "kind": "ack",
+      "id": "r009",
+      "at": "2026-10-21T16:08:38.337Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r010",
+      "task": "116-bring-maestro-s-stale-concept-skills-up-to-date.md",
+      "file": "inbox/r010-116-bring-maestro-s-stale-concept-skills-up-to-date.md",
+      "at": "2026-10-21T16:29:20.765Z",
+      "from": "maestro-54a42673"
+    },
+    {
+      "kind": "ack",
+      "id": "r010",
+      "at": "2026-10-21T16:29:57.214Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r011",
+      "task": "117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md",
+      "file": "inbox/r011-117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md",
+      "at": "2026-10-21T17:21:13.065Z",
+      "from": "maestro-fbcb0f28"
+    },
+    {
+      "kind": "ack",
+      "id": "r011",
+      "at": "2026-10-21T17:21:43.911Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r012",
+      "task": "118-fully-review-the-five-riskiest-stamped-only-concept-skills.md",
+      "file": "inbox/r012-118-fully-review-the-five-riskiest-stamped-only-concept-skills.md",
+      "at": "2026-10-21T18:29:16.723Z",
+      "from": "maestro-848c8834"
+    },
+    {
+      "kind": "ack",
+      "id": "r012",
+      "at": "2026-10-21T18:29:36.318Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r013",
+      "task": "119-fully-review-the-remaining-eight-stamped-only-concept-skills.md",
+      "file": "inbox/r013-119-fully-review-the-remaining-eight-stamped-only-concept-skills.md",
+      "at": "2026-10-21T19:04:53.368Z",
+      "from": "maestro-f0d5220f"
+    },
+    {
+      "kind": "ack",
+      "id": "r013",
+      "at": "2026-10-21T19:05:15.471Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r014",
+      "task": "120-fully-review-the-last-three-concept-skills-maestro-architecture-claude-session-bridge-and-agents-view.md",
+      "file": "inbox/r014-120-fully-review-the-last-three-concept-skills-maestro-architecture-claude-session-bridge-and-agents-view.md",
+      "at": "2026-10-22T00:08:33.930Z",
+      "from": "maestro-76cb58a6"
+    },
+    {
+      "kind": "ack",
+      "id": "r014",
+      "at": "2026-10-22T00:09:18.289Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r015",
+      "task": "121-close-the-channel-write-guard-gap-in-project-local-installs-or-correct-the-comment-that-hides-it.md",
+      "file": "inbox/r015-121-close-the-channel-write-guard-gap-in-project-local-installs-or-correct-the-comment-that-hides-it.md",
+      "at": "2026-10-22T00:44:02.369Z",
+      "from": "maestro-fbd4ccc9"
+    },
+    {
+      "kind": "ack",
+      "id": "r015",
+      "at": "2026-10-22T00:46:08.199Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r016",
+      "task": "122-stop-the-channel-write-guard-from-failing-open-when-the-project-copy-can-t-run.md",
+      "file": "inbox/r016-122-stop-the-channel-write-guard-from-failing-open-when-the-project-copy-can-t-run.md",
+      "at": "2026-10-23T15:51:32.288Z",
+      "from": "maestro-08131b1b"
+    },
+    {
+      "kind": "ack",
+      "id": "r016",
+      "at": "2026-10-23T15:52:35.509Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r017",
+      "task": "123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md",
+      "file": "inbox/r017-123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md",
+      "at": "2026-10-23T16:15:05.071Z",
+      "from": "maestro-2e1cb206"
+    },
+    {
+      "kind": "ack",
+      "id": "r017",
+      "at": "2026-10-23T16:16:13.726Z",
+      "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "report",
+      "id": "r018",
+      "task": "124-find-why-the-subagentstop-hook-still-flags-no-handoff-line-for-subagenthandback-reports-and-fix-it.md",
+      "file": "inbox/r018-124-find-why-the-subagentstop-hook-still-flags-no-handoff-line-for-subagenthandback-reports-and-fix-it.md",
+      "at": "2026-10-23T19:31:50.994Z",
+      "from": "maestro-8dcd3767"
+    },
+    {
+      "kind": "ack",
+      "id": "r018",
+      "at": "2026-10-23T19:34:56.863Z",
+      "by": "manager-code-graph-merge"
+    }
+  ]
+}

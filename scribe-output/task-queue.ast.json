@@ -1,0 +1,5332 @@
+{
+  "concept": "task-queue",
+  "vertices": [
+    {
+      "_key": "026239de396536462a5edd7f0584e9a7",
+      "displayKey": "task-queue::type-def::EpicVerdictEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicVerdictEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 114,
+      "end_line": 125,
+      "signature": "export interface EpicVerdictEntry {",
+      "contentHash": "47f7235216fc21963d992280c1591b9b8c542d5926e80d55d71530518db8b09a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0447987955bc8d5c027456a4826a1c70",
+      "displayKey": "task-queue::type-def::TrackerEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "TrackerEntry",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 240,
+      "end_line": 245,
+      "signature": "export interface TrackerEntry {",
+      "contentHash": "4e7aed29ca2154d9ba3cdca5f6f3acf463946f0803306b30068437b5462f416f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "044d2ab9645ab32e835740af68d1663a",
+      "displayKey": "task-queue::function::withLock",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "withLock",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 161,
+      "end_line": 184,
+      "signature": "function withLock(dir: string, fn: () => T): T",
+      "contentHash": "7cf3e72e716bf31d745652d763f40fbc9a6260645082b1202f2e42d1b20ba0b5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "05a3e61634be359f37425915d6de3537",
+      "displayKey": "task-queue::function::writeStatusMap",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "writeStatusMap",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 78,
+      "end_line": 88,
+      "signature": "function writeStatusMap(dir: string, statusMap: StatusMap): void",
+      "contentHash": "fcd492525e25a8a6cd3205b85c40accf13f9651616682c9512ffda0caa4b386a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0badc33a242eccf12edf799a03ddd499",
+      "displayKey": "task-queue::type-def::TaskStatus",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "TaskStatus",
+      "filepath": "apps/maestro/src/renderer/src/utils/maestro-tasks.ts",
+      "start_line": 4,
+      "end_line": 4,
+      "signature": "export type TaskStatus = MaestroTask[\"status\"];",
+      "contentHash": "fb0ca9e6db8ce49be607dc3cd5de6c9419a2c1495d99ef0bb2ac4b69a6124e83",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0c030394bf7b0d306056206f01085c16",
+      "displayKey": "task-queue::function::epicOfTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "epicOfTask",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 332,
+      "end_line": 334,
+      "signature": "function epicOfTask(projectRoot: string, filename: string): string | null",
+      "contentHash": "98eddd1fc5a4577a31de358652cbcca42c49679e50621cf58a400473ceb2a84c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "displayKey": "task-queue::function::writeReviewRequest",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "writeReviewRequest",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 549,
+      "end_line": 581,
+      "signature": "function writeReviewRequest(projectRoot: string, task: string, file: string, sender?: string): WrittenReviewRequest | null",
+      "contentHash": "fec06439ed4946684efc13b03243c659f48760dd71109e5a01fb907e53fb0fce",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0d315ff547976199b45bf6486c686d05",
+      "displayKey": "task-queue::type-def::StatusMap",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "StatusMap",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 27,
+      "end_line": 27,
+      "signature": "type StatusMap = Record<string, StatusEntry>;",
+      "contentHash": "2c03aeb44fe3d9e6f8e0c42847fcbb156856ef22d31e70c09e3fa26c88c141c6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0dc7bd142d696f521309be415905428a",
+      "displayKey": "task-queue::function::epicDirFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "epicDirFor",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 147,
+      "end_line": 150,
+      "signature": "function epicDirFor(projectRoot: string, slug: string): string | null",
+      "contentHash": "1e8a6b7ef29736a8e7e6e8f1bb705dcb85d2e1ffca94251865f47db8b71e20c4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0e3e3d797b8cb32f705571cb43280f44",
+      "displayKey": "task-queue::function::unlinkTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "unlinkTasks",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 318,
+      "end_line": 320,
+      "signature": "function unlinkTasks(projectRoot: string, tasks: string[]): SetEpicResult",
+      "contentHash": "57f2c9e79f744e9052f991d78e1cce25bdce2b458640b62971236297da6f25ad",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "120889258450c5d3faaef7d6007b2f08",
+      "displayKey": "task-queue::type-def::StatusEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "StatusEntry",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 21,
+      "end_line": 26,
+      "signature": "interface StatusEntry {",
+      "contentHash": "bcf7be2a6ad5f13db36c1f046d59f029a1a9906a25750c6672b622c050117ef4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "122da9810ef945f109dce0989b5fd3e6",
+      "displayKey": "task-queue::function::getMaestroTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "getMaestroTasks",
+      "filepath": "apps/maestro/src/renderer/src/utils/maestro-tasks.ts",
+      "start_line": 6,
+      "end_line": 8,
+      "signature": "function getMaestroTasks(): Promise<MaestroTask[]>",
+      "contentHash": "fbbc26317306ba559199e1bff3569d20746a44dba1614a1c278b93bef3a0e667",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "125b0a7c2dcb4d0939f998016f73f7cf",
+      "displayKey": "task-queue::function::nextInboxId",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "nextInboxId",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 339,
+      "end_line": 342,
+      "signature": "function nextInboxId(state: EpicState, kind: EpicInboxEntry[\"kind\"]): string",
+      "contentHash": "cf23725c49d9515da74c853a9cdd0d72d3b5792049dd938602e32496f46252cd",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "12dd2655103d485c9df656e5f7ff5c2a",
+      "displayKey": "task-queue::type-def::EpicReportEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicReportEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 47,
+      "end_line": 57,
+      "signature": "export interface EpicReportEntry {",
+      "contentHash": "f4948408dba938be0664fbf8b30b74db738b115a76df59e145484972eae83955",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "12e51def13197d29aaa18fdbb4321f7b",
+      "displayKey": "task-queue::function::readClaimFile",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readClaimFile",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 87,
+      "end_line": 102,
+      "signature": "function readClaimFile(filePath: string): ClaimFile | null",
+      "contentHash": "29ad70828a59e9c399df3267004952e820ebe8ebca86f7668fcf8f63ebd47d84",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1525204638262f8aad349e696aa0c63b",
+      "displayKey": "task-queue::function::acknowledgeReport",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "acknowledgeReport",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 462,
+      "end_line": 479,
+      "signature": "function acknowledgeReport(projectRoot: string, slug: string, id: string, by?: string): \"acknowledged\" | \"already\"",
+      "contentHash": "7f44f5c95970debba375a0c7b3ac2f49d35640c6d8bc97c9bf093c60582c60b9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "16b6125d220ab89df9272d3d3be047d6",
+      "displayKey": "task-queue::type-def::EpicTaskView",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicTaskView",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 658,
+      "end_line": 663,
+      "signature": "export interface EpicTaskView {",
+      "contentHash": "e8b52179938d5df85f422dc25a777f994ff59b2ebe09849cba482788af6c02c5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "18078d1d49fb196e6b096de30ba562cb",
+      "displayKey": "task-queue::type-def::EpicState",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicState",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 132,
+      "end_line": 138,
+      "signature": "export interface EpicState {",
+      "contentHash": "3ba5dc746a9fc68a7b3d9a432ab6c8720b73a2fd0a0844e88eab5cf2a034dee9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1929c2d449f7d09599914516bcdc33a6",
+      "displayKey": "task-queue::function::recordReviewVerdict",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "recordReviewVerdict",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 609,
+      "end_line": 656,
+      "signature": "function recordReviewVerdict(projectRoot: string, task: string, verdict: ReviewVerdict, by?: string): RecordedVerdict",
+      "contentHash": "d628486b00558910497d53611af262e98fa3c0a395e6a50fd76b8fad0f4b95a8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1b06390ce27406909b03f2460e262e6c",
+      "displayKey": "task-queue::type-def::EpicLogEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicLogEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 130,
+      "end_line": 130,
+      "signature": "export type EpicLogEntry = EpicReportEntry | EpicNoteEntry | EpicReviewEntry | EpicAckEntry | EpicVerdictEntry;",
+      "contentHash": "ae19f071093b4e02611cf7c130f39b8739947dbef1fafc24c514b8fbf2839e98",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1ed19486d656d7055c17a74c0adb7d34",
+      "displayKey": "task-queue::type-def::Filter",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "Filter",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 48,
+      "end_line": 48,
+      "signature": "type Filter = \"open\" | \"closed\";",
+      "contentHash": "9f431f17fa214f7dd736ef050f37602a7f6f0aadf9b77f91c6a4ffdfd0d9ab3e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "222bd41eb5a3a112dc9ed187aafc3fe5",
+      "displayKey": "task-queue::type-def::EpicView",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicView",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 681,
+      "end_line": 690,
+      "signature": "export interface EpicView {",
+      "contentHash": "920d33050bf8362a08a945058d416ba4e6071ff9aed3f001646a5fc7afd023a6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "250aade7b331dbf112093a1d18c60d3d",
+      "displayKey": "task-queue::function::buildStatusMap",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "buildStatusMap",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 117,
+      "end_line": 134,
+      "signature": "function buildStatusMap(dir: string, files: string[], doneSet: Set<string>, previous: StatusMap = {}): StatusMap",
+      "contentHash": "ca111289f0dc2dffaebd162360db23e831b441e5ae47a18604e5001eeef604bf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "27a8c8f1bf14b8cb4e805d35bed7eff4",
+      "displayKey": "task-queue::type-def::SetEpicResult",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "SetEpicResult",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 203,
+      "end_line": 208,
+      "signature": "export interface SetEpicResult {",
+      "contentHash": "422930eb1fa6ddaeb79ad8a0c8e1c230fda8067a5ee071269add70343cb230fe",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "29cb954c94d830ae480204e982660a27",
+      "displayKey": "task-queue::type-def::EpicSummary",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicSummary",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 271,
+      "end_line": 277,
+      "signature": "export interface EpicSummary {",
+      "contentHash": "0df705e8310b3a394ea527347d65f5d6d86772633fe53c0a1ae8413d8eec01a2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2a24b294973ee6e7c2612fbd5dc572e7",
+      "displayKey": "task-queue::type-def::CrossEpicEdge",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "CrossEpicEdge",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 671,
+      "end_line": 676,
+      "signature": "export interface CrossEpicEdge {",
+      "contentHash": "d1563819fd3aaeb512b0707a0ff936b580ab67ed9c322edc1b4d00f9825ed1da",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "30108449c638db17bba95a83cf1a1d71",
+      "displayKey": "task-queue::type-def::NoteOptions",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "NoteOptions",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 400,
+      "end_line": 406,
+      "signature": "export interface NoteOptions {",
+      "contentHash": "59489e53533420da2347dc036330cf2d0acec98934cba978da6bea576fba3dfb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "335af66abc36f49a90289999fb1dd3c6",
+      "displayKey": "task-queue::function::readyTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readyTasks",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 813,
+      "end_line": 852,
+      "signature": "function readyTasks(projectRoot: string, slug: string, cap: number = DEFAULT_SPAWN_CAP): EpicReadyView",
+      "contentHash": "b73277d084ade7902db6146e02e5f3d5ade7675be3b3b5c1bdf99f0e79176ac3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "352bd17c43a8926046c504b19ba90646",
+      "displayKey": "task-queue::function::isValidEpicSlug",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "isValidEpicSlug",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 142,
+      "end_line": 144,
+      "signature": "function isValidEpicSlug(slug: string): boolean",
+      "contentHash": "f240c809664969474adae2b174a63e6bc7009d9ef9d45c51d85942991d743b9e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3538e1408c267711a69ab51161744377",
+      "displayKey": "task-queue::function::reviewHistory",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "reviewHistory",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 507,
+      "end_line": 518,
+      "signature": "function reviewHistory(state: EpicState, task: string): ReviewHistory",
+      "contentHash": "29413fabf0cb3c14882a9d74da3bcf93f706fe803f6579c9ef1e03a0113e7266",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "35ec0e141b5a8822363510c51e9604aa",
+      "displayKey": "task-queue::function::claimPathFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "claimPathFor",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 42,
+      "end_line": 44,
+      "signature": "function claimPathFor(tasksDir: string, filename: string): string",
+      "contentHash": "51f22e76597dbf7894f17ab9e0e7d4a8a11a66f8587e4b195c04434e99925598",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "36dd167f0bae91ed3b9ed2a4db6c6597",
+      "displayKey": "task-queue::function::tasksFromFiles",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "tasksFromFiles",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 136,
+      "end_line": 168,
+      "signature": "function tasksFromFiles(dir: string, files: string[], statusMap: StatusMap, claims: Map<string, TaskClaim> = new Map()): MaestroTask[]",
+      "contentHash": "4f498902a955d304e20e5cee278afce8d8b7363c3570978d9d88c3816be10364",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "39e16b1f603661de2b3e7159deec0315",
+      "displayKey": "task-queue::function::formatReady",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatReady",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 855,
+      "end_line": 869,
+      "signature": "function formatReady(view: EpicReadyView): string",
+      "contentHash": "4ba3b5d229e12671f756f0e803a6789c06a1a61bd89daa0591347fe86f3998fb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "39eaccc58f06270d5cc88ab682f9e539",
+      "displayKey": "task-queue::type-def::EpicInboxEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicInboxEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 128,
+      "end_line": 128,
+      "signature": "export type EpicInboxEntry = EpicReportEntry | EpicNoteEntry | EpicReviewEntry;",
+      "contentHash": "a07d5bda6d09915db00f7609e16dacce1c5f427284f860ea339e8f26ccad14a7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "41f1affb4c0758a948e085e29abe91d5",
+      "displayKey": "task-queue::type-def::RecordedVerdict",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "RecordedVerdict",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 583,
+      "end_line": 596,
+      "signature": "export interface RecordedVerdict {",
+      "contentHash": "edbf5bddf6e221e0119187d3b4ce8305b7435dd453ce0d0adf1c6d5ade21d973",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "45147e20d5f83c1a0679810fa97c5b45",
+      "displayKey": "task-queue::type-def::TaskQueueTailEvents",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "TaskQueueTailEvents",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 297,
+      "end_line": 308,
+      "signature": "export interface TaskQueueTailEvents {",
+      "contentHash": "3a547b01a1f0283a7b83b07c9abf1bad5389a5d690727ff51e35708ecf35ef9b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "456a6a173e259f146e1f8263b0c8123a",
+      "displayKey": "task-queue::type-def::EpicReadyView",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicReadyView",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 765,
+      "end_line": 778,
+      "signature": "export interface EpicReadyView {",
+      "contentHash": "7860fe26644e764a4fd7c157cc33d980769c15771b4371afe83ab4baf3d3ea18",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "462f5272515d01b15f59279e15cb7fbb",
+      "displayKey": "task-queue::function::createEpic",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "createEpic",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 231,
+      "end_line": 256,
+      "signature": "function createEpic(projectRoot: string, slug: string, options: CreateEpicOptions = {}): { dir: string; }",
+      "contentHash": "2d12d8d8dae8b107ddd4ad7ba5952c3b501374c927983730d2eaab95c5d74d55",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "46f720971d288a791829c5e9df1f0405",
+      "displayKey": "task-queue::function::removeWorker",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "removeWorker",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 306,
+      "end_line": 310,
+      "signature": "function removeWorker(projectRoot: string, slug: string, name: string): void",
+      "contentHash": "7465f069b0fbe9b499c800fdb8ebcac6ecfbe7a1ba3ab0d6a05a7c191dd9a3ae",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4900be733905e0e3dff9b761ed1e194f",
+      "displayKey": "task-queue::function::releaseTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "releaseTask",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 240,
+      "end_line": 251,
+      "signature": "function releaseTask(tasksDir: string, filename: string, sessionId: string): ReleaseResult",
+      "contentHash": "3612caef06d0558aed228b791cff98a41bf3770bcfb24182f55e0a9686d5c3de",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4b8e083f09c5f692ee5fc2f142543255",
+      "displayKey": "task-queue::type-def::ClaimResult",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "ClaimResult",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 173,
+      "end_line": 173,
+      "signature": "export type ClaimResult = { outcome: \"claimed\" } | { outcome: \"already-claimed\"; claim: TaskClaim };",
+      "contentHash": "07109f98764f8c3883185b21d877572a319c77410599bba366bd2f03b74d07b1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4b98ee0e98ae5c84a328efefd73871df",
+      "displayKey": "task-queue::function::claimsDirFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "claimsDirFor",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 37,
+      "end_line": 39,
+      "signature": "function claimsDirFor(tasksDir: string): string",
+      "contentHash": "a21ab5eae509718bd8f024e210f0aab5a63ef492c5392d146dfe88c86aa1f94b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4ce603d3d87cae4d15cd1dce5bea146c",
+      "displayKey": "task-queue::function::readStatusMap",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readStatusMap",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 68,
+      "end_line": 75,
+      "signature": "function readStatusMap(dir: string): StatusMap",
+      "contentHash": "ddc00feb47c83d99c84caec22507354bccbde9469b8295ddbe7d7bb96b3fb0e5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4e735a1964d429efa4a2d04cf64679e0",
+      "displayKey": "task-queue::function::unacknowledgedReports",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "unacknowledgedReports",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 485,
+      "end_line": 495,
+      "signature": "function unacknowledgedReports(state: EpicState): EpicInboxEntry[]",
+      "contentHash": "4dab446ecda56408ed75892e069033225efba13bfd92ab9d034d0291a9d06a09",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4f778e78a0d4ef3071efed32f696c208",
+      "displayKey": "task-queue::function::claimSessionName",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "claimSessionName",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 105,
+      "end_line": 108,
+      "signature": "function claimSessionName(tasksDir: string, filename: string): string | null",
+      "contentHash": "5b1e546cb3d122bf6a0c8d1e7c5eb3fbcb2f7702953533eca7a0e46ed786d9a0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5295e01fc222d1a67b3db7c548feeff0",
+      "displayKey": "task-queue::function::shellQuote",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "shellQuote",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 790,
+      "end_line": 792,
+      "signature": "function shellQuote(value: string): string",
+      "contentHash": "2f1ac593f6cfde5f023fe78d902bc4ccafc52da449387a648ffab10fe8fc851f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5341839d6016bc10fb5df403fac3f8f2",
+      "displayKey": "task-queue::function::linkTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "linkTasks",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 313,
+      "end_line": 316,
+      "signature": "function linkTasks(projectRoot: string, slug: string, tasks: string[]): SetEpicResult",
+      "contentHash": "cb3925eae7aca943feaa5aaaf12b449141b1805ebf561b776a47f507d6172b05",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "53c2dc3252dea6e963f79032a744c8c7",
+      "displayKey": "task-queue::function::setTaskEpic",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "setTaskEpic",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 216,
+      "end_line": 238,
+      "signature": "function setTaskEpic(projectRoot: string, filenames: string[], epic: string | null): SetEpicResult",
+      "contentHash": "f6028dc7c7318c1cd85633115b9561b85314c5fcb4aae8387e0549917f5e7c2d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "540f0b68de78d81852395d53e079208c",
+      "displayKey": "task-queue::function::listTaskFiles",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "listTaskFiles",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 90,
+      "end_line": 103,
+      "signature": "function listTaskFiles(dir: string): string[]",
+      "contentHash": "760a16d8dad852e418340f65d219dc2cbf5fe745712251bf92f2dea2a9c65bdc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "54c8adae47cf50a1d3aac72cf374024c",
+      "displayKey": "task-queue::function::collectAgentSkills",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "collectAgentSkills",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 86,
+      "end_line": 115,
+      "signature": "function collectAgentSkills(searchList: MaestroWorkflowV3[] | null | undefined, instances: MaestroInstanceV3[] | null | undefined, agentType: string | null | undefined): AgentSkills",
+      "contentHash": "ecefcfc707cadfd79664837c93f5c98035e8f9540fb518ba12398d07d1481d35",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "570b3261d345d2e6ba9b618adfb6a352",
+      "displayKey": "task-queue::function::isReviewVerdict",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "isReviewVerdict",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 598,
+      "end_line": 600,
+      "signature": "function isReviewVerdict(value: unknown): boolean",
+      "contentHash": "478bfcd1aa2e671ace63a7fcc23d31969fbdb56aeaa334eba2703a779fb752ab",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5d48574614173fca559dc213ad018bde",
+      "displayKey": "task-queue::function::resolveSearchList",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "resolveSearchList",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 33,
+      "end_line": 63,
+      "signature": "function resolveSearchList(cfg: Partial<MaestroConfigV3> | null, session: Partial<MaestroSession> | null): SearchListResult",
+      "contentHash": "c0c85c9d674c96c425fe124410eb6ffc0cdbcfdb9c58ba8a8e4bfb0087c4134f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5f6924f412d4fe0ebe08acff5b24671e",
+      "displayKey": "task-queue::type-def::WrittenNote",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "WrittenNote",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 409,
+      "end_line": 409,
+      "signature": "export type WrittenNote = WrittenReport;",
+      "contentHash": "2bb0056e3ac5963cbe330f17d1de39bf2e4decba30b7fcae60ce073876950bf5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "627a9bbeefce5d5fadb7a59592a35a1d",
+      "displayKey": "task-queue::function::ensureClaimsDir",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "ensureClaimsDir",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 52,
+      "end_line": 58,
+      "signature": "function ensureClaimsDir(tasksDir: string): string",
+      "contentHash": "24360ab3ced7723e71f8dc962ee4a865618b195323f932872c52b212cf66d69f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "66e97c0dd0efd4cb150ada77e873b6da",
+      "displayKey": "task-queue::function::launchCommandFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "launchCommandFor",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 799,
+      "end_line": 803,
+      "signature": "function launchCommandFor(name: string, filename: string, model?: string): string",
+      "contentHash": "f83f98191c9d7658857032729ddfc4a630a2fec2b9ff8186977c170c6867ce1e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "684768b508e7edb0072b59886126e1c4",
+      "displayKey": "task-queue::function::listClaimFiles",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "listClaimFiles",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 137,
+      "end_line": 143,
+      "signature": "function listClaimFiles(dir: string): string[]",
+      "contentHash": "4e3def273984324cf2270033e02c7138d6f1a3647337f05ad8f36dc26d4eb1c1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6a2a4257dadb36b4ce65b24d4fa1f64f",
+      "displayKey": "task-queue::type-def::EpicInboxView",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicInboxView",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 679,
+      "end_line": 679,
+      "signature": "export type EpicInboxView = EpicInboxEntry & { path: string; redirects?: number };",
+      "contentHash": "49a068089c9c18bb3e7d43f0c96be6a27a575c35903c73dfc1a544576fa1f0de",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6a6f0606f8e996a9371550750dbd47de",
+      "displayKey": "task-queue::function::isOpen",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "isOpen",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 49,
+      "end_line": 49,
+      "signature": "isOpen(t: MaestroTask): boolean",
+      "contentHash": "43ef3d88e83bdc228ea2074a2800394906c71796709b973d94839b40d62f146f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6b0c1d9d5b32f6afbea929809467530a",
+      "displayKey": "task-queue::component::MaestroTasksPage",
+      "concept": "task-queue",
+      "type": "component",
+      "name": "MaestroTasksPage",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 108,
+      "end_line": 397,
+      "signature": "function MaestroTasksPage(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "94cf24a0ba7dc0c6e0e95404936d2c9765d82a1dc873fa2c9d3e87fad31dbfbc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6bd82c2657f7507bac3bb874f779a8e0",
+      "displayKey": "task-queue::function::checkNoteRoute",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "checkNoteRoute",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 422,
+      "end_line": 426,
+      "signature": "function checkNoteRoute(projectRoot: string, toSlug: string, fromEpic: string): void",
+      "contentHash": "e38c33c78379697b874693a2ea25ed1f1f042328a3e22c3058e1d509d5bfd16a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6ca671c74cb847893fa61b680ed0349b",
+      "displayKey": "task-queue::function::sleepSync",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "sleepSync",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 156,
+      "end_line": 158,
+      "signature": "function sleepSync(ms: number): void",
+      "contentHash": "fae77e5eb125a3248b0d2fee35ba552b140cc0322c85d03c6656e9bcb42d333c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "759f9da661dccfa9ab5ab30b4cbc50be",
+      "displayKey": "task-queue::function::isSessionLive",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "isSessionLive",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 123,
+      "end_line": 135,
+      "signature": "function isSessionLive(claudeDir: string, sessionId: string, now: number = Date.now()): boolean",
+      "contentHash": "f8d3486b24b28a0b8c86f6b64473a9029a91f4ce5f1479b7153f9278a3588e72",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "76178aef983791c85d3aca85b02950ad",
+      "displayKey": "task-queue::type-def::AgentSkills",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "AgentSkills",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 75,
+      "end_line": 79,
+      "signature": "export interface AgentSkills {",
+      "contentHash": "30a616ec5e2c9890c765c95c624c6ff184c20d6a5369f3d06cb4b28d9a278067",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "77cb22333b4b2f151862b2cc65bc70ed",
+      "displayKey": "task-queue::function::readTaskTracker",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readTaskTracker",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 248,
+      "end_line": 258,
+      "signature": "function readTaskTracker(projectRoot: string): Record<string, TrackerEntry>",
+      "contentHash": "fc104b37eb4ee236e95f3e637a6fe730e929bbb666665a7911c9d4eac3799932",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7a95dd443d76bc1fdd1ce565483a6b7b",
+      "displayKey": "task-queue::type-def::ClaimFile",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "ClaimFile",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 61,
+      "end_line": 71,
+      "signature": "export interface ClaimFile {",
+      "contentHash": "3f06be9a44aa046fb8a38774c9365f378134b233337c08f5ca84057e1d85101e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "displayKey": "task-queue::function::updateState",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "updateState",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 213,
+      "end_line": 223,
+      "signature": "function updateState(projectRoot: string, slug: string, fn: (state: EpicState) => T): T",
+      "contentHash": "1fc82787e662cc7f4836efebed39523f0934f5299cefaea56aa0d16b3b5eba52",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8509cae44807ec761925913fb3eb8e0c",
+      "displayKey": "task-queue::function::tailTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "tailTasks",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 323,
+      "end_line": 347,
+      "signature": "function tailTasks(projectRoot: string, events: Partial<TaskQueueTailEvents>, intervalMs = 1000): () => void",
+      "contentHash": "7b562ae6d83a6b9f4a33dc472f903d777e84a4ae3d7f4a95181ed1767fd04fcf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "851b412e528c96d3191fbdb02e38bd47",
+      "displayKey": "task-queue::function::readClaims",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readClaims",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 151,
+      "end_line": 171,
+      "signature": "function readClaims(projectRoot: string, tasksDir: string, now: number = Date.now()): Map<string, TaskClaim>",
+      "contentHash": "ef898c075e3998e507f7ae71d9575ea86665f376733d2d9aaa6cdac1a1a78f94",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85268cf21aea6581c5f58d98d17b7593",
+      "displayKey": "task-queue::function::listEpicSummaries",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "listEpicSummaries",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 280,
+      "end_line": 286,
+      "signature": "function listEpicSummaries(projectRoot: string): EpicSummary[]",
+      "contentHash": "c7051a104f505ec734f7054fd15f9354b8b8f607d8a2f3bf39605717aa1ede18",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "86e8200e3c068cf87a326a17750d6f9c",
+      "displayKey": "task-queue::function::nameOf",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "nameOf",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 83,
+      "end_line": 85,
+      "signature": "function nameOf(claim: ClaimFile): { sessionName?: string; }",
+      "contentHash": "e1a66a1a2c27fffcd85c66ef8e135d260510386edcbfca5418ab7fcd67847f5a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "87ab5685f10f06c4fa0ddaf8948d7d02",
+      "displayKey": "task-queue::function::resolveWorkflowName",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "resolveWorkflowName",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 16,
+      "end_line": 20,
+      "signature": "function resolveWorkflowName(cfg: Partial<MaestroConfigV3> | null, explicit?: string | null): string",
+      "contentHash": "4d8b9acf2d6c043cac88a1e7378be53780e3d131b0a07af00c2a1608f5591207",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "895550bdf313f084c082c3d882e174e4",
+      "displayKey": "task-queue::function::readFileSafe",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readFileSafe",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 105,
+      "end_line": 111,
+      "signature": "function readFileSafe(dir: string, filename: string): string",
+      "contentHash": "dd3275a700e9b4674bef5071d1f98fc819b3361d0533c9c93ff37b77f7840cd7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8aff328aa76edad60ccaa3058291b274",
+      "displayKey": "task-queue::type-def::SpawnableTask",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "SpawnableTask",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 755,
+      "end_line": 763,
+      "signature": "export interface SpawnableTask {",
+      "contentHash": "2a3feca775fa7509950d3cbdbced67de1d4b40273f0fd6ee085573d3ca82f11e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8b0f6670e3b9c37d4ee54a13446c669c",
+      "displayKey": "task-queue::function::reportCommandFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "reportCommandFor",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 387,
+      "end_line": 398,
+      "signature": "function reportCommandFor(projectRoot: string, task: string, sessionName?: string | null): string | null",
+      "contentHash": "1c12b30b69af1846a9671e19b73ea3acc6aea7faf7356fd5812687d4a010d549",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8b4b1c6419a9a355dadaccf9d18fb4d8",
+      "displayKey": "task-queue::type-def::WrittenReport",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "WrittenReport",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 344,
+      "end_line": 351,
+      "signature": "export interface WrittenReport {",
+      "contentHash": "2f4397101105aa1406d8b392d21e37a1d36a6a76155feff13ad9156ff85fd735",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8bcd7b029d081b693cfacfdf28d34918",
+      "displayKey": "task-queue::type-def::ReviewVerdict",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "ReviewVerdict",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 103,
+      "end_line": 103,
+      "signature": "export type ReviewVerdict = \"on-track\" | \"redirect\" | \"escalate\";",
+      "contentHash": "4e0a8d421f8e51c97015e9ed29c3b15fda9312c8f5fbbf56037d9eba9a34cd02",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8c2529013ec8528f4ebbc1a46f672f65",
+      "displayKey": "task-queue::function::successPathSteps",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "successPathSteps",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 139,
+      "end_line": 152,
+      "signature": "function successPathSteps(wf: MaestroWorkflowV3, instances: MaestroInstanceV3[] | null | undefined): string[]",
+      "contentHash": "d4bc47a6acbcd19c66eee264094eb3f46c36d4503eb686fc9dc107486a0632bf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8cd9879886d773ffda1596674539dc10",
+      "displayKey": "task-queue::type-def::EpicAckEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicAckEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 77,
+      "end_line": 82,
+      "signature": "export interface EpicAckEntry {",
+      "contentHash": "3931fe03d7ccd060d14adb7ee34f20bbe8f102b49dabd06bfe52d79a63041466",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8dc681797a2b576708884a4f930325e6",
+      "displayKey": "task-queue::function::formatInboxEntry",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatInboxEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 872,
+      "end_line": 884,
+      "signature": "function formatInboxEntry(entry: EpicInboxEntry & { path: string; redirects?: number }): string",
+      "contentHash": "fa16c5a1117e21b546df20ab78ee30ce475a1fe540b30a20dd719e94bb6e4d7b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "97140114560ee2592d50b7a13c777f53",
+      "displayKey": "task-queue::function::promptFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "promptFor",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 44,
+      "end_line": 46,
+      "signature": "function promptFor(task: MaestroTask): string",
+      "contentHash": "e5317e15824322ff719f5ca8ba39f11a588d42fd4e8c90346c107721bfcabdad",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "975dd676396984b68a7edbc1401e8ffd",
+      "displayKey": "task-queue::function::deleteMaestroTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "deleteMaestroTask",
+      "filepath": "apps/maestro/src/renderer/src/utils/maestro-tasks.ts",
+      "start_line": 22,
+      "end_line": 24,
+      "signature": "function deleteMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]>",
+      "contentHash": "0a3cc4f5e4b98a4b33e3a0aedca51382b0ebb0fc8629de83c1f7b777c92b7100",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "97c33bc6d18dae516c7a94821d902ed2",
+      "displayKey": "task-queue::function::workflowNodeLabels",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "workflowNodeLabels",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 158,
+      "end_line": 168,
+      "signature": "function workflowNodeLabels(wf: MaestroWorkflowV3, instances: MaestroInstanceV3[] | null | undefined): Set<string>",
+      "contentHash": "88b00582b6efac3af3dbc7a1c4ad6bbeb01569691b15a6e24fdb592c2d89f052",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "980dcb86fef33c2d55e4c66b334e6b77",
+      "displayKey": "task-queue::function::tasksDirFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "tasksDirFor",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 29,
+      "end_line": 33,
+      "signature": "function tasksDirFor(projectRoot: string): string",
+      "contentHash": "2071307093616586635f83ed988ed6fbb0c0ee36f72b0f160254dce33fa098ca",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9a6e62d6960395654e07c09fa4477c13",
+      "displayKey": "task-queue::function::formatCrossEpicEdge",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatCrossEpicEdge",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 886,
+      "end_line": 891,
+      "signature": "function formatCrossEpicEdge(edge: CrossEpicEdge): string",
+      "contentHash": "06b376ce4882a8cc2aa27486cbf8d5d00f8eb66e400c312caab8408ebcdbeb01",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9cb273b8be3b4d3c8ffbd22abad98943",
+      "displayKey": "task-queue::function::claimTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "claimTask",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 181,
+      "end_line": 231,
+      "signature": "function claimTask(projectRoot: string, tasksDir: string, filename: string, sessionId: string, now: number = Date.now(), sessionName?: string | null): ClaimResult",
+      "contentHash": "08e26624bdcf0a8242829bd48bca6d49c366c7de05c1b18380d142000ea96269",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9d95a562e24915129d62cbbb06be306a",
+      "displayKey": "task-queue::function::taskClaimName",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "taskClaimName",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 327,
+      "end_line": 329,
+      "signature": "function taskClaimName(projectRoot: string, task: string): string | null",
+      "contentHash": "9a229d2b2c0a782da6e1b11af2155d21df6b3ffe19be46be0e16648877a00bb1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9e6e4b1ea529e46c261224d3e26259f6",
+      "displayKey": "task-queue::type-def::ReviewHistory",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "ReviewHistory",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 498,
+      "end_line": 505,
+      "signature": "export interface ReviewHistory {",
+      "contentHash": "0136005a7124b94c131ea4df7efe9761f3de8f8bb8fe91f2c0eb8a83e7e03d75",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9f227024aefada6a231df819fb087b92",
+      "displayKey": "task-queue::function::isInboxEntry",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "isInboxEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 457,
+      "end_line": 459,
+      "signature": "function isInboxEntry(e: EpicLogEntry): boolean",
+      "contentHash": "fb09fc6b5ff074d173c31d15db0057b027a578b6187c7f7e38aba346deceafa2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a1c77134536e9138a4b79ff35306ee42",
+      "displayKey": "task-queue::function::now",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "now",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 152,
+      "end_line": 154,
+      "signature": "function now(): string",
+      "contentHash": "eee0a5ff5501551b0ea7f6fc18e286437193c5d497f46699b46a38b4a6ad101c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a21165036ad1c3400f13f71e6d9ee77f",
+      "displayKey": "task-queue::component::StatusBadge",
+      "concept": "task-queue",
+      "type": "component",
+      "name": "StatusBadge",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 57,
+      "end_line": 64,
+      "signature": "function StatusBadge({ status }: { status: TaskStatus }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "62ea8bbc6da2cda665de0c846bfc63659e4d3037b9a6e2a18b5c90801a1aafea",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a2ed4d9588c15b04803562c485a6c8af",
+      "displayKey": "task-queue::function::nodeLabel",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "nodeLabel",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 118,
+      "end_line": 133,
+      "signature": "function nodeLabel(id: string, wf: MaestroWorkflowV3, instances: MaestroInstanceV3[] | null | undefined): string",
+      "contentHash": "b10432526d8dd956d35a2113d669e0413c9a39770f9e149ea08a8a443bf044f0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a5832a0ef641a31ab2188b162eeb3a43",
+      "displayKey": "task-queue::function::writeNote",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "writeNote",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 428,
+      "end_line": 455,
+      "signature": "function writeNote(projectRoot: string, toSlug: string, body: string, options: NoteOptions): WrittenReport",
+      "contentHash": "6e22be7d4cd47fdd34d52bddbdbc20fa4fb3d742ec8e6c31c91743a3cc6549fa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a6c89c61459988769ef8916fa8639f06",
+      "displayKey": "task-queue::function::bareAgentName",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "bareAgentName",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 71,
+      "end_line": 73,
+      "signature": "function bareAgentName(s: string | null | undefined): string",
+      "contentHash": "7b52fb9c4f9920d265a88cfedaacd50232ace546c64fdb135d26ec3af5403b8b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a91580ce491b4883b540c9b852087643",
+      "displayKey": "task-queue::function::ago",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "ago",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 67,
+      "end_line": 78,
+      "signature": "function ago(iso: string): string",
+      "contentHash": "aadfaa0d7f5388536059d03c486268b186edf42aceea042464e5c356969e82b4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b2d02b1a58254edd866781ddeb6a4857",
+      "displayKey": "task-queue::function::extractPostMortemSection",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "extractPostMortemSection",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 59,
+      "end_line": 66,
+      "signature": "function extractPostMortemSection(content: string): string | null",
+      "contentHash": "6992dd7e471ac89b2dd19901c8d3dd86a5ce6073fd02105cf7cf2094d5307113",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b5de4656340848aa51dd95e7d26b7816",
+      "displayKey": "task-queue::type-def::EpicNoteEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicNoteEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 63,
+      "end_line": 75,
+      "signature": "export interface EpicNoteEntry {",
+      "contentHash": "023c9d4d147253b93e4fb2b667916bde5f0952408f78db7d539e16f6e09975c4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b775c126adce5d288f20d2cf379996fa",
+      "displayKey": "task-queue::function::deleteClaimIfAny",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "deleteClaimIfAny",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 258,
+      "end_line": 265,
+      "signature": "function deleteClaimIfAny(tasksDir: string, filename: string): void",
+      "contentHash": "48eece2fc7db41f28c4fb5c3b82f4830f9031891ca5602efb142bbd0bddd17d0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b9dfd7f56e2ee324503cf77bfedd6bfc",
+      "displayKey": "task-queue::type-def::WrittenReviewRequest",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "WrittenReviewRequest",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 520,
+      "end_line": 534,
+      "signature": "export interface WrittenReviewRequest {",
+      "contentHash": "2972e1beac320c5ab0ca97a6cbd0c6de37f5eba8ce991520a408a3754c1b9476",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bdbfdba712bcaaf83e35769e32681959",
+      "displayKey": "task-queue::function::addWorker",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "addWorker",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 295,
+      "end_line": 304,
+      "signature": "function addWorker(projectRoot: string, slug: string, name: string, task?: string): void",
+      "contentHash": "76f910806b8a213ec6199af240b4cf71555433d0799cf7af2c31ff1baa78074f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c0d46e84cb95e35b5e14e8f5e3a09400",
+      "displayKey": "task-queue::effect::effect-138",
+      "concept": "task-queue",
+      "type": "effect",
+      "name": "effect-138",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 138,
+      "end_line": 144,
+      "signature": "useEffect(() => {",
+      "contentHash": "007e271b5096b1797c2a9c8d46eb71bea92d01541208bab65b13bad5f2375056",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c103f2b64636df6a794b2127a7d2914f",
+      "displayKey": "task-queue::function::parseTitle",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "parseTitle",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 35,
+      "end_line": 38,
+      "signature": "function parseTitle(content: string, filename: string): string",
+      "contentHash": "a6db162a0e59782fcddff9ed8239d424b70fb7632134b5b5b2df1892019df8b3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c1d425229745e5c66426684d723ebacf",
+      "displayKey": "task-queue::function::writeReport",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "writeReport",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 359,
+      "end_line": 380,
+      "signature": "function writeReport(projectRoot: string, task: string, body: string, sender?: string): WrittenReport | null",
+      "contentHash": "51365da5bb5d48505be604bad2d559bb2160377909e948ca40d6a0ac239b8498",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c887148af8f3b5ebec8ef4c2f8d4b7c1",
+      "displayKey": "task-queue::type-def::EpicWorker",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicWorker",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 39,
+      "end_line": 45,
+      "signature": "export interface EpicWorker {",
+      "contentHash": "6892e6fcec9632609d3f33134c6db729cfe6da020dff7bfdb1f8534de69858ba",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "displayKey": "task-queue::function::crossEpicEdges",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "crossEpicEdges",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 698,
+      "end_line": 714,
+      "signature": "function crossEpicEdges(tracker: Record<string, TrackerEntry>, slug: string): CrossEpicEdge[]",
+      "contentHash": "b9e63158536e6889a63e167b68d48d5de3a874e45a9f8467f1d77e5d8e9537ca",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c8dc3b9ff99b6dc053f794f3e116761a",
+      "displayKey": "task-queue::type-def::EpicReviewEntry",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "EpicReviewEntry",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 90,
+      "end_line": 101,
+      "signature": "export interface EpicReviewEntry {",
+      "contentHash": "f5976e1b4449d6f660ccd47020db6c847bc1b2f927eef51cfa25b586e8d8e123",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d23a86bd3acbb2ae7e7a0a98d4f771bf",
+      "displayKey": "task-queue::type-def::ReleaseResult",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "ReleaseResult",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 233,
+      "end_line": 233,
+      "signature": "export type ReleaseResult = \"released\" | \"no-claim\" | \"not-owner\";",
+      "contentHash": "11bb20c4056693f013ab6b4a26dc078ce4bd00abf590318d6c8c4cc95dffeda4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d517d3378d999e890d2edf50f04f12f0",
+      "displayKey": "task-queue::type-def::CreateEpicOptions",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "CreateEpicOptions",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 225,
+      "end_line": 228,
+      "signature": "export interface CreateEpicOptions {",
+      "contentHash": "8f5c608d7670a8913392c49c4dd12ac8f8a0d45056b4a20c9e3ae1a0f3529941",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d535bf0f5b3fadc023a48a8f9453db0c",
+      "displayKey": "task-queue::type-def::SearchListResult",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "SearchListResult",
+      "filepath": "apps/maestro/src/core/success-path.ts",
+      "start_line": 22,
+      "end_line": 27,
+      "signature": "export interface SearchListResult {",
+      "contentHash": "452e8791e86a3c1afb0a4924a18e4f3b6a6d798406de4e5a9b1a5387d794bf2f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d8ff7806335d0f2e4754f451e5acfb32",
+      "displayKey": "task-queue::function::listTasks",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "listTasks",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 170,
+      "end_line": 177,
+      "signature": "function listTasks(projectRoot: string): MaestroTask[]",
+      "contentHash": "d770b3413c22b8897eb131795cc8624a5a036e4c34811650d94e709f9364530b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "daf86c154fac5e3f51109bbd3cb38bd8",
+      "displayKey": "task-queue::function::writeEpicState",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "writeEpicState",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 205,
+      "end_line": 210,
+      "signature": "function writeEpicState(dir: string, state: EpicState): void",
+      "contentHash": "6ba16e71d2d3bef7f21e320726f90a95d9e57caf48e738a5e16391fbf302c235",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "de94a7c00c998e900fbfe02f9edf884f",
+      "displayKey": "task-queue::component::ClaimBadge",
+      "concept": "task-queue",
+      "type": "component",
+      "name": "ClaimBadge",
+      "filepath": "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
+      "start_line": 86,
+      "end_line": 106,
+      "signature": "function ClaimBadge({ claim }: { claim: NonNullable<MaestroTask[\"claim\"]> }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "c1612f5b27caf6507f5e72ef0b6458f88400d9c18576c435df395dd251c8f720",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e0c9d8bebb72839f0883e4a773e76464",
+      "displayKey": "task-queue::function::readEpicState",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "readEpicState",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 186,
+      "end_line": 203,
+      "signature": "function readEpicState(projectRoot: string, slug: string): EpicState | null",
+      "contentHash": "e35c0c14cc994a72c4cacc84985eef9ce04cf6287d384abacce8e5c8a3701683",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e2c57759878018a7a3f06ac467bb3e1a",
+      "displayKey": "task-queue::function::deleteTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "deleteTask",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 269,
+      "end_line": 295,
+      "signature": "function deleteTask(projectRoot: string, filename: string): MaestroTask[]",
+      "contentHash": "282af79b23723f042cc2c750657aa23c42a20b1c0f3c5c405aae6a2f57ab4f59",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e6038e473146f4b3f0edc7f2183246e4",
+      "displayKey": "task-queue::function::parseBlockedBy",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "parseBlockedBy",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 44,
+      "end_line": 52,
+      "signature": "function parseBlockedBy(content: string): string[]",
+      "contentHash": "a00d4263e9a01a3e80b9e58de8c506d553a280c21249ff96d846a51af7222eed",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "eb9e4a907d42e74c60cd24be30db7b84",
+      "displayKey": "task-queue::function::showEpic",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "showEpic",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 717,
+      "end_line": 749,
+      "signature": "function showEpic(projectRoot: string, slug: string): EpicView",
+      "contentHash": "f981efca151ca82f596f8481bb0bcf62bab011e7be47e32eaa39a4b123866d86",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ecc6d29d0257ec7f171713d246611a1e",
+      "displayKey": "task-queue::function::closeTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "closeTask",
+      "filepath": "apps/maestro/src/core/tasks.ts",
+      "start_line": 186,
+      "end_line": 201,
+      "signature": "function closeTask(projectRoot: string, filename: string): MaestroTask[]",
+      "contentHash": "50cf92fe78dc0c4e872d91550e41d4100ac26b0b2c067fdc8b0d69ea8b5bcae9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ecdd0e19bbc622d16e924de81f691fc7",
+      "displayKey": "task-queue::function::listEpics",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "listEpics",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 258,
+      "end_line": 269,
+      "signature": "function listEpics(projectRoot: string): string[]",
+      "contentHash": "45d921a02db8b1aad96b0ae628d3b57770dd3d4fa01c426d66d03153c8b97eb9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ee19c974769f190c5ba4bbd73bacad3b",
+      "displayKey": "task-queue::function::setManager",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "setManager",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 288,
+      "end_line": 292,
+      "signature": "function setManager(projectRoot: string, slug: string, name: string): void",
+      "contentHash": "374d86044674cfe2f489a94cfd3ccfb22abda2cf58fad78bbdbcd4547a55e458",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "efe7dc24573e7e6b94b6ffa303d66c65",
+      "displayKey": "task-queue::function::reviewFilePath",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "reviewFilePath",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 537,
+      "end_line": 539,
+      "signature": "function reviewFilePath(root: string, file: string): string",
+      "contentHash": "3e22de9768b06f0d5457b49662bd503913f67b369c7a25ffbd117fc769410b29",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f0e6e0ce829f9ba2613e24eabddf6855",
+      "displayKey": "task-queue::function::closeMaestroTask",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "closeMaestroTask",
+      "filepath": "apps/maestro/src/renderer/src/utils/maestro-tasks.ts",
+      "start_line": 14,
+      "end_line": 16,
+      "signature": "function closeMaestroTask({ data }: { data: { filename: string } }): Promise<MaestroTask[]>",
+      "contentHash": "097b8534b0f2374945cff37da499429a1a861a862ff8c808917cc25de179e5b1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f30965524d648a6eb35904d64d57c393",
+      "displayKey": "task-queue::type-def::TaskClaim",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "TaskClaim",
+      "filepath": "apps/maestro/src/core/claims.ts",
+      "start_line": 74,
+      "end_line": 80,
+      "signature": "export interface TaskClaim {",
+      "contentHash": "9ca3961b5f38495a135a63df77bad7d151a009d3723f300f651d63a15d8b9e0a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f60a7bd4e8a4df59b85bc4405c2e5c6d",
+      "displayKey": "task-queue::function::workerNameFor",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "workerNameFor",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 784,
+      "end_line": 788,
+      "signature": "function workerNameFor(slug: string, filename: string): string",
+      "contentHash": "231a2b728d920d3fa0cc9c1f3e7564fcc2d349776960664c6944dec7845ba05d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fdcd71d5576eafd0aa689b4471560b91",
+      "displayKey": "task-queue::function::formatEpic",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatEpic",
+      "filepath": "apps/maestro/src/core/epics.ts",
+      "start_line": 894,
+      "end_line": 913,
+      "signature": "function formatEpic(view: EpicView): string",
+      "contentHash": "fa4deb0690ccf4fc4e254abe2f7c94144708b23371f276d0c372a9b7c237049c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "00026ecbed0c3c0b05965141f740927e",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 228,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "008816a6b4545384eaa9b74522fe2041",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 217,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0095247616e95cba744bd90d01533604",
+      "_from": "vertices/85268cf21aea6581c5f58d98d17b7593",
+      "_to": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 284,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "02eba51244d9d3d7d0b9a7c7eb4e89a1",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 722,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "038db308b1be969f034de1ef8008f521",
+      "_from": "vertices/de94a7c00c998e900fbfe02f9edf884f",
+      "_to": "vertices/a91580ce491b4883b540c9b852087643",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "04a3b01a49b412c2c3044748aa293dd2",
+      "_from": "vertices/9d95a562e24915129d62cbbb06be306a",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 328,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "07f15dafbe05314b0061ed3bf904d0bc",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/05a3e61634be359f37425915d6de3537",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 236,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "09c7dd8f5bca9d318274980370d64f1f",
+      "_from": "vertices/0dc7bd142d696f521309be415905428a",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0a732f5962eec7dca62e183ea7085cfa",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 578,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0a980adbef5a6feda494e3f3f8717a49",
+      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 468,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0e86ac6fe5fe223f9b3a2a8fb6c678d1",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/16b6125d220ab89df9272d3d3be047d6",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 724,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0ebde6a4e5e285df956c16beda7bd33c",
+      "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "_to": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0fc65262b797ecbf7d7db052a87c8b11",
+      "_from": "vertices/3538e1408c267711a69ab51161744377",
+      "_to": "vertices/026239de396536462a5edd7f0584e9a7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 510,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1068349c2788ba4ddf9927c1cf24c2ac",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/540f0b68de78d81852395d53e079208c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 218,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "11011428db8a414e8955c57e23101bf1",
+      "_from": "vertices/46f720971d288a791829c5e9df1f0405",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 307,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1550e69a5c808a846c755b95370015e8",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/540f0b68de78d81852395d53e079208c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 190,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "15f1177671cf578cc4d18f07135113cd",
+      "_from": "vertices/54c8adae47cf50a1d3aac72cf374024c",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 92,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "17416f36d60b2e72166f85af81159545",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 819,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "179f183769ad0116fda78cfdc6aa61da",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/86e8200e3c068cf87a326a17750d6f9c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 228,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "17fdddcd5275d34ce56d67407901f056",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/975dd676396984b68a7edbc1401e8ffd",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 195,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "182a1209cdec3dfb7207364bb3c6f721",
+      "_from": "vertices/9d95a562e24915129d62cbbb06be306a",
+      "_to": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 328,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "192a5f73cd2c84fc7d7e134777527ba8",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 220,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1a3df386c684e384f3efe123e9a22155",
+      "_from": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 339,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1a67a08f4aea8db58c088f9c369dd53e",
+      "_from": "vertices/bdbfdba712bcaaf83e35769e32681959",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 301,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1c463f52eebc4520123a768caa20140a",
+      "_from": "vertices/759f9da661dccfa9ab5ab30b4cbc50be",
+      "_to": "vertices/98efe348f565a3effeb9679a84e6a3c4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1cd4c126ad8c69c208bb6f8c1530f993",
+      "_from": "vertices/8dc681797a2b576708884a4f930325e6",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 872,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1cf780a242938d173369b28e4d402df3",
+      "_from": "vertices/66e97c0dd0efd4cb150ada77e873b6da",
+      "_to": "vertices/5295e01fc222d1a67b3db7c548feeff0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 801,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1df8399e7843c40d25169e6e64c7eb17",
+      "_from": "vertices/8509cae44807ec761925913fb3eb8e0c",
+      "_to": "vertices/45147e20d5f83c1a0679810fa97c5b45",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 323,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1ed2235cf8eafca1a2dae3bf80fb2b84",
+      "_from": "vertices/5341839d6016bc10fb5df403fac3f8f2",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 314,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "219097e8b7800a7e6299e92df2680c14",
+      "_from": "vertices/759f9da661dccfa9ab5ab30b4cbc50be",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2277e97997359a7d4a929fa665ad5dc5",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 569,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "243965a0ef9923b965d94c721211e6b3",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 197,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "246ab08d182479891f994d07e52e7529",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 159,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "265d9e9920f9f9337035a556fe090fad",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 644,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "26a7db47de5c4d3d1dcab76e940e648e",
+      "_from": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 94,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "29ad9b72a7961c4a242f6141777971e2",
+      "_from": "vertices/66e97c0dd0efd4cb150ada77e873b6da",
+      "_to": "vertices/5295e01fc222d1a67b3db7c548feeff0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 802,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2b8e0cd2ce43f2f5dd803d4c2cab7f6e",
+      "_from": "vertices/de94a7c00c998e900fbfe02f9edf884f",
+      "_to": "vertices/a91580ce491b4883b540c9b852087643",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 92,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2ce7e18692d2a546515d16ad61fa066e",
+      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 699,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2d64729031e02500bb88040828852dd4",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/f30965524d648a6eb35904d64d57c393",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 154,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2dd7468e8d3ba5623784a9ca854cd3d7",
+      "_from": "vertices/570b3261d345d2e6ba9b618adfb6a352",
+      "_to": "vertices/8bcd7b029d081b693cfacfdf28d34918",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 598,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2ded5452b029834a3e94b441884615dd",
+      "_from": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2ea3be3b8865cac670c79264c95b8b08",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 556,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2ee1fca394cfbe96ab98672ad53c11f8",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 569,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2f0bb86b72af3d7f10f984924a3c5244",
+      "_from": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 187,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2fbab7244eda9cb59bcbec7199847b4f",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 366,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2feca0f74bce66492364e0b59b0b2666",
+      "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "_to": "vertices/044d2ab9645ab32e835740af68d1663a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 216,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "30538a0048080e1c03c218c551642d75",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 817,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "32191fd6d49e2bc2af4478bfe25cfeec",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 818,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "34ffb761761aca26f307b2a95616ee6e",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/27a8c8f1bf14b8cb4e805d35bed7eff4",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 216,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "352081b6918607e60a3b2e3ea9fde841",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 559,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "36dc52b499dda4e65c96d35c841aebac",
+      "_from": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 139,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "36dee90e060590e5c413abb3d059a14c",
+      "_from": "vertices/54c8adae47cf50a1d3aac72cf374024c",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 101,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "37299abfd58432dbd0ab5c8ba4e98b68",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 191,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "37641dc54c2a57920b1fd74e754183e5",
+      "_from": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "_to": "vertices/e6038e473146f4b3f0edc7f2183246e4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "37cc8fb4fc8dd6ca6368d0b82359bc49",
+      "_from": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 71,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "38adff84b05ba70bf5773fc650736859",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/b9dfd7f56e2ee324503cf77bfedd6bfc",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 554,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "392b9e5411a6697eaae4bf07b849eaae",
+      "_from": "vertices/de94a7c00c998e900fbfe02f9edf884f",
+      "_to": "vertices/a91580ce491b4883b540c9b852087643",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 101,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3a6723a70c61143d1df57a0ae2358e63",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 276,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3a962f3e7344965ff09d457c58fff8a5",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/f60a7bd4e8a4df59b85bc4405c2e5c6d",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 842,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3bc3ac0b6327bdb28318f73a8f5ba10d",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/9a6e62d6960395654e07c09fa4477c13",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 911,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3e133a7828f9abc66767a15b875332eb",
+      "_from": "vertices/ee19c974769f190c5ba4bbd73bacad3b",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 289,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3e461f84dcc0c78cd5d3630999deb6ee",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/efe7dc24573e7e6b94b6ffa303d66c65",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 744,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3f4e73c37305be54fe98b9fad9ae332a",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/4b98ee0e98ae5c84a328efefd73871df",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 153,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3f522e9d1d041896f1a4b6e971c7e41e",
+      "_from": "vertices/86e8200e3c068cf87a326a17750d6f9c",
+      "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "40fa39485fda47f06575ea6af232cd7c",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 570,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41b1404c601bd247cbe64a67adc09153",
+      "_from": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "_to": "vertices/c103f2b64636df6a794b2127a7d2914f",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 160,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "425f41e2deba58f1d347370e29cc3383",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/456a6a173e259f146e1f8263b0c8123a",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 813,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "435d7bf0465ee0d7fc954e900785779c",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/570b3261d345d2e6ba9b618adfb6a352",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 615,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "43708a1958b92312eb2e0582ff4fc965",
+      "_from": "vertices/3538e1408c267711a69ab51161744377",
+      "_to": "vertices/9e6e4b1ea529e46c261224d3e26259f6",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 507,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "46310e3d598fd8facf1af80297bd2949",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 193,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "464114dd65044feafc8cf59341bd8ddb",
+      "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 249,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "468ffb173f239095c98012d3396591f7",
+      "_from": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 119,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "46b1340547ee610084c36cc37c67f548",
+      "_from": "vertices/ee19c974769f190c5ba4bbd73bacad3b",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 290,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "46b5b1fee2305c194904e9029a8f95c2",
+      "_from": "vertices/4900be733905e0e3dff9b761ed1e194f",
+      "_to": "vertices/d23a86bd3acbb2ae7e7a0a98d4f771bf",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 240,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "47409088b762115fcb95a5b18fd12c34",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/4b8e083f09c5f692ee5fc2f142543255",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 188,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "478f3ea1610d16f706e6f2c71132657d",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 820,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4796fc40ec2408c0d80e7e386e038a7f",
+      "_from": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 93,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "47e48802eab171c82a58735ead49ac13",
+      "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "_to": "vertices/daf86c154fac5e3f51109bbd3cb38bd8",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 220,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "481af9fafb3ab91d3af6ca58b7b4d5a3",
+      "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 173,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4986a13e70f80a6a8890b9855141dddc",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/9f227024aefada6a231df819fb087b92",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 491,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4affd565e623222aa953c99c6462321f",
+      "_from": "vertices/85268cf21aea6581c5f58d98d17b7593",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 282,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4bcab01645d647b7ce07e75a3ef12bef",
+      "_from": "vertices/0dc7bd142d696f521309be415905428a",
+      "_to": "vertices/352bd17c43a8926046c504b19ba90646",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4e0731feb576b2e319b4cd3bc60f0bc6",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 814,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4e9a5de768c5203650b3700eb66cfb5e",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 719,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "500e035344fe310bb6e3bc38ebf1a192",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 221,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "50fe8da8f47ae38af1314104238ad6e8",
+      "_from": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "_to": "vertices/0447987955bc8d5c027456a4826a1c70",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 248,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "51e48f842895afa9503d929beb415762",
+      "_from": "vertices/05a3e61634be359f37425915d6de3537",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "53dbf31f2f7100178796a8719f77a783",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/05a3e61634be359f37425915d6de3537",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 293,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5554576aaf6cf05c97bf0bd275bdd391",
+      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 698,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "579b1bd70b0362512afdd0b4e3895aea",
+      "_from": "vertices/ecdd0e19bbc622d16e924de81f691fc7",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 260,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "579cde301e64509c8ab72a613db0585a",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/97140114560ee2592d50b7a13c777f53",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 365,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57fee377c4b51ad1d75f5f0c7046feb8",
+      "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 250,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "592da5377fa63730a0d9ebe72e5a2ff9",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/759f9da661dccfa9ab5ab30b4cbc50be",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 196,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5bfaa877ce1b196ea47cdbfb8c61bc02",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/a21165036ad1c3400f13f71e6d9ee77f",
+      "type": "mounts",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 324,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5c727465d8f5ce77bfa29377edb518ad",
+      "_from": "vertices/9a6e62d6960395654e07c09fa4477c13",
+      "_to": "vertices/2a24b294973ee6e7c2612fbd5dc572e7",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 886,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5d9d846ef2cc154c17bdac90589de87c",
+      "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "_to": "vertices/540f0b68de78d81852395d53e079208c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 174,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5da44d74cb1b9330e1297935e133f207",
+      "_from": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "_to": "vertices/895550bdf313f084c082c3d882e174e4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5dae07425ed3234b300dd034f6263dcd",
+      "_from": "vertices/4900be733905e0e3dff9b761ed1e194f",
+      "_to": "vertices/35ec0e141b5a8822363510c51e9604aa",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 241,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5dd2895550a78e123af56c30dc36b7ce",
+      "_from": "vertices/9d95a562e24915129d62cbbb06be306a",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 328,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5fe69994778d5f73e252d718ac2116b8",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/3538e1408c267711a69ab51161744377",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 571,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "602c1cb59cfacbe2964bfa47207bb367",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 558,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "602d93c356ed008506a54fe2cbde73d1",
+      "_from": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 117,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "61844c3cb5dd22eb83198149ec983f24",
+      "_from": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 192,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "663a1b7814059f1fac437180c82292cd",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 276,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "66cdef3f0bae062e11b7a8e0137b64ce",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/8dc681797a2b576708884a4f930325e6",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 909,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "678670f6f174e4db341ed5d945b9722c",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/3538e1408c267711a69ab51161744377",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 744,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "69293832420c7facfef6fbe2f3a61ffc",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 272,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "696d3caa466911e32bf698a8ce7fce4a",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 195,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "69f0f720ee27e110dc71245153efb3e0",
+      "_from": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "_to": "vertices/35ec0e141b5a8822363510c51e9604aa",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6c03a5212564b440055b99b453febb82",
+      "_from": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "_to": "vertices/e6038e473146f4b3f0edc7f2183246e4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6d00389b64f44502765e301dab3332cf",
+      "_from": "vertices/bdbfdba712bcaaf83e35769e32681959",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 296,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6e7734d860ad542c102c7373987c2fce",
+      "_from": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6f2257e931f5e104bb955a37f288d8d2",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 431,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "708c675353e7e29c0c3af6499bb22144",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 157,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "708f071f9d69a82b426edbccfd161392",
+      "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "72149cc014fd7f34e1c99ffdc4e4e03e",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/b2d02b1a58254edd866781ddeb6a4857",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 279,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "723350ccc54ca0a0c9ecb5d8d4a1c33e",
+      "_from": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 96,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "72855c5524ead1e55be74751b0cae932",
+      "_from": "vertices/5341839d6016bc10fb5df403fac3f8f2",
+      "_to": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 315,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7615be66f548633571c4d30c05f28c29",
+      "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
+      "_to": "vertices/daf86c154fac5e3f51109bbd3cb38bd8",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 254,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "76329dadbaee60a0d85e2daf9650f5e8",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/3eab3449227689f61364a2111b6685a8",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 820,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "782e05e6bc50e91e3040bc747e605bc2",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 271,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7a1fa2e1fd5d011a05692a3acf22f696",
+      "_from": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "_to": "vertices/f30965524d648a6eb35904d64d57c393",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7a3294a1f0cf668f0e7d5e54dc04bf4f",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 294,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7b54343d6d3dc22ea1ff3e2261e3a267",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 620,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7b8044000276a46db362af28ac0a9675",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 367,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7bb8b1430b3783f1260962ab9a855123",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/a21165036ad1c3400f13f71e6d9ee77f",
+      "type": "mounts",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 289,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7c116c37f29d545b4f1768a460986545",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 188,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7d4caa4c358107f66d32b28e62f20dfb",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/86e8200e3c068cf87a326a17750d6f9c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 199,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7d5f14d456a88ba9e8d8cab6e1caf23a",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/250aade7b331dbf112093a1d18c60d3d",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 292,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7db85bc702a98ec7a5694609372afc83",
+      "_from": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "_to": "vertices/895550bdf313f084c082c3d882e174e4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 146,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7de6d4d9daedc845f448f213c7893268",
+      "_from": "vertices/8509cae44807ec761925913fb3eb8e0c",
+      "_to": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 326,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7fcfccf00d7ec7b074bf80e60634866e",
+      "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 214,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7fd27bf2de29e35724fe8e0dde1e6c3b",
+      "_from": "vertices/b775c126adce5d288f20d2cf379996fa",
+      "_to": "vertices/35ec0e141b5a8822363510c51e9604aa",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 259,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "83d8bc7ea4a4e8c1ea9a21abc5f644d9",
+      "_from": "vertices/5341839d6016bc10fb5df403fac3f8f2",
+      "_to": "vertices/27a8c8f1bf14b8cb4e805d35bed7eff4",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 313,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "85302a7944f2a61a49a6b82144ab65be",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 365,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "87dfaa56e7997450c75b2aab864185b1",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/41f1affb4c0758a948e085e29abe91d5",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 614,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89ea817a719d3f0e47f1f554c4652a49",
+      "_from": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 249,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8ae0c684471934cfc216347906ea79bb",
+      "_from": "vertices/fdcd71d5576eafd0aa689b4471560b91",
+      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 894,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8bb19e139e576d860d95745c537525b1",
+      "_from": "vertices/0cfdfbc6c93b100e6f1d2e98b4d18e20",
+      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 576,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8cfa5aa59db53b906a6d4e27b21aee9c",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 200,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8cfe8a6188888a00967a725feba8d612",
+      "_from": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 424,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8d3eb4044f96fb297312fe017ffc6e58",
+      "_from": "vertices/daf86c154fac5e3f51109bbd3cb38bd8",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 205,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8e0d321b2fff664afd7fc0dac5c596a0",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/8bcd7b029d081b693cfacfdf28d34918",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 636,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8ec010e06d96eb1eba8f43f319bb95da",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 200,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "910e133a1b5ae7068ce9f263c9fe0621",
+      "_from": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "_to": "vertices/0447987955bc8d5c027456a4826a1c70",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 698,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9260ac51f89dcb1c6998b00dabea1ce8",
+      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 476,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9451c1e3325bfcdfe52e3611f9e32751",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/627a9bbeefce5d5fadb7a59592a35a1d",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 190,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9595ac8ef01d69cc4c2f08ad06dda74a",
+      "_from": "vertices/4900be733905e0e3dff9b761ed1e194f",
+      "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 242,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "95b853229d6b171d8595d6b8f57be590",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 275,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9658c352e21b4470725ba60f0a9e810a",
+      "_from": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "_to": "vertices/0447987955bc8d5c027456a4826a1c70",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 250,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "967b3697a861168241f9ce07b91aafa1",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 435,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "96df61138c40dedccd1b0dd588e9c311",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 721,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97c2cb298bacfaa6c31d991c42d83714",
+      "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 213,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9823b808273cff36ad2a1b29219091a3",
+      "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
+      "_to": "vertices/d517d3378d999e890d2edf50f04f12f0",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 231,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "99e19d2309641122a7908da2857da2b2",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/120889258450c5d3faaef7d6007b2f08",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 228,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9b667072658393f2091fd2ed32da4a61",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/f0e6e0ce829f9ba2613e24eabddf6855",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 159,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e86326aa85fc49b6d43c8b64f23d251",
+      "_from": "vertices/8b0f6670e3b9c37d4ee54a13446c669c",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 391,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9f9472bf262e1393f58859feae17967c",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 485,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a09bd9757766983d53902fb34c91c923",
+      "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 232,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a13e2d555d7bf2be97a6b20ab1e682b5",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/05a3e61634be359f37425915d6de3537",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 198,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a23b41ded6127f5c9f2f40fe5b2ab1e1",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 371,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a508e13377c133f7672771f4ea6a977a",
+      "_from": "vertices/0e3e3d797b8cb32f705571cb43280f44",
+      "_to": "vertices/27a8c8f1bf14b8cb4e805d35bed7eff4",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 318,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a6d6913b38a5b3aa420f0d100029ec73",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/66e97c0dd0efd4cb150ada77e873b6da",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 847,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a78fb2fb08538f0ce3af74fb5760f225",
+      "_from": "vertices/3538e1408c267711a69ab51161744377",
+      "_to": "vertices/c8dc3b9ff99b6dc053f794f3e116761a",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 509,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a82374fe040727a34f54471119bfb34f",
+      "_from": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 339,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a8d7cde02a86b015876fcc126f4a4283",
+      "_from": "vertices/462f5272515d01b15f59279e15cb7fbb",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 247,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a97a092f088afbe23c188800c7f1e056",
+      "_from": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 186,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a9d860f918e92a11ccc3756dd63af470",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 373,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aae91b02cb679cc40c54858aeb9a7a21",
+      "_from": "vertices/39e16b1f603661de2b3e7159deec0315",
+      "_to": "vertices/456a6a173e259f146e1f8263b0c8123a",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 855,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ab9dac7e90b6da9fd4ad8f4c9b1c14d2",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 368,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "abeeae8b176b088f15f48e4b8fd338ce",
+      "_from": "vertices/54c8adae47cf50a1d3aac72cf374024c",
+      "_to": "vertices/76178aef983791c85d3aca85b02950ad",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ac7c4fca146c60be054b4ab8c1c3b95c",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 718,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ad2ba2bf01f946c3cc9369466009bb47",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/b775c126adce5d288f20d2cf379996fa",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 288,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ada652f2fd15314fc519dd406d71612b",
+      "_from": "vertices/85268cf21aea6581c5f58d98d17b7593",
+      "_to": "vertices/29cb954c94d830ae480204e982660a27",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 280,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ae9f8d2dcb73ac94f83833d7083af51f",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 819,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aee85bb3d2e2eae6de2827d40037d4f6",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/5f6924f412d4fe0ebe08acff5b24671e",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 428,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b08ff8dbc8af5718b6d2493b54872765",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 189,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b14f1c6a0e8d012dda17f90717dae0b3",
+      "_from": "vertices/335af66abc36f49a90289999fb1dd3c6",
+      "_to": "vertices/456a6a173e259f146e1f8263b0c8123a",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 824,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b227ca055c2ac08dd93dada07cacfc96",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/c89cbe6450051c6bfc1a7da5cd5d28a7",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 747,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b3ea295d5a2e4174913ffe5cf60befe8",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/222bd41eb5a3a112dc9ed187aafc3fe5",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 717,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b4b31cd18c0310025cb66227d8ee18eb",
+      "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 217,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b53b62d9ae1f0cb7b3e18686b74315d8",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/684768b508e7edb0072b59886126e1c4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 155,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b6ca9ece9b9910ca29005883dc14f46b",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 361,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b7ab307b99a33ff051bc76ef05b998d6",
+      "_from": "vertices/1525204638262f8aad349e696aa0c63b",
+      "_to": "vertices/9f227024aefada6a231df819fb087b92",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 469,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b82b36b9437386c4d2f40147777e545f",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/30108449c638db17bba95a83cf1a1d71",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 428,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ba2601daf3ef96a144cdbbe4577886ee",
+      "_from": "vertices/627a9bbeefce5d5fadb7a59592a35a1d",
+      "_to": "vertices/4b98ee0e98ae5c84a328efefd73871df",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 53,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bc75777383b5c21a9802205dde837f7d",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/36dd167f0bae91ed3b9ed2a4db6c6597",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 294,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bf26e38d2ea928f2a77ce3bdf588c8a9",
+      "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 175,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c0eb086a4528d63763a130dcbb087cd0",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/3538e1408c267711a69ab51161744377",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 621,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c1222c2bd223e22b9e9f8794b577c38b",
+      "_from": "vertices/0c030394bf7b0d306056206f01085c16",
+      "_to": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 333,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c13292b9d5b5c000a8a367749974a35b",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/8bcd7b029d081b693cfacfdf28d34918",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 612,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c31fe0f42fa8917471400e9203d65916",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/540f0b68de78d81852395d53e079208c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 273,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c5eaca33e82e44902b4897495dc9e6b3",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/759f9da661dccfa9ab5ab30b4cbc50be",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 160,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c622c14d1eababa01df172f21bae8fe7",
+      "_from": "vertices/1929c2d449f7d09599914516bcdc33a6",
+      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 618,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c673b4fa48e9f8f220939ff3cdd82afd",
+      "_from": "vertices/3538e1408c267711a69ab51161744377",
+      "_to": "vertices/18078d1d49fb196e6b096de30ba562cb",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 507,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c73b77f3ea45755ec82eeaf073203acb",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 490,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c9c58e44ead0c690757385cfd32e4213",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 194,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ca17c192e38c6ed69dd4d69a74125315",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/b775c126adce5d288f20d2cf379996fa",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 199,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ca83b550f9437d1a36b1ebf30507e698",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/0dc7bd142d696f521309be415905428a",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 432,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "caa1eff304481f44269eac6e3d2bcf03",
+      "_from": "vertices/8b0f6670e3b9c37d4ee54a13446c669c",
+      "_to": "vertices/0c030394bf7b0d306056206f01085c16",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 389,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cac161624ae5608aac814bc6c48a7d5f",
+      "_from": "vertices/5d48574614173fca559dc213ad018bde",
+      "_to": "vertices/d535bf0f5b3fadc023a48a8f9453db0c",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cc7355ebc5cb0afa83e8eb9931c96a04",
+      "_from": "vertices/05a3e61634be359f37425915d6de3537",
+      "_to": "vertices/0d315ff547976199b45bf6486c686d05",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 80,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ccf0703ba4935600e0c294b1a9736b77",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 366,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ce2fde6b510f6e6e00ac02c5f2ce274d",
+      "_from": "vertices/9f227024aefada6a231df819fb087b92",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 457,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ce657a93a424896e4909c0c8085adcb2",
+      "_from": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "_to": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 219,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d4415b6c1691ead14fa89c3bb398982c",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/8b4b1c6419a9a355dadaccf9d18fb4d8",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 359,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d77fdfadbdcad3c346a09ebe81bb4650",
+      "_from": "vertices/97c33bc6d18dae516c7a94821d902ed2",
+      "_to": "vertices/a2ed4d9588c15b04803562c485a6c8af",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 164,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d7b472baf91775a3c1b7d9c46dfaee54",
+      "_from": "vertices/9cb273b8be3b4d3c8ffbd22abad98943",
+      "_to": "vertices/7a95dd443d76bc1fdd1ce565483a6b7b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 209,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d8352bf355994beaaad6b8458bb0f563",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/f30965524d648a6eb35904d64d57c393",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 151,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d86d595e8ce77905fd64244f3665edd6",
+      "_from": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 32,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dc0bd3b77f47e641f10560fa3e017f15",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 742,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dd19af334bf67819545d57b1b0d49ebe",
+      "_from": "vertices/d8ff7806335d0f2e4754f451e5acfb32",
+      "_to": "vertices/48d916fc7e81c02cd0ec0321dc534b52",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 172,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dfb766e874f1398b3389c2ae8956ca41",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/125b0a7c2dcb4d0939f998016f73f7cf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 436,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e0b2998cffd506d4093c92ae4be64c52",
+      "_from": "vertices/9f227024aefada6a231df819fb087b92",
+      "_to": "vertices/1b06390ce27406909b03f2460e262e6c",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 457,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e0fb77a853ef26dc42680738a662fec2",
+      "_from": "vertices/4f778e78a0d4ef3071efed32f696c208",
+      "_to": "vertices/12e51def13197d29aaa18fdbb4321f7b",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e14d9421c45ebcaafb8eba481e77b2a8",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/c103f2b64636df6a794b2127a7d2914f",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 281,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e37d1dd4644fae385198aefa69e5a75c",
+      "_from": "vertices/044d2ab9645ab32e835740af68d1663a",
+      "_to": "vertices/6ca671c74cb847893fa61b680ed0349b",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e43a283f98bdf83a10fbc31665398f17",
+      "_from": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "_to": "vertices/86e8200e3c068cf87a326a17750d6f9c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e43ad6a7de84cb4a05fba1c4bd0053b4",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/6a6f0606f8e996a9371550750dbd47de",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e686022f8b59cee489002dcd8c9c7a45",
+      "_from": "vertices/a21165036ad1c3400f13f71e6d9ee77f",
+      "_to": "vertices/0badc33a242eccf12edf799a03ddd499",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 57,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e9c6ae10757711793f62225b41b8b18f",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/1ed19486d656d7055c17a74c0adb7d34",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 111,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ead4e126d47222bc6d0d0085d68e2beb",
+      "_from": "vertices/5d48574614173fca559dc213ad018bde",
+      "_to": "vertices/87ab5685f10f06c4fa0ddaf8948d7d02",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 52,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eea4a701328ac23b7156cfea98907674",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/de94a7c00c998e900fbfe02f9edf884f",
+      "type": "mounts",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 294,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ef823e375fb9d262f063221b2d94241e",
+      "_from": "vertices/85268cf21aea6581c5f58d98d17b7593",
+      "_to": "vertices/ecdd0e19bbc622d16e924de81f691fc7",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 281,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "efa78becbc3c6a1ed650a36f94761ea8",
+      "_from": "vertices/0e3e3d797b8cb32f705571cb43280f44",
+      "_to": "vertices/53c2dc3252dea6e963f79032a744c8c7",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 319,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f12bef85c959ff0c15dff4c78b0dc7fc",
+      "_from": "vertices/e2c57759878018a7a3f06ac467bb3e1a",
+      "_to": "vertices/895550bdf313f084c082c3d882e174e4",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 278,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f20aafedce7324268b940f82c1c561b1",
+      "_from": "vertices/35ec0e141b5a8822363510c51e9604aa",
+      "_to": "vertices/4b98ee0e98ae5c84a328efefd73871df",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f33133f4b6607538f89a3b346c6b3992",
+      "_from": "vertices/c1d425229745e5c66426684d723ebacf",
+      "_to": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 370,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f39eb70bec057871fd5e7a0a2d3307a0",
+      "_from": "vertices/4e735a1964d429efa4a2d04cf64679e0",
+      "_to": "vertices/39eaccc58f06270d5cc88ab682f9e539",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 485,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f3e274e5c692a25377733ba8b57f97c0",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/de94a7c00c998e900fbfe02f9edf884f",
+      "type": "mounts",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 325,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f435f1476ddd116b5630a5d7a42cbefd",
+      "_from": "vertices/8c2529013ec8528f4ebbc1a46f672f65",
+      "_to": "vertices/a2ed4d9588c15b04803562c485a6c8af",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f4b2392623b66be91e89d64bd05af110",
+      "_from": "vertices/6bd82c2657f7507bac3bb874f779a8e0",
+      "_to": "vertices/e0c9d8bebb72839f0883e4a773e76464",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 423,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f603135921bb925c68526e74cf8943d9",
+      "_from": "vertices/ecc6d29d0257ec7f171713d246611a1e",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 193,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f7f83ea9335f0aae1ed8db57a038a021",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/980dcb86fef33c2d55e4c66b334e6b77",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 723,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f90363979d8995e298e05225ae84cc68",
+      "_from": "vertices/77cb22333b4b2f151862b2cc65bc70ed",
+      "_to": "vertices/4ce603d3d87cae4d15cd1dce5bea146c",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 249,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f979358cf10ff5048c2f36bb18f3e876",
+      "_from": "vertices/a5832a0ef641a31ab2188b162eeb3a43",
+      "_to": "vertices/a1c77134536e9138a4b79ff35306ee42",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 438,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fca8ca9d7fb34549b47604da64865148",
+      "_from": "vertices/eb9e4a907d42e74c60cd24be30db7b84",
+      "_to": "vertices/851b412e528c96d3191fbdb02e38bd47",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 723,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fcdd83ad099e03910c5bf8afdcb16392",
+      "_from": "vertices/6b0c1d9d5b32f6afbea929809467530a",
+      "_to": "vertices/15bf8123a47a2aa02eaeab2c8814acff",
+      "type": "mounts",
+      "concept": "task-queue",
+      "crosses_concept": true,
+      "line": 394,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": ".claude/skills/task-queue/SKILL.md",
+    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"2.3\"\n  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |\n| `apps/maestro/src/core/session-heartbeat.ts` | `141`: `heartbeatVerdict` (the liveness rule `isSessionLive` applies first), `heartbeatTick` and the process probes behind the detached watcher that `plugins/maestro/scripts/maestro-session-heartbeat.js` (SessionStart) spawns. See [Claims](sub-concepts/task-claims.md#the-session-heartbeat-141). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`), the manager's spawn list `readyTasks` (`125`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`); spawns workers in herdr tabs from `ready` (`125`). |\n| `plugins/maestro/skills/maestro-install/references/herdr.md` | The user-facing herdr setup guide the manager's fallback points to (`125`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, run `pnpm refresh:runtime` to rebuild the libs and copy them over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); sibling `worktree-deps.ts` (`135`: lockfile package-manager detection and the missing-dependencies `STOP` notice that `worktree`/`freeform-check` print and `done` refuses on); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `apps/maestro/src/core/human-review-gate.ts` | `130`'s gate logic; `isReviewFile` and the `.review(-N).md` pattern. `<task>.review.md` and `<task>.review-N.md` sit in `.claude/maestro-tasks/` but are not tasks: `listTaskFiles` in `tasks.ts` (and its twin `maestro-tasks.cjs`) skips them. Any new lister must do the same. |\n| `plugins/maestro/scripts/maestro-human-review-gate.js` | `PreToolUse`/`AskUserQuestion` hook denying the question until the round's review file exists. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view (Open/Closed filter, claim badge, Copy prompt, Run with Claude via `claude.preview` + the confirmation dialog, Close, Delete); owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/renderer/src/utils/maestro-tasks.ts` | Thin `window.maestro.tasks` wrappers: `getMaestroTasks`, `closeMaestroTask`, `deleteMaestroTask` (each close/delete returns the full recomputed list). |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic; `125`: `ready`, the manager's spawn list.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
+    "contentHash": "sha256:81ee538d1e72e48588fb48c8c780fbac4699c109104a67c9c1be3fb5136f08e2"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.31",
+    "extracted_at": "2026-10-31T13:09:20.048Z",
+    "files": {
+      "apps/maestro/src/core/claims.ts": "sha256:a88b5f2b9a6f9f3996f1e4d2dfca7389c7ca49c1ca2741632f66b4fc0c61aeb1",
+      "apps/maestro/src/core/epics.ts": "sha256:189cace61c7c5f09c20a2492de061e56744d6e27645808361741fa2e3e7b7e4f",
+      "apps/maestro/src/core/success-path.ts": "sha256:bbe89e7028c578528928349f6458e68905f314e59d79655da8f0c3427ecbf2aa",
+      "apps/maestro/src/core/tasks.ts": "sha256:9f7f242f007d740af6c90fab31d6437e23402738670665ebf477b79e33711bc0",
+      "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx": "sha256:95dc9de847e877098f9e43c2ceea58425618f73e9cfe63c74df01218cbf39b23",
+      "apps/maestro/src/renderer/src/utils/maestro-tasks.ts": "sha256:3f8529dd75d4ee76bd5ea4f8634345b50cfdc43c20b3ac65faeecd4071f4d287"
+    }
+  }
+}

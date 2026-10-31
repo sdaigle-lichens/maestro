@@ -1,0 +1,1053 @@
+{
+  "concept": "rule-view",
+  "vertices": [
+    {
+      "_key": "00bef7d95b7bbb74c5c7fae56af87d8b",
+      "displayKey": "rule-view::function::unassignRule",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "unassignRule",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 195,
+      "end_line": 208,
+      "signature": "function unassignRule(projectRoot: string, ruleId: string): Promise<RuleUnassignResult>",
+      "contentHash": "f087c99b5b4db7d4576386495fbe5e60f0d2ba2775414736dbd7de373efa7e1e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0c9721cdfbaea08e6e8bf805f24fd2dd",
+      "displayKey": "rule-view::type-def::RuleSource",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RuleSource",
+      "filepath": "apps/maestro/src/renderer/src/routes/rules.tsx",
+      "start_line": 19,
+      "end_line": 19,
+      "signature": "type RuleSource = \"project\" | \"vibe-rules\";",
+      "contentHash": "c39a1614877578a813cfc9a26287d9613bca969bc69e32dfd64123506e5d04ab",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2c7fb7631375aa1bc9845149e48b5b84",
+      "displayKey": "rule-view::type-def::Phase",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "Phase",
+      "filepath": "apps/maestro/src/renderer/src/routes/rules.tsx",
+      "start_line": 30,
+      "end_line": 30,
+      "signature": "type Phase = \"idle\" | \"saving\";",
+      "contentHash": "f5ebd442fd5cb3a57c86855f65d0cb54227696cf15fcefd5b8e294f13413a3da",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2f5cfabbf39a52cd603c1b557028e0da",
+      "displayKey": "rule-view::function::listRules",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "listRules",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 126,
+      "end_line": 146,
+      "signature": "function listRules(projectRoot: string): RuleListEntry[]",
+      "contentHash": "fb0eaa4d7298cf51288bf8403c00a1fd6c7f8126b9b2f23c6d2506ee33bf4440",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "324cf06e7c606117aa04e14a243aab20",
+      "displayKey": "rule-view::function::configToWriteOnto",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "configToWriteOnto",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 108,
+      "end_line": 118,
+      "signature": "function configToWriteOnto(projectRoot: string): { cfg: MaestroConfigV3; } | { reason: string; }",
+      "contentHash": "223afa005ffa4bf5835eba6f96341d26989c8220ee45d81635434e18092a4c83",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "36c7c963e51591b8008040b95a584575",
+      "displayKey": "rule-view::function::ruleIdOf",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "ruleIdOf",
+      "filepath": "apps/maestro/src/core/rules.ts",
+      "start_line": 54,
+      "end_line": 62,
+      "signature": "function ruleIdOf(filePath: string): string | null",
+      "contentHash": "ea3b67165b295ee978c3b2c2e39d9fc89e25b4274c3b9ffbbb53ed6f663b2c6f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3fefd4282ab85b1ea1972053291d7807",
+      "displayKey": "rule-view::function::assignRule",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "assignRule",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 56,
+      "end_line": 62,
+      "signature": "function assignRule(rules: MaestroRuleV3[], assignment: MaestroRuleV3, source: \"project\" | \"vibe-rules\" = \"project\"): MaestroRuleV3[]",
+      "contentHash": "59eefcbb2954bd55a4dc52ac5ce25eadb57d7e6d38dcc431469d0567ef7e1e91",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "40dc94c424242ece05ec82e0c0362eb7",
+      "displayKey": "rule-view::type-def::RuleListEntry",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RuleListEntry",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 44,
+      "end_line": 50,
+      "signature": "export interface RuleListEntry {",
+      "contentHash": "b83ecdb016de830250929a5e63fb4022a672f66daf404641b16d2bfa3ee5632a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "displayKey": "rule-view::function::moveRule",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "moveRule",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 153,
+      "end_line": 189,
+      "signature": "function moveRule(projectRoot: string, ruleId: string, destination: string, opts: { scopeOnly?: boolean } = {}): Promise<RuleMoveResult>",
+      "contentHash": "fb8064065a9f3d4783c15e4efac3c44812f64276bd2ee8a370a9246b07b6e030",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6982891dfaddf27331fb8c9999e5deb3",
+      "displayKey": "rule-view::type-def::TreeRowProps",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "TreeRowProps",
+      "filepath": "apps/maestro/src/renderer/src/components/rule-tree.tsx",
+      "start_line": 18,
+      "end_line": 28,
+      "signature": "interface TreeRowProps {",
+      "contentHash": "35446440596328aaf86e164a8b76b110ca7efaaab77f692bccd19a37a55dc70a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6b5caa2921dcda35803a24c15e5e061d",
+      "displayKey": "rule-view::component::RulesEditor",
+      "concept": "rule-view",
+      "type": "component",
+      "name": "RulesEditor",
+      "filepath": "apps/maestro/src/renderer/src/routes/rules.tsx",
+      "start_line": 48,
+      "end_line": 265,
+      "signature": "function RulesEditor({ loaderData }: { loaderData: RulesLoaderData }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "543e4b2301fd1dfadc054d0c116b9ecc019ff5193e00b430b3eb0718045ee992",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "72c7a2a04eac9e802055c386ad5d598c",
+      "displayKey": "rule-view::component::RuleTree",
+      "concept": "rule-view",
+      "type": "component",
+      "name": "RuleTree",
+      "filepath": "apps/maestro/src/renderer/src/components/rule-tree.tsx",
+      "start_line": 200,
+      "end_line": 240,
+      "signature": "function RuleTree({\n  tree,\n  rules,\n  selectedRuleIds,\n  ruleAssignments,\n  ruleSource,\n  onAssign,\n  onUnassign,\n}: RuleTreeProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "d4252cccc12933efc01ff37c27d9b594331e5630171ba6f002db6d6d2fd9826a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7ffc9ce2581af69bd23dc26b2b7e3102",
+      "displayKey": "rule-view::type-def::RuleUnassignResult",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RuleUnassignResult",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 41,
+      "end_line": 42,
+      "signature": "export type RuleUnassignResult =",
+      "contentHash": "6d4151ac52d0391eae991be2ae103f7f8757a9161e2b5435bdb9d3c5d31b4b71",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8386b27703c603228c998e222304e39e",
+      "displayKey": "rule-view::function::alreadyInstalled",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "alreadyInstalled",
+      "filepath": "apps/maestro/src/core/rules.ts",
+      "start_line": 75,
+      "end_line": 81,
+      "signature": "function alreadyInstalled(file: string, id: string): boolean",
+      "contentHash": "ff8d5e8e74eeb7cd03d3f477d65e868f0123a12a7e2a79e80908c72af8432ee8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8f85fffa11fe7fab079daa3e93a2bb82",
+      "displayKey": "rule-view::function::findProjectRuleFile",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "findProjectRuleFile",
+      "filepath": "apps/maestro/src/core/rules.ts",
+      "start_line": 65,
+      "end_line": 72,
+      "signature": "function findProjectRuleFile(projectRoot: string, id: string): string | null",
+      "contentHash": "7ed41e077749aff8a77b283a20d9f71c996de27e7af00c2bc9d0cd52491562fa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9378e0bdc1911f63d4cca4b13e65d5fe",
+      "displayKey": "rule-view::function::resolveDestination",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "resolveDestination",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 75,
+      "end_line": 105,
+      "signature": "function resolveDestination(projectRoot: string, raw: string): { ok: true; relDir: string; } | { ok: false; reason: string; }",
+      "contentHash": "d21d555208e9faeff736064cc5c2c658fa1e152ba7720230448da0fb7c07b458",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "99f00d7383241fc89536c751d5dfc4f5",
+      "displayKey": "rule-view::function::emptySummary",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "emptySummary",
+      "filepath": "apps/maestro/src/core/rules.ts",
+      "start_line": 35,
+      "end_line": 37,
+      "signature": "function emptySummary(): ApplyRulesSummary",
+      "contentHash": "caa07810f00215724294890a177995f74c77deb8087a3cd8248235e0610f8394",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a383c1cfe0a221317712f0b5d2d86fa1",
+      "displayKey": "rule-view::function::targetDirFor",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "targetDirFor",
+      "filepath": "apps/maestro/src/core/rules.ts",
+      "start_line": 43,
+      "end_line": 48,
+      "signature": "function targetDirFor(rule: MaestroRuleV3): string",
+      "contentHash": "c8745c3e57cfbeee8c3cccbe4be46daf27ed5b272601f89c929633c5b3b10567",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bd00eca7e8b90b203d736ddc5c89f625",
+      "displayKey": "rule-view::component::RulesTab",
+      "concept": "rule-view",
+      "type": "component",
+      "name": "RulesTab",
+      "filepath": "apps/maestro/src/renderer/src/components/tabs/rules-tab.tsx",
+      "start_line": 14,
+      "end_line": 63,
+      "signature": "function RulesTab({ projectRules }: { projectRules: ProjectRule[] }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "91985e76295264bd49b116de486fb74b4777a26c1bcda022b70d7875c10d321a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bfc103e6fb8e7c6e440fe85bf14880ee",
+      "displayKey": "rule-view::type-def::RuleMoveResult",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RuleMoveResult",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 37,
+      "end_line": 39,
+      "signature": "export type RuleMoveResult =",
+      "contentHash": "f8b32c46d3c85fc2dc3925dfe9449439f0778010cb01682fbebcf33a12d4716a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c31c132441625fc8cf37885a29591987",
+      "displayKey": "rule-view::function::dirOfRuleFile",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "dirOfRuleFile",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 120,
+      "end_line": 123,
+      "signature": "function dirOfRuleFile(projectRoot: string, file: string): string",
+      "contentHash": "0bcd132f9995d5065db8d71c6866344293337a60c9751df937036329322006f8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cfa502f79a466c0cc715dce38d22826c",
+      "displayKey": "rule-view::type-def::RuleTreeProps",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RuleTreeProps",
+      "filepath": "apps/maestro/src/renderer/src/components/rule-tree.tsx",
+      "start_line": 8,
+      "end_line": 16,
+      "signature": "interface RuleTreeProps {",
+      "contentHash": "4ce74b1e60eaf4952205674be84f8e35dd261e8c2e14e757ac6828820eea1683",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d021f150e945894f25405a1a97e69161",
+      "displayKey": "rule-view::type-def::RulesLoaderData",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RulesLoaderData",
+      "filepath": "apps/maestro/src/renderer/src/routes/rules.tsx",
+      "start_line": 21,
+      "end_line": 21,
+      "signature": "type RulesLoaderData = MaestroRulesResult;",
+      "contentHash": "e10a14c4a09fdf0d3aa8a9629c1341cea4d28bec1f9228ed717d47a1b431eef7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d39e69eb46a768a903dd14979e26444e",
+      "displayKey": "rule-view::component::TreeRow",
+      "concept": "rule-view",
+      "type": "component",
+      "name": "TreeRow",
+      "filepath": "apps/maestro/src/renderer/src/components/rule-tree.tsx",
+      "start_line": 30,
+      "end_line": 198,
+      "signature": "function TreeRow({\n  dirPath,\n  name,\n  depth,\n  rules: _rules,\n  selectedRuleIds,\n  ruleAssignments,\n  ruleSource,\n  onAssign,\n  onUnassign,\n}: TreeRowProps): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "6184f1cdf949e0938d2bb61aefb037f7517fac392f90875cb0a093f64b2f324b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d3b4840e83d3d81263a14e863d47148e",
+      "displayKey": "rule-view::function::assignmentFor",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "assignmentFor",
+      "filepath": "apps/maestro/src/core/rule-move.ts",
+      "start_line": 65,
+      "end_line": 68,
+      "signature": "function assignmentFor(id: string, relDir: string, scopeOnly: boolean): MaestroRuleV3",
+      "contentHash": "ad4fac762bfc3917303ae786606f6073b6f9ce0feb22d0aa770b5098fc08d2aa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ea683aa1cc988d8d77429bc6eb332912",
+      "displayKey": "rule-view::effect::effect-63",
+      "concept": "rule-view",
+      "type": "effect",
+      "name": "effect-63",
+      "filepath": "apps/maestro/src/renderer/src/routes/rules.tsx",
+      "start_line": 63,
+      "end_line": 71,
+      "signature": "useEffect(() => {",
+      "contentHash": "d254175c3a8037538cda259b30ff58b16f0447ea7f701aac848e9185e1f53a87",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ea8d6d7b0f560ecd56dbec06f97a14c7",
+      "displayKey": "rule-view::type-def::RuleSource",
+      "concept": "rule-view",
+      "type": "type-def",
+      "name": "RuleSource",
+      "filepath": "apps/maestro/src/renderer/src/components/rule-tree.tsx",
+      "start_line": 6,
+      "end_line": 6,
+      "signature": "type RuleSource = \"project\" | \"vibe-rules\";",
+      "contentHash": "c39a1614877578a813cfc9a26287d9613bca969bc69e32dfd64123506e5d04ab",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ee933c6950831472945a0640a5cf2391",
+      "displayKey": "rule-view::component::RulesPage",
+      "concept": "rule-view",
+      "type": "component",
+      "name": "RulesPage",
+      "filepath": "apps/maestro/src/renderer/src/routes/rules.tsx",
+      "start_line": 43,
+      "end_line": 46,
+      "signature": "function RulesPage(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "91aabee5946abdf6167d425cf4b90c31375601713cd8491d773a771b48ef982a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fe18edb6cca91a0f8ffa60185a136278",
+      "displayKey": "rule-view::function::applyRules",
+      "concept": "rule-view",
+      "type": "function",
+      "name": "applyRules",
+      "filepath": "apps/maestro/src/core/rules.ts",
+      "start_line": 87,
+      "end_line": 153,
+      "signature": "function applyRules(projectRoot: string, cfg: Pick<MaestroConfigV3, \"rules\"> | null): Promise<ApplyRulesSummary>",
+      "contentHash": "18936eeac98970dbd5c491136eb8624e21709e4fae7bf09a76d7ac1474b68b07",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "003e0c601f5b3de7722254006a715b84",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/36c7c963e51591b8008040b95a584575",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 132,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "01ca37c083f38d6b97781712217de832",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/40dc94c424242ece05ec82e0c0362eb7",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 126,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0a5773c021ed8d75850bc759d85204f5",
+      "_from": "vertices/72c7a2a04eac9e802055c386ad5d598c",
+      "_to": "vertices/d39e69eb46a768a903dd14979e26444e",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 224,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0a6c9a5fa3a0146c54f5338f94a22b74",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/9378e0bdc1911f63d4cca4b13e65d5fe",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 163,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0eb4fc6c5e9b2fc48d8a00aa770eac27",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/a383c1cfe0a221317712f0b5d2d86fa1",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "167081117e87a76c5e91ff5a36ad92c6",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/2c7fb7631375aa1bc9845149e48b5b84",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 53,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "17c099b969477821931f3242449c0a46",
+      "_from": "vertices/00bef7d95b7bbb74c5c7fae56af87d8b",
+      "_to": "vertices/7ffc9ce2581af69bd23dc26b2b7e3102",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 195,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1811f09cbaca6b89da071aea9713332c",
+      "_from": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 115,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "18c169886225f5cc3aba49fb5cf51f02",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/4ed91bdb454c255b0b48086a5e9a926a",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1cd3006b4f4c95abb97a1b469622c2f1",
+      "_from": "vertices/36c7c963e51591b8008040b95a584575",
+      "_to": "vertices/baa8e42d7e638974c81eb55ca503543b",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2669aea5929dbd4142484ba6418331d3",
+      "_from": "vertices/00bef7d95b7bbb74c5c7fae56af87d8b",
+      "_to": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 203,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3292bc984d6bf4fbf633b485d106eb40",
+      "_from": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "_to": "vertices/dc8b2a5b5827f10716ba152db27344ff",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 109,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "397ab015108c7e00f4ce5d6982c685b8",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/72c7a2a04eac9e802055c386ad5d598c",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 251,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b8e43a0083b5cea2a4f373e27aa06a8",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/bfc103e6fb8e7c6e440fe85bf14880ee",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 158,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3c1507b040f634ee9a8c3dd4d92d5079",
+      "_from": "vertices/8f85fffa11fe7fab079daa3e93a2bb82",
+      "_to": "vertices/36c7c963e51591b8008040b95a584575",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "445af3691731c013a862a57593d6f1e9",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/cfe4313c1fed3f2bf25a43ba59fca491",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 215,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b6399b0b23877f2ba1430d3411ea5b6",
+      "_from": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "_to": "vertices/3932ce0b7d5a8155966f1fb284ef4d95",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 111,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57e62185a69593fc4869e8caba9caa57",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/cfe4313c1fed3f2bf25a43ba59fca491",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 185,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5d759e5050377f98c2a6e9baf0b20581",
+      "_from": "vertices/fe18edb6cca91a0f8ffa60185a136278",
+      "_to": "vertices/8386b27703c603228c998e222304e39e",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "66d7b002534ede6741a2e91d929dd04b",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/1f40d8e8a0f118d55a037c4320c177f1",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 175,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "679ac6bdd9c73339e745ab1a2ab7749a",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/0c9721cdfbaea08e6e8bf805f24fd2dd",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a00f5ce0a7160f2edb1db09d67ca46c",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6c89335addb8521c6ebeff04c57c469f",
+      "_from": "vertices/72c7a2a04eac9e802055c386ad5d598c",
+      "_to": "vertices/d39e69eb46a768a903dd14979e26444e",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 212,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6ce895ab55495e12a75cab75aeb6eee4",
+      "_from": "vertices/fe18edb6cca91a0f8ffa60185a136278",
+      "_to": "vertices/8f85fffa11fe7fab079daa3e93a2bb82",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6cffc6e954af436d56362a2979118785",
+      "_from": "vertices/ee933c6950831472945a0640a5cf2391",
+      "_to": "vertices/d021f150e945894f25405a1a97e69161",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 44,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7114bcd739a2bfe326572dbef7e7a730",
+      "_from": "vertices/00bef7d95b7bbb74c5c7fae56af87d8b",
+      "_to": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 198,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "83e87ca6889f8911e244e47b53a15384",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/d3b4840e83d3d81263a14e863d47148e",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 173,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "878b51aa5b0b7647da34c82ec14eb81d",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/c31c132441625fc8cf37885a29591987",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 138,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8ceab7fa8dbf1964d42b334fe662f358",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/324cf06e7c606117aa04e14a243aab20",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 171,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a28c853355983e7a7a08a5f5c1eceb42",
+      "_from": "vertices/ee933c6950831472945a0640a5cf2391",
+      "_to": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "type": "mounts",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 45,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a8a0146f827338da0da5016129143484",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/40dc94c424242ece05ec82e0c0362eb7",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b1afc32c14a4ac396724e6eb14bb7449",
+      "_from": "vertices/fe18edb6cca91a0f8ffa60185a136278",
+      "_to": "vertices/99f00d7383241fc89536c751d5dfc4f5",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cc3ee8a7e8a184bf4b63b938161a5e5f",
+      "_from": "vertices/2f5cfabbf39a52cd603c1b557028e0da",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": true,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cda2dac846568fa5933d901fa468e153",
+      "_from": "vertices/72c7a2a04eac9e802055c386ad5d598c",
+      "_to": "vertices/cfa502f79a466c0cc715dce38d22826c",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 208,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eb037e22e9c7e82db5d209fe61cbcdb4",
+      "_from": "vertices/6b5caa2921dcda35803a24c15e5e061d",
+      "_to": "vertices/d021f150e945894f25405a1a97e69161",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 48,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "edb733be61833b47febeeaf3cbea06c9",
+      "_from": "vertices/fe18edb6cca91a0f8ffa60185a136278",
+      "_to": "vertices/a383c1cfe0a221317712f0b5d2d86fa1",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f9b692b9ceaaf1fa34c249ae772c3da6",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/8f85fffa11fe7fab079daa3e93a2bb82",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 165,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fb880ad027ae83bdb92c14a35447ec1f",
+      "_from": "vertices/63dc7d35a6f0ff73c1ad62a8be5a4df4",
+      "_to": "vertices/3fefd4282ab85b1ea1972053291d7807",
+      "type": "calls",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 173,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fef7b2eb943421ca524ef59ecde9b08b",
+      "_from": "vertices/d39e69eb46a768a903dd14979e26444e",
+      "_to": "vertices/6982891dfaddf27331fb8c9999e5deb3",
+      "type": "has-type",
+      "concept": "rule-view",
+      "crosses_concept": false,
+      "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/rule-view/SKILL.md",
+    "body": "---\nname: rule-view\ndescription: \"Explains how the /rules view in the Maestro desktop app is built end-to-end: the left rule selectors (on-disk project rules + installable vibe-rules), the center directory tree (rule-tree.tsx), how assignments map to the MaestroConfigV3 `rules` slice in .claude/maestro.json, and how the rule files are moved/installed on save. Use when the user is working inside apps/maestro and asks how the rules view works, how rules get assigned to the project root or directory paths, how rule files get moved or installed, how vibe-rules integrate, why a rule isn't showing up, or why a rule assignment isn't reaching the config.\"\nmetadata:\n  type: concept-skill\n  version: \"2.0\"\n  last-update: bbb69aba5cc3b304f8b672198781663c2b38866f\n---\n\n# Rule View\n\nThe `/rules` route (`src/renderer/src/routes/rules.tsx`) is a visual editor for assigning a project's **rules** to scopes — the project root and/or specific directory paths. The user picks which rules to work with (left pane), assigns each to a row of the project's directory tree (center). On save it persists the **rules slice** of `.claude/maestro.json` (v3) **and physically moves or installs** each rule file into its assigned directory — one IPC call, no Claude session, no separate follow-up step.\n\nIt is the rules half of the desktop app's config editor — the `/workflows` route owns the other half (workflows + instances), and the two share one `maestro.json`. See the `workflow-view` skill for that side.\n\n## Layout\n\n```\n┌──────────────────────────── TopNav (top-nav.tsx) ────────────────────────────┐\n│ Workflows | Rules        (no workflow selector on this route)              ☀ │\n├───────────────┬──────────────────────────────────────────────────────────────┤\n│ Left pane     │ Center — RuleTree                                            │\n│ (rules.tsx)   │ (rule-tree.tsx)                                              │\n│               │                                                              │\n│ Available     │   ⊟ (project root)     [chip ×] [chip ×] +                   │\n│  rules:       │   ▸ src               [chip ×]           +                   │\n│  [chips]      │   ▸ src/backend       [vibe chip ×]      +                   │\n│               │   ▸ apps               …                 +                   │\n│ Installable   │                                                              │\n│ (vibe-rules): │   (rows from getProjectTree)                                 │\n│  [chips]      │                                                              │\n│  [Save rules] │                                                              │\n└───────────────┴──────────────────────────────────────────────────────────────┘\n   280px                          1fr\n```\n\nThe TopNav is shared with `/workflows` but rendered here **without** a `workflowSelector`, so the centered selector is absent.\n\n## Data flow\n\n```\nRoute loader: getRulesData()                   (src/renderer/src/utils/maestro.ts)\n  → window.maestro.data.rules()  = IPC `data:rules`, handled in src/main/ipc.ts\n      ONE round trip returning { config, projectRoot, seeded, tree, projectRules,\n                                 vibeRules, vibeRulesAvailable }\n      (the web app made four server-fn calls here, three of which each re-walked the tree)\n      `config` is `readConfig(...) ?? blankConfig()` (not the starter graph — `seeded` just means\n      no maestro.json yet); `getRulesData` renames `projectRules` to `availableRules`\n      vibeRulesAvailable is false when the vibe-rules CLI isn't installed, so the UI can say so\n        │\n        ▼\nRulesPage holds `config: MaestroConfigV3` (source of truth for the slice)\n   + `selectedRuleIds: string[]` — seeded from config.rules.map(r => r.id)\n   + derived `ruleSource: Record<id, \"project\"|\"vibe-rules\">`\n   • the whole editor is remounted with key={projectRoot} (see Things that bite)\n        │   left pane edits selectedRuleIds (+ prunes config.rules); tree edits config.rules\n        ▼\nRuleTree renders the project-root row + one row per tree dir; each row shows the\n  assignment for its path and a hover \"+\" picker to assign a selected rule (one per rule)\n        │   onAssign / onUnassign → setConfig (mutates config.rules only)\n        ▼ (Save rules)\nsubmitMaestroConfig({ data: { sliceType: \"rules\", slice: { rules: config.rules } } })\n  → window.maestro.config.save(...)  = IPC `config:save` → saveConfig() in src/core\n      1. merge the rules slice into maestro.json (preserves workflows/instances) and write it\n      2. re-render the orchestrator's handoff table\n      3. APPLY the placements — move project rule files, `vibe-rules load` installable ones\n  ← SaveResult { rule summary } → the toast reports what moved and what was installed\n        │\n        ▼ router.invalidate()   — a rules save MOVES FILES, so the tree and rule pool it\n                                  was rendering now describe a layout that no longer exists\n```\n\nStep 3 — what actually moves or installs, and what `placement` changes about it — is\n[`sub-concepts/applying-placements.md`](sub-concepts/applying-placements.md).\n\n## File-by-file map\n\nPaths are relative to `apps/maestro/` unless stated otherwise.\n\n| Concern                                                                       | File                                                             |\n| ----------------------------------------------------------------------------- | ---------------------------------------------------------------- |\n| Route, both rule selectors, save, assign/unassign handlers                    | `src/renderer/src/routes/rules.tsx`                              |\n| The directory tree + per-row chips + add-rule picker                          | `src/renderer/src/components/rule-tree.tsx`                      |\n| Rule chip multi-select (used by both left-pane sections)                      | `src/renderer/src/components/chip-multi-select.tsx`              |\n| Top bar — nav links (no workflow selector here)                               | `src/renderer/src/components/top-nav.tsx`                        |\n| Renderer-side loader + save wrappers over the IPC bridge                      | `src/renderer/src/utils/maestro.ts`                              |\n| The typed channel contract                                                    | `src/shared/ipc.ts` (`data:rules`, `config:save`)                |\n| Main-process handler — the only side that touches `fs` or spawns `vibe-rules` | `src/main/ipc.ts`                                                |\n| Directory walk, project-rule scan, `vibe-rules list`                          | `discovery.ts` in `apps/maestro/src/core/`                       |\n| **The apply step** (move project files / `vibe-rules load`)                   | `rules.ts` in `apps/maestro/src/core/`, called by `saveConfig()` |\n| Terminal-path equivalent of that step                                         | `plugins/maestro/scripts/maestro-apply-rules.js`        |\n| Same move without the window (`081`) — `assignRule`, `moveRule`, `unassignRule`, `listRules` | `rule-move.ts` in `apps/maestro/src/core/`; CLI `plugins/maestro/scripts/maestro-rules.cjs` |\n| `/tools` Rules tab (read-only table of the same `projectRules` set)           | `src/renderer/src/components/tabs/rules-tab.tsx`                 |\n| `ProjectRule` type re-export for the renderer                                 | `src/renderer/src/utils/maestro-rules.ts`                        |\n| Banner shown while no `maestro.json` exists                                   | `src/renderer/src/components/seeded-banner.tsx`                  |\n| Source of project rules                                                       | `<projectRoot>/**/.claude/rules/*.md`                            |\n\n## The data model (the `rules` slice)\n\nThe view edits exactly one field of the shared `MaestroConfigV3` (types from `src/core/contracts.ts` — that **module**, never `src/core/index.ts`, which re-exports `fs`):\n\n```ts\nMaestroConfigV3 { version: 3, …workflow fields…, rules: MaestroRuleV3[] }   // only `rules` here\n\nMaestroRuleV3 { id, scope?: \"project\", paths?: string[], source?: \"project\" | \"vibe-rules\", placement?: \"move\" | \"scope-only\" }\n```\n\nAn `MaestroRuleV3` is **one assignment of a rule to one location** — not a rule definition, and (post this feature) at most one per rule id:\n\n- **Project-root assignment** → `{ id, scope: \"project\" }` (no `paths`).\n- **Directory assignment** → `{ id, paths: [\"<dirPath>/**\"] }` (no `scope`).\n- **`source`** records where the rule comes from, so the apply step knows what to do:\n  - `\"project\"` — an on-disk `.claude/rules/<file>.md`; the file is **moved** into the assigned directory.\n  - `\"vibe-rules\"` — a rule from the vibe-rules store; **installed** via `vibe-rules load`.\n- **`placement`** decides whether the assignment does anything physical at all. Absent means\n  `\"move\"`; `\"scope-only\"` scopes the rule without moving or installing at the target. Set from\n  `rule-tree.tsx`'s add-picker checkbox or its per-chip toggle; full semantics in\n  [`sub-concepts/applying-placements.md`](sub-concepts/applying-placements.md).\n\nThe rule **definitions** are separate shapes, loaded but never written into `maestro.json`:\n\n```ts\nProjectRule { id, description, body, dir }       // from <projectRoot>/**/.claude/rules/<file>.md; `dir` = current location\nTreeNode    { path, name, depth }                // a directory, relative to projectRoot\n// vibe-rules: just a string[] of ids from `vibe-rules list`\n```\n\n## Left pane — two rule selectors (rules.tsx + chip-multi-select.tsx)\n\nTwo `ChipMultiSelect` sections feed one shared `selectedRuleIds` pool:\n\n- **Available rules** — on-disk project rules from `discoverProjectRules()`. It scans **every** `.claude/rules/` in the tree (not just the root), so a rule already moved into a subdirectory still shows up. Each file is parsed for frontmatter (`id = fm.name || filename`, plus `description`/`body` — currently only `id` is rendered) and tagged `source: \"project\"`.\n- **Installable rules (vibe-rules)** — ids from `discoverVibeRules()` (`vibe-rules list`). Tagged `source: \"vibe-rules\"`. These don't exist in the project yet; assigning one installs it on save.\n\nSource bookkeeping:\n\n- `ruleSource: Record<id, \"project\"|\"vibe-rules\">` is derived: project ids first, then vibe ids **not already** a project id (a project rule wins a name collision, since it's a real file). The vibe section only lists `vibeOnlyIds` (resolving to `\"vibe-rules\"`) so a shared name never appears in both sections.\n- `setGroupSelection(groupIds, next)` toggles selection within one section while leaving the other's intact, and **prunes `config.rules`** to the still-selected ids.\n- `selectedRuleIds` is **seeded** on mount from `config.rules.map(r => r.id)`.\n\nWhile `seeded` (no `maestro.json` yet) a `SeededBanner` says assignments start empty and are written only on Save. The center shows \"Select rules on the left…\" until at least one rule is selected. On a successful save the page fires a `toast` (`@repo/ui/toast`) with the config path and how many rule files were placed (moved + installed) — or, when the save returned `warnings`, a `warning`-variant \"Saved, but: …\" toast instead — and `router.invalidate()`s (before the toast) and **stays put** — the window is long-lived and the user saves repeatedly, so there is no terminal success view.\n\n## Center — directory tree (rule-tree.tsx)\n\n`RuleTree` renders a flat, indented list: a synthetic **`(project root)`** row (`dirPath = \"\"`, `⊟`), then one `TreeRow` per `TreeNode` from the loader's `tree` (`▸`, indented by `depth * 16 + 8`px). `discoverProjectTree` (`discovery.ts` in `src/core`) walks from `projectRoot`, **maxDepth 4**, skipping `node_modules`/`.git`/`dist`/`build`/`.next`/`.turbo`/`.output`.\n\nEach `TreeRow`:\n\n- **Computes its own assignment** by filtering `ruleAssignments` (= `config.rules`): root matches `scope === \"project\" && no paths`; a dir matches `paths` containing `\"<dirPath>/**\"` or the bare `dirPath`.\n- Renders one chip per assignment, tinted by source — **project rules** in the primary color, **vibe-rules** in amber with a tiny `vibe` badge (from `a.source ?? ruleSource[a.id]`). The `×` calls `onUnassign(id)`.\n- Each chip also has a `⇄`/`📌` button that flips that assignment's `placement` between move and `\"scope-only\"` (re-calling `onAssign`); a scope-only chip has a dashed border and a `scoped` badge.\n- Shows a hover-revealed `+` that opens an inline `<select>` of selected rules not already on this path plus a **scope only** checkbox; **Add** calls `onAssign` (with `placement: \"scope-only\"` when checked).\n\n**One location per rule.** `handleAssign` (in `rules.tsx`) removes **every** prior assignment of that id before appending the new one (and stamps `source` from `ruleSource`). So a rule assigned to the root and then added to a directory **moves** — the root chip disappears and the directory chip appears. `handleUnassign` filters purely by id. The glob convention `\"<dirPath>/**\"` is written in `rule-tree.tsx`'s `handleAdd` and read back by `pathAssignments`; the two must stay in lockstep.\n\n## Persistence and apply\n\nThe save is a single `config:save` carrying only `{ sliceType: \"rules\", slice: { rules } }`;\n`saveConfig()` performs all three steps above in that one call. The apply matrix\n(`placement` x `source`), the idempotency guards and the vibe-rules traps are\n[`sub-concepts/applying-placements.md`](sub-concepts/applying-placements.md).\n\n## The same move without the window (`081`)\n\n`src/core/rule-move.ts` is `handleAssign` / `handleUnassign` plus Save as a function, for a caller with\nno renderer: `assignRule` (drop the old assignment of that id, append the new one with `source` last),\n`assignmentFor` (the `rule-tree.tsx` shape), `resolveDestination` (the destination must be an existing\ndirectory inside the project, relative, not `.claude`/`.git`/`node_modules`), then `saveConfig` (rules\nslice merge, re-render, `applyRules`); `moveRule` also fails if no project rule file has that id.\n`listRules` reports each rule's directory and assignment. `plugins/maestro/scripts/maestro-rules.cjs` (`list`, `move <id> --to <dir|.>\n[--scope-only]`, `unassign <id>`) is its terminal front end, via the plugin-only `maestro-rule-move`\nbundle. It reads `maestro.json` right before writing, because `mergeSlice` replaces the whole `rules`\nblock, and refuses a missing or non-v3 file instead of saving over it (`readConfig` would answer a\nblank config). A move made there shows in `/rules` as a normal assignment. The team-meeting skill uses\nit for `rule.move` proposals.\n\n## Things that bite\n\n- **Save only touches the rules slice.** Don't widen `submitMaestroConfig`'s rules branch to write `workflows`/instances — that's the `/workflows` route's slice, and a stray write will clobber it.\n- **`rules` entries are assignments, not definitions, and now one-per-id.** Code that assumed multiple assignments per id no longer applies.\n- **De-selecting a rule deletes its assignment.** `setGroupSelection` prunes `config.rules` to the selected ids. Unchecking a chip to \"hide\" a rule removes the path it was assigned to.\n- **An outside `maestro.json` edit re-runs the loader but not `useState` initialisers.** `RulesEditor` adopts the new `config`/selected rules in an effect only when its rules still equal the previous loader data (clean); unsaved assignments are kept.\n- **A rules save moves files on disk, which is why the route invalidates after one.** Unlike a workflows save, this one changes the very thing the loader read: the rule pool and the directory tree. Without `router.invalidate()` the tree keeps describing a layout that no longer exists, and the next assignment is computed against stale paths.\n- **The project-rule scan walks the whole tree (maxDepth 4).** A rule nested deeper than 4 levels, or under an ignored dir, won't appear in the picker even though its assignment may persist in `maestro.json`. Same depth/ignore list as the tree walk — keep them consistent.\n- **A rule assigned in maestro.json but missing from disk is stranded.** `selectedRuleIds` is seeded from `config.rules`, but the chips only render ids the loaders return. If the file was deleted (project) or removed from the store (vibe-rules), the chip can't render, yet the assignment persists until something prunes it — and the apply step reports it under `missing`/`errors`.\n- **Name collisions resolve to project.** If the same id exists both on disk and in `vibe-rules list`, `ruleSource` calls it `\"project\"` and the vibe section hides it. The on-disk file is moved; the vibe-rules version is ignored.\n- **Two functions answer \"get the rules\", and they are not the same set — the other one surfaces on\n  `/tools`, not here.** `discoverRuleLibrary` reads `<project>/rules/*.md` — what the project\n  *publishes*, shown in `/tools`' marketplace tabs (`ruleLibrary`). `discoverProjectRules`,\n  the one this route uses, reads every `.claude/rules/` in the tree — what is *assigned* to a\n  directory, shown here, and what a save **moves**. (`/tools`' own Rules tab, `rules-tab.tsx`, shows\n  this second set read-only and says there is no global rule tier.) A project can have either without the other, so\n  they were deliberately not unified: the names and the return types (`RuleLibraryEntry` with\n  `title`/`paths` vs `ProjectRule` with `id`/`dir`) are what keep a reader from assuming one view\n  manages the other's files. If a rule shows up on `/tools` but not in this route's pickers (or vice\n  versa), this is why — check which function the surface in question actually calls before assuming\n  a bug.\n",
+    "contentHash": "sha256:31f7de5f0a759029a52a4df5856566ddffb8818761f8a2d8d31a7f1ebd23f2a4"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:42:28.918Z",
+    "files": {
+      "apps/maestro/src/core/rule-move.ts": "sha256:085f7af46b35db0873c250cdf36ff08fb93a5900b080144369e6b89ccb1f8a05",
+      "apps/maestro/src/core/rules.ts": "sha256:c549904f48d697afba095cb2d63a4b4b908a0477a0e245f491e6bc2dc7eb7b1b",
+      "apps/maestro/src/renderer/src/components/rule-tree.tsx": "sha256:454e6258508dc29cacdf400b2cd55c924d399eed8dd07384a870e565348044cf",
+      "apps/maestro/src/renderer/src/components/tabs/rules-tab.tsx": "sha256:e3a90b4e9c075902204fcf8c3a4e1ed24c43a6a28e95d652b72a5eab3c04c8c8",
+      "apps/maestro/src/renderer/src/routes/rules.tsx": "sha256:8d10d8dfc686eb16031dd6883d0d1c8248042570303aecdf422d67c6e2f7a08e",
+      "apps/maestro/src/renderer/src/utils/maestro-rules.ts": "sha256:7ddb355356d8ecca98c5e018debdece601d59b5bb8aabda50037a11d086c6eda"
+    }
+  }
+}

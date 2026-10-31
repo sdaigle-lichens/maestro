@@ -6,10 +6,14 @@ const hooks = [
   "UserPromptExpansion:maestro-step0.cjs",
   "UserPromptExpansion:maestro-enable-task-routing.cjs",
   "UserPromptExpansion:maestro-post-mortem-context.cjs",
+  "UserPromptExpansion:maestro-session-name.cjs",
   "PreToolUse:maestro-step0.cjs",
   "PreToolUse:maestro-enable-task-routing.cjs",
   "PreToolUse:maestro-post-mortem-context.cjs",
   "PreToolUse:maestro-session-log.cjs",
+  "PreToolUse:maestro-session-name.cjs",
+  "UserPromptSubmit:maestro-session-name.cjs",
+  "SessionStart:maestro-session-name.cjs",
   "SubagentStart:maestro-inject-agent-context.cjs",
   "SubagentStart:maestro-subagent-log.cjs",
   "SubagentStop:maestro-subagent-log.cjs",
@@ -18,6 +22,7 @@ const hooks = [
 ];
 
 // Mutable so the picker round-trips within a browser session, like a save to maestro.json would.
+let workerModel = "";
 let skillLists = {
   start_skills: {
     maestro: ["confidence-check"],
@@ -75,15 +80,22 @@ export const maestroInstall = {
         sampleSkill("test-maestro", "project"),
         sampleSkill("scribe", "project"),
         sampleSkill("confidence-check", "maestro"),
-        sampleSkill("concept-skills:scribe", "concept-skills"),
-        sampleSkill("concept-skills:use-code-architecture-design-check", "concept-skills"),
+        sampleSkill("code-graph:scribe", "code-graph"),
+        sampleSkill("code-graph:use-code-architecture-design-check", "code-graph"),
         sampleSkill("design-sketch", "design"),
       ],
     }),
     taskRouting: async () => ({ useMaestroTasks: true }),
+    workerModel: async () => ({ workerModel }),
   },
   // Merged into `project` by index.ts, which already holds `project.get`.
   project: {
+    workerModel: {
+      set: async (next: string) => {
+        workerModel = next.trim();
+        return workerModel;
+      },
+    },
     skillLists: {
       set: async (next: typeof skillLists) => {
         skillLists = next;

@@ -86,6 +86,13 @@ function writeConfig(projectRoot, cfg) {
   import_node_fs.default.writeFileSync(p, serializeConfig(cfg));
   return p;
 }
+function resolveWorkerModel(cfg) {
+  if (!cfg || cfg.version !== 3) return void 0;
+  const v = cfg.worker_model;
+  if (typeof v !== "string") return void 0;
+  const t = v.trim();
+  return t === "" ? void 0 : t;
+}
 function mergeSlice(current, input) {
   const next = { ...current, version: 3 };
   if (input.sliceType === "workflows") {
@@ -102,6 +109,10 @@ function mergeSlice(current, input) {
     next.end_skills = input.slice.end_skills;
   } else if (input.sliceType === "task-routing") {
     next.use_maestro_tasks = input.slice.use_maestro_tasks;
+  } else if (input.sliceType === "worker-model") {
+    const model = resolveWorkerModel({ version: 3, worker_model: input.slice.worker_model });
+    if (model === void 0) delete next.worker_model;
+    else next.worker_model = model;
   }
   return next;
 }
@@ -120,6 +131,7 @@ function nodeLabel(id, wf, instances) {
     return "@" + (inst?.name || n.instance || n.id);
   }
   if (n.type === "skill") return "/" + (n.skill || n.id);
+  if (n.type === "manager_review") return "manager review";
   return "human review";
 }
 function successPathSteps(wf, instances) {

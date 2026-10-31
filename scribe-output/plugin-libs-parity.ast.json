@@ -1,0 +1,3236 @@
+{
+  "concept": "plugin-libs-parity",
+  "vertices": [
+    {
+      "_key": "011c9d9511983b68497d579a2a7abcf1",
+      "displayKey": "plugin-libs-parity::function::hasHandbackCall",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "hasHandbackCall",
+      "filepath": "apps/maestro/src/core/handoff-label.ts",
+      "start_line": 53,
+      "end_line": 55,
+      "signature": "function hasHandbackCall(transcript: string): boolean",
+      "contentHash": "65114ed6d794c76de608bd73e9607273452778c3a2635f22f0f192dbd2bc6f64",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "04d7761615c1c3c6624910bf901fa83c",
+      "displayKey": "plugin-libs-parity::function::readDisableRules",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "readDisableRules",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 205,
+      "end_line": 208,
+      "signature": "function readDisableRules(projectRoot: string, homeDir: string = os.homedir()): DisableRules",
+      "contentHash": "53d833941e43f6f8152c82b20f040f9aeed96e1b772ab7a178d748f4a4729626",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0e7e31fa975292e0628486b7a4a209e3",
+      "displayKey": "plugin-libs-parity::function::isPlainObject",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "isPlainObject",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 14,
+      "end_line": 16,
+      "signature": "function isPlainObject(v: unknown): boolean",
+      "contentHash": "51042a502f10e171b7676a8b8235b11cc42f3c3f6793d25e88732b0961f4bd4c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0eddf70c4279be5f55b37c9c280857e3",
+      "displayKey": "plugin-libs-parity::function::ids",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "ids",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 23,
+      "end_line": 32,
+      "signature": "function ids(v: unknown): string[]",
+      "contentHash": "87eaaeb6d3c27c9ee11a0f656b191f552bab4cf6020586089c59383a285ff7a8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0fae7574f74c8b814a41998ca22bec11",
+      "displayKey": "plugin-libs-parity::function::validateConfig",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "validateConfig",
+      "filepath": "apps/maestro/src/core/config-validate.ts",
+      "start_line": 64,
+      "end_line": 66,
+      "signature": "function validateConfig(cfg: MaestroConfigV3 | null): ConfigIssue[]",
+      "contentHash": "3a1fd55a54792289bb18dfd5593b5c5e499c54100d2893dd515df20d0a9992e8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "100ab2d995a1fd56afcbcd6d6f2ac0cd",
+      "displayKey": "plugin-libs-parity::function::messageText",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "messageText",
+      "filepath": "apps/maestro/src/core/handoff-label.ts",
+      "start_line": 30,
+      "end_line": 38,
+      "signature": "function messageText(input: unknown): string",
+      "contentHash": "b8c13ebc24af7b82d4d943173bcbc575a51b52d4e2a8d82d5b08f74b05ea781b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "12c1e183be5580b26e8f38a66c4474d5",
+      "displayKey": "plugin-libs-parity::function::isPresent",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "isPresent",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 393,
+      "end_line": 393,
+      "signature": "isPresent(v: unknown): boolean",
+      "contentHash": "fd45fdb5c3b42d604788c496f9d37b6a10e1010cb1ae01479d322d1c232328e1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "19e08475a4db4eb61a450fe88c37bd37",
+      "displayKey": "plugin-libs-parity::function::handoffPairs",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "handoffPairs",
+      "filepath": "apps/maestro/src/core/handoff-routes.ts",
+      "start_line": 117,
+      "end_line": 121,
+      "signature": "function handoffPairs(routes: HandoffRoute[]): string[]",
+      "contentHash": "1cadb40b060a39a69072d5f913f3e618ca82b1233196a87d3f8ea74909387bd7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1f2929cae014b40d350b6ff2ebea750d",
+      "displayKey": "plugin-libs-parity::function::isSideRun",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "isSideRun",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 67,
+      "end_line": 69,
+      "signature": "function isSideRun(entry: Record<string, unknown>): boolean",
+      "contentHash": "8b0048bf3577d434bd6f55e34c6ab0e3bec54974eb39ebaa2853b81d45094622",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1fef63797a06558de9af570726fd0c9b",
+      "displayKey": "plugin-libs-parity::type-def::SeedSkills",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "SeedSkills",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 263,
+      "end_line": 266,
+      "signature": "export interface SeedSkills {",
+      "contentHash": "c09f168f7ff7014505610dcfc77a3eafd4510a765b8c0d8fe640752862452be7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2090fe189f2bd6640063f00e13e20ceb",
+      "displayKey": "plugin-libs-parity::function::cond",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "cond",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 35,
+      "end_line": 42,
+      "signature": "cond(from: string, to: string, label: string, side: \"left\" | \"right\" = \"right\"): MaestroEdgeV3",
+      "contentHash": "52fd551a27df8235079aa700f9edd55c3ea31bf6127481771fc9c5a5b6e0965b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "22fc657583fa0a3d897c061a7c3792eb",
+      "displayKey": "plugin-libs-parity::function::defaultV3Config",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "defaultV3Config",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 308,
+      "end_line": 368,
+      "signature": "function defaultV3Config(implAgents: string[], skillMap: SkillMap = {}, seedSkills: SeedSkills = {}): MaestroConfigV3",
+      "contentHash": "22890acc46354b7a236f08609c0fc18c5b7bee3ea22613c9be6e438ff98c357c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "25d34773fac17adb7a1527ee03f0827c",
+      "displayKey": "plugin-libs-parity::function::handbackHandoff",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "handbackHandoff",
+      "filepath": "apps/maestro/src/core/handoff-label.ts",
+      "start_line": 45,
+      "end_line": 47,
+      "signature": "function handbackHandoff(transcript: string): string | null",
+      "contentHash": "45da1d6698f8e7e5cb370d0d0cda38640f9c2afdc95f04b5cdf6273c91a3e097",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "289cd5ad3512147542be0d62be7034cd",
+      "displayKey": "plugin-libs-parity::function::resolveSkillLists",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "resolveSkillLists",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 42,
+      "end_line": 49,
+      "signature": "function resolveSkillLists(cfg: unknown): ResolvedSkillLists",
+      "contentHash": "c46a79d73b7d879a3e4c9eb1d1af793714a6117ac0cc6a78d68d6c467fde71e7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "29daca6f72378527f19ec0bf39d53a3a",
+      "displayKey": "plugin-libs-parity::function::strings",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "strings",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 285,
+      "end_line": 289,
+      "signature": "function strings(v: unknown): string[]",
+      "contentHash": "25df1f9cf470235c206bc222133912563a1ce2e3637de7ff36794c2594fe3ef5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2a54c08ca9b1ee81ff8b3b596e566342",
+      "displayKey": "plugin-libs-parity::function::hasChanges",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "hasChanges",
+      "filepath": "apps/maestro/src/core/diff.ts",
+      "start_line": 68,
+      "end_line": 70,
+      "signature": "function hasChanges(lines: DiffLine[]): boolean",
+      "contentHash": "b797e2950409fd152fd2d0486cd77e39b93de59afe3f4a8cab6497971f81aec0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2b3facbf831da038308904e6cfc5a485",
+      "displayKey": "plugin-libs-parity::type-def::DisableRules",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "DisableRules",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 43,
+      "end_line": 43,
+      "signature": "export type DisableRules = Pick<SkillSources, \"skillOverrides\" | \"disabledPlugins\">;",
+      "contentHash": "d3ea317bb992b1bbb04828b31d4b47522276654805c39b0de1acddd7a63135e7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2e9b3cbbe3e00eb9b66b0656e27c0dd1",
+      "displayKey": "plugin-libs-parity::function::columnNodes",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "columnNodes",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 82,
+      "end_line": 92,
+      "signature": "function columnNodes(ids: string[], skillCount: SkillCount = () => 0): MaestroNodeV3[]",
+      "contentHash": "2df60c0a5699ab4e74df37910a67f504fa15fb7c0e2ec31ad22f09fda0b5e6fa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "354a1987e664c7a6f1056be578d0c9e1",
+      "displayKey": "plugin-libs-parity::type-def::ConfigRefusalKind",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "ConfigRefusalKind",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 11,
+      "end_line": 11,
+      "signature": "export type ConfigRefusalKind = \"unparseable\" | \"unsupported-version\";",
+      "contentHash": "fbff8ce0113e126710493ce85a164e019fdd77a1bd795259be3b8413f5e90c9f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "377e5e1cb21e3a3d88b8dbb68ab87658",
+      "displayKey": "plugin-libs-parity::function::splitLines",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "splitLines",
+      "filepath": "apps/maestro/src/core/diff.ts",
+      "start_line": 21,
+      "end_line": 26,
+      "signature": "function splitLines(s: string): string[]",
+      "contentHash": "f99dc02edc7f13ddb31903d77982d45c2d1c4b3c6eaddf5e8cfc5bb8ea6f917e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "37b1de21e728fe0e31a57c670a9482ca",
+      "displayKey": "plugin-libs-parity::function::firstAvailableSkill",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "firstAvailableSkill",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 251,
+      "end_line": 253,
+      "signature": "function firstAvailableSkill(sources: SkillSources, candidates: string[]): string | null",
+      "contentHash": "9e85d54a380e9bb9caa4b2bfe32320a2387bcbb94f8f822f172bcd1cdaf14443",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "381160fbcdfa0a34e52204be633814aa",
+      "displayKey": "plugin-libs-parity::function::duplicateAgentTypes",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "duplicateAgentTypes",
+      "filepath": "apps/maestro/src/core/config-validate.ts",
+      "start_line": 28,
+      "end_line": 58,
+      "signature": "function duplicateAgentTypes(cfg: MaestroConfigV3 | null): ConfigIssue[]",
+      "contentHash": "5ac206f14373e63df7a3557dade5a2b7f17a624148282e11d41f0d8080795982",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "38d9198f7224b5f60068b37718b098ce",
+      "displayKey": "plugin-libs-parity::type-def::HandoffRoute",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "HandoffRoute",
+      "filepath": "apps/maestro/src/core/handoff-routes.ts",
+      "start_line": 22,
+      "end_line": 34,
+      "signature": "export interface HandoffRoute {",
+      "contentHash": "ba61df4b39eb338791ee474223a21152f2dd68f304efe01522afde4245a2a5a0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3ba86c797cfa744bd5e923ae2b2ffd4a",
+      "displayKey": "plugin-libs-parity::type-def::SkillSources",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "SkillSources",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 25,
+      "end_line": 40,
+      "signature": "export interface SkillSources {",
+      "contentHash": "8b8266f4cad03c99294c7bcad8899c0f6263eaec68b0240b76cbbc7930e64a24",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3c553ee9fc2db49b23161c8ddd70f321",
+      "displayKey": "plugin-libs-parity::function::defaultSkillLists",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "defaultSkillLists",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 377,
+      "end_line": 383,
+      "signature": "function defaultSkillLists(seedSkills: SeedSkills = {}): MaestroSkillListsSlice",
+      "contentHash": "677c7c0b310c235fabc56d24a10c5f8a278227baeda1428a76c7a10ee20fd3dd",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "43c85beaffd540a451bc4ea18736dc19",
+      "displayKey": "plugin-libs-parity::function::readInstalledPluginSkills",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "readInstalledPluginSkills",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 120,
+      "end_line": 133,
+      "signature": "function readInstalledPluginSkills(homeDir: string): Record<string, string[]>",
+      "contentHash": "f072e92c87af984587c30e514c853d778e923e8d5b75658886c171be7d102910",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "47f61d9cf4114bc5c1d26cd45152c641",
+      "displayKey": "plugin-libs-parity::function::readEnabledPlugins",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "readEnabledPlugins",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 112,
+      "end_line": 114,
+      "signature": "function readEnabledPlugins(projectRoot: string, homeDir: string = os.homedir()): string[]",
+      "contentHash": "efc762e28c6848db306fb7de82700e4f782bab5b60442db4ac878b4dc1213395",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4e3a598c4f5e3231e2aba704a41a8385",
+      "displayKey": "plugin-libs-parity::function::routesFrom",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "routesFrom",
+      "filepath": "apps/maestro/src/core/handoff-routes.ts",
+      "start_line": 107,
+      "end_line": 110,
+      "signature": "function routesFrom(routes: HandoffRoute[], agent: string): HandoffRoute[]",
+      "contentHash": "7b7d1628b42e7257aff382ee2f2ddcb9afe2fb51d452aff83ac0c2eb22ec6ea2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4f1fabcc705df9e4d929c33c238a4f76",
+      "displayKey": "plugin-libs-parity::function::resumeTarget",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "resumeTarget",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 115,
+      "end_line": 134,
+      "signature": "function resumeTarget(lines: unknown[], cfg: MaestroConfigV3 | null, session: MaestroSession, agentType: string): string | null",
+      "contentHash": "c2e3a5c25341623a808c9599a92fae16136110ac38969b720f3b15468fbb7328",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "54bbea79eb5be170267fc62eca71c0f0",
+      "displayKey": "plugin-libs-parity::function::handoffRoutes",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "handoffRoutes",
+      "filepath": "apps/maestro/src/core/handoff-routes.ts",
+      "start_line": 50,
+      "end_line": 104,
+      "signature": "function handoffRoutes(workflows: MaestroWorkflowV3[] | null | undefined, instances: MaestroInstanceV3[] | null | undefined): HandoffRoute[]",
+      "contentHash": "b0a4e321d4dc59550363d6ccee05d55e6318f71f6d440d0c755b254678d2805c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "55c0ac48f563ecb11e68a3e7f88b1449",
+      "displayKey": "plugin-libs-parity::function::diffLines",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "diffLines",
+      "filepath": "apps/maestro/src/core/diff.ts",
+      "start_line": 29,
+      "end_line": 66,
+      "signature": "function diffLines(before: string, after: string): DiffLine[]",
+      "contentHash": "9cd273d90f4785678737bffefff3616d0d30211e8e688a5dc520d01628788b54",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5616b6249ea931326e094c5707faf9c1",
+      "displayKey": "plugin-libs-parity::type-def::AgentRun",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "AgentRun",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 18,
+      "end_line": 23,
+      "signature": "export interface AgentRun {",
+      "contentHash": "f20bb0ebea5b77ae6321373a34acf5b0d39a0ce2a3cc7a2e075954b7fbd7e56b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5a9878676defe7702a428384a3a72787",
+      "displayKey": "plugin-libs-parity::function::awaitHandback",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "awaitHandback",
+      "filepath": "apps/maestro/src/core/handoff-label.ts",
+      "start_line": 96,
+      "end_line": 111,
+      "signature": "function awaitHandback(read: () => string | null, sleep: (ms: number) => Promise<void>, waitMs: number = HANDBACK_WAIT_MS, pollMs: number = HANDBACK_POLL_MS): Promise<string | null>",
+      "contentHash": "3c52df5c8177505b184c4c04318022000e3f3a5d77bc80ae978928da8cb86e92",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5edf00550d26db81af4c67682370bd51",
+      "displayKey": "plugin-libs-parity::function::describeVersion",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "describeVersion",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 29,
+      "end_line": 33,
+      "signature": "function describeVersion(v: unknown): string",
+      "contentHash": "c933de89dd30bc96c84cd2df8432e4fe27552f19691cd09a3df45e9e00ea6595",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "displayKey": "plugin-libs-parity::function::isObject",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "isObject",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 53,
+      "end_line": 55,
+      "signature": "function isObject(v: unknown): boolean",
+      "contentHash": "b41a237c1ef8d7eafd3c15a79a1c2bf4913f652487c4b320e22afb13c78cccc9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6413288fd0e543ee7cc68830f489637b",
+      "displayKey": "plugin-libs-parity::function::isInfraOnlyChain",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "isInfraOnlyChain",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 258,
+      "end_line": 260,
+      "signature": "function isInfraOnlyChain(impl: string[]): boolean",
+      "contentHash": "244b97b516492dd137060f4c3be8864261ccaa86420b08e80cff3cc0d387dad5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "68ccd6dc0cc6135029f3ab9dbf95452d",
+      "displayKey": "plugin-libs-parity::function::readSkillSettings",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "readSkillSettings",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 86,
+      "end_line": 109,
+      "signature": "function readSkillSettings(projectRoot: string, homeDir: string = os.homedir()): SkillSettings",
+      "contentHash": "47043e35f308861df7b076308c63f677283f37993bb287221b37fe01843fea1f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "displayKey": "plugin-libs-parity::function::buildInfraWorkflow",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "buildInfraWorkflow",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 277,
+      "end_line": 295,
+      "signature": "function buildInfraWorkflow(impl: string[], skillCount: SkillCount = () => 0): MaestroWorkflowV3",
+      "contentHash": "b5acbe244997ac5f9486a2e0023ebe3b39750645a19796868d5e64032959bda0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6969cd415548e8aabab79f3756b3a35a",
+      "displayKey": "plugin-libs-parity::function::readSkillSources",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "readSkillSources",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 136,
+      "end_line": 147,
+      "signature": "function readSkillSources(projectRoot: string, homeDir: string = os.homedir()): SkillSources",
+      "contentHash": "72cbd9083b7a92d591853938d13457a17219d98277b195af4b2864807e9c8c6e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6ce33c4d24b869fb17610cdac3d082e1",
+      "displayKey": "plugin-libs-parity::type-def::SkillMap",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "SkillMap",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 249,
+      "end_line": 249,
+      "signature": "export type SkillMap = Record<string, string[]>;",
+      "contentHash": "ef4156fe5c6126dbd6ec9019fd25bf0f39acb1b20fac7f8f00982d31619de56d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6e41be76b83764e6854f356523ec8706",
+      "displayKey": "plugin-libs-parity::function::maestroConfigRefusal",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "maestroConfigRefusal",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 40,
+      "end_line": 65,
+      "signature": "function maestroConfigRefusal(raw: string): ConfigRefusal | null",
+      "contentHash": "b02c82803027393f06438da2e0a7f0d618847def8bab5a0f401625d1d8703098",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "719473e6712cfe0e67e38830c500942f",
+      "displayKey": "plugin-libs-parity::function::pluginSuggestions",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "pluginSuggestions",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 333,
+      "end_line": 352,
+      "signature": "function pluginSuggestions(projectRoot: string, sources: SkillSources): string[]",
+      "contentHash": "52b2ae60f014878ba76ac3857f8d152a510f413fe69a9be3bb71fad4927ef5bf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "72888926b2b59bc9906b9b36886272f5",
+      "displayKey": "plugin-libs-parity::function::checkWorktreeWrite",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "checkWorktreeWrite",
+      "filepath": "apps/maestro/src/core/worktree-write-guard.ts",
+      "start_line": 68,
+      "end_line": 100,
+      "signature": "function checkWorktreeWrite(input: {\n  cwd: string;\n  toolName: string | null | undefined;\n  toolInput: Record<string, unknown> | null | undefined;\n  worktree: { path?: unknown; main_root?: unknown } | null | undefined;\n}): ChannelWriteVerdict",
+      "contentHash": "18c36bf03f9e2057444d8f7bc7856a53d5bab8fa048ca1de2a687ef0f7eea5e9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "76b0e4b00a9902c638af8b34a9e40007",
+      "displayKey": "plugin-libs-parity::function::buildWorkflow",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "buildWorkflow",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 100,
+      "end_line": 173,
+      "signature": "function buildWorkflow(name: string, kind: \"default\" | \"tdd\", impl: string[], skillCount: SkillCount = () => 0): MaestroWorkflowV3",
+      "contentHash": "d542aa706bda2f987a9994f2aa9388118b60ce0a08d1d719ac76af9d5fc59868",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7c957003088f3ec4948ac888ba22ec66",
+      "displayKey": "plugin-libs-parity::type-def::ResolvedSkillLists",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "ResolvedSkillLists",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 8,
+      "end_line": 12,
+      "signature": "export interface ResolvedSkillLists {",
+      "contentHash": "03f803d68ac990f52832fba1775df35cd01ccf74a2fb9dd5491cdc3c84d203ae",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7ce91a5b2ed8edf3efb4cf6d798be701",
+      "displayKey": "plugin-libs-parity::function::skillDirIds",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "skillDirIds",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 62,
+      "end_line": 71,
+      "signature": "function skillDirIds(skillsDir: string): string[]",
+      "contentHash": "31eb15b43957aacedd71990b24301a8e9027d4b1672e4fbc2534efb4183f2dab",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "849c9260fa85b9c6d5cfe28066402cc4",
+      "displayKey": "plugin-libs-parity::type-def::SkillListsSeeded",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "SkillListsSeeded",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 386,
+      "end_line": 391,
+      "signature": "export interface SkillListsSeeded {",
+      "contentHash": "cca13a9b658169d18179e115728a40d09cf7508cb847e73a11eecf3ec1de73bc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "84f372ce52fc631454e09252567acb29",
+      "displayKey": "plugin-libs-parity::function::skillDisabledReason",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "skillDisabledReason",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 191,
+      "end_line": 197,
+      "signature": "function skillDisabledReason(sources: DisableRules, name: string, plugin?: string): UnavailableReason | null",
+      "contentHash": "5cbe90c31896aef2625472a3f6b3c7b82c8e7b86fb121244dc621898ae9df52d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8744af58600d8520844bd71e388089f2",
+      "displayKey": "plugin-libs-parity::function::agentRunsFromLog",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "agentRunsFromLog",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 33,
+      "end_line": 64,
+      "signature": "function agentRunsFromLog(lines: unknown[]): AgentRun[]",
+      "contentHash": "25cf75fa911fb9ced3ddd085f294b91a44b26f33e4ef882a43377c2839e29906",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8755bb1fdfd734a8bf0599663ecdc3ad",
+      "displayKey": "plugin-libs-parity::type-def::ConfigRefusal",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "ConfigRefusal",
+      "filepath": "apps/maestro/src/core/config-usable.ts",
+      "start_line": 14,
+      "end_line": 22,
+      "signature": "export interface ConfigRefusal {",
+      "contentHash": "cd1b624e59465f70a99368aa8e1ed1509fabedaec1aef0d98fd08c00271e341f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "88d4569ba7b122142b9edb2dd910fd9a",
+      "displayKey": "plugin-libs-parity::function::within",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "within",
+      "filepath": "apps/maestro/src/core/worktree-write-guard.ts",
+      "start_line": 60,
+      "end_line": 60,
+      "signature": "within(target: string, root: string): boolean",
+      "contentHash": "b89e961a27ac0e6832f3e5421db47cd2fff04c6be359d239ab1d27d1d16c22f3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8c509a12f8edf61f36b1a3e3c5db69f5",
+      "displayKey": "plugin-libs-parity::function::whyUnavailable",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "whyUnavailable",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 222,
+      "end_line": 248,
+      "signature": "function whyUnavailable(sources: SkillSources, id: string): UnavailableReason | null",
+      "contentHash": "21b75a4a3b7cce24687c9350927358952ab1295dc81e455ba128d3a4dbb3a53e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8d1bc2898af46543618f08d32547dff6",
+      "displayKey": "plugin-libs-parity::function::unifiedDiffText",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "unifiedDiffText",
+      "filepath": "apps/maestro/src/core/diff.ts",
+      "start_line": 77,
+      "end_line": 100,
+      "signature": "function unifiedDiffText(lines: DiffLine[], context = 3): string",
+      "contentHash": "8f5f1884247459a988cdd8a7e0455b0163d861a4fafe653c218f5f34614a7d00",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8dec0390a3b2ba9582fb127289cd7f1e",
+      "displayKey": "plugin-libs-parity::function::collectSkillRefs",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "collectSkillRefs",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 292,
+      "end_line": 325,
+      "signature": "function collectSkillRefs(cfg: unknown): Map<string, string[]>",
+      "contentHash": "0ac86ef53d3a37613dd74e01744c72c8111d8f58bfa27457c2e6aaeb3437df9d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9dc1dc9912ba659049d2b5e406a12a73",
+      "displayKey": "plugin-libs-parity::function::sideTracker",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "sideTracker",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 56,
+      "end_line": 68,
+      "signature": "function sideTracker(nodes: MaestroNodeV3[]): (from: string, to: string) => \"left\" | \"right\"",
+      "contentHash": "6a8aa37c5230836ebeb1d0a76e0766b9cb5c1af5da1564c4e3ac20848aa4431f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9dc87e232419ca2dd72b6cfe1f946693",
+      "displayKey": "plugin-libs-parity::function::buildTestsWorkflow",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "buildTestsWorkflow",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 207,
+      "end_line": 244,
+      "signature": "function buildTestsWorkflow(name: string, impl: string[], skillCount: SkillCount = () => 0): MaestroWorkflowV3",
+      "contentHash": "476cc92bc29d246341da79ce0b3a86bba1f8d2014fc8c8664affbcc14630bdbc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9fbfd2bb4d7d1402cf5a0b2d8928ef11",
+      "displayKey": "plugin-libs-parity::type-def::StaleRefsReport",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "StaleRefsReport",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 283,
+      "end_line": 283,
+      "signature": "export type StaleRefsReport = SkillRefReport;",
+      "contentHash": "843c69924bd9ddad1cb352ac66d09437cc828172ead806d65083fcf106cb064b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a0ffedb087403921369b0cabd064b5dd",
+      "displayKey": "plugin-libs-parity::function::seedSkillsFor",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "seedSkillsFor",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 272,
+      "end_line": 276,
+      "signature": "function seedSkillsFor(projectRoot: string, homeDir?: string): SeedSkills",
+      "contentHash": "927dfb7249ed763cf78c6174cf0c51ea1b944fcab4622677186857c8698266be",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a50c9fa3bc5478d6e4221c420008da9e",
+      "displayKey": "plugin-libs-parity::function::succ",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "succ",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 27,
+      "end_line": 33,
+      "signature": "succ(from: string, to: string): MaestroEdgeV3",
+      "contentHash": "3e8865b0c91c5db59f6c3e5b66d7342bb94433374907809587a7c3eaec29d766",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bbbf256834b192acce958b16e78ed27e",
+      "displayKey": "plugin-libs-parity::function::isSkillListed",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "isSkillListed",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 200,
+      "end_line": 202,
+      "signature": "function isSkillListed(sources: DisableRules, name: string, plugin?: string): boolean",
+      "contentHash": "7a9b5a8b1e23c70187ea56464a9c80a239c4602ebd8e40e372e49e03ff638ce1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c316b76251a4dfa73535f711b0fb48c6",
+      "displayKey": "plugin-libs-parity::function::namesWhere",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "namesWhere",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 116,
+      "end_line": 118,
+      "signature": "function namesWhere(plugins: Map<string, boolean>, on: boolean): string[]",
+      "contentHash": "ebdf89d3e062bb02d49b4b19304f3df5763d3007654ea055bd1caa4990125d31",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c445a280b4c4080b6d7915f0ffd5f485",
+      "displayKey": "plugin-libs-parity::function::seedMissingSkillLists",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "seedMissingSkillLists",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 402,
+      "end_line": 425,
+      "signature": "function seedMissingSkillLists(cfg: MaestroConfigV3, seedSkills: SeedSkills = {}): { config: MaestroConfigV3; seeded: SkillListsSeeded; changed: boolean; }",
+      "contentHash": "40f6c31d3ffdd5a138fb591da6c315b917028d4c4ca7e220b3aff05cfe09add7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c9bfaf4f4520aba4b0ad9cf680eccc65",
+      "displayKey": "plugin-libs-parity::function::hasCompletedRun",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "hasCompletedRun",
+      "filepath": "apps/maestro/src/core/agent-runs.ts",
+      "start_line": 87,
+      "end_line": 96,
+      "signature": "function hasCompletedRun(lines: unknown[], agentId: string): boolean",
+      "contentHash": "ff7c2e1ba2fb9f4abb48ff5f67f9d95e2b1c7493188b9831b87115d7ee675160",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d779cf2e17161a362b528473ae9ee228",
+      "displayKey": "plugin-libs-parity::type-def::SkillSettings",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "SkillSettings",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 74,
+      "end_line": 79,
+      "signature": "export interface SkillSettings {",
+      "contentHash": "1965d5576d2db39663f54e21d5c75252a1d460ba0cd52fbacdf01fcad3e125eb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "dc42a24576a8ee631312720d83abbb9c",
+      "displayKey": "plugin-libs-parity::function::linearWorkflow",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "linearWorkflow",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 178,
+      "end_line": 200,
+      "signature": "function linearWorkflow(name: string, steps: string[], skillCount: SkillCount = () => 0): MaestroWorkflowV3",
+      "contentHash": "8c55439295b660c5498bc89b78b941e32ee82d0bb1460836fd69db7a7f430085",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "de95a0cbb17442bd745111ab13a67cb6",
+      "displayKey": "plugin-libs-parity::function::findStaleSkillRefs",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "findStaleSkillRefs",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 373,
+      "end_line": 401,
+      "signature": "function findStaleSkillRefs(projectRoot: string, cfg: unknown, homeDir?: string): SkillRefReport",
+      "contentHash": "98d56d9ab0077d049c40cb930ecaa42a21c529e60726f50a36666cdee991c1ad",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e2cc4d6e516ff1bab7d795384e0d530b",
+      "displayKey": "plugin-libs-parity::type-def::SkillCount",
+      "concept": "plugin-libs-parity",
+      "type": "type-def",
+      "name": "SkillCount",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 77,
+      "end_line": 77,
+      "signature": "type SkillCount = (instanceName: string) => number;",
+      "contentHash": "ff52b23d78aea21b9fb53103f608d6bebf260c9e8f7fa29393c893d14e3755b8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e40495a205b64a6ab5442973869876fa",
+      "displayKey": "plugin-libs-parity::function::seededAgentNames",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "seededAgentNames",
+      "filepath": "apps/maestro/src/core/seed.ts",
+      "start_line": 267,
+      "end_line": 271,
+      "signature": "function seededAgentNames(implAgents: string[]): string[]",
+      "contentHash": "7d55d221c3ba4c43eaa4b9210487ca988c0d6a5b5c8547881e5717faaa11a22c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e66ff03726157440fa1b8a7b9627fdff",
+      "displayKey": "plugin-libs-parity::function::missingListsSuggestions",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "missingListsSuggestions",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 359,
+      "end_line": 366,
+      "signature": "function missingListsSuggestions(cfg: unknown): string[]",
+      "contentHash": "a71d38ee09d6eb836c1b4a112ce917b6dc5388cb2dd28eef62378f4304a7fb4b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "eb13199d6d91056c34b402dac9fa2ef3",
+      "displayKey": "plugin-libs-parity::function::scanHandbacks",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "scanHandbacks",
+      "filepath": "apps/maestro/src/core/handoff-label.ts",
+      "start_line": 57,
+      "end_line": 80,
+      "signature": "function scanHandbacks(transcript: string): { text: string | null; sawCall: boolean; }",
+      "contentHash": "2bc51ce0b81e8bd3ff00a75adb35d8a3529ed148f079dce9796bbb832e8ab77a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ebaccec57076902b65e5bc77004d7a84",
+      "displayKey": "plugin-libs-parity::function::lastHandoffLabel",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "lastHandoffLabel",
+      "filepath": "apps/maestro/src/core/handoff-label.ts",
+      "start_line": 23,
+      "end_line": 28,
+      "signature": "function lastHandoffLabel(msg: unknown): string | null",
+      "contentHash": "6251d048c62b6c1c82d43118992e67148081a0123a73e9d0bc611c8224258cfa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ef3091072989aa9875bc374c82a42575",
+      "displayKey": "plugin-libs-parity::function::pluginName",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "pluginName",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 57,
+      "end_line": 60,
+      "signature": "function pluginName(key: string): string",
+      "contentHash": "b0681bd8ecbaca80889a311ccd78481b484650f7319da327df8eb6c335b784ad",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f55458c415009f24e520e73d2ba04c33",
+      "displayKey": "plugin-libs-parity::function::readJson",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "readJson",
+      "filepath": "apps/maestro/src/core/skill-availability.ts",
+      "start_line": 45,
+      "end_line": 51,
+      "signature": "function readJson(file: string): unknown",
+      "contentHash": "eed1d31a8361670ab880b268f2382c9e302dfce573c60e0799e4da3cb022c348",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fa09e199005b1e76223eff431a12cdd6",
+      "displayKey": "plugin-libs-parity::function::realResolve",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "realResolve",
+      "filepath": "apps/maestro/src/core/worktree-write-guard.ts",
+      "start_line": 36,
+      "end_line": 58,
+      "signature": "function realResolve(p: string): string | null",
+      "contentHash": "2a123c4c38dd5c5206ccef7a6ce737f8d6b1e095cd873a9c9bfe92914b7453c8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "020978fabbed714a35d0fb151acc1c0b",
+      "_from": "vertices/0fae7574f74c8b814a41998ca22bec11",
+      "_to": "vertices/381160fbcdfa0a34e52204be633814aa",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "023a65b827ef62683189ecaaf114189b",
+      "_from": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "_to": "vertices/a50c9fa3bc5478d6e4221c420008da9e",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 198,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "05a031eb221b97d1862e65180bf85724",
+      "_from": "vertices/54bbea79eb5be170267fc62eca71c0f0",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "070d0192e05f073cc9c559a7ec03db60",
+      "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
+      "_to": "vertices/88d4569ba7b122142b9edb2dd910fd9a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 88,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "084ef40e2a6c19361d7727356ad40c0b",
+      "_from": "vertices/6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "_to": "vertices/9dc1dc9912ba659049d2b5e406a12a73",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 286,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "08edb065be11785fd84d1399ed0804b4",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 101,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0aec6e16ae87150551ab2bd7c9592f87",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/f55458c415009f24e520e73d2ba04c33",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 94,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0bc31ad2e29502641047ef195b24c9c8",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 295,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0de1261c044cf95662387a90affba7dd",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 343,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0eebdc5966154cb4b4d21f5c3fd6a099",
+      "_from": "vertices/04d7761615c1c3c6624910bf901fa83c",
+      "_to": "vertices/c316b76251a4dfa73535f711b0fb48c6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 207,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1052678e91aa7f956cdbddda666910bb",
+      "_from": "vertices/a0ffedb087403921369b0cabd064b5dd",
+      "_to": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 274,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1194883abf950366b3ab3b50bee70ed8",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 303,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "11ada93d6a3676be2ceb204963dd88fa",
+      "_from": "vertices/de95a0cbb17442bd745111ab13a67cb6",
+      "_to": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 377,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1833844093551269d27f562e33515f47",
+      "_from": "vertices/04d7761615c1c3c6624910bf901fa83c",
+      "_to": "vertices/2b3facbf831da038308904e6cfc5a485",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 205,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "19c8e0fa337e32f2919606c8102f5f63",
+      "_from": "vertices/e66ff03726157440fa1b8a7b9627fdff",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 360,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1aaf334cbc66faf38135edc3afb6b6c3",
+      "_from": "vertices/719473e6712cfe0e67e38830c500942f",
+      "_to": "vertices/3ba86c797cfa744bd5e923ae2b2ffd4a",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 333,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e7e1702d5c10cf581ec0265989e76d6",
+      "_from": "vertices/55c0ac48f563ecb11e68a3e7f88b1449",
+      "_to": "vertices/377e5e1cb21e3a3d88b8dbb68ab87658",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 30,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2081464548a22fc091d286431ddd2b0e",
+      "_from": "vertices/719473e6712cfe0e67e38830c500942f",
+      "_to": "vertices/f55458c415009f24e520e73d2ba04c33",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 345,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "24e1940fc8524712eecc048244cdee4a",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 302,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "28f08ee487087cdfbaaf3b18ef78aaa5",
+      "_from": "vertices/de95a0cbb17442bd745111ab13a67cb6",
+      "_to": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 376,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "29b907a18835b963d0cd9f0baa68236c",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/1fef63797a06558de9af570726fd0c9b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 311,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2aa4a295a5153dd759a5e29e84c4bb7d",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/e40495a205b64a6ab5442973869876fa",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 325,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2d1d61cbc01c30f2c7200b3d86ce0208",
+      "_from": "vertices/6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "_to": "vertices/2e9b3cbbe3e00eb9b66b0656e27c0dd1",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 280,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "322bae0c1b35959991aa285d2a34c383",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/6ce33c4d24b869fb17610cdac3d082e1",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 310,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3622143267ce4eb1c2a0eb71ae5734f1",
+      "_from": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "_to": "vertices/12c1e183be5580b26e8f38a66c4474d5",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 409,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "36c0248b1348f776d9a35023a1c60715",
+      "_from": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "_to": "vertices/9dc1dc9912ba659049d2b5e406a12a73",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 122,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "37b2b25537f3901a19f1a2dbed117521",
+      "_from": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
+      "_to": "vertices/9dc1dc9912ba659049d2b5e406a12a73",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 227,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b5792621808b835d6472893c6fb2e2a",
+      "_from": "vertices/a0ffedb087403921369b0cabd064b5dd",
+      "_to": "vertices/37b1de21e728fe0e31a57c670a9482ca",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 274,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3d3986333970fd19e8d8df59b5a18f7f",
+      "_from": "vertices/19e08475a4db4eb61a450fe88c37bd37",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 117,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "40c95c41a90de55519b2f6952b748b0b",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/85c0de8fe75bf641c36997a33e7985ba",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 139,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41f722a054f5041bcdc1e04baddb2777",
+      "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
+      "_to": "vertices/88d4569ba7b122142b9edb2dd910fd9a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "435938243d3b26a320ad95e556fd7534",
+      "_from": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "_to": "vertices/3ba86c797cfa744bd5e923ae2b2ffd4a",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 222,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4408f694666fede5abfa8847f2a90da6",
+      "_from": "vertices/100ab2d995a1fd56afcbcd6d6f2ac0cd",
+      "_to": "vertices/ebaccec57076902b65e5bc77004d7a84",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 35,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "45c8c3ea7e7514a736e34eb01e6a6a0d",
+      "_from": "vertices/289cd5ad3512147542be0d62be7034cd",
+      "_to": "vertices/0e7e31fa975292e0628486b7a4a209e3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 47,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "473123a148b124fd4bf7c2caf89044dc",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 357,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4a14008b175e9170a661db72bedd9a64",
+      "_from": "vertices/4f1fabcc705df9e4d929c33c238a4f76",
+      "_to": "vertices/5d48574614173fca559dc213ad018bde",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4a356edd1fa9bd5b8fefc0b9b69d7eb4",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/ef3091072989aa9875bc374c82a42575",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 98,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b52c8e50dfca33abee47e4ba3416eab",
+      "_from": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "_to": "vertices/84f372ce52fc631454e09252567acb29",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 241,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b7818cab0f50cba6c0678e7ee913c9e",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 310,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4bd961135fc74a3dd81cda1bf4f94c01",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/6413288fd0e543ee7cc68830f489637b",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 314,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4d068e0e95a3cd2e7c9287b12706daab",
+      "_from": "vertices/4f1fabcc705df9e4d929c33c238a4f76",
+      "_to": "vertices/8744af58600d8520844bd71e388089f2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5100f062a398d73b50080336152ddc96",
+      "_from": "vertices/4e3a598c4f5e3231e2aba704a41a8385",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "54e94a63d8868c1dda42d91f85e0956a",
+      "_from": "vertices/719473e6712cfe0e67e38830c500942f",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 345,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "56fbd92d6c6a648f5b21ea77bd82fcab",
+      "_from": "vertices/43c85beaffd540a451bc4ea18736dc19",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 123,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "58dd933511dd1215a843114016439eea",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 311,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "59f4f0c17d35def5f787f3306de0c9b7",
+      "_from": "vertices/55c0ac48f563ecb11e68a3e7f88b1449",
+      "_to": "vertices/377e5e1cb21e3a3d88b8dbb68ab87658",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5b9f7f56ea843a28009d40f3573a64e3",
+      "_from": "vertices/4f1fabcc705df9e4d929c33c238a4f76",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 130,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6126b0206ab8a251bd255108a967aded",
+      "_from": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "_to": "vertices/84f372ce52fc631454e09252567acb29",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 237,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "619e8f4c8fa60de0ab96c5cb1df51af7",
+      "_from": "vertices/43c85beaffd540a451bc4ea18736dc19",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "65cff2bfbb66b76ecc81c969bbcfb348",
+      "_from": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "_to": "vertices/849c9260fa85b9c6d5cfe28066402cc4",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 405,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "65d4494606ced7d83c99f86644b30355",
+      "_from": "vertices/43c85beaffd540a451bc4ea18736dc19",
+      "_to": "vertices/ef3091072989aa9875bc374c82a42575",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 126,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "677df4fdefb28dbb26fb7220c4b67e04",
+      "_from": "vertices/de95a0cbb17442bd745111ab13a67cb6",
+      "_to": "vertices/719473e6712cfe0e67e38830c500942f",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 399,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a2dbcffd365948a3b919c464ac02253",
+      "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
+      "_to": "vertices/fa09e199005b1e76223eff431a12cdd6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 84,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a826999620eeb9a3a15894ded770a85",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 349,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6aa21bdcfc10ea984a653669a897aa9c",
+      "_from": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "_to": "vertices/84f372ce52fc631454e09252567acb29",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 245,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6baa90a6f3092d746d1686292638c4e7",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 297,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6e5df21ffac3b97824cbe9416795bd00",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 350,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6fa1c859a8c30411dda73b89420ae107",
+      "_from": "vertices/bbbf256834b192acce958b16e78ed27e",
+      "_to": "vertices/2b3facbf831da038308904e6cfc5a485",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 200,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "71fb7f5cde0cc478905e0e2821a1018b",
+      "_from": "vertices/84f372ce52fc631454e09252567acb29",
+      "_to": "vertices/2b3facbf831da038308904e6cfc5a485",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 191,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "73b0949d1187a0fd03815e269c4aeb6d",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/3c553ee9fc2db49b23161c8ddd70f321",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 366,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7537f11e953d88275fe9d8e5aa700051",
+      "_from": "vertices/54bbea79eb5be170267fc62eca71c0f0",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 89,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "760df1f2e56fbf99268c05fa6c348532",
+      "_from": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "_to": "vertices/a50c9fa3bc5478d6e4221c420008da9e",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "78cfe683cb3892f53313f9beb0b25439",
+      "_from": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "_to": "vertices/849c9260fa85b9c6d5cfe28066402cc4",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 407,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "796bf7013c7b2ce18413996a1f64e0f4",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/c316b76251a4dfa73535f711b0fb48c6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 143,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79a801a1f675fb59d52a4efb4da19ea2",
+      "_from": "vertices/37b1de21e728fe0e31a57c670a9482ca",
+      "_to": "vertices/3ba86c797cfa744bd5e923ae2b2ffd4a",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 251,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7bcdcc863d056e38f38e94670a6a25ae",
+      "_from": "vertices/e40495a205b64a6ab5442973869876fa",
+      "_to": "vertices/6413288fd0e543ee7cc68830f489637b",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 269,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7cbdaddc84d65af6ef7883084dd8bff3",
+      "_from": "vertices/4e3a598c4f5e3231e2aba704a41a8385",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7d8ff408cc715a555f0df5d62bb058de",
+      "_from": "vertices/2e9b3cbbe3e00eb9b66b0656e27c0dd1",
+      "_to": "vertices/e2cc4d6e516ff1bab7d795384e0d530b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "809f4420edaa4a9524fdc63fe562db63",
+      "_from": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "_to": "vertices/e2cc4d6e516ff1bab7d795384e0d530b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 178,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "851eefd74103a6411acc911ffaf5d728",
+      "_from": "vertices/47f61d9cf4114bc5c1d26cd45152c641",
+      "_to": "vertices/c316b76251a4dfa73535f711b0fb48c6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 113,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8586544f1ad51d3278a865544a69aa6a",
+      "_from": "vertices/289cd5ad3512147542be0d62be7034cd",
+      "_to": "vertices/0e7e31fa975292e0628486b7a4a209e3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8a983cb03a5044a4b64ceed96e043903",
+      "_from": "vertices/8744af58600d8520844bd71e388089f2",
+      "_to": "vertices/1f2929cae014b40d350b6ff2ebea750d",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8b5d1cb5d94d3189575f0dbe2d0682e5",
+      "_from": "vertices/de95a0cbb17442bd745111ab13a67cb6",
+      "_to": "vertices/9fbfd2bb4d7d1402cf5a0b2d8928ef11",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 373,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8ee3915d6de87d9c325309ae3ad32eb2",
+      "_from": "vertices/bbbf256834b192acce958b16e78ed27e",
+      "_to": "vertices/84f372ce52fc631454e09252567acb29",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 201,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8fab663f37ba64a57f061b38f06366c4",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/43c85beaffd540a451bc4ea18736dc19",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 142,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "90055486c2c7ac1c00d6e70224c83c07",
+      "_from": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "_to": "vertices/e2cc4d6e516ff1bab7d795384e0d530b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 104,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "910041a68950b918f93d10c0758d18a4",
+      "_from": "vertices/6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "_to": "vertices/a50c9fa3bc5478d6e4221c420008da9e",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 284,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "91bcaf3fa05457571945ee38c1c243be",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 318,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "91ee0fc7edcace3c4107481ab908f1de",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 306,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "92bbd935661363176d5b229068216961",
+      "_from": "vertices/54bbea79eb5be170267fc62eca71c0f0",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 53,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "92ddcf60c563bdf6630a0972ce57f7f8",
+      "_from": "vertices/011c9d9511983b68497d579a2a7abcf1",
+      "_to": "vertices/eb13199d6d91056c34b402dac9fa2ef3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 54,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "95aac00634af40eb5c8c36d805c2d4c6",
+      "_from": "vertices/289cd5ad3512147542be0d62be7034cd",
+      "_to": "vertices/0eddf70c4279be5f55b37c9c280857e3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 48,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "96018d7a38dbd07353c7c9214e1a1ea6",
+      "_from": "vertices/289cd5ad3512147542be0d62be7034cd",
+      "_to": "vertices/7c957003088f3ec4948ac888ba22ec66",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 42,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9a56f7841c9cb8069a84077e8ba471de",
+      "_from": "vertices/5a9878676defe7702a428384a3a72787",
+      "_to": "vertices/eb13199d6d91056c34b402dac9fa2ef3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9d0803cc6233835f1dc858298f99a8b8",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 348,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e2fe3e02f183e89de040a22c3ab499b",
+      "_from": "vertices/8744af58600d8520844bd71e388089f2",
+      "_to": "vertices/5616b6249ea931326e094c5707faf9c1",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e32383b51b8eca28d782ae65689a8b8",
+      "_from": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
+      "_to": "vertices/2e9b3cbbe3e00eb9b66b0656e27c0dd1",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 209,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9f57751c51fd563f3d22e8eb2c8084c1",
+      "_from": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
+      "_to": "vertices/2090fe189f2bd6640063f00e13e20ceb",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 228,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a0a6f044f225438174f47e8c4c0d0f7a",
+      "_from": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "_to": "vertices/3c553ee9fc2db49b23161c8ddd70f321",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 406,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a1beb2f8ae6c6d5d2157560d8ef30c21",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 355,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a32011f4a353f3f42be6a37cc1e8bf3c",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 344,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a387b0e6d55ce76a9e880818d52d498a",
+      "_from": "vertices/4f1fabcc705df9e4d929c33c238a4f76",
+      "_to": "vertices/5616b6249ea931326e094c5707faf9c1",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a407c2d204c3d2b7e313c8cf91f35110",
+      "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
+      "_to": "vertices/fa09e199005b1e76223eff431a12cdd6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a72461d28bdade82edae584487bc7455",
+      "_from": "vertices/43c85beaffd540a451bc4ea18736dc19",
+      "_to": "vertices/7ce91a5b2ed8edf3efb4cf6d798be701",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a85e2fa6c8cbfccc924d84e273f7df26",
+      "_from": "vertices/25d34773fac17adb7a1527ee03f0827c",
+      "_to": "vertices/eb13199d6d91056c34b402dac9fa2ef3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aa3e914e33a252c795c4eba55d7a2df7",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/e2cc4d6e516ff1bab7d795384e0d530b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 340,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aa3efa60b98337efe82bb40122543d5b",
+      "_from": "vertices/8744af58600d8520844bd71e388089f2",
+      "_to": "vertices/5616b6249ea931326e094c5707faf9c1",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 33,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aaebf2baa78a5b3b416159a6b1476e78",
+      "_from": "vertices/719473e6712cfe0e67e38830c500942f",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 339,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ab335a145b073dc06551dbcb43cc873b",
+      "_from": "vertices/719473e6712cfe0e67e38830c500942f",
+      "_to": "vertices/f55458c415009f24e520e73d2ba04c33",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 339,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ae627bf6ae0f2ada29ed8be25ab4ce24",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ae70ae16cbdb59309c145c6c2730d00d",
+      "_from": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "_to": "vertices/2e9b3cbbe3e00eb9b66b0656e27c0dd1",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b248bccefbcefc8d34000bc7cc748f2c",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/c316b76251a4dfa73535f711b0fb48c6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 141,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b277ed6479f35fa7099d0c332421548b",
+      "_from": "vertices/54bbea79eb5be170267fc62eca71c0f0",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b42373e6bab2a8a168cd9442b9cbf1eb",
+      "_from": "vertices/76b0e4b00a9902c638af8b34a9e40007",
+      "_to": "vertices/2090fe189f2bd6640063f00e13e20ceb",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 123,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b8b6b0c73231df0bb7967d175e596c6c",
+      "_from": "vertices/6e41be76b83764e6854f356523ec8706",
+      "_to": "vertices/8755bb1fdfd734a8bf0599663ecdc3ad",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bc0895489e6a15c645c9eb5a3f52e8eb",
+      "_from": "vertices/43c85beaffd540a451bc4ea18736dc19",
+      "_to": "vertices/f55458c415009f24e520e73d2ba04c33",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 122,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bcefae3b3ddc3d76dd934df76842aa6e",
+      "_from": "vertices/de95a0cbb17442bd745111ab13a67cb6",
+      "_to": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 374,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bdd4ccf298c602f9df2d6bebc66138b1",
+      "_from": "vertices/47f61d9cf4114bc5c1d26cd45152c641",
+      "_to": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 113,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bdec42319a45e0a239837a7cd2fc0efc",
+      "_from": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
+      "_to": "vertices/a50c9fa3bc5478d6e4221c420008da9e",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 225,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "be8667c702087a8390808eaf6b9dbb9a",
+      "_from": "vertices/381160fbcdfa0a34e52204be633814aa",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "beb03257ac575a738717adc8133df220",
+      "_from": "vertices/e66ff03726157440fa1b8a7b9627fdff",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 361,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bfea43cde49c73bd57c4c1c387f994eb",
+      "_from": "vertices/289cd5ad3512147542be0d62be7034cd",
+      "_to": "vertices/0eddf70c4279be5f55b37c9c280857e3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c1bec833b1195dab3bbc55d205b86568",
+      "_from": "vertices/6e41be76b83764e6854f356523ec8706",
+      "_to": "vertices/5edf00550d26db81af4c67682370bd51",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c1da7570981c8969c5971450250e79c7",
+      "_from": "vertices/8744af58600d8520844bd71e388089f2",
+      "_to": "vertices/1f2929cae014b40d350b6ff2ebea750d",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c1e74bc28bc2f97a3fac150b3e6a07a9",
+      "_from": "vertices/4f1fabcc705df9e4d929c33c238a4f76",
+      "_to": "vertices/54c8adae47cf50a1d3aac72cf374024c",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c265dc37ccfe090f0324c3f830564586",
+      "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
+      "_to": "vertices/88d4569ba7b122142b9edb2dd910fd9a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 89,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cb75f7c6b9b35f847a5949062735dba3",
+      "_from": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "_to": "vertices/12c1e183be5580b26e8f38a66c4474d5",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 408,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cbad9a83c735cf465652127ea7cdd976",
+      "_from": "vertices/289cd5ad3512147542be0d62be7034cd",
+      "_to": "vertices/0e7e31fa975292e0628486b7a4a209e3",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ccd8764278a86ba600b6de11028489f2",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 137,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ceb4265b01a153f293c7da5c70c5873a",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 96,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cfb64a7db06997ca1ceb11d0f56b1d95",
+      "_from": "vertices/a0ffedb087403921369b0cabd064b5dd",
+      "_to": "vertices/1fef63797a06558de9af570726fd0c9b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 272,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d2c308690ae5545416bd0713e7456db0",
+      "_from": "vertices/04d7761615c1c3c6624910bf901fa83c",
+      "_to": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 206,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d7eed8eceb84b7f64a2b210fe8cd4b2c",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/d779cf2e17161a362b528473ae9ee228",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 86,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "de28bc880352395251b7efb89b4ea600",
+      "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
+      "_to": "vertices/fa09e199005b1e76223eff431a12cdd6",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 83,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "df24a01a3ce8f536ea3c83e3060e80a2",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/3ba86c797cfa744bd5e923ae2b2ffd4a",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e22336f7341e738498e6029b51169395",
+      "_from": "vertices/6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "_to": "vertices/e2cc4d6e516ff1bab7d795384e0d530b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 277,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e536489ea914f5a99b22824a9d90354b",
+      "_from": "vertices/de95a0cbb17442bd745111ab13a67cb6",
+      "_to": "vertices/e66ff03726157440fa1b8a7b9627fdff",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 399,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e5cd0ac1e530704cbc4aa6526b2685dd",
+      "_from": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "_to": "vertices/84f372ce52fc631454e09252567acb29",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 227,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e6206af81d8e253e79222ea137e44a76",
+      "_from": "vertices/68ccd6dc0cc6135029f3ab9dbf95452d",
+      "_to": "vertices/d779cf2e17161a362b528473ae9ee228",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ec5855565f2da581c6f7a7c3a3036fcf",
+      "_from": "vertices/eb13199d6d91056c34b402dac9fa2ef3",
+      "_to": "vertices/100ab2d995a1fd56afcbcd6d6f2ac0cd",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ecd4b6353185f58d1093573ec83e3f97",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 345,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed5dce394759681550f7ad7415897d42",
+      "_from": "vertices/c445a280b4c4080b6d7915f0ffd5f485",
+      "_to": "vertices/1fef63797a06558de9af570726fd0c9b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 404,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ee30fce84e3522b3fb1f0b16c03d45e1",
+      "_from": "vertices/6969cd415548e8aabab79f3756b3a35a",
+      "_to": "vertices/7ce91a5b2ed8edf3efb4cf6d798be701",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eea356b5e53dde2addb6079da6e42430",
+      "_from": "vertices/6934f1a0f79be4dd3be65d3a8e4c3acc",
+      "_to": "vertices/2090fe189f2bd6640063f00e13e20ceb",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 287,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f38a41ef4888ddcbe923cc861dd9f92a",
+      "_from": "vertices/4f1fabcc705df9e4d929c33c238a4f76",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f45c0ba8cf2d06a19b84a4e069d070a2",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 307,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f5c07b72113636e1a19463d76d5475e6",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 315,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f7eb172568195a48239c1733c9a3a977",
+      "_from": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
+      "_to": "vertices/e2cc4d6e516ff1bab7d795384e0d530b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 207,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f83c271e13614e22a3518ce106a5a957",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 308,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f8529bb14c58caaecf01ea25399846ed",
+      "_from": "vertices/37b1de21e728fe0e31a57c670a9482ca",
+      "_to": "vertices/8c509a12f8edf61f36b1a3e3c5db69f5",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 252,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fb38053356e5cd65b5783fa4c0dd48da",
+      "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
+      "_to": "vertices/5f7f5f0aef9fdbec9eeb8877cc13b3e2",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 300,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fb9ced089e8f5d7b26a9e5a29317943a",
+      "_from": "vertices/22fc657583fa0a3d897c061a7c3792eb",
+      "_to": "vertices/dc42a24576a8ee631312720d83abbb9c",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 356,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ffdd03dab651c8d15f9a97ff6780afef",
+      "_from": "vertices/3c553ee9fc2db49b23161c8ddd70f321",
+      "_to": "vertices/1fef63797a06558de9af570726fd0c9b",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 377,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/plugin-libs-parity/SKILL.md",
+    "body": "---\nname: plugin-libs-parity\ndescription: \"Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict.\"\nmetadata:\n  type: concept-skill\n  version: \"2.4\"\n  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c\n---\n\n# Core ↔ plugin parity\n\nSome logic is needed by **both** the desktop app and the standalone scripts the plugin ships — and\nthose scripts run under bare `node` with no `node_modules`, sometimes after being copied into a\nproject's `.claude/scripts/`. They cannot import from this workspace, and there is no build step\nwhere they run, which is why `plugins/maestro/scripts/lib/*.cjs` are **generated and committed**\nbundles rather than built at install time. `apps/maestro/src/core` is the source.\n\n```\nsrc/core/*.ts  →  src/core/plugin-entries/<name>.ts  →  esbuild  →  plugins/maestro/scripts/lib/<name>.cjs\n```\n\nRegenerate with `pnpm --filter maestro build:plugin-libs`.\n\n## This fails quietly — the single most important fact here\n\nThe build script's own header says it: **if it stops producing correct output, the committed `.cjs`\nfiles keep working.** The symptom is an edit to a source module that stops reaching the plugin while\nthe hooks go on running the old behaviour. Since `066` one test does catch a stale bundle —\n`parity.test.ts`'s \"generated bundle freshness (066)\" rebuilds into a scratch dir and diffs every\ncommitted lib — but it only fires if the suite is run, and it cannot notice a build that is wrong in\na way both the fresh and the committed output share (a lost `\"use strict\"`, a dropped entry).\n\nSo after changing anything in `plugin-entries/` or in a `src/core` module one of them pulls in,\nre-run the build and **read `git diff plugins/maestro/scripts/lib/`** rather than trusting green\ntests. The root `CLAUDE.md` states the same rule.\n\n**`contracts.ts` counts as \"a module one of them pulls in\", even though no `plugin-entries/*.ts`\nimports it directly (`045`).** Several entries import a `src/core` module that in turn imports a\ntype or a value export (`EDITABLE_AGENT_SOURCES` and friends) from it. So **a commit that touches\n`contracts.ts` needs `build:plugin-libs`**, whether or not it touches `plugin-entries/*.ts` — easy\nto miss precisely because the diff that triggers it never touches `plugin-entries/` at all.\n\nThree recorded instances of this one failure, each worse than the last:\n\n- **`045`** — `maestro-agent-sync`, `maestro-agent-types` and `maestro-skill-tags` were already stale\n  against `contracts.ts` before that task's own edits, most likely from an earlier commit that\n  touched `contracts.ts` without re-running the build. No symptom at all; it sat unnoticed.\n- **`053`** — `052` landed the `infra`-only seed profile (`isInfraOnlyChain`/`buildInfraWorkflow`, a\n  chain-dependent `seededAgentNames()` in `seed.ts`, the `infra` category in `detect.ts`, plus the\n  stores six other entries pull from) without rebuilding. `lib/maestro-seed.cjs` and six siblings\n  kept exporting pre-`052` behaviour, so the terminal install path (`maestro-install.js`, which\n  `require`s them) seeded the old six-workflow graph for an infrastructure repo while the app's\n  `defaultV3Config` seeded the new three-workflow one. Every test green; found a task later.\n- **`066`** — `CLAIM_IDLE_CAP_MS` was added to `handoff-channels.ts` and re-exported from\n  `maestro-session`, but both `plugins/maestro/scripts/lib/maestro-session.cjs` and\n  `.claude/scripts/lib/maestro-session.cjs` were committed without a rebuild. This one didn't keep\n  old behaviour, it silently disabled the feature the commit shipped: `maestro-task-status.cjs`\n  destructures `CLAIM_IDLE_CAP_MS` out of that bundle, got `undefined`, and `isSessionLive`'s\n  `now - mtime <= undefined` is `false` for every claim — the shipped CLI could create a claim but\n  never see one as live. Only `test/core/task-claims-cli.test.ts`'s 3 failures signalled it, caught\n  only because @reviewer ran the suite against the committed diff rather than the implementer's own\n  green run. Fixed by rebuilding **and** mirroring the `.claude/scripts/lib/` copy by hand.\n\n## The export surface is a superset, not an identity\n\nEach bundle's export list must stay a **superset** of what the hook scripts `require()` — adding an\nexport is safe, renaming or removing one breaks a script that runs outside this workspace (from the\nmarketplace cache, or from a copy inside someone else's project). `test/core/parity.test.ts` asserts\nthe original name list is still all there, not that the lists match exactly. `maestro-session.ts`\ngrew `projectOwnsHook` this way, which is how the hook-arbitration guard reaches the plugin's hook\nscripts at all.\n\n**A name kept but given a different ARITY is the break the superset rule does not catch, and `064`\nproduced one.** `sessionLogPath` went from `(claudeDir)` to `(claudeDir, sessionId)`: the export is\nstill there, the name list still passes, and an old caller passing one argument now gets `null`\n(`sessionPathsFor` rejects `undefined` as a session id) rather than a `TypeError` — a silent wrong\nanswer instead of a crash. When you must change a signature in a bundle, grep the `.js`/`.cjs` hook\nscripts for the name across `plugins/maestro/scripts/` rather than trusting the export assertion.\n\nRelated, same task: `SESSION_LOG_FILE` is now an alias for `SESSION_LOG_NAME` with **no live\ncallers** — retained solely because this rule forbids removing it. An export you find with no\ncallers is probably load-bearing for exactly that reason; check before deleting it.\n\n## The seventeen generated entries\n\n`maestro-session`, `maestro-skill-regions`, `maestro-seed` (also re-exports `maestroConfigRefusal` from `config-usable.ts`, `096` — rebuild after editing that file), `maestro-skill-tags`,\n`maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,\n`maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check; `142` adds the disable decision, `skillDisabledReason`/`isSkillListed`/`readDisableRules`, which `discoverSkills` also imports, so an edit here changes the app's skill lists too), `maestro-agent-sync` (`031`),\n`maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,\n`maestro-agent-fork`, `maestro-rule-move` (`081`), `maestro-skill-lists` (`089`: `resolveSkillLists`, behind both Step-1/end-skills scripts) and `maestro-epic` (`084`: epics, the report\ninbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `writeNote` and\n`formatInboxEntry`; `125`: the spawn list, adding `DEFAULT_SPAWN_CAP`, `workerNameFor`,\n`launchCommandFor`, `readyTasks` and `formatReady`; `132`: manager review, adding\n`MANAGER_REDIRECT_CAP`, `REVIEW_VERDICTS`, `isReviewVerdict`, `reviewHistory`, `writeReviewRequest`\nand `recordReviewVerdict`, and pulling in `human-review-gate.ts`, which imports nothing;\n`maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from it; copied into projects,\nfs/path only, no `node:sqlite`).\n\nEach `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the\nplugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.\nThe list is hard-coded in the `entries` array in `build-plugin-libs.mjs`, so adding an entry means\nediting that array as well as creating the file. The constraint an entry inherits: everything it\npulls in must run under bare `node` with no `node_modules` and no Electron. Node built-ins stay\nexternal (`node:fs`, `node:path`, `node:os`, `node:sqlite`, and their bare aliases); anything else\nit imports is inlined into the bundle. Reaching into a module that touches Electron, the Agent SDK\nor a third-party dependency is how an entry stops being buildable — or worse, builds and fails at\nhook time in a project with no dependencies installed.\n\n**Built-ins are allowed, but `node:child_process` is not, in a core module the app's preview path\nreaches.** `claims.ts` and everything it imports sit in `claude-preview.ts`'s import graph, and\n`test/isolation.test.ts` (a reviewed allow-list of `src/core`/`src/main` files importing\n`child_process`) plus `test/core/claude.test.ts`'s \"spawns nothing\" walk fail the moment one does.\nWhen a hook needs a process spawn (`141`'s macOS `ps` fallback), put the spawn in the hook script\nunder `plugins/maestro/scripts/` and keep a pure parser in core (`parsePsLine`), or pass the\nspawner in as a port.\n\n**Eight of the seventeen are also COPIED into projects, which widens what a rename breaks (`035`).** A\nbundle runs from the marketplace cache _and_, if it is in `install.ts`'s `STATIC_ASSETS`, from\n`<project>/.claude/scripts/lib/` — where the copy is a snapshot that only a re-install refreshes.\nThe copied set is `maestro-session`, `maestro-skill-regions`, `maestro-agent-sync`,\n`maestro-report-defaults` and `maestro-handoff-defaults` (since `035`), and — since `063` —\n`maestro-workflow-spec`, which backs the `maestro-workflow-spec.cjs` CLI the `create-workflow`/\n`update-workflow` skills invoke directly, and — since `084` — `maestro-epic`, behind the\n`maestro-epic.cjs` CLI, and — since `089` — `maestro-skill-lists` (plus the hand-maintained `maestro-tasks.cjs`). So removing\nor renaming an export from one of those breaks two populations with different clocks: the cache\nre-pulls on a `plugin.json` version bump, the project copies do not move until someone re-installs.\nSee `installing-maestro`'s manifest sub-concept for the rule the copied list answers to, and why a\nlib missing from it fails silently.\n\n**`maestro-agent-sync` must not pull in `node:sqlite`.** It backs **two** callers, both running\nunder whatever bare `node` is on the session's PATH: `plugins/maestro/scripts/maestro-agent-forks.cjs`\n(the user-facing CLI, driven by `/maestro-update`) and `plugins/maestro/scripts/maestro-step0.js`,\nthe readiness hook, which `require`s `computeAgentSync` out of the bundle directly rather than\nspawning the CLI. Its source (`agent-sync.ts`) therefore imports `agent-fork-record.ts` and never\n`agent-fork.ts` — the latter reaches three sqlite stores through `copyAgentAttributeRows`, which is\nexactly why `031` split the file (see `global-stores`). The check is\n`grep -c \"node:sqlite\" plugins/maestro/scripts/lib/maestro-agent-sync.cjs` → `0`. Nothing fails if\nit stops being 0; the script just starts throwing on machines with an older `node`.\n\n**`maestro-session` must not pull in `node:sqlite` either (`033`).** It is the bundle every hook\n`require`s **unconditionally**, and it has now absorbed three surfaces on the same \"it's `fs`/`path`\nonly and every hook already requires this bundle\" argument:\n\n- `033` — the handoff seed tier (`SEED_HANDOFFS`, `isSeededHandoff`, `isValidHandoffId`), the pure\n  route walk (`handoffRoutes`, `routesFrom`, `handoffPairs`) and `resolveHandoff`.\n- `036` — the agent-channel surface from `handoff-channels.ts` (`channelDir`, `laneFor`,\n  `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/`parseStampedContent`,\n  `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId`, re-exported here rather than given a 13th bundle;\n  `066` added `CLAIM_IDLE_CAP_MS`, the claims subsystem's mtime cap, to the same list.\n- `064` — all of `session-paths.ts` (`resolveSessionId`, `isValidSessionId`, `sessionPathsFor`,\n  `resolveSessionPaths`, `ensureSessionPaths`, `ensureSessionsRoot`, `listSessionIds`,\n  `removeSessionState`, `LEGACY_SESSION_FILES`, `SESSIONS_DIR_NAME`).\n- `078` — the channel write guard (`checkChannelWrite`, `isChannelOnlyAgent`, `CHANNEL_ONLY_AGENTS`,\n  from `channel-write-guard.ts`, backing `maestro-channel-write-guard.js`) and the transcript\n  hand-back parser (`lastHandoffLabel`, `sendMessageHandoff`, from `handoff-label.ts`). Still `fs`/`path`\n  only; keep the `node:sqlite` grep at `0`.\n- `087` — `handbackHandoff` + `HANDBACK_TOOLS` (`sendMessageHandoff` stays as an alias: the export\n  surface only grows), `checkPayload` (`handoff-check.ts`), all of `handoff-payload.ts`\n  (`payloadRoutes`, `payloadRequirement`, `payloadWrittenSince`, `runStartedAt`,\n  `readProjectHandoff`) and `runtime-version.ts` (`compareRuntimeVersions`, `runtimeNeedsRefresh`).\n  The global handoff tier is passed **in** as a reader, so the sqlite bundle stays out; the grep is\n  still `0`.\n- `130` — the human-review gate (`checkHumanReview`, `currentReviewRound`, `reviewFileName`,\n  `isReviewFile`, `HUMAN_REVIEW_LABEL`, from `human-review-gate.ts`, backing\n  `maestro-human-review-gate.js`). `132` added `currentReviewStop` and `MANAGER_REVIEW_LABEL` (the\n  gate now covers `manager review` too). It imports nothing (the file probe and the manager's name\n  are passed in); keep the `node:sqlite` grep at `0`. `tasks.ts` inlines the same `.review(-N).md` pattern to skip review files.\n- `080` — the durable run-metrics module (`run-metrics.ts`: `recordSessionRun`, `readMetrics`,\n  `renderMetricsDigest`, `compactMetrics`, …) called by both SessionEnd cleanup hooks and by\n  `maestro-team-meeting.cjs`. `fs`/`path` only.\n- team meetings — all of `meeting-mode.ts` (`readMeeting`, `meetingFor`, `startMeeting`,\n  `endMeeting`, `closeMeeting`, `meetingLeftovers`, `meetingNotice`, …) and `unstampedFilesOf`, read\n  by the SubagentStart/Stop hooks, the write guard and `maestro-set-session-workflow.cjs`.\n- `088` — all of `resume-delivery.ts` (`pendingResumeDeliveries`, `recordResumeDeliveries`,\n  `retireResumeDeliveries`, `latestWorkflowHandoff`, `expectedLoopbackPayloads`,\n  `missingLoopbackPayload`, `appendHandoffIssue`), read by `maestro-resume-target.cjs` and the\n  SubagentStop hook. `fs`/`path` only; the grep is still `0`.\n- `112` — `isGapReport`, `acknowledgeGaps` and `parseGapsHandled` from `handoff-channels.ts`, read\n  by the SubagentStart delivery block and the SubagentStop hook. `fs`/`path` only.\n- `113` — all of `session-name.ts` (`sessionNameFor`, `entranceRoleFor`, `promptEntranceRole`,\n  `noteEntrance`, `titleFor`, `storedName`, `storedSessionName`, `rederiveSessionName`), read by\n  `maestro-session-name.js`, `maestro-task-status.cjs claim` and `maestro-epic.cjs`. `fs`/`path`\n  only; the grep is still `0`.\n- `124` — `awaitHandback`, `hasHandbackCall`, `HANDBACK_WAIT_MS` and `HANDBACK_POLL_MS` from\n  `handoff-label.ts`, used by the SubagentStop hook to keep re-reading a transcript that Claude\n  Code hasn't finished writing. `fs`-free (the reader and the sleep are passed in); the grep is\n  still `0`.\n- `141` — all of `session-heartbeat.ts` (`heartbeatVerdict`, `heartbeatTick`, `heartbeatTargets`,\n  `heartbeatIntervalMs`, `writeHeartbeatPid`, `isProcessAlive`, `processInfo`, `parsePsLine`,\n  `watchedPid`, `parentProbe`) plus `HEARTBEAT_INTERVAL_MS`/`HEARTBEAT_STALE_MS`/\n  `HEARTBEAT_INTERVAL_ENV` and `SESSION_HEARTBEAT_NAME`/`SESSION_HEARTBEAT_PID_NAME`, read by\n  `maestro-session-heartbeat.js` and `maestro-task-status.cjs`. `fs`/`path` only (it reads `/proc`,\n  never spawns); the grep is still `0`. `maestro-epic` also rebuilt, because `claims.ts` now\n  imports `session-heartbeat.ts`.\n- `144` — channel scopes from `handoff-channels.ts` (`channelScopeOf`, `channelScopeFromState`,\n  `channelRelPath`, `isChannelScope`, `NO_SESSION_SCOPE`, `consumedDir`, `pendingLanes`). Also an\n  **arity change**: every lane function (`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`,\n  `acknowledgeGaps`, `unstampedFilesOf`, `payloadRoutes`, `pendingResumeDeliveries`, `retireResumeDeliveries`,\n  `closeMeeting`, `closeOwnerRuns`) now takes a `scope` argument, so every hook calling one changed\n  in the same commit. The export-superset test can't catch a stale call shape — only a rebuild plus\n  the hook tests can. `fs`/`path` only; the grep is still `0`.\n\nThe argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.\nRe-run `grep -c \"node:sqlite\" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any\naddition. The sqlite tier is a **separate** bundle, `maestro-handoff-defaults`, which\n`maestro-inject-agent-context.js` `require`s inside a try/catch — so on a `node` older than 22.5 the\nsqlite `require` fails and the seed still answers. The trap: `handoff-seeds.ts` imports **nothing**,\nand adding one store import to it moves 24 protocol bodies behind a `node` version check without\nfailing a single test.\n\n**`maestro-workflow-spec` carries no `node:sqlite`-free requirement of its own.** It is `require`d\nonly by the standalone `maestro-workflow-spec.cjs` CLI, which has no try/catch degrade path at all —\na missing or throwing `require` fails it outright regardless of cause. It happens to pull in no\n`node:sqlite` (`workflow-spec.ts` only reaches `config.ts`, `success-path.ts` and `seed.ts`'s layout\nhelpers), but that is incidental, not an invariant.\n\n**`maestro-team-meeting` is plugin-only.** It holds `team-meeting.ts`'s pure logic (briefs,\nproposal schema, conflicts, tally), is `require`d only by `plugins/maestro/scripts/maestro-team-meeting.cjs`,\nand is **not** copied into projects. The meeting flag the hooks read is not in it; that lives in\n`maestro-session`.\n\n**`maestro-agent-fork` and `maestro-rule-move` are plugin-only too (`081`).** Each is `require`d by\nexactly one plugin script, `maestro-agent-fork.cjs` and `maestro-rules.cjs`, run from the plugin and\nnever copied into a project (`maestro-agent-forks.cjs` is the copied one, which is why `fork` is not a\nsubcommand of it). **`maestro-agent-fork` DOES contain `node:sqlite`** (`forkAgent`'s\n`copyAgentAttributeRows`), so its script requires it lazily and turns a failed require into a refusal;\nit must never be imported by `maestro-session` or `maestro-agent-sync`. `maestro-rule-move` has none.\nThe owner-run marker (`startOwnerRuns`, `ownerRunFor`, `closeOwnerRuns`, ...) lives in\n`maestro-session`, from `meeting-mode.ts`, and stays `fs`/`path` only.\n\n**`maestro-tasks.cjs` is not generated.** It has no entry in `plugin-entries/` and is hand-maintained\nalongside `src/core/tasks.ts`, kept in sync so a task close from the UI and one from the orchestrator\ncannot disagree about which tasks are ready. Editing `tasks.ts` alone is not enough.\n\n## After rebuilding: refresh the `.claude/scripts/lib` mirrors and run the parity test (`082`)\n\nThis repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin libs listed in\n`install.ts`'s `STATIC_ASSETS` (the repo is a Maestro project too). `build:plugin-libs` writes only\n`plugins/maestro/scripts/lib/`, so a rebuild leaves the mirrors stale and `parity.test.ts`'s\n\"plugin-lib project mirror parity (066)\" fails. After every rebuild:\n\n1. **`pnpm refresh:runtime`** (`scripts/refresh-runtime.mjs`) — one idempotent command that rebuilds\n   the libs, runs `maestro-install.js .` (copies every `runtimeAssets()` file over its\n   `.claude/scripts/` mirror, re-syncs the STEPS/PRINCIPLES regions of the rendered\n   `.claude/skills/maestro/SKILL.md`, merges the hook registrations into `.claude/settings.json`) and\n   then re-renders the HANDOFFS table. A sandboxed agent cannot write those paths, so it hands the\n   user exactly `! pnpm refresh:runtime` instead of hand-built `cp` lines;\n2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.\n\n**`maestro-render-orchestrator.cjs` alone does NOT refresh STEPS.** It rewrites only the HANDOFFS\ntable; STEPS comes from the template via `maestro-install.js`. Giving the user the render script as\nthe re-sync step cost task 132 a second round-trip. `parity.test.ts` fails with a message naming\n`pnpm refresh:runtime` for a stale mirror, a stale bundle or a stale STEPS region.\n\nSince `087` that test covers **every** `.claude/scripts/` asset in `runtimeAssets()` — hand-written\nscripts and hook scripts (with the `.js` → `.cjs` rename) as well as libs — via\n`test/helpers/mirror-parity.ts` (`staleMirrors`, `describeStale`). A stale or missing mirror fails\nand the message names `pnpm refresh:runtime` as the fix. Task 084's stale\n`maestro-epic.cjs` passed the old lib-only check.\n\n**Decision (`082`): the mirrors stay tracked.** Untracking them would leave a fresh clone without a\nworking runtime for the repo's own hooks. The cost is a guaranteed merge conflict whenever two task\nbranches both rebuild a lib; `maestro-task-status.cjs merge` therefore detects \"every conflicting\nfile is a generated lib or its mirror\" and prints the resolution: resolve `src/core` first, rebuild,\ncopy over the mirrors, run the parity test, commit, merge again. Never hand-merge bundle text.\n\n**Worktree path comments.** The bundle's `// <path>` comments must not depend on where the checkout\nlives. A worktree's `node_modules/@repo/*` is a symlink into the main checkout, which used to stamp\n`// ../../../maestro/packages/...` and fail the freshness check; `build-plugin-libs.mjs` now aliases\n`@repo/claude-fs` to this checkout's own `packages/` source. A new workspace import in a bundled\nmodule needs an alias there too.\n\n`maestro-session` also carries `checkWorktreeWrite` (`worktree-write-guard.ts`), which backs the\nworktree branch of `maestro-channel-write-guard.js` (a `HOOK_SCRIPTS` entry since `121`, so a copy\nlives at `.claude/scripts/maestro-channel-write-guard.cjs` and `parity.test.ts` checks it), and the worktree helpers from `worktree.ts`\n(`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`, …) — all still\n`fs`/`path` only.\n\n## Why the build is so specific\n\n- **`absWorkingDir` is pinned to the app root.** esbuild stamps a `// <path>` comment above each\n  bundled module _relative to its working directory_, so the bundle's bytes depend on where the\n  build was launched. Without the pin, `pnpm --filter maestro build:plugin-libs` and\n  `node apps/maestro/scripts/build-plugin-libs.mjs` from the repo root produce a spurious diff.\n- **`tsconfig` is pinned to `tsconfig.node.json`.** esbuild otherwise walks up for one, and `strict`\n  there is what makes it emit `\"use strict\";`. A previous move changed which file that walk found and\n  the bundles silently came out non-strict — nothing failed, the hooks just stopped throwing on the\n  assignments strict mode catches.\n- **Node built-ins stay `external`.** In particular `node:sqlite`: keeping the `require()` in the\n  output is what lets `maestro-skill-tags.cjs` degrade gracefully on an older `node` on the session's\n  PATH, since the script's own try/catch can catch it. An inlined shim would throw at a different,\n  harder-to-catch point.\n\n## Files\n\n| File                                           | Role                                                        |\n| ---------------------------------------------- | ----------------------------------------------------------- |\n| `apps/maestro/scripts/build-plugin-libs.mjs`   | The generator. Carries the reasoning above in comments.     |\n| `apps/maestro/src/core/plugin-entries/*.ts`    | The seventeen entry points — thin re-exports of `src/core`. |\n| `plugins/maestro/scripts/lib/*.cjs`            | Committed output, banner-marked `DO NOT EDIT`.              |\n| `apps/maestro/test/core/parity.test.ts`        | Differential test vs legacy CJS, plus bundle freshness and mirror checks. |\n| `apps/maestro/test/core/avatar-parity.test.ts` | Unrelated drift check: avatar part ids vs the renderer manifest. |\n| `apps/maestro/test/helpers/mirror-parity.ts`   | `staleMirrors` / `describeStale`, behind the mirror checks. |\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — what `maestro-agent-sync` carries, and why it\n  must stay free of `node:sqlite`.\n- [`global-stores`](../global-stores/SKILL.md) — five of the generated entries are its stores, and\n  the two splits (`031`'s `agent-fork-record.ts`, `033`'s `handoff-seeds.ts`) that keep the bundles\n  above free of them.\n- [`agents-view`](../agents-view/SKILL.md) — what `maestro-agent-sync` computes, and the app-side\n  surface that shares the verdict with the CLI.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — `maestro-session` and\n  `maestro-skill-regions` read and rewrite what it defines.\n- `maestro-architecture` and `updating-maestro` (at the repo root `.claude/skills`) — the hooks\n  that consume these bundles, and the _other_ staleness problem (delivery, not generation).\n- `installing-maestro`'s **hook arbitration** sub-concept — `projectOwnsHook` ships through the\n  `maestro-session` bundle, so editing `hook-arbitration.ts` without re-running the build leaves the\n  plugin's hooks arbitrating with the old rule.\n\n## Sub-concepts\n\n- [Parity tests](sub-concepts/parity-tests.md) — the snapshot baseline, why it is not the live file,\n  the user-visible strings it freezes byte for byte, and the freshness/manifest/mirror blocks.\n",
+    "contentHash": "sha256:51a58cc269ce02e026e8cd4774ceba865f23bfe0d4b87df984e8819238680a5c"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.33",
+    "extracted_at": "2026-10-31T14:11:40.263Z",
+    "files": {
+      "apps/maestro/src/core/agent-runs.ts": "sha256:3d88951ed3d496e0224e3426f717f00fc3b0ccfb894ec37a1ee4faa3ad4712c5",
+      "apps/maestro/src/core/config-usable.ts": "sha256:5c737f4eabdc2bdb4d4caf95cb3016b09ffe2b66c0e1d4654b1314866bee929a",
+      "apps/maestro/src/core/config-validate.ts": "sha256:d54d8f25928bba6b14d42d1ff355b882d49c32f638804d58ce8bb2b6d9cd33cb",
+      "apps/maestro/src/core/diff.ts": "sha256:7f5850c7edae7ea22c8784e40347eb76183e1d4c955ba62adf88ad1edccdc263",
+      "apps/maestro/src/core/handoff-label.ts": "sha256:7f1159c9e2f434d8857beb255f87f0cb1fb330c71f44214a716b5f631ddd577f",
+      "apps/maestro/src/core/handoff-routes.ts": "sha256:03d66bc4378014b353021442617cf7f1a41c2b42f50c4d3b1f4fafec44d10fc4",
+      "apps/maestro/src/core/plugin-entries/maestro-agent-fork.ts": "sha256:330c614d51dbc669ae534f554a324f2353e8a3d75ed6d81c2378a887d03cf08a",
+      "apps/maestro/src/core/plugin-entries/maestro-agent-project-tags.ts": "sha256:e57208a9681b649257af543dd018e4cac4c53f5af015ffe7febf9de0a18e1795",
+      "apps/maestro/src/core/plugin-entries/maestro-agent-sync.ts": "sha256:70737126b642a8e02f47a7d8fadde63714ad9c9183423693b934a3e9c4f75c95",
+      "apps/maestro/src/core/plugin-entries/maestro-agent-types.ts": "sha256:c392977aec6c5ae87068c39a9a59deb829c357e641e4b047337cf459b6447c1d",
+      "apps/maestro/src/core/plugin-entries/maestro-epic.ts": "sha256:22bc77c6d4db93a91dfd8aee81d9f3f246ccabb9f5b894114417bbd9eb1a303e",
+      "apps/maestro/src/core/plugin-entries/maestro-handoff-defaults.ts": "sha256:b201a9f73048858d4a7ea0619d492bbf5365cf4a0e5040b1800230c6ed4bb910",
+      "apps/maestro/src/core/plugin-entries/maestro-project-tags.ts": "sha256:b4b13c2f6842542ea0615cd2ced1f88f9bb251e76eba2611cad1d8094f84bfcc",
+      "apps/maestro/src/core/plugin-entries/maestro-report-defaults.ts": "sha256:295f29a07bacff12536dcfa55f28c2373a9074b683e919bf08051b1869cff406",
+      "apps/maestro/src/core/plugin-entries/maestro-rule-move.ts": "sha256:6414183f2d2db0709b0b7a40a0ed016d0951e9f9cfd50f7a6f9b75ca8a0a4f9d",
+      "apps/maestro/src/core/plugin-entries/maestro-seed.ts": "sha256:50a9d6a21a4e4c23a1669d3fced79930b9886ce23636af8f1a349692999f6a5c",
+      "apps/maestro/src/core/plugin-entries/maestro-session.ts": "sha256:646628cc7b35b3a549f241f6d4d9f7e06796d36ba97580259b0df16f40a40650",
+      "apps/maestro/src/core/plugin-entries/maestro-skill-availability.ts": "sha256:25a53f0e8bee5ad760bd02bcdae8a3c6cf39993ebea91e2e76fed60e9e026d37",
+      "apps/maestro/src/core/plugin-entries/maestro-skill-lists.ts": "sha256:062e78c7cdc4fc49153e2124ed5cdb54a264cf240533b654f4fc8e69ebe748fb",
+      "apps/maestro/src/core/plugin-entries/maestro-skill-regions.ts": "sha256:8fff00a30208bc85dca630ba604cd286515dfcdfa1d0050f20bced2e70881943",
+      "apps/maestro/src/core/plugin-entries/maestro-skill-tags.ts": "sha256:0af0304d2d7a53edd437e248407acc38cd0033f81aee13e3483af126cf00e525",
+      "apps/maestro/src/core/plugin-entries/maestro-team-meeting.ts": "sha256:b23313f72ec2e7d94f278b312b75586cf166a1a377f4cefc9c0058d8aa902c0b",
+      "apps/maestro/src/core/plugin-entries/maestro-workflow-spec.ts": "sha256:e06f42af73c8d5b4c3db76edbe5391fed4094804242d64495fb5ec7764694431",
+      "apps/maestro/src/core/seed.ts": "sha256:2846710bbf5dbbeb434c1cd9500e9bbf4a1d82f209eb418e0ba570e14154deee",
+      "apps/maestro/src/core/skill-availability.ts": "sha256:d0d13d433e9b2d0885eeeea9c0ea5199d1e03bcc0fcf2c52651a31c8f77ffa56",
+      "apps/maestro/src/core/skill-lists.ts": "sha256:207f5463739b24ff8367948362be3e5bd7f20af4ff9378793d6db5e6cf3ec6f0",
+      "apps/maestro/src/core/worktree-write-guard.ts": "sha256:e6e1c94257d74f33fbf2d17dc558e23cd133768a3167b97fd9c53819d03fa688"
+    }
+  }
+}

@@ -1,10 +1,10 @@
 ---
 name: agents-view
-description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the "Copy into the project" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body."
+description: "Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<scope>/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the \"Copy into the project\" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body."
 metadata:
   type: concept-skill
-  version: "1.13"
-  last-update: 4a94620c64a136a5b12d3df435b0b033a32f17a9
+  version: "1.16"
+  last-update: b323aa7c8e869672baceac7299994951c25f78cb
 ---
 
 # Agents View
@@ -166,10 +166,15 @@ The `+` attaches the next unused entry from `config.skills_available`, which kee
 internally consistent — an instance skill that is not in the project's available set is a config that
 disagrees with itself.
 
-Skills are **read-only** in two cases, both signposted in the footer note rather than by a silently
-inert control: when the agent has no instance in this project's workflow, and when the config is
-`seeded` (no `maestro.json` on disk). The second matters — writing would materialise a starter config
-as a side effect of visiting `/agents`.
+Skills are **read-only** when `skillsEditable` is false (`instance !== null && workflows !== null &&
+!workflows.seeded`). Two of those causes are signposted in the footer note rather than by a silently
+inert control: the agent has no instance in this project's workflow, and the config is `seeded` (no
+`maestro.json` on disk). The second matters — writing would materialise a starter config as a side
+effect of visiting `/agents`. The third, `data:workflows` failing to load, has no note of its own.
+
+Each chip also renders `SkillRefMark` (`components/skill-ref-mark.tsx`, `091`): an advisory amber
+"plugin not installed / not found…" label when the id is in the dangling-skill report. It never
+disables or removes the chip.
 
 ## The avatar block
 
@@ -180,8 +185,8 @@ The card's cosmetic avatar editor — tabs-and-arrows over seven categories, the
 ## The Interactions pane (`034`)
 
 The right pane's two tabs (`044`) — the Interactions list (the resolved report plus one editor per
-outgoing handoff route, each labelled since `037` with its `.claude/channels/<receiver>/<sender>.1.md`
-lane path) and the Content tab (`044` read-only, `045` editable for a project-tier agent) — plus the
+outgoing handoff route, each labelled since `037` with its `.claude/channels/<scope>/<receiver>/<sender>.1.md`
+lane path, `<scope>` left a literal placeholder since `144`) and the Content tab (`044` read-only, `045` editable for a project-tier agent) — plus the
 content and handoff write paths they own, are [`interactions-pane`](sub-concepts/interactions-pane.md).
 
 ## Forking a global agent
@@ -244,20 +249,21 @@ fork-review block that renders below the card (`031`) are
 | `src/renderer/src/routes/agents.tsx` | State, the draft (`cloneDraft`, `handoffsOf`), the eight-way save, the round trips. |
 | `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` (incl. `034`'s `handoffs: Record<handoffId, string>` and `045`'s `content: string`) / `AgentSkill`, the constants, `clampText`, `cycleOption`, `PANE_SURFACES`, the shared class strings. |
 | `src/renderer/src/components/agents/agent-list.tsx` | Left pane. Holds the `/create-subagent` link. |
-| `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card + the Edit/Cancel/Save footer. |
+| `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card (skill chips with `SkillRefMark`) + the Edit/Cancel/Save footer, and the fork Copy button on a non-project card. |
 | `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |
 | `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane: the Interactions/Content tab strip (`044`), the report + one entry per route, `HANDOFF_TIER`, the resize handle, one auto-growing editor per entry, and (`045`) the Content tab's own pencil, `agent-content-editor` textarea and `contentNote` for a project-tier agent. |
 | `src/core/handoffs.ts` | `resolvedRoutesFrom(projectRoot, agent, dbPath?)` — the pane's one round trip, and `saveProjectHandoffOverride`, its write. |
 | `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, `describeUneditableSource`'s tier-specific refusals, (`044`) `extractAgentBody`/`getAgentBody` for the Content tab, and (`045`) `replaceBodyInFrontmatter`/`setAgentContent`, the tab's write path. |
 | `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, and `copyAgentAttributeRows`. Re-exports everything below. |
 | `src/core/agent-fork-record.ts` | The sidecar and the hashing/merging helpers, split out of `agent-fork.ts` in `031` so nothing sqlite-shaped reaches the generated bundle. |
-| `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts`. |
+| `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts` (`agent-sync.ts` never reaches its `adopt` verdict: a fork's tracking is never `untracked`). |
 | `src/core/agent-sync.ts` | `computeAgentSync` (read-only) and `applyAgentSync` (the only writer). |
 | `src/core/diff.ts` | `diffLines`/`hasChanges`/`unifiedDiffText` — LCS, with a `MAX_LINES = 4000` fallback to a whole-file replace. |
 | `src/renderer/src/components/agents/agent-fork-review.tsx` | The review block: both descriptions, the diff, and the three actions. |
 | `test/core/sync-decision.test.ts` | The branch table — `detached` outranks everything, `stale-customized` decided before `templateAdvanced`. |
 | `test/core/agent-sync.test.ts` | One case per `031` acceptance criterion, including the mtime-and-bytes proof that computing writes nothing. |
 | `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |
+| `src/renderer/src/utils/avatar.ts` | Pure client-side avatar helpers, no IPC: the placeholder layers for an agent with no saved avatar, randomised layers for a new one, and the native colour each recolourable shape starts from in the colour picker. |
 | `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |
 | `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |
 
@@ -277,7 +283,7 @@ fork-review block that renders below the card (`031`) are
   this page's "+ New agent" link is the entry point for.
 - [`test-maestro`](../test-maestro/SKILL.md) — how the measured numbers above were measured, and how
   to re-measure them.
-- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is the tenth
-  generated bundle, and the reason the fork record had to leave `agent-fork.ts`.
+- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is one of the
+  seventeen generated bundles, and the reason the fork record had to leave `agent-fork.ts`.
 - `updating-maestro` (at the repo root `.claude/skills`) — why a plugin-tier fork is checked by
   version string alone, and why that is the *correct* answer rather than a shortcut.

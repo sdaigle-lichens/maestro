@@ -10,6 +10,7 @@ session**, since `064`:
     log.jsonl             <- was maestro_session.log.jsonl
     session.json          <- was maestro_session.json  { workflow, generated_instances, run_id }
     tasks.json            <- was maestro_session_tasks.json
+    heartbeat, heartbeat.pid  <- `141`, claim liveness (see the file table)
 ```
 
 Before this, all three were one fixed file per project, and two sessions against the same project
@@ -67,6 +68,7 @@ is created on disk for a rejected id, which is what makes rejecting cost nothing
 | `maestro.json` | `<project>/.claude/maestro.json` | **Source of truth** (`version: 3`). Every hook + the renderer read this. `success_path` is **not** stored here. | App + skill (byte-identical) | Committed; edited via canvas or by hand (+ `/maestro-update`) |
 | `session.json` | `<project>/.claude/maestro_sessions/<id>/session.json` | Ephemeral session state: `{ workflow, generated_instances, run_id }` — `run_id` is per **session** since `064`, not per project. Tells `maestro-inject-agent-context.js` which workflow is active. | `maestro-set-session-workflow.cjs`, `maestro-inject-agent-context.js` | Ephemeral; **gitignored**; this session's directory deleted at its own `SessionEnd` |
 | `log.jsonl` | `<project>/.claude/maestro_sessions/<id>/log.jsonl` | Ephemeral **append-only** log — see entry kinds below. | `maestro-session-log.js` (PreToolUse) + `maestro-subagent-log.js` (SubagentStart/Stop) + `maestro-inject-agent-context.js` (SubagentStart) | Ephemeral; **gitignored**; this session's directory deleted at its own `SessionEnd` |
+| `heartbeat`, `heartbeat.pid` | `<project>/.claude/maestro_sessions/<id>/` | `141`: claim liveness. `heartbeat`'s **mtime** is the signal (fresh within 3 min = live; zeroed when `claude` exits); `heartbeat.pid` names the one watcher process that owns the session. Not the log: since `141` the log is only the fallback heartbeat. See `task-queue` claims. | the detached watcher `maestro-session-heartbeat.js` (SessionStart) spawns | Ephemeral; **gitignored**; removed with the directory |
 | `tasks.json` | `<project>/.claude/maestro_sessions/<id>/tasks.json` | Ephemeral task-coverage tracker: `{ steps: ["@backend", "human review", ...] }`. Records which success-path steps already have a `TaskCreate` in this session. Read-modify-write is safe (only the main orchestrator calls `TaskCreate`, no parallel race). | `maestro-validate-tasks.js` (PostToolUse) | Ephemeral; **gitignored**; this session's directory deleted at its own `SessionEnd` |
 
 `success_path` is derived by `successPathSteps` in `lib/maestro-session.cjs` — never persisted in
@@ -90,7 +92,13 @@ keeps it out of resume targets and the post-mortem timeline (see `team-meeting.m
 `session.json` may also carry `meeting` (an active team meeting) and `meeting_leftovers` (lane files
 an ended meeting left unstamped), both from `meeting-mode.ts`, and `resume_deliveries`
 (`agent_id` → `{file, sender, run_id}[]`, lane files a resumed run was handed by path — written by
-`maestro-resume-target.cjs`, cleared at that run's `SubagentStop`, `088`, see `agent-resume.md`). Every `session.json` writer spreads
+`maestro-resume-target.cjs`, cleared at that run's `SubagentStop`, `088`, see `agent-resume.md`).
+Since `113` it also carries the session's name for cross-session messages: `session_name`
+(`maestro-<id8>`, `maestro-mgr-<id8>`, or the user's custom title), `session_name_role`
+(`worker`/`manager`, the first entrance), `session_name_custom` and `session_name_applied`. Only
+`core/session-name.ts` writes them (via `maestro-session-name.js`, see `hooks.md`); `storedName()`
+is what `claim` and the epic CLI record in preference to a passed name. When the directory was
+swept, `SessionStart` re-derives the name from a claim or epic record. Every `session.json` writer spreads
 the existing object; `maestro-set-session-workflow.cjs` is the only one that removes a key, ending
 the meeting through `closeMeeting`.
 
@@ -151,6 +159,11 @@ unreadable or dangling pointer falls back to the given `claudeDir`.
   session holds a claim (see `task-queue` claims). A freeform run (no task file) gets the same
   isolation from `freeform-check` (`103`): branch `freeform-<id>`, and the pointer carries
   `freeform: true` with `task` = that branch name.
+- **Dependencies (`135`).** A new worktree has no `node_modules` and the agent cannot install, so
+  `worktree`/`freeform-check` print a `STOP:` notice (from `worktree-deps.ts`) naming the user's
+  install command, picked from the lockfile (no guess when unknown or ambiguous); template Step 2
+  tells the orchestrator to stop and not dispatch `@test`/`@reviewer`. `done` refuses while the
+  session worktree still lacks dependencies. Details: `task-queue` claims.
 - **Cleanup touches two dirs.** `removeSessionState`, `sweepStaleSessions` and `deleteSession` use
   `sessionDirsFor`, removing both the worktree's and the main checkout's session dir. The worktree
   and branch themselves are **never** removed automatically; only an explicit

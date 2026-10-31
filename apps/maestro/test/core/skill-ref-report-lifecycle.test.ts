@@ -15,13 +15,13 @@ let installPath: string;
 beforeAll(() => {
   tmp = fs.mkdtempSync(path.join(os.tmpdir(), "skill-ref-lifecycle-"));
   home = path.join(tmp, "home");
-  installPath = path.join(tmp, "cache", "concept-skills");
+  installPath = path.join(tmp, "cache", "code-graph");
   fs.mkdirSync(path.join(installPath, "skills", "scribe"), { recursive: true });
   fs.writeFileSync(path.join(installPath, "skills", "scribe", "SKILL.md"), "x");
   fs.mkdirSync(path.join(home, ".claude", "plugins"), { recursive: true });
   fs.writeFileSync(
     path.join(home, ".claude", "plugins", "installed_plugins.json"),
-    JSON.stringify({ plugins: { "concept-skills@maestro": [{ installPath }] } })
+    JSON.stringify({ plugins: { "code-graph@code-graph": [{ installPath }] } })
   );
 });
 afterAll(() => fs.rmSync(tmp, { recursive: true, force: true }));
@@ -46,22 +46,26 @@ const cfg = (skills: string[]) => ({
 
 describe("skillRefReport lifecycle", () => {
   it("clears the mark and the hint once the plugin is enabled outside the app", () => {
-    const root = makeProject(cfg(["concept-skills:scribe"]));
+    const root = makeProject(cfg(["code-graph:scribe"]));
     const before = skillRefReport(root, home);
-    expect(before.dangling.map((d) => [d.id, d.reason])).toEqual([["concept-skills:scribe", "plugin-not-enabled"]]);
-    expect(before.suggestions.some((s) => s.includes("concept-skills plugin is not enabled"))).toBe(true);
+    expect(before.dangling.map((d) => [d.id, d.reason])).toEqual([["code-graph:scribe", "plugin-not-enabled"]]);
+    // The legacy state file is hinted toward code-graph.
+    expect(before.suggestions.some((s) => s.includes("/code-graph-install"))).toBe(true);
 
     fs.writeFileSync(
       path.join(root, ".claude", "settings.json"),
-      JSON.stringify({ enabledPlugins: { "concept-skills@maestro": true } })
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
     );
-    expect(skillRefReport(root, home)).toEqual({ dangling: [], suggestions: [] });
+    // Enabling code-graph clears both the dangling mark and the migrate hint.
+    const after = skillRefReport(root, home);
+    expect(after.dangling).toEqual([]);
+    expect(after.suggestions).toEqual([]);
   });
 
   it("clears the mark after the reference is removed from the file", () => {
-    const root = makeProject(cfg(["concept-skills:scribe", "nope"]));
+    const root = makeProject(cfg(["code-graph:scribe", "nope"]));
     expect(skillRefReport(root, home).dangling.map((d) => d.id)).toContain("nope");
-    fs.writeFileSync(path.join(root, ".claude", "maestro.json"), JSON.stringify(cfg(["concept-skills:scribe"])));
+    fs.writeFileSync(path.join(root, ".claude", "maestro.json"), JSON.stringify(cfg(["code-graph:scribe"])));
     expect(skillRefReport(root, home).dangling.map((d) => d.id)).not.toContain("nope");
   });
 

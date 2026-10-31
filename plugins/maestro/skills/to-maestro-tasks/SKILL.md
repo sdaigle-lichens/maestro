@@ -68,6 +68,11 @@ Iterate until the user approves the breakdown.
 
 Once approved, prepare one object per approved task — **do not write the markdown files or `status.json` by hand.** Order tasks in the array exactly as the topological order from Step 3 (blockers before dependents; the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild` — choosing the workflow is the orchestrator's job (`maestro.md` Step 1), not the prompt's.
 
+**Make `whatToBuild` name every kind of change the criteria need.** The orchestrator picks the workflow from the description, so a description that sounds like docs gets a docs-only run, even when a criterion needs code.
+- A criterion that reaches across the repo ("no file still points users at X", "every reference renamed") needs the description to say whether **user-facing strings in source** (messages, help text, errors) are in scope. If they are, say "including messages in source code" in the description, not only in the criterion.
+- When the work is mostly docs or skill files but also includes code, tests, version bumps or a build/regenerate step, list those in the description too, in plain words.
+- A criterion that only a later step can meet (e.g. "the ported tests pass") is fine. State it as the end state, not as something the first change must achieve on its own.
+
 ```json
 [
   {

@@ -293,11 +293,24 @@ const HOOK_REGISTRATIONS = [
   // Same two entrances again, watching for /maestro-post-mortem.
   nodeHook("UserPromptExpansion", "maestro-post-mortem", "maestro-post-mortem-context.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-post-mortem-context.cjs"),
+  // `113`: session names. ONE UserPromptExpansion entry for both /maestro and /maestro-manager:
+  // hasHook keys on event + script, so a second entry for the same script would never be written.
+  nodeHook("UserPromptExpansion", "^(maestro|(maestro:)?maestro-manager)$", "maestro-session-name.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-session-name.cjs"),
+  nodeHook("UserPromptSubmit", "", "maestro-session-name.cjs"),
+  nodeHook("SessionStart", "", "maestro-session-name.cjs"),
+  // `141`: the session heartbeat (claim liveness while the session waits on the user).
+  nodeHook("SessionStart", "", "maestro-session-heartbeat.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
+  // `121`: the channel write guard — see install.ts's HOOK_SCRIPTS for why it is project-local too.
+  nodeHook("PreToolUse", "Write|Edit|MultiEdit|NotebookEdit", "maestro-channel-write-guard.cjs"),
+  // `130`: denies AskUserQuestion at a human review until that round's review file exists; `132`:
+  // at a manager review, a SendMessage to the epic's manager too.
+  nodeHook("PreToolUse", "AskUserQuestion|SendMessage", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
@@ -335,6 +348,29 @@ function addMissingHooks(settings) {
   return added;
 }
 
+// Move each of our hooks registered under an older matcher to its current one, in place (`132`: the
+// review gate went from `AskUserQuestion` to `AskUserQuestion|SendMessage`). addMissingHooks skips
+// a script already registered on its event whatever the matcher, so without this a re-install keeps
+// the old one. An entry holding only our hook has its matcher rewritten; from a shared entry ours is
+// removed and addMissingHooks adds it back. Mirrors install.ts's updateHookMatchers. Returns the ids moved.
+function updateHookMatchers(settings) {
+  const moved = [];
+  for (const reg of HOOK_REGISTRATIONS) {
+    const entries = settings.hooks && settings.hooks[reg.event];
+    if (!Array.isArray(entries)) continue;
+    const ours = (h) => !!h && typeof h.command === "string" && h.command.includes(`.claude/scripts/${reg.script}`);
+    if (entries.some((e) => e && e.matcher === reg.matcher && Array.isArray(e.hooks) && e.hooks.some(ours))) continue;
+    for (const entry of entries) {
+      if (!entry || entry.matcher === reg.matcher || !Array.isArray(entry.hooks) || !entry.hooks.some(ours)) continue;
+      if (entry.hooks.every(ours)) entry.matcher = reg.matcher;
+      else entry.hooks = entry.hooks.filter((h) => !ours(h));
+      moved.push(reg.id);
+      break;
+    }
+  }
+  return moved;
+}
+
 // Strip every retired script's hook from `settings` in place. Returns the ids removed. A command is
 // ours only if it points into `.claude/scripts/` and names a retired script; an entry or event list
 // is dropped only where WE emptied it.
@@ -369,7 +405,31 @@ function removeRetiredHooks(settings) {
   return removed;
 }
 
-// Merge every missing hook registration into settings.json, preserving all other keys.
+// The permission allow rule for agent channel writes (`139`); mirrors install.ts's
+// CHANNEL_WRITE_ALLOW_RULE / addChannelAllowRule. The classifier intermittently denied a worktree
+// agent's write into the main checkout's .claude/channels/; an allow rule is evaluated before it.
+// A single leading slash anchors the pattern to the settings file's project root.
+const CHANNEL_WRITE_ALLOW_RULE = "Write(/.claude/channels/**)";
+
+// Add the rule to permissions.allow in place unless present. Returns the rules added. A non-object
+// permissions or non-array allow is the user's and is left alone.
+function addChannelAllowRule(settings) {
+  const permissions = settings.permissions;
+  if (
+    permissions !== undefined &&
+    (permissions === null || typeof permissions !== "object" || Array.isArray(permissions))
+  )
+    return [];
+  const perms = permissions || {};
+  if (perms.allow !== undefined && !Array.isArray(perms.allow)) return [];
+  const allow = perms.allow || [];
+  if (allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return [];
+  perms.allow = [...allow, CHANNEL_WRITE_ALLOW_RULE];
+  settings.permissions = perms;
+  return [CHANNEL_WRITE_ALLOW_RULE];
+}
+
+// Merge every missing hook registration and the channel allow rule into settings.json, preserving all other keys.
 function mergeSettings(settingsPath) {
   let settings = {};
   if (fs.existsSync(settingsPath)) {
@@ -380,12 +440,14 @@ function mergeSettings(settingsPath) {
     }
   }
   const hooksRemoved = removeRetiredHooks(settings);
+  const hooksMoved = updateHookMatchers(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksRemoved.length > 0 || hooksAdded.length > 0) {
+  const permissionsAdded = addChannelAllowRule(settings);
+  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0) {
     ensureDir(path.dirname(settingsPath));
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
   }
-  return { hooksAdded, hooksRemoved };
+  return { hooksAdded, hooksRemoved, permissionsAdded };
 }
 
 // The hook scripts the plugin runs as `.js`, copied into the project as `.cjs` — see
@@ -400,6 +462,15 @@ const HOOK_SCRIPTS = [
   "maestro-enable-task-routing",
   // Injects the active task's Post-Mortem section + postmortems.log tail before /maestro-post-mortem runs.
   "maestro-post-mortem-context",
+  // Records and applies the deterministic session name `maestro[-mgr]-<id8>` (113).
+  "maestro-session-name",
+  // Confines the reviewer/refactor agents and meeting participants; refuses worktree-run writes
+  // into the main checkout (078/082/121).
+  "maestro-channel-write-guard",
+  // Blocks AskUserQuestion at a human review until the round's review file exists (130).
+  "maestro-human-review-gate",
+  // SessionStart: spawns the detached session heartbeat that keeps an open session's claim live (141).
+  "maestro-session-heartbeat",
 ];
 
 // Every file this install copies into a project, `{ src, dest, executable? }` relative to the
@@ -867,7 +938,7 @@ function main() {
       scriptsWritten.push(asset.dest);
     }
 
-    const { hooksAdded, hooksRemoved } = mergeSettings(path.join(claudeDir, "settings.json"));
+    const { hooksAdded, hooksRemoved, permissionsAdded } = mergeSettings(path.join(claudeDir, "settings.json"));
     // After the settings write: a crash between the two leaves a harmless unreferenced file, never
     // a hook pointing at a file that is gone.
     const retiredScriptsRemoved = [];
@@ -941,6 +1012,7 @@ function main() {
         orchestratorSkill,
         scriptsWritten,
         hooksAdded,
+        permissionsAdded,
         hooksRemoved,
         retiredScriptsRemoved,
         wroteRepoGitignore,

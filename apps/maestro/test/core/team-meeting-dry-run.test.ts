@@ -130,7 +130,7 @@ function projectFingerprint(root: string): Record<string, string> {
 
 /** The write guard hook, called as Claude Code would for a participant's Write. */
 function participantWrite(root: string, agent: string, file: string) {
-  const r = spawnSync("node", [path.join(PLUGIN_SCRIPTS, "maestro-channel-write-guard.js")], {
+  const r = spawnSync("node", [path.join(root, ".claude", "scripts", "maestro-channel-write-guard.cjs")], {
     encoding: "utf8",
     env: env(root),
     input: JSON.stringify({

@@ -40,9 +40,10 @@
 //       clean SessionEnd) is reaped automatically before the attempt, so a
 //       crashed session's claim never blocks a fresh one.
 //
-//       `--name <session name>` (`084`) records the claiming session's NAME beside its id, because
-//       cross-session messages are addressed by name and the id is all a hook can learn. The
-//       orchestrator reads its name from the agent listing. A claim without it works and shows as
+//       The claim records the claiming session's NAME beside its id (`084`), because cross-session
+//       messages are addressed by name. Since `113` the CLI fills it in from the name the
+//       session-name hook stored (`maestro-<id8>`, or the user's custom title); `--name <session
+//       name>` is only the fallback when none is stored. A claim with neither works and shows as
 //       unnamed. `maestro-epic.cjs show` lists each running task with that name.
 //
 //   node maestro-task-status.cjs release [filename]
@@ -58,6 +59,11 @@
 //       queue (status.json, claims/) stays in the main checkout either way. A worktree path or branch
 //       that already exists is reported, never reused or overwritten. Never merges, pushes or removes.
 //
+//       `135`: both `worktree` and `freeform-check` then check the worktree for installed dependencies
+//       (a package.json with no node_modules). When missing they print a STOP notice with the exact
+//       install command for the user (package manager from the lockfile; unknown/ambiguous gets
+//       guidance, never a guessed command). Re-run the same command to confirm. `done` refuses while
+//       the session's worktree still lacks them. Nothing is installed or linked.
 //   node maestro-task-status.cjs freeform-check
 //       The same decision for a freeform /maestro run (no task file) (`098`, `103`). Another live session
 //       (a task claim, or a freeform run) means THIS session gets its own worktree
@@ -100,6 +106,13 @@ const {
   isFreeformBranch,
   SESSION_WORKTREE_NAME,
   CLAIM_IDLE_CAP_MS,
+  HEARTBEAT_STALE_MS,
+  SESSION_HEARTBEAT_NAME,
+  storedName,
+  missingDependenciesNotice,
+  pendingResumeDeliveries,
+  dropResolvedMissingPayloads,
+  isChannelScope,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -107,9 +120,10 @@ const {
 const projectDir = mainCheckoutRoot(process.env.CLAUDE_PROJECT_DIR || process.cwd());
 const [command, arg] = process.argv.slice(2);
 
-// `084`: `claim <filename> --name <session name>`. The orchestrator learns its session's name from
-// the agent listing (hooks never have it) and records it so a manager can message the session
-// running a task. Absent or empty means an unnamed claim, which works exactly as before.
+// `084`: `claim <filename> --name <session name>` records the session's name so a manager can
+// message the session running a task. `113`: the name the session-name hook stored in session.json
+// (`maestro-<id8>`, or the user's custom title) is recorded in preference, so `--name` is only a
+// fallback for a session with no stored name. Neither means an unnamed claim, which still works.
 function flagValue(flag) {
   const args = process.argv.slice(2);
   const i = args.indexOf(flag);
@@ -191,11 +205,20 @@ function readClaimFile(filePath) {
   }
 }
 
-// Live iff the claiming session's directory still exists AND its log.jsonl was modified within
-// CLAIM_IDLE_CAP_MS. A missing directory (clean SessionEnd) is dead immediately.
+// Live iff the claiming session's directory still exists AND (`141`): when it holds a `heartbeat`
+// file, that file's mtime is within HEARTBEAT_STALE_MS (a present-but-stale heartbeat is dead even
+// with a fresh log); otherwise its log.jsonl was modified within CLAIM_IDLE_CAP_MS. A missing
+// directory (clean SessionEnd) is dead immediately. Same rule as isSessionLive in claims.ts.
 function isSessionLive(sessionId, now) {
   const paths = sessionPathsFor(path.join(projectDir, ".claude"), sessionId);
   if (!paths || !fs.existsSync(paths.dir)) return false;
+  let heartbeat = null;
+  try {
+    heartbeat = fs.statSync(path.join(paths.dir, SESSION_HEARTBEAT_NAME));
+  } catch {
+    // No heartbeat file: a runtime predating it — fall back to the log rule below.
+  }
+  if (heartbeat) return now - heartbeat.mtimeMs <= HEARTBEAT_STALE_MS;
   try {
     const stat = fs.statSync(paths.log);
     return now - stat.mtimeMs <= CLAIM_IDLE_CAP_MS;
@@ -323,7 +346,8 @@ function freeformCheck(sessionId) {
   const existing = readWorktreePointer(path.join(projectDir, ".claude"), sessionId);
   if (existing) {
     process.stdout.write(
-      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n`
+      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n` +
+        existingWorktreeNotice(existing.path)
     );
     return;
   }
@@ -383,7 +407,8 @@ function setupWorktree(filename, sessionId) {
   const existing = readWorktreePointer(claudeDir, sessionId);
   if (existing) {
     process.stdout.write(
-      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n`
+      `Maestro tasks: this session already works in worktree ${existing.path} (branch ${existing.branch}) — keep using it\n` +
+        existingWorktreeNotice(existing.path)
     );
     return;
   }
@@ -487,9 +512,18 @@ function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointe
     `Maestro tasks: another live session (${foreign.sessionId}) is active, so ${subject} runs in its own worktree.\n` +
       `  worktree: ${wtPath}\n  branch:   ${branch}\n` +
       "Do ALL of this session's work there: tell every subagent to use that directory as its working directory and absolute paths under it, " +
-      `and never edit the main checkout (${projectDir}). The task queue and .claude/ channels stay in the main checkout (${projectDir}/.claude/...). ` +
+      `and never edit the main checkout (${projectDir}). The task queue and this task's .claude/channels/<scope>/ lanes stay in the main checkout (${projectDir}/.claude/...). ` +
       "If edits there are denied, ask the user to allow the worktree directory (/add-dir).\n"
   );
+  // `135`: a fresh checkout has no installed dependencies; stop with the user's install command.
+  const notice = missingDependenciesNotice(wtPath);
+  if (notice) process.stdout.write(notice);
+}
+
+// `135`: the reminder printed when a worktree is (re)confirmed, so re-running `worktree` after the
+// user's install is how the orchestrator verifies it. Empty when the dependencies are in place.
+function existingWorktreeNotice(wtPath) {
+  return missingDependenciesNotice(wtPath) || "";
 }
 
 // ── finishing a worktree task (`076`) ───────────────────────────────────────
@@ -610,25 +644,18 @@ const SANDBOX_DENIAL =
 // hand-maintained maestro-tasks.cjs) or in this repo's tracked MIRROR of one
 // (.claude/scripts/lib/*.cjs) is never resolved by hand-merging the bundle text. Two tasks that both
 // rebuilt the same lib always collide there. The fix is mechanical: resolve the TypeScript source
-// conflicts first, rebuild the plugin libs, then copy each plugin lib over its mirror.
+// conflicts first, then `pnpm refresh:runtime` rebuilds the plugin libs and copies each over its mirror.
 function generatedLibResolution(conflicts) {
-  const kinds = conflicts.map((f) => {
+  const generated = conflicts.every((f) => {
     const m = /^(plugins\/maestro|\.claude)\/scripts\/lib\/([^/]+\.cjs)$/.exec(f);
-    if (!m || m[2] === "maestro-tasks.cjs") return null;
-    return { file: f, name: m[2], mirror: m[1] === ".claude" };
+    return m && m[2] !== "maestro-tasks.cjs";
   });
-  if (!conflicts.length || kinds.some((k) => k === null)) return null;
-  const mirrors = kinds.filter((k) => k.mirror);
+  if (!conflicts.length || !generated) return null;
   return (
     "Every conflicting file is a generated plugin lib or its tracked mirror, so do NOT edit the bundle text. Resolve like this in the worktree:\n" +
     "  1. resolve any conflict in apps/maestro/src/core/** first (none listed here means the sources merged cleanly);\n" +
-    "  2. rebuild the libs: `pnpm --filter maestro build:plugin-libs`;\n" +
-    (mirrors.length
-      ? "  3. copy each plugin lib over its mirror: " +
-        mirrors.map((k) => `\`cp plugins/maestro/scripts/lib/${k.name} .claude/scripts/lib/${k.name}\``).join(", ") +
-        ";\n"
-      : "  3. (no mirror conflicted, but copy any changed lib over its .claude/scripts/lib/ mirror anyway);\n") +
-    "  4. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
+    "  2. run `pnpm refresh:runtime` (rebuilds the libs and copies each over its .claude/scripts/lib/ mirror; a sandboxed agent hands the user `! pnpm refresh:runtime`);\n" +
+    "  3. `git add` those files, run `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, commit, then ask for the merge again.\n"
   );
 }
 
@@ -867,7 +894,11 @@ function planStepCommand(label, status) {
     process.exit(1);
   }
   if (status === "done") plan.steps[index].status = "done";
-  else for (let i = index; i < plan.steps.length; i++) plan.steps[i].status = "pending";
+  else {
+    for (let i = index; i < plan.steps.length; i++) plan.steps[i].status = "pending";
+    // `130`: each loop-back starts a new human-review round (its own review file).
+    plan.loopbacks = (typeof plan.loopbacks === "number" ? plan.loopbacks : 0) + 1;
+  }
   plan.updated_at = new Date().toISOString();
   writeSessionState(file, state);
   process.stdout.write(`Maestro plan: "${label}" -> ${status}.\n${renderPlan(plan)}\n`);
@@ -884,18 +915,51 @@ function planShowCommand() {
 function handoffIssuesCommand() {
   const file = sessionStateFile();
   const state = file ? readSessionState(file) : {};
-  const issues = Array.isArray(state.handoff_issues) ? state.handoff_issues : [];
+  // A `missing_payload` whose files are all in their lane now, stamped with THIS run's id, is
+  // resolved (a resumed agent's earlier file still exists): reporting it sends the orchestrator after
+  // a file that is already there. Same check `maestro-resume-target.cjs` makes (`139`).
+  const recorded = Array.isArray(state.handoff_issues) ? state.handoff_issues : [];
+  let issues = recorded;
+  if (recorded.some((i) => i && i.kind === "missing_payload") && typeof state.run_id === "string" && state.run_id) {
+    try {
+      // `144`: a recorded file names its scope — `.claude/channels/<scope>/<receiver>/…` — and was
+      // recorded by this session, so it is this session's scope. A legacy unscoped path matches no
+      // scope and is never looked up (it is never delivered either).
+      const present = [];
+      const lanes = new Map();
+      for (const i of recorded) {
+        if (!i || i.kind !== "missing_payload") continue;
+        for (const f of i.files || []) {
+          const m = /^\.claude\/channels\/([^/]+)\/([^/]+)\//.exec(f);
+          if (m && isChannelScope(m[1])) lanes.set(`${m[1]}/${m[2]}`, { scope: m[1], receiver: m[2] });
+        }
+      }
+      for (const { scope, receiver } of lanes.values()) {
+        present.push(...pendingResumeDeliveries(projectDir, scope, receiver, state.run_id));
+      }
+      issues = dropResolvedMissingPayloads(recorded, present);
+    } catch {
+      issues = recorded;
+    }
+  }
   if (!issues.length) {
+    if (recorded.length) {
+      delete state.handoff_issues;
+      writeSessionState(file, state);
+    }
     process.stdout.write("Maestro handoffs: no problems recorded.\n");
     return;
   }
   // `087` adds `missing_payload`: the route taken expects a payload the sender never wrote.
+  // `108` adds `unrouted`: a condition label the active workflow has no edge for.
   const what = (i) =>
     i.kind === "missing"
       ? "NO HANDOFF line"
       : i.kind === "missing_payload"
         ? `NO PAYLOAD written for HANDOFF: ${i.label}${i.agent_id ? ` (agent_id ${i.agent_id})` : ""}`
-        : "verdict FAIL but HANDOFF: success";
+        : i.kind === "unrouted"
+          ? `NO ROUTE for HANDOFF: ${i.label}`
+          : "verdict FAIL but HANDOFF: success";
   const lines = issues.map(
     (i) => `  - ${i.agent}: ${what(i)}` + `${i.verdict ? ` (verdict ${i.verdict})` : ""}. ${i.message}`
   );
@@ -904,14 +968,14 @@ function handoffIssuesCommand() {
   const payloadIssues = issues.filter((i) => i.kind === "missing_payload");
   // `104`: in a worktree run the agent's channel write (a cross-checkout write into the main
   // checkout) is intermittently denied by the auto-mode classifier — not by a Maestro hook, whose
-  // guard allows .claude/channels/. Resuming the agent to retry the write just meets the same
+  // guard allows this session's .claude/channels/<scope>/. Resuming the agent to retry the write just meets the same
   // judgement, so the sanctioned path is: the agent returns the payload, the orchestrator writes it.
   const worktreeNote =
     inWorktree && payloadIssues.length
       ? '\nWorktree run — the missing-payload advice above ("resume this agent and ask it to write that file") is replaced by this:\n' +
-        "  - Writing into the main checkout's .claude/channels/ from a worktree is intermittently denied by the permission classifier. The sanctioned path is that YOU write the channel file for the agent.\n" +
-        "  - Find the payload in the agent's final message (the JSON block it returned). Write its body (no stamp line) with the Write tool to the named file under the MAIN checkout's .claude/channels/ (absolute path)" +
-        `${wt.main_root ? ` — ${wt.main_root}/.claude/channels/` : ""}. This is a Maestro-sanctioned write; it needs no user approval, so do not ask the user.\n` +
+        "  - Writing into the main checkout's .claude/channels/<scope>/ from a worktree is intermittently denied by the permission classifier. The sanctioned path is that YOU write the channel file for the agent.\n" +
+        "  - Find the payload in the agent's final message (the JSON block it returned). Write its body (no stamp line) with the Write tool to exactly the named file — its .claude/channels/<scope>/<receiver>/ path, scope included — under the MAIN checkout (absolute path)" +
+        `${wt.main_root ? ` — ${wt.main_root}/<that path>` : ""}. This is a Maestro-sanctioned write; it needs no user approval, so do not ask the user.\n` +
         "  - If the agent returned no payload, resume it (SendMessage to its agent_id) and ask for the payload JSON in its final message, not for a file write. Never invent or reconstruct one yourself.\n" +
         "  - A file you write is unstamped, so the receiver's SubagentStart only mentions it. Name the file's path in the receiver's dispatch (or SendMessage) prompt and tell it to Read it first.\n"
       : "";
@@ -974,6 +1038,14 @@ try {
       );
       process.exit(1);
     }
+    // `135`: a task whose worktree has no installed dependencies cannot have been tested there.
+    const doneSession = ownSessionId();
+    const doneWorktree = doneSession ? readWorktreePointer(path.join(projectDir, ".claude"), doneSession) : null;
+    const doneNotice = doneWorktree ? missingDependenciesNotice(doneWorktree.path) : null;
+    if (doneNotice) {
+      process.stdout.write(`Maestro tasks: done REFUSED — nothing was marked done. ${doneNotice}`);
+      process.exit(1);
+    }
     const { map, marked } = markDone(projectDir, filename);
     if (!marked) {
       process.stderr.write(
@@ -1022,7 +1094,8 @@ try {
       process.exit(1);
     }
     const filename = path.basename(target);
-    const sessionName = flagValue("--name");
+    // `113`: the session's stored name wins over a passed one; `--name` is only the fallback.
+    const sessionName = storedName(path.join(projectDir, ".claude"), sessionId) || flagValue("--name");
     const result = claimTask(filename, sessionId, Date.now(), sessionName);
     if (result.outcome === "claimed") {
       process.stdout.write(

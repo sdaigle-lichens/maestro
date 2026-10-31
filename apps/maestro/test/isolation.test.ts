@@ -287,8 +287,8 @@ describe("the claude bridge across the process boundary", () => {
     // user comparing the two would be looking at a lie. So the two are compared here rather than
     // deduplicated: this asserts the renderer's LITERAL against what the builder actually returns,
     // not against a third copy of the string.
-    const literal = read("src/renderer/src/routes/maestro-tasks.tsx").match(/`(Use \/maestro[^`]*)`/);
-    expect(literal, "no Use /maestro template literal in the route").not.toBeNull();
+    const literal = read("src/renderer/src/routes/maestro-tasks.tsx").match(/`(\/maestro Complete[^`]*)`/);
+    expect(literal, "no `/maestro Complete ...` template literal in the route").not.toBeNull();
 
     const project = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-prompt-drift-"));
     try {

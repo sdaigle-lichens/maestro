@@ -14,7 +14,8 @@
 //
 //   What the registrations this file writes then MEAN to the plugin's own copy of the same hooks
 //   is hook-arbitration.ts: the plugin's copy stands down for any hook the project registers here,
-//   so both being installed is a precedence rule and not the double-firing it used to be.
+//   so both being installed is a precedence rule and not the double-firing it used to be. The one
+//   exception is the channel write guard (task 122): the plugin's copy of it never stands down.
 //
 // Three rules this file exists to enforce:
 //
@@ -153,6 +154,21 @@ const HOOK_SCRIPTS = [
   // `## Post-Mortem` section and a tail of `.claude/postmortems.log` as context before that skill
   // runs, so its own prose doesn't re-derive them by hand every time.
   "maestro-post-mortem-context",
+  // Deterministic session names (`113`): records `maestro[-mgr]-<id8>` on the /maestro and
+  // /maestro-manager entrances and applies it as the session title on UserPromptSubmit and
+  // SessionStart, so a restarted session keeps the name its epic and claims recorded.
+  "maestro-session-name",
+  // The write guard (`078`/`082`): confines the reviewer and refactor agents (and team-meeting
+  // participants) and refuses worktree-run writes into the main checkout. It is registered here
+  // because those agents' frontmatter carries no `disallowedTools` — a project that gets its
+  // hooks only from this install (a forked `reviewer`, a `~/.claude/agents` copy, the plugin
+  // disabled) would otherwise run them with nothing confining their writes.
+  "maestro-channel-write-guard",
+  // Denies AskUserQuestion at a human review until that round's review file exists (`130`).
+  "maestro-human-review-gate",
+  // SessionStart: spawns the detached heartbeat that keeps an open session's claim live while it
+  // waits on the user, and frees it within about a minute of the session ending (`141`).
+  "maestro-session-heartbeat",
 ] as const;
 
 const STATIC_ASSETS: RuntimeAsset[] = [
@@ -272,7 +288,14 @@ export function runtimeAssets(_pluginRoot?: string): RuntimeAsset[] {
 // ── the hooks ──────────────────────────────────────────────────────────────
 
 export type HookEvent =
-  "UserPromptExpansion" | "SubagentStart" | "SubagentStop" | "PreToolUse" | "PostToolUse" | "SessionEnd";
+  | "UserPromptExpansion"
+  | "UserPromptSubmit"
+  | "SessionStart"
+  | "SubagentStart"
+  | "SubagentStop"
+  | "PreToolUse"
+  | "PostToolUse"
+  | "SessionEnd";
 
 export interface HookRegistration {
   event: HookEvent;
@@ -298,6 +321,12 @@ const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
  */
 export const RETIRED_HOOK_SCRIPTS = ["bash-validation.sh"];
 
+/** The /maestro and /maestro-manager entrances, as one UserPromptExpansion matcher (`113`). */
+export const SESSION_NAME_EXPANSION_MATCHER = "^(maestro|(maestro:)?maestro-manager)$";
+
+/** The file-write tools the channel write guard watches (`078`); identical to hooks.json. */
+export const CHANNEL_GUARD_MATCHER = "Write|Edit|MultiEdit|NotebookEdit";
+
 function nodeHook(event: HookEvent, matcher: string, script: string): HookRegistration {
   return { event, matcher, script, command: `node "${SCRIPTS_VAR}/${script}"`, id: `${event}:${script}` };
 }
@@ -305,11 +334,12 @@ function nodeHook(event: HookEvent, matcher: string, script: string): HookRegist
 /**
  * What the app registers in the project's `.claude/settings.json`.
  *
- * Mirrors the plugin's hooks.json one-for-one. It used to be "minus two": a SessionStart that
- * refcounted live sessions against the per-project web-app container, and the four
- * UserPromptExpansion entries that launched that container for the `create-*` commands. M5 deleted
- * both from the plugin, so there is no longer any divergence to explain — if this list and
- * hooks.json ever differ again, that is a bug in one of them.
+ * Mirrors the plugin's hooks.json one-for-one: every script hooks.json registers has a project
+ * twin here, with the same event and matcher (the plugin's SessionEnd `.sh` twin is the `.cjs`).
+ * The channel write guard was missing from this list for a while (`121`) even though this comment
+ * claimed parity; it is registered now because a project-local install can run the reviewer and
+ * refactor agents without the plugin, and the guard is the only thing confining them. If this list
+ * and hooks.json ever differ again, that is a bug in one of them.
  *
  * SubagentStop IS included even though the plan lists only four events — without it the session log
  * has dispatch entries with no matching handoff, and /session-log renders half a conversation.
@@ -329,11 +359,24 @@ export const HOOK_REGISTRATIONS: HookRegistration[] = [
   // Same two entrances again, watching for /maestro-post-mortem.
   nodeHook("UserPromptExpansion", "maestro-post-mortem", "maestro-post-mortem-context.cjs"),
   nodeHook("PreToolUse", "Skill", "maestro-post-mortem-context.cjs"),
+  // `113`: session names. ONE UserPromptExpansion entry for both commands, not one per command:
+  // a registration is keyed on event + script (`hasHook`), so a second UserPromptExpansion entry
+  // for the same script would read as already registered and never be written. The anchored regex
+  // covers `maestro`, `maestro-manager` and the plugin-namespaced `maestro:maestro-manager`.
+  nodeHook("UserPromptExpansion", SESSION_NAME_EXPANSION_MATCHER, "maestro-session-name.cjs"),
+  nodeHook("PreToolUse", "Skill", "maestro-session-name.cjs"),
+  nodeHook("UserPromptSubmit", "", "maestro-session-name.cjs"),
+  nodeHook("SessionStart", "", "maestro-session-name.cjs"),
+  // `141`: the session heartbeat (claim liveness while the session waits on the user).
+  nodeHook("SessionStart", "", "maestro-session-heartbeat.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-inject-agent-context.cjs"),
   nodeHook("SubagentStart", ".*", "maestro-subagent-log.cjs"),
   nodeHook("SubagentStop", ".*", "maestro-subagent-log.cjs"),
   nodeHook("PreToolUse", ".*", "maestro-session-log.cjs"),
   nodeHook("PostToolUse", "TaskCreate", "maestro-validate-tasks.cjs"),
+  nodeHook("PreToolUse", CHANNEL_GUARD_MATCHER, "maestro-channel-write-guard.cjs"),
+  // `132`: also SendMessage, so a manager review request waits for that round's review file.
+  nodeHook("PreToolUse", "AskUserQuestion|SendMessage", "maestro-human-review-gate.cjs"),
   nodeHook("SessionEnd", "", "maestro-session-cleanup.cjs"),
 ];
 
@@ -347,8 +390,9 @@ export type { HookCommand, HookEntry, Settings } from "./hook-arbitration.js";
  * `settingsRegisterScript` is shared with the runtime guard in hook-arbitration.ts on purpose: the
  * installer uses it so a re-quoted command doesn't get a duplicate entry that fires the hook twice,
  * and the plugin's copy of a hook uses the same test to decide the project owns that hook and stand
- * down. Two answers to "is this script registered here?" that could disagree would put those two
- * mechanisms at odds.
+ * down (except the channel write guard, task 122, whose plugin copy never stands down). Two
+ * answers to "is this script registered here?" that could disagree would put those two mechanisms
+ * at odds.
  */
 function hasHook(settings: Settings, reg: HookRegistration): boolean {
   return settingsRegisterScript(settings, reg.event, reg.script);
@@ -372,6 +416,80 @@ function addMissingHooks(settings: Settings, regs: HookRegistration[] = HOOK_REG
     added.push(reg.id);
   }
   return added;
+}
+
+/**
+ * The permission allow rule for agent channel writes (`139`). In a worktree run the subagents write
+ * their payloads into the MAIN checkout's `.claude/channels/`, and the auto-mode classifier
+ * intermittently denied that as a write to a shared resource. An explicit allow rule is evaluated
+ * before the classifier. A single leading slash anchors the pattern to the settings file's project
+ * root (the main checkout, where the session runs), so it is portable across machines; `//path`
+ * would be absolute and `path` alone would be relative to the session's working directory.
+ */
+export const CHANNEL_WRITE_ALLOW_RULE = "Write(/.claude/channels/**)";
+
+/**
+ * Add `CHANNEL_WRITE_ALLOW_RULE` to `permissions.allow` in place, unless it is already there. Every
+ * other key and rule survives. A non-object `permissions` or non-array `allow` is left alone (it is
+ * the user's, and not ours to repair). Returns the rules added.
+ */
+export function addChannelAllowRule(settings: Settings): string[] {
+  const permissions = settings.permissions;
+  if (
+    permissions !== undefined &&
+    (permissions === null || typeof permissions !== "object" || Array.isArray(permissions))
+  )
+    return [];
+  const perms = (permissions ?? {}) as { allow?: unknown };
+  if (perms.allow !== undefined && !Array.isArray(perms.allow)) return [];
+  const allow = (perms.allow ?? []) as unknown[];
+  if (allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return [];
+  perms.allow = [...allow, CHANNEL_WRITE_ALLOW_RULE];
+  settings.permissions = perms;
+  return [CHANNEL_WRITE_ALLOW_RULE];
+}
+
+/**
+ * Undo `addChannelAllowRule` in place (uninstall). Removes only the exact rule; `allow` and
+ * `permissions` are dropped only when WE emptied them, so nothing of the user's is tidied away.
+ * Returns whether the rule was removed.
+ */
+export function removeChannelAllowRule(settings: Settings): boolean {
+  const perms = settings.permissions as { allow?: unknown } | null | undefined;
+  if (!perms || typeof perms !== "object" || !Array.isArray(perms.allow)) return false;
+  if (!perms.allow.includes(CHANNEL_WRITE_ALLOW_RULE)) return false;
+  const kept = perms.allow.filter((r) => r !== CHANNEL_WRITE_ALLOW_RULE);
+  if (kept.length > 0) perms.allow = kept;
+  else delete perms.allow;
+  if (Object.keys(perms).length === 0) delete settings.permissions;
+  return true;
+}
+
+/**
+ * Move each of our hooks registered under an older matcher to its current one, in place (`132`:
+ * the review gate went from `AskUserQuestion` to `AskUserQuestion|SendMessage`). `addMissingHooks`
+ * skips a script already registered on its event whatever the matcher, so without this a re-install
+ * would keep the old one forever. An entry holding only our hook has its matcher rewritten; from an
+ * entry shared with other hooks ours is removed, and `addMissingHooks` adds it back. Returns the ids
+ * moved.
+ */
+function updateHookMatchers(settings: Settings, regs: HookRegistration[] = HOOK_REGISTRATIONS): string[] {
+  const moved: string[] = [];
+  for (const reg of regs) {
+    const entries = settings.hooks?.[reg.event];
+    if (!Array.isArray(entries)) continue;
+    const ours = (h: { command?: unknown } | null | undefined) =>
+      !!h && typeof h.command === "string" && h.command.includes(`.claude/scripts/${reg.script}`);
+    if (entries.some((e) => e && e.matcher === reg.matcher && Array.isArray(e.hooks) && e.hooks.some(ours))) continue;
+    for (const entry of entries) {
+      if (!entry || entry.matcher === reg.matcher || !Array.isArray(entry.hooks) || !entry.hooks.some(ours)) continue;
+      if (entry.hooks.every(ours)) entry.matcher = reg.matcher;
+      else entry.hooks = entry.hooks.filter((h) => !ours(h));
+      moved.push(reg.id);
+      break;
+    }
+  }
+  return moved;
 }
 
 /**
@@ -728,8 +846,11 @@ export async function installRuntime(
   ensureDir(path.join(projectRoot, ".claude", "scripts"));
 
   const hooksRemoved = removeRetiredHooks(settings);
+  const hooksMoved = updateHookMatchers(settings);
   const hooksAdded = addMissingHooks(settings);
-  if (hooksRemoved.length > 0 || hooksAdded.length > 0) writeJsonAtomic(settingsPath, settings);
+  const permissionsAdded = addChannelAllowRule(settings);
+  if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0)
+    writeJsonAtomic(settingsPath, settings);
   // The retired scripts themselves, after the settings write: a crash between the two leaves a
   // harmless unreferenced file, never a hook pointing at a file that is gone.
   const retiredScriptsRemoved: string[] = [];
@@ -842,6 +963,7 @@ export async function installRuntime(
     orchestratorSkill,
     scriptsWritten,
     hooksAdded,
+    permissionsAdded,
     hooksRemoved,
     retiredScriptsRemoved,
     gitignoreUpdated,
@@ -853,6 +975,7 @@ export async function installRuntime(
       orchestratorSkill.action === "unchanged" &&
       scriptsWritten.length === 0 &&
       hooksAdded.length === 0 &&
+      permissionsAdded.length === 0 &&
       hooksRemoved.length === 0 &&
       retiredScriptsRemoved.length === 0 &&
       !gitignoreUpdated &&
@@ -879,6 +1002,7 @@ async function refusedReport(projectRoot: string, root: string, refusal: ConfigR
     orchestratorSkill: { action: "unchanged", regions: [], backup: null },
     scriptsWritten: [],
     hooksAdded: [],
+    permissionsAdded: [],
     hooksRemoved: [],
     retiredScriptsRemoved: [],
     gitignoreUpdated: false,

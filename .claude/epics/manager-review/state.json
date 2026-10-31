@@ -1,0 +1,321 @@
+{
+  "slug": "manager-review",
+  "created_at": "2026-10-28T00:11:56.709Z",
+  "manager": {
+    "name": "maestro-mgr-3a4fd839",
+    "set_at": "2026-10-28T16:36:26.747Z"
+  },
+  "workers": [
+    {
+      "name": "manager-review-130",
+      "task": "130-human-review-always-shows-its-summary.md",
+      "added_at": "2026-10-28T16:38:29.570Z"
+    },
+    {
+      "name": "manager-review-133",
+      "task": "133-detect-herdr-reliably-under-the-sandbox.md",
+      "added_at": "2026-10-28T16:47:23.379Z"
+    },
+    {
+      "name": "manager-review-134",
+      "task": "134-configurable-model-for-epic-worker-sessions.md",
+      "added_at": "2026-10-28T17:19:53.599Z"
+    },
+    {
+      "name": "manager-review-131",
+      "task": "131-add-the-manager-review-workflow-node.md",
+      "added_at": "2026-10-28T18:02:19.404Z"
+    },
+    {
+      "name": "manager-review-135",
+      "task": "135-task-worktrees-start-with-dependencies-ready.md",
+      "added_at": "2026-10-28T18:09:19.823Z"
+    },
+    {
+      "name": "manager-review-132",
+      "task": "132-manager-review-protocol-between-worker-and-manager.md",
+      "added_at": "2026-10-28T20:05:49.933Z"
+    },
+    {
+      "name": "manager-review-136",
+      "task": "136-one-command-to-refresh-this-repo-s-mirrors-and-orchestrator.md",
+      "added_at": "2026-10-28T21:34:31.878Z"
+    },
+    {
+      "name": "manager-review-137",
+      "added_at": "2026-10-28T23:06:19.456Z"
+    },
+    {
+      "name": "manager-review-138",
+      "added_at": "2026-10-28T23:06:20.300Z"
+    },
+    {
+      "name": "manager-review-139",
+      "added_at": "2026-10-28T23:41:57.486Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "133-detect-herdr-reliably-under-the-sandbox.md",
+      "file": "inbox/r001-133-detect-herdr-reliably-under-the-sandbox.md",
+      "at": "2026-10-28T17:02:45.002Z",
+      "from": "manager-review-133"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-10-28T17:03:05.351Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "130-human-review-always-shows-its-summary.md",
+      "file": "inbox/r002-130-human-review-always-shows-its-summary.md",
+      "at": "2026-10-28T17:21:32.770Z",
+      "from": "manager-review-130"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-10-28T17:21:54.966Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "134-configurable-model-for-epic-worker-sessions.md",
+      "file": "inbox/r003-134-configurable-model-for-epic-worker-sessions.md",
+      "at": "2026-10-28T17:48:25.371Z",
+      "from": "manager-review-134"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "at": "2026-10-28T17:48:35.119Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "131-add-the-manager-review-workflow-node.md",
+      "file": "inbox/r004-131-add-the-manager-review-workflow-node.md",
+      "at": "2026-10-28T19:40:13.147Z",
+      "from": "manager-review-131"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-10-28T19:40:26.773Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "135-task-worktrees-start-with-dependencies-ready.md",
+      "file": "inbox/r005-135-task-worktrees-start-with-dependencies-ready.md",
+      "at": "2026-10-28T19:49:52.591Z",
+      "from": "manager-review-135"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-10-28T19:50:04.729Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r006",
+      "task": "132-manager-review-protocol-between-worker-and-manager.md",
+      "file": "inbox/r006-132-manager-review-protocol-between-worker-and-manager.md",
+      "at": "2026-10-28T21:27:14.236Z",
+      "from": "manager-review-132"
+    },
+    {
+      "kind": "ack",
+      "id": "r006",
+      "at": "2026-10-28T21:27:28.690Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r007",
+      "task": "136-one-command-to-refresh-this-repo-s-mirrors-and-orchestrator.md",
+      "file": "inbox/r007-136-one-command-to-refresh-this-repo-s-mirrors-and-orchestrator.md",
+      "at": "2026-10-28T21:44:52.296Z",
+      "from": "manager-review-136"
+    },
+    {
+      "kind": "ack",
+      "id": "r007",
+      "at": "2026-10-28T21:46:06.657Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m001",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/137-live-check-of-the-manager-review-step.review.md",
+      "at": "2026-10-28T23:09:56.744Z",
+      "from": "manager-review-137"
+    },
+    {
+      "kind": "verdict",
+      "id": "m001",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "verdict": "redirect",
+      "effective": "redirect",
+      "at": "2026-10-28T23:10:06.440Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m002",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "round": 2,
+      "file": ".claude/maestro-tasks/137-live-check-of-the-manager-review-step.review-2.md",
+      "at": "2026-10-28T23:10:47.489Z",
+      "from": "manager-review-137"
+    },
+    {
+      "kind": "review",
+      "id": "m003",
+      "task": "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/138-add-step-modal-three-step-kinds-with-a-review-type-choice.review.md",
+      "at": "2026-10-28T23:10:47.548Z",
+      "from": "manager-review-138"
+    },
+    {
+      "kind": "verdict",
+      "id": "m002",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-10-28T23:10:56.872Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "verdict",
+      "id": "m003",
+      "task": "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-10-28T23:11:03.362Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "137-live-check-of-the-manager-review-step.md",
+      "file": "inbox/r008-137-live-check-of-the-manager-review-step.md",
+      "at": "2026-10-28T23:12:56.814Z",
+      "from": "manager-review-137"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "at": "2026-10-28T23:13:02.281Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r009",
+      "task": "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "file": "inbox/r009-138-add-step-modal-three-step-kinds-with-a-review-type-choice.md",
+      "at": "2026-10-28T23:21:08.172Z",
+      "from": "manager-review-138"
+    },
+    {
+      "kind": "ack",
+      "id": "r009",
+      "at": "2026-10-28T23:21:13.974Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r010",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "file": "inbox/r010-139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "at": "2026-10-28T23:50:46.007Z",
+      "from": "manager-review-139"
+    },
+    {
+      "kind": "ack",
+      "id": "r010",
+      "at": "2026-10-28T23:50:54.124Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m004",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.review.md",
+      "at": "2026-10-29T00:17:56.094Z",
+      "from": "maestro-139"
+    },
+    {
+      "kind": "verdict",
+      "id": "m004",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "verdict": "redirect",
+      "effective": "redirect",
+      "at": "2026-10-29T00:29:39.651Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m005",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "round": 2,
+      "file": ".claude/maestro-tasks/139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.review-2.md",
+      "at": "2026-10-29T00:38:34.925Z",
+      "from": "maestro-139"
+    },
+    {
+      "kind": "verdict",
+      "id": "m005",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-10-29T00:38:47.904Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m006",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "round": 3,
+      "file": ".claude/maestro-tasks/139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.review-3.md",
+      "at": "2026-10-29T00:53:08.195Z",
+      "from": "maestro-139"
+    },
+    {
+      "kind": "verdict",
+      "id": "m006",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-10-29T00:53:18.828Z",
+      "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "report",
+      "id": "r011",
+      "task": "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "file": "inbox/r011-139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md",
+      "at": "2026-10-29T01:03:14.476Z",
+      "from": "maestro-139"
+    },
+    {
+      "kind": "ack",
+      "id": "r011",
+      "at": "2026-10-29T01:03:21.241Z",
+      "by": "maestro-mgr-3a4fd839"
+    }
+  ]
+}

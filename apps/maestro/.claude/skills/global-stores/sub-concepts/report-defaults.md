@@ -27,5 +27,14 @@ set `decideSync`'s `adopt` verdict needs — see `agent-fork-sync`'s shared-deci
 `report-defaults.ts`'s equivalent of `handoff-seeds.ts`'s already-exported `PRIOR_SEEDS`, kept private
 until now only because nothing needed it outside this module.
 
+**A body leaves `PRIOR_SEEDS` while it is current and returns when superseded.** A prior equal to
+the current body would be "refreshed" (version bumped) on every open. `090` made the scribe's V1
+body current again, so it was dropped from `PRIOR_SEEDS.scribe`; `114` appended
+`SCRIBE_ENDING_NOTE` (the `SKILL_GAPS_HANDLED:`/`HANDOFF:` ending rule) to it, so `SCRIBE_REPORT_V1`
+is a prior again beside `SCRIBE_REPORT_V2`. `144` scoped the gap note's path to
+`.claude/channels/<scope>/scribe/<agent>.1.md` (the agent reads `<scope>` from its injected context),
+so each backend-like/test body before it is a v5 prior (`backendLikeV5`, `TEST_REPORT_V5`) and the
+scribe's unscoped ending note is `SCRIBE_REPORT_V3` (`scribeEndingNote(gapsDir)` builds both).
+
 Files: `src/core/report-defaults.ts`, `src/core/report-resolution.ts`, `src/core/report-sync.ts`,
 `src/core/reports.ts`.

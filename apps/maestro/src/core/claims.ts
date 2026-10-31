@@ -12,8 +12,9 @@
 // task instead). EEXIST is not an error condition anywhere in this module.
 //
 // Liveness is derived, never trusted from the claim file's own content: a claim is live iff its
-// session's directory under `maestro_sessions/` still exists AND that session's `log.jsonl` was
-// modified within `CLAIM_IDLE_CAP_MS`. A final `SessionEnd` (not a resumable one, `077`) deletes the whole directory, so that
+// session's directory under `maestro_sessions/` still exists AND its `heartbeat` file (`141`) is
+// fresh, or — with no heartbeat file — that session's `log.jsonl` was modified within
+// `CLAIM_IDLE_CAP_MS` (see `isSessionLive`). A final `SessionEnd` (not a resumable one, `077`) deletes the whole directory, so that
 // claim reads as dead immediately; a crashed session's directory lingers, so its claim ages out
 // once nothing has touched the log for the cap. Dead claims are reclaimable, not errors — reading
 // the queue drops them (best-effort, deleting the stale file so the next read doesn't redo the
@@ -28,6 +29,7 @@ import path from "node:path";
 
 import { sessionPathsFor } from "./session-paths.js";
 import { CLAIM_IDLE_CAP_MS } from "./handoff-channels.js";
+import { heartbeatVerdict } from "./session-heartbeat.js";
 
 export const CLAIMS_DIR_NAME = "claims";
 
@@ -106,15 +108,24 @@ export function claimSessionName(tasksDir: string, filename: string): string | n
 }
 
 /**
- * Live iff the claiming session's directory still exists AND its `log.jsonl` was modified within
- * `CLAIM_IDLE_CAP_MS`. A missing session directory (clean `SessionEnd`) is dead immediately; a
- * directory with no log yet is dead too — the spec's liveness test is conjunctive, not "innocent
- * until proven stale".
+ * Live iff the claiming session's directory still exists AND:
+ *
+ *   - when it holds a `heartbeat` file (`141`, see session-heartbeat.ts): that file's mtime is within
+ *     `HEARTBEAT_STALE_MS`. A present-but-stale heartbeat is DEAD even if the log is fresh — the
+ *     heartbeat zeroes it the moment the session's process is gone, so the claim frees at once;
+ *   - otherwise (a runtime predating the heartbeat): its `log.jsonl` was modified within
+ *     `CLAIM_IDLE_CAP_MS`.
+ *
+ * A missing session directory (clean `SessionEnd`) is dead immediately; a directory with neither a
+ * heartbeat nor a log is dead too — the test is conjunctive, not "innocent until proven stale".
+ * The hand-written twin in `maestro-task-status.cjs` applies the same rule.
  */
 export function isSessionLive(claudeDir: string, sessionId: string, now: number = Date.now()): boolean {
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return false;
   if (!fs.existsSync(paths.dir)) return false;
+  const heartbeat = heartbeatVerdict(paths.dir, now);
+  if (heartbeat !== null) return heartbeat;
   try {
     const stat = fs.statSync(paths.log);
     return now - stat.mtimeMs <= CLAIM_IDLE_CAP_MS;

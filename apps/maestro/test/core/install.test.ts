@@ -51,6 +51,9 @@ const PLUGIN_ROOT = findUpPluginRoot(here)!;
 // nothing about either. `hookEnv` therefore always SETS or DELETES the variable explicitly:
 // nothing in this file is allowed to read the ambient one.
 const HOOK_SESSION = "install-test-session";
+/** `144`: HOOK_SESSION claims no task, so its channels live under `session-<first 8 chars of its id>`. */
+const HOOK_SCOPE = "session-install-";
+const CH = `.claude/channels/${HOOK_SCOPE}`;
 
 /**
  * The environment a copied script runs under. `sessionId: null` deletes the variable outright —
@@ -477,7 +480,8 @@ describe("installRuntime", () => {
     const settings = readSettings(root);
 
     expect(settings.model).toBe("opus");
-    expect(settings.permissions).toEqual({ allow: ["Bash(git status)"] });
+    // The user's rule survives and ours is appended after it (`139`).
+    expect(settings.permissions).toEqual({ allow: ["Bash(git status)", "Write(/.claude/channels/**)"] });
     expect(commandsFor(settings, "PreToolUse")).toContain("/usr/local/bin/my-guard.sh");
     expect(commandsFor(settings, "SessionEnd")).toContain("my-cleanup.sh");
     expect(commandsFor(settings, "Notification")).toEqual(["say hi"]);
@@ -1044,6 +1048,74 @@ describe("the installed hooks actually run", () => {
     expect(fs.existsSync(path.join(root, ".claude", "maestro.json"))).toBe(true);
   });
 
+  // `121`. The channel write guard was in the plugin's hooks.json only, so a project whose hooks
+  // came from this install ran a forked/user-tier `reviewer` with nothing confining its writes.
+  describe("channel write guard (121)", () => {
+    const denied = (out: string) => (out ? JSON.parse(out).hookSpecificOutput.permissionDecision : "allow");
+
+    it("is copied as .cjs and registered under PreToolUse with the plugin's matcher", async () => {
+      const root = makeProject("guard-reg");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      expect(fs.existsSync(path.join(root, ".claude", "scripts", "maestro-channel-write-guard.cjs"))).toBe(true);
+      const entry = readSettings(root).hooks.PreToolUse.find((e: any) =>
+        e.hooks.some((h: any) => h.command.includes("maestro-channel-write-guard.cjs"))
+      );
+      expect(entry.matcher).toBe("Write|Edit|MultiEdit|NotebookEdit");
+      const pluginHooks = JSON.parse(fs.readFileSync(path.join(PLUGIN_ROOT, "hooks", "hooks.json"), "utf8"));
+      const pluginEntry = pluginHooks.hooks.PreToolUse.find((e: any) =>
+        e.hooks.some((h: any) => h.args.join(" ").includes("maestro-channel-write-guard.js"))
+      );
+      expect(entry.matcher).toBe(pluginEntry.matcher);
+    });
+
+    it("denies a reviewer Write outside .claude/channels/ and allows one inside, from the project copy", async () => {
+      const root = makeProject("guard-run");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      const run = (file: string) =>
+        runHook(root, "maestro-channel-write-guard.cjs", {
+          hook_event_name: "PreToolUse",
+          cwd: root,
+          agent_type: "reviewer",
+          tool_name: "Write",
+          tool_input: { file_path: path.join(root, file) },
+        });
+
+      expect(denied(run("src/app.ts"))).toBe("deny");
+      expect(denied(run(`${CH}/scribe/reviewer.1.md`))).toBe("allow");
+      // `144`: the legacy unscoped root and another session's scope are denied.
+      expect(denied(run(".claude/channels/scribe/reviewer.1.md"))).toBe("deny");
+      expect(denied(run(".claude/channels/task-045/scribe/reviewer.1.md"))).toBe("deny");
+    });
+
+    it("the plugin's copy keeps denying once the project registers its own (122: exempt from stand-down)", async () => {
+      const pluginGuard = path.join(PLUGIN_ROOT, "scripts", "maestro-channel-write-guard.js");
+      const payload = (root: string) => ({
+        hook_event_name: "PreToolUse",
+        cwd: root,
+        agent_type: "reviewer",
+        tool_name: "Write",
+        tool_input: { file_path: path.join(root, "src", "app.ts") },
+      });
+      const runPlugin = (root: string) =>
+        execFileSync("node", [pluginGuard], {
+          input: JSON.stringify(payload(root)),
+          encoding: "utf8",
+          env: hookEnv(root, HOOK_SESSION, tmp),
+        });
+
+      const bare = makeProject("guard-bare");
+      expect(denied(runPlugin(bare))).toBe("deny");
+
+      const installed = makeProject("guard-installed");
+      writeConfig(installed, defaultish);
+      await installRuntime(installed, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      expect(denied(runPlugin(installed))).toBe("deny");
+    });
+  });
+
   // `035`. The global report tier, reached from the PROJECT'S copy of the hook — which is the
   // whole point: `.claude/scripts/` is a different `require` root than the marketplace cache the
   // plugin's copy runs from, and until this slice the manifest copied no
@@ -1118,7 +1190,7 @@ describe("the installed hooks actually run", () => {
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
       const injected = runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" });
-      expect(injected).toContain(".claude/channels/test/backend.1.md"); // `036`: the channel file to write, not a field
+      expect(injected).toContain(`${CH}/test/backend.1.md`); // `036`: the channel file to write, not a field
       expect(injected).toContain("behaviors_to_test"); // the backend -> test protocol
 
       fs.writeFileSync(path.join(root, ".claude", "handoffs", "backend", "test.md"), "MY OWN SHAPE\n");
@@ -1140,9 +1212,7 @@ describe("the installed hooks actually run", () => {
       const context = JSON.parse(
         runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })
       ).hookSpecificOutput.additionalContext as string;
-      expect(context).toContain(
-        "Route `HANDOFF: success` → `test` — write this to `.claude/channels/test/backend.1.md`:"
-      );
+      expect(context).toContain(`Route \`HANDOFF: success\` → \`test\` — write this to \`${CH}/test/backend.1.md\`:`);
       expect(context).toContain(SEED_HANDOFFS["backend/test"]);
     });
 
@@ -1168,7 +1238,7 @@ describe("the installed hooks actually run", () => {
         runPluginHook(root, "maestro-inject-agent-context.js", { cwd: root, agent_type: "maestro:frontend" })
       ).hookSpecificOutput.additionalContext as string;
       expect(context).toContain(
-        "Route `HANDOFF: success` → `reviewer` — write this to `.claude/channels/reviewer/frontend.1.md`:"
+        `Route \`HANDOFF: success\` → \`reviewer\` — write this to \`${CH}/reviewer/frontend.1.md\`:`
       );
       expect(context).toContain("areas_of_concern"); // the frontend -> reviewer protocol
     });
@@ -1186,10 +1256,14 @@ describe("the installed hooks actually run", () => {
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
-      const laneDir = path.join(root, ".claude", "channels", "test");
+      const laneDir = path.join(root, ".claude", "channels", HOOK_SCOPE, "test");
       fs.mkdirSync(laneDir, { recursive: true });
       fs.writeFileSync(path.join(laneDir, "backend.1.md"), '{"behaviors_to_test":["x"]}\n');
       fs.writeFileSync(path.join(laneDir, "frontend.1.md"), '{"behaviors_to_test":["y"]}\n');
+      // `144`: the same sender's legacy unscoped file is never stamped.
+      const legacy = path.join(root, ".claude", "channels", "test", "backend.1.md");
+      fs.mkdirSync(path.dirname(legacy), { recursive: true });
+      fs.writeFileSync(legacy, "LEGACY\n");
 
       runHook(root, "maestro-subagent-log.cjs", {
         cwd: root,
@@ -1203,6 +1277,7 @@ describe("the installed hooks actually run", () => {
       expect(stamped).toMatch(/^<!-- maestro:run_id=.+ -->\n\{"behaviors_to_test":\["x"\]\}\n$/);
       // A parallel `frontend` write must not have been stamped by `backend`'s own SubagentStop.
       expect(fs.readFileSync(path.join(laneDir, "frontend.1.md"), "utf8")).toBe('{"behaviors_to_test":["y"]}\n');
+      expect(fs.readFileSync(legacy, "utf8")).toBe("LEGACY\n");
     });
 
     it("delivers a same-run stamped file at SubagentStart, retires it, and logs a channel_delivery entry", async () => {
@@ -1210,7 +1285,7 @@ describe("the installed hooks actually run", () => {
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
-      const laneDir = path.join(root, ".claude", "channels", "test");
+      const laneDir = path.join(root, ".claude", "channels", HOOK_SCOPE, "test");
       fs.mkdirSync(laneDir, { recursive: true });
       fs.writeFileSync(path.join(laneDir, "backend.1.md"), '{"behaviors_to_test":["x"]}\n');
 
@@ -1233,7 +1308,7 @@ describe("the installed hooks actually run", () => {
       // Retired by MOVE, not delete.
       expect(fs.existsSync(path.join(laneDir, "backend.1.md"))).toBe(false);
       expect(
-        fs.readFileSync(path.join(root, ".claude", "channels", ".consumed", "test", "backend.1.md"), "utf8")
+        fs.readFileSync(path.join(root, ".claude", "channels", HOOK_SCOPE, ".consumed", "test", "backend.1.md"), "utf8")
       ).toContain('{"behaviors_to_test":["x"]}');
 
       const log = fs
@@ -1258,7 +1333,7 @@ describe("the installed hooks actually run", () => {
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
-      const laneDir = path.join(root, ".claude", "channels", "test");
+      const laneDir = path.join(root, ".claude", "channels", HOOK_SCOPE, "test");
       fs.mkdirSync(laneDir, { recursive: true });
       fs.writeFileSync(path.join(laneDir, "backend.1.md"), "<!-- maestro:run_id=some-other-run -->\nFOREIGN\n");
       fs.writeFileSync(path.join(laneDir, "frontend.1.md"), "UNSTAMPED\n");
@@ -1273,8 +1348,8 @@ describe("the installed hooks actually run", () => {
       expect(context).toContain("backend");
       expect(context).toContain("frontend");
       expect(context).toContain("(unstamped)");
-      expect(context).toContain(".claude/channels/test/backend.1.md");
-      expect(context).toContain(".claude/channels/test/frontend.1.md");
+      expect(context).toContain(`${CH}/test/backend.1.md`);
+      expect(context).toContain(`${CH}/test/frontend.1.md`);
 
       // Left on disk, exactly where they were.
       expect(fs.existsSync(path.join(laneDir, "backend.1.md"))).toBe(true);
@@ -1314,17 +1389,21 @@ describe("the installed hooks actually run", () => {
       writeConfig(root, defaultish);
       await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
 
-      const consumedPath = path.join(root, ".claude", "channels", ".consumed", "test", "backend.1.md");
+      const consumedPath = path.join(root, ".claude", "channels", HOOK_SCOPE, ".consumed", "test", "backend.1.md");
       fs.mkdirSync(path.dirname(consumedPath), { recursive: true });
       fs.writeFileSync(consumedPath, "OLD DELIVERY\n");
+      // `144`: another scope's young `.consumed/` is not this session's to sweep.
+      const otherConsumed = path.join(root, ".claude", "channels", "task-045", ".consumed", "test", "backend.1.md");
+      fs.mkdirSync(path.dirname(otherConsumed), { recursive: true });
+      fs.writeFileSync(otherConsumed, "ANOTHER SESSION'S DELIVERY\n");
 
-      const scribeLane = path.join(root, ".claude", "channels", "scribe", "backend.1.md");
+      const scribeLane = path.join(root, ".claude", "channels", HOOK_SCOPE, "scribe", "backend.1.md");
       fs.mkdirSync(path.dirname(scribeLane), { recursive: true });
       fs.writeFileSync(scribeLane, '{"concept_skill_gaps":[]}\n');
       const oldTime = new Date(Date.now() - 20 * 24 * 60 * 60 * 1000);
       fs.utimesSync(scribeLane, oldTime, oldTime); // past the 14-day cap
 
-      const recentLane = path.join(root, ".claude", "channels", "test", "frontend.1.md");
+      const recentLane = path.join(root, ".claude", "channels", HOOK_SCOPE, "test", "frontend.1.md");
       fs.mkdirSync(path.dirname(recentLane), { recursive: true });
       fs.writeFileSync(recentLane, "RECENT\n"); // no scribe ran, still well inside the cap
 
@@ -1333,6 +1412,7 @@ describe("the installed hooks actually run", () => {
       expect(fs.existsSync(consumedPath)).toBe(false); // .consumed/ swept unconditionally
       expect(fs.existsSync(scribeLane)).toBe(false); // past the age cap
       expect(fs.existsSync(recentLane)).toBe(true); // in-cap, undelivered — kept
+      expect(fs.existsSync(otherConsumed)).toBe(true); // `144`: another scope's, in-cap — kept
     });
 
     // `backend` has NO route to `scribe` at all in `defaultish` (its only success edge is
@@ -1349,10 +1429,10 @@ describe("the installed hooks actually run", () => {
       const backendContext = JSON.parse(
         runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })
       ).hookSpecificOutput.additionalContext as string;
-      expect(backendContext).toContain(".claude/channels/scribe/backend.1.md");
+      expect(backendContext).toContain(`${CH}/scribe/backend.1.md`);
 
       // backend writes the gap itself, then its own SubagentStop stamps it (run A).
-      const gapPath = path.join(root, ".claude", "channels", "scribe", "backend.1.md");
+      const gapPath = path.join(root, ".claude", "channels", HOOK_SCOPE, "scribe", "backend.1.md");
       fs.mkdirSync(path.dirname(gapPath), { recursive: true });
       fs.writeFileSync(
         gapPath,
@@ -1379,7 +1459,7 @@ describe("the installed hooks actually run", () => {
       ).hookSpecificOutput.additionalContext as string;
       expect(scribeContext).toContain("Waiting in your channel but NOT from this run");
       expect(scribeContext).toContain("backend");
-      expect(scribeContext).toContain(".claude/channels/scribe/backend.1.md");
+      expect(scribeContext).toContain(`${CH}/scribe/backend.1.md`);
       expect(fs.existsSync(gapPath)).toBe(true); // left in place — the scribe can go read it
     });
   });
@@ -1417,7 +1497,7 @@ describe("the installed hooks actually run", () => {
       expect(first).toContain("Handoff routing for the `backend` agent");
       // `087`: the payload write is a REQUIRED step, with the route's shape inlined on a first run.
       expect(first).toContain("REQUIRED before your HANDOFF line");
-      expect(first).toContain("write this to `.claude/channels/test/backend.1.md`");
+      expect(first).toContain(`write this to \`${CH}/test/backend.1.md\``);
       expect(first).not.toContain("Resumed run —");
 
       // Rerunning the SAME first-run payload must be pinned identical — the regression that
@@ -1436,10 +1516,10 @@ describe("the installed hooks actually run", () => {
       expect(resumed).not.toContain("Skills to load for the");
       expect(resumed).not.toContain("Skills available to the");
       expect(resumed).not.toContain("Handoff routing for the");
-      expect(resumed).not.toContain("write this to `.claude/channels/test/backend.1.md`");
+      expect(resumed).not.toContain(`write this to \`${CH}/test/backend.1.md\``);
       // `087`: the requirement itself is NOT static — a resume still names the file to write.
       expect(resumed).toContain("REQUIRED before your HANDOFF line");
-      expect(resumed).toContain("`HANDOFF: success` → write `.claude/channels/test/backend.1.md`");
+      expect(resumed).toContain(`\`HANDOFF: success\` → write \`${CH}/test/backend.1.md\``);
     });
 
     it("still names a channel payload that arrived between a resumed agent's two runs, and still carries a warning", async () => {
@@ -1458,7 +1538,7 @@ describe("the installed hooks actually run", () => {
       stop(root, "backend", "a1"); // a1 completes its first run — the resume signal for next time
 
       // A payload arrives in backend's lane between the two runs.
-      const laneDir = path.join(root, ".claude", "channels", "backend");
+      const laneDir = path.join(root, ".claude", "channels", HOOK_SCOPE, "backend");
       fs.mkdirSync(laneDir, { recursive: true });
       fs.writeFileSync(path.join(laneDir, "test.1.md"), "NEW SINCE THE FIRST RUN\n");
       stop(root, "test", "t1"); // test's own SubagentStop stamps its own write with this run's id
@@ -1472,7 +1552,7 @@ describe("the installed hooks actually run", () => {
       // `088`: a resume never receives this context, so the payload is named by path (the
       // orchestrator's SendMessage carries it) — never inlined, and left in the lane, not retired.
       expect(resumed).toContain("In your channel from this run");
-      expect(resumed).toContain("`.claude/channels/backend/test.1.md`");
+      expect(resumed).toContain(`\`${CH}/backend/test.1.md\``);
       expect(resumed).not.toContain("Delivered to your channel");
       expect(resumed).not.toContain("NEW SINCE THE FIRST RUN");
       expect(fs.existsSync(path.join(laneDir, "test.1.md"))).toBe(true);
@@ -1772,7 +1852,7 @@ describe("maestro-step1-gates.cjs (032)", () => {
       ["use-code-architecture-design-check"],
       ["confidence-check", "use-code-architecture-design-check"],
       ["use-code-architecture-design-check", "confidence-check"],
-      ["concept-skills:use-code-architecture-design-check", "alpha", "beta"],
+      ["code-graph:use-code-architecture-design-check", "alpha", "beta"],
     ];
     const seen = new Set<string>();
     for (const maestro of lists) {
@@ -1951,7 +2031,7 @@ describe("maestro-end-skills.cjs", () => {
 
   it("prints one line naming exactly the configured end skills, in order", async () => {
     const root = await installed("end-lists");
-    const lists = [["one"], ["one", "two"], ["two", "one"], ["concept-skills:x", "y", "z"]];
+    const lists = [["one"], ["one", "two"], ["two", "one"], ["code-graph:x", "y", "z"]];
     const seen = new Set<string>();
     for (const end of lists) {
       const label = JSON.stringify(end);

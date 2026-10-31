@@ -1,6 +1,6 @@
 # Concept Skills
 
-> Shipped as the opt-in `concept-skills` plugin (`plugins/concept-skills/`), not part of `maestro`. Its state lives in `.claude/concept-skills.json`, not `.claude/maestro.json`: read every `maestro.json` mention below as that file. Install with `/concept-skills-install`.
+> Concept skills now live in the `code-graph` plugin, from its own marketplace (`sdaigle-lichens/code-graph`), not in this repository. This page is the original design; read every `maestro.json` mention below as code-graph's own state file. Install with `/code-graph-install`.
 
 I need to cleanup this project concepts/documentations skills. This is a recurring problem in many of my repositories so I want to create skills that will help my scribe agent generate and maintain relevant and up to date concepts/documentations skills. The skills will be: create-concept-skills, update-concept-skills and update-single-concept-skill.
 
@@ -26,7 +26,7 @@ Each of the concept skill can have a subdirectory called `sub-concepts`. In this
 
 Similarly, each of the concept skill can have a subdirectory called `agents`. In there are files referenced in the SKILL.md of the core concept that give additional information about the core concepts that are useful for that agent in particular. It will only do so for agents used in the .claude/maestro.json. For example, it can give more details in the referenced files for the backend agent on how to implement certain things and in the test agent referenced file more details about how to test the concept. Still, the goal is not to do an exhaustive code search to find every details of the concept. The skill is there to GUIDE the agent through it's code exploration and to get the general context it needs about the concept quickly. Through it's work it can report to the scribe what is missing about the core concept's skill. This can be added in the report templates for each agent, so the main session knows that it needs to ask the scribe these updates.
 
-To trace when the concept list was created and updated last, there will be a parameter called `concept-skills-last-update` in `.claude/maestro.json` that will take as a value the last commit SHA for when the `create-concept-skills` skill or `update-concept-skills` skill was run for the repository. There can also be a `concept-skills-version` parameter to help the update-concept-skills skill to know if the concept skills list as a whole is mature or not.
+To trace when the concept list was created and updated last, the `skills` block of code-graph's `scribe.config.json` records the last commit SHA for when the `create-concept-skills` skill or `update-concept-skills` skill was run for the repository.
 
 ## Create Concept Skills
 

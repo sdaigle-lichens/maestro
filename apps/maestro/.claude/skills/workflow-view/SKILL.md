@@ -3,8 +3,8 @@ name: workflow-view
 description: "Explains how the /workflows view in the Maestro desktop app is built end-to-end: the React Flow canvas (workflow-canvas.tsx), the left agents/skills pane and top workflow selector, and how the diagram maps to the MaestroConfigV3 model written to .claude/maestro.json. Use when the user is working inside apps/maestro and asks how the workflow view/canvas works, how nodes and edges map to maestro.json, how the success vs condition paths are built, how workflow instances and per-instance skills work, why a duplicate-agent-type banner is showing and what the instance picker's fork-an-agent affordance does about it (`041`), or why a workflow change isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.7"
-  last-update: 036cb4685fb6be413fa708d28e8d786508e239fd
+  version: "2.1"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Workflow View
@@ -41,9 +41,10 @@ The grid is a fixed `280px 1fr` (left pane + center; `workflows.tsx`, `gridTempl
 Route loader: getMaestroConfig()             (src/renderer/src/utils/maestro.ts)
   → window.maestro.data.workflows()  = IPC `data:workflows`, handled in src/main/ipc.ts
       main reads <projectRoot>/.claude/maestro.json → MaestroConfigV3
-      no file yet: detectImplAgents() → defaultV3Config(chain), seeded:true + RepoDetection
-      corrupt / wrong version: blankV3Config()
-  • returns { config, projectRoot, seeded, detection, agents, skills } in one round trip
+      no file yet: detectImplAgents() → defaultV3Config(chain, skillMap, seedSkills), seeded:true + RepoDetection
+      corrupt / wrong version: blankConfig()   (also what no open project returns)
+      on-disk config: configIssues = duplicateAgentTypes(config)   (see 041 below)
+  • returns { config, projectRoot, seeded, detection, agents, skills, configIssues } in one round trip
         │
         ▼
 WorkflowsPage seeds the workflow store, KEYED ON projectRoot (see Things that bite)
@@ -55,7 +56,7 @@ WorkflowCanvas mirrors the active workflow into React Flow state (rfNodes/rfEdge
         │   every edit calls onChange → updateWorkflow → store
         │   instance edits go via onInstancesChange
         ▼ (Save workflows)
-submitMaestroConfig({ sliceType: "workflows", slice })
+submitMaestroConfig({ data: { sliceType: "workflows", slice } })
   → window.maestro.config.save(...)  = IPC `config:save` → saveConfig() in src/core
       1. merge the workflow slice into maestro.json (preserves `rules`) and write it
          (2-space indent, NO trailing newline — preserved so existing repos show no diff)
@@ -108,8 +109,8 @@ Paths are relative to `apps/maestro/`.
 | The typed channel contract                                             | `src/shared/ipc.ts` (`data:workflows`, `data:reseed`, `config:save`)                                          |
 | Main-process handlers (the only side that touches `fs`)                | `src/main/ipc.ts`                                                                                             |
 | Read/merge/write, render, apply — all of it                            | `saveConfig()`, `seed.ts`, `render.ts`, `rules.ts` in `apps/maestro/src/core/`                                |
-| Bundled subagents (source of the Agents list)                          | `plugins/maestro/agents/*.md`                                                                        |
-| Project skills (source of the Skills list)                             | `<projectRoot>/.claude/skills/*/SKILL.md`                                                                     |
+| Agents list sources (`discoverAgents`)                                 | project `.claude/agents`, `~/.claude/agents`, bundled `plugins/maestro/agents/*.md`, every installed plugin's agents |
+| Skills list sources (`discoverSkills`)                                 | every `.claude/skills` in the project tree, `~/.claude/skills`, every installed plugin's skills (non-maestro ids are `plugin:skill`) |
 
 ## The data model (MaestroConfigV3)
 
@@ -120,7 +121,7 @@ The three shapes the canvas maps onto directly:
 ```ts
 MaestroInstanceV3 { name, agent, loaded_skills: string[], referenced_skills: string[] }  // referenced by name from agent nodes
 MaestroWorkflowV3 { name, nodes: MaestroNodeV3[], edges: MaestroEdgeV3[] }               // one per entry in the top selector; success_path is DERIVED, never stored
-MaestroNodeV3     { id, type: "agent"|"human_review"|"skill", instance?, skill?, position? }
+MaestroNodeV3     { id, type: "agent"|"human_review"|"manager_review"|"skill", instance?, skill?, position? }
 MaestroEdgeV3     { from, to, kind: "success"|"condition", label?, sourceHandle?, targetHandle? }
 ```
 
@@ -135,8 +136,8 @@ What the canvas adds on top of that schema:
 
 ## Left pane (workflows.tsx)
 
-- **Agents** checkboxes come from `bundledAgents` — read from `plugins/maestro/agents/*.md` frontmatter by `discoverAgents()` in `src/core`, in the main process. Toggling edits `config.agents_available`. `＋ Agent` `window.prompt`s for a manual id (for agents not bundled).
-- **Skills** checkboxes come from `projectSkills` — read by `discoverSkills()` in main, which walks EVERY `.claude/skills` in the project tree (`discoverProjectSkillsTree`/`skillSearchDirs` in `src/core`), not just the root's — a monorepo skill living beside the code it describes is just as visible as a root one. Toggling edits `config.skills_available` (a plain `string[]` of skill ids). `＋ Skill` prompts for a manual id.
+- **Agents** checkboxes come from `bundledAgents` (a legacy loader-field name: the list is everything `discoverAgents()` in `src/core` finds in the main process — project, user, the bundled Maestro agents and every installed plugin's, each with a `source`). Toggling edits `config.agents_available`. `＋ Agent` `window.prompt`s for a manual id (for agents not discovered).
+- **Skills** checkboxes come from `projectSkills` (likewise a legacy name) — `discoverSkills()` in main: project skills from EVERY `.claude/skills` in the tree (`discoverProjectSkillsTree`/`skillSearchDirs` in `src/core`), not just the root's, plus user and installed-plugin skills (maestro's own stay bare, other plugins' are `plugin:skill`). Toggling edits `config.skills_available` (a plain `string[]` of skill ids). `＋ Skill` prompts for a manual id.
 - `skills_available` is the menu of skills the canvas can attach to instances — only a skill checked here can be attached.
 - **Save workflows** → `handleSubmit` → `submitMaestroConfig` → `router.invalidate()`. On success the page fires a `toast` (`@repo/ui/toast`) naming what changed on disk and **stays on the canvas** — the window is long-lived and the user saves repeatedly, so there is no terminal success view.
 
@@ -175,6 +176,7 @@ On load, `workflows.tsx` renders a dismissible `config-issue-banner.tsx` (own co
 A config can name a skill that no longer resolves (plugin not installed / not enabled / skill not in plugin / not found). The report is advisory: it never blocks a save and never removes a reference.
 
 - **Core:** `src/core/skill-ref-report.ts` `skillRefReport(projectRoot)` reads the on-disk `maestro.json` and calls `findStaleSkillRefs` (`skill-availability.ts`, shared with `maestro-stale-refs.cjs`). Never throws: no project or a missing/corrupt config is an empty report. Not in the plugin-entries graph. `UnavailableReason` / `DanglingSkillRef` / `SkillRefReport` live in `core/contracts.ts` (re-exported by `skill-availability.ts` and `shared/ipc.ts`).
+- **Disabled skills (`142`):** one decision, `skill-availability.ts` `skillDisabledReason` / `isSkillListed` / `readDisableRules` (fs/os/path only; exported from `core/index.ts`). `discoverSkills(projectRoot, homeDir?)` and `claude-preview.ts` `projectSkillsForTagging` filter every list through `isSkillListed`, and `whyUnavailable` asks the same `skillDisabledReason`, so a list and the dangling report cannot disagree. Settings merge per key, **user < project `settings.json` < project `settings.local.json`** (`readSkillSettings`); a later file wins. Rules: `skillOverrides[<plugin:name> then <name>] === "off"` (first key present decides, so an explicit "on" beats "off" on the other spelling), `enabledPlugins[plugin] === false` (absent is not disabled), `disableBundledSkills`. New reasons: `skill-disabled`, `bundled-skills-disabled` (labels in `SKILL_REF_REASON_LABEL`). The app lists **no built-ins**, so `disableBundledSkills` only affects the dangling report (a reference to a name in `CLAUDE_CODE_BUNDLED_SKILLS`; a real project/user/plugin skill of that name wins); the list is documented-only, with collision protection. A malformed/unreadable settings file or wrong-typed value is skipped, i.e. the skill stays listed. A disabled skill still referenced in `maestro.json` is flagged (the report reads the config, not the list) and shows as a flagged checkbox in the referencing instance's own list. Settings edits show on the next navigation (the list loader re-runs); the report needs "Recheck skills".
 - **IPC:** `IPC.skillRefReport` = `data:skill-refs`, `window.maestro.data.skillRefs()`, wrapped by `getSkillRefReport()` in `utils/maestro.ts`.
 - **Provider:** `SkillRefProvider` (`utils/skill-ref-context.tsx`, in `__root.tsx` **above** `InstallProvider`, inside `ConfigWatchProvider`) exposes `{ report, find(id), refresh(), checking, recheck() }` via `useSkillRefs()`. Refresh triggers: project switch (clears marks first), every `config:changed`, a debounced (300ms) window `focus`/`visibilitychange` (enable a plugin elsewhere, return to the app), and `refresh()` (the always-visible `SkillRefRecheck` "Recheck skills" control on `/workflows` and `/maestro`, plus the notice's button; `workflows.tsx` and `maestro.tsx` call it after their own save rather than wait for the ~1s poll). A late answer for a project since left is dropped.
 - **Marks:** `components/skill-ref-mark.tsx` `SkillRefMark id` (amber reason label, matched **by id**, so one entry marks every occurrence) and `SkillRefNotice` (one dismissible notice with the project-level suggestions plus Recheck; render it `key={projectRoot}`). Marks sit on: instance chips in `workflow-canvas.tsx` (loaded and referenced), the skill-node label there, `instance-skill-picker.tsx` rows, the shared skills list and instance rows in `workflows.tsx`, the start/end skill pickers in `maestro.tsx`, and `agents/agent-card.tsx`. The notice renders in `workflows.tsx` and `maestro.tsx`. `checking`/`recheck()` (a refresh with `checking` held true until it settles) live in the provider, so every Recheck button reads them from `useSkillRefs()` and disables together; never keep local checking state. `SkillRefRecheck` is always visible because the notice disappears when the report is clean, which made a notice-only Recheck unreachable.

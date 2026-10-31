@@ -26,6 +26,7 @@ import { buildReadScope } from "./read-scope.js";
 import { enclosingRepo } from "./repo.js";
 import { resolveCreateTarget } from "./scaffold.js";
 import { readAllSkillTags } from "./skill-tags.js";
+import { isSkillListed, readDisableRules } from "./skill-availability.js";
 import { readAllProjectTags } from "./project-tags.js";
 import { tasksDirFor } from "./tasks.js";
 import { joinOxford } from "./text.js";
@@ -230,7 +231,11 @@ async function projectSkillsForTagging(
 ): Promise<Array<{ id: string; description: string; projectTags: string[]; agentTypes: string[] }>> {
   const skills = await readSkillsFromDir(path.join(projectRoot, ".claude", "skills"));
   const tagsById = readAllSkillTags();
+  // The same disable decision every skill list uses (`skill-availability.ts`: fs/os/path only, so
+  // it keeps this module free of child_process): a skill the project switched off is not tagged.
+  const rules = readDisableRules(projectRoot);
   return skills
+    .filter((s) => isSkillListed(rules, s.name))
     .map((s) => ({
       id: s.name,
       description: s.description,
@@ -392,8 +397,9 @@ async function build(projectRoot: string, request: ClaudeRequest, opts: ResolveO
       const relativePath = path.posix.join(".claude", "maestro-tasks", filename);
       return {
         // The same sentence /maestro-tasks offers as "Copy prompt" — running it here and pasting
-        // it into a session by hand must produce the same session.
-        prompt: `Use /maestro to complete the task described in file ${relativePath}`,
+        // it into a session by hand must produce the same session. It starts with the command so
+        // the typed `/maestro` entrance (and its session-name hook) fires on the first prompt.
+        prompt: `/maestro Complete the task described in file ${relativePath}`,
         targets: [
           {
             path: projectRoot,

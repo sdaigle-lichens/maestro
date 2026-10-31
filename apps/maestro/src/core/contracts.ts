@@ -23,6 +23,7 @@ export type {
   MaestroProjectTagsSlice,
   MaestroSkillListsSlice,
   MaestroTaskRoutingSlice,
+  MaestroWorkerModelSlice,
   MaestroReportEntry,
   MaestroReportsSlice,
   MaestroSession,
@@ -31,7 +32,13 @@ export type {
 import type { MaestroConfigV3, MaestroWorkflowV3 } from "./types.js";
 
 /** Why a skill id does not resolve — what a person would have to do about it. */
-export type UnavailableReason = "plugin-not-installed" | "plugin-not-enabled" | "skill-not-in-plugin" | "not-found";
+export type UnavailableReason =
+  | "plugin-not-installed"
+  | "plugin-not-enabled"
+  | "skill-not-in-plugin"
+  | "skill-disabled"
+  | "bundled-skills-disabled"
+  | "not-found";
 
 export interface DanglingSkillRef {
   id: string;
@@ -43,7 +50,7 @@ export interface DanglingSkillRef {
 /** Dangling skill references in a config, plus project-level suggestions (`090`, `091`). */
 export interface SkillRefReport {
   dangling: DanglingSkillRef[];
-  /** One sentence each, ready to show a user. Includes the concept-skills plugin hint. */
+  /** One sentence each, ready to show a user. Includes the code-graph plugin hint. */
   suggestions: string[];
 }
 
@@ -530,9 +537,11 @@ export interface SessionLogEntry {
   /**
    * channel_delivery only (`088`): `"resume"` when the payload reached a RESUMED run by path and was
    * retired at that run's SubagentStop — logged just before its handoff, not at a SubagentStart.
-   * Absent for the ordinary SubagentStart inlining.
+   * Absent for the ordinary SubagentStart inlining. `"ack"` (`112`) when a scribe's
+   * `SKILL_GAPS_HANDLED:` line retired a skill-gap report at its SubagentStop — the gap itself was
+   * already logged (once per scribe start) as an ordinary delivery.
    */
-  via?: "resume";
+  via?: "resume" | "ack";
   /** phase only: which pre-coding orchestration step this marks, e.g. "step1_gates". */
   phase?: string;
   /** Best-effort context-window fill percentage at write time. Absent means unknown, never 0. */
@@ -551,13 +560,18 @@ export interface ChannelDelivery {
   receiver: string;
   agent_id: string;
   content: string;
-  /** `"resume"` when delivered by path to a resumed run (`088`); absent for SubagentStart inlining. */
-  via?: "resume";
+  /**
+   * `"resume"` when delivered by path to a resumed run (`088`); `"ack"` (`112`) when this is not a
+   * delivery at all but the scribe's acknowledgement retiring a gap report it was handed earlier.
+   * Absent for SubagentStart inlining.
+   */
+  via?: "resume" | "ack";
 }
 
 /**
- * One receiver's `.claude/channels/<receiver>/` lane, as `handoff-channels.ts`'s `pendingLanes()`
- * (`037`) computes it — read-only, for `/maestro`'s Channels block.
+ * One receiver's `.claude/channels/<scope>/<receiver>/` lane, as `handoff-channels.ts`'s
+ * `pendingLanes()` (`037`) computes it — read-only, for `/maestro`'s Channels block. A legacy
+ * pre-`144` unscoped `.claude/channels/<receiver>/` lane has `scope: null` and is all `stranded`.
  *
  * `current` is entries stamped with the LIVE session's own `run_id` — normal in-flight traffic that
  * the next matching `SubagentStart` will inline. `stranded` is everything else (a foreign `run_id`,
@@ -567,6 +581,8 @@ export interface ChannelDelivery {
  * backlog the channel design means to make visible rather than silently remembered.
  */
 export interface PendingLane {
+  /** `task-<NNN>` / `session-<id8>` (`144`), or `null` for a legacy unscoped lane. */
+  scope: string | null;
   receiver: string;
   count: number;
   /** Age, in ms, of the oldest file still in the lane. */
@@ -625,7 +641,8 @@ export interface ConfigIssue {
  *
  * `steps` is the success chain, in order, EXCLUDING the implicit `main-session` entry node — each
  * entry is a step token in the same vocabulary `seed.ts`'s `linearWorkflow` already uses:
- * `"human_review-1"` (the one representable human-review node), `"skill:<id>"` (a skill node the
+ * `"human_review-1"` (the one representable human-review node), `"manager_review-<n>"` (a
+ * manager-review node), `"skill:<id>"` (a skill node the
  * orchestrator runs inline), or anything else (the `workflow_instances` name of an agent node —
  * created fresh, agent == name, when it doesn't exist yet and the agent it names is available).
  *
@@ -847,6 +864,8 @@ export interface InstallReport {
   scriptsWritten: string[];
   /** Hook ids added to the project's `.claude/settings.json`. */
   hooksAdded: string[];
+  /** Permission allow rules added to `.claude/settings.json` (`139`: the agent channel write rule). */
+  permissionsAdded?: string[];
   /** Hook ids of retired scripts removed from the project's `.claude/settings.json`. */
   hooksRemoved: string[];
   /** Project-relative paths of retired hook scripts deleted from `.claude/scripts/`. */

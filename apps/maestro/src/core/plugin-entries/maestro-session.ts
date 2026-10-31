@@ -43,6 +43,8 @@ export {
   SESSION_STATE_NAME,
   SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME,
+  SESSION_HEARTBEAT_NAME,
+  SESSION_HEARTBEAT_PID_NAME,
   readWorktreePointer,
   sessionDirsFor,
   SESSION_ID_ENV,
@@ -63,9 +65,37 @@ export {
   type SessionIdSource,
 } from "../session-paths.js";
 
-// Agent channels (`036`) — lanes, stamps, retire, sweep. `fs`/`path` only, so this costs nothing
-// against the "no node:sqlite in maestro-session.cjs" property below.
+// The session heartbeat (`141`): the detached process `maestro-session-heartbeat.js` spawns at
+// SessionStart, and the rule claims read from it. `fs`/`path` only (the script runs the non-Linux
+// `ps` fallback itself) — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
 export {
+  heartbeatVerdict,
+  heartbeatIntervalMs,
+  heartbeatTargets,
+  heartbeatTick,
+  writeHeartbeatPid,
+  isProcessAlive,
+  processInfo,
+  parsePsLine,
+  watchedPid,
+  parentProbe,
+  type HeartbeatTargets,
+  type HeartbeatTickInput,
+  type HeartbeatTickResult,
+  type ProcessInfo,
+} from "../session-heartbeat.js";
+
+// Agent channels (`036`) — lanes, stamps, retire, sweep. `fs`/`path` only, so this costs nothing
+// against the "no node:sqlite in maestro-session.cjs" property below. Every lane function takes the
+// session's channel scope (`144`), which `channelScopeOf` resolves.
+export {
+  channelScopeOf,
+  channelScopeFromState,
+  channelRelPath,
+  isChannelScope,
+  NO_SESSION_SCOPE,
+  consumedDir,
+  pendingLanes,
   channelDir,
   laneFor,
   writeStamp,
@@ -76,7 +106,13 @@ export {
   parseStampedContent,
   CHANNEL_AGE_CAP_MS,
   CLAIM_IDLE_CAP_MS,
+  HEARTBEAT_INTERVAL_MS,
+  HEARTBEAT_STALE_MS,
+  HEARTBEAT_INTERVAL_ENV,
   unstampedFilesOf,
+  isGapReport,
+  acknowledgeGaps,
+  parseGapsHandled,
   type ChannelFileMark,
   type ChannelEntry,
   type SweepResult,
@@ -152,6 +188,16 @@ export {
   type WorktreePointer,
 } from "../worktree.js";
 
+// A worktree starts with no installed dependencies: detect the package manager and stop with the
+// install command for the user (`135`). `fs`/`path` only.
+export {
+  detectPackageManager,
+  installCommand,
+  dependencyStatus,
+  missingDependenciesNotice,
+  type PackageManager,
+} from "../worktree-deps.js";
+
 // Channel-only writes for the reviewer and refactor agents (`078`) and SendMessage hand-back
 // recovery. `fs`/`path` only — keeps `grep -c "node:sqlite"` on maestro-session.cjs at 0.
 export {
@@ -160,7 +206,27 @@ export {
   CHANNEL_ONLY_AGENTS,
   type ChannelWriteVerdict,
 } from "../channel-write-guard.js";
-export { lastHandoffLabel, sendMessageHandoff, handbackHandoff, HANDBACK_TOOLS } from "../handoff-label.js";
+// The review summary gate (`130`; manager review `132`): imports nothing.
+export {
+  checkHumanReview,
+  currentReviewRound,
+  currentReviewStop,
+  reviewFileName,
+  isReviewFile,
+  HUMAN_REVIEW_LABEL,
+  MANAGER_REVIEW_LABEL,
+  type HumanReviewVerdict,
+} from "../human-review-gate.js";
+export {
+  lastHandoffLabel,
+  sendMessageHandoff,
+  handbackHandoff,
+  hasHandbackCall,
+  awaitHandback,
+  HANDBACK_TOOLS,
+  HANDBACK_WAIT_MS,
+  HANDBACK_POLL_MS,
+} from "../handoff-label.js";
 
 // Does a final message agree with itself — report verdict vs HANDOFF line (`083`)? Read by the
 // SubagentStop hook. `fs`-free. `087` adds the third issue, a route expecting a payload whose
@@ -168,6 +234,7 @@ export { lastHandoffLabel, sendMessageHandoff, handbackHandoff, HANDBACK_TOOLS }
 // SubagentStart injector and the SubagentStop check use (`handoff-payload.ts`, `fs`/`path` only).
 export {
   checkHandoff,
+  checkRoute,
   checkPayload,
   reportVerdict,
   type HandoffIssue,
@@ -225,6 +292,24 @@ export {
   type MetricsFile,
   type Totals,
 } from "../run-metrics.js";
+
+// Deterministic session names (`113`): `maestro-<id8>` / `maestro-mgr-<id8>` recorded by the first
+// /maestro or /maestro-manager entrance, applied as the session title by maestro-session-name.js,
+// and preferred by the epic and claim CLIs over a passed-in name. `fs`/`path` only — keeps
+// `grep -c "node:sqlite"` on maestro-session.cjs at 0.
+export {
+  sessionNameFor,
+  entranceRoleFor,
+  promptEntranceRole,
+  noteEntrance,
+  titleFor,
+  storedName,
+  storedSessionName,
+  rederiveSessionName,
+  type SessionNameRole,
+  type SessionNamePayload,
+  type StoredSessionName,
+} from "../session-name.js";
 
 // Team-meeting mode — the `meeting` flag in session.json that the SubagentStart/Stop hooks and the
 // write guard read to treat a meeting participant differently from a workflow agent. `fs`/`path`

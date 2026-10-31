@@ -1,6 +1,12 @@
 # Version bump precedent — the worked examples
 
-**Latest: `0.11.0` (`084`), a minor.** A new directory under `skills/` (`maestro-manager`) grows the
+**Latest minor: `0.12.0` (`113`)** (`plugin.json` reads `0.12.3`; `0.12.1`–`0.12.3` were patch bumps —
+scribe handoff prose and the missing-code-graph hint). `maestro-session-name.js` registers on two events
+`hooks.json` had never had, `UserPromptSubmit` and `SessionStart`: the minor row's "a hook
+registered on a new event". Its `UserPromptExpansion` and `PreToolUse` entries alone would have been
+a patch, since those events were already registered.
+
+**Previous: `0.11.0` (`084`), a minor.** A new directory under `skills/` (`maestro-manager`) grows the
 published surface. The new scripts (`maestro-epic.cjs` and its lib) and the `claim --name` /
 `--epic` flags alone would have been a patch: a new file under `scripts/` is not a published surface.
 
@@ -9,8 +15,8 @@ the case law behind it: every bump the repo has argued about, and the reasoning 
 Read it when a change feels like it might be a minor.
 
 **A `feat:` commit is not automatically a minor.** The repo's own history is the guide: `0.2.0` was
-new skills, `0.3.0` was new script behaviour plus a new state file — but `0.3.1` (concept-skills
-system), `0.3.2` (agent page) and `0.2.1` (a bare re-pull trigger) are all patches, and two of the
+new skills, `0.3.0` was new script behaviour plus a new state file — but `0.3.1` (the concept-skill
+system, since moved to code-graph), `0.3.2` (agent page) and `0.2.1` (a bare re-pull trigger) are all patches, and two of the
 three landed under a `feat:` subject. The commit message describes the work; the version component
 describes what a *consumer* of the plugin sees change.
 

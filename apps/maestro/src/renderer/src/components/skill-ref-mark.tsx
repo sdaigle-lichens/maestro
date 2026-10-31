@@ -9,6 +9,8 @@ export const SKILL_REF_REASON_LABEL: Record<UnavailableReason, string> = {
   "plugin-not-installed": "plugin not installed",
   "plugin-not-enabled": "plugin not enabled",
   "skill-not-in-plugin": "skill not in plugin",
+  "skill-disabled": "switched off in settings",
+  "bundled-skills-disabled": "built-in skills disabled",
   "not-found": "not found",
 };
 

@@ -85,6 +85,10 @@ vite.config.ts.timestamp-*
 *storybook.log
 storybook-static
 
+# code-graph plugin: local graph store (SQLite), rebuilt by extract + apply. The .ast.json and
+# .enriched.json files beside it are meant to be committed.
+scribe-output/graph.db*
+
 # design plugin: saved sign-in for screen captures
 .design-screens/
 design/requests/

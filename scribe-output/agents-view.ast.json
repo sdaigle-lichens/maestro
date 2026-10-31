@@ -1,0 +1,2728 @@
+{
+  "concept": "agents-view",
+  "vertices": [
+    {
+      "_key": "03563308e5b6320cadcb028f706e2f06",
+      "displayKey": "agents-view::component::AgentForkReview",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AgentForkReview",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 130,
+      "end_line": 221,
+      "signature": "function AgentForkReview({\n  entry,\n  busy,\n  onAction,\n}: {\n  entry: AgentSyncEntry;\n  busy: boolean;\n  onAction: (action: AgentSyncAction) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "acb64f974a15de359e4c351db7ba34a1ca9d55e9942140c6ca2c7c294556bbbe",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0b99879bd94afb163787799a19cff3a7",
+      "displayKey": "agents-view::type-def::PaneTab",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "PaneTab",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/interactions-pane.tsx",
+      "start_line": 22,
+      "end_line": 22,
+      "signature": "type PaneTab = \"interactions\" | \"content\";",
+      "contentHash": "1dfe0925aa4bc503a0513ce8b9fa018e04115270db835f2887fb153f707e0f4b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0ca12f797f3de75b593f2b3a400fa6fa",
+      "displayKey": "agents-view::effect::effect-205",
+      "concept": "agents-view",
+      "type": "effect",
+      "name": "effect-205",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 205,
+      "end_line": 229,
+      "signature": "useEffect(() => {",
+      "contentHash": "87b71e9fedba2a1ba89025edd39b8577c07baff8410dbcadc041c79655dd5ad1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0d53ae10ccf7b733cfba36324c2496b6",
+      "displayKey": "agents-view::function::isRequired",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "isRequired",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-avatar-block.tsx",
+      "start_line": 106,
+      "end_line": 108,
+      "signature": "function isRequired(cat: AvatarCategory): boolean",
+      "contentHash": "61a54720c9da12e85e6acbd6951a99c877b0f1ba09fc4d628c010e1d53e523e2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "11eda32789182f37be333cf12012a822",
+      "displayKey": "agents-view::component::AgentsPage",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AgentsPage",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 132,
+      "end_line": 700,
+      "signature": "function AgentsPage(): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "acf56941a5d1b9d3d77a7265058e978c02335f1282cc197884732256db9128a0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "13f9bac317d0ad1e78aa8c2c70dfc1a2",
+      "displayKey": "agents-view::component::Entry",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "Entry",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/interactions-pane.tsx",
+      "start_line": 255,
+      "end_line": 335,
+      "signature": "function Entry({\n  header,\n  testId,\n  value,\n  editable,\n  editing,\n  placeholder,\n  emptyText,\n  note,\n  lanePath,\n  onChange,\n  onStartEdit,\n}: {\n  header: React.ReactNode;\n  testId?: string;\n  value: string;\n  editable: boolean;\n  editing: boolean;\n  placeholder: string;\n  emptyText: string;\n  note: string | null;\n  /** Where this route's template lands at runtime (`036`) — null for the report entry. */\n  lanePath?: string | null;\n  onChange: (value: string) => void;\n  onStartEdit: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "4387e67e9e35c7548c166b4291a226c86ef071dcb16039c19c7ff3bef5c245f3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1bf5fa273bb1865a559acc34078d5213",
+      "displayKey": "agents-view::component::InteractionsPane",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "InteractionsPane",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/interactions-pane.tsx",
+      "start_line": 38,
+      "end_line": 248,
+      "signature": "function InteractionsPane({\n  report,\n  reportNote,\n  routes,\n  content,\n  contentEditable,\n  contentNote,\n  handoffs,\n  editing,\n  open,\n  width,\n  onToggleOpen,\n  onStartEdit,\n  onReport,\n  onContent,\n  onHandoff,\n  onWidth,\n}: {\n  report: string;\n  reportNote: string | null;\n  /** The routes leaving the selected agent, in the graph walk's own order. */\n  routes: ResolvedHandoffRoute[];\n  /**\n   * The selected agent's markdown body — everything after the closing frontmatter `---` — for the\n   * Content tab. The DRAFT value while editing (`045`), same as `report`/`handoffs` below.\n   */\n  content: string;\n  /** Whether the Content tab's body may be edited — project-tier only, same gate as the description. */\n  contentEditable: boolean;\n  /** Why the Content tab is locked, when it is. Null when `contentEditable`. */\n  contentNote: string | null;\n  /** The DRAFT bodies, keyed by handoff id — what the editors show and what Save compares. */\n  handoffs: Record<string, string>;\n  editing: boolean;\n  open: boolean;\n  width: number;\n  onToggleOpen: () => void;\n  onStartEdit: () => void;\n  onReport: (value: string) => void;\n  onContent: (value: string) => void;\n  onHandoff: (handoffId: string, value: string) => void;\n  onWidth: (width: number) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "5bb06525be580cc81a2c1657ebce68e8dd52a0a2df3d1fc4f9077535fe38aac1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1d14ccf264a35431ae321dd126372bf2",
+      "displayKey": "agents-view::function::clampText",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "clampText",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-shared.ts",
+      "start_line": 136,
+      "end_line": 141,
+      "signature": "function clampText(text: string, max = 108): string",
+      "contentHash": "4f16658097efb87c3d143d4e7fb504989033b7e944a1b9deb9ca827add580cb1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "245653b9f645a61987a1ae7f95147369",
+      "displayKey": "agents-view::function::openDb",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 27,
+      "end_line": 41,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "c377be8c51a59c7564c298a40c8002cb531e744dd7ee4c81c02b5c911dbbcebc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "25aee2ad033114ee0c6d203e0a4c4748",
+      "displayKey": "agents-view::component::SectionLabel",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "SectionLabel",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-list.tsx",
+      "start_line": 80,
+      "end_line": 86,
+      "signature": "function SectionLabel({ children }: { children: string }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "6c2c51686ce659868d309fcdfa94790f66ee975a3908d91f78481fa990bc0a57",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "279f8ee9522682ead77b097a8618f16f",
+      "displayKey": "agents-view::function::findAgentFile",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "findAgentFile",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 57,
+      "end_line": 86,
+      "signature": "function findAgentFile(projectRoot: string, bundledDir: string | null, agentName: string): Promise<AgentFileRef | null>",
+      "contentHash": "bac4e4f16651f5d68fc4a39931f7b28da873671366f4d8b5ab10f78d9ebdf5ee",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2e809560dd31abf5ab1ae182c9175af7",
+      "displayKey": "agents-view::component::AgentList",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AgentList",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-list.tsx",
+      "start_line": 88,
+      "end_line": 174,
+      "signature": "function AgentList({\n  items,\n  selected,\n  open,\n  query,\n  onQueryChange,\n  onToggleOpen,\n  onSelect,\n  onEdit,\n}: {\n  items: AgentListItem[];\n  selected: string | null;\n  open: boolean;\n  query: string;\n  onQueryChange: (q: string) => void;\n  onToggleOpen: () => void;\n  onSelect: (id: string) => void;\n  onEdit: (id: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "ce313fdba75f9a3a88fc7e66d5015dc6852fd491de106686d7b46328ef030e0e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "344392dce815444fee2f3d2e58557c4b",
+      "displayKey": "agents-view::function::getAvatar",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "getAvatar",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 76,
+      "end_line": 95,
+      "signature": "function getAvatar(agentName: string, dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): AvatarLayers | null",
+      "contentHash": "21020c6ab51c7b75aa0b6cebb05561db69ebda9e542702f3d4885b74a1a227b3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4bf59981afa0e681aaf497b9f9831f47",
+      "displayKey": "agents-view::function::sameSkills",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "sameSkills",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 106,
+      "end_line": 108,
+      "signature": "function sameSkills(a: AgentSkill[], b: AgentSkill[]): boolean",
+      "contentHash": "69927a02b53067561b0060c0c887b45e6c8675f69ef59872a08b784e3f5039aa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4c6970223b35587e1943bb71e7f30b2a",
+      "displayKey": "agents-view::function::originLine",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "originLine",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 21,
+      "end_line": 31,
+      "signature": "function originLine(entry: AgentSyncEntry): string",
+      "contentHash": "c7e3b0e3a0fc67bc30394d7c80c0f018815adf0437d1f1271db8334d1a0cbe06",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4e1856cf2f834f183d3181939d3b6315",
+      "displayKey": "agents-view::effect::effect-198",
+      "concept": "agents-view",
+      "type": "effect",
+      "name": "effect-198",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 198,
+      "end_line": 200,
+      "signature": "useEffect(() => {",
+      "contentHash": "f9a94b41456b3804f07357363aadcb2999bbca6476dd02184fc8cb953ac6b3c2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4f5103b8c133f1bfe1185319c20f85f2",
+      "displayKey": "agents-view::function::verdictLine",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "verdictLine",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 37,
+      "end_line": 62,
+      "signature": "function verdictLine(entry: AgentSyncEntry): { tone: \"ok\" | \"warn\" | \"info\"; text: string; }",
+      "contentHash": "dc5d2467490b4e2dd84b2a592eb270421c5c39619871d714a39073c325b97198",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "56a71fb5ee00920637c7818a8237eb18",
+      "displayKey": "agents-view::function::extractAgentBody",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "extractAgentBody",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 131,
+      "end_line": 134,
+      "signature": "function extractAgentBody(contents: string): string",
+      "contentHash": "741c360ac38d926c624bdfb0697729666e245474dfa279e7795b3a1376c6147f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5febf0e75149586412c2f55d01c1d429",
+      "displayKey": "agents-view::function::sourceLabel",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "sourceLabel",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 92,
+      "end_line": 96,
+      "signature": "function sourceLabel(source: ResolvedReport[\"source\"]): string",
+      "contentHash": "5efd89bd02ce1f6249c57327b21a78a48ca2c62f5fb197bcc33c419821a8339b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "602728e113437e562b5cf5a8dd5e2d03",
+      "displayKey": "agents-view::function::dropLegacySchema",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "dropLegacySchema",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 44,
+      "end_line": 49,
+      "signature": "function dropLegacySchema(db: DatabaseSync): void",
+      "contentHash": "0fbcd6d21560f4aca09a2c86de4b7059bbf1893c85e5efd1b49b16fd7d04a3cf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6392fbacfa929e400148c68fc3c60949",
+      "displayKey": "agents-view::function::replaceDescriptionInFrontmatter",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "replaceDescriptionInFrontmatter",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 170,
+      "end_line": 199,
+      "signature": "function replaceDescriptionInFrontmatter(contents: string, description: string): string",
+      "contentHash": "9aa76a1e8988c4c4ab1235a2b8dbe337fa5c8b0c9233a2ca6953e21f2a32f1df",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6809c030baa513e46c9a11f251e0723b",
+      "displayKey": "agents-view::function::skillsOf",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "skillsOf",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 124,
+      "end_line": 130,
+      "signature": "function skillsOf(instance: MaestroInstanceV3 | null): AgentSkill[]",
+      "contentHash": "bbe7014c5671803ca80fb548fb52085b0bd6a42c3c76b24ff69b6930962c70bf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "70fbd25e40e4ed6eb3aa63f82f941942",
+      "displayKey": "agents-view::function::cycleOption",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "cycleOption",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-shared.ts",
+      "start_line": 148,
+      "end_line": 152,
+      "signature": "function cycleOption(options: string[], required: boolean, current: string | null, dir: 1 | -1): string | null",
+      "contentHash": "5c3d883fd356545f95e92fc01b8b71f1ff5994a07a3fcd7f2916da4e6e8e6ccd",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7736666a198f3f1c2ad6cabb9438287c",
+      "displayKey": "agents-view::component::DiffBlock",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "DiffBlock",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 87,
+      "end_line": 128,
+      "signature": "function DiffBlock({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "1bf08a6627fd30cad2418265d276fdc0cc1d74abb54e9588b63c706486aba454",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7765e7e62cc9fd148af8732bcb57ab10",
+      "displayKey": "agents-view::function::setAgentContent",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "setAgentContent",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 242,
+      "end_line": 263,
+      "signature": "function setAgentContent(projectRoot: string, bundledDir: string | null, agentName: string, body: string): Promise<AgentContentResult>",
+      "contentHash": "90a398ba1664577e139cf8bf4488a7cd2455b378aeaa7620f3a9f05a8a6b4715",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7865619737d5223dccd5e434708728bf",
+      "displayKey": "agents-view::type-def::AgentListItem",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "AgentListItem",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-list.tsx",
+      "start_line": 13,
+      "end_line": 19,
+      "signature": "export interface AgentListItem {",
+      "contentHash": "54364234cd73642145177e1bcd68b25e5cfbd01a2fba35fce41589cbfc3a4442",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7e31dcf1a6f1aff4609fe38b28043a9b",
+      "displayKey": "agents-view::effect::effect-323",
+      "concept": "agents-view",
+      "type": "effect",
+      "name": "effect-323",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 323,
+      "end_line": 327,
+      "signature": "useEffect(() => {",
+      "contentHash": "58c7b0506e03fd89d3cd88f978c95a6256112ed2fe2d779fb6d93375a2505d02",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "82fb650622cd32d6521c51f9b06a614d",
+      "displayKey": "agents-view::effect::effect-289",
+      "concept": "agents-view",
+      "type": "effect",
+      "name": "effect-289",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/interactions-pane.tsx",
+      "start_line": 289,
+      "end_line": 294,
+      "signature": "useEffect(() => {",
+      "contentHash": "e80bb62188a5acfdfe66021711083ea3f9c1e22cbb94f8d50308116f2b2eacc4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85c838dcbd42c9009aaef61332f5bffb",
+      "displayKey": "agents-view::component::DescriptionPair",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "DescriptionPair",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 64,
+      "end_line": 85,
+      "signature": "function DescriptionPair({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "bd39060cc6af48b5a78a53291584db953fb3c89aea1ac9c63ab49061c89792d1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "886eb83cb941286da861d9800261f96a",
+      "displayKey": "agents-view::function::nativeHairColor",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "nativeHairColor",
+      "filepath": "apps/maestro/src/renderer/src/utils/avatar.ts",
+      "start_line": 75,
+      "end_line": 77,
+      "signature": "function nativeHairColor(id: string | null): string",
+      "contentHash": "df23c4e19e4b95306ec8d27c7b96f5fdd4ac43de0bfb2b9cd9d340e8491fa220",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "891e8b32dd3bf0aa125269f30e05af1e",
+      "displayKey": "agents-view::type-def::AgentAttributes",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "AgentAttributes",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 73,
+      "end_line": 78,
+      "signature": "interface AgentAttributes {",
+      "contentHash": "683f526a66e6d8942b7cf001b817336c6519582912178d80042e2ffb744ebee4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8fc07ed8b139b76342b88dba83461133",
+      "displayKey": "agents-view::component::AgentRow",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AgentRow",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-list.tsx",
+      "start_line": 25,
+      "end_line": 77,
+      "signature": "function AgentRow({\n  agent,\n  selected,\n  onSelect,\n  onEdit,\n}: {\n  agent: AgentListItem;\n  selected: string | null;\n  onSelect: (id: string) => void;\n  onEdit: (id: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "bbbf331cf5157d003fb32ec5434bafda7b98819449c47964912656bfa29a275b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "95b97fd4b56f4f03a543e6ddead1b79c",
+      "displayKey": "agents-view::function::randomAvatarLayers",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "randomAvatarLayers",
+      "filepath": "apps/maestro/src/renderer/src/utils/avatar.ts",
+      "start_line": 94,
+      "end_line": 117,
+      "signature": "function randomAvatarLayers(): AvatarLayers",
+      "contentHash": "19440724efb772b73638460290b2a76c7e5833ec4ef822ff9e2a03e2c64eeb96",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9744ab452a8710f94e7a2ae5599850a2",
+      "displayKey": "agents-view::type-def::LayerSpec",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "LayerSpec",
+      "filepath": "apps/maestro/src/renderer/src/components/avatar/avatar-canvas.tsx",
+      "start_line": 21,
+      "end_line": 24,
+      "signature": "interface LayerSpec {",
+      "contentHash": "0c83d2efe484da391c305bed76a09c177d9da9017eccfd0034e5480b14813678",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "997bbe9b1f6f8fc9e7f731d364d68dc5",
+      "displayKey": "agents-view::function::pluginAgentEntries",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "pluginAgentEntries",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 42,
+      "end_line": 50,
+      "signature": "function pluginAgentEntries(): Promise<(AgentEntry & { plugin: string; })[]>",
+      "contentHash": "a99754403974f00b8f02929fd3d5f886a1d10bb84935fec61e28e81c6b877f0a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9b1549976d12544bfa16debe2f10c6d4",
+      "displayKey": "agents-view::type-def::AgentDraft",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "AgentDraft",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-shared.ts",
+      "start_line": 29,
+      "end_line": 56,
+      "signature": "export interface AgentDraft {",
+      "contentHash": "6a57be2baff0c7b6ccfc471999bc9c7685800c7923daa62bff9bbcc3b455e189",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9db1c0aa7c9a68399e0bacac5a6dc16a",
+      "displayKey": "agents-view::function::readAllAvatars",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "readAllAvatars",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 109,
+      "end_line": 140,
+      "signature": "function readAllAvatars(dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): Record<string, AvatarLayers>",
+      "contentHash": "db91f514b65002f91a6cf6a11e391cc15c3768076224a3d909f66a706132e39e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a47694dfe5b091c96b45382f5c8b775e",
+      "displayKey": "agents-view::function::defaultAvatarLayers",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "defaultAvatarLayers",
+      "filepath": "apps/maestro/src/renderer/src/utils/avatar.ts",
+      "start_line": 88,
+      "end_line": 92,
+      "signature": "function defaultAvatarLayers(): AvatarLayers",
+      "contentHash": "543b9fded958229253d08f91ebeab803a1aa4bdf0439821d6d4d8e298df2213f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a9916ad9397a8c5440c29b399e3e222f",
+      "displayKey": "agents-view::component::SkillChip",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "SkillChip",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-card.tsx",
+      "start_line": 33,
+      "end_line": 99,
+      "signature": "function SkillChip({\n  skill,\n  editing,\n  onToggle,\n  onCycleMode,\n}: {\n  skill: AgentSkill;\n  editing: boolean;\n  onToggle: () => void;\n  onCycleMode: () => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "00018f6efb5c88cc8bc756420a46e4a4299fc1dedfae4b3c6d10dddfa879c1e5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "aa957754f5518729f9206da7757c2f2a",
+      "displayKey": "agents-view::component::ColorControl",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "ColorControl",
+      "filepath": "apps/maestro/src/renderer/src/components/avatar/avatar-picker.tsx",
+      "start_line": 38,
+      "end_line": 85,
+      "signature": "function ColorControl({\n  label,\n  color,\n  native,\n  onChange,\n}: {\n  label: string;\n  color: string | null;\n  native: string;\n  onChange: (color: string | null) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "928790090f4c054a76d15131f36a862d92b2dcbf4c4a0c914350b641c2a30e9a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ac95a1c4c846d04b60e06e6d754cdcb9",
+      "displayKey": "agents-view::function::sameLayers",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "sameLayers",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 98,
+      "end_line": 104,
+      "signature": "function sameLayers(a: AvatarLayers, b: AvatarLayers): boolean",
+      "contentHash": "f74bcb5ba45890689f221f98134cf63eececdc01087eedfc4fa7fc5729dd0bf2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "aee28571c50c65fde1009f885445716d",
+      "displayKey": "agents-view::function::replaceBodyInFrontmatter",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "replaceBodyInFrontmatter",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 143,
+      "end_line": 147,
+      "signature": "function replaceBodyInFrontmatter(contents: string, body: string): string",
+      "contentHash": "fd1fafb1e609b557b94109e47af429cd7361645135e73d4af6033de42bd946ed",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b79ab69813d7beffced90a6f868ad481",
+      "displayKey": "agents-view::function::getAgentBody",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "getAgentBody",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 154,
+      "end_line": 159,
+      "signature": "function getAgentBody(projectRoot: string, bundledDir: string | null, agentName: string): Promise<string>",
+      "contentHash": "c1075bb48870078c6a461e9e755f364b58628eaa5a4268ed6bcfb55537556ecf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b88e81bb8f5d13e06ce9f5f97fd569b1",
+      "displayKey": "agents-view::function::describeUneditableSource",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "describeUneditableSource",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 104,
+      "end_line": 115,
+      "signature": "function describeUneditableSource(agentName: string, source: string): string",
+      "contentHash": "e0196cee110ad393c1adde0f18b5a78f5fe4fd9282892a01c052056e70236e86",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c1aff98f91bea8353311695d34deb336",
+      "displayKey": "agents-view::type-def::AgentFileRef",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "AgentFileRef",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 35,
+      "end_line": 40,
+      "signature": "export interface AgentFileRef {",
+      "contentHash": "79ffd0c38483ecaab2812153ff758154efd50746768273c738ac4898000f6d42",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c5565ec259c3944fc1793e58c7431a3f",
+      "displayKey": "agents-view::function::partName",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "partName",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-avatar-block.tsx",
+      "start_line": 101,
+      "end_line": 104,
+      "signature": "function partName(cat: AvatarCategory, id: string | null): string",
+      "contentHash": "7deca2bfcbeed5eb5bcc614282c42b4efe7788c0776788b023a6a3a262746273",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c6122ae19389cb5ea20e61c1318361d3",
+      "displayKey": "agents-view::function::nativeEyesColor",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "nativeEyesColor",
+      "filepath": "apps/maestro/src/renderer/src/utils/avatar.ts",
+      "start_line": 70,
+      "end_line": 72,
+      "signature": "function nativeEyesColor(id: string | null): string",
+      "contentHash": "25f6a59abaede3da11320536ec06cdfa4c8ba11c2bc49c68e626a6bfe75f1de9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c702ab00d65d319b646688e854b27ff8",
+      "displayKey": "agents-view::function::setAvatar",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "setAvatar",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 150,
+      "end_line": 167,
+      "signature": "function setAvatar(agentName: string, layers: AvatarLayers, dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): AvatarLayers",
+      "contentHash": "5a9815bbcc7d6d4f3f569500265181937a9f3c3a09c6ba438350838e7c8210a4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cfe4313c1fed3f2bf25a43ba59fca491",
+      "displayKey": "agents-view::component::ChipMultiSelect",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "ChipMultiSelect",
+      "filepath": "apps/maestro/src/renderer/src/components/chip-multi-select.tsx",
+      "start_line": 1,
+      "end_line": 41,
+      "signature": "function ChipMultiSelect({\n  options,\n  value,\n  onChange,\n  emptyText = \"No options available.\",\n}: {\n  options: string[];\n  value: string[];\n  onChange: (next: string[]) => void;\n  emptyText?: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "98e4ab49f560d853362b6ce45031950ca6f060d21f34d3adbd4bb944dc05e3f9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d8a4d8c8ef41d09d0d3155282bc27c5a",
+      "displayKey": "agents-view::function::loadImage",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "loadImage",
+      "filepath": "apps/maestro/src/renderer/src/components/avatar/avatar-canvas.tsx",
+      "start_line": 11,
+      "end_line": 18,
+      "signature": "function loadImage(src: string): Promise<HTMLImageElement>",
+      "contentHash": "c4888bbddbff171ed7ec9fc8a33ad6e285c4107d2698d2a537ba6ec3489b545b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d8ed46bcab5f319fe619e674d0033c89",
+      "displayKey": "agents-view::function::normalizeAgentDescription",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "normalizeAgentDescription",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 94,
+      "end_line": 96,
+      "signature": "function normalizeAgentDescription(description: string): string",
+      "contentHash": "3690822a620921d6b3f8542939438c3face8f2aa4825e1e43ca9760600f8d61a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "da749aab0e4cad3d58d43be6e8ad05ca",
+      "displayKey": "agents-view::function::isValidColor",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "isValidColor",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 64,
+      "end_line": 67,
+      "signature": "function isValidColor(value: unknown): boolean",
+      "contentHash": "4c98f18b281301cf98a4b033f67e1638b3d20838c002955743413fda520db40b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e37aa06396f0677670c1e5e70033de44",
+      "displayKey": "agents-view::component::AgentCard",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AgentCard",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-card.tsx",
+      "start_line": 101,
+      "end_line": 353,
+      "signature": "function AgentCard({\n  name,\n  source,\n  description,\n  type,\n  projectTag,\n  projectTagOptions,\n  layers,\n  skills,\n  editing,\n  saving,\n  forking,\n  activeCat,\n  descriptionEditable,\n  skillsEditable,\n  footerNote,\n  nextSkill,\n  onActiveCat,\n  onDescription,\n  onType,\n  onProjectTag,\n  onLayers,\n  onToggleSkill,\n  onCycleSkillMode,\n  onAddSkill,\n  onStartEdit,\n  onCancel,\n  onSave,\n  onFork,\n}: {\n  name: string;\n  /** The tier this agent resolved from — \"project\", \"user\", \"maestro\", or a plugin name. */\n  source: string;\n  description: string;\n  type: AgentType;\n  projectTag: string;\n  projectTagOptions: string[];\n  layers: AvatarLayers;\n  skills: AgentSkill[];\n  editing: boolean;\n  saving: boolean;\n  /** A fork is in flight — disables the fork control the same way `saving` disables Save. */\n  forking: boolean;\n  activeCat: AvatarCategory;\n  descriptionEditable: boolean;\n  skillsEditable: boolean;\n  /**\n   * The one line of edit-mode explanation, rendered in the FOOTER rather than in the card. Inside\n   * the card it would change the card's height with its own wrapping, and the card's height is\n   * what stops the page reflowing when the user presses Edit.\n   */\n  footerNote: string | null;\n  /** The next catalog skill the `+` would attach, or null when the catalog is exhausted/empty. */\n  nextSkill: string | null;\n  onActiveCat: (cat: AvatarCategory) => void;\n  onDescription: (value: string) => void;\n  onType: (value: AgentType) => void;\n  onProjectTag: (value: string) => void;\n  onLayers: (layers: AvatarLayers) => void;\n  onToggleSkill: (index: number) => void;\n  onCycleSkillMode: (index: number) => void;\n  onAddSkill: () => void;\n  onStartEdit: () => void;\n  onCancel: () => void;\n  onSave: () => void;\n  /** \"Copy into the project\" — the read-only card's escape hatch. Always shadows under the same name. */\n  onFork: (newName: string) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "e2f33f0a153b164e5986882f2a4a51e67b99f1afc707f8a25a7a16e38be5bee0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e3d433037a4933901535d9f69348276f",
+      "displayKey": "agents-view::function::quoteYaml",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "quoteYaml",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 117,
+      "end_line": 119,
+      "signature": "function quoteYaml(s: string): string",
+      "contentHash": "dd64f1a8f969cc1d56de1796bc2c723cc8ac33878f6c83c424168064d67e11f5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e501d29d90a9be57cf239bd6b544ecde",
+      "displayKey": "agents-view::function::cloneDraft",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "cloneDraft",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 114,
+      "end_line": 121,
+      "signature": "function cloneDraft(base: AgentDraft): AgentDraft",
+      "contentHash": "4cb131e91e69a68909d0ad219ee3b513398baa0e7959c8f6f30bc1ad34edd1bb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e512e17b80b5dc045c14d66ddd3b0b82",
+      "displayKey": "agents-view::function::activeCount",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "activeCount",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-card.tsx",
+      "start_line": 29,
+      "end_line": 31,
+      "signature": "function activeCount(skills: AgentSkill[]): number",
+      "contentHash": "f95702f822f7cf23e658b7c755b7b07374a7a6e46281151d6b4938f26c6a9863",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e6f53332dea1af65af201bb3a97d051a",
+      "displayKey": "agents-view::component::AvatarPicker",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AvatarPicker",
+      "filepath": "apps/maestro/src/renderer/src/components/avatar/avatar-picker.tsx",
+      "start_line": 87,
+      "end_line": 188,
+      "signature": "function AvatarPicker({\n  value,\n  onChange,\n}: {\n  value: AvatarLayers;\n  onChange: (layers: AvatarLayers) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "34156bc09b299b63c1c00a1663f728a7892ea17ba99b5704e719aa39bb542ccb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e7470b42f6a88344ddcd94e3ed6efe72",
+      "displayKey": "agents-view::component::AvatarCanvas",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AvatarCanvas",
+      "filepath": "apps/maestro/src/renderer/src/components/avatar/avatar-canvas.tsx",
+      "start_line": 26,
+      "end_line": 101,
+      "signature": "function AvatarCanvas({\n  layers,\n  size = 128,\n  fill = false,\n  className = \"\",\n}: {\n  layers: AvatarLayers;\n  size?: number;\n  /**\n   * Stretch to the parent box instead of `size` px. The /agents card frames the avatar in a\n   * responsive `aspect-square` container whose width the layout decides, so it cannot name a pixel\n   * size up front; every other caller still passes one.\n   */\n  fill?: boolean;\n  className?: string;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "371b15da00d54d68e4e20c046323d533576425916745cb207e8eb78cff09a724",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e994257db6247256dc65f44000931023",
+      "displayKey": "agents-view::effect::effect-44",
+      "concept": "agents-view",
+      "type": "effect",
+      "name": "effect-44",
+      "filepath": "apps/maestro/src/renderer/src/components/avatar/avatar-canvas.tsx",
+      "start_line": 44,
+      "end_line": 86,
+      "signature": "useEffect(() => {",
+      "contentHash": "eece8c70e39beadf2b680fc47d2d91c7f16b68d95ec25cbd7562a97e68325ac4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ec3c021e1b407d4c380e4c0974e161ac",
+      "displayKey": "agents-view::component::ColorControl",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "ColorControl",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-avatar-block.tsx",
+      "start_line": 42,
+      "end_line": 89,
+      "signature": "function ColorControl({\n  label,\n  color,\n  native,\n  onChange,\n}: {\n  label: string;\n  color: string | null;\n  native: string;\n  onChange: (color: string | null) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "f221c1fe368fdc446dba00e1a28d7354f8ff1f4fb130bf19a4d005a8a54f9647",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f345900b1f9ba159b87eb1035370c52d",
+      "displayKey": "agents-view::function::resolveAgentPickerState",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "resolveAgentPickerState",
+      "filepath": "apps/maestro/src/renderer/src/utils/handoff-picker.ts",
+      "start_line": 6,
+      "end_line": 12,
+      "signature": "function resolveAgentPickerState(viewedRoot: string | null, projectAgents: string[]): { options: string[]; createDisabled: boolean; }",
+      "contentHash": "a58dffcedfed717c49cb1835f7d62b27782d1b7b268d3a0053d34206bf8ba6e0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f58f1ca4c428fa7b1526654e1b5bce3e",
+      "displayKey": "agents-view::function::setAgentDescription",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "setAgentDescription",
+      "filepath": "apps/maestro/src/core/agent-descriptions.ts",
+      "start_line": 209,
+      "end_line": 233,
+      "signature": "function setAgentDescription(projectRoot: string, bundledDir: string | null, agentName: string, description: string): Promise<AgentDescriptionResult>",
+      "contentHash": "857a2effba5c3db7ecacf657bdb8d6e4af258d264b9724cf4c7f2d86233afe60",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f89e4ebe7e1756e94f5becd8a0e9ab32",
+      "displayKey": "agents-view::function::isValidLayers",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "isValidLayers",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 51,
+      "end_line": 62,
+      "signature": "function isValidLayers(value: unknown): boolean",
+      "contentHash": "c831c35078d5d1882a04e0fadbd92c65c8dd8e31971b3c5b2948b56d7a6d428f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f90c62da396de80f98192e331da7d63e",
+      "displayKey": "agents-view::component::AgentAvatarBlock",
+      "concept": "agents-view",
+      "type": "component",
+      "name": "AgentAvatarBlock",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-avatar-block.tsx",
+      "start_line": 110,
+      "end_line": 225,
+      "signature": "function AgentAvatarBlock({\n  layers,\n  editing,\n  activeCat,\n  onActiveCat,\n  onChange,\n}: {\n  layers: AvatarLayers;\n  editing: boolean;\n  activeCat: AvatarCategory;\n  onActiveCat: (cat: AvatarCategory) => void;\n  onChange: (layers: AvatarLayers) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "e2e289160f5806a700b3cb877365c41e606320af1e2f7c11757ef629edc426fa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fb37549dedc5f337fa820475421b438d",
+      "displayKey": "agents-view::function::handoffsOf",
+      "concept": "agents-view",
+      "type": "function",
+      "name": "handoffsOf",
+      "filepath": "apps/maestro/src/renderer/src/routes/agents.tsx",
+      "start_line": 86,
+      "end_line": 90,
+      "signature": "function handoffsOf(routes: ResolvedHandoffRoute[]): Record<string, string>",
+      "contentHash": "85a4b3ef42d1d539e6010f9018d22a14b5cb764f6ac955eb2f6f773e2eceac69",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fdb96562026e7fb39f4deec9f5e471c7",
+      "displayKey": "agents-view::type-def::AgentSkill",
+      "concept": "agents-view",
+      "type": "type-def",
+      "name": "AgentSkill",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-shared.ts",
+      "start_line": 19,
+      "end_line": 22,
+      "signature": "export interface AgentSkill {",
+      "contentHash": "184d6d497d0207bbe8274b9b8fc1571177c61b0a2b918b1833de85eebf62ed9f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "01d796f4a61ce30cada09a7ebf02cd2d",
+      "_from": "vertices/03563308e5b6320cadcb028f706e2f06",
+      "_to": "vertices/4f5103b8c133f1bfe1185319c20f85f2",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 143,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "04b63065981718101dd7947b059f0a89",
+      "_from": "vertices/6809c030baa513e46c9a11f251e0723b",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "06450f7cfc06954e3919b2cfe7e9b15f",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 216,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "06802b2eeb69e08bbd7fbd53a93c94af",
+      "_from": "vertices/f58f1ca4c428fa7b1526654e1b5bce3e",
+      "_to": "vertices/799e59f504287d7b3d757a64b98bf902",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 220,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "08ce3c720093d6bb74b01f344022bbce",
+      "_from": "vertices/e7470b42f6a88344ddcd94e3ed6efe72",
+      "_to": "vertices/d8a4d8c8ef41d09d0d3155282bc27c5a",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0b520875a9a2af6de630dae83442fa07",
+      "_from": "vertices/e37aa06396f0677670c1e5e70033de44",
+      "_to": "vertices/f90c62da396de80f98192e331da7d63e",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 211,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0bfd6c1641fc4eb8b2298543f51fe228",
+      "_from": "vertices/e7470b42f6a88344ddcd94e3ed6efe72",
+      "_to": "vertices/9744ab452a8710f94e7a2ae5599850a2",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 52,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0dc91309e68d698b686d126d0c89e035",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/9b1549976d12544bfa16debe2f10c6d4",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 150,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0e2739c69f1fb049eadd058248614b47",
+      "_from": "vertices/c702ab00d65d319b646688e854b27ff8",
+      "_to": "vertices/245653b9f645a61987a1ae7f95147369",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 157,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "11a8fdf5a83a8e13096b12eda374aded",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 179,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "161b85e3d1990907cd576a7a7d5e3aa1",
+      "_from": "vertices/2e809560dd31abf5ab1ae182c9175af7",
+      "_to": "vertices/25aee2ad033114ee0c6d203e0a4c4748",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1721f389fc8fba6a02584c4e424d6e5a",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "191ae96d2e1d5f1fc8b235df6f203302",
+      "_from": "vertices/8fc07ed8b139b76342b88dba83461133",
+      "_to": "vertices/1d14ccf264a35431ae321dd126372bf2",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 72,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "196662b0dfff378c51d558baaa7b50bb",
+      "_from": "vertices/f58f1ca4c428fa7b1526654e1b5bce3e",
+      "_to": "vertices/b88e81bb8f5d13e06ce9f5f97fd569b1",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 221,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "19a504b14ba372cb459b18ef58fee644",
+      "_from": "vertices/e6f53332dea1af65af201bb3a97d051a",
+      "_to": "vertices/95b97fd4b56f4f03a543e6ddead1b79c",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 167,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1a6f69bdeaab6d90e2bf940db66d5ec2",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/9b1549976d12544bfa16debe2f10c6d4",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 254,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1c0d30550c6042ba6e47f4336d8d062f",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/03563308e5b6320cadcb028f706e2f06",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 671,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e34905e20d775a7de468404b81a6681",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/e501d29d90a9be57cf239bd6b544ecde",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 325,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e4b29c4e80abd64395227a2eb723c94",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 499,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "222bdbe1a5d0b7573dfccb26c5ac4393",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/4bf59981afa0e681aaf497b9f9831f47",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 445,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2285e9c6de177c3351afe0bb9bdfeb9b",
+      "_from": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "_to": "vertices/997bbe9b1f6f8fc9e7f731d364d68dc5",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 76,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "22acbe9cde6282a4acd7ebeea1705d84",
+      "_from": "vertices/a9916ad9397a8c5440c29b399e3e222f",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "25aa79bd392d0b52f7552104a0c164c2",
+      "_from": "vertices/e6f53332dea1af65af201bb3a97d051a",
+      "_to": "vertices/e7470b42f6a88344ddcd94e3ed6efe72",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 182,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "25bc98812ecf847ac14c5a04bebe89f8",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/70fbd25e40e4ed6eb3aa63f82f941942",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "26e222141e8430c7d56153dfd2e46ec5",
+      "_from": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "_to": "vertices/c1aff98f91bea8353311695d34deb336",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2794e12b79b1b8780a6fb5af2add16be",
+      "_from": "vertices/8fc07ed8b139b76342b88dba83461133",
+      "_to": "vertices/7865619737d5223dccd5e434708728bf",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "28f12afa6bd8ce25d07040dd41d24884",
+      "_from": "vertices/2e809560dd31abf5ab1ae182c9175af7",
+      "_to": "vertices/8fc07ed8b139b76342b88dba83461133",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 158,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2a3f8279b0f97abff0c0f8073ddc2043",
+      "_from": "vertices/6809c030baa513e46c9a11f251e0723b",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2c0dc069105a54d5e943b328160a2964",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/5febf0e75149586412c2f55d01c1d429",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 554,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2f4010796951401e4025ef96341dede3",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 421,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2fc8bdd7b6d30b99d021ccc57b02f96f",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 441,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "30b147cfd60f282087140ed6bce16c28",
+      "_from": "vertices/2e809560dd31abf5ab1ae182c9175af7",
+      "_to": "vertices/8fc07ed8b139b76342b88dba83461133",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "382f243b8c49a8634b5f04a6d6e83844",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/799e59f504287d7b3d757a64b98bf902",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 272,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3830461e2bdf6d7f54d46c517986efc3",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3d233e7454e44e2cfdc829ad8aec293c",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 412,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3ebbaeb9445d7f5992d430ed63a7dda1",
+      "_from": "vertices/e501d29d90a9be57cf239bd6b544ecde",
+      "_to": "vertices/9b1549976d12544bfa16debe2f10c6d4",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 114,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3ed1178a7488427a78bd137f0fbb7a82",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/9b1549976d12544bfa16debe2f10c6d4",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 364,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4412bd73a334ded0f848532a78fe3754",
+      "_from": "vertices/1bf5fa273bb1865a559acc34078d5213",
+      "_to": "vertices/13f9bac317d0ad1e78aa8c2c70dfc1a2",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 215,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4695b5956744a1dc6a4cc0fe4aae2562",
+      "_from": "vertices/03563308e5b6320cadcb028f706e2f06",
+      "_to": "vertices/7736666a198f3f1c2ad6cabb9438287c",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 181,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4766bf9bfb5e9a30fc687c28d0a9cd6d",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/ec3c021e1b407d4c380e4c0974e161ac",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 202,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4a3d3d586f167ba5f1f144dc9f790194",
+      "_from": "vertices/e7470b42f6a88344ddcd94e3ed6efe72",
+      "_to": "vertices/9744ab452a8710f94e7a2ae5599850a2",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5262d0cbbd14015f1e9aaa613c133507",
+      "_from": "vertices/b79ab69813d7beffced90a6f868ad481",
+      "_to": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 155,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "53dd2ca56408a793343378b7ad4bbc3f",
+      "_from": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "_to": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5847c814ef52b30b8991b1b6622cf08b",
+      "_from": "vertices/e6f53332dea1af65af201bb3a97d051a",
+      "_to": "vertices/aa957754f5518729f9206da7757c2f2a",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5e4a6aedfd392891b519aa45d264de7b",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/886eb83cb941286da861d9800261f96a",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 213,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5f4774a197c575745411866d73411b8e",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 178,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6072197c9fa6c9df4a5dd68b679202de",
+      "_from": "vertices/e37aa06396f0677670c1e5e70033de44",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 139,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6e9a594cb80e4e09fa7644c83b5d5d2e",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 374,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "70d1de6fed486ed37e3877a5cb8a5736",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/2e809560dd31abf5ab1ae182c9175af7",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 582,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "715b0fbf95b6d901c0aa0adeeec8fbde",
+      "_from": "vertices/7765e7e62cc9fd148af8732bcb57ab10",
+      "_to": "vertices/aee28571c50c65fde1009f885445716d",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 261,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "723423acd2746668400ac3ce88ddc0e8",
+      "_from": "vertices/344392dce815444fee2f3d2e58557c4b",
+      "_to": "vertices/f89e4ebe7e1756e94f5becd8a0e9ab32",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "74b1cc87bb472dde5aba0f960d304de5",
+      "_from": "vertices/e6f53332dea1af65af201bb3a97d051a",
+      "_to": "vertices/886eb83cb941286da861d9800261f96a",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 159,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79052ad4cdfd05bb6fe9c5980d4e2a06",
+      "_from": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "_to": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 67,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "797574ff9f4815424b6af2e07ec4e3cd",
+      "_from": "vertices/1bf5fa273bb1865a559acc34078d5213",
+      "_to": "vertices/0b99879bd94afb163787799a19cff3a7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7c22a8732f25dab4081299b8587f6dc7",
+      "_from": "vertices/997bbe9b1f6f8fc9e7f731d364d68dc5",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "80ab7f10a1b0f491bc2fae9d11508ed0",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 425,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "80b0911476de8cc54974bd3bf4f4d0ff",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 177,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "81ce774ecfd602366017793c58efe1db",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/fb37549dedc5f337fa820475421b438d",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 264,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8491a1d2232acf3f0ca79a66e7dd0b6c",
+      "_from": "vertices/f58f1ca4c428fa7b1526654e1b5bce3e",
+      "_to": "vertices/d8ed46bcab5f319fe619e674d0033c89",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 215,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89fc07a86d6e7d25357e26c4c76a0676",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/a47694dfe5b091c96b45382f5c8b775e",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 261,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8f21caa6cc953abe79095a4b39fe397a",
+      "_from": "vertices/7765e7e62cc9fd148af8732bcb57ab10",
+      "_to": "vertices/799e59f504287d7b3d757a64b98bf902",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 250,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "93ce39654f6bdfc1c0056ebae613efe9",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 181,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "941657eec4e80c2726a72f11780a57a8",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 474,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "94a580406b4ff711469ee06f83f97879",
+      "_from": "vertices/b79ab69813d7beffced90a6f868ad481",
+      "_to": "vertices/56a71fb5ee00920637c7818a8237eb18",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 158,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "990c5b3a073cfbe66827e2239ef7846e",
+      "_from": "vertices/03563308e5b6320cadcb028f706e2f06",
+      "_to": "vertices/85c838dcbd42c9009aaef61332f5bffb",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "994d1b87ad075181a1cab16bcd7172aa",
+      "_from": "vertices/f58f1ca4c428fa7b1526654e1b5bce3e",
+      "_to": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 218,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9b72c4cb0cd8861b5434abb9dfdce13a",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/e37aa06396f0677670c1e5e70033de44",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 628,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e31e265ca34f95943b03e90c6f42ba8",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/c5565ec259c3944fc1793e58c7431a3f",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 199,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e6b8d2be105bf552d005ffecbad542b",
+      "_from": "vertices/997bbe9b1f6f8fc9e7f731d364d68dc5",
+      "_to": "vertices/f1780510e3d0f7bf0e10e00a76ac2604",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9eeff48134035a2a3943b79be352089a",
+      "_from": "vertices/245653b9f645a61987a1ae7f95147369",
+      "_to": "vertices/602728e113437e562b5cf5a8dd5e2d03",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a278b0b0f7b371a0a102f01b833322dd",
+      "_from": "vertices/e512e17b80b5dc045c14d66ddd3b0b82",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 29,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a34f22164d3b5e3022621255832a9e23",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 369,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a37ed3c908e91086eb70daa23d6a6386",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 417,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a557964df3d1aeb8c4711712a6d5c00f",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/7865619737d5223dccd5e434708728bf",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 236,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a64a5259ed17ee6f3021b4d10e2ccbc0",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/423ad03fe1f95fedafa682a6d9666e01",
+      "type": "uses-hook",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 134,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a853523e0f54ea248b9180e9ce711196",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/c6122ae19389cb5ea20e61c1318361d3",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 205,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "abb2047f6cd88fbad347ca113a6d4660",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/a47694dfe5b091c96b45382f5c8b775e",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 244,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "abe22e0297a0ce5fc072a576b7eb3d87",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 214,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ada03556f0aa17ca96153cd86d52ae91",
+      "_from": "vertices/2e809560dd31abf5ab1ae182c9175af7",
+      "_to": "vertices/25aee2ad033114ee0c6d203e0a4c4748",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b26a035c9b77f302b28f1cad50199f77",
+      "_from": "vertices/2e809560dd31abf5ab1ae182c9175af7",
+      "_to": "vertices/7865619737d5223dccd5e434708728bf",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 98,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b3d77be1a793f8807c8b215906d98af3",
+      "_from": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "_to": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b3fcaec93dfbf16091cbeca557e781b8",
+      "_from": "vertices/4bf59981afa0e681aaf497b9f9831f47",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b4602295ae544730c97ebe8ee84ac417",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/1bf5fa273bb1865a559acc34078d5213",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 675,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b4c94f943cde0143edcc1f97286de206",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 429,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b83932f12d0ae5636a324cdc9e67c803",
+      "_from": "vertices/7765e7e62cc9fd148af8732bcb57ab10",
+      "_to": "vertices/b88e81bb8f5d13e06ce9f5f97fd569b1",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 251,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b86f47850af707674b61994c6fdf0e34",
+      "_from": "vertices/344392dce815444fee2f3d2e58557c4b",
+      "_to": "vertices/245653b9f645a61987a1ae7f95147369",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 81,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c6139dab93b0fb7570e6ac950c5e4ed2",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 401,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c92c15511a165b8cd6bda41820aeca97",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 182,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cb6792f303fe0d3a275c7aa24c4cf210",
+      "_from": "vertices/e6f53332dea1af65af201bb3a97d051a",
+      "_to": "vertices/c6122ae19389cb5ea20e61c1318361d3",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 151,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cd77886b7882ddc4c1f4cd705b17a63e",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 215,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cda64a59424cbc28fed534a911707b8c",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/c5565ec259c3944fc1793e58c7431a3f",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 157,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cdf194038c5005bde315ba524edd9596",
+      "_from": "vertices/997bbe9b1f6f8fc9e7f731d364d68dc5",
+      "_to": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d2220540b81e32aa56289828b43e8056",
+      "_from": "vertices/f58f1ca4c428fa7b1526654e1b5bce3e",
+      "_to": "vertices/6392fbacfa929e400148c68fc3c60949",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 231,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d795f29c515fe0d81574bf580ed602ae",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/ac95a1c4c846d04b60e06e6d754cdcb9",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 420,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d825b4070347c7c9b721c530495a5ab2",
+      "_from": "vertices/9db1c0aa7c9a68399e0bacac5a6dc16a",
+      "_to": "vertices/f89e4ebe7e1756e94f5becd8a0e9ab32",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 131,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "da07c650fd318649bc3803d825ef67f5",
+      "_from": "vertices/8fc07ed8b139b76342b88dba83461133",
+      "_to": "vertices/e7470b42f6a88344ddcd94e3ed6efe72",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dc013dcf588b77c87cf46786e13501e0",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/56f9a8975d3414e8b53ba6c740cd9943",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": true,
+      "line": 435,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e15d9b94cc013ccfc68d88fe37e6cff5",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/891e8b32dd3bf0aa125269f30e05af1e",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 138,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e552d58dfe18bfc2150e210749c40e0d",
+      "_from": "vertices/f89e4ebe7e1756e94f5becd8a0e9ab32",
+      "_to": "vertices/da749aab0e4cad3d58d43be6e8ad05ca",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e90fa4c7d79d1b4e33e69c66aff577f3",
+      "_from": "vertices/9db1c0aa7c9a68399e0bacac5a6dc16a",
+      "_to": "vertices/245653b9f645a61987a1ae7f95147369",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 113,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e9d80ecf7f1550302d43f5331f0d8767",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/95b97fd4b56f4f03a543e6ddead1b79c",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eb6ce991f4b82857d491201bc110ffa3",
+      "_from": "vertices/6392fbacfa929e400148c68fc3c60949",
+      "_to": "vertices/e3d433037a4933901535d9f69348276f",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 176,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eee4216e2b7c4b90f5bdd6526cc70893",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/0d53ae10ccf7b733cfba36324c2496b6",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 125,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ef0028ff1a7e7bd5eab88f19348aa8d5",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/e501d29d90a9be57cf239bd6b544ecde",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 319,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ef261669d9d32b90ae3d0a8ed749d1b7",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/6809c030baa513e46c9a11f251e0723b",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 262,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "efc1003eef488c436395c3195454cb86",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/e7470b42f6a88344ddcd94e3ed6efe72",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 191,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f07699c7cc68b0cc96df9b7066ea67c9",
+      "_from": "vertices/c702ab00d65d319b646688e854b27ff8",
+      "_to": "vertices/f89e4ebe7e1756e94f5becd8a0e9ab32",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f0def6b80ffc514f2bd0657d1f66ea48",
+      "_from": "vertices/f90c62da396de80f98192e331da7d63e",
+      "_to": "vertices/ec3c021e1b407d4c380e4c0974e161ac",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 210,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f1d8bccd8ccc20e8e7133b5c07edc23f",
+      "_from": "vertices/03563308e5b6320cadcb028f706e2f06",
+      "_to": "vertices/4c6970223b35587e1943bb71e7f30b2a",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f2a3ca29eb05eb1e0341d55da006262f",
+      "_from": "vertices/7765e7e62cc9fd148af8732bcb57ab10",
+      "_to": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 248,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f52fa22dd44420984ecf6c8a5de2bd79",
+      "_from": "vertices/e37aa06396f0677670c1e5e70033de44",
+      "_to": "vertices/a9916ad9397a8c5440c29b399e3e222f",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 245,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f97078982db7ae22e3d4fd38467ac538",
+      "_from": "vertices/11eda32789182f37be333cf12012a822",
+      "_to": "vertices/9b1549976d12544bfa16debe2f10c6d4",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 329,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f9bea4931e916e211b4151065e4e6eae",
+      "_from": "vertices/1bf5fa273bb1865a559acc34078d5213",
+      "_to": "vertices/13f9bac317d0ad1e78aa8c2c70dfc1a2",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 194,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fc7fbcd2671bc9a30af97ed2df9444c5",
+      "_from": "vertices/6809c030baa513e46c9a11f251e0723b",
+      "_to": "vertices/fdb96562026e7fb39f4deec9f5e471c7",
+      "type": "has-type",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fe2d12ea584dcf5bb7cffb00c2c8c99c",
+      "_from": "vertices/e37aa06396f0677670c1e5e70033de44",
+      "_to": "vertices/e512e17b80b5dc045c14d66ddd3b0b82",
+      "type": "calls",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 240,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ffe347d592c87ddc66e7baa675e95ff3",
+      "_from": "vertices/e6f53332dea1af65af201bb3a97d051a",
+      "_to": "vertices/aa957754f5518729f9206da7757c2f2a",
+      "type": "mounts",
+      "concept": "agents-view",
+      "crosses_concept": false,
+      "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/agents-view/SKILL.md",
+    "body": "---\nname: agents-view\ndescription: \"Explains how the /agents view in the Maestro desktop app is built end-to-end: the three-pane shell and its 1120px scroller, the Project/Global left-pane split, the single edit session that fans out to eight different write paths on Save, why only the description (and, since `045`, the Content tab body) locks on a Global-tier card and how forking a global agent into the project works, the loaded/referenced skill chips and their tri-state, the tabs-and-arrows avatar editor, the Interactions pane's two tabs — Interactions (the resolved report plus one editor per outgoing handoff route, each labelled since `037` with the `.claude/channels/<scope>/<receiver>/<sender>.1.md` lane path its template writes to) and Content (`044`, `045` made it editable for project-tier agents via `setAgentContent`/`replaceBodyInFrontmatter`, gated on the same `EDITABLE_AGENT_SOURCES` check as the description) — the fork-review block that renders below the card, and the load-bearing card min-height. Use when the user is working inside apps/maestro and asks how the agents page works, why a Save wrote to eight places, why a description or a Content tab body is written to the agent's own .md, why an agent's description or content can't be edited, how the \\\"Copy into the project\\\" button works, why a forked agent is flagged as behind its template and what update/keep/detach do, why the skills section is read-only, why the card doesn't reflow when you press Edit, how the Interactions pane's per-route handoff editors work, why a route shows (or doesn't show) a channel lane path, or how the Content tab resolves, shows and (for project-tier) saves an agent's markdown body.\"\nmetadata:\n  type: concept-skill\n  version: \"1.16\"\n  last-update: b323aa7c8e869672baceac7299994951c25f78cb\n---\n\n# Agents View\n\nThe `/agents` route (`src/renderer/src/routes/agents.tsx`) is where you browse the subagents a\nproject can dispatch, read the report a run would actually receive, and edit an agent's properties\nand its cosmetic avatar in place.\n\nIt is the third of the app's editor routes, alongside `workflow-view` and `rule-view` — but unlike\nthose two it does **not** own one slice of one file. An \"agent\" as this page presents it is assembled\nfrom seven different homes, and that is the single fact everything else here follows from.\n\n## Layout\n\n```\n┌───────────────────────────── TopNav (top-nav.tsx, unchanged) ─────────────────────────────┐\n├──────────────────┬────────────────────────────────────────┬───────────────────────────────┤\n│ Agents           │                                        │ Interactions            [▤]  │\n│ [▤]              │        ┌────────────────────────┐      │                              │\n│ [Filter agents…] │        │ probe-agent  DEVELOPER │      │ [Main Session]          [✎]  │\n│                  │        │                        │      │ ┌──────────────────────────┐ │\n│ ┌──────────────┐ │        │      ┌──────────┐      │      │ │ the resolved report,     │ │\n│ │ backend  [✎] │ │        │  ‹   │  avatar  │   ›  │      │ │ capped at 50% and faded  │ │\n│ │ [◲] desc…    │ │        │      └──────────┘      │      │ └──────────────────────────┘ │\n│ └──────────────┘ │        │  Hair · Long Bangs     │      │  Project override — saving…  │\n│ ┌──────────────┐ │        │ ── // DESCRIPTION ──   │      │ → test                  [✎]  │\n│ │ frontend [✎] │ │        │ ── // SKILLS ──        │      │ ┌──────────────────────────┐ │\n│ │ [◲] desc…    │ │        │ ── // PROJECT TAG ──   │      │ │ handoff_details protocol │ │\n│ └──────────────┘ │        └────────────────────────┘      │ └──────────────────────────┘ │\n│ [+ New agent]    │                     [Cancel] [Save]    │◂ drag                        │\n└──────────────────┴────────────────────────────────────────┴───────────────────────────────┘\n      292px                        flex: 1, min 560px                 400px, 280–720\n```\n\nThe left pane is two labelled sections, **Project** and **Global** (`agent-list.tsx`'s\n`SectionLabel`) — `source === \"project\"` vs. everything else — shown only when non-empty. Since\n`discoverAgents` already runs `dedupeById` over project → user → bundled → plugins (first wins),\nevery agent appears in exactly one section, and forking one moves its row from Global to Project on\nthe next refresh — that movement is the confirmation the fork worked, no toast needed. The card\ncarries a matching uppercase tier tag next to the agent name.\n\nBoth side panes collapse to their header row. The right pane is resizable by dragging its left edge.\n\n**One horizontal scroller wraps the nav _and_ the pane row**, with an inner `min-width: 1120px`, so\nchrome and content scroll together and nothing clips on a narrow window. There are no breakpoints —\nthis is a desktop window, so it has a floor rather than a set of layouts.\n\nThe page renders the real `TopNav` with no arguments. The page-local `ProjectSelect` the old version\ncarried is **gone**, and its removal fixed a latent split: the list was fetched for `viewedRoot`\nwhile `reports.get` resolved against `currentRoot()`, so the two could describe different projects.\nEverything on this page now reads the open project, and only the nav's folder button changes it.\n\n## One edit session, eight write paths\n\nPressing Edit — from the card footer, a list row's pencil, or *any* of the Interactions pane's\npencils — clones the agent into a **draft** via `cloneDraft(base)` (`agents.tsx`), which deep-copies\n`layers`, `skills` **and** `handoffs`; a shallow spread would edit `base` and make Cancel a no-op.\nEvery control edits the draft. Cancel drops it. **Nothing touches disk until Save**, which then fans\nout to the channel that owns each field:\n\n| Field | Channel | Destination |\n| --- | --- | --- |\n| report | `report:save` | `.claude/reports/<agent>.md` — a **project override**, keyed by the agent's own name |\n| handoffs (`034`) | `handoff:save`, once per edited route | `.claude/handoffs/<sender>/<receiver>.md` — a project override, and it **drops that pair's `syncedFrom`** |\n| avatar | `avatar:set` | `~/.claude/maestro-avatars.sqlite` — global, or this project's own row (see below) |\n| type | `template:agent-types:save` | `~/.claude/maestro-agent-types.sqlite` — global, or this project's own row |\n| project tag | `template:agent-project-tags:save` | `~/.claude/maestro-agent-project-tags.sqlite` — global, or this project's own row |\n| description | `agent:describe` | **the agent's own `.md` frontmatter** |\n| content (`045`) | `agent:content:save` | **the same `.md`'s body**, everything past the frontmatter block |\n| skills | `config:save` (workflows slice) | `.claude/maestro.json`'s `workflow_instances` |\n\nEach write is attempted only when that field actually changed, and **failures are collected per\nfield**: a partial failure toasts what failed and **stays in edit mode**, rather than closing the\neditor as if the whole save had landed. There is no transaction across eight destinations — the\nhonest alternative is to say which parts got through.\n\nThe two least obvious paths are documented with the pane that owns them: the **content** write\n(`setAgentContent`/`replaceBodyInFrontmatter`, the mirror image of the description write) and the\n**handoff** write (the only path that is a list, and the only one that re-reads after writing) are\nboth in [`interactions-pane`](sub-concepts/interactions-pane.md).\n\n**Avatar/type/project-tag are global or project-scoped depending on the selected agent's tier\n(`030`).** `handleSave()` computes `const projectScoped = agent?.source === \"project\"` from the\nalready-in-scope `DiscoveredDefinition` and passes it as the trailing argument to all three writes\n(`avatar.set`, `agentTypes.save`, `agentProjectTags.save`). Editing a `user`/`maestro`/plugin-tier\nagent still writes the one shared global row, exactly as before `030`; editing a project-tier agent\nscopes the write to the open project, so two projects with a same-named agent no longer collide.\n`refresh()`'s three bulk reads (`agentTypes.list`, `agentProjectTags.list`, `avatar.list`) always\npass `true` — this page wants the merged (global ∪ open-project) view regardless of which agent is\nselected. See [`global-stores`](../global-stores/SKILL.md)'s \"Keyed by project, not just agent\nname\" section for the store-level mechanism.\n\nTwo of these are documented in depth elsewhere rather than restated here:\n\n- **Why the description (and, since `045`, the content) is a file write and not a store** — see the\n  \"The exception: a description is not a store\" section of [`global-stores`](../global-stores/SKILL.md).\n  Short version: type/tag/avatar are Maestro's own metadata, but a description and a body are what\n  Claude Code itself reads to decide when to dispatch the agent and how it behaves — the same\n  argument, extended to the second file-backed field.\n- **Why the skills write re-reads before writing** — see `maestro-config-model`'s read-before-write\n  rule and `workflow-view`'s \"no longer the only writer\" note.\n\n## Data in\n\nThe route holds no loader-driven state beyond the first paint. `refresh()` fans out seven reads in\nparallel, and re-runs on every project change, after every save, and on every router invalidation (including an\noutside edit to `maestro.json` — the effect depends on `loaderResult`):\n\n```\ngetToolsData()                            → data.agents (id, description, source), data.skills\nwindow.maestro.data.workflows()           → config.workflow_instances, config.skills_available, seeded\nwindow.maestro.templates.agentTypes.list(true)        → Record<agent, AgentType> — merged, global ∪ open project\nwindow.maestro.templates.agentProjectTags.list(true)  → Record<agent, string> — merged\nwindow.maestro.avatar.list(true)                      → Record<agent, AvatarLayers> — merged\nwindow.maestro.templates.projectTags.list()       → the catalog for the dropdown\nwindow.maestro.agents.sync()                      → AgentSyncSummary — which forks are behind their template (`031`)\n```\n\nThe seventh read is the only one that is *also* computed app-wide: `install-context.tsx`'s\n`refresh()` calls the same channel on project selection and hangs the result off\n`InstallContextValue.agentSync`, so `/maestro` can show the headline count without visiting this\npage. Both call sites swallow a failure the way the auto-refresh does — a fork check that throws\nmust not stop the page from loading.\n\n`avatar:list` exists because of this page. The list draws a composited thumb per row, and the\nper-agent `avatar:get` would have been one sqlite open per agent on every render — see\n`global-stores`' avatars sub-concept.\n\n**Three things are refetched per selection, in one `Promise.all`** (`034`, `content` added `044`):\n`reports.get(agent)`, `handoffs.routes(agent)`, and `agents.content(agent)`. They are the per-agent\npair (now a triple), project-scoped — everything else arrives with the global attributes in\n`refresh()`'s bulk reads. `handoff:routes` is deliberately **one** call for every row the\nInteractions pane will render rather than a `get` per route: the graph walk that produces the list\n(`handoff-routes.ts`) is not renderer-safe, and a fan-out would reopen the global sqlite store once\nper row on every click. Each read failing toasts on its own and falls back to `NO_REPORT` /\n`NO_ROUTES` / `NO_CONTENT`; none of the three stops the others.\n\n## Skills are the instance's, not the agent's\n\nThe chips come from the first `workflow_instances` entry whose `agent` matches the selected agent,\nflattened out of its two lists. `AgentSkill.mode` is therefore **tri-state**:\n\n| `mode` | Means | On save |\n| --- | --- | --- |\n| `\"loaded\"` | in `loaded_skills` — the SubagentStart hook injects it before the agent works | stays in `loaded_skills` |\n| `\"referenced\"` | in `referenced_skills` — offered, loaded only if the task needs it | stays in `referenced_skills` |\n| `null` | on screen but unticked | dropped from **both** lists |\n\nThe third state is what lets the count read \"2 of 3 active\" without the chip vanishing the instant it\nis unticked, so unticking is visibly reversible before Save.\n\n**The loaded/ref toggle inside each chip is the one control the design did not draw**, and it is not\ncosmetic: an instance keeps its skills in two lists, so a chip that showed only \"attached\" would let\na save silently demote every loaded skill to referenced. Ticking a fresh chip defaults it to\n**referenced**, matching `instance-skill-picker.tsx` on the workflows canvas — offering a skill is\nthe reversible choice; loading one costs context on every run.\n\nThe `+` attaches the next unused entry from `config.skills_available`, which keeps `maestro.json`\ninternally consistent — an instance skill that is not in the project's available set is a config that\ndisagrees with itself.\n\nSkills are **read-only** when `skillsEditable` is false (`instance !== null && workflows !== null &&\n!workflows.seeded`). Two of those causes are signposted in the footer note rather than by a silently\ninert control: the agent has no instance in this project's workflow, and the config is `seeded` (no\n`maestro.json` on disk). The second matters — writing would materialise a starter config as a side\neffect of visiting `/agents`. The third, `data:workflows` failing to load, has no note of its own.\n\nEach chip also renders `SkillRefMark` (`components/skill-ref-mark.tsx`, `091`): an advisory amber\n\"plugin not installed / not found…\" label when the id is in the dangling-skill report. It never\ndisables or removes the chip.\n\n## The avatar block\n\nThe card's cosmetic avatar editor — tabs-and-arrows over seven categories, the eyes/hair\n`ColorControl` and its live recolor, and why it supersedes `avatar-picker.tsx` here only — is\n[`avatar-block`](sub-concepts/avatar-block.md).\n\n## The Interactions pane (`034`)\n\nThe right pane's two tabs (`044`) — the Interactions list (the resolved report plus one editor per\noutgoing handoff route, each labelled since `037` with its `.claude/channels/<scope>/<receiver>/<sender>.1.md`\nlane path, `<scope>` left a literal placeholder since `144`) and the Content tab (`044` read-only, `045` editable for a project-tier agent) — plus the\ncontent and handoff write paths they own, are [`interactions-pane`](sub-concepts/interactions-pane.md).\n\n## Forking a global agent\n\nThe Copy button, same-name vs. renamed forks, the `agent-forks.json` provenance record, and the\nfork-review block that renders below the card (`031`) are\n[`forking-a-global-agent`](sub-concepts/forking-a-global-agent.md).\n\n## Things that bite\n\n- **`CARD_MIN_HEIGHT` is a measured constant, not a round number.** The card must be the same height\n  in view and edit mode so pressing Edit does not reflow the page under the pointer. Measured in a\n  real window: natural view height **607px**, natural edit height **627px**, so the floor is 627. If\n  you change edit-mode card content, **re-measure and update it** — the `test-maestro` skill's CDP\n  harness is how. Re-measured on the packaged build for `034`: view **618.95px**, edit **603.83px**,\n  applied **627px** in both modes — unchanged, and expected to be, because the Interactions pane is\n  outside the card and `034` changed no edit-mode card content.\n- **The single line of edit-mode explanation lives in the card's _footer_, outside the card.** That is\n  the same constraint: an in-card note changes the card's height with its own wrapping, and the note\n  is conditional (it changes for a plugin-owned agent, or one with no instance), so in-card it would\n  make the height vary by agent.\n- **Measuring that height by setting `card.style.minHeight = \"\"` deletes React's own inline\n  declaration** until the next render, so every later measurement in the same probe silently loses the\n  floor and reports a card that \"doesn't respect its minimum\". Save the previous inline value and\n  restore *that*. This cost a probe run.\n- **The description — and, since `045`, the Content tab body — is not editable for every agent, as\n  of `029`, only `project`-tier is.** `EDITABLE_AGENT_SOURCES` in `contracts.ts` is `[\"project\"]`;\n  every other tier renders a read-only paragraph (description) or `<pre>` (content) even in edit\n  mode. The renderer decides from `DiscoveredDefinition.source` alone, with no round trip — which is\n  why that constant is a value export from an otherwise interfaces-only file.\n  `describeUneditableSource(agentName, source)` (`agent-descriptions.ts`) gives the thrown refusal a\n  tier-specific message, shared verbatim by both fields' server-side rejection: `user`-tier says the\n  agent is machine-wide and points at forking rather than claiming it was \"created\" anywhere (there\n  is no such place); `maestro`/plugin-tier names the plugin and says an update overwrites the file.\n  The card's own footer note and the Content tab's `contentNote` are each a **separate, hand-written\n  parallel** of that message (`agents.tsx`), not a shared import — the renderer can only pull\n  `contracts`/`text` out of `src/core`, so the three strings can drift; check all of them if you\n  change one.\n- **A pencil on an _unselected_ row cannot build the draft immediately.** That agent's report is still\n  in flight, so `startEdit` sets `selected` plus a `pendingEdit` flag and an effect builds the draft\n  once `base` resolves. Building it inline would clone a draft carrying the previously selected\n  agent's report.\n- **List descriptions are truncated in JS (`clampText`), deliberately not `-webkit-line-clamp`.** The\n  clamp loses its ellipsis as a flex child and how many lines fit depends on the Chromium build; the\n  untruncated text still goes in `title`.\n- **Two page-local surfaces are mixed from tokens, not hard-coded.** The design names `#2b2722` (side\n  panes, avatar frame) and `#2f2b26` (the read-only report block) and the token set has neither, so\n  `PANE_SURFACES` sets `--pane` and `--sunken` with `color-mix()` on the page root. They resolve to\n  exactly those two hexes in dark mode and follow the theme in light. When asserting on them: a\n  `color-mix()` result serialises as `color(srgb r g b)` with 0..1 channels, **not** as `rgb()`.\n- **The right pane's drag writes width straight to the DOM and only tells React on mouseup.** A\n  `setState` per `mousemove` re-renders the card, the list and every canvas on it, once per pixel.\n- **`components/tabs/discovered-definitions.tsx` is still shared with `/skills`.** This page grew its\n  own list (a skill has no avatar and no per-row pencil); do not widen the shared table to serve both.\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `src/renderer/src/routes/agents.tsx` | State, the draft (`cloneDraft`, `handoffsOf`), the eight-way save, the round trips. |\n| `src/renderer/src/components/agents/agent-shared.ts` | `AgentDraft` (incl. `034`'s `handoffs: Record<handoffId, string>` and `045`'s `content: string`) / `AgentSkill`, the constants, `clampText`, `cycleOption`, `PANE_SURFACES`, the shared class strings. |\n| `src/renderer/src/components/agents/agent-list.tsx` | Left pane. Holds the `/create-subagent` link. |\n| `src/renderer/src/components/agents/agent-card.tsx` | Centre pane card (skill chips with `SkillRefMark`) + the Edit/Cancel/Save footer, and the fork Copy button on a non-project card. |\n| `src/renderer/src/components/agents/agent-avatar-block.tsx` | The frame in both modes, and the tabs+arrows editor. |\n| `src/renderer/src/components/agents/interactions-pane.tsx` | Right pane: the Interactions/Content tab strip (`044`), the report + one entry per route, `HANDOFF_TIER`, the resize handle, one auto-growing editor per entry, and (`045`) the Content tab's own pencil, `agent-content-editor` textarea and `contentNote` for a project-tier agent. |\n| `src/core/handoffs.ts` | `resolvedRoutesFrom(projectRoot, agent, dbPath?)` — the pane's one round trip, and `saveProjectHandoffOverride`, its write. |\n| `src/core/agent-descriptions.ts` | The node side of `agent:describe` — file resolution, the frontmatter rewrite, `describeUneditableSource`'s tier-specific refusals, (`044`) `extractAgentBody`/`getAgentBody` for the Content tab, and (`045`) `replaceBodyInFrontmatter`/`setAgentContent`, the tab's write path. |\n| `src/core/agent-fork.ts` | `forkAgent` — byte-copy or renamed-frontmatter fork, and `copyAgentAttributeRows`. Re-exports everything below. |\n| `src/core/agent-fork-record.ts` | The sidecar and the hashing/merging helpers, split out of `agent-fork.ts` in `031` so nothing sqlite-shaped reaches the generated bundle. |\n| `src/core/sync-decision.ts` | `decideSync` — the one shared, `fs`-free rule, also called by `report-sync.ts` (`agent-sync.ts` never reaches its `adopt` verdict: a fork's tracking is never `untracked`). |\n| `src/core/agent-sync.ts` | `computeAgentSync` (read-only) and `applyAgentSync` (the only writer). |\n| `src/core/diff.ts` | `diffLines`/`hasChanges`/`unifiedDiffText` — LCS, with a `MAX_LINES = 4000` fallback to a whole-file replace. |\n| `src/renderer/src/components/agents/agent-fork-review.tsx` | The review block: both descriptions, the diff, and the three actions. |\n| `test/core/sync-decision.test.ts` | The branch table — `detached` outranks everything, `stale-customized` decided before `templateAdvanced`. |\n| `test/core/agent-sync.test.ts` | One case per `031` acceptance criterion, including the mtime-and-bytes proof that computing writes nothing. |\n| `src/renderer/src/components/avatar/avatar-canvas.tsx` | Composites the layers; `fill` is this page's. |\n| `src/renderer/src/utils/avatar.ts` | Pure client-side avatar helpers, no IPC: the placeholder layers for an agent with no saved avatar, randomised layers for a new one, and the native colour each recolourable shape starts from in the colour picker. |\n| `test/core/agent-descriptions.test.ts` | The frontmatter rewrite's refusals and its byte-identical body. |\n| `test/core/agent-fork.test.ts` | Hash normalization and `forkAgent` end-to-end, including every refusal path. |\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — the mechanism behind the fork review on\n  this page: the one decision function `report-sync.ts` shares, the two staleness triggers, and\n  what update / keep / detach write.\n- [`global-stores`](../global-stores/SKILL.md) — five of the eight write paths, why the description\n  and (`045`) the content deliberately are not stores, and where `copyAgentAttributeRows`\n  reads/writes those same three stores for a renamed fork.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the workflows slice this page is the\n  second writer of, and the read-before-write rule that follows.\n- [`workflow-view`](../workflow-view/SKILL.md) — the other writer, and where `loaded_skills` /\n  `referenced_skills` are normally edited.\n- [`create-skills-architecture`](../create-skills-architecture/SKILL.md) — the `/create-subagent` flow\n  this page's \"+ New agent\" link is the entry point for.\n- [`test-maestro`](../test-maestro/SKILL.md) — how the measured numbers above were measured, and how\n  to re-measure them.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — `maestro-agent-sync` is one of the\n  seventeen generated bundles, and the reason the fork record had to leave `agent-fork.ts`.\n- `updating-maestro` (at the repo root `.claude/skills`) — why a plugin-tier fork is checked by\n  version string alone, and why that is the *correct* answer rather than a shortcut.\n",
+    "contentHash": "sha256:990b3d4f0311e96c3aacd3a65b216eb039fb13ec06ffb927c9300c37eedfdd1a"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.33",
+    "extracted_at": "2026-10-31T14:11:38.740Z",
+    "files": {
+      "apps/maestro/src/core/agent-descriptions.ts": "sha256:02f886605d001f2fde218bdbdb040a8b189701592e8ec337778e808d80ec4985",
+      "apps/maestro/src/core/avatar-store.ts": "sha256:8d037cfc7aab0e180f6fcea32b652525f41597edfff181a55451e1d17468b58f",
+      "apps/maestro/src/renderer/src/components/agents/agent-avatar-block.tsx": "sha256:53bafe0bbf8feb43e7ac6d1b6497cf6eef7b2f1da65af7aa0fd86fafd8ab7fba",
+      "apps/maestro/src/renderer/src/components/agents/agent-card.tsx": "sha256:638038d318889587bbc4e7252c273e34df0e43abb495dd37e7d67726f5588dc9",
+      "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx": "sha256:a7078870e61a9d1a662291cfbef7e3f4a27066c2d234e30b01ac44051451a506",
+      "apps/maestro/src/renderer/src/components/agents/agent-list.tsx": "sha256:c26c283656e31ff90430e9f627d656aff627ed0ffd9ff8948e7ddbc442195003",
+      "apps/maestro/src/renderer/src/components/agents/agent-shared.ts": "sha256:7bc071101d9d98db610738371b4591aa5a3b9bb1f420d77c164f682878550479",
+      "apps/maestro/src/renderer/src/components/agents/interactions-pane.tsx": "sha256:969016d101fa1ff28cb860508f36077dc42c063a8eda4fa4d6f814e807c9ed83",
+      "apps/maestro/src/renderer/src/components/avatar/avatar-canvas.tsx": "sha256:d9ba08860c63e4f0643510467e20fbcca0c93c22c069378359f4a46c2528bff9",
+      "apps/maestro/src/renderer/src/components/avatar/avatar-picker.tsx": "sha256:36426c21caf9f0a1afcdda7335f7bfb61d4c6ea83816a86e8d35b95dce56b77f",
+      "apps/maestro/src/renderer/src/components/chip-multi-select.tsx": "sha256:0bf25c9b7df926cedc6606aac18dba9a0c4a730ed27f05d6029bef863f175d63",
+      "apps/maestro/src/renderer/src/routes/agents.tsx": "sha256:415164fe03bf1d54828ad587d181bb627be60d8940da2c06772d72d1d4be77b7",
+      "apps/maestro/src/renderer/src/utils/avatar.ts": "sha256:b5227415c5ac4ba967d568d7248e86cbc750de51fd7de11f3334540a87978fab",
+      "apps/maestro/src/renderer/src/utils/handoff-picker.ts": "sha256:76a13316adf48f6e36ea29da2cfeaf83eb92f760dade3f7a10e10a47b51fa209"
+    }
+  }
+}

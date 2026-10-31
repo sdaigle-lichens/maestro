@@ -13,7 +13,10 @@ import { fileURLToPath } from "node:url";
 
 import { installRuntime, findUpPluginRoot } from "../../src/core/install.js";
 import { writeConfig } from "../../src/core/config.js";
-import { checkHandoff, reportVerdict } from "../../src/core/handoff-check.js";
+import { checkHandoff, checkRoute, reportVerdict } from "../../src/core/handoff-check.js";
+import { handoffRoutes, routesFrom } from "../../src/core/handoff-routes.js";
+import { parseGapsHandled } from "../../src/core/handoff-channels.js";
+import { defaultV3Config } from "../../src/core/seed.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -215,8 +218,9 @@ describe("SubagentStop hook flags verdict/HANDOFF disagreement (083)", () => {
       ["scribe", "reviewer"],
       ["reviewer", "scribe"],
     ]) {
-      fs.mkdirSync(path.join(root, ".claude", "channels", receiver), { recursive: true });
-      fs.writeFileSync(path.join(root, ".claude", "channels", receiver, `${sender}.1.md`), "{}\n");
+      // `144`: SESS claims no task, so its lanes live under `session-<first 8 chars of its id>`.
+      fs.mkdirSync(path.join(root, ".claude", "channels", "session-sess-083", receiver), { recursive: true });
+      fs.writeFileSync(path.join(root, ".claude", "channels", "session-sess-083", receiver, `${sender}.1.md`), "{}\n");
     }
 
     const a = stop(root, "reviewer", "r1", '"verdict": "FAIL"\nHANDOFF: changes requested');
@@ -258,6 +262,143 @@ describe("SubagentStop hook flags verdict/HANDOFF disagreement (083)", () => {
     expect(checkHandoff("ok\nHANDOFF: success")).toBeNull();
     expect(reportVerdict('"verdict": "SUCCESS"\n...\n"verdict": "FAIL"')).toBe("FAIL");
     expect(reportVerdict(null)).toBeNull();
+  });
+});
+
+describe("SubagentStop hook flags a condition label with no route (108)", () => {
+  const setWorkflow = (root: string, name: string) => script(root, "maestro-set-session-workflow.cjs", [name], SESS);
+
+  it("a label the active workflow has no edge for is unrouted, surfaced with stop-and-ask advice", async () => {
+    const root = await installed();
+    expect(setWorkflow(root, "docs").code).toBe(0);
+
+    const run = stop(root, "scribe", "a1", '"verdict": "SUCCESS"\nHANDOFF: partial');
+    expect(run.code, run.stderr).toBe(0);
+    expect(run.stdout).toContain("handoff problem (unrouted)");
+    expect(readLog(root, SESS).find((e) => e.kind === "handoff")!.handoff_issue).toMatchObject({
+      kind: "unrouted",
+      label: "partial",
+    });
+
+    const seen = cli(root, ["handoff-issues"], SESS);
+    expect(seen.stdout).toContain("scribe: NO ROUTE for HANDOFF: partial");
+    expect(seen.stdout).toContain('workflow "docs"');
+    expect(seen.stdout).toContain("Do not dispatch another agent on your own.");
+  });
+
+  it("a label that matches an edge, and success from the last node, raise nothing", async () => {
+    const root = await installed();
+    setWorkflow(root, "docs");
+    fs.mkdirSync(path.join(root, ".claude", "channels", "session-sess-083", "scribe"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "channels", "session-sess-083", "scribe", "reviewer.1.md"), "{}\n");
+
+    expect(stop(root, "reviewer", "r1", '"verdict": "FAIL"\nHANDOFF: Changes Requested').stdout).not.toContain(
+      "handoff problem"
+    );
+    expect(stop(root, "reviewer", "r2", '"verdict": "SUCCESS"\nHANDOFF: success').stdout).not.toContain(
+      "handoff problem"
+    );
+  });
+
+  it("with no workflow recorded the label is not judged (the search list is a guess)", async () => {
+    const root = await installed();
+    expect(stop(root, "scribe", "a1", "HANDOFF: partial").stdout).not.toContain("handoff problem");
+  });
+
+  it("the pure judgement", () => {
+    const routes = [{ label: "success" }, { label: "needs code" }];
+    expect(checkRoute("HANDOFF: partial", routes, "Documentation")).toMatchObject({
+      kind: "unrouted",
+      label: "partial",
+    });
+    expect(checkRoute("HANDOFF: partial", routes, "Documentation")!.message).toContain("(its conditions: needs code)");
+    expect(checkRoute("HANDOFF: partial", [], "Documentation")!.message).toContain("(its conditions: none)");
+    expect(checkRoute("HANDOFF: Needs Code", routes, "Documentation")).toBeNull();
+    expect(checkRoute("HANDOFF: success", [], "Documentation")).toBeNull();
+    expect(checkRoute("no line", [], "Documentation")).toBeNull();
+  });
+});
+
+// `114`: a finished scribe ended `HANDOFF: done` (task 111, r006) and the Documentation run stopped
+// as unrouted. The fix is the scribe's own ending rule, not a looser `checkRoute`.
+describe("the scribe's ending lines route in the Documentation workflow (114)", () => {
+  const seeded = defaultV3Config(["backend"]);
+  const docs = seeded.workflows.find((w) => w.name === "Documentation")!;
+  const scribeRoutes = routesFrom(handoffRoutes([docs], seeded.workflow_instances), "maestro:scribe");
+
+  // What a finished scribe that acted on two gap reports and skipped a graph refresh sends back,
+  // shaped exactly as plugins/maestro/agents/scribe.md's "Ending your run" asks.
+  const finished =
+    "```json\n" +
+    '{ "subagent": "scribe", "docsUpdated": 1, "description": "updated docs; graph refresh skipped: no tsconfig" }\n' +
+    "```\n" +
+    "Skipped: graph refresh (no tsconfig); 3 targets left to enrich.\n" +
+    "\n" +
+    "SKILL_GAPS_HANDLED: backend.1.md, test.2.md\n" +
+    "HANDOFF: success";
+
+  it("the seeded Documentation workflow gives the scribe no condition route", () => {
+    expect(docs).toBeTruthy();
+    expect(scribeRoutes.filter((r) => r.label !== "success")).toEqual([]);
+  });
+
+  it("a finished scribe's final message raises no issue, with SKILL_GAPS_HANDLED: before the label", () => {
+    expect(checkHandoff(finished)).toBeNull();
+    expect(checkRoute(finished, scribeRoutes, "Documentation")).toBeNull();
+    expect(parseGapsHandled(finished)).toEqual(["backend.1.md", "test.2.md"]);
+  });
+
+  it("`HANDOFF: done` and `HANDOFF: complete` are still flagged unrouted — no synonyms", () => {
+    for (const label of ["done", "complete"]) {
+      const msg = finished.replace("HANDOFF: success", `HANDOFF: ${label}`);
+      expect(checkRoute(msg, scribeRoutes, "Documentation")).toMatchObject({ kind: "unrouted", label });
+    }
+  });
+
+  it("a scribe that could not finish ends `HANDOFF: partial`, which the unrouted stop catches (108)", () => {
+    const msg = "SKILL_GAPS_HANDLED: backend.1.md\nHANDOFF: partial";
+    expect(checkRoute(msg, scribeRoutes, "Documentation")).toMatchObject({ kind: "unrouted", label: "partial" });
+    expect(parseGapsHandled(msg)).toEqual(["backend.1.md"]);
+  });
+
+  // Adversarial (test): a scribe that QUOTES the rule (`HANDOFF: success`) in its body but ends on
+  // `done` is still unrouted — only the last label counts.
+  it("a quoted `HANDOFF: success` in the body does not rescue a final `HANDOFF: done`", () => {
+    const msg = "I followed the rule: end with `HANDOFF: success`.\nSKILL_GAPS_HANDLED: a.1.md\nHANDOFF: done";
+    expect(checkRoute(msg, scribeRoutes, "Documentation")).toMatchObject({ kind: "unrouted", label: "done" });
+  });
+
+  it("a scribe that acted on no gap report (no SKILL_GAPS_HANDLED: line) still routes on success", () => {
+    const msg = "Docs updated.\nHANDOFF: success";
+    expect(checkRoute(msg, scribeRoutes, "Documentation")).toBeNull();
+    expect(parseGapsHandled(msg)).toEqual([]);
+  });
+
+  it("the plugin template's and the mirror's `Ending your run` sections are identical", () => {
+    const repoRoot = path.resolve(PLUGIN_ROOT, "..", "..");
+    const section = (file: string) => {
+      const body = fs.readFileSync(file, "utf8");
+      const start = body.indexOf("## Ending your run");
+      return body.slice(start, body.indexOf("\n## ", start + 1));
+    };
+    const plugin = section(path.join(PLUGIN_ROOT, "agents", "scribe.md"));
+    expect(plugin.length).toBeGreaterThan(100);
+    expect(section(path.join(repoRoot, ".claude", "agents", "scribe.md"))).toBe(plugin);
+  });
+
+  it("scribe.md (plugin template and this repo's mirror) carries the ending rule, gap line before HANDOFF", () => {
+    const repoRoot = path.resolve(PLUGIN_ROOT, "..", "..");
+    for (const file of [
+      path.join(PLUGIN_ROOT, "agents", "scribe.md"),
+      path.join(repoRoot, ".claude", "agents", "scribe.md"),
+    ]) {
+      const body = fs.readFileSync(file, "utf8");
+      expect(body, file).toContain("## Ending your run");
+      expect(body, file).toContain("`HANDOFF: success`");
+      expect(body, file).toContain("`HANDOFF: partial`");
+      expect(body.indexOf("`SKILL_GAPS_HANDLED: <file>"), file).toBeGreaterThan(-1);
+      expect(body.indexOf("`SKILL_GAPS_HANDLED: <file>"), file).toBeLessThan(body.indexOf("`HANDOFF: <label>`"));
+    }
   });
 });
 

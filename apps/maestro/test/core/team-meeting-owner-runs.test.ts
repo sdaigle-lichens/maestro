@@ -60,8 +60,10 @@ afterEach(() => {
 const sessDir = (root: string) => path.join(root, ".claude", "maestro_sessions", SESSION);
 const statePath = (root: string) => path.join(sessDir(root), "session.json");
 const readState = (root: string) => JSON.parse(fs.readFileSync(statePath(root), "utf8"));
+/** `144`: SESSION claims no task, so its lanes live under `session-<first 8 chars of its id>`. */
+const SCOPE = "session-sess-own";
 const lane = (root: string, receiver: string, sender: string) =>
-  path.join(root, ".claude", "channels", receiver, `${sender}.1.md`);
+  path.join(root, ".claude", "channels", SCOPE, receiver, `${sender}.1.md`);
 
 function readLog(root: string): Record<string, unknown>[] {
   const f = path.join(sessDir(root), "log.jsonl");
@@ -154,7 +156,7 @@ describe("owner runs under a recorded workflow (current behaviour)", () => {
     const ctx = injected(hook(root, "maestro-inject-agent-context.js", start(root, "backend", "own-1")));
     expect(ctx).toMatch(/Handoff routing/);
     expect(ctx).toContain("HANDOFF: success");
-    expect(ctx).toContain("write this to `.claude/channels/test/backend.1.md`");
+    expect(ctx).toContain(`write this to \`.claude/channels/${SCOPE}/test/backend.1.md\``);
     expect(ctx).not.toMatch(/team meeting/i);
   });
 
@@ -239,6 +241,7 @@ describe("owner runs after the fix (081)", () => {
       expect(ctx).not.toMatch(/write this to/);
       expect(ctx).not.toMatch(/HANDOFF: success/);
       expect(ctx).not.toContain("WAITING-FOR-BACKEND");
+      expect(ctx).not.toContain(`.claude/channels/${SCOPE}/backend/`);
       expect(ctx).not.toContain(".claude/channels/backend/");
       expect(ctx).toMatch(/expressjs/);
       expect(ctx).toMatch(/owner run/i);
@@ -246,7 +249,9 @@ describe("owner runs after the fix (081)", () => {
       // the waiting file is neither retired nor touched
       expect(fs.existsSync(waiting)).toBe(true);
       expect(fs.readFileSync(waiting, "utf8")).toBe(before);
-      expect(fs.existsSync(path.join(root, ".claude", "channels", ".consumed", "backend", "test.1.md"))).toBe(false);
+      expect(fs.existsSync(path.join(root, ".claude", "channels", SCOPE, ".consumed", "backend", "test.1.md"))).toBe(
+        false
+      );
     });
   }
 

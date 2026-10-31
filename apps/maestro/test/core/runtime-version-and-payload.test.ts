@@ -9,7 +9,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
-import { execFileSync, spawnSync } from "node:child_process";
+import { execFileSync, spawn, spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
 import {
@@ -22,7 +22,7 @@ import {
 import { writeConfig, readConfig } from "../../src/core/config.js";
 import { compareRuntimeVersions, runtimeNeedsRefresh } from "../../src/core/runtime-version.js";
 import { checkPayload } from "../../src/core/handoff-check.js";
-import { handbackHandoff } from "../../src/core/handoff-label.js";
+import { handbackHandoff, hasHandbackCall, awaitHandback } from "../../src/core/handoff-label.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -112,8 +112,11 @@ const readLog = (root: string): Record<string, any>[] => {
     .filter(Boolean)
     .map((l) => JSON.parse(l));
 };
+/** `144`: SESS claims no task, so its lanes live under `session-<first 8 chars of its id>`. */
+const SCOPE = "session-sess-087";
+const CH = `.claude/channels/${SCOPE}`;
 const lane = (root: string, receiver: string, sender: string) =>
-  path.join(root, ".claude", "channels", receiver, `${sender}.1.md`);
+  path.join(root, ".claude", "channels", SCOPE, receiver, `${sender}.1.md`);
 function writePayload(root: string, receiver: string, sender: string, body = "{}\n") {
   fs.mkdirSync(path.dirname(lane(root, receiver, sender)), { recursive: true });
   fs.writeFileSync(lane(root, receiver, sender), body);
@@ -408,7 +411,7 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     expect(entry.handoff_issue).toMatchObject({
       kind: "missing_payload",
       label: "success",
-      files: [".claude/channels/test/backend.1.md"],
+      files: [`${CH}/test/backend.1.md`],
     });
     expect(entry.handoff_issue.message).toContain("resume this agent");
     expect(entry.handoff_issue.message).toContain("do not skip it");
@@ -421,7 +424,7 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     });
     const seen = projectScript(root, "maestro-task-status.cjs", ["handoff-issues"]);
     expect(seen.stdout).toContain("backend: NO PAYLOAD written for HANDOFF: success (agent_id b1)");
-    expect(seen.stdout).toContain(".claude/channels/test/backend.1.md");
+    expect(seen.stdout).toContain(`${CH}/test/backend.1.md`);
   });
 
   it("a condition route expecting a payload is checked too", async () => {
@@ -429,7 +432,22 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     subagentStart(root, "test", "t1");
     const r = subagentStop(root, "test", "t1", { last_assistant_message: '"verdict": "FAIL"\nHANDOFF: tests failed' });
     expect(r.stdout).toContain("missing_payload");
-    expect(handoffEntry(root, "t1").handoff_issue.files).toEqual([".claude/channels/backend/test.1.md"]);
+    expect(handoffEntry(root, "t1").handoff_issue.files).toEqual([`${CH}/backend/test.1.md`]);
+  });
+
+  // `144`: a payload written to the legacy unscoped path, or into another task's scope, is not
+  // this run's payload — the route is still flagged missing.
+  it("a payload written outside the session's own scope does not count", async () => {
+    const root = await installed();
+    subagentStart(root, "backend", "b1");
+    for (const rel of ["test", path.join("task-045", "test")]) {
+      const f = path.join(root, ".claude", "channels", rel, "backend.1.md");
+      fs.mkdirSync(path.dirname(f), { recursive: true });
+      fs.writeFileSync(f, "{}\n");
+    }
+    const r = subagentStop(root, "backend", "b1", { last_assistant_message: "HANDOFF: success" });
+    expect(r.stdout).toContain("missing_payload");
+    expect(handoffEntry(root, "b1").handoff_issue.files).toEqual([`${CH}/test/backend.1.md`]);
   });
 
   it("a file left over from BEFORE this run does not count", async () => {
@@ -463,7 +481,7 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
   });
 
   it("the pure judgement agrees with the hook", () => {
-    const routes = [{ label: "success", receiver: "test", channelFile: ".claude/channels/test/backend.1.md" }];
+    const routes = [{ label: "success", receiver: "test", scope: SCOPE, channelFile: `${CH}/test/backend.1.md` }];
     expect(checkPayload("HANDOFF: success", routes, () => false)?.kind).toBe("missing_payload");
     expect(checkPayload("HANDOFF: success", routes, () => true)).toBeNull();
     expect(checkPayload("HANDOFF: SUCCESS", routes, () => false)?.kind).toBe("missing_payload");
@@ -480,7 +498,7 @@ describe("the required-payload instruction reaches every kind of run (087 item 2
     const first = inject(root, "backend", "b1");
     expect(first).toContain("REQUIRED before your HANDOFF line");
     expect(first).toContain("A missing payload is not skipped");
-    expect(first).toContain("Route `HANDOFF: success` → `test` — write this to `.claude/channels/test/backend.1.md`");
+    expect(first).toContain(`Route \`HANDOFF: success\` → \`test\` — write this to \`${CH}/test/backend.1.md\``);
     expect(first).not.toContain("skip the write");
 
     // b1 completes; the loop-back then RESUMES b1 …
@@ -490,14 +508,14 @@ describe("the required-payload instruction reaches every kind of run (087 item 2
     const resumed = inject(root, "backend", "b1");
     expect(resumed).toContain("Resumed run —");
     expect(resumed).toContain("REQUIRED before your HANDOFF line");
-    expect(resumed).toContain("`HANDOFF: success` → write `.claude/channels/test/backend.1.md` (for `test`)");
+    expect(resumed).toContain(`\`HANDOFF: success\` → write \`${CH}/test/backend.1.md\` (for \`test\`)`);
     expect(resumed).not.toContain("Handoff routing for the");
 
     // … or dispatches a COLD re-run under a new agent_id, which gets the full first-run text.
     const cold = inject(root, "backend", "b2");
     expect(cold).not.toContain("Resumed run —");
     expect(cold).toContain("REQUIRED before your HANDOFF line");
-    expect(cold).toContain("write this to `.claude/channels/test/backend.1.md`");
+    expect(cold).toContain(`write this to \`${CH}/test/backend.1.md\``);
   });
 
   it("a meeting participant gets no payload requirement", async () => {
@@ -512,7 +530,7 @@ describe("the required-payload instruction reaches every kind of run (087 item 2
     const root = await installed();
     const ctx = inject(root, "test", "t1");
     // test -> backend (tests failed) needs one; test -> scribe (success) does not.
-    expect(ctx).toContain("`.claude/channels/backend/test.1.md`");
+    expect(ctx).toContain(`\`${CH}/backend/test.1.md\``);
     // (the report's optional concept-gap note names scribe/test.1.md; no ROUTE requires it)
     expect(ctx).not.toContain("Route `HANDOFF: success` → `scribe`");
   });
@@ -627,6 +645,154 @@ describe("SubagentHandback hand-backs are read, not flagged missing (087 item 3)
     });
     expect(handbackHandoff(viaSend)).toContain("HANDOFF: tests failed");
     expect(handbackHandoff(handbackTranscript("no line here"))).toBeNull();
+  });
+});
+
+// ── 3b. 124: SubagentStop fires before the hand-back line is flushed ──────────────────────────────
+
+// Measured live (Claude Code 2.1.309): the SubagentStop hook read the agent's transcript one turn
+// short — everything up to the "handing back" text turn, no SubagentHandback tool_use yet — and the
+// complete file (same path) held it moments later. The parser was always right; the read was early.
+describe("a hand-back not yet flushed when SubagentStop fires is waited for (124)", () => {
+  const REPORT = 'Done.\n```json\n{ "verdict": "SUCCESS" }\n```\nHANDOFF: success';
+  const full = handbackTranscript(REPORT);
+  // lines 0-1 only: the transcript as the hook first saw it (reminder + text turn, no tool_use).
+  const partial = full.split("\n").slice(0, 2).join("\n") + "\n";
+  const noSleep = () => Promise.resolve();
+
+  it("the early read alone finds no label (the 123 symptom)", () => {
+    expect(handbackHandoff(partial)).toBeNull();
+    expect(hasHandbackCall(partial)).toBe(false);
+  });
+
+  it("re-reads until the tool_use lands and recovers the label", async () => {
+    let reads = 0;
+    const got = await awaitHandback(() => (++reads < 4 ? partial : full), noSleep);
+    expect(got).toContain("HANDOFF: success");
+    expect(reads).toBe(4);
+  });
+
+  it("gives up after the bounded wait when the call never appears", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, partial), noSleep, 300, 100)).toBeNull();
+    expect(reads).toBe(4);
+  });
+
+  it("does not wait once a call is present, even a labelless one", async () => {
+    let reads = 0;
+    const labelless = handbackTranscript("no line here");
+    expect(await awaitHandback(() => (reads++, labelless), noSleep)).toBeNull();
+    expect(reads).toBe(1);
+  });
+
+  it("stops at once when the transcript cannot be read", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, null), noSleep)).toBeNull();
+    expect(reads).toBe(1);
+  });
+
+  it("the real hook waits for a transcript still being written (123 end to end)", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-124-late.jsonl");
+    fs.writeFileSync(transcript, partial);
+    subagentStart(root, "backend", "b1");
+    writePayload(root, "test", "backend");
+    // The flush lands ~0.6s after the hook starts reading, from another process (the hook is
+    // run synchronously, so a timer in this one would never fire).
+    const writer = spawn(
+      process.execPath,
+      ["-e", "setTimeout(() => require('fs').writeFileSync(process.argv[1], process.argv[2]), 600)", transcript, full],
+      { stdio: "ignore" }
+    );
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    writer.kill();
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(handoffEntry(root, "b1")).toMatchObject({ status: "success", label: "success" });
+    expect(handoffEntry(root, "b1").handoff_issue).toBeUndefined();
+  });
+
+  it("the real hook still recovers a transcript that is complete on first read", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-124.jsonl");
+    fs.writeFileSync(transcript, full);
+    subagentStart(root, "backend", "b1");
+    writePayload(root, "test", "backend");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(handoffEntry(root, "b1")).toMatchObject({ status: "success", label: "success" });
+  });
+
+  const sendMessageLine = (text: string) =>
+    JSON.stringify({
+      type: "assistant",
+      message: { content: [{ type: "tool_use", name: "SendMessage", input: { to: "main", message: text } }] },
+    });
+
+  it("a SendMessage hand-back that lands late is waited for too", async () => {
+    let reads = 0;
+    const got = await awaitHandback(
+      () => (++reads < 3 ? partial : partial + sendMessageLine("x\nHANDOFF: tests failed") + "\n"),
+      noSleep
+    );
+    expect(got).toContain("HANDOFF: tests failed");
+    expect(reads).toBe(3);
+  });
+
+  it("a half-written last line (malformed JSON) is not a call and keeps waiting", async () => {
+    const truncated = full.split("\n").slice(0, 3).join("\n") + "\n" + full.split("\n")[2].slice(0, 80);
+    expect(hasHandbackCall(truncated)).toBe(true); // line 2 complete, truncated tail ignored
+    const torn = partial + full.split("\n")[2].slice(0, 80); // only the torn tool_use line
+    expect(hasHandbackCall(torn)).toBe(false);
+    let reads = 0;
+    const got = await awaitHandback(() => (++reads < 3 ? torn : full), noSleep);
+    expect(got).toContain("HANDOFF: success");
+    expect(reads).toBe(3);
+  });
+
+  it("garbage lines and prose that merely name the tool are not a call", () => {
+    const prose = JSON.stringify({
+      type: "assistant",
+      message: { content: [{ type: "text", text: "I will call SubagentHandback next" }] },
+    });
+    expect(hasHandbackCall("not json SubagentHandback\n" + prose + "\n{\n")).toBe(false);
+    expect(hasHandbackCall(JSON.stringify({ content: "SubagentHandback" }))).toBe(false);
+  });
+
+  it("with several hand-back calls the last labelled one wins", () => {
+    const two = full + sendMessageLine("later\nHANDOFF: tests failed") + "\n";
+    expect(handbackHandoff(two)).toContain("HANDOFF: tests failed");
+  });
+
+  it("a zero or negative wait still reads once", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, partial), noSleep, 0, 100)).toBeNull();
+    expect(reads).toBe(1);
+    reads = 0;
+    expect(await awaitHandback(() => (reads++, partial), noSleep, -5, 100)).toBeNull();
+    expect(reads).toBe(1);
+  });
+
+  it("the real hook gives up after the cap when the flush never lands, and flags missing", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-124-never.jsonl");
+    fs.writeFileSync(transcript, partial);
+    subagentStart(root, "backend", "b1");
+    const t0 = Date.now();
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    const took = Date.now() - t0;
+    expect(r.code, r.stderr).toBe(0);
+    expect(r.stdout).toContain("handoff problem (missing)");
+    expect(took).toBeGreaterThanOrEqual(2800);
+    expect(took).toBeLessThan(9000);
+  }, 20000);
+
+  it("the real hook does not delay when the transcript file is unreadable", async () => {
+    const root = await installed();
+    subagentStart(root, "backend", "b1");
+    const t0 = Date.now();
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: path.join(tmp, "nope.jsonl") });
+    expect(r.code, r.stderr).toBe(0);
+    expect(Date.now() - t0).toBeLessThan(2500);
   });
 });
 

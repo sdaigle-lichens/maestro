@@ -41,8 +41,10 @@ stdin to a file, driven for real:
   docs, not from an observation here.
 
 The consequence of `other` being resumable: a `-p` run or a kill is kept, so a session that never
-comes back leaves a directory behind. `sweepSessions` (`068`, 24 h idle cap) reaps those, and a
-claim on one ages out through `CLAIM_IDLE_CAP_MS` (15 min) as it does for a crash.
+comes back leaves a directory behind. `sweepStaleSessions` (`068`, `session-sweep.ts`, 24 h idle cap) reaps those. A claim on one frees within about a minute: the
+`141` heartbeat watcher zeroes the session's `heartbeat` once `claude` exits (3 min at most if the
+watcher was killed; only a runtime without the heartbeat waits out `CLAIM_IDLE_CAP_MS`, 15 min).
+See `task-queue` claims.
 
 ## Gotcha for anyone re-observing
 

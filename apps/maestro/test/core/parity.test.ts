@@ -27,7 +27,7 @@ import { allConfigs } from "./fixtures/configs.js";
 import { SEED_HANDOFFS } from "../../src/core/handoff-seeds.js";
 import { buildPluginLibs, PLUGIN_LIB_ENTRIES } from "../../scripts/build-plugin-libs.mjs";
 import { runtimeAssets } from "../../src/core/install.js";
-import { staleMirrors, describeStale } from "../helpers/mirror-parity.js";
+import { staleMirrors, describeStale, REFRESH_COMMAND } from "../helpers/mirror-parity.js";
 
 const require = createRequire(import.meta.url);
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -380,9 +380,7 @@ describe("generated bundle freshness (066)", () => {
         const name = path.basename(freshFile);
         const fresh = fs.readFileSync(freshFile, "utf8");
         const committed = fs.readFileSync(path.join(LIB, name), "utf8");
-        expect(committed, `${name} is stale — run pnpm --filter maestro build:plugin-libs and commit the diff`).toBe(
-          fresh
-        );
+        expect(committed, `${name} is stale — run ${REFRESH_COMMAND} and commit the diff`).toBe(fresh);
       }
     } finally {
       fs.rmSync(tmpDir, { recursive: true, force: true });
@@ -400,6 +398,28 @@ describe("generated bundle freshness (066)", () => {
         .filter((l) => /^\/\/ (\.\.\/){3,}/.test(l));
       expect(escaping, `${name} has module-path comments outside the checkout`).toEqual([]);
     }
+  });
+});
+
+// The lib freshness failure above is fixed by the same one command as the mirrors below; the
+// message used to name only the build, leaving the mirrors and the orchestrator to a second round-trip.
+
+// The rendered orchestrator (.claude/skills/maestro/SKILL.md) is a project copy too: its STEPS and
+// PRINCIPLES regions come from the plugin template, and only `maestro-install.js` re-syncs them
+// (`maestro-render-orchestrator.cjs` rewrites the HANDOFFS table alone).
+describe("rendered orchestrator parity (this repo's own SKILL.md)", () => {
+  const REPO = path.resolve(here, "../../../..");
+
+  it("STEPS and PRINCIPLES of .claude/skills/maestro/SKILL.md match the plugin template", () => {
+    const installed = fs.readFileSync(path.join(REPO, ".claude/skills/maestro/SKILL.md"), "utf8");
+    const template = fs.readFileSync(path.join(REPO, "plugins/maestro/templates/maestro/SKILL.md"), "utf8");
+    const { text, missing } = syncManagedRegions(installed, template);
+    expect(missing).toEqual([]);
+    expect(
+      text === installed,
+      `.claude/skills/maestro/SKILL.md has a stale STEPS/PRINCIPLES region. Fix: run \`${REFRESH_COMMAND}\` ` +
+        `(maestro-render-orchestrator.cjs alone only rewrites HANDOFFS).`
+    ).toBe(true);
   });
 });
 
@@ -441,7 +461,7 @@ describe("plugin-lib project mirror parity (066)", () => {
     for (const { src, dest } of pairs) {
       const pluginFile = path.join(REPO, "plugins/maestro", src);
       const mirrorFile = path.join(REPO, dest);
-      expect(fs.readFileSync(mirrorFile, "utf8"), `${dest} is stale against ${src}`).toBe(
+      expect(fs.readFileSync(mirrorFile, "utf8"), `${dest} is stale against ${src} — run ${REFRESH_COMMAND}`).toBe(
         fs.readFileSync(pluginFile, "utf8")
       );
     }
@@ -494,9 +514,10 @@ describe("hand-written plugin script mirror parity (087)", () => {
         ])
       );
       expect(stale).toHaveLength(2);
-      expect(describeStale(stale)).toContain(
-        "cp plugins/maestro/scripts/maestro-subagent-log.js .claude/scripts/maestro-subagent-log.cjs"
-      );
+      const message = describeStale(stale);
+      expect(message).toContain(".claude/scripts/maestro-subagent-log.cjs is stale");
+      expect(message).toContain(REFRESH_COMMAND);
+      expect(message).not.toContain("cp plugins/");
     } finally {
       fs.rmSync(tmp, { recursive: true, force: true });
     }

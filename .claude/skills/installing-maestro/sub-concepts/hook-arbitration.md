@@ -52,12 +52,29 @@ is running, so the plugin's copy should.
 
 ## Where the guard is called
 
-The five plugin hook scripts — `maestro-session-log.js`, `maestro-subagent-log.js`,
-`maestro-validate-tasks.js`, `maestro-inject-agent-context.js`, `maestro-step0.js` — each call
-`projectOwnsHook(__filename, cwd, p.hook_event_name)` right after resolving `cwd`, and `exit 0` when
-it is true. `projectOwnsHook` reaches them through the `maestro-session.cjs` bundle
-(`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm --filter maestro
-build:plugin-libs` — see `plugin-libs-parity`.
+The eight plugin hook scripts that have a project twin and stand down — `maestro-session-log.js`,
+`maestro-subagent-log.js`, `maestro-validate-tasks.js`, `maestro-inject-agent-context.js`,
+`maestro-step0.js`, `maestro-enable-task-routing.js`, `maestro-post-mortem-context.js`,
+`maestro-session-name.js` — each call `projectOwnsHook` right after resolving `cwd` and `exit 0`
+when it is true. `maestro-human-review-gate.js` (`130`) and `maestro-session-heartbeat.js` (`141`)
+stand down the same way. `maestro-channel-write-guard.js` is the ninth `HOOK_SCRIPTS` entry (since `121`) and
+**does not call it** — see below. `projectOwnsHook` reaches the eight through the
+`maestro-session.cjs` bundle (`plugin-entries/maestro-session.ts`), so a change to it needs `pnpm
+--filter maestro build:plugin-libs` — see `plugin-libs-parity`.
+
+**The channel write guard is exempt from stand-down (`122`).** `121` made it stand down like the
+others, and that opened a fail-open path: the plugin copy yielded on the project's *registration*
+alone, never checking the project copy could run. With `.claude/scripts/maestro-channel-write-guard.cjs`
+or `.claude/scripts/lib/` missing, the project copy exits 1 (`Cannot find module`), which Claude Code
+treats as non-blocking — so a reviewer `Write` to `src/` went through, where before `121` the plugin
+copy denied it. Stand-down is the right trade for logging hooks (a missed log line is cheap) and the
+wrong one for a confinement hook. The guard only ever denies, so both copies running is the stricter
+outcome with no duplicate side effects; an older plugin copy denying what a newer project copy
+allows is accepted. Both copies therefore always run.
+
+**Known gap, documented not guarded:** the guard's matcher is the file-write tools only, and
+reviewer/refactor keep Bash, so a Bash redirect or `tee` is not confined. A post-mortem catching one
+doing it is the trigger for a stronger guard; no Bash check exists.
 
 **`maestro-session-cleanup.sh` has no guard, on purpose.** Its project twin is `.cjs`, and since
 `064` both call the same `resolveSessionId` + `removeSessionState` out of `lib/maestro-session.cjs`
@@ -87,7 +104,15 @@ re-pulls. This is why the change shipped with `plugins/maestro/.claude-plugin/pl
 
 ## Tests
 
-`apps/maestro/test/core/hook-arbitration.test.ts` covers the predicates in isolation. The four
+`apps/maestro/test/core/hook-arbitration.test.ts` covers the predicates in isolation.
+`test/core/channel-guard-install.test.ts` (`121`, reworked by `122`) pins the guard's *non*-stand-down:
+after `installRuntime` both the plugin's `maestro-channel-write-guard.js` and the project copy
+`.claude/scripts/maestro-channel-write-guard.cjs` deny a reviewer write outside its own `.claude/channels/<scope>/` (`144`)
+(each once, no filesystem side effects); with the project script or its `lib/` deleted the project copy
+throws and the plugin copy still denies; a guard registered only in `settings.local.json` does not
+silence the plugin copy. `test/core/hook-registration-parity.test.ts` (`122`) fails if any
+`hooks.json` script lacks a same-event, same-matcher `HOOK_REGISTRATIONS` twin in `install.ts` or
+`maestro-install.js`. The four
 end-to-end cases in `test/core/install.test.ts` run the **real** `plugins/maestro/scripts/*.js`
 against a real install: the plugin stands down for an installed project (and the project's own copy
 then logs exactly once), still runs for a Maestro project with no local install, runs again after a

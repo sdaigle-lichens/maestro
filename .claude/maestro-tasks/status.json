@@ -513,5 +513,225 @@
     "status": "done",
     "blockedBy": [],
     "epic": "concept-skills-plugin"
+  },
+  "105-accept-code-graph-s-design-check-alongside-concept-skills.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md": {
+    "status": "done",
+    "blockedBy": [
+      "105-accept-code-graph-s-design-check-alongside-concept-skills.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "107-remove-the-concept-skills-plugin-and-package.md": {
+    "status": "done",
+    "blockedBy": [
+      "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "108-give-docs-only-work-a-route-when-it-turns-up-a-code-change.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md": {
+    "status": "done",
+    "blockedBy": [
+      "106-switch-this-repo-to-code-graph-and-dogfood-the-scribe.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "110-enrich-maestro-s-code-graph-concepts-so-search-ranks-domain-terms.md": {
+    "status": "done",
+    "blockedBy": [
+      "109-configure-maestro-s-code-graph-concepts-so-subagents-can-explore-it-through-the-graph.md"
+    ],
+    "epic": "code-graph-cutover"
+  },
+  "111-end-to-end-check-of-code-graph-0-3-11-s-incremental-enrichment-through-maestro-s-scribe.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "112-keep-a-scribe-gap-report-until-a-scribe-acts-on-it.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "113-name-maestro-sessions-automatically-so-cross-session-messages-survive-restarts.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "114-make-the-scribe-end-with-a-handoff-label-the-workflow-can-route.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "115-give-maestro-s-code-graph-install-hint-the-exact-commands.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "116-bring-maestro-s-stale-concept-skills-up-to-date.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "117-pin-maestro-s-gap-report-handling-to-code-graph-s-published-gap-fixture.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "118-fully-review-the-five-riskiest-stamped-only-concept-skills.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "119-fully-review-the-remaining-eight-stamped-only-concept-skills.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "120-fully-review-the-last-three-concept-skills-maestro-architecture-claude-session-bridge-and-agents-view.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "121-close-the-channel-write-guard-gap-in-project-local-installs-or-correct-the-comment-that-hides-it.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "122-stop-the-channel-write-guard-from-failing-open-when-the-project-copy-can-t-run.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "123-make-pnpm-verify-pass-in-the-sandbox-and-stop-the-test-temp-home-leak.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "124-find-why-the-subagentstop-hook-still-flags-no-handoff-line-for-subagenthandback-reports-and-fix-it.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "code-graph-cutover"
+  },
+  "125-manager-spawns-worker-sessions-in-herdr.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
+  },
+  "126-human-review-asks-with-an-approve-request-changes-picker.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
+  },
+  "127-install-and-update-offer-the-sandbox-allow-list-with-a-herdr-opt-in.md": {
+    "status": "done",
+    "blockedBy": [
+      "125-manager-spawns-worker-sessions-in-herdr.md"
+    ],
+    "epic": "autonomous-workers"
+  },
+  "128-test-the-epic-ready-list-against-an-apostrophe-filename-and-claim-liveness-edges.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
+  },
+  "129-sandbox-allow-list-offer-run-it-before-the-update-installer-and-stop-re-asking-the-herdr-opt-in.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "autonomous-workers"
+  },
+  "130-human-review-always-shows-its-summary.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "131-add-the-manager-review-workflow-node.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "132-manager-review-protocol-between-worker-and-manager.md": {
+    "status": "done",
+    "blockedBy": [
+      "130-human-review-always-shows-its-summary.md",
+      "131-add-the-manager-review-workflow-node.md"
+    ],
+    "epic": "manager-review"
+  },
+  "133-detect-herdr-reliably-under-the-sandbox.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "134-configurable-model-for-epic-worker-sessions.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "135-task-worktrees-start-with-dependencies-ready.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "136-one-command-to-refresh-this-repo-s-mirrors-and-orchestrator.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "137-live-check-of-the-manager-review-step.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "138-add-step-modal-three-step-kinds-with-a-review-type-choice.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "139-let-worktree-agents-write-their-channel-files-without-a-classifier-denial.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "141-a-session-waiting-on-the-user-keeps-its-claim-live.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "142-hide-project-disabled-skills-from-the-maestro-app-s-skill-lists.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "143-keep-the-review-file-path-visible-in-every-approval-summary.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "144-scope-handoff-channels-per-task-so-parallel-sessions-never-cross-payloads.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "145-plan-for-file-overlap-and-merge-order-when-tasks-run-in-parallel.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "147-close-the-gaps-left-in-per-task-channel-scoping.md"
+    ]
+  },
+  "146-keep-an-epic-task-blocked-until-its-blocker-is-merged-not-just-done.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "145-plan-for-file-overlap-and-merge-order-when-tasks-run-in-parallel.md"
+    ]
+  },
+  "147-close-the-gaps-left-in-per-task-channel-scoping.md": {
+    "status": "ready",
+    "blockedBy": [
+      "144-scope-handoff-channels-per-task-so-parallel-sessions-never-cross-payloads.md"
+    ]
   }
 }

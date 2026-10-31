@@ -10,11 +10,13 @@ import SkillRefMark, {
 } from "../../src/renderer/src/components/skill-ref-mark.js";
 
 describe("skill-ref-mark", () => {
-  it("labels all four reasons", () => {
+  it("labels every reason", () => {
     expect(SKILL_REF_REASON_LABEL).toEqual({
       "plugin-not-installed": "plugin not installed",
       "plugin-not-enabled": "plugin not enabled",
       "skill-not-in-plugin": "skill not in plugin",
+      "skill-disabled": "switched off in settings",
+      "bundled-skills-disabled": "built-in skills disabled",
       "not-found": "not found",
     });
   });

@@ -76,3 +76,85 @@ describe("orchestrator template script commands (094)", () => {
     expect(stepsRegion(TEMPLATE)).not.toBe("");
   });
 });
+
+// 126: the `human review` step kind asks with an `AskUserQuestion` picker (Approve / Request
+// changes) instead of free text, keeps a plain-text fallback, and keeps the hard-stop and
+// `condition`-edge loop-back rules it already had.
+describe("orchestrator template `human review` step kind (126)", () => {
+  const HUMAN_REVIEW_BULLET = /^- `human review` — .*$/gm;
+  const bulletsIn = (text: string): string[] => text.match(HUMAN_REVIEW_BULLET) ?? [];
+
+  // Returns the list of rules the bullet breaks; empty means it is compliant.
+  const violations = (bullet: string): string[] => {
+    const out: string[] = [];
+    const need = (ok: boolean, why: string) => {
+      if (!ok) out.push(why);
+    };
+    need(bullet.includes("**never bypassed**"), "hard stop: **never bypassed**");
+    need(bullet.includes("`AskUserQuestion`"), "names `AskUserQuestion`");
+    need(bullet.includes("`Approve`"), "offers `Approve`");
+    need(bullet.includes("`Request changes`"), "offers `Request changes`");
+    need(/plain text/.test(bullet), "plain-text fallback");
+    need(/unavailable or fails/.test(bullet), "fallback trigger: unavailable or fails");
+    need(bullet.includes("`condition` edge"), "loop-back along the review's `condition` edge");
+    need(bullet.includes("don't fix them yourself"), "orchestrator does not fix corrections itself");
+    need(bullet.includes("resume from this step"), "resumes from the review after the loop-back");
+    need(bullet.includes("Fix inline only if no such edge exists"), "inline fix only without an edge");
+    // The picker is the primary path; the fallback comes after it, and the ask comes before the
+    // approval branch (summarise → ask → act on the answer).
+    const ask = bullet.indexOf("`AskUserQuestion`");
+    need(ask < bullet.indexOf("plain text"), "picker named before the plain-text fallback");
+    need(ask < bullet.indexOf("On approval"), "ask happens before the approval branch");
+    need(bullet.indexOf("`Approve`") < bullet.indexOf("`Request changes`"), "`Approve` listed first");
+    return out;
+  };
+
+  const rendered = fs.readFileSync(path.join(REPO_ROOT, ".claude", "skills", "maestro", "SKILL.md"), "utf8");
+
+  it("the template has exactly one `human review` bullet, inside the STEPS region", () => {
+    expect(bulletsIn(TEMPLATE)).toHaveLength(1);
+    expect(bulletsIn(stepsRegion(TEMPLATE))).toHaveLength(1);
+  });
+
+  it("the template's bullet asks with AskUserQuestion, falls back to plain text, and keeps the hard stop and loop-back", () => {
+    expect(violations(bulletsIn(TEMPLATE)[0] ?? "")).toEqual([]);
+  });
+
+  it("this repo's rendered orchestrator carries the same compliant bullet", () => {
+    const bullets = bulletsIn(rendered);
+    expect(bullets).toHaveLength(1);
+    expect(bullets[0]).toBe(bulletsIn(TEMPLATE)[0]);
+    expect(violations(bullets[0])).toEqual([]);
+  });
+
+  // Negative control: the pre-126 bullet ("Surface the work to the user") must be rejected, so the
+  // check above is not passing vacuously.
+  it("rejects the pre-126 free-text bullet", () => {
+    const pre126 =
+      "- `human review` — a hard stop, **never bypassed**. Surface the work to the user. On approval, continue. " +
+      "On requested corrections, don't fix them yourself: follow the review's `condition` edge to the agent that " +
+      "produced the work (e.g. `human requested code corrections` → `@backend`; for fullstack pick `@frontend` or " +
+      "`@backend` by the change), resolve it like any loop-back below, hand it the changes, then resume from this " +
+      "step. Fix inline only if no such edge exists.";
+    expect(bulletsIn(pre126)).toHaveLength(1);
+    const v = violations(pre126);
+    expect(v).toContain("names `AskUserQuestion`");
+    expect(v).toContain("plain-text fallback");
+    expect(v).not.toContain("hard stop: **never bypassed**");
+    expect(v).not.toContain("loop-back along the review's `condition` edge");
+  });
+
+  // Adversarial: a picker-only rewrite that drops the hard stop or the fallback is caught too.
+  it("rejects a bullet that adds the picker but drops the hard stop or the fallback", () => {
+    const current = bulletsIn(TEMPLATE)[0];
+    expect(violations(current.replace("**never bypassed**", "usually honoured"))).toContain(
+      "hard stop: **never bypassed**"
+    );
+    const fallback = "If it is unavailable or fails, ask in plain text instead. ";
+    // Guard the replace target so a future rewording cannot turn this into a vacuous no-op again.
+    expect(current).toContain(fallback);
+    expect(violations(current.replace(fallback, ""))).toEqual(
+      expect.arrayContaining(["plain-text fallback", "fallback trigger: unavailable or fails"])
+    );
+  });
+});

@@ -29,7 +29,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { bareAgentName } from "./success-path.js";
-import { unstampedFilesOf, type ChannelFileMark } from "./handoff-channels.js";
+import { channelScopeFromState, unstampedFilesOf, type ChannelFileMark } from "./handoff-channels.js";
 import type { MaestroMeetingState, MaestroOwnerRunsState } from "./types.js";
 
 /** `<session dir>/meeting/` — the transcript directory and the only place participants may write. */
@@ -152,17 +152,19 @@ export function meetingLeftovers(session: unknown): ChannelFileMark[] {
  * and the participants' current unstamped lane files merged into `meeting_leftovers` (newest mark
  * per path wins). The ONE way a meeting ends — `endMeeting` and `maestro-set-session-workflow.cjs`
  * both go through it, so neither path can let a participant's leftover be stamped later.
- * `ended` is false (and the state returned untouched) when no meeting key was present.
+ * `ended` is false (and the state returned untouched) when no meeting key was present. `scope` is
+ * the session's channel scope (`144`): only that scope's lanes are this session's leftovers.
  */
 export function closeMeeting(
   session: Record<string, unknown>,
-  projectDir: string
+  projectDir: string,
+  scope: string
 ): { state: Record<string, unknown>; ended: boolean } {
   if (!("meeting" in session)) return { state: session, ended: false };
   const participants = readMeeting(session)?.participants ?? [];
   const byPath = new Map(meetingLeftovers(session).map((m) => [m.path, m]));
   for (const participant of participants) {
-    for (const mark of unstampedFilesOf(projectDir, participant)) byPath.set(mark.path, mark);
+    for (const mark of unstampedFilesOf(projectDir, scope, participant)) byPath.set(mark.path, mark);
   }
   const state = withoutMeeting(session);
   if (byPath.size > 0) state[MEETING_LEFTOVERS_KEY] = [...byPath.values()];
@@ -174,6 +176,11 @@ function projectDirOfState(statePath: string): string {
   return path.resolve(statePath, "..", "..", "..", "..");
 }
 
+/** The channel scope (`144`) of the session whose `session.json` is `statePath`, as parsed into `state`. */
+function scopeOfState(statePath: string, state: Record<string, unknown>): string {
+  return channelScopeFromState(state, path.basename(path.dirname(statePath)));
+}
+
 /**
  * Switch meeting mode off through `closeMeeting`, keeping every other key and the meeting
  * directory (the transcript stays until SessionEnd removes the session directory). Returns whether
@@ -181,7 +188,8 @@ function projectDirOfState(statePath: string): string {
  */
 export function endMeeting(statePath: string, projectDir: string = projectDirOfState(statePath)): boolean {
   if (!fs.existsSync(statePath)) return false;
-  const { state, ended } = closeMeeting(readRawState(statePath), projectDir);
+  const raw = readRawState(statePath);
+  const { state, ended } = closeMeeting(raw, projectDir, scopeOfState(statePath, raw));
   if (ended) writeRawState(statePath, state);
   return ended;
 }
@@ -260,17 +268,18 @@ export function ownerRunLeftovers(session: unknown): ChannelFileMark[] {
  * A parsed `session.json` with its owner-run marker removed, every other key kept, and the owner
  * agents' current unstamped lane files merged into `owner_run_leftovers` — so the next normal run of
  * the same agent never adopts a file an owner run left behind. `ended` is false (state untouched)
- * when no marker was present.
+ * when no marker was present. `scope` is the session's channel scope (`144`), as for `closeMeeting`.
  */
 export function closeOwnerRuns(
   session: Record<string, unknown>,
-  projectDir: string
+  projectDir: string,
+  scope: string
 ): { state: Record<string, unknown>; ended: boolean } {
   if (!(OWNER_RUNS_KEY in session)) return { state: session, ended: false };
   const agents = readOwnerRuns(session)?.agents ?? [];
   const byPath = new Map(ownerRunLeftovers(session).map((m) => [m.path, m]));
   for (const agent of agents) {
-    for (const mark of unstampedFilesOf(projectDir, agent)) byPath.set(mark.path, mark);
+    for (const mark of unstampedFilesOf(projectDir, scope, agent)) byPath.set(mark.path, mark);
   }
   const state = { ...session };
   delete state[OWNER_RUNS_KEY];
@@ -281,7 +290,8 @@ export function closeOwnerRuns(
 /** Switch owner-run mode off through `closeOwnerRuns`. Returns whether a marker was on. */
 export function endOwnerRuns(statePath: string, projectDir: string = projectDirOfState(statePath)): boolean {
   if (!fs.existsSync(statePath)) return false;
-  const { state, ended } = closeOwnerRuns(readRawState(statePath), projectDir);
+  const raw = readRawState(statePath);
+  const { state, ended } = closeOwnerRuns(raw, projectDir, scopeOfState(statePath, raw));
   if (ended) writeRawState(statePath, state);
   return ended;
 }

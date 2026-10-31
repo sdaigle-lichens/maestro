@@ -7,11 +7,13 @@ a task file, so there is no second implementation to keep in sync, unlike the ca
 pairs.
 
 Before removing the file, `deleteTask` looks for a `## Post-Mortem` section (`extractPostMortemSection`)
-— written by the orchestrator's Step 4 template when a task didn't go cleanly, and possibly annotated
+— written by the orchestrator's Step 5 (Post Mortem) template when a task didn't go cleanly, and possibly annotated
 further by `/maestro-post-mortem` with what fix was applied to each bullet — and appends it to
 `<project>/.claude/postmortems.log`, one entry per deleted ticket. Unlike `maestro_sessions/` or
 `claims/`, this file is **committed**, since deleting the ticket is exactly what would otherwise erase
-its history.
+its history. Trap: the install's gitignore manifest does not ignore it, but a project-wide `*.log` rule
+does (this repo's own `.gitignore` has one, so its `postmortems.log` is untracked); add a `!` negation
+there or the "committed" history is silently local.
 
 `/maestro-post-mortem` never reads either source itself: `maestro-post-mortem-context.js`, registered
 on the same two entrances as `maestro-step0.js` (`UserPromptExpansion` on the command name, `PreToolUse`

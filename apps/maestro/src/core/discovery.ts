@@ -20,6 +20,7 @@ import {
 } from "@repo/claude-fs";
 import { IGNORE_DIRS, walkDirs, rulesFilesIn, ruleSearchDirs, skillSearchDirs } from "./fs-scan.js";
 import { readAllSkillTags } from "./skill-tags.js";
+import { isSkillListed, readDisableRules } from "./skill-availability.js";
 
 import type { DiscoveredDefinition, ProjectRule, RuleLibraryEntry, TreeNode } from "./contracts.js";
 export type { DiscoveredDefinition, ProjectRule, RuleLibraryEntry, TreeNode };
@@ -159,7 +160,7 @@ export async function discoverProjectSkillsTree(projectRoot: string): Promise<{
  * not only the root's — a single-directory read is blind to most of a monorepo, the same gap
  * `discoverConceptSkills` exists to close for concept skills specifically.
  */
-export async function discoverSkills(projectRoot: string): Promise<DiscoveredDefinition[]> {
+export async function discoverSkills(projectRoot: string, homeDir?: string): Promise<DiscoveredDefinition[]> {
   const { skills: projectTree, collisions } = await discoverProjectSkillsTree(projectRoot);
   for (const c of collisions) {
     console.warn(
@@ -173,16 +174,25 @@ export async function discoverSkills(projectRoot: string): Promise<DiscoveredDef
     getInstalledPluginSkills(),
   ]);
   const tagsById = readAllSkillTags();
+  // The one disable decision (`skill-availability.ts`), shared with the dangling-reference check:
+  // a skill the project's settings switch off is left out of every list built from here.
+  const rules = readDisableRules(projectRoot, homeDir);
   return dedupeById([
-    ...project.map((s) => ({ id: s.name, description: s.description, source: "project" })),
-    ...user.map((s) => ({ id: s.name, description: s.description, source: "user" })),
+    ...project
+      .filter((s) => isSkillListed(rules, s.name))
+      .map((s) => ({ id: s.name, description: s.description, source: "project" })),
+    ...user
+      .filter((s) => isSkillListed(rules, s.name))
+      .map((s) => ({ id: s.name, description: s.description, source: "user" })),
     // Maestro's own skills stay bare (the seeds name them that way); every other plugin's skills
-    // are offered plugin-qualified, so `concept-skills:scribe` is not hidden by a project `scribe`.
-    ...plugins.map((s) => ({
-      id: s.plugin === "maestro" ? s.name : `${s.plugin}:${s.name}`,
-      description: s.description,
-      source: s.plugin,
-    })),
+    // are offered plugin-qualified, so `code-graph:scribe` is not hidden by a project `scribe`.
+    ...plugins
+      .filter((s) => isSkillListed(rules, s.name, s.plugin))
+      .map((s) => ({
+        id: s.plugin === "maestro" ? s.name : `${s.plugin}:${s.name}`,
+        description: s.description,
+        source: s.plugin,
+      })),
   ])
     .map((s) => ({
       ...s,

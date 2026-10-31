@@ -15,7 +15,7 @@ export interface MirrorAsset {
 
 export interface StaleMirror extends MirrorAsset {
   reason: "missing" | "differs";
-  /** `cp plugins/maestro/<src> <dest>` — the fix, ready to paste. */
+  /** The one refresh command (`REFRESH_COMMAND`). */
   fix: string;
 }
 
@@ -24,7 +24,7 @@ export function staleMirrors(pluginRoot: string, projectRoot: string, assets: Mi
   for (const { src, dest } of assets) {
     const from = path.join(pluginRoot, ...src.split("/"));
     const to = path.join(projectRoot, ...dest.split("/"));
-    const fix = `cp plugins/maestro/${src} ${dest}`;
+    const fix = REFRESH_COMMAND;
     if (!fs.existsSync(to)) {
       stale.push({ src, dest, reason: "missing", fix });
       continue;
@@ -34,7 +34,12 @@ export function staleMirrors(pluginRoot: string, projectRoot: string, assets: Mi
   return stale;
 }
 
-/** One line per stale mirror, for an assertion message. */
+/** The one command that refreshes every mirror, the rendered orchestrator and the settings hooks. */
+export const REFRESH_COMMAND = "pnpm refresh:runtime";
+
+/** One line per stale mirror, then the single command that fixes all of them. */
 export function describeStale(stale: StaleMirror[]): string {
-  return stale.map((s) => `${s.dest} ${s.reason === "missing" ? "is missing" : "is stale"} — ${s.fix}`).join("\n");
+  if (stale.length === 0) return "";
+  const lines = stale.map((s) => `${s.dest} ${s.reason === "missing" ? "is missing" : "is stale"} (from ${s.src})`);
+  return [...lines, `Fix: run \`${REFRESH_COMMAND}\` (an agent hands the user \`! ${REFRESH_COMMAND}\`).`].join("\n");
 }

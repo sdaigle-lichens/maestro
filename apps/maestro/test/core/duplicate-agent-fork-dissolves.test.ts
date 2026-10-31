@@ -127,7 +127,8 @@ describe("#3 channel-stamp collision — handoff-channels.ts's laneFor", () => {
   function laneForInstance(cfg: MaestroConfigV3, instanceName: string, receiver: string): string {
     const inst = cfg.workflow_instances.find((i) => i.name === instanceName);
     if (!inst) throw new Error(`fixture has no instance "${instanceName}"`);
-    return laneFor("/project", bareAgentName(inst.agent), receiver);
+    // One session's scope (`144`): the collision is within a run, so both writers share it.
+    return laneFor("/project", "task-001", bareAgentName(inst.agent), receiver);
   }
 
   it("BEFORE: both instances resolve to the SAME lane file for a shared receiver", () => {

@@ -9,7 +9,7 @@
     "test"
   ],
   "skills_available": [
-    "concept-skills:use-code-architecture-design-check",
+    "code-graph:use-code-architecture-design-check",
     "task-queue",
     "installing-maestro",
     "maestro-architecture",
@@ -20,13 +20,12 @@
     "maestro-config-model",
     "create-skills-architecture",
     "global-stores",
-    "concept-skills-system",
     "workflow-view",
     "rule-view",
     "agents-view",
     "log-view",
     "test-maestro-desktop",
-    "concept-skills:scribe"
+    "code-graph:scribe"
   ],
   "workflow_instances": [
     {
@@ -43,8 +42,7 @@
         "claude-session-bridge",
         "maestro-config-model",
         "create-skills-architecture",
-        "global-stores",
-        "concept-skills-system"
+        "global-stores"
       ]
     },
     {
@@ -82,7 +80,7 @@
       "name": "scribe",
       "agent": "scribe",
       "loaded_skills": [
-        "concept-skills:scribe"
+        "code-graph:scribe"
       ],
       "referenced_skills": []
     }
@@ -110,8 +108,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 900
@@ -171,13 +169,13 @@
         },
         {
           "from": "frontend",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "test",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -294,10 +292,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "backend",
           "kind": "condition",
-          "label": "human requested backend corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "left",
           "targetHandle": "top",
           "label_offset": {
@@ -306,16 +304,32 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "frontend",
           "kind": "condition",
-          "label": "human requested frontend corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "right",
           "targetHandle": "top",
           "label_offset": {
             "x": 150,
             "y": 0
           }
+        },
+        {
+          "from": "test",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: a simple backend code fix found while testing",
+          "sourceHandle": "left",
+          "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: a simple frontend code fix found while testing",
+          "sourceHandle": "right",
+          "targetHandle": "top"
         }
       ]
     },
@@ -332,8 +346,8 @@
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 310
@@ -395,13 +409,13 @@
         },
         {
           "from": "test",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "backend",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -501,10 +515,10 @@
           }
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "test",
           "kind": "condition",
-          "label": "human requested test corrections",
+          "label": "manager requested direction change",
           "sourceHandle": "left",
           "targetHandle": "top",
           "label_offset": {
@@ -520,15 +534,15 @@
         {
           "id": "use-code-architecture-design-check",
           "type": "skill",
-          "skill": "concept-skills:use-code-architecture-design-check",
+          "skill": "code-graph:use-code-architecture-design-check",
           "position": {
             "x": 0,
             "y": 140
           }
         },
         {
-          "id": "human_review-1",
-          "type": "human_review",
+          "id": "manager_review-1",
+          "type": "manager_review",
           "position": {
             "x": 0,
             "y": 280
@@ -554,13 +568,13 @@
         },
         {
           "from": "use-code-architecture-design-check",
-          "to": "human_review-1",
+          "to": "manager_review-1",
           "kind": "success",
           "sourceHandle": "bottom",
           "targetHandle": "top"
         },
         {
-          "from": "human_review-1",
+          "from": "manager_review-1",
           "to": "refactor",
           "kind": "success",
           "sourceHandle": "bottom",
@@ -765,6 +779,388 @@
           "label": "frontend fix applied; re-run the tests",
           "sourceHandle": "left",
           "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: a simple backend code fix found while testing",
+          "sourceHandle": "left",
+          "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: a simple frontend code fix found while testing",
+          "sourceHandle": "right",
+          "targetHandle": "top"
+        }
+      ]
+    },
+    {
+      "name": "Backend",
+      "nodes": [
+        {
+          "id": "backend",
+          "type": "agent",
+          "instance": "backend",
+          "position": {
+            "x": 0,
+            "y": 140
+          }
+        },
+        {
+          "id": "manager_review-1",
+          "type": "manager_review",
+          "position": {
+            "x": 0,
+            "y": 580
+          }
+        },
+        {
+          "id": "test",
+          "type": "agent",
+          "instance": "test",
+          "position": {
+            "x": 0,
+            "y": 720
+          }
+        },
+        {
+          "id": "reviewer",
+          "type": "agent",
+          "instance": "reviewer",
+          "position": {
+            "x": 0,
+            "y": 890
+          }
+        },
+        {
+          "id": "scribe",
+          "type": "agent",
+          "instance": "scribe",
+          "position": {
+            "x": 0,
+            "y": 1030
+          }
+        },
+        {
+          "id": "refactor",
+          "type": "agent",
+          "instance": "refactor",
+          "position": {
+            "x": 360,
+            "y": 140
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "main-session",
+          "to": "backend",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "backend",
+          "to": "manager_review-1",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "manager_review-1",
+          "to": "test",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "reviewer",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "reviewer",
+          "to": "scribe",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "reviewer",
+          "to": "refactor",
+          "kind": "condition",
+          "label": "FAIL: code pattern violation or code redundancy",
+          "sourceHandle": "right",
+          "targetHandle": "top"
+        },
+        {
+          "from": "reviewer",
+          "to": "test",
+          "kind": "condition",
+          "label": "FAIL: a test",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": -110,
+            "y": 0
+          }
+        },
+        {
+          "from": "reviewer",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: backend code (style, data layer, error handling, security, or persistence)",
+          "sourceHandle": "right",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 110,
+            "y": 40
+          }
+        },
+        {
+          "from": "refactor",
+          "to": "scribe",
+          "kind": "condition",
+          "label": "finding is a recurring pattern an agent should know going forward",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 100,
+            "y": -40
+          }
+        },
+        {
+          "from": "refactor",
+          "to": "backend",
+          "kind": "condition",
+          "label": "finding requires backend code changes",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 100,
+            "y": 0
+          }
+        },
+        {
+          "from": "refactor",
+          "to": "reviewer",
+          "kind": "condition",
+          "label": "triggered by reviewer on a systemic FAIL; notify when delegation is complete so it can re-review",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 100,
+            "y": -40
+          }
+        },
+        {
+          "from": "manager_review-1",
+          "to": "backend",
+          "kind": "condition",
+          "label": "manager requested direction change",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": -110,
+            "y": 0
+          }
+        },
+        {
+          "from": "test",
+          "to": "backend",
+          "kind": "condition",
+          "label": "FAIL: a simple backend code fix found while testing",
+          "sourceHandle": "left",
+          "targetHandle": "top"
+        }
+      ]
+    },
+    {
+      "name": "Frontend",
+      "nodes": [
+        {
+          "id": "frontend",
+          "type": "agent",
+          "instance": "frontend",
+          "position": {
+            "x": 0,
+            "y": 140
+          }
+        },
+        {
+          "id": "manager_review-1",
+          "type": "manager_review",
+          "position": {
+            "x": 0,
+            "y": 400
+          }
+        },
+        {
+          "id": "test",
+          "type": "agent",
+          "instance": "test",
+          "position": {
+            "x": 0,
+            "y": 540
+          }
+        },
+        {
+          "id": "reviewer",
+          "type": "agent",
+          "instance": "reviewer",
+          "position": {
+            "x": 0,
+            "y": 710
+          }
+        },
+        {
+          "id": "scribe",
+          "type": "agent",
+          "instance": "scribe",
+          "position": {
+            "x": 0,
+            "y": 850
+          }
+        },
+        {
+          "id": "refactor",
+          "type": "agent",
+          "instance": "refactor",
+          "position": {
+            "x": 360,
+            "y": 140
+          }
+        }
+      ],
+      "edges": [
+        {
+          "from": "main-session",
+          "to": "frontend",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "frontend",
+          "to": "manager_review-1",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "manager_review-1",
+          "to": "test",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "reviewer",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "reviewer",
+          "to": "scribe",
+          "kind": "success",
+          "sourceHandle": "bottom",
+          "targetHandle": "top"
+        },
+        {
+          "from": "reviewer",
+          "to": "refactor",
+          "kind": "condition",
+          "label": "FAIL: code pattern violation or code redundancy",
+          "sourceHandle": "right",
+          "targetHandle": "top"
+        },
+        {
+          "from": "reviewer",
+          "to": "test",
+          "kind": "condition",
+          "label": "FAIL: a test",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": -110,
+            "y": 0
+          }
+        },
+        {
+          "from": "reviewer",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: frontend code (style, data layer, error handling, security, or persistence)",
+          "sourceHandle": "right",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 110,
+            "y": 40
+          }
+        },
+        {
+          "from": "refactor",
+          "to": "scribe",
+          "kind": "condition",
+          "label": "finding is a recurring pattern an agent should know going forward",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 100,
+            "y": -40
+          }
+        },
+        {
+          "from": "refactor",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "finding requires frontend code changes",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 100,
+            "y": 0
+          }
+        },
+        {
+          "from": "refactor",
+          "to": "reviewer",
+          "kind": "condition",
+          "label": "triggered by reviewer on a systemic FAIL; notify when delegation is complete so it can re-review",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 100,
+            "y": -40
+          }
+        },
+        {
+          "from": "manager_review-1",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "manager requested direction change",
+          "sourceHandle": "left",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": -110,
+            "y": 0
+          }
+        },
+        {
+          "from": "test",
+          "to": "frontend",
+          "kind": "condition",
+          "label": "FAIL: a simple frontend code fix found while testing",
+          "sourceHandle": "right",
+          "targetHandle": "top"
         }
       ]
     }
@@ -773,11 +1169,11 @@
   "start_skills": {
     "maestro": [
       "confidence-check",
-      "concept-skills:use-code-architecture-design-check"
+      "code-graph:use-code-architecture-design-check"
     ],
     "to_maestro_tasks": [
       "confidence-check",
-      "concept-skills:use-code-architecture-design-check"
+      "code-graph:use-code-architecture-design-check"
     ]
   },
   "end_skills": {
@@ -787,7 +1183,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.11.23",
+  "runtimeVersion": "0.13.11",
   "reports": {
     "backend": {
       "id": "backend",
@@ -916,7 +1312,22 @@
         "version": 2,
         "hash": "f0a8b372a8237bde28a7bd89397bfbf156475f1b5bfb836ca027dfc5740ae146"
       }
+    },
+    "test/backend": {
+      "id": "test/backend",
+      "syncedFrom": {
+        "version": 2,
+        "hash": "a6ad894f8f7aff72cd0f28d17f1669b322d2f7b318e4072ea1d8b4ca7e377c1a"
+      }
+    },
+    "test/frontend": {
+      "id": "test/frontend",
+      "syncedFrom": {
+        "version": 2,
+        "hash": "20ee63410cb19589b140a0f19cf538df7ed82161efa79178e2335445828bb8de"
+      }
     }
   },
-  "use_maestro_tasks": true
+  "use_maestro_tasks": true,
+  "worker_model": "sonnet"
 }
