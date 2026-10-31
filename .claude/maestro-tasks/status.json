@@ -717,15 +717,21 @@
     "blockedBy": []
   },
   "145-plan-for-file-overlap-and-merge-order-when-tasks-run-in-parallel.md": {
-    "status": "ready",
+    "status": "blocked",
     "blockedBy": [
-      "144-scope-handoff-channels-per-task-so-parallel-sessions-never-cross-payloads.md"
+      "147-close-the-gaps-left-in-per-task-channel-scoping.md"
     ]
   },
   "146-keep-an-epic-task-blocked-until-its-blocker-is-merged-not-just-done.md": {
     "status": "blocked",
     "blockedBy": [
       "145-plan-for-file-overlap-and-merge-order-when-tasks-run-in-parallel.md"
+    ]
+  },
+  "147-close-the-gaps-left-in-per-task-channel-scoping.md": {
+    "status": "ready",
+    "blockedBy": [
+      "144-scope-handoff-channels-per-task-so-parallel-sessions-never-cross-payloads.md"
     ]
   }
 }
