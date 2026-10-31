@@ -118,7 +118,7 @@ file overlap.
 
 ## Spawning workers: `ready` (`125`)
 
-`ready <slug> [--cap <n>] [--json]` is the manager's spawn list (`readyTasks`, `formatReady`). The
+Before the first spawn the manager makes sure `EPIC.md` holds a merge-plan table (`145`): one row per task with merge order, base branch, the version-file owner and the shared touched surfaces. Spawning follows that order. `ready <slug> [--cap <n>] [--json]` is the manager's spawn list (`readyTasks`, `formatReady`). The
 `maestro-manager` skill runs it, then opens one herdr tab per `[spawn]` task (`herdr tab create`,
 `herdr pane run <launch command>`, then `add-worker --task`); without herdr, or outside a herdr pane
 (`HERDR_ENV` not `1`), or with `herdr status server` not printing `status: running`, it prints the

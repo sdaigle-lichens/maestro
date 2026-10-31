@@ -15,6 +15,7 @@
 //       "title": "Add login form",
 //       "whatToBuild": "...",
 //       "acceptanceCriteria": ["Criterion 1", "Criterion 2"],
+//       "touchedSurfaces": ["src/login.ts", "package.json version"],   (optional)
 //       "blockedBy": []
 //     },
 //     {
@@ -92,6 +93,9 @@ function renderBody(slice, blockedByFilenames) {
     blockedByFilenames.length === 0
       ? "None — can start immediately"
       : blockedByFilenames.map((f) => `- \`${f}\``).join("\n");
+  // Optional: a slice without `touchedSurfaces` writes the file exactly as before.
+  const surfaces = Array.isArray(slice.touchedSurfaces) ? slice.touchedSurfaces : [];
+  const touched = surfaces.length === 0 ? "" : `## Touched surfaces\n\n${surfaces.map((s) => `- ${s}`).join("\n")}\n\n`;
   return `# ${slice.title}
 
 Implement the following vertical slice. When complete, ensure every acceptance
@@ -105,7 +109,7 @@ ${slice.whatToBuild}
 
 ${criteria}
 
-## Blocked by
+${touched}## Blocked by
 
 ${blockedBy}
 `;
@@ -149,6 +153,12 @@ slices.forEach((slice, i) => {
   }
   if (!Array.isArray(slice.acceptanceCriteria) || slice.acceptanceCriteria.length === 0) {
     fail(`slice ${i} ("${slice.title}") needs at least one "acceptanceCriteria" entry`);
+  }
+  if (
+    slice.touchedSurfaces !== undefined &&
+    (!Array.isArray(slice.touchedSurfaces) || slice.touchedSurfaces.some((s) => typeof s !== "string" || !s.trim()))
+  ) {
+    fail(`slice ${i} ("${slice.title}"): "touchedSurfaces" must be an array of non-empty strings`);
   }
   const blockedBy = slice.blockedBy || [];
   if (!Array.isArray(blockedBy)) {

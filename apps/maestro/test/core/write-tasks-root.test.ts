@@ -8,6 +8,7 @@ import os from "node:os";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
+import { createRequire } from "node:module";
 
 import { findUpPluginRoot } from "../../src/core/install.js";
 
@@ -135,5 +136,92 @@ describe("maestro-write-tasks blockedBy on existing tasks", () => {
       expect(r.stderr).toContain(`blockedBy "${ref}" does not name exactly one existing task`);
     }
     expect(fs.readdirSync(path.join(repo, ".claude", "maestro-tasks"))).toEqual([EXISTING]);
+  });
+});
+
+// Task 145: optional touchedSurfaces renders a "## Touched surfaces" section.
+describe("maestro-write-tasks touchedSurfaces", () => {
+  const EXISTING = "001-earlier-work.md";
+
+  function setup(): string {
+    const repo = mkdir("repo");
+    mkdir("repo", ".git");
+    const dir = mkdir("repo", ".claude", "maestro-tasks");
+    fs.writeFileSync(path.join(dir, EXISTING), "# Earlier work\n\n## Blocked by\n\nNone — can start immediately\n");
+    return repo;
+  }
+
+  function run(repo: string, slices: unknown[]) {
+    const json = path.join(tmp, "slices.json");
+    fs.writeFileSync(json, JSON.stringify(slices));
+    const childEnv: NodeJS.ProcessEnv = { ...process["env"], HOME: tmp, CLAUDE_PROJECT_DIR: repo };
+    delete childEnv.CLAUDE_CODE_SESSION_ID;
+    return spawnSync("node", [SCRIPT, json], { cwd: repo, env: childEnv, encoding: "utf8" });
+  }
+
+  const slice = (extra: Record<string, unknown>) => ({
+    title: "Surf",
+    whatToBuild: "x",
+    acceptanceCriteria: ["a"],
+    blockedBy: [],
+    ...extra,
+  });
+  const tasksOf = (repo: string) => path.join(repo, ".claude", "maestro-tasks");
+  const body = (repo: string) => fs.readFileSync(path.join(tasksOf(repo), "002-surf.md"), "utf8");
+
+  it("writes no section when omitted or empty", () => {
+    for (const extra of [{}, { touchedSurfaces: [] }]) {
+      const repo = setup();
+      expect(run(repo, [slice(extra)]).status).toBe(0);
+      const text = body(repo);
+      expect(text).not.toContain("Touched surfaces");
+      expect(text).toMatch(/## Acceptance criteria\n\n[^#]*\n\n## Blocked by\n\nNone/);
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+
+  it("renders bullets between Acceptance criteria and Blocked by, keeping Blocked by parseable", () => {
+    const repo = setup();
+    const r = run(repo, [slice({ touchedSurfaces: ["src/login.ts", "package.json version"], blockedBy: [EXISTING] })]);
+    expect(r.status, r.stderr).toBe(0);
+    const text = body(repo);
+    const a = text.indexOf("## Acceptance criteria");
+    const t = text.indexOf("## Touched surfaces\n\n- src/login.ts\n- package.json version\n\n## Blocked by");
+    const b = text.indexOf("## Blocked by");
+    expect(a).toBeGreaterThan(-1);
+    expect(t).toBeGreaterThan(a);
+    expect(b).toBeGreaterThan(t);
+    const req = createRequire(import.meta.url);
+    const { parseBlockedBy } = req(path.join(path.dirname(SCRIPT), "lib", "maestro-tasks.cjs"));
+    expect(parseBlockedBy(text)).toEqual([EXISTING]);
+    const status = JSON.parse(fs.readFileSync(path.join(tasksOf(repo), "status.json"), "utf8"));
+    expect(status["002-surf.md"].blockedBy).toEqual([EXISTING]);
+  });
+
+  it("refuses a non-array or blank/non-string entry and writes nothing", () => {
+    for (const bad of ["str", {}, [""], ["  "], [1], ["ok", null]]) {
+      const repo = setup();
+      const r = run(repo, [slice({ touchedSurfaces: bad })]);
+      expect(r.status).toBe(1);
+      expect(r.stderr).toContain('"touchedSurfaces" must be an array of non-empty strings');
+      expect(fs.readdirSync(tasksOf(repo))).toEqual([EXISTING]);
+      fs.rmSync(repo, { recursive: true, force: true });
+    }
+  });
+});
+
+// Task 145: the shipped orchestrator template carries the red-suite / verified-commit rule.
+describe("orchestrator template red-suite rule", () => {
+  const tpl = fs.readFileSync(path.join(path.dirname(SCRIPT), "..", "templates", "maestro", "SKILL.md"), "utf8");
+  it("requires a Verified section in the brief and human review file", () => {
+    expect(tpl.match(/## Verified/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(tpl).toContain("the commit verified");
+  });
+  it("forbids approving a red suite, even pending a later test step", () => {
+    expect(tpl).toContain("Never approve a red suite");
+    expect(tpl).toContain("not even pending a later test step");
+  });
+  it("requires the Step 6 report to state the verified commit and a green suite", () => {
+    expect(tpl).toContain("the commit verified and that the full test suite was green on it");
   });
 });

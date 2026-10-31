@@ -24,7 +24,8 @@ either side's save gives a stable diff.
 array, or as strings naming a task already in the queue by filename or `NNN` — refused unless it
 matches exactly one existing file), and the script assigns numbers/slugs, renders each file, and calls `sync()` in one pass —
 folding what used to be two separate steps (write the files, then run `maestro-task-status.cjs sync`)
-into one script call.
+into one script call. An optional `touchedSurfaces` string array on a slice is rendered as a
+`## Touched surfaces` section placed before `## Blocked by` (`145`); a slice without it is written as before.
 
 **Where the writer puts the queue (`071`).** `maestro-write-tasks.cjs` resolves its root with
 `findProjectRoot`, starting from `CLAUDE_PROJECT_DIR` (else cwd): the **nearest ancestor containing

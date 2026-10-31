@@ -133,7 +133,7 @@ To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` 
 **Manager review (`132`).** A `manager review` step is no longer run as a human review, except on escalation or fallback. The worker (orchestrator template Step 3):
 
 1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.
-2. **Brief.** The round's review file as a direction brief: `## Goal`, `## Done`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Questions`. A re-request opens with `Round <N>` and quotes the previous redirect note, each point with how it was addressed.
+2. **Brief.** The round's review file as a direction brief: `## Goal`, `## Done`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Verified` (the commit verified and a green full suite on it), `## Questions`. A re-request opens with `Round <N>` and quotes the previous redirect note, each point with how it was addressed.
 3. **Request.** `maestro-epic.cjs review-request --task <t> --file <f>` refuses a file that does not exist or is not that task's review file, logs a `review` inbox entry `mNNN` with its `round` (the ticket's request count + 1), and prints the ONE `SendMessage` line for the manager. The same file again while it waits is a re-send, not a new round. `show`/`reports` list it until a verdict exists or a newer request for the ticket supersedes it; `ack` refuses an `mNNN`.
 4. **Verdict.** `maestro-epic.cjs review-verdict --task <t> <on-track|redirect|escalate>`, run by the manager when it decides and by the worker on the reply; the second caller gets the recorded verdict back. It logs a `verdict` entry with `verdict` and `effective`.
 
@@ -144,6 +144,8 @@ To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` 
 | `escalate` | a `human review` inline at this stop, the manager's note added to the summary |
 
 **The 2-redirect cap counts per ticket, not `plan.loopbacks`** (which counts every loop-back, a test one too). `MANAGER_REDIRECT_CAP = 2` in `epics.ts`; `reviewHistory` counts the ticket's `verdict` entries whose `effective` is `redirect`. With 2 recorded, the next redirect is logged `effective: "escalate"`, `capped: true`. The manager reads the brief, never the diff; a code concern goes only as a `for @reviewer:` line, passed verbatim into @reviewer's dispatch prompt. Code: `writeReviewRequest`, `recordReviewVerdict`, `reviewHistory` in `src/core/epics.ts`, exported through the `maestro-epic` bundle.
+
+**Parallel tasks and the red-suite rule (`145`).** A task file may carry a `## Touched surfaces` section, written by `maestro-write-tasks.cjs` from the optional `touchedSurfaces` slice and placed before `## Blocked by`. An epic's `EPIC.md` holds a merge-plan table that `maestro-manager` records before it spawns workers. Neither is read by a hook. **No review round approves work while the full suite is red**: the human review file's `## Verified`, the manager brief's `## Verified`, and the epic report from Step 6 each name the commit verified and the green suite on it.
 
 ## Where the detail lives
 

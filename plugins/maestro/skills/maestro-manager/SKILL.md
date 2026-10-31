@@ -51,6 +51,7 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
 You start the epic's worker sessions yourself instead of the user opening one per task. Each worker
 is a normal named `/maestro` session in its own herdr tab; you start it and record it, nothing more.
 
+0. **Merge plan first.** Before any worker starts, `EPIC.md` must hold a **merge-plan table**, one row per task: merge order, base branch, who bumps shared version files (for example "workers never bump; whoever merges bumps"), and the touched surfaces it shares with siblings (read each task's `## Touched surfaces`; a version or generated file always counts as shared). Build it from the tasks' touched surfaces; where two unordered tasks overlap and no merge order is recorded, add a `blockedBy` edge or a merge order with `to-maestro-tasks` first. Missing or stale table: write it now and show it to the user. Then spawn only according to it: a task whose base is another task's branch waits for that merge, and the table's order decides which `[spawn]` tasks you offer.
 1. **List what can start:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>`
    (add `--cap <n>` only when the user asked for a different limit; the default is 5). It prints the
    ready tasks no session has claimed, oldest first, each with its worker name and exact launch
@@ -118,7 +119,7 @@ frees the task for the next spawn.
 
 For each worker message ("report r003 for 087-... is in <file>") or unacknowledged report:
 
-1. **Read the report file**, not the message.
+1. **Read the report file**, not the message. A worker report must name the **commit it verified** and state that the **full test suite was green on that commit**. A report without both, or with a red or partial suite, is not acknowledged as done: ask the worker for them.
 2. **Acknowledge it:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ack <slug> <id>`, then reply one line to the sender.
    Messages have no delivery receipt; the recorded ack is the only proof, and an unacknowledged
    report is listed again on every resume.
@@ -131,6 +132,7 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
      once, naming the report, and group reports that share a cause.
    - **A finding about several agents** (a skill gap, a bad handoff, a wrong tool): suggest a
      `maestro-team-meeting`; run one when the user asks. See below before applying it.
+   - **A merge.** After each merge, whoever merged re-runs the **full suite on the merged result** (a rebase or a rebuilt generated file can break what was green separately) and the report states that commit and result. Do not acknowledge the merge, or offer the next merge in the plan, before then. Never approve a red suite "pending the test step".
    - **Nothing:** note the decision in `EPIC.md` if it affects later tickets.
 4. **Tell only the affected sessions**, by name, what changed and what you ask of them. Never edit a
    task a worker is running without telling it. If `SendMessage` or `ListAgents` is unavailable, tell
@@ -148,7 +150,12 @@ ticket's redirect count. You review **direction only**: is the ticket heading wh
 it? Code correctness is @reviewer's job and acceptance is the user's.
 
 1. **Read the brief file**, never the diff or the code. Check it against `EPIC.md`'s goal, scope and
-   decisions, and against the sibling tickets (`show <slug>`, their task files).
+   decisions, and against the sibling tickets (`show <slug>`, their task files). Also check the brief's
+   `## Touches` against (a) the paths covered by the project's `.claude/rules/*` (a new file or
+   hook a rule forbids is a redirect) and (b) the sibling tickets' `## Touched surfaces` and the
+   `EPIC.md` merge plan: an overlap with no recorded merge order, or a helper a sibling owns, is a
+   redirect. The brief must also state the commit verified and a green full suite on it; a red
+   suite is never on-track.
 2. **Decide one verdict**, then record it:
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" review-verdict --task <task.md> <on-track|redirect|escalate>`.
    It prints the verdict that stands: after 2 redirects on the same ticket, a redirect is recorded
