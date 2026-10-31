@@ -55,10 +55,10 @@ A resume's payload therefore travels **by path, in the orchestrator's own `SendM
 
 | Step | Who | What |
 | --- | --- | --- |
-| 1 | `maestro-resume-target.cjs` | After the `agent_id`, prints `deliver: <file>` per current-run file in the target's lane and records them in `session.json` `resume_deliveries[<agent_id>]` (`{file, sender, run_id}[]`). |
+| 1 | `maestro-resume-target.cjs` | After the `agent_id`, prints `deliver: .claude/channels/<scope>/<receiver>/<file>` per current-run file in the target's lane **in this session's own scope** (`144`) and records them in `session.json` `resume_deliveries[<agent_id>]` (`{file, sender, run_id}[]`). |
 | 2 | Orchestrator | Names every `deliver:` path in the `SendMessage` and tells the agent to Read it. It never reads the payload itself. |
 | 3 | `SubagentStart` (resume) | Leaves the lane alone: no inline, no retire, just a path mention. |
-| 4 | Resumed run's own `SubagentStop` | `retireResumeDeliveries` retires exactly the recorded files, logs each as `channel_delivery` with `via:"resume"` **before** the run's handoff entry, and drops the record. A scribe-lane gap report (`112`) is skipped: only the scribe's `SKILL_GAPS_HANDLED:` ack retires it (see `channels.md`). |
+| 4 | Resumed run's own `SubagentStop` | `retireResumeDeliveries` retires exactly the recorded files (matched by full scoped path, so a record from another scope retires nothing), logs each as `channel_delivery` with `via:"resume"` **before** the run's handoff entry, and drops the record. A scribe-lane gap report (`112`) is skipped: only the scribe's `SKILL_GAPS_HANDLED:` ack retires it (see `channels.md`). |
 
 The same CLI also checks the loop-back's **expected** payload, resume or cold: if the latest
 workflow handoff's route to this target resolves a protocol (`expectedLoopbackPayloads`, via

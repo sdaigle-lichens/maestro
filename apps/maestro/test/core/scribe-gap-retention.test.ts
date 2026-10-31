@@ -27,6 +27,13 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const S1 = "sess-112-one";
 const S2 = "sess-112-two";
+/** `144`: S1 and S2 both run task 112, so they share this channel scope — a later session on the
+ *  same task picks up an unhandled gap. A session on another task (S3, task 113) never does. */
+const TASK = "112-gap-retention.md";
+const SCOPE = "task-112";
+const S3 = "sess-113-other";
+const OTHER_TASK = "113-unrelated.md";
+const OTHER_SCOPE = "task-113";
 
 // main -> backend -> test -> scribe. `backend` has NO route to scribe: a gap is not route-shaped.
 const cfg = {
@@ -79,7 +86,15 @@ async function installed(config: MaestroConfigV3 = cfg): Promise<string> {
     path.join(tmp, "project-tags.sqlite"),
     path.join(tmp, "handoff-defaults.sqlite")
   );
+  claim(root, S1, TASK);
+  claim(root, S2, TASK);
   return root;
+}
+
+/** What the orchestrator does at a run's start: record the workflow and the claimed task (`144`). */
+function claim(root: string, sess: string, task: string) {
+  const r = script(root, sess, "maestro-set-session-workflow.cjs", ["feature", "--task", task]);
+  expect(r.code, r.stderr).toBe(0);
 }
 
 function script(root: string, sess: string, name: string, args: string[], input?: unknown) {
@@ -124,8 +139,10 @@ function sessionEnd(root: string, sess: string) {
   expect(r.code, r.stderr).toBe(0);
 }
 
-const laneDir = (root: string, receiver: string) => path.join(root, ".claude", "channels", receiver);
-const consumedDir = (root: string, receiver: string) => path.join(root, ".claude", "channels", ".consumed", receiver);
+const laneDir = (root: string, receiver: string, scope = SCOPE) =>
+  path.join(root, ".claude", "channels", scope, receiver);
+const consumedDir = (root: string, receiver: string, scope = SCOPE) =>
+  path.join(root, ".claude", "channels", scope, ".consumed", receiver);
 const filesIn = (dir: string) =>
   fs.existsSync(dir)
     ? fs
@@ -208,6 +225,30 @@ describe("the 111 sequence: a gap survives a scribe that did not act on it (112)
 
     expect(sweep(root, { now: Date.now() + CHANNEL_AGE_CAP_MS + 60_000 }).removed).toContain(live);
     expect(fs.existsSync(live)).toBe(false);
+  });
+});
+
+describe("a gap stays in its task's scope (144)", () => {
+  it("a session on another task never sees, inlines or acknowledges task 112's gap", async () => {
+    const root = await installed();
+    claim(root, S3, OTHER_TASK);
+    const gap = backendReportsGap(root, S1, "GAP-SCOPED-TOKEN");
+
+    // S3's scribe (task 113) gets nothing from task 112's lane.
+    const other = start(root, S3, "scribe", "x1");
+    expect(other).not.toContain("GAP-SCOPED-TOKEN");
+    expect(other).toContain(OTHER_SCOPE);
+    // Its ack naming the same file name retires nothing in task 112's scope.
+    stop(root, S3, "scribe", "x1", `SKILL_GAPS_HANDLED: ${gap}\nHANDOFF: success`);
+    expect(filesIn(laneDir(root, "scribe"))).toContain(gap);
+    expect(filesIn(consumedDir(root, "scribe"))).toEqual([]);
+    expect(filesIn(consumedDir(root, "scribe", OTHER_SCOPE))).toEqual([]);
+    // S3's SessionEnd sweeps only its own scope; the gap survives.
+    sessionEnd(root, S3);
+    expect(filesIn(laneDir(root, "scribe"))).toContain(gap);
+
+    // The same task's next session still gets it.
+    expect(start(root, S2, "scribe", "s2")).toContain("GAP-SCOPED-TOKEN");
   });
 });
 
@@ -330,7 +371,7 @@ describe("deliver-once is unchanged for everything that is not a stamped gap (11
     writeGap(root, "frontend", "GAP-UNSTAMPED-TOKEN"); // the sender died before its SubagentStop
     const ctx = start(root, S1, "scribe", "s1");
     expect(ctx).not.toContain("GAP-UNSTAMPED-TOKEN");
-    expect(ctx).toContain(".claude/channels/scribe/frontend.1.md");
+    expect(ctx).toContain(`.claude/channels/${SCOPE}/scribe/frontend.1.md`);
     expect(ctx).toContain("(unstamped)");
     expect(filesIn(laneDir(root, "scribe"))).toEqual(["frontend.1.md"]);
   });

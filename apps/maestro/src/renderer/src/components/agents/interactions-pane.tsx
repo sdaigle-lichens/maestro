@@ -208,8 +208,9 @@ export default function InteractionsPane({
             const value = id ? (handoffs[id] ?? route.content) : "";
             // The route's payload is no longer a JSON field the agent returns (`036`) — it is the
             // content of the file its own SubagentStart writes into the receiver's lane. Only
-            // routes with a receiver have one to name.
-            const lanePath = route.receiver ? `.claude/channels/${route.receiver}/${route.sender}.1.md` : null;
+            // routes with a receiver have one to name. `<scope>` (`144`) is resolved per session by the
+            // hooks — the active task's `task-<NNN>`, else `session-<id8>` — so it stays a placeholder.
+            const lanePath = route.receiver ? `.claude/channels/<scope>/${route.receiver}/${route.sender}.1.md` : null;
             return (
               <Entry
                 key={`${route.label}:${route.receiver ?? "—"}`}

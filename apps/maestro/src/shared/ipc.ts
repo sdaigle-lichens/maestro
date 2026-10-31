@@ -684,7 +684,7 @@ export const IPC = {
   worktreeLogOpen: "worktree-log:open",
   worktreeLogClose: "worktree-log:close",
 
-  // `/maestro`'s Channels block (`037`) — every `.claude/channels/<receiver>/` lane holding at
+  // `/maestro`'s Channels block (`037`) — every `.claude/channels/<scope>/<receiver>/` lane (`144`; a legacy unscoped one has `scope: null`) holding at
   // least one undelivered file, right now. READ-ONLY: `036`'s hooks are the only thing that
   // delivers, retires or sweeps a channel file; this just reads `handoff-channels.ts`'s
   // `pendingLanes()`, the same functions those hooks use, re-exported to the app.

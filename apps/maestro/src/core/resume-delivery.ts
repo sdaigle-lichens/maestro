@@ -24,30 +24,27 @@
 //
 // `fs`/`path` only: rides in the maestro-session bundle, which must stay free of `node:sqlite`.
 
-import { isGapReport, readLane, retire, type ChannelEntry } from "./handoff-channels.js";
+import { channelRelPath, isGapReport, readLane, retire, type ChannelEntry } from "./handoff-channels.js";
 import type { PayloadRoute } from "./handoff-payload.js";
 import { bareAgentName } from "./success-path.js";
 import type { HandoffIssueRecord, MaestroSession, ResumeDelivery } from "./types.js";
 
-/** Project-relative path of a lane file, the form printed to the orchestrator. */
-function laneFileOf(receiver: string, fileName: string): string {
-  return `.claude/channels/${receiver}/${fileName}`;
-}
-
 /**
- * The files in `receiver`'s lane stamped with this session's `runId` — what a resumed `receiver`
- * must be handed. None without a `runId`: an unattributable file is never presented as this run's.
+ * The files in `receiver`'s lane IN `scope` (`144`, the resuming session's own) stamped with this
+ * session's `runId` — what a resumed `receiver` must be handed. None without a `runId`: an
+ * unattributable file is never presented as this run's. Another scope's lane is never read.
  */
 export function pendingResumeDeliveries(
   projectDir: string,
+  scope: string,
   receiver: string,
   runId: string | null | undefined
 ): ResumeDelivery[] {
   if (!runId) return [];
   const bare = bareAgentName(receiver);
-  return readLane(projectDir, bare)
+  return readLane(projectDir, scope, bare)
     .filter((e) => e.runId === runId)
-    .map((e) => ({ file: laneFileOf(bare, e.fileName), sender: e.sender, run_id: runId }));
+    .map((e) => ({ file: channelRelPath(scope, bare, e.fileName), sender: e.sender, run_id: runId }));
 }
 
 /** `session` with `deliveries` recorded for `agentId` (replacing any earlier record for it). */
@@ -65,13 +62,15 @@ export function recordResumeDeliveries(
 }
 
 /**
- * Retire the files recorded for `agentId` that are still in `receiver`'s lane with the recorded
- * stamp (a file the sender rewrote since carries the same run's stamp and is the fresher payload,
- * so it is retired too; a file now gone is skipped). Returns the session without the record and the
- * entries retired, for the caller to log.
+ * Retire the files recorded for `agentId` that are still in `receiver`'s lane in `scope` with the
+ * recorded stamp (a file the sender rewrote since carries the same run's stamp and is the fresher
+ * payload, so it is retired too; a file now gone is skipped). A recorded file is matched by its
+ * full scoped path, so a record made in another scope never retires anything here. Returns the
+ * session without the record and the entries retired, for the caller to log.
  */
 export function retireResumeDeliveries(
   projectDir: string,
+  scope: string,
   session: MaestroSession,
   agentId: string,
   receiver: string
@@ -81,14 +80,14 @@ export function retireResumeDeliveries(
   const bare = bareAgentName(receiver);
   const want = new Map(recorded.map((d) => [d.file, d.run_id]));
   const retired: ChannelEntry[] = [];
-  for (const e of readLane(projectDir, bare)) {
-    const runId = want.get(laneFileOf(bare, e.fileName));
+  for (const e of readLane(projectDir, scope, bare)) {
+    const runId = want.get(channelRelPath(scope, bare, e.fileName));
     if (runId === undefined || e.runId !== runId) continue;
     // `112`: a scribe-lane gap report is retired only by the scribe's own `SKILL_GAPS_HANDLED:`
     // line (`acknowledgeGaps`), never by having been handed over.
     if (isGapReport(e)) continue;
     try {
-      retire(projectDir, bare, e);
+      retire(projectDir, scope, bare, e);
       retired.push(e);
     } catch {
       // Left in the lane: a later cold start still delivers it.

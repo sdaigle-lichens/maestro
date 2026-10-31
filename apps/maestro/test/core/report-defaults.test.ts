@@ -246,7 +246,7 @@ describe("superseded seed migration", () => {
     const row = readAgentReportDefault("backend", dbPath)!;
     expect(row.content).not.toContain('"conceptSkillGaps"');
     expect(row.content).not.toContain('"filesChanged"');
-    expect(row.content).toContain(".claude/channels/scribe/backend.1.md");
+    expect(row.content).toContain(".claude/channels/<scope>/scribe/backend.1.md"); // `144`: scoped lane
     expect(row.version).toBe(2);
   });
 
@@ -262,7 +262,7 @@ describe("superseded seed migration", () => {
     const row = readAgentReportDefault("backend", dbPath)!;
     expect(row.content).not.toContain('"conceptSkillGaps"');
     expect(row.content).not.toContain('"filesChanged"');
-    expect(row.content).toContain(".claude/channels/scribe/backend.1.md");
+    expect(row.content).toContain(".claude/channels/<scope>/scribe/backend.1.md"); // `144`: scoped lane
     expect(row.version).toBe(2);
   });
 
@@ -369,11 +369,41 @@ describe("superseded seed migration (090: generic skill_gaps)", () => {
       expect(row.content).toContain('"skill_gaps"');
       expect(row.content).not.toContain("concept_skill_gaps");
       expect(row.content).not.toContain("concept skill");
-      expect(row.content).toContain(`.claude/channels/scribe/${agent}.1.md`);
+      expect(row.content).toContain(`.claude/channels/<scope>/scribe/${agent}.1.md`); // `144`: scoped lane
+      expect(row.content).not.toContain(`.claude/channels/scribe/`);
       expect(row.content).toContain("`HANDOFF:` line must agree"); // the 083 note survives
       expect(readAgentReportDefault(agent, dbPath)!.version).toBe(6); // idempotent
     }
   );
+
+  // `144`: the body that shipped between 090 and 144 names the UNSCOPED scribe lane, which is never
+  // delivered any more. A store holding it must upgrade to the scoped note. Verbatim copy, not imported.
+  const NOTE_090 = (subagent: string) =>
+    "If a skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
+    '`{ "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file.";
+  it.each(["backend", "frontend", "mobile", "infra"])(
+    "%s: a stored pre-144 body (unscoped gap lane) upgrades to the scoped lane and bumps the version",
+    (agent) => {
+      const pre144 = SHAPE(agent) + IMPL_TAIL + NOTE_090(agent) + "\n\n" + HANDOFF_NOTE;
+      expect(priorReportSeeds(agent)).toContain(pre144);
+      storeWith({ [agent]: pre144 });
+      const row = readAgentReportDefault(agent, dbPath)!;
+      expect(row.version).toBe(6);
+      expect(row.content).toContain(`.claude/channels/<scope>/scribe/${agent}.1.md`);
+      expect(row.content).toContain("channel scope named in your injected context");
+      expect(row.content).not.toContain(`.claude/channels/scribe/`);
+      expect(readAgentReportDefault(agent, dbPath)!.version).toBe(6);
+    }
+  );
+
+  it("test and scribe: the current seeds name only the scoped lane", () => {
+    const fresh = path.join(dir, "fresh.sqlite");
+    expect(readAgentReportDefault("test", fresh)!.content).toContain(".claude/channels/<scope>/scribe/test.1.md");
+    expect(readAgentReportDefault("test", fresh)!.content).not.toContain(".claude/channels/scribe/");
+    expect(readAgentReportDefault("scribe", fresh)!.content).not.toContain(".claude/channels/scribe/");
+  });
 
   it("test: a stored pre-090 body upgrades too", () => {
     storeWith({ test: preTest() });

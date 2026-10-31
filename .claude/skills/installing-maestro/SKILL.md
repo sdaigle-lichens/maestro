@@ -144,7 +144,10 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   grant out of settings (the orchestrator template's `allowed-tools`). The one exception is `139`'s
   `Write(/.claude/channels/**)` in `permissions.allow` (`addChannelAllowRule`, both installers,
   idempotent), added because a skill's `allowed-tools` cannot cover a subagent's writes. Do not add
-  a second rule without the same argument. See the manifest sub-concept.
+  a second rule without the same argument. See the manifest sub-concept. The rule stays unscoped
+  even though lanes are per-scope since `144`: confining reviewer/refactor to their OWN
+  `.claude/channels/<scope>/` is the channel write guard's job (it denies other scopes and the
+  legacy root), not the allow rule's.
 - **The skills must run `maestro-install.js` unquoted, on one line:**
   `node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js . …` (`127`). The allow-list's
   `excludedCommands` entry (`node <plugin>/scripts/maestro-install.js *`) matches the literal command

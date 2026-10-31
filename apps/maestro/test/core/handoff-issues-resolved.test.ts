@@ -21,8 +21,10 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const SESS = "sess-139-aaa";
 const RUN = "run-139-current";
-const BACKEND_FILE = ".claude/channels/backend/test.1.md";
-const TEST_FILE = ".claude/channels/test/backend.1.md";
+/** `144`: SESS claims no task, so its lanes live under `session-<first 8 chars of its id>`. */
+const SCOPE = "session-sess-139";
+const BACKEND_FILE = `.claude/channels/${SCOPE}/backend/test.1.md`;
+const TEST_FILE = `.claude/channels/${SCOPE}/test/backend.1.md`;
 
 let tmp: string;
 let home: string;
@@ -124,8 +126,23 @@ describe("handoff-issues drops a missing_payload resolved by a this-run file (13
     expect(issues()).toContain("NO PAYLOAD written");
   });
 
+  // `144`: a this-run-stamped file at the legacy unscoped path, or in another scope, is not this
+  // session's payload — the issue stays reported.
+  it("a this-run-stamped file at the legacy path or in another scope does not resolve it", () => {
+    const legacy = ".claude/channels/backend/test.1.md";
+    const otherScope = ".claude/channels/task-045/backend/test.1.md";
+    writeState({ run_id: RUN, handoff_issues: [issue([BACKEND_FILE])] });
+    lane(legacy, RUN);
+    lane(otherScope, RUN);
+    expect(issues()).toContain("NO PAYLOAD written");
+
+    // A recorded legacy path (a pre-144 issue) is not resolved by its own legacy file either.
+    writeState({ run_id: RUN, handoff_issues: [issue([legacy])] });
+    expect(issues()).toContain("NO PAYLOAD written");
+  });
+
   it("partial files: only one of two expected files is this-run, so it is still reported", () => {
-    const other = ".claude/channels/backend/frontend.1.md";
+    const other = `.claude/channels/${SCOPE}/backend/frontend.1.md`;
     writeState({ run_id: RUN, handoff_issues: [issue([BACKEND_FILE, other])] });
     lane(BACKEND_FILE, RUN);
 
@@ -135,7 +152,7 @@ describe("handoff-issues drops a missing_payload resolved by a this-run file (13
   });
 
   it("both expected files this-run: dropped", () => {
-    const other = ".claude/channels/backend/frontend.1.md";
+    const other = `.claude/channels/${SCOPE}/backend/frontend.1.md`;
     writeState({ run_id: RUN, handoff_issues: [issue([BACKEND_FILE, other])] });
     lane(BACKEND_FILE, RUN);
     lane(other, RUN);

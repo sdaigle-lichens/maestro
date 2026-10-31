@@ -112,8 +112,11 @@ const readLog = (root: string): Record<string, any>[] => {
     .filter(Boolean)
     .map((l) => JSON.parse(l));
 };
+/** `144`: SESS claims no task, so its lanes live under `session-<first 8 chars of its id>`. */
+const SCOPE = "session-sess-087";
+const CH = `.claude/channels/${SCOPE}`;
 const lane = (root: string, receiver: string, sender: string) =>
-  path.join(root, ".claude", "channels", receiver, `${sender}.1.md`);
+  path.join(root, ".claude", "channels", SCOPE, receiver, `${sender}.1.md`);
 function writePayload(root: string, receiver: string, sender: string, body = "{}\n") {
   fs.mkdirSync(path.dirname(lane(root, receiver, sender)), { recursive: true });
   fs.writeFileSync(lane(root, receiver, sender), body);
@@ -408,7 +411,7 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     expect(entry.handoff_issue).toMatchObject({
       kind: "missing_payload",
       label: "success",
-      files: [".claude/channels/test/backend.1.md"],
+      files: [`${CH}/test/backend.1.md`],
     });
     expect(entry.handoff_issue.message).toContain("resume this agent");
     expect(entry.handoff_issue.message).toContain("do not skip it");
@@ -421,7 +424,7 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     });
     const seen = projectScript(root, "maestro-task-status.cjs", ["handoff-issues"]);
     expect(seen.stdout).toContain("backend: NO PAYLOAD written for HANDOFF: success (agent_id b1)");
-    expect(seen.stdout).toContain(".claude/channels/test/backend.1.md");
+    expect(seen.stdout).toContain(`${CH}/test/backend.1.md`);
   });
 
   it("a condition route expecting a payload is checked too", async () => {
@@ -429,7 +432,22 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     subagentStart(root, "test", "t1");
     const r = subagentStop(root, "test", "t1", { last_assistant_message: '"verdict": "FAIL"\nHANDOFF: tests failed' });
     expect(r.stdout).toContain("missing_payload");
-    expect(handoffEntry(root, "t1").handoff_issue.files).toEqual([".claude/channels/backend/test.1.md"]);
+    expect(handoffEntry(root, "t1").handoff_issue.files).toEqual([`${CH}/backend/test.1.md`]);
+  });
+
+  // `144`: a payload written to the legacy unscoped path, or into another task's scope, is not
+  // this run's payload — the route is still flagged missing.
+  it("a payload written outside the session's own scope does not count", async () => {
+    const root = await installed();
+    subagentStart(root, "backend", "b1");
+    for (const rel of ["test", path.join("task-045", "test")]) {
+      const f = path.join(root, ".claude", "channels", rel, "backend.1.md");
+      fs.mkdirSync(path.dirname(f), { recursive: true });
+      fs.writeFileSync(f, "{}\n");
+    }
+    const r = subagentStop(root, "backend", "b1", { last_assistant_message: "HANDOFF: success" });
+    expect(r.stdout).toContain("missing_payload");
+    expect(handoffEntry(root, "b1").handoff_issue.files).toEqual([`${CH}/test/backend.1.md`]);
   });
 
   it("a file left over from BEFORE this run does not count", async () => {
@@ -463,7 +481,7 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
   });
 
   it("the pure judgement agrees with the hook", () => {
-    const routes = [{ label: "success", receiver: "test", channelFile: ".claude/channels/test/backend.1.md" }];
+    const routes = [{ label: "success", receiver: "test", scope: SCOPE, channelFile: `${CH}/test/backend.1.md` }];
     expect(checkPayload("HANDOFF: success", routes, () => false)?.kind).toBe("missing_payload");
     expect(checkPayload("HANDOFF: success", routes, () => true)).toBeNull();
     expect(checkPayload("HANDOFF: SUCCESS", routes, () => false)?.kind).toBe("missing_payload");
@@ -480,7 +498,7 @@ describe("the required-payload instruction reaches every kind of run (087 item 2
     const first = inject(root, "backend", "b1");
     expect(first).toContain("REQUIRED before your HANDOFF line");
     expect(first).toContain("A missing payload is not skipped");
-    expect(first).toContain("Route `HANDOFF: success` → `test` — write this to `.claude/channels/test/backend.1.md`");
+    expect(first).toContain(`Route \`HANDOFF: success\` → \`test\` — write this to \`${CH}/test/backend.1.md\``);
     expect(first).not.toContain("skip the write");
 
     // b1 completes; the loop-back then RESUMES b1 …
@@ -490,14 +508,14 @@ describe("the required-payload instruction reaches every kind of run (087 item 2
     const resumed = inject(root, "backend", "b1");
     expect(resumed).toContain("Resumed run —");
     expect(resumed).toContain("REQUIRED before your HANDOFF line");
-    expect(resumed).toContain("`HANDOFF: success` → write `.claude/channels/test/backend.1.md` (for `test`)");
+    expect(resumed).toContain(`\`HANDOFF: success\` → write \`${CH}/test/backend.1.md\` (for \`test\`)`);
     expect(resumed).not.toContain("Handoff routing for the");
 
     // … or dispatches a COLD re-run under a new agent_id, which gets the full first-run text.
     const cold = inject(root, "backend", "b2");
     expect(cold).not.toContain("Resumed run —");
     expect(cold).toContain("REQUIRED before your HANDOFF line");
-    expect(cold).toContain("write this to `.claude/channels/test/backend.1.md`");
+    expect(cold).toContain(`write this to \`${CH}/test/backend.1.md\``);
   });
 
   it("a meeting participant gets no payload requirement", async () => {
@@ -512,7 +530,7 @@ describe("the required-payload instruction reaches every kind of run (087 item 2
     const root = await installed();
     const ctx = inject(root, "test", "t1");
     // test -> backend (tests failed) needs one; test -> scribe (success) does not.
-    expect(ctx).toContain("`.claude/channels/backend/test.1.md`");
+    expect(ctx).toContain(`\`${CH}/backend/test.1.md\``);
     // (the report's optional concept-gap note names scribe/test.1.md; no ROUTE requires it)
     expect(ctx).not.toContain("Route `HANDOFF: success` → `scribe`");
   });

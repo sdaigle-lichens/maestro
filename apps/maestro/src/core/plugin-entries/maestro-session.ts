@@ -86,8 +86,16 @@ export {
 } from "../session-heartbeat.js";
 
 // Agent channels (`036`) — lanes, stamps, retire, sweep. `fs`/`path` only, so this costs nothing
-// against the "no node:sqlite in maestro-session.cjs" property below.
+// against the "no node:sqlite in maestro-session.cjs" property below. Every lane function takes the
+// session's channel scope (`144`), which `channelScopeOf` resolves.
 export {
+  channelScopeOf,
+  channelScopeFromState,
+  channelRelPath,
+  isChannelScope,
+  NO_SESSION_SCOPE,
+  consumedDir,
+  pendingLanes,
   channelDir,
   laneFor,
   writeStamp,

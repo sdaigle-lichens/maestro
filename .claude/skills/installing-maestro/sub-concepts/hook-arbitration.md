@@ -107,7 +107,7 @@ re-pulls. This is why the change shipped with `plugins/maestro/.claude-plugin/pl
 `apps/maestro/test/core/hook-arbitration.test.ts` covers the predicates in isolation.
 `test/core/channel-guard-install.test.ts` (`121`, reworked by `122`) pins the guard's *non*-stand-down:
 after `installRuntime` both the plugin's `maestro-channel-write-guard.js` and the project copy
-`.claude/scripts/maestro-channel-write-guard.cjs` deny a reviewer write outside `.claude/channels/`
+`.claude/scripts/maestro-channel-write-guard.cjs` deny a reviewer write outside its own `.claude/channels/<scope>/` (`144`)
 (each once, no filesystem side effects); with the project script or its `lib/` deleted the project copy
 throws and the plugin copy still denies; a guard registered only in `settings.local.json` does not
 silence the plugin copy. `test/core/hook-registration-parity.test.ts` (`122`) fails if any

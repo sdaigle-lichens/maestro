@@ -59,7 +59,7 @@ Two paths, both through `closeMeeting`:
   must never get meeting treatment. It is the one `session.json` writer that deletes a key; every
   other writer spreads the existing object, so `meeting` survives them.
 
-`closeMeeting` removes `meeting` and records every participant's **unstamped** lane files as
+`closeMeeting` removes `meeting` and records every participant's **unstamped** lane files in the session's own channel scope (`144`) as
 `meeting_leftovers: [{path, mtimeMs, size}]`, merged with any earlier ones. The `meeting/` directory
 (transcript, briefs, rounds, `decision.md`) stays until the session directory is removed at
 `SessionEnd`. Why the leftovers exist: see the stamping rules in `channels.md`.

@@ -871,7 +871,9 @@ function formatAge(ms: number): string {
 }
 
 /**
- * `037`'s entry point — every `.claude/channels/<receiver>/` lane still holding a file, right now.
+ * `037`'s entry point — every `.claude/channels/<scope>/<receiver>/` lane (`144`) still holding a
+ * file, right now, plus any pre-`144` unscoped `.claude/channels/<receiver>/` lane, shown as
+ * `legacy` (never delivered, aged out by the sweep).
  *
  * READ-ONLY, same discipline as `ForkedAgentsCard` below: nothing here delivers, retires or sweeps
  * a channel file — that is entirely `036`'s hooks' job, inside a live session. This just names what
@@ -911,11 +913,14 @@ function ChannelsCard({ viewedRoot }: { viewedRoot: string }) {
       <ul className="list-none p-0 m-0 flex flex-col gap-1.5">
         {lanes.map((lane) => (
           <li
-            key={lane.receiver}
+            key={`${lane.scope ?? "legacy"}/${lane.receiver}`}
             data-testid={`channel-lane-${lane.receiver}`}
+            data-scope={lane.scope ?? "legacy"}
             className="text-[12px] flex flex-wrap items-baseline gap-x-1.5"
           >
-            <span className="font-mono text-maestro">{lane.receiver}</span>
+            <span className="font-mono text-maestro">
+              {lane.scope ?? "legacy"}/{lane.receiver}
+            </span>
             <span className="text-maestro-muted">{lane.count} pending</span>
             <span className="text-maestro-muted">
               {lane.stranded === 0

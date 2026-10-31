@@ -64,7 +64,7 @@ Called when a recurring pattern is identified that an agent should know going fo
 Your final message ends with these plain-text lines, in this order, after your report:
 
 1. `SKILL_GAPS_HANDLED: <file>, <file>, …` — only when you acted on one or more skill-gap reports
-   from `.claude/channels/scribe/`. Name every gap file you acted on, including one you handled by
+   from `.claude/channels/<scope>/scribe/` (the channel scope your injected context names). Name every gap file you acted on, including one you handled by
    enrichment only (no SKILL.md edit, no stamp), one where you left a remainder to enrich, and one
    whose concept has no graph to enrich. A gap file you do not name stays in your channel for the
    next scribe run. Leave the line out when you acted on none.

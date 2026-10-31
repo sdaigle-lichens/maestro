@@ -569,8 +569,9 @@ export interface ChannelDelivery {
 }
 
 /**
- * One receiver's `.claude/channels/<receiver>/` lane, as `handoff-channels.ts`'s `pendingLanes()`
- * (`037`) computes it — read-only, for `/maestro`'s Channels block.
+ * One receiver's `.claude/channels/<scope>/<receiver>/` lane, as `handoff-channels.ts`'s
+ * `pendingLanes()` (`037`) computes it — read-only, for `/maestro`'s Channels block. A legacy
+ * pre-`144` unscoped `.claude/channels/<receiver>/` lane has `scope: null` and is all `stranded`.
  *
  * `current` is entries stamped with the LIVE session's own `run_id` — normal in-flight traffic that
  * the next matching `SubagentStart` will inline. `stranded` is everything else (a foreign `run_id`,
@@ -580,6 +581,8 @@ export interface ChannelDelivery {
  * backlog the channel design means to make visible rather than silently remembered.
  */
 export interface PendingLane {
+  /** `task-<NNN>` / `session-<id8>` (`144`), or `null` for a legacy unscoped lane. */
+  scope: string | null;
   receiver: string;
   count: number;
   /** Age, in ms, of the oldest file still in the lane. */

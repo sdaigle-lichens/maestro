@@ -48,7 +48,7 @@ export const DEFAULT_REPORT_DEFAULTS_DB_PATH = path.join(os.homedir(), ".claude"
 // the project has wired to handle it (the code-graph plugin's scribe skill, for one).
 // The previous, concept-skill-specific text lives on below as `conceptGapsChannelNote`, kept
 // verbatim because the superseded bodies in `PRIOR_SEEDS` are rebuilt from it.
-function skillGapsChannelNote(subagent: string): string {
+function skillGapsChannelNoteUnscoped(subagent: string): string {
   return (
     "If a skill you loaded was missing something you had to work out from the code " +
     `yourself, write \`.claude/channels/scribe/${subagent}.1.md\` with a fenced \`json\` block: ` +
@@ -57,11 +57,25 @@ function skillGapsChannelNote(subagent: string): string {
   );
 }
 
+// `144`: channel lanes are scoped per task/session — `.claude/channels/<scope>/<receiver>/` — so a
+// gap note naming the unscoped path would land in the legacy layout, which is never delivered. The
+// agent never works out its scope: SubagentStart names it (`channelScopeLine`), and the note points
+// there. The unscoped wording above is kept for the prior seeds.
+function skillGapsChannelNote(subagent: string): string {
+  return (
+    "If a skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/<scope>/scribe/${subagent}.1.md\` (\`<scope>\` is the channel scope ` +
+    "named in your injected context) with a fenced `json` block: " +
+    '`{ "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file."
+  );
+}
+
 // `036`: a concept-skill gap no longer travels as a `conceptSkillGaps` field in the JSON report —
 // it goes on the scribe's own channel, unconditionally, whether or not this run's workflow wires a
 // route to `@scribe` at all. That is what makes a gap reachable even from an agent with no scribe
-// edge: `SubagentStart` delivers whatever is waiting in `.claude/channels/scribe/` the next time
-// `@scribe` is invoked, in this run or a later one. `filesChanged` is dropped outright rather than
+// edge: `SubagentStart` delivers whatever is waiting in the scribe lane (since `144`,
+// `.claude/channels/<scope>/scribe/`) the next time `@scribe` is invoked in the same scope. `filesChanged` is dropped outright rather than
 // moved — `grep` found it had zero consumers, and the files-changed information a *receiving*
 // agent actually needs already travels per-route, inside the `handoff-seeds.ts` shapes that most
 // routes already carry as `files_added_removed_renamed`.
@@ -93,6 +107,11 @@ function backendLikeV3(subagent: string): string {
 // The body before `090` made the gap note generic: V3 plus the verdict/HANDOFF note.
 function backendLikeV4(subagent: string): string {
   return backendLikeV3(subagent) + "\n\n" + VERDICT_HANDOFF_NOTE;
+}
+
+// The body before `144` scoped the gap note's channel path.
+function backendLikeV5(subagent: string): string {
+  return backendLikeBody(subagent, skillGapsChannelNoteUnscoped(subagent)) + "\n\n" + VERDICT_HANDOFF_NOTE;
 }
 
 function backendLikeBody(subagent: string, gapsNote: string): string {
@@ -163,20 +182,26 @@ const SCRIBE_REPORT_V1 =
 // `112`'s acknowledgement line lived only in the SubagentStart block, which a RESUMED scribe never
 // gets. Both rules travel here (and in plugins/maestro/agents/scribe.md), in the order
 // `parseGapsHandled` and `lastHandoffLabel` read them: the gap line first, the HANDOFF line last.
-const SCRIBE_ENDING_NOTE =
-  "End your final message with these plain-text lines, in this order:\n" +
-  "\n" +
-  "1. `SKILL_GAPS_HANDLED: <file>, <file>, …` — only when you acted on skill-gap reports from " +
-  "`.claude/channels/scribe/`. Name every gap file you acted on, including one handled by enrichment only, " +
-  "one with a remainder left to enrich, and one with no graph to enrich. A gap file you do not " +
-  "name stays in your channel for the next scribe run.\n" +
-  "2. `HANDOFF: <label>` — always last. `HANDOFF: success` when the documentation is done, even if you " +
-  "skipped a step (a graph refresh skipped for lack of a tsconfig, targets left to enrich): report skipped " +
-  "steps in the report body, never through the label. `done` or `complete` is not a label — no workflow " +
-  "routes it. When you could not finish, end with a condition label from your injected routes when one fits, " +
-  "else `HANDOFF: partial` with the reason in the body: the orchestrator's unrouted check stops there and asks the user.";
+function scribeEndingNote(gapsDir: string): string {
+  return (
+    "End your final message with these plain-text lines, in this order:\n" +
+    "\n" +
+    "1. `SKILL_GAPS_HANDLED: <file>, <file>, …` — only when you acted on skill-gap reports from " +
+    `\`${gapsDir}\`. Name every gap file you acted on, including one handled by enrichment only, ` +
+    "one with a remainder left to enrich, and one with no graph to enrich. A gap file you do not " +
+    "name stays in your channel for the next scribe run.\n" +
+    "2. `HANDOFF: <label>` — always last. `HANDOFF: success` when the documentation is done, even if you " +
+    "skipped a step (a graph refresh skipped for lack of a tsconfig, targets left to enrich): report skipped " +
+    "steps in the report body, never through the label. `done` or `complete` is not a label — no workflow " +
+    "routes it. When you could not finish, end with a condition label from your injected routes when one fits, " +
+    "else `HANDOFF: partial` with the reason in the body: the orchestrator's unrouted check stops there and asks the user."
+  );
+}
 
-const SCRIBE_REPORT = SCRIBE_REPORT_V1 + "\n\n" + SCRIBE_ENDING_NOTE;
+// The body before `144` scoped the scribe lane's path.
+const SCRIBE_REPORT_V3 = SCRIBE_REPORT_V1 + "\n\n" + scribeEndingNote(".claude/channels/scribe/");
+
+const SCRIBE_REPORT = SCRIBE_REPORT_V1 + "\n\n" + scribeEndingNote(".claude/channels/<scope>/scribe/");
 
 function testReportBody(gapsNote: string): string {
   return (
@@ -200,6 +225,9 @@ const TEST_REPORT_V3 = testReportBody(conceptGapsChannelNote("test"));
 
 // The body before `090` made the gap note generic: V3 plus the verdict/HANDOFF note.
 const TEST_REPORT_V4 = TEST_REPORT_V3 + "\n\n" + VERDICT_HANDOFF_NOTE;
+
+// The body before `144` scoped the gap note's channel path.
+const TEST_REPORT_V5 = testReportBody(skillGapsChannelNoteUnscoped("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
 
 const TEST_REPORT = testReportBody(skillGapsChannelNote("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
 
@@ -318,19 +346,33 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
   // v3 (`083`): the body before the verdict/HANDOFF agreement note was appended. v4 (`090`): the
   // body with that note but the concept-skill-specific gap note, before the gap note went generic.
   // The V1 scribe body was absent while it was the current one (a prior equal to the current body
-  // would be "refreshed" on every open); `114` superseded it, so it is a prior again.
+  // would be "refreshed" on every open); `114` superseded it, so it is a prior again. v5 (`144`):
+  // the body whose gap note (scribe: whose ending note) named the unscoped channel path.
   return {
-    backend: [backendLikeV1("backend"), backendLikeV2("backend"), backendLikeV3("backend"), backendLikeV4("backend")],
+    backend: [
+      backendLikeV1("backend"),
+      backendLikeV2("backend"),
+      backendLikeV3("backend"),
+      backendLikeV4("backend"),
+      backendLikeV5("backend"),
+    ],
     frontend: [
       backendLikeV1("frontend"),
       backendLikeV2("frontend"),
       backendLikeV3("frontend"),
       backendLikeV4("frontend"),
+      backendLikeV5("frontend"),
     ],
-    mobile: [backendLikeV1("mobile"), backendLikeV2("mobile"), backendLikeV3("mobile"), backendLikeV4("mobile")],
-    infra: [backendLikeV3("infra"), backendLikeV4("infra")],
-    scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1],
-    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4],
+    mobile: [
+      backendLikeV1("mobile"),
+      backendLikeV2("mobile"),
+      backendLikeV3("mobile"),
+      backendLikeV4("mobile"),
+      backendLikeV5("mobile"),
+    ],
+    infra: [backendLikeV3("infra"), backendLikeV4("infra"), backendLikeV5("infra")],
+    scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1, SCRIBE_REPORT_V3],
+    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4, TEST_REPORT_V5],
   };
 })();
 

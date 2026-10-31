@@ -279,6 +279,12 @@ export { syncProjectHandoffs, handoffFilePath } from "./handoff-sync.js";
 export { getResolvedHandoff, saveProjectHandoffOverride, resolvedRoutesFrom } from "./handoffs.js";
 
 export {
+  channelScopeOf,
+  channelScopeFromState,
+  channelRelPath,
+  isChannelScope,
+  NO_SESSION_SCOPE,
+  consumedDir,
   channelDir,
   laneFor,
   writeStamp,

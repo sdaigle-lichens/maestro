@@ -22,6 +22,7 @@ vi.setConfig({ testTimeout: 30_000 });
 
 const SESSION_A = "sess-104-aaa";
 const SESSION_B = "sess-104-bbb";
+const B_SCOPE = "session-sess-104";
 
 let tmp: string;
 beforeEach(() => {
@@ -120,7 +121,9 @@ describe("handoff-issues worktree note (104)", () => {
     expect(run.stdout).toContain("NO PAYLOAD written for HANDOFF: success");
     expect(run.stdout).toContain("Worktree run");
     expect(run.stdout).toContain("YOU write the channel file");
-    expect(run.stdout).toContain(`${root}/.claude/channels/`);
+    // `144`: the note names the main checkout and the scoped lane shape, scope included.
+    expect(run.stdout).toContain(`${root}/<that path>`);
+    expect(run.stdout).toContain(".claude/channels/<scope>/<receiver>/ path, scope included");
     expect(run.stdout).toContain("do not ask the user");
     expect(run.stdout).toContain("Never invent or reconstruct");
     expect(run.stdout).toContain("Name the file's path in the receiver's dispatch");
@@ -169,7 +172,9 @@ describe("SubagentStart worktree block (104)", () => {
     expect(out).toContain(`pnpm --dir ${wt}`);
     expect(out).toContain(`git -C ${wt}`);
     expect(out).toContain("Never `cd`");
-    expect(out).toContain(`${root}/.claude/channels/ is denied`);
+    // `144`: B's own scoped lane. setup() claims 002 but never records `active_task`
+    // (set-session-workflow --task), so B's scope is `session-<id8>`.
+    expect(out).toContain(`${root}/.claude/channels/${B_SCOPE}/ is denied`);
     expect(out).toContain("include the full payload");
     expect(out).toContain("before your HANDOFF: line");
     expect(out).toContain("The orchestrator writes the channel file for you");

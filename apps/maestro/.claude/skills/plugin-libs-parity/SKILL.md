@@ -192,6 +192,13 @@ only and every hook already requires this bundle" argument:
   `maestro-session-heartbeat.js` and `maestro-task-status.cjs`. `fs`/`path` only (it reads `/proc`,
   never spawns); the grep is still `0`. `maestro-epic` also rebuilt, because `claims.ts` now
   imports `session-heartbeat.ts`.
+- `144` — channel scopes from `handoff-channels.ts` (`channelScopeOf`, `channelScopeFromState`,
+  `channelRelPath`, `isChannelScope`, `NO_SESSION_SCOPE`, `consumedDir`, `pendingLanes`). Also an
+  **arity change**: every lane function (`channelDir`, `laneFor`, `writeStamp`, `readLane`, `retire`,
+  `acknowledgeGaps`, `unstampedFilesOf`, `payloadRoutes`, `pendingResumeDeliveries`, `retireResumeDeliveries`,
+  `closeMeeting`, `closeOwnerRuns`) now takes a `scope` argument, so every hook calling one changed
+  in the same commit. The export-superset test can't catch a stale call shape — only a rebuild plus
+  the hook tests can. `fs`/`path` only; the grep is still `0`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

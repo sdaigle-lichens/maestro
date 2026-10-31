@@ -229,6 +229,13 @@ export interface MaestroSession {
   generated_instances: string[];
   run_id?: string | null;
   /**
+   * The task-queue file this session runs (`NNN-slug.md`), recorded by
+   * `maestro-set-session-workflow.cjs --task`. Its numeric prefix names the session's channel scope
+   * (`task-NNN`, `144`); with none the scope is `session-<id8>` — see `channelScopeOf` in
+   * `handoff-channels.ts`.
+   */
+  active_task?: string | null;
+  /**
    * Present only while a team meeting runs in this session (`/maestro-team-meeting`). Its
    * `participants` get meeting-mode treatment from the hooks: no HANDOFF routing, no channel
    * delivery or stamping, log entries marked `meeting: true`, writes confined to the meeting
@@ -299,7 +306,7 @@ export interface HandoffIssueRecord {
 
 /** One channel file handed to a resumed agent by path (`088`). */
 export interface ResumeDelivery {
-  /** Project-relative, e.g. `.claude/channels/backend/reviewer.1.md`. */
+  /** Project-relative, e.g. `.claude/channels/task-144/backend/reviewer.1.md`. */
   file: string;
   sender: string;
   /** The session `run_id` the file was stamped with when it was handed over. */

@@ -192,10 +192,17 @@ describe("channel write guard is exempt from stand-down (122)", () => {
     expect(decision(runPluginGuard(root, target))).toBe("deny");
   });
 
-  it("the plugin copy still allows a reviewer payload write under .claude/channels/", () => {
+  // No session id resolves here (payload carries none, env id deleted), so the scope is
+  // `session-none` (`144`) — the one scope this reviewer may write to.
+  it("the plugin copy still allows a reviewer payload write under .claude/channels/<own scope>/", () => {
     const root = project("channels");
     pluginInstall(root);
-    expect(runPluginGuard(root, path.join(root, ".claude", "channels", "scribe", "r.1.md"))).toBe("");
+    expect(runPluginGuard(root, path.join(root, ".claude", "channels", "session-none", "scribe", "r.1.md"))).toBe("");
+    // ...and denies the legacy unscoped root and another scope (144).
+    expect(decision(runPluginGuard(root, path.join(root, ".claude", "channels", "scribe", "r.1.md")))).toBe("deny");
+    expect(decision(runPluginGuard(root, path.join(root, ".claude", "channels", "task-001", "scribe", "r.1.md")))).toBe(
+      "deny"
+    );
   });
 
   it("a guard registered only in settings.local.json does not silence the plugin copy", () => {
@@ -229,8 +236,11 @@ describe("channel write guard is exempt from stand-down (122)", () => {
     const viaLink = path.join(link, "src", "app.ts");
     expect(decision(runPluginGuard(link, viaLink))).toBe("deny");
     expect(decision(runProjectGuard(real, link, viaLink))).toBe("deny");
+    expect(
+      decision(runProjectGuard(real, link, path.join(link, ".claude", "channels", "session-none", "scribe", "r.1.md")))
+    ).toBe("allow");
     expect(decision(runProjectGuard(real, link, path.join(link, ".claude", "channels", "scribe", "r.1.md")))).toBe(
-      "allow"
+      "deny"
     );
   });
 });

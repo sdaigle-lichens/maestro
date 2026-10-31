@@ -255,8 +255,8 @@ nodes and edges for the first, an empty project directory for the second. For ru
 A few files under `apps/maestro/test/core/` (`per-session-state.test.ts`, `install.test.ts`,
 `uninstall.test.ts`, `worktree-merge.test.ts`, `worktree-channel-delivery.test.ts`) `spawnSync` the real hook scripts the installer copies into a temp project —
 no window, no CDP. For writing or changing one of those, and especially for the rule that `HOME`
-and `CLAUDE_CODE_SESSION_ID` must be pinned or deleted per spawn and never inherited (`064`), see
-`references/hook-script-tests.md`.
+and `CLAUDE_CODE_SESSION_ID` must be pinned or deleted per spawn and never inherited (`064`), and
+for testing channel scopes (`144`), see `references/hook-script-tests.md`.
 
 ## Reporting
 

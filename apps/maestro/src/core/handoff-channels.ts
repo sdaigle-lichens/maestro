@@ -3,12 +3,25 @@
 // `SubagentStart` inlines it when that agent is next invoked, in the same run. See
 // `.claude/maestro-tasks/036-move-handoff-payloads-onto-agent-channels.md` for the design.
 //
+// Scoped lanes (`144`): every channel file belongs to exactly ONE scope, and only the session that
+// owns that scope reads, writes, retires, sweeps (outright), lists as pending, resumes or
+// gap-acknowledges it. Before `144` lanes were keyed by receiver and sender alone, so two
+// concurrent sessions (the main checkout and a git worktree, which deliberately shares the main
+// checkout's `.claude/channels/`) injected each other's payloads — task 045's `test/backend.1.md`
+// reached 048's @test.
+//
 //   .claude/channels/
-//     <receiver>/
-//       <sender>.1.md        ← written by the sender, stamped by ITS OWN SubagentStop
-//     .consumed/
+//     <scope>/                      ← `task-<NNN>` (a session running task NNN) or `session-<id8>`
 //       <receiver>/
-//         <sender>.1.md      ← retired here by SubagentStart once delivered, never deleted
+//         <sender>.1.md             ← written by the sender, stamped by ITS OWN SubagentStop
+//       .consumed/
+//         <receiver>/
+//           <sender>.1.md           ← retired here by SubagentStart once delivered, never deleted
+//     <receiver>/                   ← LEGACY (pre-`144`): never delivered, resumed or acknowledged;
+//     .consumed/                       reported stranded by `pendingLanes`, aged out by `sweep`
+//
+// The scope is resolved by hooks and scripts only (`channelScopeOf`), never by an agent: an agent is
+// told the exact scoped file to write by the injected route text (`payloadRoutes`).
 //
 // `fs` and `path` only, on purpose — this is re-exported from `plugin-entries/maestro-session.ts`,
 // the bundle every copied hook `require`s UNCONDITIONALLY, and that bundle must stay free of
@@ -17,12 +30,12 @@
 // A channel file's first line is its stamp — see `formatStampedContent`/`parseStampedContent` —
 // written once, by the RECEIVER'S SENDER'S OWN `SubagentStop`, never by the agent itself: asking a
 // subagent to look up and write a correct `run_id` is a protocol it will get wrong silently, the
-// way it already omits `skillsTriage`.
+// way it already omits `skillsTriage`. The stamp stays the WITHIN-scope freshness check.
 
 import fs from "node:fs";
 import path from "node:path";
 import { readSession } from "./session-runtime.js";
-import { listSessionIds, sessionPathsFor } from "./session-paths.js";
+import { isValidSessionId, listSessionIds, sessionPathsFor } from "./session-paths.js";
 import type { PendingLane } from "./contracts.js";
 
 /** How long a lane file may sit unconsumed before `sweep` removes it. */
@@ -62,31 +75,85 @@ const CONSUMED_DIR_NAME = ".consumed";
 /** The scribe's lane — the only one whose skill-gap reports outlive their delivery (`112`). */
 const SCRIBE_LANE = "scribe";
 
+/**
+ * The scope of a session with no resolvable session id. Such a session has no `run_id` either, so
+ * nothing in it is ever inlined (every file is only mentioned) — sharing this one scope between
+ * id-less sessions cannot deliver a payload into the wrong run.
+ */
+export const NO_SESSION_SCOPE = "session-none";
+
+/** `task-<digits>` or `session-<up to 8 id chars>` — the only directory names that are scopes. */
+const SCOPE_RE = /^(?:task-\d+|session-[A-Za-z0-9_-]{1,8})$/;
+const TASK_PREFIX_RE = /^(\d+)/;
+
+/** Is `name` a channel scope directory name (as opposed to a legacy receiver dir or `.consumed`)? */
+export function isChannelScope(name: unknown): name is string {
+  return typeof name === "string" && SCOPE_RE.test(name);
+}
+
+/**
+ * The channel scope for a parsed `session.json` and its session id — pure. `task-<NNN>` when the
+ * state records an `active_task` whose filename starts with digits (the claimed task), else
+ * `session-<first 8 chars of the id>`, else {@link NO_SESSION_SCOPE} when the id is not valid.
+ */
+export function channelScopeFromState(state: unknown, sessionId: unknown): string {
+  const task = state && typeof state === "object" ? (state as { active_task?: unknown }).active_task : undefined;
+  if (typeof task === "string") {
+    const m = TASK_PREFIX_RE.exec(path.basename(task));
+    if (m) return `task-${m[1]}`;
+  }
+  return isValidSessionId(sessionId) ? `session-${sessionId.slice(0, 8)}` : NO_SESSION_SCOPE;
+}
+
+/**
+ * The channel scope session `sessionId` owns in `projectDir` (`144`): `task-<NNN>` when its
+ * `session.json` (followed through a worktree pointer, `074`) has a claimed `active_task`, else
+ * `session-<id8>`. The one place a hook or script decides which lanes are its own.
+ */
+export function channelScopeOf(projectDir: string, sessionId: unknown): string {
+  const paths = sessionPathsFor(path.join(projectDir, ".claude"), sessionId);
+  return channelScopeFromState(paths ? readSession(paths.state) : null, sessionId);
+}
+
+function assertScope(scope: string): void {
+  if (!isChannelScope(scope)) throw new Error(`not a channel scope: ${JSON.stringify(scope)}`);
+}
+
 /** `<projectDir>/.claude/channels` — never used directly for I/O outside this module. */
 function channelsRoot(projectDir: string): string {
   return path.join(projectDir, ".claude", CHANNELS_DIR_NAME);
 }
 
-/** The directory a sender writes into and `SubagentStart` reads for one receiver. */
-export function channelDir(projectDir: string, receiver: string): string {
-  return path.join(channelsRoot(projectDir), receiver);
+function scopeRoot(projectDir: string, scope: string): string {
+  assertScope(scope);
+  return path.join(channelsRoot(projectDir), scope);
 }
 
-/** Where a retired (delivered) file for `receiver` lands — never deleted, only aged out. */
-function consumedDir(projectDir: string, receiver: string): string {
-  return path.join(channelsRoot(projectDir), CONSUMED_DIR_NAME, receiver);
+/** The directory a sender writes into and `SubagentStart` reads for one receiver, in one scope. */
+export function channelDir(projectDir: string, scope: string, receiver: string): string {
+  return path.join(scopeRoot(projectDir, scope), receiver);
+}
+
+/** Where a retired (delivered) file for `receiver` lands in `scope` — never deleted, only aged out. */
+export function consumedDir(projectDir: string, scope: string, receiver: string): string {
+  return path.join(scopeRoot(projectDir, scope), CONSUMED_DIR_NAME, receiver);
+}
+
+/** Project-relative path of a lane file — the form agents and the orchestrator are shown. */
+export function channelRelPath(scope: string, receiver: string, fileName: string): string {
+  return `.claude/${CHANNELS_DIR_NAME}/${scope}/${receiver}/${fileName}`;
 }
 
 /**
- * The path a `sender` writes its payload for `receiver` to. Always `.1.md` — the seed bodies tell
- * an agent to write there literally; there is no multi-file protocol for one sender/receiver pair
- * in this slice, so a second write simply overwrites the first (a stale, undelivered file being
- * clobbered by a fresher one from the same sender is the desired behaviour, not a bug). The one
- * exception (`112`): `writeStamp` moves a stamped scribe-lane gap report off this slot to
- * `<sender>.<n>.md`, because an unhandled gap must survive the sender's next one.
+ * The path a `sender` writes its payload for `receiver` to, in `scope`. Always `.1.md` — the seed
+ * bodies tell an agent to write there literally; there is no multi-file protocol for one
+ * sender/receiver pair in this slice, so a second write simply overwrites the first (a stale,
+ * undelivered file being clobbered by a fresher one from the same sender is the desired behaviour,
+ * not a bug). The one exception (`112`): `writeStamp` moves a stamped scribe-lane gap report off
+ * this slot to `<sender>.<n>.md`, because an unhandled gap must survive the sender's next one.
  */
-export function laneFor(projectDir: string, sender: string, receiver: string): string {
-  return path.join(channelDir(projectDir, receiver), `${sender}.1.md`);
+export function laneFor(projectDir: string, scope: string, sender: string, receiver: string): string {
+  return path.join(channelDir(projectDir, scope, receiver), `${sender}.1.md`);
 }
 
 const STAMP_RE = /^<!-- maestro:run_id=([^\s>]+) -->\n/;
@@ -141,11 +208,12 @@ function listFiles(dir: string): string[] {
 }
 
 /**
- * Stamp every unstamped file under every receiver's lane whose filename SENDER segment matches
- * `sender` — called by `sender`'s OWN `SubagentStop`, never anyone else's, which is what keeps two
- * parallel subagents from stamping each other's writes. Already-stamped files are left untouched
- * (idempotent, and never overwrites a stamp a differently-timed run already wrote). Returns the
- * absolute paths it stamped.
+ * Stamp every unstamped file under every receiver's lane IN `scope` whose filename SENDER segment
+ * matches `sender` — called by `sender`'s OWN `SubagentStop`, never anyone else's, which is what
+ * keeps two parallel subagents from stamping each other's writes; and since `144` only in the
+ * stopping session's own scope, which is what keeps a concurrent session's same-named sender's
+ * write from being adopted. Already-stamped files are left untouched (idempotent, and never
+ * overwrites a stamp a differently-timed run already wrote). Returns the absolute paths it stamped.
  *
  * `skip` is the session's `meeting_leftovers` (see `meeting-mode.ts` `closeMeeting`): the
  * unstamped lane files a team meeting's participants had left when the meeting ended (a Bash write
@@ -158,14 +226,16 @@ function listFiles(dir: string): string[] {
  */
 export function writeStamp(
   projectDir: string,
+  scope: string,
   sender: string,
   runId: string,
   opts: { skip?: readonly ChannelFileMark[] | null } = {}
 ): string[] {
+  if (!isChannelScope(scope)) return [];
   const stamped: string[] = [];
   const skip = new Map((opts.skip ?? []).map((m) => [m.path, m]));
-  for (const receiver of listDirs(channelsRoot(projectDir))) {
-    const dir = channelDir(projectDir, receiver);
+  for (const receiver of listDirs(scopeRoot(projectDir, scope))) {
+    const dir = channelDir(projectDir, scope, receiver);
     for (const fileName of listFiles(dir)) {
       if (senderOf(fileName) !== sender) continue;
       const filePath = path.join(dir, fileName);
@@ -239,8 +309,9 @@ function isNonEmptyArray(value: unknown): boolean {
 
 /**
  * `112`: whether a lane entry is a skill-gap report — in the scribe's lane, with a gap block (see
- * `hasGapBlock`). Such an entry is inlined to every scribe and never retired on delivery; only a
- * scribe's `SKILL_GAPS_HANDLED:` line (`acknowledgeGaps`) or `sweep`'s age cap removes it.
+ * `hasGapBlock`). Such an entry is inlined to every scribe IN ITS SCOPE (`144`) and never retired on
+ * delivery; only a scribe's `SKILL_GAPS_HANDLED:` line (`acknowledgeGaps`) or `sweep`'s age cap
+ * removes it.
  */
 export function isGapReport(entry: ChannelEntry): boolean {
   return path.basename(path.dirname(entry.path)) === SCRIBE_LANE && hasGapBlock(entry.body);
@@ -264,20 +335,22 @@ export function parseGapsHandled(finalMessage: string): string[] {
 }
 
 /**
- * Retire the named scribe-lane gap reports to `.consumed/scribe/` and return what was retired.
- * A name that is path-shaped, no longer in the lane, or not a gap report is skipped silently — a
- * scribe repeating its ack, or naming an ordinary payload, is not an error.
+ * Retire the named scribe-lane gap reports IN `scope` to `<scope>/.consumed/scribe/` and return what
+ * was retired. A name that is path-shaped, no longer in the lane, not a gap report, or only present
+ * in another scope's lane is skipped silently — a scribe repeating its ack, or naming an ordinary
+ * payload, is not an error.
  */
-export function acknowledgeGaps(projectDir: string, fileNames: readonly string[]): ChannelEntry[] {
+export function acknowledgeGaps(projectDir: string, scope: string, fileNames: readonly string[]): ChannelEntry[] {
+  if (!isChannelScope(scope)) return [];
   const wanted = new Set(
     fileNames.filter((n) => n && n === path.basename(n) && !n.includes("\\") && n !== "." && n !== "..")
   );
   if (wanted.size === 0) return [];
   const retired: ChannelEntry[] = [];
-  for (const entry of readLane(projectDir, SCRIBE_LANE)) {
+  for (const entry of readLane(projectDir, scope, SCRIBE_LANE)) {
     if (!wanted.has(entry.fileName) || !isGapReport(entry)) continue;
     try {
-      retire(projectDir, SCRIBE_LANE, entry);
+      retire(projectDir, scope, SCRIBE_LANE, entry);
       retired.push(entry);
     } catch {
       // Left in the lane: delivered again to the next scribe, which can acknowledge it then.
@@ -287,14 +360,15 @@ export function acknowledgeGaps(projectDir: string, fileNames: readonly string[]
 }
 
 /**
- * Every UNSTAMPED file under any receiver's lane whose sender segment is `sender`, as it stands
- * now. Taken by `closeMeeting` for each participant when a team meeting ends; stored as the
+ * Every UNSTAMPED file under any receiver's lane IN `scope` whose sender segment is `sender`, as it
+ * stands now. Taken by `closeMeeting` for each participant when a team meeting ends; stored as the
  * session's `meeting_leftovers`, which SubagentStop passes to `writeStamp` as `skip`.
  */
-export function unstampedFilesOf(projectDir: string, sender: string): ChannelFileMark[] {
+export function unstampedFilesOf(projectDir: string, scope: string, sender: string): ChannelFileMark[] {
+  if (!isChannelScope(scope)) return [];
   const out: ChannelFileMark[] = [];
-  for (const receiver of listDirs(channelsRoot(projectDir))) {
-    const dir = channelDir(projectDir, receiver);
+  for (const receiver of listDirs(scopeRoot(projectDir, scope))) {
+    const dir = channelDir(projectDir, scope, receiver);
     for (const fileName of listFiles(dir)) {
       if (senderOf(fileName) !== sender) continue;
       const filePath = path.join(dir, fileName);
@@ -322,9 +396,7 @@ export interface ChannelEntry {
   body: string;
 }
 
-/** Every file currently sitting in `receiver`'s lane — delivered and non-delivered alike. */
-export function readLane(projectDir: string, receiver: string, now: number = Date.now()): ChannelEntry[] {
-  const dir = channelDir(projectDir, receiver);
+function readDirEntries(dir: string, now: number): ChannelEntry[] {
   const out: ChannelEntry[] = [];
   for (const fileName of listFiles(dir)) {
     const filePath = path.join(dir, fileName);
@@ -343,13 +415,28 @@ export function readLane(projectDir: string, receiver: string, now: number = Dat
 }
 
 /**
- * Move a delivered entry to `.claude/channels/.consumed/<receiver>/` — by rename, never delete, so
- * a delivered-but-then-failed agent's payload is recoverable for `CHANNEL_AGE_CAP_MS` rather than
- * gone. Never call this for an entry `readLane` did not just return; it assumes the file is still
- * where that call found it.
+ * Every file currently sitting in `receiver`'s lane IN `scope` — delivered and non-delivered alike.
+ * Another scope's lane, and a legacy unscoped `<receiver>/` dir, are never read. `[]` for a value
+ * that is not a scope.
  */
-export function retire(projectDir: string, receiver: string, entry: ChannelEntry): void {
-  const dest = consumedDir(projectDir, receiver);
+export function readLane(
+  projectDir: string,
+  scope: string,
+  receiver: string,
+  now: number = Date.now()
+): ChannelEntry[] {
+  if (!isChannelScope(scope)) return [];
+  return readDirEntries(channelDir(projectDir, scope, receiver), now);
+}
+
+/**
+ * Move a delivered entry to `.claude/channels/<scope>/.consumed/<receiver>/` — by rename, never
+ * delete, so a delivered-but-then-failed agent's payload is recoverable for `CHANNEL_AGE_CAP_MS`
+ * rather than gone. Never call this for an entry `readLane` did not just return for the same
+ * `scope`; it assumes the file is still where that call found it.
+ */
+export function retire(projectDir: string, scope: string, receiver: string, entry: ChannelEntry): void {
+  const dest = consumedDir(projectDir, scope, receiver);
   fs.mkdirSync(dest, { recursive: true });
   fs.renameSync(entry.path, path.join(dest, entry.fileName));
 }
@@ -359,34 +446,16 @@ export interface SweepResult {
 }
 
 /**
- * `SessionEnd`'s replacement for the old flush: retire `.consumed/` outright, and age out anything
- * in a live lane past `ageCapMs` — including a lane nothing has ever drained (the scribe's, when no
- * scribe ran). Never touches a lane file inside the cap, delivered or not.
+ * An emptied directory is removed only once nothing has touched it for this long, so a sweep can
+ * never pull a folder out from under an agent's Write that created it a moment ago.
  */
-export function sweep(projectDir: string, opts: { now?: number; ageCapMs?: number } = {}): SweepResult {
-  const now = opts.now ?? Date.now();
-  const ageCapMs = opts.ageCapMs ?? CHANNEL_AGE_CAP_MS;
-  const removed: string[] = [];
-  const root = channelsRoot(projectDir);
+const EMPTY_DIR_GRACE_MS = 60 * 60 * 1000;
 
-  const consumedRoot = path.join(root, CONSUMED_DIR_NAME);
-  for (const receiver of listDirs(consumedRoot)) {
-    const dir = path.join(consumedRoot, receiver);
-    for (const fileName of listFiles(dir)) {
-      const filePath = path.join(dir, fileName);
-      try {
-        fs.rmSync(filePath, { force: true });
-        removed.push(filePath);
-      } catch {
-        // Not worth failing SessionEnd over.
-      }
-    }
-  }
-
-  for (const receiver of listDirs(root)) {
-    const dir = channelDir(projectDir, receiver);
-    for (const fileName of listFiles(dir)) {
-      const filePath = path.join(dir, fileName);
+/** Remove every file in `dir` older than the cap (or every file, with `all`), pushing to `removed`. */
+function sweepFiles(dir: string, now: number, ageCapMs: number, all: boolean, removed: string[]): void {
+  for (const fileName of listFiles(dir)) {
+    const filePath = path.join(dir, fileName);
+    if (!all) {
       let stat: fs.Stats;
       try {
         stat = fs.statSync(filePath);
@@ -394,14 +463,72 @@ export function sweep(projectDir: string, opts: { now?: number; ageCapMs?: numbe
         continue;
       }
       if (now - stat.mtimeMs <= ageCapMs) continue;
-      try {
-        fs.rmSync(filePath, { force: true });
-        removed.push(filePath);
-      } catch {
-        // Not worth failing SessionEnd over.
-      }
+    }
+    try {
+      fs.rmSync(filePath, { force: true });
+      removed.push(filePath);
+    } catch {
+      // Not worth failing SessionEnd over.
     }
   }
+}
+
+/** `rmdir` `dir` when it is empty and untouched for {@link EMPTY_DIR_GRACE_MS}. Never recursive. */
+function pruneEmptyDir(dir: string, now: number): void {
+  try {
+    if (fs.readdirSync(dir).length > 0) return;
+    if (now - fs.statSync(dir).mtimeMs <= EMPTY_DIR_GRACE_MS) return;
+    fs.rmdirSync(dir);
+  } catch {
+    // Not empty after all, gone, or unreadable — leave it.
+  }
+}
+
+/** Sweep a `<…>/.consumed/` dir: every receiver's files (all, or aged), then prune emptied dirs. */
+function sweepConsumed(consumedRoot: string, now: number, ageCapMs: number, all: boolean, removed: string[]): void {
+  for (const receiver of listDirs(consumedRoot)) {
+    const dir = path.join(consumedRoot, receiver);
+    sweepFiles(dir, now, ageCapMs, all, removed);
+    pruneEmptyDir(dir, now);
+  }
+  pruneEmptyDir(consumedRoot, now);
+}
+
+/**
+ * `SessionEnd`'s replacement for the old flush. With `scope` (the ending session's own, `144`):
+ * retire that scope's `.consumed/` outright — never another scope's. Then, across EVERY scope and
+ * the legacy unscoped layout, age out anything past `ageCapMs` — in a live lane (including a lane
+ * nothing has ever drained, the scribe's when no scribe ran) or in a `.consumed/`. Age-out is safe
+ * across scopes because it depends on nothing but the file's age. Never touches a lane file inside
+ * the cap, delivered or not. Directories emptied long enough ago are pruned.
+ */
+export function sweep(
+  projectDir: string,
+  opts: { now?: number; ageCapMs?: number; scope?: string | null } = {}
+): SweepResult {
+  const now = opts.now ?? Date.now();
+  const ageCapMs = opts.ageCapMs ?? CHANNEL_AGE_CAP_MS;
+  const removed: string[] = [];
+  const root = channelsRoot(projectDir);
+  const own = isChannelScope(opts.scope) ? opts.scope : null;
+
+  for (const name of listDirs(root)) {
+    const dir = path.join(root, name);
+    if (isChannelScope(name)) {
+      sweepConsumed(path.join(dir, CONSUMED_DIR_NAME), now, ageCapMs, name === own, removed);
+      for (const receiver of listDirs(dir)) {
+        const laneDir = path.join(dir, receiver);
+        sweepFiles(laneDir, now, ageCapMs, false, removed);
+        pruneEmptyDir(laneDir, now);
+      }
+    } else {
+      // Legacy (pre-`144`) unscoped `<receiver>/` lane: never delivered, only aged out.
+      sweepFiles(dir, now, ageCapMs, false, removed);
+    }
+    pruneEmptyDir(dir, now);
+  }
+  // Legacy root `.consumed/`: aged out like a lane — no session owns it any more.
+  sweepConsumed(path.join(root, CONSUMED_DIR_NAME), now, ageCapMs, false, removed);
 
   return { removed };
 }
@@ -429,23 +556,44 @@ function liveRunIds(projectDir: string): Set<string> {
  * touches disk. It does not even mint a `run_id` — that is `ensureSessionRunId`'s job, reserved for
  * a live hook mid-run; the app reads whatever the live sessions' `session.json` files already hold.
  *
+ * Each lane carries its `scope` (`144`); `opts.scope` narrows the answer to that one scope, so a
+ * session never sees another scope's backlog as its own. A legacy unscoped lane is reported with
+ * `scope: null` (only when no scope filter is given) and is ENTIRELY stranded — it is never
+ * delivered again.
+ *
  * `current`/`stranded` split on that read, not on age: no live `run_id` at all means every entry
  * reads as `stranded`, which is correct — with no session running, nothing is "in flight".
  */
-export function pendingLanes(projectDir: string, now: number = Date.now()): PendingLane[] {
+export function pendingLanes(
+  projectDir: string,
+  now: number = Date.now(),
+  opts: { scope?: string | null } = {}
+): PendingLane[] {
   const runIds = liveRunIds(projectDir);
+  const root = channelsRoot(projectDir);
+  const only = opts.scope ?? null;
   const lanes: PendingLane[] = [];
-  for (const receiver of listDirs(channelsRoot(projectDir))) {
-    const entries = readLane(projectDir, receiver, now);
-    if (entries.length === 0) continue;
-    const current = entries.filter((e) => e.runId != null && runIds.has(e.runId)).length;
+  const push = (scope: string | null, receiver: string, entries: ChannelEntry[], current: number) => {
+    if (entries.length === 0) return;
     lanes.push({
+      scope,
       receiver,
       count: entries.length,
       oldestAgeMs: Math.max(...entries.map((e) => e.ageMs)),
       current,
       stranded: entries.length - current,
     });
+  };
+  for (const name of listDirs(root)) {
+    if (isChannelScope(name)) {
+      if (only !== null && name !== only) continue;
+      for (const receiver of listDirs(path.join(root, name))) {
+        const entries = readLane(projectDir, name, receiver, now);
+        push(name, receiver, entries, entries.filter((e) => e.runId != null && runIds.has(e.runId)).length);
+      }
+    } else if (only === null) {
+      push(null, name, readDirEntries(path.join(root, name), now), 0);
+    }
   }
   return lanes;
 }

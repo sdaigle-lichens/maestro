@@ -66,3 +66,16 @@ long-lived** watcher and exits; `test/core/session-heartbeat-cli.test.ts` is the
 - **Poll with a deadline** (`until(label, fn, timeoutMs)`), never a fixed sleep.
 - **Each sandboxed Bash call has its own PID namespace**: a leftover process cannot be inspected
   with `ps` from a later call, so clean up inside the test, not afterwards by hand.
+
+## Testing channel scopes (`144`)
+
+`test/core/channel-scope-collision.test.ts` is the worked example.
+
+- **Claim through `maestro-set-session-workflow.cjs <workflow> --task <file>`**, not just
+  `maestro-task-status.cjs claim`: only the former records `active_task`, so a bare claim leaves the
+  session on `session-<id8>` and the test silently exercises the wrong scope.
+- **A worktree session's `session.json` (and `run_id`) lives in the worktree's
+  `.claude/maestro_sessions/<id>/`** (`074` pointer), while its hooks run with `CLAUDE_PROJECT_DIR`
+  set to the main checkout. Read the run_id from the worktree root.
+- **Session ids sharing their first 8 chars share a `session-<id8>` scope.** Give each fixture
+  session a distinct 8-char prefix, or two "isolated" sessions collide by construction.

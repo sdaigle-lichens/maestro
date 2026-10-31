@@ -28,7 +28,7 @@ install-time sync.
 ## The payload protocol, resolved across three tiers
 
 The protocol is the JSON shape the sender must **write to its channel file**,
-`.claude/channels/<receiver>/<sender>.1.md` (**`036`**; before it, the shape of a `handoff_details`
+`.claude/channels/<scope>/<receiver>/<sender>.1.md` (**`036`**; `<scope>` since `144`, see `channels.md`; before it, the shape of a `handoff_details`
 field in the final-message JSON, forwarded by the orchestrator — that forwarding is gone). Since
 `033` the shape itself is resolved by one pure `resolveHandoff()` (`src/core/handoff-resolution.ts`)
 that the hook and the app both call:
@@ -133,7 +133,7 @@ whose files sit in the lane stamped with this run's id (`139`, see `channels.md`
 and the receiver's own `SubagentStart` inlines it (a resumed receiver is instead handed the path, `088`) — the orchestrator's job is routing only. The one
 place the orchestrator still touches a channel file is a **skill step** in the success path: a skill
 node has no `SubagentStart` of its own, so if it needs the upstream payload the orchestrator reads
-`.claude/channels/<downstream receiver>/<upstream sender>.*.md` itself, **without retiring it** —
+`.claude/channels/<scope>/<downstream receiver>/<upstream sender>.*.md` itself, **without retiring it** —
 retiring is `SubagentStart`'s job alone, so a read here starves nobody; the downstream agent still
 gets its own delivery.
 

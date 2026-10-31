@@ -218,8 +218,9 @@ describe("SubagentStop hook flags verdict/HANDOFF disagreement (083)", () => {
       ["scribe", "reviewer"],
       ["reviewer", "scribe"],
     ]) {
-      fs.mkdirSync(path.join(root, ".claude", "channels", receiver), { recursive: true });
-      fs.writeFileSync(path.join(root, ".claude", "channels", receiver, `${sender}.1.md`), "{}\n");
+      // `144`: SESS claims no task, so its lanes live under `session-<first 8 chars of its id>`.
+      fs.mkdirSync(path.join(root, ".claude", "channels", "session-sess-083", receiver), { recursive: true });
+      fs.writeFileSync(path.join(root, ".claude", "channels", "session-sess-083", receiver, `${sender}.1.md`), "{}\n");
     }
 
     const a = stop(root, "reviewer", "r1", '"verdict": "FAIL"\nHANDOFF: changes requested');
@@ -288,8 +289,8 @@ describe("SubagentStop hook flags a condition label with no route (108)", () => 
   it("a label that matches an edge, and success from the last node, raise nothing", async () => {
     const root = await installed();
     setWorkflow(root, "docs");
-    fs.mkdirSync(path.join(root, ".claude", "channels", "scribe"), { recursive: true });
-    fs.writeFileSync(path.join(root, ".claude", "channels", "scribe", "reviewer.1.md"), "{}\n");
+    fs.mkdirSync(path.join(root, ".claude", "channels", "session-sess-083", "scribe"), { recursive: true });
+    fs.writeFileSync(path.join(root, ".claude", "channels", "session-sess-083", "scribe", "reviewer.1.md"), "{}\n");
 
     expect(stop(root, "reviewer", "r1", '"verdict": "FAIL"\nHANDOFF: Changes Requested').stdout).not.toContain(
       "handoff problem"

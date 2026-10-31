@@ -8,8 +8,9 @@ deliberately not the same shape.
 **Since `036` a body is what the sender writes to a channel file, not a JSON field it returns.**
 The stored content itself is unaffected — still the protocol text resolved by `resolveHandoff()` —
 but the (then-)23 `SEED_HANDOFFS` bodies were rewritten to drop the `{"handoff_details": {...}}`
-wrapper in favour of the flat shape written to `.claude/channels/<receiver>/<sender>.1.md`. Every
-rewritten body's previous text is in `PRIOR_SEEDS`, per the rule below.
+wrapper in favour of the flat shape written to `.claude/channels/<receiver>/<sender>.1.md`
+(`.claude/channels/<scope>/…` since `144`). Every rewritten body's previous text is in `PRIOR_SEEDS`,
+per the rule below.
 
 **One table, not two.** `report-defaults.ts` routes agent → `report_id` → content so a future UI
 could point two agents at one shared body; its own header admits nothing creates that sharing.

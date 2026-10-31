@@ -10,9 +10,12 @@
 #      `080`: BEFORE removing it, the run is recorded into .claude/maestro-metrics/ (recordSessionRun).
 #   2. SWEEP `.claude/channels/` (`036`) — a channel file is no longer flushed at SessionEnd, since
 #      a lane the receiving agent hasn't run yet (an abandoned `human review` stop is the routine
-#      case) still has to survive it. Sweeping instead retires `.consumed/` outright and ages out
-#      anything left in a live lane past the cap, via the SAME `sweep()` every other channel
-#      operation goes through — see apps/maestro/src/core/handoff-channels.ts.
+#      case) still has to survive it. Sweeping instead retires THIS session's own scope's
+#      `.claude/channels/<scope>/.consumed/` outright (`144`: never another session's — the scope
+#      is resolved BEFORE step 1 deletes the session.json that names its task) and ages out
+#      anything past the cap in every scope and in the legacy unscoped layout, via the SAME
+#      `sweep()` every other channel operation goes through — see
+#      apps/maestro/src/core/handoff-channels.ts.
 #
 # It used to also tear down a per-project ai-tools-manager container, reference-counted across
 # live sessions via marker files under /tmp. There is no container: the desktop app
@@ -45,8 +48,10 @@ if [[ -n "$cwd" ]]; then
     const [, , cwd, sessionId, reason] = process.argv;
     const sid = lib.resolveSessionId(sessionId ? { session_id: sessionId } : null);
     try { lib.recordSessionRun(cwd, sid); } catch {}
-    lib.endSessionState(path.join(cwd, ".claude"), sid, reason || null);
-    lib.sweep(cwd);
+    let scope = null;
+    try { scope = lib.channelScopeOf(cwd, sid); } catch {}
+    try { lib.endSessionState(path.join(cwd, ".claude"), sid, reason || null); } catch {}
+    lib.sweep(cwd, { scope });
   ' "$script_dir/lib/maestro-session.cjs" "$cwd" "$session_id" "$reason" 2>/dev/null || true
 fi
 
