@@ -253,3 +253,50 @@ describe("mergeForkBody", () => {
     expect(mergeForkBody(template, file("name: a\ndescription: b"))).toBe(template);
   });
 });
+
+// `148`: the shipped test and scribe agents declare a Haiku model; no other shipped agent does.
+// A fork copies the template's bytes and a sync takes the template's frontmatter, so the line must
+// survive both.
+describe("shipped model frontmatter (148)", () => {
+  const agentsDir = path.resolve(__dirname, "../../../../plugins/maestro/agents");
+
+  it("only the test and scribe agents declare model: claude-haiku-5-5", () => {
+    for (const f of fs.readdirSync(agentsDir).filter((n) => n.endsWith(".md"))) {
+      const head = fs.readFileSync(path.join(agentsDir, f), "utf8").split("\n---")[0];
+      const hasModel = /^model:/m.test(head);
+      if (f === "test.md" || f === "scribe.md") expect(head).toMatch(/^model: claude-haiku-5-5$/m);
+      else expect(hasModel, f).toBe(false);
+    }
+  });
+
+  it.each(["test", "scribe"])("forking %s keeps the model line", async (name) => {
+    const root = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-agent-fork-model-"));
+    try {
+      fs.mkdirSync(path.join(root, ".claude", "agents"), { recursive: true });
+      const forked = await forkAgent(root, agentsDir, "1.0.0", name);
+      expect(fs.readFileSync(forked.file, "utf8")).toMatch(/^model: claude-haiku-5-5$/m);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  it.each(["test", "scribe"])("syncing %s onto an older fork WITHOUT a model line adds the template's", (name) => {
+    const template = fs.readFileSync(path.join(agentsDir, `${name}.md`), "utf8");
+    const fork = file(`name: my-${name}\ndescription: Mine.`);
+    const merged = mergeForkBody(template, fork);
+    expect(merged).toMatch(/^model: claude-haiku-5-5$/m);
+    expect(merged).toMatch(new RegExp(`^name: my-${name}$`, "m"));
+    expect(merged).toMatch(/^description: Mine\.$/m);
+  });
+
+  it("syncing a template with no model line does not invent one", () => {
+    const template = fs.readFileSync(path.join(agentsDir, "backend.md"), "utf8");
+    expect(mergeForkBody(template, file("name: my-be\ndescription: Mine."))).not.toMatch(/^model:/m);
+  });
+
+  it.each(["test", "scribe"])("syncing the %s template body keeps the model line", (name) => {
+    const template = fs.readFileSync(path.join(agentsDir, `${name}.md`), "utf8");
+    const fork = file(`name: my-${name}\ndescription: Mine.\nmodel: claude-haiku-5-5`);
+    expect(mergeForkBody(template, fork)).toMatch(/^model: claude-haiku-5-5$/m);
+  });
+});

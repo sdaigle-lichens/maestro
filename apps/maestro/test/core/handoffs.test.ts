@@ -638,3 +638,51 @@ describe("syncProjectHandoffs — a global row deleted out from under a tracked 
     expect(readConfig(projectRoot)!.handoffs!["scribe/reviewer"]).toEqual({ id: "scribe/reviewer" });
   });
 });
+
+describe("test/reviewer handoff upgrade (148)", () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-handoff-148-"));
+  });
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  // Verbatim pre-148 body (NOT imported): a stored row holding it must upgrade.
+  const PRE_148 =
+    "```json\n" +
+    "{\n" +
+    '  "tests_added": ["<test name — what it verifies>"],\n' +
+    '  "results": ["<pass/fail summary>"],\n' +
+    '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+    '  "files_touched": ["<list, or \'none\'>"]\n' +
+    "}\n" +
+    "```";
+
+  it("a stored pre-148 row upgrades to the extended body, once", () => {
+    const dbPath = path.join(dir, "handoffs.sqlite");
+    writeHandoffDefault("test/reviewer", PRE_148, dbPath);
+    const row = readHandoffDefault("test/reviewer", dbPath)!;
+    expect(row.content).toBe(SEED_HANDOFFS["test/reviewer"]);
+    expect(row.content).toContain('"commands_run"');
+    const again = readHandoffDefault("test/reviewer", dbPath)!;
+    expect(again.version).toBe(row.version);
+  });
+
+  it("a hand-edited test/reviewer row is left alone", () => {
+    const dbPath = path.join(dir, "handoffs.sqlite");
+    const mine = PRE_148.replace("results", "my_results");
+    writeHandoffDefault("test/reviewer", mine, dbPath);
+    expect(readHandoffDefault("test/reviewer", dbPath)!.content).toBe(mine);
+  });
+});
+
+describe("test/reviewer handoff (148)", () => {
+  it("carries commands_run, negative_control and real_path_exercised, and keeps the old body as a prior", () => {
+    const cur = SEED_HANDOFFS["test/reviewer"];
+    for (const k of ['"commands_run"', '"negative_control"', '"real_path_exercised"']) expect(cur).toContain(k);
+    expect(cur).not.toMatch(/pnpm|parity/);
+    expect(PRIOR_SEEDS["test/reviewer"]).not.toContain(cur);
+    expect(PRIOR_SEEDS["test/reviewer"].some((p) => p.includes('"files_touched"') && !p.includes("commands_run"))).toBe(
+      true
+    );
+  });
+});

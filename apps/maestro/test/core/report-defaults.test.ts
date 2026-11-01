@@ -442,7 +442,7 @@ describe("superseded seed migration (090: generic skill_gaps)", () => {
     storeWith({ scribe: post090 });
     const row = readAgentReportDefault("scribe", dbPath)!;
     expect(row.version).toBe(6);
-    expect(row.content.startsWith(post090)).toBe(true);
+    expect(row.content).not.toBe(post090);
     expect(row.content).toContain("`HANDOFF: success` when the documentation is done");
     expect(row.content).toContain("`HANDOFF: partial`");
     expect(row.content.indexOf("SKILL_GAPS_HANDLED:")).toBeGreaterThan(-1);
@@ -501,5 +501,96 @@ describe("superseded seed migration (090: generic skill_gaps)", () => {
     const summary = syncProjectReports(root, dbPath);
     expect(JSON.stringify(summary)).toContain("backend");
     expect(fs.readFileSync(file, "utf8")).toContain('"skill_gaps"');
+  });
+});
+
+// `148`: the test, scribe and backend defaults carry checkable evidence. Bodies below that held
+// before this change are verbatim copies, NOT imported, and must upgrade.
+describe("stricter report defaults (148)", () => {
+  const HANDOFF_NOTE =
+    'Your `"verdict"` and your final `HANDOFF:` line must agree. A real defect must end with the matching ' +
+    "condition-edge label when the workflow has one. A verdict of FAIL with `HANDOFF: success` is invalid, " +
+    "and so is ending with no `HANDOFF:` line — the orchestrator is told about both and never treats either as success.";
+  const GAP_NOTE = (a: string) =>
+    "If a skill you loaded was missing something you had to work out from the code " +
+    `yourself, write \`.claude/channels/<scope>/scribe/${a}.1.md\` (\`<scope>\` is the channel scope ` +
+    "named in your injected context) with a fenced `json` block: " +
+    '`{ "skill_gaps": [{ "skill": "<skill-id>", "missing": "<what it did not tell you>" }] }`. ' +
+    "Leave it unwritten when nothing was missing — do not write a gap just to fill the file.";
+  const HEAD = (a: string) =>
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n\n```json\n{\n" +
+    `  "subagent": "${a}",\n  "verdict": "SUCCESS | FAIL",\n` +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n';
+  const PRE_TEST =
+    HEAD("test") +
+    '  "testResult": "<N passed, N failed>",\n  "description": "<summary of what was tested>"\n}\n```\n\n' +
+    GAP_NOTE("test") +
+    "\n\n" +
+    HANDOFF_NOTE;
+  const PRE_BACKEND =
+    HEAD("backend") +
+    '  "description": "<summary of what was implemented>"\n}\n```\n\n' +
+    GAP_NOTE("backend") +
+    "\n\n" +
+    HANDOFF_NOTE;
+
+  let dir: string;
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-seed-148-"));
+  });
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  function storeWith(agent: string, content: string): string {
+    const dbPath = path.join(dir, "reports.sqlite");
+    const db = new DatabaseSync(dbPath);
+    db.exec(
+      "CREATE TABLE reports (report_id TEXT PRIMARY KEY, content TEXT NOT NULL, version INTEGER NOT NULL);" +
+        "CREATE TABLE agent_reports (agent_name TEXT PRIMARY KEY, report_id TEXT NOT NULL);"
+    );
+    db.prepare("INSERT INTO reports VALUES (?, ?, 5)").run(agent, content);
+    db.prepare("INSERT INTO agent_reports VALUES (?, ?)").run(agent, agent);
+    db.close();
+    return dbPath;
+  }
+
+  it("a fresh read returns the stricter test, scribe and backend reports", () => {
+    const fresh = path.join(dir, "fresh.sqlite");
+    const t = readAgentReportDefault("test", fresh)!.content;
+    for (const k of ['"gates"', '"gatesSkipped"', '"notCaught"']) expect(t).toContain(k);
+    const s = readAgentReportDefault("scribe", fresh)!.content;
+    for (const k of ['"verifiedAgainstCode"', '"stampFailures"', '"changelogEntryAdded"', '"intentionallyNotTouched"'])
+      expect(s).toContain(k);
+    const b = readAgentReportDefault("backend", fresh)!.content;
+    for (const k of ['"testTargets"', '"behaviors"', '"failureModes"', '"preHandoffChecks"']) expect(b).toContain(k);
+    expect(readAgentReportDefault("frontend", fresh)!.content).not.toContain("testTargets");
+  });
+
+  it("names none of this repo's own commands or paths", () => {
+    const fresh = path.join(dir, "fresh.sqlite");
+    for (const a of ["test", "scribe", "backend"]) {
+      const c = readAgentReportDefault(a, fresh)!.content;
+      expect(c, a).not.toMatch(/pnpm|parity\.test|plugin-entries|apps\/maestro|plugins\//);
+    }
+  });
+
+  it.each([
+    ["test", PRE_TEST],
+    ["backend", PRE_BACKEND],
+  ])("%s: the pre-148 body is a recorded prior and upgrades, bumping the version once", (agent, pre) => {
+    expect(priorReportSeeds(agent)).toContain(pre);
+    const dbPath = storeWith(agent, pre);
+    const row = readAgentReportDefault(agent, dbPath)!;
+    expect(row.version).toBe(6);
+    expect(row.content).not.toBe(pre);
+    expect(readAgentReportDefault(agent, dbPath)!.version).toBe(6);
+  });
+
+  it("scribe: the pre-148 body upgrades", () => {
+    const fresh = readAgentReportDefault("scribe", path.join(dir, "fresh.sqlite"))!;
+    const prior = priorReportSeeds("scribe").find((p) => p.includes("<scope>/scribe/") && !p.includes('"files"'))!;
+    expect(prior).toBeDefined();
+    const row = readAgentReportDefault("scribe", storeWith("scribe", prior))!;
+    expect(row.content).toBe(fresh.content);
+    expect(row.version).toBe(6);
   });
 });

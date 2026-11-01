@@ -36,5 +36,14 @@ is a prior again beside `SCRIBE_REPORT_V2`. `144` scoped the gap note's path to
 so each backend-like/test body before it is a v5 prior (`backendLikeV5`, `TEST_REPORT_V5`) and the
 scribe's unscoped ending note is `SCRIBE_REPORT_V3` (`scribeEndingNote(gapsDir)` builds both).
 
+`148` rewrote three current bodies, so each predecessor is a prior: backend gained a mandatory
+`testTargets` section (`backendReport()`; the old shared body is `backendLikeV6("backend")` — frontend,
+mobile and infra still use `backendLikeReport`), test gained `gates`/`gatesSkipped`/`notCaught`
+(`TEST_REPORT_V6`), and scribe lists per-file evidence (`SCRIBE_REPORT_V4`). The `test/reviewer`
+handoff seed gained `commands_run`/`negative_control`/`real_path_exercised`, its flat predecessor
+appended to `PRIOR_SEEDS["test/reviewer"]`. The bundled `test.md` and `scribe.md` also declare
+`model: claude-haiku-5-5` in frontmatter. Report bodies stay project-neutral: they tell the agent to
+name the project's own commands, never to run a specific one.
+
 Files: `src/core/report-defaults.ts`, `src/core/report-resolution.ts`, `src/core/report-sync.ts`,
 `src/core/reports.ts`.

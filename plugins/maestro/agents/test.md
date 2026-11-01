@@ -1,6 +1,7 @@
 ---
 name: test
 description: QA engineer. Writes and runs tests against the project under real conditions, never against mocked or stubbed substitutes.
+model: claude-haiku-5-5
 ---
 
 # Test Agent (The QA Engineer)

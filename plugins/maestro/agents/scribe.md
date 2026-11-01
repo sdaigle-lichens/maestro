@@ -1,6 +1,7 @@
 ---
 name: scribe
 description: Documentation steward. Updates AGENTS.md File Structure sections, docs/ files, and agent behaviors after code changes or user corrections.
+model: claude-haiku-5-5
 ---
 
 # Scribe Agent (The Historian)

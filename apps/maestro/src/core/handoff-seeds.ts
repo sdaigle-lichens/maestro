@@ -238,6 +238,9 @@ const TEST_TO_REVIEWER =
   "{\n" +
   '  "tests_added": ["<test name — what it verifies>"],\n' +
   '  "results": ["<pass/fail summary>"],\n' +
+  '  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],\n' +
+  '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
+  '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
   '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
   '  "files_touched": ["<list, or \'none\'>"]\n' +
   "}\n" +
@@ -547,6 +550,15 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "test/reviewer": [
+    // `148`: the flat body before commands_run, negative_control and real_path_exercised.
+    "```json\n" +
+      "{\n" +
+      '  "tests_added": ["<test name — what it verifies>"],\n' +
+      '  "results": ["<pass/fail summary>"],\n' +
+      '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+      '  "files_touched": ["<list, or \'none\'>"]\n' +
+      "}\n" +
+      "```",
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +

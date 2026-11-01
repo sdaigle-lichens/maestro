@@ -114,6 +114,56 @@ function backendLikeV5(subagent: string): string {
   return backendLikeBody(subagent, skillGapsChannelNoteUnscoped(subagent)) + "\n\n" + VERDICT_HANDOFF_NOTE;
 }
 
+// The body before `148` gave the backend report its `testTargets` section.
+function backendLikeV6(subagent: string): string {
+  return backendLikeReport(subagent);
+}
+
+// `148`: the backend report feeds the backend -> test handoff, so it names what the tests must
+// cover and which checks already ran. Project-neutral: no command is named, the agent copies the
+// ones it actually ran.
+const BACKEND_TEST_TARGETS_NOTE =
+  "## Test targets (mandatory)\n" +
+  "\n" +
+  "The report feeds the backend -> test handoff, so the `testTargets` section is required, never omitted. " +
+  "For each behavior you changed, name the failure mode to test (empty or closed input, missing file, stale generated copy, edge input) " +
+  "and the files the tests must touch. List every pre-handoff check you ran, copied verbatim with its result, " +
+  "and mark one `n/a` only when it does not apply to your change. You must run the project's own " +
+  "static check yourself before handing off; do not leave it to the test agent.";
+
+function backendReport(): string {
+  return (
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "backend",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "description": "<summary of what was implemented>",\n' +
+    '  "testTargets": {\n' +
+    '    "behaviors": [\n' +
+    "      {\n" +
+    '        "behavior": "<behavior you changed>",\n' +
+    '        "failureModes": ["<empty/closed input | missing file | stale generated copy | edge input | ...>"],\n' +
+    '        "files": ["<files the tests must touch>"]\n' +
+    "      }\n" +
+    "    ],\n" +
+    '    "preHandoffChecks": [\n' +
+    '      { "command": "<exact command run>", "result": "pass | fail | n/a" }\n' +
+    "    ]\n" +
+    "  }\n" +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    BACKEND_TEST_TARGETS_NOTE +
+    "\n\n" +
+    skillGapsChannelNote("backend") +
+    "\n\n" +
+    VERDICT_HANDOFF_NOTE
+  );
+}
+
 function backendLikeBody(subagent: string, gapsNote: string): string {
   return (
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
@@ -201,7 +251,49 @@ function scribeEndingNote(gapsDir: string): string {
 // The body before `144` scoped the scribe lane's path.
 const SCRIBE_REPORT_V3 = SCRIBE_REPORT_V1 + "\n\n" + scribeEndingNote(".claude/channels/scribe/");
 
-const SCRIBE_REPORT = SCRIBE_REPORT_V1 + "\n\n" + scribeEndingNote(".claude/channels/<scope>/scribe/");
+// The body before `148` made the scribe report list per-file evidence.
+const SCRIBE_REPORT_V4 = SCRIBE_REPORT_V1 + "\n\n" + scribeEndingNote(".claude/channels/<scope>/scribe/");
+
+// `148`: a count tells the reader nothing checkable, so the report names each file, the source it
+// was verified against, any stamp failure, and what was deliberately left alone. Project-neutral.
+const SCRIBE_REPORT =
+  "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+  "\n" +
+  "```json\n" +
+  "{\n" +
+  '  "subagent": "scribe",\n' +
+  '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+  '  "agentsMdUpdated": 0,\n' +
+  '  "docsUpdated": 0,\n' +
+  '  "claudeFilesUpdated": 0,\n' +
+  '  "changelogUpdated": false,\n' +
+  '  "description": "<summary of what was updated>",\n' +
+  '  "files": [\n' +
+  "    {\n" +
+  '      "path": "<file path>",\n' +
+  '      "action": "edited | stamped-only",\n' +
+  '      "verifiedAgainstCode": ["<source file(s) actually read to support the claims>"],\n' +
+  '      "stampFailures": ["<exact error text, or omit if none>"]\n' +
+  "    }\n" +
+  "  ],\n" +
+  '  "changelogEntryAdded": "yes | no (<why>)",\n' +
+  '  "intentionallyNotTouched": ["<published, generated or changelog files left alone>"]\n' +
+  "}\n" +
+  "```\n" +
+  "\n" +
+  "After the JSON block, add these lines in plain text:\n" +
+  "\n" +
+  "- `Verified against code: <source file(s) read>` for each edited file.\n" +
+  "- `CHANGELOG entry added: yes/no (<why>)`.\n" +
+  "- `Files: <path> — edited | stamped only` per file, then `Stamp failures: <path> — <exact error>` (or `none`).\n" +
+  "- `Intentionally NOT touched: <files left alone>` (or `none`).\n" +
+  "\n" +
+  "The scribe is read-only on application code and on published or generated files: never edit them.\n" +
+  "\n" +
+  scribeEndingNote(".claude/channels/<scope>/scribe/") +
+  "\n\n" +
+  '"Claude files" covers any file under `.claude/agents/`, `.claude/rules/`, or `.claude/skills/`. ' +
+  "Use the counts to keep the handoff message small — do not list individual file names unless the caller asks.";
 
 function testReportBody(gapsNote: string): string {
   return (
@@ -229,7 +321,40 @@ const TEST_REPORT_V4 = TEST_REPORT_V3 + "\n\n" + VERDICT_HANDOFF_NOTE;
 // The body before `144` scoped the gap note's channel path.
 const TEST_REPORT_V5 = testReportBody(skillGapsChannelNoteUnscoped("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
 
-const TEST_REPORT = testReportBody(skillGapsChannelNote("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
+// The body before `148` asked for the gates run and a notCaught line per test.
+const TEST_REPORT_V6 = testReportBody(skillGapsChannelNote("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
+
+// `148`: checkable evidence. Project-neutral — the agent names the project's own commands.
+const TEST_REPORT =
+  "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+  "\n" +
+  "```json\n" +
+  "{\n" +
+  '  "subagent": "test",\n' +
+  '  "verdict": "SUCCESS | FAIL",\n' +
+  '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+  '  "testResult": "<N passed, N failed>",\n' +
+  '  "description": "<summary of what was tested>",\n' +
+  '  "gates": [{ "command": "<exact command run>", "result": "<exit code, N passed / N failed>" }],\n' +
+  '  "gatesSkipped": [{ "command": "<command not run>", "reason": "<why>" }],\n' +
+  '  "notCaught": ["<one line per new test: what this test would NOT catch>"]\n' +
+  "}\n" +
+  "```\n" +
+  "\n" +
+  "`gates` lists the exact verify commands you ran, copied verbatim with their result: the project test suite, " +
+  "lint, static check or typecheck, and any parity or generated-artifact check the change touches. " +
+  "Any of those you did not run goes in `gatesSkipped` with a reason. A verdict of SUCCESS is invalid if any of " +
+  "them was skipped without a stated reason.\n" +
+  "\n" +
+  'The implementing agent\'s "Test targets" are the minimum, not the scope: cover every one, then add your own ' +
+  "adversarial cases that it did not name, and list in `notCaught` what neither side covered.\n" +
+  "\n" +
+  "For each new test you write, add one line to `notCaught` saying what that test would NOT catch, for example " +
+  "closed or empty input, a copy of a file that no test compares, or a missing feature rather than a wrong one.\n" +
+  "\n" +
+  skillGapsChannelNote("test") +
+  "\n\n" +
+  VERDICT_HANDOFF_NOTE;
 
 /**
  * The exact bodies stripped from
@@ -242,7 +367,7 @@ const TEST_REPORT = testReportBody(skillGapsChannelNote("test")) + "\n\n" + VERD
  * get no seed row and resolve to `"none"`, exactly as before.
  */
 const SEED_REPORTS: Record<string, string> = {
-  backend: backendLikeReport("backend"),
+  backend: backendReport(),
   frontend: backendLikeReport("frontend"),
   mobile: backendLikeReport("mobile"),
   infra: backendLikeReport("infra"),
@@ -355,6 +480,7 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
       backendLikeV3("backend"),
       backendLikeV4("backend"),
       backendLikeV5("backend"),
+      backendLikeV6("backend"),
     ],
     frontend: [
       backendLikeV1("frontend"),
@@ -371,8 +497,8 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
       backendLikeV5("mobile"),
     ],
     infra: [backendLikeV3("infra"), backendLikeV4("infra"), backendLikeV5("infra")],
-    scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1, SCRIBE_REPORT_V3],
-    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4, TEST_REPORT_V5],
+    scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1, SCRIBE_REPORT_V3, SCRIBE_REPORT_V4],
+    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4, TEST_REPORT_V5, TEST_REPORT_V6],
   };
 })();
 
