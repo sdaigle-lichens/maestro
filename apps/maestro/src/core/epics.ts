@@ -773,6 +773,8 @@ export interface EpicReadyView {
   pending: Array<{ filename: string; worker: string }>;
   /** Ready (no unfinished blocker), unclaimed and not pending, oldest first. */
   ready: SpawnableTask[];
+  /** `146`: every blocker is done, but at least one is not merged yet. Never spawnable until it is. */
+  waitingOnMerge: Array<{ filename: string; unmergedBlockers: string[] }>;
   /** `cap` minus running and pending, never below 0: how many of `ready` may be spawned now. */
   slots: number;
 }
@@ -804,7 +806,8 @@ export function launchCommandFor(name: string, filename: string, model?: string)
 
 /**
  * The manager's spawn list (`125`): the epic's tasks that are ready and that no session has
- * claimed. Ready means the tracker says `ready` AND every blocker the tracker knows is done, so a
+ * claimed. Ready means the tracker says `ready` AND every blocker the tracker knows is done AND
+ * merged (`146`: a done blocker marked `unmerged` puts the task in `waitingOnMerge` instead), so a
  * stale `ready` never spawns a blocked task. A task recorded on a worker but not claimed yet is
  * `pending`, not ready: the worker was spawned and has not started, or its claim aged out while it
  * waits on the user. Listing it as ready would spawn a second worker for it. Done tasks are never
@@ -821,7 +824,16 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
   const workerOf = new Map<string, string>();
   for (const w of state.workers) if (w.task) workerOf.set(path.basename(w.task), w.name);
 
-  const view: EpicReadyView = { slug, cwd: root, cap, running: [], pending: [], ready: [], slots: 0 };
+  const view: EpicReadyView = {
+    slug,
+    cwd: root,
+    cap,
+    running: [],
+    pending: [],
+    ready: [],
+    waitingOnMerge: [],
+    slots: 0,
+  };
   const own = Object.keys(tracker)
     .filter((f) => tracker[f].epic === slug && tracker[f].status !== "done")
     .sort((a, b) => a.localeCompare(b));
@@ -837,7 +849,14 @@ export function readyTasks(projectRoot: string, slug: string, cap: number = DEFA
       continue;
     }
     const entry = tracker[filename];
+    // `146`: inside an epic a done blocker whose work is not merged yet still blocks: the dependent
+    // would start from a base without its code.
+    const unmerged = entry.blockedBy.filter((b) => tracker[b]?.status === "done" && tracker[b].unmerged);
     const unblocked = entry.blockedBy.every((b) => !tracker[b] || tracker[b].status === "done");
+    if (unblocked && unmerged.length) {
+      view.waitingOnMerge.push({ filename, unmergedBlockers: unmerged });
+      continue;
+    }
     if (entry.status !== "ready" || !unblocked) continue;
     const name = workerNameFor(slug, filename);
     view.ready.push({
@@ -865,6 +884,10 @@ export function formatReady(view: EpicReadyView): string {
   for (const r of view.running)
     lines.push(`  ${r.filename}  running in session ${r.sessionName ? `"${r.sessionName}"` : "(unnamed)"}`);
   for (const p of view.pending) lines.push(`  ${p.filename}  spawned as "${p.worker}", not claimed yet`);
+  for (const w of view.waitingOnMerge)
+    lines.push(
+      `  ${w.filename}  waiting on merge: ${w.unmergedBlockers.join(", ")} done but not merged (run merge or mark-merged)`
+    );
   return lines.join("\n");
 }
 

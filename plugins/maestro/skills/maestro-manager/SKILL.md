@@ -57,7 +57,11 @@ is a normal named `/maestro` session in its own herdr tab; you start it and reco
    ready tasks no session has claimed, oldest first, each with its worker name and exact launch
    command, marked `[spawn]` while a slot is free and `[waits for a slot]` after that. Running
    tasks and tasks already spawned but not claimed yet count against the cap and are never listed
-   as ready. Nothing marked `[spawn]`: say so and stop.
+   as ready. A task whose blockers are all done but not all **merged** is never listed as ready: it
+   appears as `waiting on merge: <blockers> done but not merged`, because a worker started now would
+   branch from a base without that code. Unblock it by merging the blocker (the user asks for the
+   worker's `merge`) or, after a hand merge, `node .claude/scripts/maestro-task-status.cjs mark-merged <blocker.md>`;
+   then run `ready` again. Never edit `status.json` to skip this. Nothing marked `[spawn]`: say so and stop.
 2. **Check for herdr**, in this order, one command per call. Any check failing means the
    **fallback** below:
    1. `command -v herdr`. Nothing found: fallback. The Bash sandbox hides the binary unless the

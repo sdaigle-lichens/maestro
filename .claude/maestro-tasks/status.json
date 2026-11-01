@@ -723,7 +723,7 @@
     ]
   },
   "146-keep-an-epic-task-blocked-until-its-blocker-is-merged-not-just-done.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "145-plan-for-file-overlap-and-merge-order-when-tasks-run-in-parallel.md"
     ]

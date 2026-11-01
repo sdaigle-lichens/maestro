@@ -506,6 +506,12 @@ export interface MaestroTask {
   claim: { sessionId: string; claimedAt: string; live: boolean; sessionName?: string } | null;
   /** The epic this task belongs to (`084`), from its tracker entry; absent when it belongs to none. */
   epic?: string;
+  /**
+   * `146`: blockers that are done but whose work is not merged yet (`unmerged: true` in their
+   * tracker entry). Only ever non-empty for an unfinished task inside an epic, where such a blocker
+   * keeps the task `blocked`; the UI shows it as the reason.
+   */
+  unmergedBlockers: string[];
 }
 
 export interface SessionLogEntry {

@@ -134,6 +134,11 @@ Each unfinished epic task (tracker `epic === slug`, oldest first) lands in exact
 | `pending` | A worker recorded with `add-worker --task` and no live claim: spawned, not started, or its claim aged out. |
 | `ready` | Tracker `ready` **and** every `blockedBy` entry the tracker knows is `done` — a hand-edited stale `ready` never spawns a blocked task. Blockers in other epics or none count too. |
 
+A fourth list, `waitingOnMerge` (`146`), holds tasks whose blockers are all done but at least one is
+`unmerged` (see [Task files](task-files.md)); it is never spawnable. `formatReady` prints each as
+`waiting on merge: <blockers> done but not merged (run merge or mark-merged)`. `ready` is not given
+to it, so the manager must merge the blocker (or `mark-merged` after a hand merge) first.
+
 `slots = max(0, cap − running − pending)`; the text marks the first `slots` ready tasks `[spawn]`,
 the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an integer ≥ 1.
 

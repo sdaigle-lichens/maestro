@@ -19,6 +19,17 @@ longer exists counts as satisfied. `closeTask` marks one done and recomputes the
 close can unblock several tasks at once. `status.json` is written atomically with sorted keys, so
 either side's save gives a stable diff.
 
+**Merged vs done (`146`), epic tasks only.** A `status.json` entry may carry `unmerged: true` (done
+tasks only; absent = merged, so old entries need no migration). `maestro-task-status.cjs done` sets
+it when the task ran in a worktree (not a freeform one); `merge` and the new `mark-merged <task>`
+(refuses a task that is not done) clear it and recompute the cascade. `closeTask` (the UI close)
+never sets it. Inside an epic a blocker satisfies a dependent only when it is done AND not
+`unmerged` (`blockersSatisfied` in `tasks.ts`, mirrored in `maestro-tasks.cjs`); a task outside an
+epic ignores the flag. Every rebuild preserves `unmerged`. `MaestroTask.unmergedBlockers` lists the
+done-but-unmerged blockers of an unfinished epic task; the route shows them as
+"Waiting for merge of X" and `tasksFromFiles` forces such a task to `blocked` even if the tracker
+said `ready`. Test: `apps/maestro/test/core/unmerged-blockers.test.ts`.
+
 `/to-maestro-tasks` does not hand-assemble the files for a fresh batch: it hands
 `maestro-write-tasks.cjs` a JSON array of slices (title, body, `blockedBy` as indices into that same
 array, or as strings naming a task already in the queue by filename or `NNN` — refused unless it

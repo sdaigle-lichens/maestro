@@ -165,7 +165,9 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
   branch stay, and the conflicting files are listed with how to resolve (merge the base into the
   branch inside the worktree, commit, ask again). The orchestrator never resolves one unasked.
 - **Success:** `git worktree remove` (no `--force`), `git branch -d` (merged-only), and any session
-  `worktree.json` pointer aimed at the removed path is deleted.
+  `worktree.json` pointer aimed at the removed path is deleted. `146`: it then calls `markMerged`
+  (not for `freeform-<id>`), clearing the task's `unmerged` flag and printing the cascade summary;
+  if that fails it adds a note naming `mark-merged <task>`.
 - **No pull-request mode, deliberately.** A PR needs a remote, a forge CLI and credentials the plugin
   cannot assume, and pushing is the one irreversible step; the branch is an ordinary local branch, so
   `git push -u origin task-NNN` plus the user's own PR flow works at any time before they ask for the

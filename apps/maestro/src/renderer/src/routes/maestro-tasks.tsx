@@ -296,15 +296,18 @@ function MaestroTasksPage() {
                   )}
                   {task.blockedBy.length > 0 && task.status !== "done" && (
                     <div className="mt-1.5 flex flex-wrap gap-1">
-                      {task.blockedBy.map((b) => (
-                        <span
-                          key={b}
-                          title={`Blocked by ${b}`}
-                          className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-maestro-soft text-maestro-muted border border-maestro"
-                        >
-                          ⛔ {b}
-                        </span>
-                      ))}
+                      {task.blockedBy.map((b) => {
+                        const unmerged = task.unmergedBlockers?.includes(b) ?? false;
+                        return (
+                          <span
+                            key={b}
+                            title={unmerged ? `Done but not merged: ${b}` : `Blocked by ${b}`}
+                            className="font-mono text-[9px] px-1.5 py-0.5 rounded bg-maestro-soft text-maestro-muted border border-maestro"
+                          >
+                            {unmerged ? `⏳ Waiting for merge of ${b}` : `⛔ ${b}`}
+                          </span>
+                        );
+                      })}
                     </div>
                   )}
                 </button>
