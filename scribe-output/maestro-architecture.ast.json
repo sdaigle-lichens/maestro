@@ -26,8 +26,8 @@
       "type": "function",
       "name": "writeAgentReportDefault",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 529,
-      "end_line": 558,
+      "start_line": 655,
+      "end_line": 684,
       "signature": "function writeAgentReportDefault(agentName: string, content: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportDefault",
       "contentHash": "829cb20f3fe4728cfa922e83ea9dd4d5f9ee336d5ee227065205f5882868b8f3",
       "status": "live",
@@ -242,8 +242,8 @@
       "type": "function",
       "name": "readAgentReportDefault",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 465,
-      "end_line": 482,
+      "start_line": 591,
+      "end_line": 608,
       "signature": "function readAgentReportDefault(agentName: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportDefault | null",
       "contentHash": "404130549ec80594a7cc93da3303d821b41c883c4fbdac9e7d5131d91de8221b",
       "status": "live",
@@ -260,8 +260,8 @@
       "type": "function",
       "name": "splitHandoffId",
       "filepath": "apps/maestro/src/core/handoff-seeds.ts",
-      "start_line": 586,
-      "end_line": 590,
+      "start_line": 598,
+      "end_line": 602,
       "signature": "function splitHandoffId(handoffId: string): { sender: string; receiver: string; }",
       "contentHash": "29eb61236021e1f6560e7547dbbc6d28455a86430f5ffb8f7e836a9d743f6372",
       "status": "live",
@@ -296,8 +296,8 @@
       "type": "function",
       "name": "scribeEndingNote",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 185,
-      "end_line": 199,
+      "start_line": 235,
+      "end_line": 249,
       "signature": "function scribeEndingNote(gapsDir: string): string",
       "contentHash": "975f97b8c9f17efef7ce3d5ab8e5bd2b6e97586ebf26c4636913e11b0e2f0d4b",
       "status": "live",
@@ -386,8 +386,8 @@
       "type": "function",
       "name": "testReportBody",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 206,
-      "end_line": 222,
+      "start_line": 298,
+      "end_line": 314,
       "signature": "function testReportBody(gapsNote: string): string",
       "contentHash": "3f319a0d3ab37dda2d991ec72519c359d56251e318fa9f361cd61bd8c930291a",
       "status": "live",
@@ -458,8 +458,8 @@
       "type": "function",
       "name": "refreshSupersededSeeds",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 411,
-      "end_line": 431,
+      "start_line": 537,
+      "end_line": 557,
       "signature": "function refreshSupersededSeeds(db: DatabaseSync): void",
       "contentHash": "ac87bd78960c69460dac628eab740f370e1529ab3cbc1e684765cc4101ab7d30",
       "status": "live",
@@ -494,8 +494,8 @@
       "type": "function",
       "name": "seedIfEmpty",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 434,
-      "end_line": 450,
+      "start_line": 560,
+      "end_line": 576,
       "signature": "function seedIfEmpty(db: DatabaseSync): void",
       "contentHash": "fa8a4033627ff804de4406b99965dae2a4efa2a986959b75db76a0ce2d2fd68a",
       "status": "live",
@@ -620,8 +620,8 @@
       "type": "function",
       "name": "backendLikeBody",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 117,
-      "end_line": 132,
+      "start_line": 167,
+      "end_line": 182,
       "signature": "function backendLikeBody(subagent: string, gapsNote: string): string",
       "contentHash": "8ae991163a33c80ed6a28f574764c58cfd0d4dce147a9bb77379c41dab6b0c19",
       "status": "live",
@@ -692,8 +692,8 @@
       "type": "function",
       "name": "handoffId",
       "filepath": "apps/maestro/src/core/handoff-seeds.ts",
-      "start_line": 593,
-      "end_line": 595,
+      "start_line": 605,
+      "end_line": 607,
       "signature": "function handoffId(sender: string, receiver: string): string",
       "contentHash": "4f7d50b4816d68a3a61522aaab826495ba6f62de91ab6738b0c1e17869f510dd",
       "status": "live",
@@ -800,8 +800,8 @@
       "type": "function",
       "name": "isSeededHandoff",
       "filepath": "apps/maestro/src/core/handoff-seeds.ts",
-      "start_line": 567,
-      "end_line": 569,
+      "start_line": 579,
+      "end_line": 581,
       "signature": "function isSeededHandoff(handoffId: string): boolean",
       "contentHash": "47833602aa9d212d08fe2f693d8d2b275ee5a5b965f1c5374d145cb7a83a9a05",
       "status": "live",
@@ -926,8 +926,8 @@
       "type": "function",
       "name": "openDb",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 379,
-      "end_line": 401,
+      "start_line": 505,
+      "end_line": 527,
       "signature": "function openDb(dbPath: string): DatabaseSync",
       "contentHash": "59294e58b393814b3dbf96d498575b143119872b3903f622815a19f78d695040",
       "status": "live",
@@ -1052,8 +1052,8 @@
       "type": "function",
       "name": "readReportById",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 485,
-      "end_line": 497,
+      "start_line": 611,
+      "end_line": 623,
       "signature": "function readReportById(reportId: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): { content: string; version: number; } | null",
       "contentHash": "1069e9a6b7f4d2b25592861ddefd7f8c7680561ae1f0aeee9b63df18f555f4e6",
       "status": "live",
@@ -1232,8 +1232,8 @@
       "type": "function",
       "name": "isValidHandoffId",
       "filepath": "apps/maestro/src/core/handoff-seeds.ts",
-      "start_line": 581,
-      "end_line": 583,
+      "start_line": 593,
+      "end_line": 595,
       "signature": "function isValidHandoffId(handoffId: unknown): boolean",
       "contentHash": "44b5e70eff3a698f48143d01c5906fa7ab4503dfc1d118a0c5db6847d6f06f15",
       "status": "live",
@@ -1488,6 +1488,24 @@
       "end_line": 134,
       "signature": "function appendSessionLog(claudeDir: string, entry: unknown, payload?: SessionIdSource & { transcript_path?: string }): void",
       "contentHash": "45b6f9f4dcaada8e5d8a8b5ab6fafa07095e5a9a43f805eb322fd7ffc64dbc71",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "78600971a86568a0f199044efd998eb4",
+      "displayKey": "maestro-architecture::function::backendLikeV6",
+      "concept": "maestro-architecture",
+      "type": "function",
+      "name": "backendLikeV6",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 118,
+      "end_line": 120,
+      "signature": "function backendLikeV6(subagent: string): string",
+      "contentHash": "094286b63143cbc0a8f32875195a62233a08004ceb36878ee44f6def1f98c345",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1880,8 +1898,8 @@
       "type": "function",
       "name": "priorReportSeeds",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 460,
-      "end_line": 462,
+      "start_line": 586,
+      "end_line": 588,
       "signature": "function priorReportSeeds(agentName: string): string[]",
       "contentHash": "bfa857a6232820bb529079d116f0e60205f3e863c41a14d9a78db0c216d25ec9",
       "status": "live",
@@ -2618,8 +2636,8 @@
       "type": "function",
       "name": "readAllAgentReportDefaults",
       "filepath": "apps/maestro/src/core/report-defaults.ts",
-      "start_line": 500,
-      "end_line": 517,
+      "start_line": 626,
+      "end_line": 643,
       "signature": "function readAllAgentReportDefaults(dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): Record<string, ReportDefault>",
       "contentHash": "d41921d770d423cfe8edb95afc7ee3e4d917068b34b3d0a156872e375efec315",
       "status": "live",
@@ -3224,6 +3242,24 @@
       }
     },
     {
+      "_key": "fcb9ecb28963dd75f3d75bcbeb00891c",
+      "displayKey": "maestro-architecture::function::backendReport",
+      "concept": "maestro-architecture",
+      "type": "function",
+      "name": "backendReport",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 134,
+      "end_line": 165,
+      "signature": "function backendReport(): string",
+      "contentHash": "bd8ea19a381e2b87391138aeb443ede02403692698d363241880ee3d568b885c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "fd81fb115884562d8e3dc9b38d65adad",
       "displayKey": "maestro-architecture::function::pluginName",
       "concept": "maestro-architecture",
@@ -3378,6 +3414,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "05c93c778af81f618d8ef3cdf65d0ff2",
+      "_from": "vertices/1654727e5676700751ba77d9cb3ba1d5",
+      "_to": "vertices/63c36a6d4bf97574985bd98246b72e9c",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 599,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3670,19 +3719,6 @@
       }
     },
     {
-      "_key": "19414a14149aee0fd192385ed2c635ef",
-      "_from": "vertices/1654727e5676700751ba77d9cb3ba1d5",
-      "_to": "vertices/63c36a6d4bf97574985bd98246b72e9c",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 587,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "19f94f0a4162a2a7e30feaff6321ca1a",
       "_from": "vertices/95029a1b44903556cdcb890d1a5dba23",
       "_to": "vertices/3fb44e547255052aceaae8bd59e0f013",
@@ -3833,19 +3869,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 110,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "2740118aecaf421f4ccffb9854b60d32",
-      "_from": "vertices/cf6b72115a9773a71a329095caf3557b",
-      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 503,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4509,6 +4532,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "534dcc026ceb17f45371f05efe654b88",
+      "_from": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
+      "_to": "vertices/22e0c11826fba23391708525b667fc27",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 525,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5490,6 +5526,19 @@
       }
     },
     {
+      "_key": "866726ecfebc7bb715543fdef4f7c72b",
+      "_from": "vertices/05b1f7b1c95dbb3ace8cd0d86318ed36",
+      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 660,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "8683104b91adf9186c4f055143879e43",
       "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
       "_to": "vertices/40687f14372bebc709036418f8620eee",
@@ -5510,6 +5559,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "87241642b022ee69ee1b010afcbd4057",
+      "_from": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
+      "_to": "vertices/262f2e6ec072f1963663466ac60a6b42",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 524,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5646,19 +5708,6 @@
       }
     },
     {
-      "_key": "93bcb4e74339e4be7000f3affc356e31",
-      "_from": "vertices/05b1f7b1c95dbb3ace8cd0d86318ed36",
-      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 534,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "94324e4f9eed94c1391cd4a13c0f8036",
       "_from": "vertices/0b8d689d9cb3eea7f9b46e6290b5be5b",
       "_to": "vertices/5771b44f3f93a4ba6826a6e3ef6c0dbc",
@@ -5757,32 +5806,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 117,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "96c34bcabbcaba73ecdd7fa6b32b2a91",
-      "_from": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
-      "_to": "vertices/262f2e6ec072f1963663466ac60a6b42",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 398,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "9796609d8d4cbf9b8b7eebb7877ecf63",
-      "_from": "vertices/56f5c3bbc65e759084f21389c814587d",
-      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 489,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6108,6 +6131,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 117,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a78cc8388045de72e52df8ebaa9a1667",
+      "_from": "vertices/56f5c3bbc65e759084f21389c814587d",
+      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 615,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6842,6 +6878,19 @@
       }
     },
     {
+      "_key": "d1ae226f63bd178587e51cdc9c498d21",
+      "_from": "vertices/16392c2398b71c8f480e7086b03b11b6",
+      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 595,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d1da8d5380063ed64d28303a55989947",
       "_from": "vertices/863a789fea013a060867670258d9eabb",
       "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
@@ -6888,6 +6937,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d4770f9ac69a36ec8a780c2a56b44ea2",
+      "_from": "vertices/fcb9ecb28963dd75f3d75bcbeb00891c",
+      "_to": "vertices/f3dbe29229b1d8d9fabf226acde81d26",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 161,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7096,6 +7158,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 137,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e2cd538e63f4b794b99073fb3333a043",
+      "_from": "vertices/cf6b72115a9773a71a329095caf3557b",
+      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 629,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7336,9 +7411,9 @@
       }
     },
     {
-      "_key": "f2d1297bab63a4b7ff0d94586ccb9558",
-      "_from": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
-      "_to": "vertices/22e0c11826fba23391708525b667fc27",
+      "_key": "f51c17be1ff7c0df00ca6cd381b587fc",
+      "_from": "vertices/109f622e3504a4cb1a6d2d8c0b3a7047",
+      "_to": "vertices/faa62810753e9585f748b9928a285b6c",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
@@ -7349,13 +7424,13 @@
       }
     },
     {
-      "_key": "f51c17be1ff7c0df00ca6cd381b587fc",
-      "_from": "vertices/109f622e3504a4cb1a6d2d8c0b3a7047",
-      "_to": "vertices/faa62810753e9585f748b9928a285b6c",
+      "_key": "f6752391c3c4e30bdd54afdc9037b1d8",
+      "_from": "vertices/78600971a86568a0f199044efd998eb4",
+      "_to": "vertices/25fe6718f376ac5d7626d352f3cd2015",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 399,
+      "line": 119,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7408,19 +7483,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 275,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "fb94da153ed7afe35b74d5bf0268f44c",
-      "_from": "vertices/16392c2398b71c8f480e7086b03b11b6",
-      "_to": "vertices/4e301673bc15f4e2d6cac4124d7c02de",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 469,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7485,8 +7547,8 @@
     "contentHash": "sha256:672450b587b7fb89a94f1ae4c1e0cd2f72457f23890a6cc6ec5f27ff0c96a92c"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.33",
-    "extracted_at": "2026-10-31T23:53:27.261Z",
+    "extractor_version": "code-graph@0.3.42",
+    "extracted_at": "2026-11-03T17:07:20.429Z",
     "files": {
       "apps/maestro/src/core/handoff-channels.ts": "sha256:5db9e0f43ef4ff0e43efd91161f185ee996e3afa2f786d4d0fdebf870ddcb33c",
       "apps/maestro/src/core/handoff-check.ts": "sha256:006a5c1a74d50956a79229aa21d274260b9fd0b9226ae11bafebe3fabd38c99d",
@@ -7495,7 +7557,7 @@
       "apps/maestro/src/core/handoff-payload.ts": "sha256:134eb1b55e8aefea560fee31e478371ce112188a0e6bbaa7f9163cd3202c1abb",
       "apps/maestro/src/core/handoff-resolution.ts": "sha256:8606eaba00738ffaf06715002bbd714eda6dd0e9d010f70c935ac4eb40764428",
       "apps/maestro/src/core/handoff-routes.ts": "sha256:03d66bc4378014b353021442617cf7f1a41c2b42f50c4d3b1f4fafec44d10fc4",
-      "apps/maestro/src/core/handoff-seeds.ts": "sha256:28125e2587a69b26d752c21f210b7e329960530b308662cbbdd4c42bcc121834",
+      "apps/maestro/src/core/handoff-seeds.ts": "sha256:dc4b24640e6d5deb34764bfaf1c9846c0df752e23c64cd5c15f158365130644b",
       "apps/maestro/src/core/handoff-sync.ts": "sha256:01dacd6cab4007e5b4b05db291a16342212ea454a7f02dded244abd23dfb4a65",
       "apps/maestro/src/core/handoffs.ts": "sha256:06dfea8f0be2d49dda9eaa9c014e67290303f183a5944e0feeae098aa3686adc",
       "apps/maestro/src/core/plugin-entries/maestro-agent-fork.ts": "sha256:330c614d51dbc669ae534f554a324f2353e8a3d75ed6d81c2378a887d03cf08a",
@@ -7516,7 +7578,7 @@
       "apps/maestro/src/core/plugin-entries/maestro-team-meeting.ts": "sha256:b23313f72ec2e7d94f278b312b75586cf166a1a377f4cefc9c0058d8aa902c0b",
       "apps/maestro/src/core/plugin-entries/maestro-workflow-spec.ts": "sha256:e06f42af73c8d5b4c3db76edbe5391fed4094804242d64495fb5ec7764694431",
       "apps/maestro/src/core/render.ts": "sha256:09a1812fa96193e19b2d13624bce4f2ce2a8bf6ca3680d7e60db3bc93d58ee59",
-      "apps/maestro/src/core/report-defaults.ts": "sha256:a16b71771b5a80d6a1043b5b728ec70ea95e45b22b928564d8157dd6e4b2ce26",
+      "apps/maestro/src/core/report-defaults.ts": "sha256:ca6bf95b5f9c9fd59e2047491b0498f11f925649a00cdad894cdb69fa60c6642",
       "apps/maestro/src/core/report-resolution.ts": "sha256:624ea83e07d606c4df6cc06e24015bad8e887aa71c4eaadf05663d664d611a64",
       "apps/maestro/src/core/report-sync.ts": "sha256:3c3a4f5f65c98576bf0f4c492d373f7349d8a4769d14f256fabc9a350c9c246d",
       "apps/maestro/src/core/reports.ts": "sha256:826fe085b0113f45b2c7cfb73410ead3020c3f0ae467496258b5c486777f0da8",
