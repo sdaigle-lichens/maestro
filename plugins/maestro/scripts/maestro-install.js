@@ -329,10 +329,10 @@ function hasHook(settings, reg) {
 }
 
 // Add every missing registration to `settings` in place. Returns the ids added.
-function addMissingHooks(settings) {
+function addMissingHooks(settings, other) {
   const added = [];
   for (const reg of HOOK_REGISTRATIONS) {
-    if (hasHook(settings, reg)) continue;
+    if (hasHook(settings, reg) || (other && hasHook(other, reg))) continue;
     settings.hooks = settings.hooks || {};
     const list = settings.hooks[reg.event] || (settings.hooks[reg.event] = []);
     // Reuse an existing entry for the same matcher rather than adding a second one, so a user's
@@ -413,7 +413,9 @@ const CHANNEL_WRITE_ALLOW_RULE = "Write(/.claude/channels/**)";
 
 // Add the rule to permissions.allow in place unless present. Returns the rules added. A non-object
 // permissions or non-array allow is the user's and is left alone.
-function addChannelAllowRule(settings) {
+function addChannelAllowRule(settings, other) {
+  const otherAllow = other && other.permissions && other.permissions.allow;
+  if (Array.isArray(otherAllow) && otherAllow.includes(CHANNEL_WRITE_ALLOW_RULE)) return [];
   const permissions = settings.permissions;
   if (
     permissions !== undefined &&
@@ -430,19 +432,25 @@ function addChannelAllowRule(settings) {
 }
 
 // Merge every missing hook registration and the channel allow rule into settings.json, preserving all other keys.
-function mergeSettings(settingsPath) {
-  let settings = {};
-  if (fs.existsSync(settingsPath)) {
-    try {
-      settings = JSON.parse(fs.readFileSync(settingsPath, "utf8"));
-    } catch {
-      settings = {};
-    }
+// `otherPath` is the sibling settings file Claude Code also merges (hook arrays concatenate across
+// files): anything already registered there is not registered again here, so a project that moved
+// between ignore modes never fires a hook twice. It is only read, never written.
+function readSettingsFile(settingsPath) {
+  if (!fs.existsSync(settingsPath)) return {};
+  try {
+    return JSON.parse(fs.readFileSync(settingsPath, "utf8"));
+  } catch {
+    return {};
   }
+}
+
+function mergeSettings(settingsPath, otherPath) {
+  const settings = readSettingsFile(settingsPath);
+  const other = otherPath ? readSettingsFile(otherPath) : null;
   const hooksRemoved = removeRetiredHooks(settings);
   const hooksMoved = updateHookMatchers(settings);
-  const hooksAdded = addMissingHooks(settings);
-  const permissionsAdded = addChannelAllowRule(settings);
+  const hooksAdded = addMissingHooks(settings, other);
+  const permissionsAdded = addChannelAllowRule(settings, other);
   if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0) {
     ensureDir(path.dirname(settingsPath));
     fs.writeFileSync(settingsPath, JSON.stringify(settings, null, 2));
@@ -812,7 +820,19 @@ function main() {
 
   // Absent flag = today's behaviour ("committed"). An unknown value or "ignored" outside a git repo is
   // refused before any write.
-  const ignoreMode = flags["ignore-mode"] === undefined ? "committed" : flags["ignore-mode"];
+  // An absent flag on a project this installer already put in `ignored` mode (its marker is in the
+  // exclude file) keeps that mode, so /maestro-update, which runs the installer without a flag, never
+  // writes the tracked settings.json or the committed .gitignore block.
+  const previouslyIgnored = (() => {
+    const p = resolveGitExcludePath(projectDir);
+    if (!p || !fs.existsSync(p)) return false;
+    return fs
+      .readFileSync(p, "utf8")
+      .split(/\r?\n/)
+      .some((l) => l.trim() === EXCLUDE_MARKER);
+  })();
+  const ignoreMode =
+    flags["ignore-mode"] === undefined ? (previouslyIgnored ? "ignored" : "committed") : flags["ignore-mode"];
   let gitExcludePath = null;
   if (!IGNORE_MODES.includes(ignoreMode)) {
     const reason = `--ignore-mode must be one of ${IGNORE_MODES.join(", ")} (got "${ignoreMode}")`;
@@ -938,7 +958,15 @@ function main() {
       scriptsWritten.push(asset.dest);
     }
 
-    const { hooksAdded, hooksRemoved, permissionsAdded } = mergeSettings(path.join(claudeDir, "settings.json"));
+    // `ignored` mode hides `.claude/` via .git/info/exclude, which does not hide an already-tracked
+    // file. A tracked settings.json would pick up a Maestro diff teammates never opted into, so the
+    // hooks go to the clone-local settings.local.json instead.
+    const sharedSettings = path.join(claudeDir, "settings.json");
+    const localSettings = path.join(claudeDir, "settings.local.json");
+    const { hooksAdded, hooksRemoved, permissionsAdded } =
+      ignoreMode === "ignored"
+        ? mergeSettings(localSettings, sharedSettings)
+        : mergeSettings(sharedSettings, localSettings);
     // After the settings write: a crash between the two leaves a harmless unreferenced file, never
     // a hook pointing at a file that is gone.
     const retiredScriptsRemoved = [];

@@ -85,7 +85,7 @@ describe("infra-only seeding profile", () => {
     const conditions = wf.edges.filter((e) => e.kind === "condition");
     expect(conditions.some((e) => e.from === "reviewer" && e.to === "infra")).toBe(true);
     expect(conditions.some((e) => e.from === "reviewer" && e.to === "backend")).toBe(true);
-    expect(conditions.some((e) => e.from === "human_review-1" && e.to === "infra")).toBe(true);
-    expect(conditions.some((e) => e.from === "human_review-1" && e.to === "backend")).toBe(true);
+    expect(conditions.some((e) => e.from === "manager_review-1" && e.to === "infra")).toBe(true);
+    expect(conditions.some((e) => e.from === "manager_review-1" && e.to === "backend")).toBe(true);
   });
 });

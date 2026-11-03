@@ -57,6 +57,46 @@ describe("maestro-install.js --ignore-mode", () => {
     expect(fs.existsSync(path.join(root, ".gitignore"))).toBe(false);
   });
 
+  it("ignored: registers hooks in settings.local.json and leaves a tracked settings.json untouched", () => {
+    const root = gitProject();
+    const shared = path.join(root, ".claude", "settings.json");
+    fs.mkdirSync(path.dirname(shared), { recursive: true });
+    const original = JSON.stringify({ permissions: { allow: ["Bash(ls)"] } }, null, 2);
+    fs.writeFileSync(shared, original);
+    run(root, "--ignore-mode", "ignored");
+    expect(fs.readFileSync(shared, "utf8")).toBe(original);
+    const local = JSON.parse(fs.readFileSync(path.join(root, ".claude", "settings.local.json"), "utf8"));
+    expect(Object.keys(local.hooks).length).toBeGreaterThan(0);
+    expect(local.permissions.allow).toContain("Write(/.claude/channels/**)");
+    // Re-run: nothing registered twice.
+    const before = fs.readFileSync(path.join(root, ".claude", "settings.local.json"), "utf8");
+    run(root, "--ignore-mode", "ignored");
+    expect(fs.readFileSync(path.join(root, ".claude", "settings.local.json"), "utf8")).toBe(before);
+  });
+
+  it("a flagless re-run (what /maestro-update does) keeps ignored mode and the seeded manager_review node", () => {
+    const root = gitProject();
+    run(root, "--ignore-mode", "ignored");
+    const cfgPath = path.join(root, ".claude", "maestro.json");
+    const before = fs.readFileSync(cfgPath, "utf8");
+    expect(JSON.parse(before).workflows[0].nodes.some((n: { type: string }) => n.type === "manager_review")).toBe(true);
+    const again = run(root);
+    expect(again.json.ignoreMode).toBe("ignored");
+    expect(again.json.wroteRepoGitignore).toBe(false);
+    expect(fs.existsSync(path.join(root, ".claude", "settings.json"))).toBe(false);
+    expect(fs.existsSync(path.join(root, ".gitignore"))).toBe(false);
+    expect(fs.readFileSync(cfgPath, "utf8")).toBe(before);
+    const skill = fs.readFileSync(path.join(root, ".claude", "skills", "maestro", "SKILL.md"), "utf8");
+    expect(skill).toContain("manager review");
+  });
+
+  it("committed after ignored: does not re-register hooks already in settings.local.json", () => {
+    const root = gitProject();
+    run(root, "--ignore-mode", "ignored");
+    run(root, "--ignore-mode", "committed");
+    expect(fs.existsSync(path.join(root, ".claude", "settings.json"))).toBe(false);
+  });
+
   it("ignored: is idempotent, no duplicate line on re-run", () => {
     const root = gitProject();
     run(root, "--ignore-mode", "ignored");
@@ -279,7 +319,7 @@ describe("maestro-uninstall.js and the git exclude entry", () => {
       .map((l) => l.slice(3));
     expect(untracked.length).toBeGreaterThan(0);
     for (const f of untracked) {
-      expect(f).toMatch(/^\.claude\/(settings\.json|reports\/|handoffs\/)/);
+      expect(f).toMatch(/^\.claude\/(settings(\.local)?\.json|reports\/|handoffs\/)/);
     }
   });
 
