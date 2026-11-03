@@ -59,6 +59,30 @@ Called when a recurring pattern is identified that an agent should know going fo
 2. **Add to Patterns section** — Descriptive title + minimal code example.
 3. **Confirm** — Report what was added and where.
 
+## Ending your run
+
+Your final message ends with these plain-text lines, in this order, after your report:
+
+1. `SKILL_GAPS_HANDLED: <file>, <file>, …` — only when you acted on one or more skill-gap reports
+   from `.claude/channels/<scope>/scribe/` (the channel scope your injected context names). Name every gap file you acted on, including one you handled by
+   enrichment only (no SKILL.md edit, no stamp), one where you left a remainder to enrich, and one
+   whose concept has no graph to enrich. A gap file you do not name stays in your channel for the
+   next scribe run. Leave the line out when you acted on none.
+2. `HANDOFF: <label>` — always, and always last.
+
+Which label:
+
+- **The documentation is done** → `HANDOFF: success`. This holds when you skipped a step on the way
+  (a graph refresh skipped because the project has no tsconfig, targets left to enrich, a stamp that
+  failed): report every skipped step in your report body, never through the label. `done`,
+  `complete` and similar words are not labels. No workflow routes them, so the orchestrator stops
+  and asks the user even though your work is finished.
+- **You could not finish** (for example, the docs need an application-code change you may not
+  make) → end with a condition label from the routes injected into your context when one fits. When
+  none fits, end with `HANDOFF: partial` and say in your report body what is left and why. No
+  workflow routes `partial` on purpose: the orchestrator's unrouted check catches it and asks the
+  user how to continue. Never end with `HANDOFF: success` when the docs are not done.
+
 ## Boundaries
 
 **Will:**

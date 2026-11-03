@@ -16,9 +16,16 @@
 // channel lane, since a lane file it wrote would be stamped and delivered into a later workflow
 // step. The caller passes `meetingDir` only for a participant; it comes from the session's own
 // paths, never from tool input.
+//
+// Scoped lanes (`144`): the confined agents may write only inside their OWN session's channel
+// scope, `.claude/channels/<scope>/`. The caller resolves `channelScope` from the session
+// (`channelScopeOf`), never from tool input. Another scope's lanes, and the legacy unscoped
+// `.claude/channels/<receiver>/` root, are refused, and so is every write when the scope is
+// missing or malformed (fail closed).
 
 import fs from "node:fs";
 import path from "node:path";
+import { isChannelScope } from "./handoff-channels.js";
 import { bareAgentName } from "./success-path.js";
 
 /** Agents whose writes are confined to `.claude/channels/`. */
@@ -103,12 +110,15 @@ function realMeetingDir(meetingDir: string): string | null {
   return real;
 }
 
-function deny(target: string): ChannelWriteVerdict {
+function deny(target: string, scope: string | null | undefined): ChannelWriteVerdict {
+  const where = isChannelScope(scope) ? `.claude/channels/${scope}/` : ".claude/channels/<this session's scope>/";
   return {
     allow: false,
     reason:
-      `Blocked: this agent may only write files under .claude/channels/ (its handoff channel lanes). ` +
-      `"${target}" is outside it (or reaches outside through a ".." segment or a symlink). ` +
+      `Blocked: this agent may only write files under ${where} (this session's handoff channel lanes — ` +
+      `write exactly the channel file your injected routes name). ` +
+      `"${target}" is outside it (another session's scope, the legacy unscoped layout, or reaching outside ` +
+      `through a ".." segment or a symlink). ` +
       `Report findings in your final message instead; delegate edits to the responsible agent.`,
   };
 }
@@ -125,8 +135,13 @@ export function checkChannelWrite(input: {
   toolInput: Record<string, unknown> | null | undefined;
   /** Set only when this agent is a participant of the session's active team meeting. */
   meetingDir?: string | null;
+  /**
+   * This session's channel scope (`144`, `channelScopeOf`). A confined agent may write only under
+   * `.claude/channels/<channelScope>/`; missing or not a scope denies every write.
+   */
+  channelScope?: string | null;
 }): ChannelWriteVerdict {
-  const { cwd, agentType, toolName, toolInput, meetingDir } = input;
+  const { cwd, agentType, toolName, toolInput, meetingDir, channelScope } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : undefined;
 
   if (meetingDir) {
@@ -144,17 +159,21 @@ export function checkChannelWrite(input: {
   if (!key) return { allow: true };
 
   const raw = toolInput?.[key];
-  if (typeof raw !== "string" || raw === "") return deny(String(raw ?? ""));
-  if (!cwd) return deny(raw);
-  if (raw.split(/[\\/]+/).includes("..")) return deny(raw);
+  if (typeof raw !== "string" || raw === "") return deny(String(raw ?? ""), channelScope);
+  if (!cwd || !isChannelScope(channelScope)) return deny(raw, channelScope);
+  if (raw.split(/[\\/]+/).includes("..")) return deny(raw, channelScope);
 
   const target = realResolve(path.resolve(cwd, raw));
   const realCwd = realResolve(cwd);
   const lane = realResolve(path.join(cwd, ".claude", "channels"));
-  if (!target || !realCwd || !lane) return deny(raw);
+  const scoped = realResolve(path.join(cwd, ".claude", "channels", channelScope));
+  if (!target || !realCwd || !lane || !scoped) return deny(raw, channelScope);
   // A `.claude/channels` that is itself a symlink out of the project is not a lane.
   if (lane !== path.join(realCwd, ".claude", "channels") && !lane.startsWith(realCwd + path.sep)) {
-    return deny(raw);
+    return deny(raw, channelScope);
   }
-  return target.startsWith(lane + path.sep) ? { allow: true } : deny(raw);
+  // The scope directory must be a real directory of that name inside the lane — a symlink to
+  // another scope (or anywhere else) is not this session's scope.
+  if (scoped !== path.join(lane, channelScope)) return deny(raw, channelScope);
+  return target.startsWith(scoped + path.sep) ? { allow: true } : deny(raw, channelScope);
 }

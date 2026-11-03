@@ -3,8 +3,8 @@ name: docs-view
 description: "Explains the two markdown documentation readers in the Maestro desktop app — /docs/$group/$slug over the corpus the app SHIPS (not gated on an open project) and /project-docs/$slug over the open project's own docs/ — and what they share: the one parsing/slugging implementation in src/core/docs.ts (the *In primitives, slugifyHeading, isValidDocSlug), the react-markdown + remark-gfm + rehypeHighlightTerms stack, why a heading travels as the `at` SEARCH param instead of a URL fragment under hash history, and why in-page #anchor links must be intercepted. Use when adding a doc corpus or a route param to either reader, changing heading anchors or search highlighting, touching src/core/docs.ts or global-docs.ts, or debugging a search hit that scrolls nowhere or highlights nothing."
 metadata:
   type: concept-skill
-  version: "1.0"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "2.0"
+  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c
 ---
 
 # Docs view
@@ -20,8 +20,9 @@ Two readers, one rendering stack.
 arrive without reshaping the route. `/project-docs/$slug` was `/docs/$slug` before the global reader
 took that path — anything still naming `/docs/$slug` as the project reader is stale.
 
-**The parsing lives once.** `src/core/global-docs.ts` is a thin aggregator that picks a directory and
-tags what comes back; the heading-slugging and markdown-splitting are `docs.ts`'s `listDocsIn` /
+**The parsing lives once.** `src/core/global-docs.ts` is a thin aggregator that merges the shipped
+directories (a slug is read from the first one holding it), title-sorts the list and tags what comes
+back with `group: "app"`; the heading-slugging and markdown-splitting are `docs.ts`'s `listDocsIn` /
 `docSectionsIn` / `readDocIn`. A second slugifier here would be a second thing to keep in sync with
 the search index, which is the whole point of the `*In` split.
 
@@ -61,10 +62,13 @@ the search index, which is the whole point of the `*In` split.
 | File | Role |
 | --- | --- |
 | `src/core/docs.ts` | The `*In` primitives, `slugifyHeading`, `isValidDocSlug`. The single parsing implementation. |
-| `src/core/global-docs.ts` | Directory picking + group tagging over the above. Never throws on an unresolved directory. |
-| `src/main/bundled-assets.ts` | Resolves the shipped app-docs directory; `null` when this build doesn't ship it. |
+| `src/core/global-docs.ts` | `globalDocsData` / `readGlobalDoc`: merges the directories, tags the group. The list never throws on an empty directory set; `readGlobalDoc` throws when none resolved. |
+| `src/main/bundled-assets.ts` | `maestroAppDocsDirs()` — the shipped app-docs directories (`MAESTRO_APP_DOCS_DIR` overrides); an empty array when this build ships none. |
+| `src/renderer/src/routes/docs.index.tsx` / `project-docs.index.tsx` | The two landing pages (list + search). |
 | `src/renderer/src/routes/docs.$group.$slug.tsx` | The global reader. |
 | `src/renderer/src/routes/project-docs.$slug.tsx` | The project reader; its header carries the `at`-not-fragment rationale. |
+| `src/renderer/src/components/docs-panel.tsx` / `docs-search.tsx` / `highlight-text.tsx` | The slide-out doc list; the in-memory per-heading search (a hit is a section: slug plus heading id); string-level `<mark>` for result rows. |
+| `src/renderer/src/utils/docs.ts` | `getDocsData` / `getDoc` / `getGlobalDocsData` / `getGlobalDoc` IPC wrappers, `filterSections`, `excerptAround`. |
 | `src/renderer/src/utils/highlight.ts` | `termPattern`, `MARK_CLASS`, `rehypeHighlightTerms` — and its header documents the SVG-`<text>` trap. |
 
 ## Relationships

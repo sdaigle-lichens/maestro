@@ -8,7 +8,11 @@
 //   - maestro-inject-agent-context.js — `payloadRequirement()` is the REQUIRED-step block, injected
 //     on a first run, a cold re-run AND a resumed run (`040` skips the static blocks on a resume,
 //     which used to drop the channel instruction with them — task 086's second @reviewer pass never
-//     wrote `.claude/channels/scribe/reviewer.1.md`).
+//     wrote its scribe-lane `reviewer.1.md`).
+//
+// The channel file named here is the exact SCOPED path (`144`), `channelRelPath(scope, …)` —
+// `.claude/channels/<scope>/<receiver>/<sender>.1.md`. The agent writes what it is told; it never
+// works out its scope itself.
 //   - maestro-subagent-log.js — `payloadWrittenSince()` + `runStartedAt()` back `checkPayload()`
 //     (handoff-check.ts), the third handoff-issue kind.
 //
@@ -17,7 +21,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { laneFor } from "./handoff-channels.js";
+import { channelRelPath, isGapReport, laneFor, readLane } from "./handoff-channels.js";
 import { resolveHandoff, type GlobalHandoffInput } from "./handoff-resolution.js";
 import type { HandoffRoute } from "./handoff-routes.js";
 
@@ -28,7 +32,9 @@ export interface PayloadRoute {
   sender: string;
   /** Bare receiver agent type. */
   receiver: string;
-  /** Project-relative channel file, `.claude/channels/<receiver>/<sender>.1.md`. */
+  /** The channel scope (`144`) the file lives in — the writing session's own. */
+  scope: string;
+  /** Project-relative channel file, `.claude/channels/<scope>/<receiver>/<sender>.1.md`. */
   channelFile: string;
   /** The resolved protocol body (the shape to write). */
   protocol: string;
@@ -47,11 +53,13 @@ export function readProjectHandoff(projectDir: string, handoffId: string): strin
 
 /**
  * The routes in `routes` (already narrowed to one sender) whose pair resolves a protocol, each
- * with the exact channel file to write. `readGlobal` is the caller's global-tier reader (null on a
- * `node` with no `node:sqlite` — the seed tier still answers then).
+ * with the exact channel file to write in `scope` (the calling session's `channelScopeOf`).
+ * `readGlobal` is the caller's global-tier reader (null on a `node` with no `node:sqlite` — the
+ * seed tier still answers then).
  */
 export function payloadRoutes(
   projectDir: string,
+  scope: string,
   routes: HandoffRoute[],
   readGlobal: (handoffId: string) => GlobalHandoffInput | null
 ): PayloadRoute[] {
@@ -71,7 +79,8 @@ export function payloadRoutes(
       label: r.label,
       sender: r.sender,
       receiver: r.receiver,
-      channelFile: `.claude/channels/${r.receiver}/${r.sender}.1.md`,
+      scope,
+      channelFile: channelRelPath(scope, r.receiver, `${r.sender}.1.md`),
       protocol: resolved.content,
     });
   }
@@ -90,7 +99,7 @@ export function payloadRequirement(routes: PayloadRoute[], opts: { withShapes: b
     "This is a step of the handoff, not a recommendation — the receiving agent starts from that file, and the stop " +
     "hook checks it was written during THIS run. A missing payload is not skipped: the orchestrator resumes you to " +
     "write it before the next agent is dispatched. When nothing applies, still write the file, containing an empty " +
-    "JSON object (`{}`).";
+    "JSON object (`{}`). Create the file with the Write tool, which creates the folder too; do not run mkdir in Bash.";
   if (opts.withShapes) {
     const blocks = routes.map(
       (r) => `Route \`HANDOFF: ${r.label}\` → \`${r.receiver}\` — write this to \`${r.channelFile}\`:\n\n${r.protocol}`
@@ -125,11 +134,27 @@ const MTIME_SLACK_MS = 1000;
 /**
  * Did `route.sender` write `route.receiver`'s channel file at or after `sinceMs`? With no known
  * start (`null`), the file merely existing counts — the conservative direction, never a false flag.
+ *
+ * `112`: the sender's stamp moves a scribe-lane gap report off the `<sender>.1.md` write slot to
+ * `<sender>.<n>.md`, so a resumed sender stopping again would find its slot empty. Its own gap
+ * reports in the receiver's lane count too, under the same mtime rule — the stamp's rewrite sets
+ * that mtime, so one stamped by an earlier run still fails it.
+ *
+ * Only `route.scope`'s lane is looked at (`144`): a concurrent session's write to the same pair
+ * never satisfies this run's requirement.
  */
 export function payloadWrittenSince(projectDir: string, route: PayloadRoute, sinceMs: number | null): boolean {
+  const candidates = [laneFor(projectDir, route.scope, route.sender, route.receiver)];
+  for (const entry of readLane(projectDir, route.scope, route.receiver)) {
+    if (entry.sender === route.sender && isGapReport(entry)) candidates.push(entry.path);
+  }
+  return candidates.some((filePath) => writtenSince(filePath, sinceMs));
+}
+
+function writtenSince(filePath: string, sinceMs: number | null): boolean {
   let stat: fs.Stats;
   try {
-    stat = fs.statSync(laneFor(projectDir, route.sender, route.receiver));
+    stat = fs.statSync(filePath);
   } catch {
     return false;
   }

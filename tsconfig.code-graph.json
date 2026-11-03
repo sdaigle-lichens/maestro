@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES2023",
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "jsx": "react-jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowJs": false,
+    "resolveJsonModule": true,
+    "esModuleInterop": true
+  },
+  "include": [
+    "apps/maestro/src/core/**/*.ts",
+    "apps/maestro/src/main/**/*.ts",
+    "apps/maestro/src/preload/**/*.ts",
+    "apps/maestro/src/shared/**/*.ts",
+    "apps/maestro/src/renderer/src/**/*.ts",
+    "apps/maestro/src/renderer/src/**/*.tsx",
+    "packages/*/src/**/*.ts",
+    "packages/*/src/**/*.tsx"
+  ],
+  "exclude": ["**/node_modules", "**/*.stories.tsx", "**/*.d.ts"]
+}

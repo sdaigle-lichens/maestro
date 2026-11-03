@@ -3,8 +3,8 @@ name: rule-view
 description: "Explains how the /rules view in the Maestro desktop app is built end-to-end: the left rule selectors (on-disk project rules + installable vibe-rules), the center directory tree (rule-tree.tsx), how assignments map to the MaestroConfigV3 `rules` slice in .claude/maestro.json, and how the rule files are moved/installed on save. Use when the user is working inside apps/maestro and asks how the rules view works, how rules get assigned to the project root or directory paths, how rule files get moved or installed, how vibe-rules integrate, why a rule isn't showing up, or why a rule assignment isn't reaching the config."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
+  version: "2.0"
+  last-update: bbb69aba5cc3b304f8b672198781663c2b38866f
 ---
 
 # Rule View
@@ -44,6 +44,8 @@ Route loader: getRulesData()                   (src/renderer/src/utils/maestro.t
       ONE round trip returning { config, projectRoot, seeded, tree, projectRules,
                                  vibeRules, vibeRulesAvailable }
       (the web app made four server-fn calls here, three of which each re-walked the tree)
+      `config` is `readConfig(...) ?? blankConfig()` (not the starter graph — `seeded` just means
+      no maestro.json yet); `getRulesData` renames `projectRules` to `availableRules`
       vibeRulesAvailable is false when the vibe-rules CLI isn't installed, so the UI can say so
         │
         ▼
@@ -57,7 +59,7 @@ RuleTree renders the project-root row + one row per tree dir; each row shows the
   assignment for its path and a hover "+" picker to assign a selected rule (one per rule)
         │   onAssign / onUnassign → setConfig (mutates config.rules only)
         ▼ (Save rules)
-submitMaestroConfig({ sliceType: "rules", slice: { rules: config.rules } })
+submitMaestroConfig({ data: { sliceType: "rules", slice: { rules: config.rules } } })
   → window.maestro.config.save(...)  = IPC `config:save` → saveConfig() in src/core
       1. merge the rules slice into maestro.json (preserves workflows/instances) and write it
       2. re-render the orchestrator's handoff table
@@ -87,6 +89,10 @@ Paths are relative to `apps/maestro/` unless stated otherwise.
 | Directory walk, project-rule scan, `vibe-rules list`                          | `discovery.ts` in `apps/maestro/src/core/`                       |
 | **The apply step** (move project files / `vibe-rules load`)                   | `rules.ts` in `apps/maestro/src/core/`, called by `saveConfig()` |
 | Terminal-path equivalent of that step                                         | `plugins/maestro/scripts/maestro-apply-rules.js`        |
+| Same move without the window (`081`) — `assignRule`, `moveRule`, `unassignRule`, `listRules` | `rule-move.ts` in `apps/maestro/src/core/`; CLI `plugins/maestro/scripts/maestro-rules.cjs` |
+| `/tools` Rules tab (read-only table of the same `projectRules` set)           | `src/renderer/src/components/tabs/rules-tab.tsx`                 |
+| `ProjectRule` type re-export for the renderer                                 | `src/renderer/src/utils/maestro-rules.ts`                        |
+| Banner shown while no `maestro.json` exists                                   | `src/renderer/src/components/seeded-banner.tsx`                  |
 | Source of project rules                                                       | `<projectRoot>/**/.claude/rules/*.md`                            |
 
 ## The data model (the `rules` slice)
@@ -123,8 +129,8 @@ TreeNode    { path, name, depth }                // a directory, relative to pro
 
 Two `ChipMultiSelect` sections feed one shared `selectedRuleIds` pool:
 
-- **Available rules** — on-disk project rules from `getProjectRules()`. It scans **every** `.claude/rules/` in the tree (not just the root), so a rule already moved into a subdirectory still shows up. Each file is parsed for frontmatter (`id = fm.name || filename`, plus `description`/`body` — currently only `id` is rendered) and tagged `source: "project"`.
-- **Installable rules (vibe-rules)** — ids from `getVibeRules()` (`vibe-rules list`). Tagged `source: "vibe-rules"`. These don't exist in the project yet; assigning one installs it on save.
+- **Available rules** — on-disk project rules from `discoverProjectRules()`. It scans **every** `.claude/rules/` in the tree (not just the root), so a rule already moved into a subdirectory still shows up. Each file is parsed for frontmatter (`id = fm.name || filename`, plus `description`/`body` — currently only `id` is rendered) and tagged `source: "project"`.
+- **Installable rules (vibe-rules)** — ids from `discoverVibeRules()` (`vibe-rules list`). Tagged `source: "vibe-rules"`. These don't exist in the project yet; assigning one installs it on save.
 
 Source bookkeeping:
 
@@ -132,7 +138,7 @@ Source bookkeeping:
 - `setGroupSelection(groupIds, next)` toggles selection within one section while leaving the other's intact, and **prunes `config.rules`** to the still-selected ids.
 - `selectedRuleIds` is **seeded** on mount from `config.rules.map(r => r.id)`.
 
-On a successful save the page fires a `toast` (`@repo/ui/toast`) naming what moved and what was installed, then `router.invalidate()`s and **stays put** — the window is long-lived and the user saves repeatedly, so there is no terminal success view.
+While `seeded` (no `maestro.json` yet) a `SeededBanner` says assignments start empty and are written only on Save. The center shows "Select rules on the left…" until at least one rule is selected. On a successful save the page fires a `toast` (`@repo/ui/toast`) with the config path and how many rule files were placed (moved + installed) — or, when the save returned `warnings`, a `warning`-variant "Saved, but: …" toast instead — and `router.invalidate()`s (before the toast) and **stays put** — the window is long-lived and the user saves repeatedly, so there is no terminal success view.
 
 ## Center — directory tree (rule-tree.tsx)
 
@@ -142,7 +148,8 @@ Each `TreeRow`:
 
 - **Computes its own assignment** by filtering `ruleAssignments` (= `config.rules`): root matches `scope === "project" && no paths`; a dir matches `paths` containing `"<dirPath>/**"` or the bare `dirPath`.
 - Renders one chip per assignment, tinted by source — **project rules** in the primary color, **vibe-rules** in amber with a tiny `vibe` badge (from `a.source ?? ruleSource[a.id]`). The `×` calls `onUnassign(id)`.
-- Shows a hover-revealed `+` that opens an inline `<select>` of selected rules not already on this path; **Add** calls `onAssign`.
+- Each chip also has a `⇄`/`📌` button that flips that assignment's `placement` between move and `"scope-only"` (re-calling `onAssign`); a scope-only chip has a dashed border and a `scoped` badge.
+- Shows a hover-revealed `+` that opens an inline `<select>` of selected rules not already on this path plus a **scope only** checkbox; **Add** calls `onAssign` (with `placement: "scope-only"` when checked).
 
 **One location per rule.** `handleAssign` (in `rules.tsx`) removes **every** prior assignment of that id before appending the new one (and stamps `source` from `ruleSource`). So a rule assigned to the root and then added to a directory **moves** — the root chip disappears and the directory chip appears. `handleUnassign` filters purely by id. The glob convention `"<dirPath>/**"` is written in `rule-tree.tsx`'s `handleAdd` and read back by `pathAssignments`; the two must stay in lockstep.
 
@@ -157,8 +164,10 @@ The save is a single `config:save` carrying only `{ sliceType: "rules", slice: {
 
 `src/core/rule-move.ts` is `handleAssign` / `handleUnassign` plus Save as a function, for a caller with
 no renderer: `assignRule` (drop the old assignment of that id, append the new one with `source` last),
-`assignmentFor` (the `rule-tree.tsx` shape), then `saveConfig` (rules slice merge, re-render,
-`applyRules`). `plugins/maestro/scripts/maestro-rules.cjs` (`list`, `move <id> --to <dir|.>
+`assignmentFor` (the `rule-tree.tsx` shape), `resolveDestination` (the destination must be an existing
+directory inside the project, relative, not `.claude`/`.git`/`node_modules`), then `saveConfig` (rules
+slice merge, re-render, `applyRules`); `moveRule` also fails if no project rule file has that id.
+`listRules` reports each rule's directory and assignment. `plugins/maestro/scripts/maestro-rules.cjs` (`list`, `move <id> --to <dir|.>
 [--scope-only]`, `unassign <id>`) is its terminal front end, via the plugin-only `maestro-rule-move`
 bundle. It reads `maestro.json` right before writing, because `mergeSlice` replaces the whole `rules`
 block, and refuses a missing or non-v3 file instead of saving over it (`readConfig` would answer a
@@ -177,9 +186,10 @@ it for `rule.move` proposals.
 - **Name collisions resolve to project.** If the same id exists both on disk and in `vibe-rules list`, `ruleSource` calls it `"project"` and the vibe section hides it. The on-disk file is moved; the vibe-rules version is ignored.
 - **Two functions answer "get the rules", and they are not the same set — the other one surfaces on
   `/tools`, not here.** `discoverRuleLibrary` reads `<project>/rules/*.md` — what the project
-  *publishes*, shown on `/tools`' Rules tab (local-only, no global tier). `discoverProjectRules`,
+  *publishes*, shown in `/tools`' marketplace tabs (`ruleLibrary`). `discoverProjectRules`,
   the one this route uses, reads every `.claude/rules/` in the tree — what is *assigned* to a
-  directory, shown here, and what a save **moves**. A project can have either without the other, so
+  directory, shown here, and what a save **moves**. (`/tools`' own Rules tab, `rules-tab.tsx`, shows
+  this second set read-only and says there is no global rule tier.) A project can have either without the other, so
   they were deliberately not unified: the names and the return types (`RuleLibraryEntry` with
   `title`/`paths` vs `ProjectRule` with `id`/`dir`) are what keep a reader from assuming one view
   manages the other's files. If a rule shows up on `/tools` but not in this route's pickers (or vice

@@ -43,7 +43,20 @@ function messageText(input: unknown): string {
  * transcript shapes (`message.content[]` and a top-level `content[]`).
  */
 export function handbackHandoff(transcript: string): string | null {
+  return scanHandbacks(transcript).text;
+}
+
+/**
+ * Whether a hand-back tool call is in the transcript at all, labelled or not. Once one is there
+ * the transcript is complete as far as the hand-back goes, so a missing label is real (`124`).
+ */
+export function hasHandbackCall(transcript: string): boolean {
+  return scanHandbacks(transcript).sawCall;
+}
+
+function scanHandbacks(transcript: string): { text: string | null; sawCall: boolean } {
   let found: string | null = null;
+  let sawCall = false;
   for (const line of transcript.split("\n")) {
     if (!HANDBACK_TOOLS.some((t) => line.includes(t))) continue;
     let entry: unknown;
@@ -57,12 +70,44 @@ export function handbackHandoff(transcript: string): string | null {
     if (!Array.isArray(content)) continue;
     for (const block of content) {
       if (block && block.type === "tool_use" && HANDBACK_TOOLS.includes(block.name)) {
+        sawCall = true;
         const text = messageText(block.input);
         if (text) found = text;
       }
     }
   }
-  return found;
+  return { text: found, sawCall };
+}
+
+/** How long `awaitHandback` keeps looking, and how often (`124`). */
+export const HANDBACK_WAIT_MS = 3000;
+export const HANDBACK_POLL_MS = 100;
+
+/**
+ * `handbackHandoff` over a transcript that may not be fully written yet (`124`). Claude Code fires
+ * `SubagentStop` before it has flushed the agent's final `SubagentHandback` tool_use line to the
+ * transcript (probed live: the hook saw the transcript one assistant turn short, with no
+ * hand-back call in it), so a single read finds nothing and the agent is flagged `missing` though
+ * its report carried `HANDOFF: success`. Re-read until a hand-back call shows up, then judge it as
+ * `handbackHandoff` always did. Stops early once a call is present (a labelless one is a real
+ * `missing`), when the transcript cannot be read, or after `waitMs`. `read` returns the
+ * transcript text, or null when unreadable; `sleep` is injected so this stays `fs`-free.
+ */
+export async function awaitHandback(
+  read: () => string | null,
+  sleep: (ms: number) => Promise<void>,
+  waitMs: number = HANDBACK_WAIT_MS,
+  pollMs: number = HANDBACK_POLL_MS
+): Promise<string | null> {
+  const attempts = Math.max(1, Math.ceil(waitMs / pollMs) + 1);
+  for (let i = 0; i < attempts; i++) {
+    const transcript = read();
+    if (transcript === null) return null;
+    const scan = scanHandbacks(transcript);
+    if (scan.sawCall) return scan.text;
+    if (i < attempts - 1) await sleep(pollMs);
+  }
+  return null;
 }
 
 /** `078`'s name for `handbackHandoff`, kept because the generated bundle's export surface only grows. */

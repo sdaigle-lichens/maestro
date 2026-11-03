@@ -5,8 +5,9 @@
 // SubagentStart  → dispatch entry:  who was called, with the full spawning message.
 // SubagentStop   → handoff entry:   the agent's outcome, parsed from its HANDOFF: line,
 //                                   with the full final message for debugging; then (`036`)
-//                                   stamps every unstamped `.claude/channels/*/<this agent>.*`
-//                                   file this agent just wrote with the run's own id — see
+//                                   stamps every unstamped `.claude/channels/<scope>/*/<this agent>.*`
+//                                   file this agent just wrote with the run's own id — in this
+//                                   session's own channel scope only (`144`) — see
 //                                   apps/maestro/src/core/handoff-channels.ts.
 //
 // Both are no-ops when maestro.json is absent (Maestro not configured for this project).
@@ -40,9 +41,10 @@ const {
   writeStamp,
   meetingLeftovers,
   ensureSessionPaths,
-  handbackHandoff,
+  awaitHandback,
   meetingFor,
   checkHandoff,
+  checkRoute,
   checkPayload,
   handoffRoutes,
   routesFrom,
@@ -54,6 +56,10 @@ const {
   ownerRunLeftovers,
   readLogLines,
   retireResumeDeliveries,
+  parseGapsHandled,
+  acknowledgeGaps,
+  channelScopeOf,
+  resolveSessionId,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -87,12 +93,26 @@ function readGlobalHandoff(handoffId) {
   }
 }
 
-function agentPayloadRoutes(cwd, claudeDir, agentType, sessionStatePath) {
+function agentPayloadRoutes(cwd, scope, claudeDir, agentType, sessionStatePath) {
   const cfg = readJson(path.join(claudeDir, "maestro.json"));
   if (!cfg || cfg.version !== 3) return [];
   const { searchList } = resolveSearchList(cfg, readSession(sessionStatePath));
   const routes = routesFrom(handoffRoutes(searchList, cfg.workflow_instances || []), agentType);
-  return payloadRoutes(cwd, routes, readGlobalHandoff);
+  return payloadRoutes(cwd, scope, routes, readGlobalHandoff);
+}
+
+// `108`: this agent's routes in the workflow the orchestrator recorded, or null when none was
+// recorded (or it names no workflow) — the search list is then a guess, and a label missing from a
+// guessed workflow is not evidence of a missing edge.
+function activeWorkflowRoutes(claudeDir, agentType, sessionStatePath) {
+  const cfg = readJson(path.join(claudeDir, "maestro.json"));
+  if (!cfg || cfg.version !== 3) return null;
+  const { searchList, activeWorkflowName } = resolveSearchList(cfg, readSession(sessionStatePath));
+  if (!activeWorkflowName || !searchList.length || searchList.some((w) => w.name !== activeWorkflowName)) return null;
+  return {
+    workflow: activeWorkflowName,
+    routes: routesFrom(handoffRoutes(searchList, cfg.workflow_instances || []), agentType),
+  };
 }
 
 // Parse the HANDOFF: label from the agent's final message.
@@ -137,6 +157,9 @@ function parseHandoff(msg) {
   // because a `run_id` minted into a shared file is exactly the cross-session bleed `064` removes.
   const sess = ensureSessionPaths(claudeDir, p);
   if (!sess) process.exit(0);
+  // `144`: this session's channel scope. Stamping, the payload check, resume retirement and gap
+  // acknowledgement below all act on this scope's lanes only.
+  const scope = channelScopeOf(cwd, resolveSessionId(p));
 
   const event = p.hook_event_name || "";
   const agentType = p.agent_type || "";
@@ -191,9 +214,21 @@ function parseHandoff(msg) {
         // that includes `SubagentHandback`, the hand-back tool current Claude Code tells every
         // subagent to end with — matching `SendMessage` alone is what flagged every agent of task
         // 084 as `missing` while each had ended `HANDOFF: success`.
+        // `124`: SubagentStop fires BEFORE Claude Code has flushed the agent's final hand-back
+        // tool_use to that transcript, so a single read missed it and every hand-back agent was
+        // flagged `missing`. awaitHandback re-reads until the call lands (bounded).
         if (!inMeeting && !inOwnerRun && status === "unknown" && p.agent_transcript_path) {
           try {
-            const viaSend = handbackHandoff(fs.readFileSync(p.agent_transcript_path, "utf8"));
+            const viaSend = await awaitHandback(
+              () => {
+                try {
+                  return fs.readFileSync(p.agent_transcript_path, "utf8");
+                } catch {
+                  return null;
+                }
+              },
+              (ms) => new Promise((resolve) => setTimeout(resolve, ms))
+            );
             if (viaSend) {
               handoffMsg = viaSend;
               ({ status, label } = parseHandoff(viaSend));
@@ -210,13 +245,18 @@ function parseHandoff(msg) {
         let issue = null;
         if (!inMeeting && !inOwnerRun && offeredSkills(claudeDir, agentType, sess.state)) {
           issue = checkHandoff(handoffMsg);
+          // `108`: a condition label the active workflow has no edge for — stop and ask, never improvise.
+          if (!issue) {
+            const active = activeWorkflowRoutes(claudeDir, agentType, sess.state);
+            if (active) issue = checkRoute(handoffMsg, active.routes, active.workflow);
+          }
           // `087`: the third issue — the route taken expects a payload and this run wrote none.
           // Checked BEFORE the stamping below; measured from this run's own dispatch entry, so a
           // file left from an earlier pass (or a loop-back's first run) does not count.
           if (!issue) {
             try {
               const since = runStartedAt(readLogLines(sess.log), agentId);
-              issue = checkPayload(handoffMsg, agentPayloadRoutes(cwd, claudeDir, agentType, sess.state), (r) =>
+              issue = checkPayload(handoffMsg, agentPayloadRoutes(cwd, scope, claudeDir, agentType, sess.state), (r) =>
                 payloadWrittenSince(cwd, r, since)
               );
             } catch {
@@ -233,7 +273,7 @@ function parseHandoff(msg) {
           try {
             const before = readSession(sess.state);
             if (before.resume_deliveries && before.resume_deliveries[agentId]) {
-              const { session: after, retired } = retireResumeDeliveries(cwd, before, agentId, agentType);
+              const { session: after, retired } = retireResumeDeliveries(cwd, scope, before, agentId, agentType);
               writeSession(sess.state, after);
               const receiver = bareAgentName(agentType);
               for (const e of retired) {
@@ -256,6 +296,35 @@ function parseHandoff(msg) {
             }
           } catch {
             // Best-effort — an unretired file is still delivered to a later cold start.
+          }
+        }
+        // `112`: a scribe's skill-gap reports stay in its lane across deliveries until it names
+        // them on a `SKILL_GAPS_HANDLED:` line. Retire exactly those now (gap reports only — a
+        // non-scribe agent's line, or a name that is not a gap, retires nothing), logged as a
+        // `channel_delivery` with `via: "ack"`.
+        if (!inMeeting && !inOwnerRun && bareAgentName(agentType) === "scribe") {
+          try {
+            const names = parseGapsHandled(`${lastMsg || ""}\n${handoffMsg === lastMsg ? "" : handoffMsg || ""}`);
+            const acked = names.length > 0 ? acknowledgeGaps(cwd, scope, names) : [];
+            for (const e of acked) {
+              appendSessionLog(
+                claudeDir,
+                {
+                  ts: new Date().toISOString(),
+                  origin: "main_session",
+                  kind: "channel_delivery",
+                  sender: e.sender,
+                  receiver: "scribe",
+                  agent_id: agentId,
+                  via: "ack",
+                  content: e.body.trim(),
+                  log: `channel: ${e.sender} → scribe (gap acknowledged: ${e.fileName})`,
+                },
+                p
+              );
+            }
+          } catch {
+            // Best-effort — an unacknowledged gap is delivered again to the next scribe.
           }
         }
         // `p.transcript_path` here is `SubagentStopHookInput`'s own field — the SAME file the main
@@ -335,7 +404,7 @@ function parseHandoff(msg) {
         // ever held = nothing skipped, the pre-meeting behaviour.
         try {
           const runId = ensureSessionRunId(sess.state);
-          writeStamp(cwd, bareAgentName(agentType), runId, {
+          writeStamp(cwd, scope, bareAgentName(agentType), runId, {
             skip: [...meetingLeftovers(sessionState), ...ownerRunLeftovers(sessionState)],
           });
         } catch {

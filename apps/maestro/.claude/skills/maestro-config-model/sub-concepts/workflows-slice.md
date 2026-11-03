@@ -17,7 +17,7 @@ agent→skill sequence the orchestrator renders as its handoff table.
 alongside a canvas save, an `/agents` skill edit, and a hand-edited `maestro.json` — and the only one
 that runs outside the app process. `WorkflowSpec` (`{ name, steps, conditions? }`, in `contracts.ts`)
 is a compact, declarative alternative to hand-written `MaestroNodeV3`/`MaestroEdgeV3` graph JSON:
-`steps` is the success chain as step tokens in `seed.ts`'s own vocabulary (`"human_review-1"`,
+`steps` is the success chain as step tokens in `seed.ts`'s own vocabulary (`"human_review-1"`, `"manager_review-1"`,
 `"skill:<id>"`, or a bare `workflow_instances` name), `conditions` are `{from, to, label}` edges, on
 or off the success path. Applying a spec writes the exact same `MaestroWorkflowV3` shape as every
 other writer — no schema change — and reuses `seed.ts`'s layout functions (`sideTracker`,
@@ -37,9 +37,9 @@ the only workflow, because every reader assumes at least one exists. It keeps th
 following the same rule as removing a step on `update`.
 
 **Trap: renaming a condition's `label` on `update` does not preserve its prior exit side.** An
-`update` re-derives each condition edge's `sourceHandle` fresh through `sideTracker` rather than
-carrying over the one already on disk, so a spec that only changes a `label` (not the endpoints) can
-still flip which side of the node the curve leaves from. Untested edge case as of `063`; likely
+existing condition edge keeps its stored `sourceHandle`, but it is matched by `from|to|label`, so a
+spec that only changes a `label` (not the endpoints) misses the match and takes whatever
+`sideTracker` computes fresh — which can flip which side of the node the curve leaves from. Likely
 harmless, but not something to assume away if a future change adds edge-preserving behavior here.
 
 Files: `src/core/types.ts`, `src/core/success-path.ts`, `src/core/render.ts`, `src/core/workflow-spec.ts`.

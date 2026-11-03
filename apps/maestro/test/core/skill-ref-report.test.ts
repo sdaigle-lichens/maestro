@@ -102,7 +102,7 @@ describe("skillRefReport", () => {
     expect(report.suggestions).toHaveLength(4);
   });
 
-  it("adds the concept-skills hint only when concept-skills.json exists and the plugin is not enabled", () => {
+  it("adds the code-graph migrate hint only when concept-skills.json exists and code-graph is not enabled", () => {
     const cfg = config();
     const without = project({ "maestro.json": cfg });
     expect(skillRefReport(without, home).suggestions).toEqual([]);
@@ -111,13 +111,38 @@ describe("skillRefReport", () => {
     const report = skillRefReport(hinted, home);
     expect(report.dangling).toEqual([]);
     expect(report.suggestions).toHaveLength(1);
-    expect(report.suggestions[0]).toContain("concept-skills plugin is not enabled");
+    expect(report.suggestions[0]).toContain("/code-graph-install");
+    expect(report.suggestions[0]).not.toContain("@maestro");
 
     const enabled = project({
       "maestro.json": cfg,
       "concept-skills.json": {},
-      "settings.json": { enabledPlugins: { "concept-skills@maestro": true } },
+      "settings.json": { enabledPlugins: { "code-graph@code-graph": true } },
     });
     expect(skillRefReport(enabled, home).suggestions).toEqual([]);
+  });
+
+  it("suggests enabling code-graph for a root scribe.config.json, and drops it once enabled", () => {
+    const root = project({ "maestro.json": config() });
+    fs.writeFileSync(path.join(root, "scribe.config.json"), "{}");
+    const report = skillRefReport(root, home);
+    expect(report.suggestions).toHaveLength(1);
+    expect(report.suggestions[0]).toContain("scribe.config.json");
+    expect(report.suggestions[0]).not.toContain("/code-graph-install");
+
+    fs.writeFileSync(
+      path.join(root, ".claude", "settings.json"),
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
+    );
+    expect(skillRefReport(root, home).suggestions).toEqual([]);
+  });
+
+  it("a project with both scribe.config.json and concept-skills.json gets both suggestions", () => {
+    const root = project({ "maestro.json": config(), "concept-skills.json": {} });
+    fs.writeFileSync(path.join(root, "scribe.config.json"), "{}");
+    const { suggestions } = skillRefReport(root, home);
+    expect(suggestions).toHaveLength(2);
+    expect(suggestions.some((s) => s.includes("scribe.config.json"))).toBe(true);
+    expect(suggestions.some((s) => s.includes("/code-graph-install"))).toBe(true);
   });
 });

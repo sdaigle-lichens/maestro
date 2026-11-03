@@ -12,6 +12,10 @@
 //
 //   THE PLUGIN'S COPY OF A HOOK STANDS DOWN WHEN THE PROJECT REGISTERS THAT SAME HOOK ITSELF.
 //
+// ONE EXCEPTION: the channel write guard (`maestro-channel-write-guard`, task 122). The plugin's
+// copy of that hook NEVER stands down, even when the project registers it, so the guard cannot be
+// switched off by a project-local registration (or a stale local copy) leaving it uncovered.
+//
 // Project-local wins because it is the copy the user can see, refresh and commit. Precedence is
 // per hook, not per project: a partial install (some registrations missing) still gets the plugin
 // covering the rest, so an incomplete install degrades to "everything runs" rather than "one hook

@@ -5,22 +5,38 @@ for whoever ends up running it: a title, a "What to build" section describing on
 acceptance criteria. It names no agent — `/to-maestro-tasks` writes them workflow-agnostic on purpose,
 so the orchestrator classifies at dispatch time.
 
-`parseBlockedBy` reads dependencies out of the file. `status.json` stores `{ status, blockedBy }`
-per filename, and `listTasks` combines the two to report what is ready:
+`parseBlockedBy` reads dependencies out of the file (the backtick-wrapped `NNN-name.md` references in
+its `## Blocked by` section; "None" gives `[]`). `status.json` stores `{ status, blockedBy, epic? }`
+per filename (`epic` is owned by `setTaskEpic`, see [Epics](epics.md); every rebuild preserves it),
+and `listTasks` combines the two to report what is ready:
 
 ```json
 { "001-….md": { "status": "done", "blockedBy": [] } }
 ```
 
-The cascade means a task is ready only when everything it names is done. `closeTask` marks one done
-and recomputes the cascade, so a single close can unblock several tasks at once.
+The cascade means a task is ready only when everything it names is done. A blocker whose file no
+longer exists counts as satisfied. `closeTask` marks one done and recomputes the cascade, so a single
+close can unblock several tasks at once. `status.json` is written atomically with sorted keys, so
+either side's save gives a stable diff.
+
+**Merged vs done (`146`), epic tasks only.** A `status.json` entry may carry `unmerged: true` (done
+tasks only; absent = merged, so old entries need no migration). `maestro-task-status.cjs done` sets
+it when the task ran in a worktree (not a freeform one); `merge` and the new `mark-merged <task>`
+(refuses a task that is not done) clear it and recompute the cascade. `closeTask` (the UI close)
+never sets it. Inside an epic a blocker satisfies a dependent only when it is done AND not
+`unmerged` (`blockersSatisfied` in `tasks.ts`, mirrored in `maestro-tasks.cjs`); a task outside an
+epic ignores the flag. Every rebuild preserves `unmerged`. `MaestroTask.unmergedBlockers` lists the
+done-but-unmerged blockers of an unfinished epic task; the route shows them as
+"Waiting for merge of X" and `tasksFromFiles` forces such a task to `blocked` even if the tracker
+said `ready`. Test: `apps/maestro/test/core/unmerged-blockers.test.ts`.
 
 `/to-maestro-tasks` does not hand-assemble the files for a fresh batch: it hands
 `maestro-write-tasks.cjs` a JSON array of slices (title, body, `blockedBy` as indices into that same
 array, or as strings naming a task already in the queue by filename or `NNN` — refused unless it
 matches exactly one existing file), and the script assigns numbers/slugs, renders each file, and calls `sync()` in one pass —
 folding what used to be two separate steps (write the files, then run `maestro-task-status.cjs sync`)
-into one script call.
+into one script call. An optional `touchedSurfaces` string array on a slice is rendered as a
+`## Touched surfaces` section placed before `## Blocked by` (`145`); a slice without it is written as before.
 
 **Where the writer puts the queue (`071`).** `maestro-write-tasks.cjs` resolves its root with
 `findProjectRoot`, starting from `CLAUDE_PROJECT_DIR` (else cwd): the **nearest ancestor containing

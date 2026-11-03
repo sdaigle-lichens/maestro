@@ -132,7 +132,7 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
           receiver: entry.receiver ?? "",
           agent_id: entry.agent_id,
           content: entry.content ?? "",
-          ...(entry.via === "resume" ? { via: "resume" as const } : {}),
+          ...(entry.via === "resume" || entry.via === "ack" ? { via: entry.via } : {}),
         },
       });
       deliveriesByAgentId.set(entry.agent_id, list);
@@ -215,6 +215,15 @@ export function buildInstances(entries: SessionLogEntry[]): Instance[] {
   }
 
   return instances;
+}
+
+/**
+ * How many payloads this instance actually RECEIVED — `delivered` minus `via:"ack"` entries (`112`),
+ * which record a scribe retiring a gap report it was already handed, not a second delivery. The
+ * badges count this; the detail panel still lists the acknowledgements, labelled.
+ */
+export function receivedCount(inst: Instance): number {
+  return inst.delivered.filter((d) => d.via !== "ack").length;
 }
 
 /**

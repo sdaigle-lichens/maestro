@@ -128,6 +128,7 @@ export function nodeLabel(
     return "@" + (inst?.name || n.instance || n.id);
   }
   if (n.type === "skill") return "/" + (n.skill || n.id);
+  if (n.type === "manager_review") return "manager review";
   return "human review";
 }
 

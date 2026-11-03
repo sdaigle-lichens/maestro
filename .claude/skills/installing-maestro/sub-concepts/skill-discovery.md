@@ -11,12 +11,11 @@ existing `maestro.json` is never re-derived.
 
 Until `056` both readers behind them saw only the repository root's `.claude/skills/`.
 `discoverSkills()` (app) and `discoverProjectSkillIds()` (terminal) now both walk **every**
-`.claude/skills` in the tree — the same bounded walk `concept-skills-system`'s `skillSearchDirs`
+`.claude/skills` in the tree — the same bounded walk code-graph's concept-skill discovery
 uses, via the new `discoverProjectSkillsTree`.
 
-On this repo that was the difference between seven `skills_available` entries and eighteen: the
-twelve concept skills living beside `apps/maestro` were invisible, and a monorepo instance could be
-seeded with **no skills at all and never know it**.
+On this repo that meant the concept skills living beside `apps/maestro` were invisible, and a
+monorepo instance could be seeded with **no skills at all and never know it**.
 
 A name collision between two directories keeps the first found in walk order and is **reported
 rather than silently resolved** — `console.warn` in the app, stderr in the terminal script, and
@@ -48,7 +47,7 @@ into `lib/maestro-session.cjs`, so a change to `skill-resolve.ts` needs
 `skills_available` itself is unchanged by `061` — still bare ids. Only what a runtime caller *does*
 when the Skill tool can't act on one changed.
 
-Files: `apps/maestro/src/core/skill-resolve.ts`, `apps/maestro/src/core/install.ts`
-(`discoverSkills`, `discoverProjectSkillsTree`), `plugins/maestro/scripts/maestro-install.js`
+Files: `apps/maestro/src/core/skill-resolve.ts`, `apps/maestro/src/core/discovery.ts`
+(`discoverSkills`, `discoverProjectSkillsTree`; `install.ts` imports them), `plugins/maestro/scripts/maestro-install.js`
 (`discoverProjectSkillIds`), `plugins/maestro/scripts/maestro-resolve-skill-path.cjs`,
 `plugins/maestro/scripts/maestro-inject-agent-context.js`.

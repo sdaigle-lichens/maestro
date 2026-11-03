@@ -1,7 +1,15 @@
 {
   "autoCompactWindow": 150000,
+  "extraKnownMarketplaces": {
+    "code-graph": {
+      "source": {
+        "source": "github",
+        "repo": "sdaigle-lichens/code-graph"
+      }
+    }
+  },
   "enabledPlugins": {
-    "concept-skills@maestro": true
+    "code-graph@code-graph": true
   },
   "hooks": {
     "UserPromptExpansion": [
@@ -31,6 +39,15 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-post-mortem-context.cjs\""
           }
         ]
+      },
+      {
+        "matcher": "^(maestro|(maestro:)?maestro-manager)$",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-session-name.cjs\""
+          }
+        ]
       }
     ],
     "PreToolUse": [
@@ -48,6 +65,10 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-post-mortem-context.cjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-session-name.cjs\""
           }
         ]
       },
@@ -57,6 +78,24 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-session-log.cjs\""
+          }
+        ]
+      },
+      {
+        "matcher": "Write|Edit|MultiEdit|NotebookEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-channel-write-guard.cjs\""
+          }
+        ]
+      },
+      {
+        "matcher": "AskUserQuestion|SendMessage",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-human-review-gate.cjs\""
           }
         ]
       }
@@ -108,6 +147,37 @@
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-session-name.cjs\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-session-name.cjs\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-session-heartbeat.cjs\""
+          }
+        ]
+      }
+    ]
+  },
+  "permissions": {
+    "allow": [
+      "Write(/.claude/channels/**)"
     ]
   }
 }

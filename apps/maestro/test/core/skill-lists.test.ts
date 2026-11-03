@@ -32,10 +32,10 @@ describe("resolveSkillLists — start_skills / end_skills", () => {
   it("passes plugin-namespaced ids through untouched", () => {
     const r = resolveSkillLists(
       v3({
-        start_skills: { maestro: ["concept-skills:use-code-architecture-design-check", "plain"], to_maestro_tasks: [] },
+        start_skills: { maestro: ["code-graph:use-code-architecture-design-check", "plain"], to_maestro_tasks: [] },
       })
     );
-    expect(r.maestroStart).toEqual(["concept-skills:use-code-architecture-design-check", "plain"]);
+    expect(r.maestroStart).toEqual(["code-graph:use-code-architecture-design-check", "plain"]);
   });
 
   it("treats a missing key as an empty list (authoritative, no legacy default)", () => {

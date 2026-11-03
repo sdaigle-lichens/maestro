@@ -3,8 +3,8 @@ name: create-skills-architecture
 description: "Explains how the four create-* flows (create-skill, create-subagent, create-plugin, create-marketplace) work end-to-end: the desktop app's form routes, the deterministic scaffold in src/core, the confirmation dialog and the Agent SDK session it runs, and the consuming SKILL.md prompts. Use when the user is working inside apps/maestro or plugins/maestro and asks how a create flow works, where to add a new field, why a form change isn't reaching the prompt, why the confirmation dialog did or didn't open, why a run was refused a write, how target=project differs from target=marketplace, or how create-subagent's template-seed field differs from an /agents fork."
 metadata:
   type: concept-skill
-  version: "1.3"
-  last-update: 0ebccda448b85ccba2da3e292cc874043a19b431
+  version: "2.1"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Create-Skills Architecture
@@ -92,7 +92,6 @@ Renderer paths are relative to `apps/maestro/`.
 | `buildDesc` and friends — ONE implementation                                         | `text.ts` in `apps/maestro/src/core/`                                                                            |
 | Shared UI primitives                                                                 | `packages/ui/src/`                                                                                               |
 | Consuming prompt                                                                     | `plugins/maestro/skills/create-<name>/SKILL.md`                                                         |
-| Shared prompt contract the four SKILL.md link to                                     | `docs/ai-tools-create-shared.md`                                                                                 |
 
 ## The four flows compared
 
@@ -177,7 +176,7 @@ Skills and Agents moved off `/tools` onto their own pages; only the last two are
   `src/core`, and the confirmation dialog names the file it returns. A second resolution
   anywhere — a path computed in the renderer, a `path.join` inlined into a prompt builder — makes the
   modal describe a file other than the one on disk, and the user is consenting to the wrong thing.
-  `test/create-preview.test.ts` and `test/scaffold.test.ts` in that package compare the two.
+  `test/core/create-preview.test.ts` and `test/core/scaffold.test.ts` compare the two.
 - **The renderer's `utils/text.ts` re-exports and must never implement.** `buildDesc` decides the
   `description:` frontmatter; the form's preview shows it before the file exists and the node-side
   scaffold writes it after. Two implementations means a preview that silently stops matching the

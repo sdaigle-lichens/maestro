@@ -1,9 +1,12 @@
 # First-install seed and chain detection
 
 When no `maestro.json` exists yet, the canvas does **not** open empty. Main returns
-`defaultV3Config(implAgents)`, which seeds the bundled agents as `workflow_instances` plus positioned
-workflow nodes, and the payload carries `seeded: true` and the `RepoDetection` evidence together.
-A corrupt or wrong-version file falls back instead to the empty `blankV3Config()`.
+`defaultV3Config(implAgents, skillMap, seedSkills)` (`src/core/seed.ts`), which seeds the bundled
+agents as `workflow_instances` plus positioned workflow nodes, and the payload carries `seeded: true`
+and the `RepoDetection` evidence together. A corrupt or wrong-version file falls back instead to the
+empty `blankConfig()` (`src/core/config.ts`). `seedSkills.designCheck` (when the project has one)
+joins `skills_available` and leads the `Refactor` workflow as a skill node; the seed also writes
+`start_skills`/`end_skills` from `defaultSkillLists`.
 
 `implAgents` is the **repo-detected** implementation chain (`detectImplAgents()` in `src/core`) —
 `["backend"]`, `["frontend"]`, `["backend","frontend"]`, and so on. `defaultV3Config` seeds one of

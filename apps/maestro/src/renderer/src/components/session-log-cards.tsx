@@ -1,5 +1,5 @@
 import { CheckCircleIcon, CircleIcon, TrayIcon, WarningIcon, XCircleIcon } from "@phosphor-icons/react";
-import { unaccountedSkills } from "../utils/session-log";
+import { receivedCount, unaccountedSkills } from "../utils/session-log";
 import type { Instance } from "../utils/session-log";
 import { ContextUsageBadge } from "./context-usage";
 
@@ -57,13 +57,13 @@ export default function SessionLogCards({ instances, activeId, onSelect }: Sessi
                 </span>
               )}
               <ContextUsageBadge instance={inst} />
-              {inst.delivered.length > 0 && (
+              {receivedCount(inst) > 0 && (
                 <span
                   className="flex items-center gap-0.5 text-[10px] font-mono text-maestro-muted"
-                  title={`${inst.delivered.length} channel deliveries`}
+                  title={`${receivedCount(inst)} channel deliveries`}
                 >
                   <TrayIcon size={10} />
-                  {inst.delivered.length}
+                  {receivedCount(inst)}
                 </span>
               )}
             </span>

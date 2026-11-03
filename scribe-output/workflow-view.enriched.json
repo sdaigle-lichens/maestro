@@ -1,0 +1,747 @@
+{
+  "concept": "workflow-view",
+  "vertices": [
+    {
+      "_key": "0af234c70ff964d65cab8b0455557909",
+      "purpose": "Builds a React Flow success edge from bottom handle to top handle, with matching maestroEdge data of kind success.",
+      "inputs": [
+        "from: source node id",
+        "to: target node id"
+      ],
+      "outputs": [
+        "Edge with type successEdge and data.maestroEdge kind success"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "success-path"
+      ],
+      "sig_seen": "function makeSuccessEdge(from: string, to: string): Edge",
+      "hash_seen": "47354f3c4097dd478bc6d734b855da854fbd572a75c3840083a0da33975a7fb0"
+    },
+    {
+      "_key": "15f1489406f54fe5151a038f9a434a5b",
+      "purpose": "Builds the React Flow node list for a workflow: a non-deletable synthetic main-session node first, then one node per maestro node, typed agentNode, skillNode, or a review node, with its instance data attached for agent nodes.",
+      "inputs": [
+        "workflow: the active MaestroWorkflowV3",
+        "instances: the workflow_instances list used to resolve agent nodes"
+      ],
+      "outputs": [
+        "Node[] for React Flow"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "main-session",
+        "instance-reference"
+      ],
+      "sig_seen": "function workflowToRfNodes(workflow: MaestroWorkflowV3, instances: MaestroInstanceV3[]): Node[]",
+      "hash_seen": "0a6f9a2cdcc04ef960f47bc72a699f24d2d1c482e69ad0a0a0f7f5e71234a16a"
+    },
+    {
+      "_key": "1a59ec845b7212a2fd789a9db8fb2a10",
+      "purpose": "The /workflows route page: seeds the workflow store from the loader, lays out the agents and skills left pane, the workflow selector, the banners and the canvas, and handles save, reseed, create-workflow and agent-fork handoff.",
+      "inputs": [
+        "loader data: config, bundledAgents, projectSkills, projectRoot, seeded, detection"
+      ],
+      "outputs": [
+        "JSX of the workflows page",
+        "saves via submitMaestroConfig; store updates"
+      ],
+      "cross_concept_refs": [
+        "config",
+        "agents",
+        "skills"
+      ],
+      "document_ref": null,
+      "tags": [
+        "workflows-page",
+        "save",
+        "external-change"
+      ],
+      "sig_seen": "function WorkflowsPage(): import(\"react/jsx-runtime\").JSX.Element | null",
+      "hash_seen": "ba9e607d6a8c41f07779cd1f4a72dfa423877526608511005ac55e8b705af84a"
+    },
+    {
+      "_key": "287ada06eb67d7da556732e51fb9512e",
+      "purpose": "Converts canvas nodes back to MaestroNodeV3 entries for saving, dropping the synthetic main-session node and keeping the stored id, type, instance, skill and the current position.",
+      "inputs": [
+        "nodes: React Flow nodes from the canvas"
+      ],
+      "outputs": [
+        "MaestroNodeV3[] without main-session"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "main-session"
+      ],
+      "sig_seen": "function rfNodesToMaestroNodes(nodes: Node[]): MaestroNodeV3[]",
+      "hash_seen": "7d8865a7cd5d80cfb685f64a391af833e8cf248ddfca63ef6bb3047149412b58"
+    },
+    {
+      "_key": "2f4b9baebf126979928a93324e8fe375",
+      "purpose": "Renames the workflow at a given index in the config's workflows list by copying it with a new name.",
+      "inputs": [
+        "idx: index of the workflow to rename",
+        "name: new workflow name"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "workflow-edit",
+        "rename"
+      ],
+      "sig_seen": "function renameWorkflow(idx: number, name: string): void",
+      "hash_seen": "5b830a6f8aff5450da711d6500f0791cddb395ac0b50e940893e0dd65124376c"
+    },
+    {
+      "_key": "30a0ec962ae2dd0584774a6c9a1c9572",
+      "purpose": "Classifies a workflow step id string into a node type: the fixed human_review-1 id becomes a human review step, a manager-review id matches MANAGER_REVIEW_ID, a skill: prefix becomes a skill node, and anything else is an agent node whose id is its instance name.",
+      "inputs": [
+        "step: the raw step id string from the workflow's success path"
+      ],
+      "outputs": [
+        "ParsedStep with id, type (agent | human_review | manager_review | skill), and instance or skill when applicable"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "step-id-parsing",
+        "instance-reference"
+      ],
+      "sig_seen": "function parseStep(step: string): ParsedStep",
+      "hash_seen": "9487a2f31053ee9c0dae8c0e7f50e3358273bb89db87bc1bfdb61254685af152"
+    },
+    {
+      "_key": "32904f01c553750e576b33a659d0a257",
+      "purpose": "Returns a copy of the edge list with any outgoing success edge from the given source removed, enforcing the one-success-edge-per-node rule.",
+      "inputs": [
+        "edges: current React Flow edges",
+        "sourceId: node whose outgoing success edge is removed"
+      ],
+      "outputs": [
+        "Edge[] without the source's success edge"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "success-path",
+        "single-success-edge"
+      ],
+      "sig_seen": "function replaceSuccessEdgeFrom(edges: Edge[], sourceId: string): Edge[]",
+      "hash_seen": "a379f5c136d90fec8cf65356802a45e9d1041785ffa4ef677c90acf0ac736f8c"
+    },
+    {
+      "_key": "344152f976dc3bf1ab699aff5ac50878",
+      "purpose": "Projects the workflow-owned fields of MaestroConfigV3 (agents, skills, instances, workflows) into a WorkflowSlice, the unit that is saved and reconciled.",
+      "inputs": [
+        "config: MaestroConfigV3"
+      ],
+      "outputs": [
+        "WorkflowSlice"
+      ],
+      "cross_concept_refs": [
+        "config"
+      ],
+      "document_ref": null,
+      "tags": [
+        "slice-merge"
+      ],
+      "sig_seen": "function workflowSlice(config: MaestroConfigV3): WorkflowSlice",
+      "hash_seen": "10b6d9422adf81a0938eace0640a1b39bef357568ad21b33a6fbc3de790f2a47"
+    },
+    {
+      "_key": "39d189c24f341248e98d04ab5d735e82",
+      "purpose": "Resolves the external-change banner by discarding canvas edits and adopting the flagged disk slice as the config and baseline, clamping the active workflow index.",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "external-change",
+        "reload-from-disk"
+      ],
+      "sig_seen": "function reloadFromDisk(): void",
+      "hash_seen": "327d8c3a9ef0798bd1bb1c3334e1a1a2515730528cd92ced262c752b9af9eb74"
+    },
+    {
+      "_key": "3ffe546d409009b95c330bb74c46bbd3",
+      "purpose": "Tells whether a canvas edge is a success edge, by its successEdge type or by a stored maestro edge with kind success.",
+      "inputs": [
+        "e: a React Flow edge"
+      ],
+      "outputs": [
+        "boolean"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "success-path"
+      ],
+      "sig_seen": "function isSuccessEdge(e: Edge): boolean",
+      "hash_seen": "d5864d9f3c754bf60f54032369edb9116c7a4550bfafe28c5c049dd57dddc98b"
+    },
+    {
+      "_key": "4890d35e3dd858670a52172e9c75e91f",
+      "purpose": "Replaces the config's skills_available list with the given skill ids when a config is loaded.",
+      "inputs": [
+        "ids: skill ids available to the project"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "skills-available"
+      ],
+      "sig_seen": "function setSkillsAvailable(ids: string[]): void",
+      "hash_seen": "4e8ed597d16639ebc186b840c1bcc4dc7a22f8f38df54511ff54e92489d6b9fe"
+    },
+    {
+      "_key": "671ac9e2ed15982e82bf91d1ac9abb4c",
+      "purpose": "Returns the default empty instance-picker value: reuse mode with no reused instance, the given default agent, an empty new name, and an empty skill selection.",
+      "inputs": [
+        "defaultAgent: agent id to pre-fill, empty string by default"
+      ],
+      "outputs": [
+        "InstancePickerValue in reuse mode"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "instance-picker"
+      ],
+      "sig_seen": "function blankInstancePicker(defaultAgent = \"\"): InstancePickerValue",
+      "hash_seen": "4728c4c3ba4247657f5115d3e5d67492e124043958b4fe46dd357e7d8a8d679f"
+    },
+    {
+      "_key": "6e0b21968a292285466d1906e4a8aed6",
+      "purpose": "The /workflows canvas component: owns the React Flow node and edge state, syncs it from the workflow prop, and pushes every structural edit back through onChange as a MaestroWorkflowV3.",
+      "inputs": [
+        "workflow: active workflow",
+        "workflowKey: switch detector",
+        "availableAgents",
+        "availableSkills",
+        "instances: workflow instances",
+        "onChange: saves the edited workflow",
+        "onInstancesChange",
+        "onAgentForked",
+        "forkableAgents"
+      ],
+      "outputs": [
+        "JSX of the React Flow canvas, pickers and side panels",
+        "onChange calls with rebuilt nodes and edges"
+      ],
+      "cross_concept_refs": [
+        "agents",
+        "skills",
+        "config"
+      ],
+      "document_ref": null,
+      "tags": [
+        "canvas",
+        "react-flow",
+        "success-path",
+        "condition-edge",
+        "instance-picker"
+      ],
+      "sig_seen": "function WorkflowCanvas({\n  workflow,\n  workflowKey,\n  availableAgents,\n  availableSkills,\n  instances,\n  onChange,\n  onInstancesChange,\n  onAgentForked,\n  forkableAgents,\n}: WorkflowCanvasProps): import(\"react/jsx-runtime\").JSX.Element",
+      "hash_seen": "4224cdbee0d9f483a548e24f99282ce240d627d9f9625b54e2de257b90e473cf"
+    },
+    {
+      "_key": "7ce2307b6a34b31ee9dc2b3fc2dffa6b",
+      "purpose": "Folds the on-disk workflow slice into the edit state: no-op when unchanged, adopt as baseline when it matches the canvas, take the disk slice when the canvas is clean, otherwise keep edits and raise externalChange.",
+      "inputs": [
+        "state: WorkflowEditState",
+        "diskSlice: WorkflowSlice"
+      ],
+      "outputs": [
+        "new WorkflowEditState (or the same object on no-op)"
+      ],
+      "cross_concept_refs": [
+        "config"
+      ],
+      "document_ref": null,
+      "tags": [
+        "reconcile",
+        "external-change"
+      ],
+      "sig_seen": "function reconcileWorkflowSlice(state: WorkflowEditState, diskSlice: WorkflowSlice): WorkflowEditState",
+      "hash_seen": "0753cc1bacfcc6a39e29e8d91a6a7330db6a5aa527a08a4990f0f27079eb22f6"
+    },
+    {
+      "_key": "8447d78379ebcae21c5fd613dad16993",
+      "purpose": "Seeds the workflow store from loader data: on the same project it reconciles the disk slice against the baseline without discarding edits, and on a project switch it replaces the config and resets the active workflow index.",
+      "inputs": [
+        "config: MaestroConfigV3 loaded from disk",
+        "projectRoot: project the loader ran for"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "seed",
+        "project-switch",
+        "reconcile"
+      ],
+      "sig_seen": "function seedWorkflowStore(config: MaestroConfigV3, projectRoot: string): void",
+      "hash_seen": "044218587d2b42d6f292ff9042a36acb099ac48e87d3552251a8faefabaf4aa7"
+    },
+    {
+      "_key": "9810cac22aa82f7eb78c4379a7cd4787",
+      "purpose": "Converts canvas edges back to MaestroEdgeV3 entries for saving, using the stored maestro edge's kind and label when present and deriving kind from the edge type otherwise; it does not filter edges from main-session.",
+      "inputs": [
+        "edges: React Flow edges from the canvas"
+      ],
+      "outputs": [
+        "MaestroEdgeV3[] including edges whose from is main-session"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "main-session",
+        "condition-edge"
+      ],
+      "sig_seen": "function rfEdgesToMaestroEdges(edges: Edge[]): MaestroEdgeV3[]",
+      "hash_seen": "e419b26e71b00543d7f56be2c2dfab7cf4c94ceb509211b793f7514d99450afa"
+    },
+    {
+      "_key": "989556c7be2348f7615b70749bca9500",
+      "purpose": "Resolves the external-change banner by keeping the user's canvas edits: clears the flag and makes the flagged disk slice the new baseline so it does not re-flag.",
+      "inputs": [],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "external-change",
+        "keep-mine"
+      ],
+      "sig_seen": "function keepMine(): void",
+      "hash_seen": "bab401441df3abae836cb0a71d6327d2bbb1497396e63dbc646d6cabd0efc246"
+    },
+    {
+      "_key": "9c516b533801d5178c37752cf6d7cf80",
+      "purpose": "Renders nothing; re-runs fitView after a short delay whenever the active workflow name changes, cancelling any pending fit on a newer switch or unmount.",
+      "inputs": [
+        "workflowName: name of the active workflow"
+      ],
+      "outputs": [
+        "null (side effect only: viewport fit)"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "viewport"
+      ],
+      "sig_seen": "function FitViewEffect({ workflowName }: { workflowName: string | undefined }): null",
+      "hash_seen": "103afd85e9da32939f444323d0a25ae333d8431f64094dffe4015a5ed087469a"
+    },
+    {
+      "_key": "b746946fac5a3833930d2190b2f24e70",
+      "purpose": "Replaces the config's agents_available list with the given agent ids when a config is loaded.",
+      "inputs": [
+        "ids: agent ids available to the project"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "agents-available"
+      ],
+      "sig_seen": "function setAgentsAvailable(ids: string[]): void",
+      "hash_seen": "d31396274887926364398dfa174bcfca17e051564a862f511a934cc5522f629b"
+    },
+    {
+      "_key": "ce1b8d9b76fe1137c0d381e135c363c4",
+      "purpose": "Renders the Skills section of an instance editor: one checkbox per available skill (plus any held id the shared list no longer offers), where checking adds a skill as referenced and a Loaded/Ref pill switches its mode; shows the emptyHint or nothing when there are no skills.",
+      "inputs": [
+        "skills: available skill ids",
+        "value: current SkillSelection with loaded and referenced lists",
+        "onChange: receives the next SkillSelection",
+        "maxHeight: scroll-box height class",
+        "size: sm or md",
+        "emptyHint: text shown when the list is empty"
+      ],
+      "outputs": [
+        "JSX for the Skills section, or null when there are no skills and no emptyHint"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "loaded-vs-referenced",
+        "dangling-skill-ref",
+        "skill-selection"
+      ],
+      "sig_seen": "function InstanceSkillPicker({\n  skills: availableSkills,\n  value,\n  onChange,\n  maxHeight = \"max-h-48\",\n  size = \"md\",\n  emptyHint,\n}: {\n  skills: string[];\n  value: SkillSelection;\n  onChange: (next: SkillSelection) => void;\n  maxHeight?: string;\n  size?: \"sm\" | \"md\";\n  // When the available-skills list is empty: if provided, render this hint\n  // instead of nothing (so the Skills section never silently disappears).\n  emptyHint?: string;\n}): import(\"react/jsx-runtime\").JSX.Element | null",
+      "hash_seen": "8b5313f2bebd97854a0f2dd18a917912a9b9b56d81267b02c056eea86a138cec"
+    },
+    {
+      "_key": "d2168e45d12aa452dbae25336e9a5357",
+      "purpose": "Structural equality for JSON-like values that ignores key order and undefined-valued keys.",
+      "inputs": [
+        "a: value",
+        "b: value"
+      ],
+      "outputs": [
+        "boolean"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "reconcile"
+      ],
+      "sig_seen": "function deepEqual(a: unknown, b: unknown): boolean",
+      "hash_seen": "aab9bc9b2695f6f30bb09746e5dd747d081283eb278f1d9c54c8f6920991d184"
+    },
+    {
+      "_key": "d32260e75918306050385f92363e3d13",
+      "purpose": "Replaces the workflow at a given index in the config's workflows list with a new workflow value, leaving other workflows untouched.",
+      "inputs": [
+        "idx: index of the workflow to replace",
+        "wf: replacement workflow"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "workflow-edit"
+      ],
+      "sig_seen": "function updateWorkflow(idx: number, wf: MaestroWorkflowV3): void",
+      "hash_seen": "2166cfc075397430425078a78eb10845856fbe12e38617e15f9150f3488fafe5"
+    },
+    {
+      "_key": "d93002b3bb0067c07719b2ef23a32ebe",
+      "purpose": "After a successful Save, records the written workflow slice as the baseline and clears the external-change flag, but only when the store still belongs to the same project root.",
+      "inputs": [
+        "slice: the workflow slice that was written",
+        "projectRoot: project the save belongs to"
+      ],
+      "outputs": [],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "save",
+        "baseline"
+      ],
+      "sig_seen": "function markSaved(slice: WorkflowSlice, projectRoot: string): void",
+      "hash_seen": "5c75c89de8689b303934592a88e2c5f8c1c16e7ea74324050340372bf0fb2f74"
+    },
+    {
+      "_key": "e0e9322f6858c7472af458221a391a4a",
+      "purpose": "Maps workflow edges to React Flow edges: success edges leave from the bottom and enter at the top, condition edges leave from the right with an orange dashed animated style, and the original maestro edge is kept in data.",
+      "inputs": [
+        "workflow: the active MaestroWorkflowV3"
+      ],
+      "outputs": [
+        "Edge[] for React Flow"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "success-path",
+        "condition-edge"
+      ],
+      "sig_seen": "function workflowToRfEdges(workflow: MaestroWorkflowV3): Edge[]",
+      "hash_seen": "104e1630cb223c7cf3d30ad5b36e118d1f26529e1c880392ff2b24035caad7fa"
+    }
+  ],
+  "edges": [
+    {
+      "_key": "03613108a6684155155af1c55ec55b5d",
+      "reason": "The skill-node add path calls nextSkillId to pick the id of the new skill node."
+    },
+    {
+      "_key": "09435a4306a02b2253b05473c54ebfa9",
+      "reason": "The condition-add path calls findSuccessTerminalId to locate the end of the success chain."
+    },
+    {
+      "_key": "0cf7247a11f3bf139b00776f7bdc3377",
+      "reason": "The condition picker state is typed with the InstancePickerValue type."
+    },
+    {
+      "_key": "0dc9a3494543e7d91ae1274acb414abd",
+      "reason": "pushChange converts React Flow nodes back into maestro nodes via rfNodesToMaestroNodes."
+    },
+    {
+      "_key": "0df1094b7d34cab0cf9317c6dc0e4279",
+      "reason": "seedWorkflowStore builds the baseline by calling workflowSlice on the loaded config in the project-switch branch."
+    },
+    {
+      "_key": "11c9c3f333ac08cb313792fa077060a1",
+      "reason": "handleConnect calls replaceSuccessEdgeFrom so a new success connection replaces the source's old one."
+    },
+    {
+      "_key": "140f1757536744fe64d7e95618daaddd",
+      "reason": "The component's props are typed with WorkflowCanvasProps."
+    },
+    {
+      "_key": "14515344b15ab50b8edf2109be39b3d1",
+      "reason": "The skill checkbox path toggles the skill list via setSkillsAvailable."
+    },
+    {
+      "_key": "15701dd49c5f0e78b540429c2e5fe0a5",
+      "reason": "The add-step path uses isSuccessEdge to find the edge displaced by an insertion."
+    },
+    {
+      "_key": "198ac6b5f814e8944959bb4c9db0291c",
+      "reason": "pushChange converts React Flow edges back into maestro edges via rfEdgesToMaestroEdges."
+    },
+    {
+      "_key": "1ee43e022d5abb04a7cd9a9ca34024d4",
+      "reason": "The skill-id prompt path adds a skill via setSkillsAvailable."
+    },
+    {
+      "_key": "20f1c7216797c612bd793733b8fed85c",
+      "reason": "The component reads the colour mode through the useColorMode hook for React Flow."
+    },
+    {
+      "_key": "21d07ac6e0f5692cf5d095c3b3b1b299",
+      "reason": "reconcileWorkflowSlice's state parameter is typed as WorkflowEditState."
+    },
+    {
+      "_key": "284fa68f21400565db1c9a583cebda93",
+      "reason": "workflowSlice is typed as returning a WorkflowSlice."
+    },
+    {
+      "_key": "299db3276a9a7faede513796f7cfee32",
+      "reason": "confirmCreateWorkflow calls addWorkflow to add the new workflow to the store."
+    },
+    {
+      "_key": "29e08cd1d9fb876354dfc80c05861afa",
+      "reason": "parseStep is declared to return a ParsedStep, so the type is referenced in its signature."
+    },
+    {
+      "_key": "2b3117ef93f63444bf03c29cfe437032",
+      "reason": "The add-condition confirm path resolves the picked instance via resolveInstanceFromPicker."
+    },
+    {
+      "_key": "3010d9f021815ef7e74cb0bfca5e38dc",
+      "reason": "The canvas mounts FitViewEffect inside the React Flow provider so it re-fits on workflow switch."
+    },
+    {
+      "_key": "303aaacd435cf63889308459c2d02542",
+      "reason": "handleSubmit calls markSaved after a successful save so the watcher echo is not a change."
+    },
+    {
+      "_key": "30f0d9df1670467ae687918f6b1650da",
+      "reason": "The selected-instance side panel mounts InstanceSkillPicker to edit loaded and referenced skills."
+    },
+    {
+      "_key": "3207066a293bdf15a5def27f2560be9a",
+      "reason": "The sync effect builds React Flow nodes from the workflow via workflowToRfNodes."
+    },
+    {
+      "_key": "3690102350eb6903ef5960e48775d2df",
+      "reason": "reconcileWorkflowSlice calls deepEqual to test whether the canvas matches the disk slice."
+    },
+    {
+      "_key": "3c996e791388a1bb479e79c82a022704",
+      "reason": "The sync effect builds React Flow edges from the workflow via workflowToRfEdges."
+    },
+    {
+      "_key": "4750fca3b1c1a7b70abfa81c5d780dac",
+      "reason": "The page mounts WorkflowCanvas for the active workflow."
+    },
+    {
+      "_key": "4c9713a6f612220c7a2a73256a837f06",
+      "reason": "The add-step path creates the success edge from the source to the new node via makeSuccessEdge."
+    },
+    {
+      "_key": "4fb56b924685c16974be281d19d9f4ab",
+      "reason": "The page calls updateWorkflow to write canvas edits for the active workflow into the store."
+    },
+    {
+      "_key": "52a6b9f76fb550072391b6c0e990124d",
+      "reason": "blankInstancePicker is declared to return an InstancePickerValue."
+    },
+    {
+      "_key": "57ba825c74c3e93833f568aabe7628f8",
+      "reason": "deleteNode uses isSuccessEdge to find the incoming success edge of the deleted node."
+    },
+    {
+      "_key": "5e18d29c178894f12daed75652725e3e",
+      "reason": "resetAddStep resets the add-step picker to a blank value via blankInstancePicker."
+    },
+    {
+      "_key": "680138add3dcb1e12aeb13bb6a0b8e11",
+      "reason": "InstanceSkillPicker's modeOf helper is annotated to return a SkillMode."
+    },
+    {
+      "_key": "72148c28b4c4491875dc5578168090d0",
+      "reason": "handleAgentForked adds the forked agent to the store via setAgentsAvailable."
+    },
+    {
+      "_key": "756cade19479e575d41f98f18cd86192",
+      "reason": "seedWorkflowStore calls workflowSlice on the incoming config to reconcile it against the current state on the same-project path."
+    },
+    {
+      "_key": "7bd17bcf6ca8f1d57aff309ec1990c4d",
+      "reason": "InstanceSkillPicker's onChange callback is typed to receive a SkillSelection."
+    },
+    {
+      "_key": "7bef4abaf48c44bfdb88deba00ebf079",
+      "reason": "deleteNode calls replaceSuccessEdgeFrom to drop the incoming success edge before re-joining the chain."
+    },
+    {
+      "_key": "7c28798e2b1c07a5d27f2c9e02980d19",
+      "reason": "The skill-id prompt path adds a skill via setSkillsAvailable."
+    },
+    {
+      "_key": "7ce2b298cd1a34a3ad39b75f566eaa2c",
+      "reason": "replaceSuccessEdgeFrom uses isSuccessEdge to decide which edges to filter out."
+    },
+    {
+      "_key": "8111c150c56813d0b8da57d0d1fb4cda",
+      "reason": "openAddStep seeds the add-step picker with a blank value via blankInstancePicker."
+    },
+    {
+      "_key": "856317b99f7fba3d2fa46fe3cde6b4cc",
+      "reason": "The condition modal mounts InstancePicker to choose the target instance for a new condition."
+    },
+    {
+      "_key": "864b848b2121635b8047ed28084b1c4b",
+      "reason": "The add-agent path calls findSuccessTerminalId to find where a new agent should be appended."
+    },
+    {
+      "_key": "883560398271fa2b68df9c2a7e6927bf",
+      "reason": "The loader effect seeds the store from loader data via seedWorkflowStore."
+    },
+    {
+      "_key": "8cd628834a39e43ed01f3348b178f403",
+      "reason": "InstanceSkillPicker's setMode helper takes a SkillMode parameter."
+    },
+    {
+      "_key": "8f6606875272b141e014b5a58a8c2c56",
+      "reason": "The condition confirm path resolves the picked instance via resolveInstanceFromPicker."
+    },
+    {
+      "_key": "8fef23612a71181e47c5a08e940627fa",
+      "reason": "changeImplAgents calls the reseed IPC through callMain for the corrected implementation chain."
+    },
+    {
+      "_key": "935183d5642a77d79e5f7812fb0d601f",
+      "reason": "blankInstancePicker calls emptySelection to build the empty skill selection it returns."
+    },
+    {
+      "_key": "98dc0b149f1e099eb98bad485bfdca33",
+      "reason": "The add-step picker state is typed with the InstancePickerValue type."
+    },
+    {
+      "_key": "9ba1234b3adb77d95c4e080d06a10c41",
+      "reason": "The condition picker's initial state is set to a blank value via blankInstancePicker."
+    },
+    {
+      "_key": "a071199fecb0ed31630457da5aacded4",
+      "reason": "The page mounts the ExternalChangeBanner to show a disk change the canvas must resolve."
+    },
+    {
+      "_key": "a0fb6821a9efca0ea0c2d1b0ebcfcd81",
+      "reason": "changeImplAgents calls storeReplaceConfig to replace the config with the reseeded one."
+    },
+    {
+      "_key": "a3a874c63546dfd961506f69b78ee0e7",
+      "reason": "The add-step path re-attaches the displaced downstream node with makeSuccessEdge."
+    },
+    {
+      "_key": "acf8894cceb47fd11c273d88fa370069",
+      "reason": "The page mounts the ConfigIssueBanner for the loader's config issues."
+    },
+    {
+      "_key": "ae6da90f0dc26b6a1b81babcc63f46ef",
+      "reason": "reconcileWorkflowSlice calls deepEqual to test whether the disk slice matches the baseline."
+    },
+    {
+      "_key": "b5314f9b54f9906cb066e1e96f4b8cdb",
+      "reason": "The sync effect runs applyDagreLayout when the workflow has no saved node positions."
+    },
+    {
+      "_key": "bd5c2626e2840e9247ff8e17f03301f7",
+      "reason": "InstanceSkillPicker's value prop is typed as SkillSelection."
+    },
+    {
+      "_key": "bf444ee0b61e654d389f5a8d6d93f6e3",
+      "reason": "markSaved's parameter and the slice it stores are typed as WorkflowSlice, so the signature references that type."
+    },
+    {
+      "_key": "c32a5d41b80a7363a072a1b8126d5e61",
+      "reason": "seedWorkflowStore calls reconcileWorkflowSlice to fold the on-disk slice into the current store state for the same project."
+    },
+    {
+      "_key": "c417891d724d02f248962acef209a01a",
+      "reason": "The sync effect runs alignMainSession when saved positions exist, to keep main-session in place."
+    },
+    {
+      "_key": "cdfb4d8498874c3b4628ba1c0a056b88",
+      "reason": "reconcileWorkflowSlice's diskSlice parameter is typed as WorkflowSlice."
+    },
+    {
+      "_key": "cee5c2ccc817800f9e5d6c409ebd3b89",
+      "reason": "The add-step modal mounts InstancePicker for agent steps."
+    },
+    {
+      "_key": "d465a0f9d56486f7b3561d11e29941f3",
+      "reason": "resetConditionState resets the condition picker to blank via blankInstancePicker."
+    },
+    {
+      "_key": "d6129af29395b46c4a876e0e51076b2f",
+      "reason": "handleSubmit wraps the save IPC in callMain."
+    },
+    {
+      "_key": "d8153ae58571b75abcfb28ffd7579ecc",
+      "reason": "handleSubmit calls submitMaestroConfig to write the workflows slice to maestro.json."
+    },
+    {
+      "_key": "d9d48b08a2433ce43e51621b5584f3cc",
+      "reason": "deleteNode uses isSuccessEdge to find the outgoing success edge of the deleted node."
+    },
+    {
+      "_key": "dcb2bccbc86b84d99e1be5af8cf45411",
+      "reason": "changeImplAgents wraps the reseed IPC in callMain."
+    },
+    {
+      "_key": "e3ee01bb01637cd0189a000af80296ba",
+      "reason": "deleteNode calls makeSuccessEdge to re-join the predecessor to the successor."
+    },
+    {
+      "_key": "e48705a00b67a9e5a44732a1b7268558",
+      "reason": "openConditionModal seeds the condition picker with a blank value via blankInstancePicker."
+    },
+    {
+      "_key": "ea8d456b6ff71ce3780de94050d64cc8",
+      "reason": "reconcileWorkflowSlice builds the canvas-side slice via workflowSlice."
+    },
+    {
+      "_key": "ee40b9658889507575943e7ccd1792a1",
+      "reason": "The add-step picker's initial state is set to a blank value via blankInstancePicker."
+    },
+    {
+      "_key": "f58520d13f480f843f155e5bc862c437",
+      "reason": "The agent-id prompt path adds an agent via setAgentsAvailable."
+    },
+    {
+      "_key": "f75ac78c1faa0612224f58918b634fb1",
+      "reason": "The page's phase state is typed with the Phase type."
+    },
+    {
+      "_key": "f96d4c8201542d2800904afbeae9d6df",
+      "reason": "reconcileWorkflowSlice calls deepEqual to test whether the canvas matches the baseline."
+    },
+    {
+      "_key": "fa05b9d3cadc44d5b0fa07e8feba9395",
+      "reason": "The agent checkbox path toggles the agent list via setAgentsAvailable."
+    },
+    {
+      "_key": "fad02e1579ea0304b3bfca21aaca3c2f",
+      "reason": "The sync effect calls hasSavedPositions to choose between dagre layout and saved positions."
+    },
+    {
+      "_key": "fe01970c84f9526528ff6be34f3f5507",
+      "reason": "The add-step path calls replaceSuccessEdgeFrom so the new node is the only success successor of the source."
+    },
+    {
+      "_key": "ffb29e7b7017b97b87848f2d513cceee",
+      "reason": "handleSubmit builds the saved slice via workflowSlice before calling markSaved."
+    }
+  ]
+}

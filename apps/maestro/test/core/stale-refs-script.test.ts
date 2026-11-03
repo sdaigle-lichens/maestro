@@ -13,7 +13,8 @@ import { pinnedEnv } from "../helpers/env.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(here, "../../../../plugins/maestro/scripts/maestro-stale-refs.cjs");
-const DESIGN = "concept-skills:use-code-architecture-design-check";
+const DESIGN = "code-graph:use-code-architecture-design-check";
+const CODE_GRAPH_DESIGN = DESIGN;
 
 let tmp: string;
 let home: string;
@@ -80,7 +81,7 @@ describe("maestro-stale-refs.cjs", () => {
   it("with the plugin enabled for the project, the namespaced id no longer dangles", () => {
     const root = project({
       "maestro.json": { version: 3, skills_available: [DESIGN] },
-      "settings.json": { enabledPlugins: { "concept-skills@maestro": true } },
+      "settings.json": { enabledPlugins: { "code-graph@code-graph": true } },
     });
     expect(parse(run([root])).dangling).toEqual([]);
   });
@@ -114,11 +115,12 @@ describe("maestro-stale-refs.cjs", () => {
     expect(parse(run([path.join(tmp, "nope")])).checked).toBe(false);
   });
 
-  it("still suggests /concept-skills-install with no maestro.json when concept-skills.json exists and the plugin is off", () => {
+  it("still suggests migrating via /code-graph-install with no maestro.json when concept-skills.json exists and code-graph is off", () => {
     const root = project({ "concept-skills.json": { version: "1.0", last_update: "x" } });
     const out = parse(run([root]));
     expect(out.checked).toBe(false);
-    expect(out.suggestions.join("\n")).toContain("/concept-skills-install");
+    expect(out.suggestions.join("\n")).toContain("/code-graph-install");
+    expect(out.suggestions.join("\n")).not.toContain("@maestro");
   });
 
   it("suggests it alongside dangling refs when maestro.json exists", () => {
@@ -128,6 +130,35 @@ describe("maestro-stale-refs.cjs", () => {
     });
     const out = parse(run([root]));
     expect(out.dangling).toHaveLength(1);
-    expect(out.suggestions.some((s) => s.includes("/concept-skills-install"))).toBe(true);
+    expect(out.suggestions.some((s) => s.includes("/code-graph-install"))).toBe(true);
+  });
+
+  it("suggests enabling code-graph for a root scribe.config.json with no maestro.json; absent once enabled", () => {
+    const root = project({});
+    fs.writeFileSync(path.join(root, "scribe.config.json"), "{}");
+    const out = parse(run([root]));
+    expect(out.checked).toBe(false);
+    expect(out.suggestions).toHaveLength(1);
+    expect(out.suggestions[0]).toContain("scribe.config.json");
+
+    fs.writeFileSync(
+      path.join(root, ".claude", "settings.json"),
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
+    );
+    expect(parse(run([root])).suggestions).toEqual([]);
+  });
+
+  it("a code-graph: id dangles as plugin-not-installed when code-graph is absent, and not once it is enabled", () => {
+    const cfg = { version: 3, skills_available: [CODE_GRAPH_DESIGN] };
+    const off = project({ "maestro.json": cfg });
+    expect(parse(run([off])).dangling.map((d) => [d.id, d.reason])).toEqual([
+      [CODE_GRAPH_DESIGN, "plugin-not-installed"],
+    ]);
+
+    const on = project({
+      "maestro.json": cfg,
+      "settings.json": { enabledPlugins: { "code-graph@code-graph": true } },
+    });
+    expect(parse(run([on])).dangling).toEqual([]);
   });
 });

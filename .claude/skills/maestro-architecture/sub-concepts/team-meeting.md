@@ -22,7 +22,7 @@ in the session, and the main session (no `agent_type`), behaves normally. A malf
 
 | Hook | For a participant |
 | --- | --- |
-| `SubagentStart` inject | `meetingNotice` replaces the resume line, `HANDOFF:` routing, per-route protocols and the report, on a first run **and** a resume, because a resumed workflow agent still has its first run's routing in its history. The skills blocks stay on a first run, since they are what it reviews. **Channel delivery is skipped**: nothing is inlined and nothing is retired, so a payload waiting for its next workflow step is still there. |
+| `SubagentStart` inject | `meetingNotice` replaces the resume line, `HANDOFF:` routing, per-route protocols and the report, on a first run **and** a resume, because a resumed workflow agent still has its first run's routing in its history. The skills blocks stay on a first run, since they are what it reviews. **Channel delivery is skipped**: nothing is inlined and nothing is retired, so a payload waiting for its next workflow step is still there. A scribe participant's `SKILL_GAPS_HANDLED:` line acknowledges nothing either (`112`). |
 | `SubagentStart`/`SubagentStop` log | `dispatch` and `handoff` entries carry `meeting: true` (`log` reads `(meeting)` / `meeting turn`). |
 | `SubagentStop` | Skips the `078` transcript hand-back recovery and `writeStamp` entirely. |
 | Write guard | Any agent type is confined to `<session dir>/meeting/`, its own channel lane included. |
@@ -59,7 +59,7 @@ Two paths, both through `closeMeeting`:
   must never get meeting treatment. It is the one `session.json` writer that deletes a key; every
   other writer spreads the existing object, so `meeting` survives them.
 
-`closeMeeting` removes `meeting` and records every participant's **unstamped** lane files as
+`closeMeeting` removes `meeting` and records every participant's **unstamped** lane files in the session's own channel scope (`144`) as
 `meeting_leftovers: [{path, mtimeMs, size}]`, merged with any earlier ones. The `meeting/` directory
 (transcript, briefs, rounds, `decision.md`) stays until the session directory is removed at
 `SessionEnd`. Why the leftovers exist: see the stamping rules in `channels.md`.

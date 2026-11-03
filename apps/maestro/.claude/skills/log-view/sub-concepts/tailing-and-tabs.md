@@ -110,7 +110,7 @@ tab's log — and offers close for removed ones.
 **Renderer: `WorktreeLogProvider`** (`worktree-log-context.tsx`, mounted in `__root.tsx` inside
 `SessionLogProvider`) is the worktree analogue of `SessionLogProvider`: it subscribes via
 `window.maestro.worktreeLog.subscribe` **before** any `open` (init events fire synchronously during `open`),
-polls `worktreeLog.list()` every 7s, and opens each listed worktree with `hasLog`. State is
+polls `worktreeLog.list()` every 7s (and on `project.onChanged`), and opens each listed worktree with `hasLog` (`describeWorktrees` sets it false for a prunable one). State is
 `Map<root, WorktreeTab>` folded by pure `reduceWorktreeTabs`, whose sessions reuse `reduceSessionLog` with
 `projectRoot = worktree root`. Traps:
 - **`listed` only ever adds tabs, never removes** — after a project switch the list describes the *new*
@@ -122,15 +122,17 @@ polls `worktreeLog.list()` every 7s, and opens each listed worktree with `hasLog
 
 ## `reset` vs `end` — the two ways tabs disappear
 
-- **`reset` event on SessionEnd.** When the JSONL file disappears (its session's directory deleted by
-  `maestro-session-cleanup.sh`), the server emits `reset: {}` and `lineCount` drops to 0. The provider
-  clears `entries`, the page shows the empty state. A new session's `init` event re-fills it. This is the
-  normal SessionEnd → new session cycle without a page reload.
+- **`end` event on SessionEnd.** When a session's directory disappears (deleted by
+  `maestro-session-cleanup.sh` on a final end), the next `tailSessionLogs` poll emits that session's
+  `end`; its tab stays, greyed, up to the retention cap below. A *resumable* SessionEnd reason keeps the
+  directory (`077`), so no `end` fires and the tab stays live. A directory whose `log.jsonl` isn't written
+  yet is not live; a log that shrinks under the tail is reported as `end` then a fresh `init`
+  (resync). The wholesale `reset` is sent only by `startTail` (subscribe, project switch, sweep/delete retarget).
 - **A project being forgotten never fires a per-session `onEnd` — it forces a full `logReset` + fresh
   `onInit` burst, and a `log.subscribe` consumer must not try to tell the two apart.** `announce()`
   (called from the `project:pick`/`project:open`/`project:forget` handlers) runs
-  `broadcast(projectChanged)` → `retargetTails()` → `retargetTaskTails()` → `clearInvocations()` →
-  `endAllSessions()`, in that order. `retargetTails()` calls `startTail()` again for every subscribed
+  `broadcast(projectChanged)` → `retargetTails()` → `retargetTaskTails()` → `restartConfigWatch()` →
+  `clearInvocations()` → `endAllSessions()`, in that order. `retargetTails()` calls `startTail()` again for every subscribed
   window, and `startTail()` unconditionally sends `IPC_EVENTS.logReset` *before* rebuilding its
   `tailSessionLogs` watcher — so every tab this window was showing (including one whose project just got
   forgotten) disappears via the wholesale reset, and the `init` burst that follows repopulates only
@@ -156,12 +158,14 @@ polls `worktreeLog.list()` every 7s, and opens each listed worktree with `hasLog
   Past 3 ended records *across all projects*, the oldest by `endedAt` is evicted on every `end` — not per
   project. A `logReset` (project forgotten, project switch) drops every record, ended or not, since it
   rebuilds the whole map from scratch.
-- **`firstSeenAt` is a proxy for session-creation time, not the real thing.** Nothing in the IPC contract
-  exposes the session directory's own creation time (see `SessionLogInitEvent`), so
-  `SessionRecord.firstSeenAt` is stamped from `Date.now()` on the renderer when its `init` event arrives.
-  Usually indistinguishable in practice — `tailSessionLogs` polls at most a second behind the file
-  appearing — but it is a receipt time, not a filesystem mtime, and drifts further under a slow/blocked
-  renderer.
+- **`firstSeenAt` is a receipt time, only a fallback.** Nothing in the IPC contract exposes the session
+  directory's own creation time (see `SessionLogInitEvent`), so `SessionRecord.firstSeenAt` is stamped
+  from `Date.now()` when the `init` event arrives. A tab's start time (`startedAt`, used for the label
+  and ordering) is the first entry's `ts`; `firstSeenAt` is used only while the log is still empty.
+  Likewise `lastActivityAt` (what `pickSelection` ranks by) is the last entry's `ts`.
+- **A late `entry` revives an ended session.** `reduceSessionLog` sets `status: "live"` on every
+  `entry`, so a greyed tab whose log is appended to again (e.g. a resumed session reusing the id after a
+  resync `end`) goes live again; `endedAt` is not cleared until the next `init`.
 - **`pickSessionTitle` / `sessionTitle` / `orderSessions`** (same file) are pure too: title = backend title (task name > `claude --resume`) else derived from the first dispatch; `orderSessions` dedupes by `sessionKey` and sorts by project rank then start time.
 - **Live stream is app-wide.** `SessionLogProvider` mounts in `__root.tsx`, so the subscription is
   maintained on every page. Entries accumulate in context even while the user is on `/workflows` or

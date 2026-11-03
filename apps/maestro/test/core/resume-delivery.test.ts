@@ -23,7 +23,9 @@ const PLUGIN_ROOT = findUpPluginRoot(here)!;
 vi.setConfig({ testTimeout: 30_000 });
 
 const SESS = "sess-088-aaa";
-const BACKEND_LANE_FILE = ".claude/channels/backend/test.1.md";
+/** `144`: SESS claims task 088 (see installed()), so its lanes live under `task-088`. */
+const SCOPE = "task-088";
+const BACKEND_LANE_FILE = `.claude/channels/${SCOPE}/backend/test.1.md`;
 
 // main -> backend -> test -> scribe, and test -> backend on "tests failed" (the loop-back). Both
 // backend/test and test/backend resolve a seeded protocol, so each expects a payload.
@@ -73,10 +75,10 @@ afterEach(() => {
   fs.rmSync(tmp, { recursive: true, force: true });
 });
 
-function script(root: string, name: string, args: string[], input?: unknown) {
+function script(root: string, name: string, args: string[], input?: unknown, sess = SESS) {
   const r = spawnSync("node", [path.join(root, ".claude", "scripts", name), ...args], {
     encoding: "utf8",
-    env: pinnedEnv(home, { CLAUDE_PROJECT_DIR: root, CLAUDE_CODE_SESSION_ID: SESS }),
+    env: pinnedEnv(home, { CLAUDE_PROJECT_DIR: root, CLAUDE_CODE_SESSION_ID: sess }),
     ...(input !== undefined ? { input: JSON.stringify(input) } : {}),
   });
   return { code: r.status ?? -1, stdout: r.stdout ?? "", stderr: r.stderr ?? "" };
@@ -95,9 +97,9 @@ const readLog = (root: string): Record<string, any>[] => {
 };
 const abs = (root: string, rel: string) => path.join(root, ...rel.split("/"));
 const consumed = (root: string, receiver: string, file: string) =>
-  path.join(root, ".claude", "channels", ".consumed", receiver, file);
-function writePayload(root: string, receiver: string, sender: string, body: string) {
-  const f = path.join(root, ".claude", "channels", receiver, `${sender}.1.md`);
+  path.join(root, ".claude", "channels", SCOPE, ".consumed", receiver, file);
+function writePayload(root: string, receiver: string, sender: string, body: string, scope: string | null = SCOPE) {
+  const f = path.join(root, ".claude", "channels", ...(scope ? [scope] : []), receiver, `${sender}.1.md`);
   fs.mkdirSync(path.dirname(f), { recursive: true });
   fs.writeFileSync(f, body);
 }
@@ -114,34 +116,47 @@ async function installed(): Promise<string> {
     path.join(tmp, "project-tags.sqlite"),
     path.join(tmp, "handoff-defaults.sqlite")
   );
+  claim(root, SESS, "088-loop-back.md");
   return root;
 }
 
+/** The orchestrator's run start: record the workflow and the claimed task (`144`). */
+function claim(root: string, sess: string, task: string) {
+  const r = script(root, "maestro-set-session-workflow.cjs", ["feature", "--task", task], undefined, sess);
+  expect(r.code, r.stderr).toBe(0);
+}
+
 // Both SubagentStart hooks, in the order Claude Code registers them; returns the injected context.
-function start(root: string, agent: string, id: string): string {
-  const payload = { cwd: root, session_id: SESS, hook_event_name: "SubagentStart", agent_type: agent, agent_id: id };
-  const log = script(root, "maestro-subagent-log.cjs", [], payload);
+function start(root: string, agent: string, id: string, sess = SESS): string {
+  const payload = { cwd: root, session_id: sess, hook_event_name: "SubagentStart", agent_type: agent, agent_id: id };
+  const log = script(root, "maestro-subagent-log.cjs", [], payload, sess);
   expect(log.code, log.stderr).toBe(0);
-  const inj = script(root, "maestro-inject-agent-context.cjs", [], payload);
+  const inj = script(root, "maestro-inject-agent-context.cjs", [], payload, sess);
   expect(inj.code, inj.stderr).toBe(0);
   return inj.stdout.trim() ? (JSON.parse(inj.stdout).hookSpecificOutput.additionalContext as string) : "";
 }
 
-function stop(root: string, agent: string, id: string, message: string) {
-  const r = script(root, "maestro-subagent-log.cjs", [], {
-    cwd: root,
-    session_id: SESS,
-    hook_event_name: "SubagentStop",
-    agent_type: agent,
-    agent_id: id,
-    last_assistant_message: message,
-  });
+function stop(root: string, agent: string, id: string, message: string, sess = SESS) {
+  const r = script(
+    root,
+    "maestro-subagent-log.cjs",
+    [],
+    {
+      cwd: root,
+      session_id: sess,
+      hook_event_name: "SubagentStop",
+      agent_type: agent,
+      agent_id: id,
+      last_assistant_message: message,
+    },
+    sess
+  );
   expect(r.code, r.stderr).toBe(0);
   return r;
 }
 
-const resumeTarget = (root: string, agent: string) => {
-  const r = script(root, "maestro-resume-target.cjs", [agent]);
+const resumeTarget = (root: string, agent: string, sess = SESS) => {
+  const r = script(root, "maestro-resume-target.cjs", [agent], undefined, sess);
   expect(r.code, r.stderr).toBe(0);
   return r.stdout.split("\n").filter(Boolean);
 };
@@ -308,6 +323,62 @@ describe("a loop-back's missing payload is printed and recorded (088)", () => {
     expect(resumeTarget(root, "backend")).toEqual(["b1", `deliver: ${BACKEND_LANE_FILE}`]);
     expect(readState(root).handoff_issues).toBeUndefined();
     expect(handoffIssues(root)).toContain("no problems recorded");
+  });
+
+  // `144`: the 045/048 collision on the resume path. A second session on another task writes the
+  // same `test -> backend` lane file name in ITS scope; this session's resume never names it.
+  it("another task's same-named payload is never delivered: this session sees missing:, not deliver:", async () => {
+    const root = await installed();
+    const OTHER = "sess-099-bbb";
+    claim(root, OTHER, "099-other.md");
+    runUpToLoopBack(root, '{"failures":["x"]}\n');
+    handoffIssues(root);
+    fs.rmSync(abs(root, BACKEND_LANE_FILE));
+
+    // The other session runs the same pair and leaves a stamped, same-named file in task-099.
+    start(root, "test", "o1", OTHER);
+    writePayload(root, "backend", "test", '{"failures":["OTHER-TASK-BODY"]}\n', "task-099");
+    stop(root, "test", "o1", '"verdict": "FAIL"\nHANDOFF: tests failed', OTHER);
+    const otherFile = ".claude/channels/task-099/backend/test.1.md";
+    expect(fs.readFileSync(abs(root, otherFile), "utf8")).toMatch(/^<!-- maestro:run_id=/);
+
+    const mine = resumeTarget(root, "backend");
+    expect(mine).toEqual(["b1", `missing: ${BACKEND_LANE_FILE} (from test)`]);
+    expect(mine.join("\n")).not.toContain("task-099");
+
+    // This session's resumed backend SubagentStart never inlines the other task's body, nor retires it.
+    expect(start(root, "backend", "b1")).not.toContain("OTHER-TASK-BODY");
+    expect(fs.existsSync(abs(root, otherFile))).toBe(true);
+
+    // The other session's target is cold (it never ran a backend) and its file is present, so
+    // resume-target prints nothing; its cold SubagentStart inlines its own file and retires it
+    // into ITS scope's .consumed/.
+    expect(resumeTarget(root, "backend", OTHER)).toEqual([]);
+    expect(start(root, "backend", "o2", OTHER)).toContain("OTHER-TASK-BODY");
+    expect(fs.existsSync(abs(root, otherFile))).toBe(false);
+    expect(fs.existsSync(path.join(root, ".claude", "channels", "task-099", ".consumed", "backend", "test.1.md"))).toBe(
+      true
+    );
+    expect(fs.existsSync(consumed(root, "backend", "test.1.md"))).toBe(false);
+  });
+
+  it("a legacy unscoped payload is never resumed, delivered or retired (144)", async () => {
+    const root = await installed();
+    runUpToLoopBack(root, '{"failures":["x"]}\n');
+    handoffIssues(root);
+    fs.rmSync(abs(root, BACKEND_LANE_FILE));
+    // A pre-144 file at the old unscoped path, stamped with THIS run's id — still not delivered.
+    const legacy = ".claude/channels/backend/test.1.md";
+    writePayload(root, "backend", "test", `<!-- maestro:run_id=${readState(root).run_id} -->\nLEGACY-BODY\n`, null);
+
+    const out = resumeTarget(root, "backend");
+    expect(out).toEqual(["b1", `missing: ${BACKEND_LANE_FILE} (from test)`]);
+    expect(out.join("\n")).not.toContain(`deliver: ${legacy}`);
+    const ctx = start(root, "backend", "b1");
+    expect(ctx).not.toContain("LEGACY-BODY");
+    stop(root, "backend", "b1", "HANDOFF: success");
+    expect(fs.existsSync(abs(root, legacy))).toBe(true);
+    expect(fs.existsSync(path.join(root, ".claude", "channels", ".consumed", "backend", "test.1.md"))).toBe(false);
   });
 
   it("asking for a target the latest handoff did not route to records nothing", async () => {

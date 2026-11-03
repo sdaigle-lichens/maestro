@@ -177,7 +177,9 @@ describe("preview", () => {
     const preview = await previewClaudeRun(root, { kind: "maestro-task", filename: task }, only(dir, emptyHome()));
 
     expect(preview.prompt).toBe(
-      "Use /maestro to complete the task described in file .claude/maestro-tasks/001-do-a-thing.md"
+      // `113`: the prompt STARTS with the command, so Claude Code takes the typed-slash-command
+      // path and the UserPromptExpansion session-name hook fires on the first prompt.
+      "/maestro Complete the task described in file .claude/maestro-tasks/001-do-a-thing.md"
     );
     expect(preview.cwd).toBe(root);
     expect(preview.argv.slice(1)).toEqual([...CLAUDE_BASE_FLAGS, preview.prompt]);
@@ -273,7 +275,7 @@ describe("a missing CLI", () => {
     expect(preview.token).toBeNull(); // nothing to authorise, so nothing is authorised
     expect(preview.bin).toBeNull();
     // The prompt survives: copying it into a session by hand is the documented fallback.
-    expect(preview.prompt).toMatch(/Use \/maestro to complete the task/);
+    expect(preview.prompt).toMatch(/^\/maestro Complete the task/);
     expect(preview.unavailable).toMatch(/was not found/);
     expect(preview.unavailable).toMatch(/directories/);
     expect(preview.searched).toContain(empty);

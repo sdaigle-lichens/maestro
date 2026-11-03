@@ -23,7 +23,7 @@
 // of the sender's final-message JSON — the orchestrator read that field and forwarded it verbatim
 // into the next `Task` prompt. Since `036` there is no `handoff_details` field: the sender writes
 // this exact JSON shape, flat (no wrapper key), to its own channel file —
-// `.claude/channels/<receiver>/<sender>.1.md` — and the receiving agent's `SubagentStart` hook
+// `.claude/channels/<scope>/<receiver>/<sender>.1.md` (`144`) — and the receiving agent's `SubagentStart` hook
 // inlines it. The hook composes the "write this to your channel file" sentence and the per-route
 // file path dynamically (it already knows both ends of the route); a body here is only ever the
 // JSON shape itself.
@@ -238,6 +238,9 @@ const TEST_TO_REVIEWER =
   "{\n" +
   '  "tests_added": ["<test name — what it verifies>"],\n' +
   '  "results": ["<pass/fail summary>"],\n' +
+  '  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],\n' +
+  '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
+  '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
   '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
   '  "files_touched": ["<list, or \'none\'>"]\n' +
   "}\n" +
@@ -245,7 +248,7 @@ const TEST_TO_REVIEWER =
 
 /**
  * The 24 handoff protocols Maestro ships, keyed `"<sender>/<receiver>"` — the JSON shape a sender
- * writes VERBATIM to `.claude/channels/<receiver>/<sender>.1.md` (`036`).
+ * writes VERBATIM to `.claude/channels/<scope>/<receiver>/<sender>.1.md` (`036`, scoped by `144`).
  *
  * Written out one constant per pair, deliberately NOT factored through shared helpers even where
  * bodies are currently byte-identical (`backend|frontend|mobile -> reviewer`, and a five-way group
@@ -547,6 +550,15 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "test/reviewer": [
+    // `148`: the flat body before commands_run, negative_control and real_path_exercised.
+    "```json\n" +
+      "{\n" +
+      '  "tests_added": ["<test name — what it verifies>"],\n' +
+      '  "results": ["<pass/fail summary>"],\n' +
+      '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+      '  "files_touched": ["<list, or \'none\'>"]\n' +
+      "}\n" +
+      "```",
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +

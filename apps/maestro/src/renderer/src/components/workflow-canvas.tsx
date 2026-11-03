@@ -1,5 +1,13 @@
 import React, { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import type { MaestroWorkflowV3, MaestroNodeV3, MaestroEdgeV3, MaestroInstanceV3 } from "../utils/maestro";
+import {
+  MANAGER_DIRECTION_CHANGE_LABEL,
+  REVIEW_STYLE,
+  nextReviewId,
+  reviewRfType,
+  type ReviewNodeType,
+} from "../utils/review-nodes";
+import AddStepKindChoice, { DEFAULT_REVIEW_TYPE, addStepNodeType, type AddStepKind } from "./add-step-kind-choice";
 import InstancePicker, {
   blankInstancePicker,
   resolveInstanceFromPicker,
@@ -107,7 +115,7 @@ function workflowToRfNodes(workflow: MaestroWorkflowV3, instances: MaestroInstan
   ];
   for (const n of workflow.nodes) {
     const instanceData = n.type === "agent" ? instances.find((i) => i.name === n.instance) : undefined;
-    const rfType = n.type === "agent" ? "agentNode" : n.type === "skill" ? "skillNode" : "humanStep";
+    const rfType = n.type === "agent" ? "agentNode" : n.type === "skill" ? "skillNode" : reviewRfType(n.type);
     nodes.push({
       id: n.id,
       type: rfType,
@@ -208,13 +216,6 @@ function makeSuccessEdge(from: string, to: string): Edge {
       } as MaestroEdgeV3,
     },
   };
-}
-
-// Generate a unique human-review node id of the form "human_review-N"
-function nextHumanId(nodes: Node[]): string {
-  let n = 1;
-  while (nodes.some((nd) => nd.id === `human_review-${n}`)) n++;
-  return `human_review-${n}`;
 }
 
 // Generate a unique skill-step node id of the form "skill-N"
@@ -395,6 +396,7 @@ function HumanStepNode({
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
   const maestro = data.maestroNode;
+  const style = REVIEW_STYLE[maestro.type === "manager_review" ? "manager_review" : "human_review"];
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -447,10 +449,10 @@ function HumanStepNode({
         </button>
 
         <div
-          className={`flex items-center justify-center border-2 bg-amber-50 text-amber-800 ${selected ? "border-amber-500" : "border-amber-300"}`}
+          className={`flex items-center justify-center border-2 ${style.fill} ${style.text} ${selected ? style.borderSelected : style.border}`}
           style={{ clipPath: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)", width: 120, height: 60 }}
         >
-          <span className="text-[11px] font-medium text-amber-800">Review</span>
+          <span className={`text-[11px] font-medium ${style.text}`}>{style.label}</span>
         </div>
 
         {/* Kebab menu — sibling of the clipped diamond so it isn't cut off by the clipPath */}
@@ -461,7 +463,7 @@ function HumanStepNode({
               e.stopPropagation();
               setMenuOpen((v) => !v);
             }}
-            className="w-5 h-5 flex items-center justify-center rounded cursor-pointer focus:outline-none text-amber-500 hover:bg-amber-100"
+            className={`w-5 h-5 flex items-center justify-center rounded cursor-pointer focus:outline-none ${style.kebab}`}
             title="Step options"
           >
             ⋮
@@ -485,7 +487,7 @@ function HumanStepNode({
         <button
           type="button"
           style={{ position: "absolute", bottom: -10, left: "50%", transform: "translateX(-50%)" }}
-          className="w-5 h-5 rounded-full bg-white border-2 border-amber-400 text-amber-600 text-[11px] font-bold flex items-center justify-center cursor-pointer z-10 shadow-sm hover:bg-amber-50 focus:outline-none"
+          className={`w-5 h-5 rounded-full bg-white border-2 text-[11px] font-bold flex items-center justify-center cursor-pointer z-10 shadow-sm focus:outline-none ${style.plus}`}
           onClick={(e) => {
             e.stopPropagation();
             data.onAddNext?.(maestro.id);
@@ -818,6 +820,7 @@ const NODE_TYPES = {
   mainSession: MainSessionNode,
   agentNode: AgentNodeComponent,
   humanStep: HumanStepNode,
+  managerStep: HumanStepNode,
   skillNode: SkillNodeComponent,
 };
 const EDGE_TYPES = { successEdge: SuccessEdge, conditionEdge: ConditionEdge };
@@ -1119,12 +1122,15 @@ export default function WorkflowCanvas({
     (nodeId: string) => {
       setConditionSourceNodeId(nodeId);
       setConditionModalOpen(true);
-      setConditionLabel("");
+      // A manager_review's one condition is the direction change back to the producing agent.
+      const source = rfNodes.find((n) => n.id === nodeId)?.data.maestroNode as MaestroNodeV3 | undefined;
+      const isManager = source?.type === "manager_review";
+      setConditionLabel(isManager ? MANAGER_DIRECTION_CHANGE_LABEL : "");
       setConditionTargetNodeId("");
       const firstFree = availableAgents.find((a) => !placedAgentTypes.has(a));
       setConditionPicker(blankInstancePicker(firstFree ?? ""));
     },
-    [availableAgents, placedAgentTypes]
+    [availableAgents, placedAgentTypes, rfNodes]
   );
 
   const handleStartAddCondition = useCallback(() => {
@@ -1251,13 +1257,16 @@ export default function WorkflowCanvas({
   // ── Add step (per-node "+" button) ──────────────────────────────
 
   const [addStepSourceId, setAddStepSourceId] = useState<string | null>(null);
-  const [addStepType, setAddStepType] = useState<"agent" | "human_review" | "skill">("agent");
+  const [addStepKind, setAddStepKind] = useState<AddStepKind>("agent");
+  const [addStepReviewType, setAddStepReviewType] = useState<ReviewNodeType>(DEFAULT_REVIEW_TYPE);
+  const addStepType = addStepNodeType(addStepKind, addStepReviewType);
   const [addStepPicker, setAddStepPicker] = useState<InstancePickerValue>(blankInstancePicker());
   const [addStepSkill, setAddStepSkill] = useState("");
 
   const resetAddStep = useCallback(() => {
     setAddStepSourceId(null);
-    setAddStepType("agent");
+    setAddStepKind("agent");
+    setAddStepReviewType(DEFAULT_REVIEW_TYPE);
     setAddStepPicker(blankInstancePicker());
     setAddStepSkill("");
   }, []);
@@ -1265,7 +1274,8 @@ export default function WorkflowCanvas({
   const openAddStep = useCallback(
     (sourceId: string) => {
       setAddStepSourceId(sourceId);
-      setAddStepType("agent");
+      setAddStepKind("agent");
+      setAddStepReviewType(DEFAULT_REVIEW_TYPE);
       const firstFree = availableAgents.find((a) => !placedAgentTypes.has(a));
       setAddStepPicker(blankInstancePicker(firstFree ?? ""));
       setAddStepSkill(availableSkills[0] ?? "");
@@ -1303,10 +1313,13 @@ export default function WorkflowCanvas({
       const maestroNode: MaestroNodeV3 = { id: nodeId, type: "skill", skill: addStepSkill, position };
       newRfNode = { id: nodeId, type: "skillNode", position, data: { maestroNode } };
     } else {
-      // human_review
-      nodeId = nextHumanId(rfNodes);
-      const maestroNode: MaestroNodeV3 = { id: nodeId, type: "human_review", position };
-      newRfNode = { id: nodeId, type: "humanStep", position, data: { maestroNode } };
+      // human_review | manager_review
+      nodeId = nextReviewId(
+        rfNodes.map((nd) => nd.id),
+        addStepType
+      );
+      const maestroNode: MaestroNodeV3 = { id: nodeId, type: addStepType, position };
+      newRfNode = { id: nodeId, type: reviewRfType(addStepType), position, data: { maestroNode } };
     }
 
     // The step is inserted *between* the source and whatever it already pointed at, so the
@@ -1630,33 +1643,16 @@ export default function WorkflowCanvas({
       {/* Add step modal */}
       {addStepSourceId && (
         <div className="absolute inset-0 bg-black/30 z-20 flex items-center justify-center">
-          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-80 flex flex-col gap-3">
+          <div className="bg-maestro border border-maestro rounded-xl p-5 shadow-xl w-[28rem] max-w-[90%] flex flex-col gap-3">
             <div className="text-[13px] font-semibold text-maestro">Add step</div>
 
             {/* Type picker */}
-            <div className="flex rounded-lg overflow-hidden border border-maestro">
-              <button
-                type="button"
-                onClick={() => setAddStepType("agent")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "agent" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Agent
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddStepType("skill")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "skill" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Skill
-              </button>
-              <button
-                type="button"
-                onClick={() => setAddStepType("human_review")}
-                className={`flex-1 py-1.5 text-[12px] font-medium cursor-pointer focus:outline-none transition-colors ${addStepType === "human_review" ? "bg-maestro-primary text-white" : "bg-maestro-elevated text-maestro-muted hover:bg-maestro"}`}
-              >
-                Human Review
-              </button>
-            </div>
+            <AddStepKindChoice
+              kind={addStepKind}
+              reviewType={addStepReviewType}
+              onKindChange={setAddStepKind}
+              onReviewTypeChange={setAddStepReviewType}
+            />
 
             {/* Instance picker (only for agent type) */}
             {addStepType === "agent" && (

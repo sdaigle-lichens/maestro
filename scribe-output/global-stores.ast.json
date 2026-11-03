@@ -1,0 +1,2379 @@
+{
+  "concept": "global-stores",
+  "vertices": [
+    {
+      "_key": "0387739a797064f4d4da9d3b90764e33",
+      "displayKey": "global-stores::function::readAllProjectTags",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllProjectTags",
+      "filepath": "apps/maestro/src/core/project-tags.ts",
+      "start_line": 69,
+      "end_line": 77,
+      "signature": "function readAllProjectTags(dbPath: string = DEFAULT_PROJECT_TAGS_DB_PATH): string[]",
+      "contentHash": "a4029c646523318c695860dcdd84ef47424e54467a80162bcb862c49e9e347e0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "03bd7f4c9d0c34a294acb01df45e63e6",
+      "displayKey": "global-stores::function::dropLegacySchema",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "dropLegacySchema",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 44,
+      "end_line": 49,
+      "signature": "function dropLegacySchema(db: DatabaseSync): void",
+      "contentHash": "0fbcd6d21560f4aca09a2c86de4b7059bbf1893c85e5efd1b49b16fd7d04a3cf",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0576f77e959c5294a4e2d16b7747944a",
+      "displayKey": "global-stores::function::openProject",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openProject",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 67,
+      "end_line": 81,
+      "signature": "function openProject(root: string): ProjectState",
+      "contentHash": "8487fdc6e9c850a8607bb15a06632b51e7fb8d8184e94692fbd422b86b0c884b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0c887df3df87deb073cb90d7782e875e",
+      "displayKey": "global-stores::function::requireValidId",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "requireValidId",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 38,
+      "end_line": 40,
+      "signature": "function requireValidId(handoffId: string): void",
+      "contentHash": "ae092cb69aa5c9f1d8d00e45abdc4e45d6898b2135e76df97c25df291f0ffbfc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0e9eacb74e36c646492bc0d3dbc2765c",
+      "displayKey": "global-stores::function::setAgentType",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "setAgentType",
+      "filepath": "apps/maestro/src/core/agent-types.ts",
+      "start_line": 133,
+      "end_line": 151,
+      "signature": "function setAgentType(agentName: string, tag: AgentType, dbPath: string = DEFAULT_AGENT_TYPES_DB_PATH, projectRoot?: string): \"developer\" | \"planner\" | \"reviewer\" | \"annotator\" | \"tester\"",
+      "contentHash": "9453df8bd847acb425ed38fe64cb67b11286fde5a0d9766a17169ab5a29da5b5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "13bf29d15cddf7b9e1d2b09e4b5ccb62",
+      "displayKey": "global-stores::function::writeAgentReportDefault",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "writeAgentReportDefault",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 487,
+      "end_line": 516,
+      "signature": "function writeAgentReportDefault(agentName: string, content: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportDefault",
+      "contentHash": "829cb20f3fe4728cfa922e83ea9dd4d5f9ee336d5ee227065205f5882868b8f3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "143e7522d21d70b80be4810880fabafc",
+      "displayKey": "global-stores::function::handoffId",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "handoffId",
+      "filepath": "apps/maestro/src/core/handoff-seeds.ts",
+      "start_line": 593,
+      "end_line": 595,
+      "signature": "function handoffId(sender: string, receiver: string): string",
+      "contentHash": "4f7d50b4816d68a3a61522aaab826495ba6f62de91ab6738b0c1e17869f510dd",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1556e3a76b817ba68afea58627641ff1",
+      "displayKey": "global-stores::function::backendLikeV4",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "backendLikeV4",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 94,
+      "end_line": 96,
+      "signature": "function backendLikeV4(subagent: string): string",
+      "contentHash": "65a02b35111ae1d4c93915aaf0fcbaa74d130ee1b18f0aa82e0f7de16d97cc74",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1b26172f3a0200c0b67596e53d4b13f3",
+      "displayKey": "global-stores::function::getState",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "getState",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 57,
+      "end_line": 60,
+      "signature": "function getState(): ProjectState",
+      "contentHash": "a27c93532b41626bf9ef119dfb0a2a69b35b12bc3ce2c533564ab40d44cc0db2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1f9edba246a03a5ae2459d7469da88b4",
+      "displayKey": "global-stores::function::isValidLayers",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "isValidLayers",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 51,
+      "end_line": 62,
+      "signature": "function isValidLayers(value: unknown): boolean",
+      "contentHash": "c831c35078d5d1882a04e0fadbd92c65c8dd8e31971b3c5b2948b56d7a6d428f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1fa2e90c672132b3a71e5748c20d0647",
+      "displayKey": "global-stores::function::readAllSkillTags",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllSkillTags",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 102,
+      "end_line": 114,
+      "signature": "function readAllSkillTags(dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): Record<string, SkillTagSet>",
+      "contentHash": "2df39df9f7fd12e579ebcc7f290233c31163e04a40db966d12068713f6b61f0f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2145a9d0a677287d7f9eae607b77e798",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/project-tags.ts",
+      "start_line": 34,
+      "end_line": 46,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "9521e69fb9c69ed5ae874126b7771f9e34e5cba32328ed120f37186399a288e7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "22bea404c1576c7398e25672b7c7866f",
+      "displayKey": "global-stores::type-def::ResolvedSkillLists",
+      "concept": "global-stores",
+      "type": "type-def",
+      "name": "ResolvedSkillLists",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 8,
+      "end_line": 12,
+      "signature": "export interface ResolvedSkillLists {",
+      "contentHash": "03f803d68ac990f52832fba1775df35cd01ccf74a2fb9dd5491cdc3c84d203ae",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2aa3a6fdbdc4d3e1d86b1cdaacf57c29",
+      "displayKey": "global-stores::function::getAvatar",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "getAvatar",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 76,
+      "end_line": 95,
+      "signature": "function getAvatar(agentName: string, dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): AvatarLayers | null",
+      "contentHash": "21020c6ab51c7b75aa0b6cebb05561db69ebda9e542702f3d4885b74a1a227b3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2c5bc5ad5447879e49228a31b97edb36",
+      "displayKey": "global-stores::function::currentRoot",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "currentRoot",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 62,
+      "end_line": 64,
+      "signature": "function currentRoot(): string",
+      "contentHash": "6dac2c1f82c468a1201d25af406fe546d4faa65e94b582af3033cba16f4462b0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3053c4eb995fce2c248382752cac0ddc",
+      "displayKey": "global-stores::function::readAllAgentReportDefaults",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllAgentReportDefaults",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 458,
+      "end_line": 475,
+      "signature": "function readAllAgentReportDefaults(dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): Record<string, ReportDefault>",
+      "contentHash": "d41921d770d423cfe8edb95afc7ee3e4d917068b34b3d0a156872e375efec315",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "32d46c0c6a1554507be12b5ebe27bb45",
+      "displayKey": "global-stores::function::resolveSkillLists",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "resolveSkillLists",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 42,
+      "end_line": 49,
+      "signature": "function resolveSkillLists(cfg: unknown): ResolvedSkillLists",
+      "contentHash": "c46a79d73b7d879a3e4c9eb1d1af793714a6117ac0cc6a78d68d6c467fde71e7",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "33bec586f490a9fbfe745d72e6c99b9b",
+      "displayKey": "global-stores::function::dropLegacySchema",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "dropLegacySchema",
+      "filepath": "apps/maestro/src/core/agent-project-tags.ts",
+      "start_line": 70,
+      "end_line": 75,
+      "signature": "function dropLegacySchema(db: DatabaseSync): void",
+      "contentHash": "868ce776c1f0b748a223e11a1181845ee4c4d56cde821b15cc59096ca1b0a6df",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "33f37a13b62db3905122988f25090355",
+      "displayKey": "global-stores::function::setSkillProjectTags",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "setSkillProjectTags",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 142,
+      "end_line": 148,
+      "signature": "function setSkillProjectTags(skillId: string, tags: string[], dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): string[]",
+      "contentHash": "2d495df9b57ed44ce7b6e84e3c86b802c54e16611db418dc4309774ece62316f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3630e481415e3abfd555dbd415b1e235",
+      "displayKey": "global-stores::function::isValidColor",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "isValidColor",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 64,
+      "end_line": 67,
+      "signature": "function isValidColor(value: unknown): boolean",
+      "contentHash": "4c98f18b281301cf98a4b033f67e1638b3d20838c002955743413fda520db40b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "36f05f48ec3ecd33eac31f08e8460704",
+      "displayKey": "global-stores::function::applySkillTagsBlock",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "applySkillTagsBlock",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 244,
+      "end_line": 258,
+      "signature": "function applySkillTagsBlock(tagsById: Record<string, SkillTagSet>, skillsDir: string, dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): string[]",
+      "contentHash": "96b808294a0e2825be1584ff8c4fb59e608ce74b760855782d86b2eef7525370",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "37d992912413a0aaa2247870abc5b035",
+      "displayKey": "global-stores::function::readAllAgentTypes",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllAgentTypes",
+      "filepath": "apps/maestro/src/core/agent-types.ts",
+      "start_line": 103,
+      "end_line": 124,
+      "signature": "function readAllAgentTypes(dbPath: string = DEFAULT_AGENT_TYPES_DB_PATH, projectRoot?: string): Record<string, \"developer\" | \"planner\" | \"reviewer\" | \"annotator\" | \"tester\">",
+      "contentHash": "c5c514aa7b8aa15e92e8155fa56ba23ffda45247bb165adb46e37a9edab62107",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3e9b42ca8957a30903066325cb8b90e8",
+      "displayKey": "global-stores::function::addProjectTag",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "addProjectTag",
+      "filepath": "apps/maestro/src/core/project-tags.ts",
+      "start_line": 84,
+      "end_line": 95,
+      "signature": "function addProjectTag(tag: string, dbPath: string = DEFAULT_PROJECT_TAGS_DB_PATH): string[]",
+      "contentHash": "387fcbc4baab40066d0bcff0931e2fa8de80baa1d41d10ad2001ea3c7adeb2e5",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "44da8c743b2288eb3cb03e87c7ab0409",
+      "displayKey": "global-stores::function::seedIfEmpty",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "seedIfEmpty",
+      "filepath": "apps/maestro/src/core/agent-types.ts",
+      "start_line": 81,
+      "end_line": 93,
+      "signature": "function seedIfEmpty(db: DatabaseSync): void",
+      "contentHash": "7e70dcbafdd3c3e629616a646795867e1b850ed6e5fde831be8525520c8bda95",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "46c8a0c87287d19fa73ac2568daa6dd1",
+      "displayKey": "global-stores::function::skillMapFromTags",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "skillMapFromTags",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 171,
+      "end_line": 189,
+      "signature": "function skillMapFromTags(tagsBySkill: Record<string, SkillTagSet>, skillIds: string[], agentAttrs: Record<string, AgentAttrs>): SkillMap",
+      "contentHash": "07e507cbdd0c3dcf9ae07b5515d229d2cc3be57f4e7d0d908c1812ad1bd601f8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "48ebfbeb6690af7eb97a6778f5a87e42",
+      "displayKey": "global-stores::function::agentsForProjectTags",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "agentsForProjectTags",
+      "filepath": "apps/maestro/src/core/agent-project-tags.ts",
+      "start_line": 162,
+      "end_line": 172,
+      "signature": "function agentsForProjectTags(tags: string[], dbPath: string = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH, projectRoot?: string): string[]",
+      "contentHash": "8ece776c23c010064227edcced1a32e3ff87bb02ed9d6f41b30f04ba660ad079",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "49d94cf02c24bb7d75ed373039b5e121",
+      "displayKey": "global-stores::function::conceptGapsChannelNote",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "conceptGapsChannelNote",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 68,
+      "end_line": 75,
+      "signature": "function conceptGapsChannelNote(subagent: string): string",
+      "contentHash": "00aa1e1c5134486d7827a6f824f59e7983190e26b062e5e8285a516a7b16ddd1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4aa9836981c69ba7eb2593b15f5d0a3b",
+      "displayKey": "global-stores::function::normalizeTag",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "normalizeTag",
+      "filepath": "apps/maestro/src/core/project-tags.ts",
+      "start_line": 64,
+      "end_line": 66,
+      "signature": "function normalizeTag(tag: string): string",
+      "contentHash": "6cf9f48116e6d476d8b2be86ccc1991c14c8d929cbb2f03997e1769c41aa0d04",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4c7f9e337ce1ff2b56404b92de2e678d",
+      "displayKey": "global-stores::function::readAllAgentProjectTags",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllAgentProjectTags",
+      "filepath": "apps/maestro/src/core/agent-project-tags.ts",
+      "start_line": 102,
+      "end_line": 123,
+      "signature": "function readAllAgentProjectTags(dbPath: string = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH, projectRoot?: string): Record<string, string>",
+      "contentHash": "7a04f637fb805fe78a61813ae25a31a202da04209f8a80bedde94d2a0b96fca0",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4eaf9eff77a3e2770c25820cffd825c2",
+      "displayKey": "global-stores::function::deleteHandoffDefault",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "deleteHandoffDefault",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 180,
+      "end_line": 193,
+      "signature": "function deleteHandoffDefault(handoffId: string, dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH): boolean",
+      "contentHash": "f0c9812f3b205e5cc68418b0be6871e739b83f093bb0af4da3da7a081444b32f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "532f28c2035f51222e1c693de921b99f",
+      "displayKey": "global-stores::function::writeHandoffDefault",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "writeHandoffDefault",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 143,
+      "end_line": 169,
+      "signature": "function writeHandoffDefault(handoffId: string, content: string, dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH): HandoffDefault",
+      "contentHash": "b8b58bfae34af507eb5b0311900f945657d670ab9f6ce7d633a647ec79f3dddc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "54b6d5bc48eee9a8d9c39028916942a3",
+      "displayKey": "global-stores::function::readHandoffDefault",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readHandoffDefault",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 102,
+      "end_line": 115,
+      "signature": "function readHandoffDefault(handoffId: string, dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH): HandoffDefault | null",
+      "contentHash": "9d85626b24bc76a2c520084de37edfbbfcc70db3c5211cb7bb0be2e821ebac99",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "595dc9664d3c3e81e53c67c4a4c2dc73",
+      "displayKey": "global-stores::function::testReportBody",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "testReportBody",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 181,
+      "end_line": 197,
+      "signature": "function testReportBody(gapsNote: string): string",
+      "contentHash": "3f319a0d3ab37dda2d991ec72519c359d56251e318fa9f361cd61bd8c930291a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6428a8c92815def49cbe8dfc57bc1e32",
+      "displayKey": "global-stores::function::seedIfEmpty",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "seedIfEmpty",
+      "filepath": "apps/maestro/src/core/agent-project-tags.ts",
+      "start_line": 78,
+      "end_line": 92,
+      "signature": "function seedIfEmpty(db: DatabaseSync): void",
+      "contentHash": "f0c5e9db6cb6449e08e59af9b76a279b5977395488646af021c919e0de2dc67d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "66388a7a25a148e7fcd7bfeb09f28cfa",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 42,
+      "end_line": 57,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "88f63329956f6e9924cf7e95d9aa015210d87b1ef9f4ced7378da05ac8969984",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6a0caf098a3c364966f18873d08278b6",
+      "displayKey": "global-stores::function::replaceAll",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "replaceAll",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 116,
+      "end_line": 139,
+      "signature": "function replaceAll(table: \"skill_project_tags\" | \"skill_agent_types\", skillId: string, tags: string[], dbPath: string): string[]",
+      "contentHash": "299edd050074c1455969416da194dbf32571112195c698838acfa8f712bd43d2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6a461dfe968877d3724ad026a96e2080",
+      "displayKey": "global-stores::function::priorReportSeeds",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "priorReportSeeds",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 418,
+      "end_line": 420,
+      "signature": "function priorReportSeeds(agentName: string): string[]",
+      "contentHash": "bfa857a6232820bb529079d116f0e60205f3e863c41a14d9a78db0c216d25ec9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6f704638ea59ea85f9b2f7f3d9fd785f",
+      "displayKey": "global-stores::function::read",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "read",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 19,
+      "end_line": 29,
+      "signature": "function read(): ProjectState",
+      "contentHash": "3a5658b3de4a9c8aaacb76908b73b3ba0ed2a961954bef28428f4a4754dc0dbb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7574c16e4d4391c3b14f2bbe7327c70d",
+      "displayKey": "global-stores::function::isValidHandoffId",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "isValidHandoffId",
+      "filepath": "apps/maestro/src/core/handoff-seeds.ts",
+      "start_line": 581,
+      "end_line": 583,
+      "signature": "function isValidHandoffId(handoffId: unknown): boolean",
+      "contentHash": "44b5e70eff3a698f48143d01c5906fa7ab4503dfc1d118a0c5db6847d6f06f15",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7efc2e2b4604d8e0d27a8ec0f852e329",
+      "displayKey": "global-stores::function::refreshSupersededSeeds",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "refreshSupersededSeeds",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 82,
+      "end_line": 99,
+      "signature": "function refreshSupersededSeeds(db: DatabaseSync): void",
+      "contentHash": "63473c6001cfcafa31da5a4b3e11fe6059f2f9d51fde52b9008972d38d6d175a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "85d237bba846b57ac1b2dba480863915",
+      "displayKey": "global-stores::function::stateFile",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "stateFile",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 15,
+      "end_line": 17,
+      "signature": "function stateFile(): string",
+      "contentHash": "8769357d4b26c8036cb30daff3f5123922b910f53dba36e29e3133779b13751b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8b92c5d22c88f96124e433d1ee71f77c",
+      "displayKey": "global-stores::function::readAllFrom",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllFrom",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 91,
+      "end_line": 99,
+      "signature": "function readAllFrom(db: DatabaseSync, table: \"skill_project_tags\" | \"skill_agent_types\"): Record<string, string[]>",
+      "contentHash": "13e002ad8843286e5ddbc467e3ae008869a557baac1a735e99a043c67f9850ee",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8dce107bb02bc1d6f465c9b0f42796af",
+      "displayKey": "global-stores::function::forgetProject",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "forgetProject",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 83,
+      "end_line": 92,
+      "signature": "function forgetProject(root: string): ProjectState",
+      "contentHash": "b57b5017d5e63a654b56093159f505502dd11a869885c609e7457ec614f81f3f",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "8df4d54a860a9b4de5f2b52e8ebde209",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 337,
+      "end_line": 359,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "59294e58b393814b3dbf96d498575b143119872b3903f622815a19f78d695040",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "97d940b8083d102ddf7d669c0924ca99",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 27,
+      "end_line": 41,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "c377be8c51a59c7564c298a40c8002cb531e744dd7ee4c81c02b5c911dbbcebc",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9dd5ffff7597e3fc1fe75928f5ed80e6",
+      "displayKey": "global-stores::function::readAllHandoffDefaults",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllHandoffDefaults",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 118,
+      "end_line": 134,
+      "signature": "function readAllHandoffDefaults(dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH): Record<string, HandoffDefault>",
+      "contentHash": "f2d912195639fe7b4b047c6737946baae7061af2e45e6c3c11dc89280f28be70",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9e920fdc6fd9462402aa073e2a1ff061",
+      "displayKey": "global-stores::function::seedIfEmpty",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "seedIfEmpty",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 392,
+      "end_line": 408,
+      "signature": "function seedIfEmpty(db: DatabaseSync): void",
+      "contentHash": "fa8a4033627ff804de4406b99965dae2a4efa2a986959b75db76a0ce2d2fd68a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a1ffb6089c936d7d9001ad9547257cc9",
+      "displayKey": "global-stores::function::ids",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "ids",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 23,
+      "end_line": 32,
+      "signature": "function ids(v: unknown): string[]",
+      "contentHash": "87eaaeb6d3c27c9ee11a0f656b191f552bab4cf6020586089c59383a285ff7a8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a5bb3f795a4e20ab9a9246f5f6941afc",
+      "displayKey": "global-stores::function::isProjectRef",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "isProjectRef",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 31,
+      "end_line": 33,
+      "signature": "function isProjectRef(v: unknown): boolean",
+      "contentHash": "db529e7a7e147b3a3eef08c228e087314f038ffc6f4ce7af93f4764c1d9c45f6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a8ee148d525bd69bed39c34b4f94c377",
+      "displayKey": "global-stores::type-def::SkillTagSet",
+      "concept": "global-stores",
+      "type": "type-def",
+      "name": "SkillTagSet",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 53,
+      "end_line": 56,
+      "signature": "export interface SkillTagSet {",
+      "contentHash": "f7d3628fc0d3e33e9151fca1aa01fc1c455ab12e9f7f88918a5875fb91630a76",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b24616774c5a26501d08c3d617f102af",
+      "displayKey": "global-stores::function::splitHandoffId",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "splitHandoffId",
+      "filepath": "apps/maestro/src/core/handoff-seeds.ts",
+      "start_line": 586,
+      "end_line": 590,
+      "signature": "function splitHandoffId(handoffId: string): { sender: string; receiver: string; }",
+      "contentHash": "29eb61236021e1f6560e7547dbbc6d28455a86430f5ffb8f7e836a9d743f6372",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b9b9420170ee618683d6159a096c27a9",
+      "displayKey": "global-stores::function::readAllAvatars",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAllAvatars",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 109,
+      "end_line": 140,
+      "signature": "function readAllAvatars(dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): Record<string, AvatarLayers>",
+      "contentHash": "db91f514b65002f91a6cf6a11e391cc15c3768076224a3d909f66a706132e39e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "baa2b5f4572abe19ddd2f04720a80ce7",
+      "displayKey": "global-stores::function::parseSkillTagsBlock",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "parseSkillTagsBlock",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 211,
+      "end_line": 236,
+      "signature": "function parseSkillTagsBlock(text: string, validProjectTags: string[]): Record<string, SkillTagSet> | null",
+      "contentHash": "4c631c07656547be78e82e05dad18e91c4e5e596e004609b9ae473f4dc37ab68",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "bfb45f208675551e962eeabd798fdfa6",
+      "displayKey": "global-stores::function::setAgentProjectTag",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "setAgentProjectTag",
+      "filepath": "apps/maestro/src/core/agent-project-tags.ts",
+      "start_line": 132,
+      "end_line": 149,
+      "signature": "function setAgentProjectTag(agentName: string, tag: string, dbPath: string = DEFAULT_AGENT_PROJECT_TAGS_DB_PATH, projectRoot?: string): string",
+      "contentHash": "71ae3d8818808fbcf8a3d9e9b83714a5296f8a59d4ae83c1ddec86bb84002a7d",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c2371299799a36437ea965aff982cd90",
+      "displayKey": "global-stores::function::write",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "write",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 35,
+      "end_line": 39,
+      "signature": "function write(state: ProjectState): void",
+      "contentHash": "7c2dd6d2b371ed80d4cd89b2528335dfd369fab3c4739bd0ad7c1f9b83615677",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c38ac0ffc6e15d1d4d332933b3da259e",
+      "displayKey": "global-stores::function::isPlainObject",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "isPlainObject",
+      "filepath": "apps/maestro/src/core/skill-lists.ts",
+      "start_line": 14,
+      "end_line": 16,
+      "signature": "function isPlainObject(v: unknown): boolean",
+      "contentHash": "51042a502f10e171b7676a8b8235b11cc42f3c3f6793d25e88732b0961f4bd4c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c3974ba5e8a066668202f84e2225a0c4",
+      "displayKey": "global-stores::function::refreshSupersededSeeds",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "refreshSupersededSeeds",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 369,
+      "end_line": 389,
+      "signature": "function refreshSupersededSeeds(db: DatabaseSync): void",
+      "contentHash": "ac87bd78960c69460dac628eab740f370e1529ab3cbc1e684765cc4101ab7d30",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c540938cf2bee1e9e2c1429d1ff433f5",
+      "displayKey": "global-stores::function::seedIfEmpty",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "seedIfEmpty",
+      "filepath": "apps/maestro/src/core/project-tags.ts",
+      "start_line": 49,
+      "end_line": 61,
+      "signature": "function seedIfEmpty(db: DatabaseSync): void",
+      "contentHash": "c7f3ee24ae3842ab2b2442a529b7d3d476b2c0a9cf1c2661135079326f2f3bf4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c695538df27597b83c59083e2f45393d",
+      "displayKey": "global-stores::function::dropLegacySchema",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "dropLegacySchema",
+      "filepath": "apps/maestro/src/core/agent-types.ts",
+      "start_line": 73,
+      "end_line": 78,
+      "signature": "function dropLegacySchema(db: DatabaseSync): void",
+      "contentHash": "feae5384d53fb154e7529ad909aa11f6737dead6cfcaafa9fecbb7b6823fd0ad",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c69835ffc998a9575a71b1f611ea6c57",
+      "displayKey": "global-stores::function::seedIfEmpty",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "seedIfEmpty",
+      "filepath": "apps/maestro/src/core/handoff-defaults.ts",
+      "start_line": 60,
+      "end_line": 72,
+      "signature": "function seedIfEmpty(db: DatabaseSync): void",
+      "contentHash": "900f8581135f6fa4055f40424ecda20e9907767ccfe2cb02b21ecf6dd96a35f2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c80d985129359ec591a8fc837ce953b6",
+      "displayKey": "global-stores::function::setSkillAgentTypes",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "setSkillAgentTypes",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 151,
+      "end_line": 157,
+      "signature": "function setSkillAgentTypes(skillId: string, tags: string[], dbPath: string = DEFAULT_SKILL_TAGS_DB_PATH): string[]",
+      "contentHash": "a3b5edc988a5fd0b1cf652ef22a28152b182dfe8136ff0c238c16941fb400213",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cb9ffc016121bb2ab5552933df451847",
+      "displayKey": "global-stores::function::readReportById",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readReportById",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 443,
+      "end_line": 455,
+      "signature": "function readReportById(reportId: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): { content: string; version: number; } | null",
+      "contentHash": "1069e9a6b7f4d2b25592861ddefd7f8c7680561ae1f0aeee9b63df18f555f4e6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cebe41443e212dd5d2fa75d4d4a3f212",
+      "displayKey": "global-stores::function::backendLikeBody",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "backendLikeBody",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 98,
+      "end_line": 113,
+      "signature": "function backendLikeBody(subagent: string, gapsNote: string): string",
+      "contentHash": "8ae991163a33c80ed6a28f574764c58cfd0d4dce147a9bb77379c41dab6b0c19",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "cfce25d27948c282537bc523226d7b6e",
+      "displayKey": "global-stores::function::skillGapsChannelNote",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "skillGapsChannelNote",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 51,
+      "end_line": 58,
+      "signature": "function skillGapsChannelNote(subagent: string): string",
+      "contentHash": "57fa810316c1a22482d9092393f1d7373bb886601b5eebd8d39074b8bd976328",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d2d1b2b674764fd993dc985bd35a6033",
+      "displayKey": "global-stores::function::setAvatar",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "setAvatar",
+      "filepath": "apps/maestro/src/core/avatar-store.ts",
+      "start_line": 150,
+      "end_line": 167,
+      "signature": "function setAvatar(agentName: string, layers: AvatarLayers, dbPath: string = DEFAULT_AVATAR_DB_PATH, projectRoot?: string): AvatarLayers",
+      "contentHash": "5a9815bbcc7d6d4f3f569500265181937a9f3c3a09c6ba438350838e7c8210a4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d7cb9920fb876910fbd10224ca7da6cd",
+      "displayKey": "global-stores::type-def::AgentAttrs",
+      "concept": "global-stores",
+      "type": "type-def",
+      "name": "AgentAttrs",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 59,
+      "end_line": 64,
+      "signature": "export interface AgentAttrs {",
+      "contentHash": "c4ac219fc69e2bc9b88f91bffa4e40d87dee4b7a7e0ad429aa76f8eba97dda91",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d84d78b05f48ef906551b02e7392cc73",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/skill-tags.ts",
+      "start_line": 66,
+      "end_line": 89,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "2fd5fe6cf90c0187099d515f038f0696c676b39b6943ab7ff515e41ac7d2b3ad",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e2a326271ca6737d23ec5c35bbf49a4e",
+      "displayKey": "global-stores::function::removeProjectTag",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "removeProjectTag",
+      "filepath": "apps/maestro/src/core/project-tags.ts",
+      "start_line": 98,
+      "end_line": 107,
+      "signature": "function removeProjectTag(tag: string, dbPath: string = DEFAULT_PROJECT_TAGS_DB_PATH): string[]",
+      "contentHash": "e4b9b2cbbdfdafff639d0706b930fa2b1da74beb8abb5962115ab27b4edda0d8",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e5ab4228f3196f10dd4b52f801a7fb8e",
+      "displayKey": "global-stores::function::prune",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "prune",
+      "filepath": "apps/maestro/src/main/project-store.ts",
+      "start_line": 48,
+      "end_line": 53,
+      "signature": "function prune(state: ProjectState): ProjectState",
+      "contentHash": "38684116d8e44f3201785bd0d2e53d7bdf960f5341446b6b0e3ff1dbfbd81ce4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e5edf320345e0e468cb00b1e6310d316",
+      "displayKey": "global-stores::function::backendLikeReport",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "backendLikeReport",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 84,
+      "end_line": 86,
+      "signature": "function backendLikeReport(subagent: string): string",
+      "contentHash": "7d832c6df3027e6beca38a6907fbafebaaa7e7cbc9b09224806ab63721deeaca",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f29bf12a50080e9f95a08884773bc081",
+      "displayKey": "global-stores::function::readAgentReportDefault",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "readAgentReportDefault",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 423,
+      "end_line": 440,
+      "signature": "function readAgentReportDefault(agentName: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportDefault | null",
+      "contentHash": "404130549ec80594a7cc93da3303d821b41c883c4fbdac9e7d5131d91de8221b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f45e1fac13883706af7c32413a63a715",
+      "displayKey": "global-stores::function::backendLikeV3",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "backendLikeV3",
+      "filepath": "apps/maestro/src/core/report-defaults.ts",
+      "start_line": 89,
+      "end_line": 91,
+      "signature": "function backendLikeV3(subagent: string): string",
+      "contentHash": "e64454c0ae5737ecabb1edb1f41f4abd9e87bcc440909bf09f652a0f7e78f367",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f4e6b19b89bb178782bd80847257787e",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/agent-project-tags.ts",
+      "start_line": 51,
+      "end_line": 67,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "fe570c14c85aa935837d6a0abff6f7d417642e2610ddbd3094af274665ed8127",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "fc6e84cb04e58887524603efc41513d3",
+      "displayKey": "global-stores::function::isSeededHandoff",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "isSeededHandoff",
+      "filepath": "apps/maestro/src/core/handoff-seeds.ts",
+      "start_line": 567,
+      "end_line": 569,
+      "signature": "function isSeededHandoff(handoffId: string): boolean",
+      "contentHash": "47833602aa9d212d08fe2f693d8d2b275ee5a5b965f1c5374d145cb7a83a9a05",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "feba09a1e7f055c560c76c3c278ccf90",
+      "displayKey": "global-stores::function::openDb",
+      "concept": "global-stores",
+      "type": "function",
+      "name": "openDb",
+      "filepath": "apps/maestro/src/core/agent-types.ts",
+      "start_line": 53,
+      "end_line": 70,
+      "signature": "function openDb(dbPath: string): DatabaseSync",
+      "contentHash": "1f25895f701a8a388a422c9081b28bc7932105623559a5e687f35f06cecda707",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "00911b6ef9d681d97a6da116d6d0ecd4",
+      "_from": "vertices/2aa3a6fdbdc4d3e1d86b1cdaacf57c29",
+      "_to": "vertices/1f9edba246a03a5ae2459d7469da88b4",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 91,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "010dbe38375a9e96d64f0b22e7a050f1",
+      "_from": "vertices/1f9edba246a03a5ae2459d7469da88b4",
+      "_to": "vertices/3630e481415e3abfd555dbd415b1e235",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 61,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "01ba74a9ef5fae5e3516e5513dc7bfda",
+      "_from": "vertices/0576f77e959c5294a4e2d16b7747944a",
+      "_to": "vertices/1b26172f3a0200c0b67596e53d4b13f3",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "05bb93268c4ac6c6123043485a9fb490",
+      "_from": "vertices/baa2b5f4572abe19ddd2f04720a80ce7",
+      "_to": "vertices/a8ee148d525bd69bed39c34b4f94c377",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 211,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0b6e8fea41effc1c274530766607654a",
+      "_from": "vertices/1556e3a76b817ba68afea58627641ff1",
+      "_to": "vertices/f45e1fac13883706af7c32413a63a715",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0e4679924e9e918793f36a285da249ca",
+      "_from": "vertices/e5edf320345e0e468cb00b1e6310d316",
+      "_to": "vertices/cfce25d27948c282537bc523226d7b6e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "155daf32cbe044ef9d0de64b3a3be55d",
+      "_from": "vertices/f45e1fac13883706af7c32413a63a715",
+      "_to": "vertices/cebe41443e212dd5d2fa75d4d4a3f212",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "18468537bcc8d85e3dad05aac1dd805c",
+      "_from": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "_to": "vertices/9e920fdc6fd9462402aa073e2a1ff061",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 356,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1d6624b89fe935bc6415b2d8005f1004",
+      "_from": "vertices/feba09a1e7f055c560c76c3c278ccf90",
+      "_to": "vertices/44da8c743b2288eb3cb03e87c7ab0409",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e14755d91b782b4fca4aef70a586f2b",
+      "_from": "vertices/97d940b8083d102ddf7d669c0924ca99",
+      "_to": "vertices/03bd7f4c9d0c34a294acb01df45e63e6",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 31,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2719e8536bf11ebff7b8833779434447",
+      "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
+      "_to": "vertices/c38ac0ffc6e15d1d4d332933b3da259e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "27bbd8cafc27380f0901ff307a592c4e",
+      "_from": "vertices/f4e6b19b89bb178782bd80847257787e",
+      "_to": "vertices/33bec586f490a9fbfe745d72e6c99b9b",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "290306e48be692c45e2ef04b0b199119",
+      "_from": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "_to": "vertices/a8ee148d525bd69bed39c34b4f94c377",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2ccf61f9440d79edfe1bad8a93b1e9b7",
+      "_from": "vertices/66388a7a25a148e7fcd7bfeb09f28cfa",
+      "_to": "vertices/7efc2e2b4604d8e0d27a8ec0f852e329",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 55,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2dfc212ae1580c0f2b89b6bb3afdc62f",
+      "_from": "vertices/36f05f48ec3ecd33eac31f08e8460704",
+      "_to": "vertices/a8ee148d525bd69bed39c34b4f94c377",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 245,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3aba3f7ee7eaf7e361107db30e30279f",
+      "_from": "vertices/d2d1b2b674764fd993dc985bd35a6033",
+      "_to": "vertices/97d940b8083d102ddf7d669c0924ca99",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 157,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b7f97c426ff6fc755d49ad425856b50",
+      "_from": "vertices/2c5bc5ad5447879e49228a31b97edb36",
+      "_to": "vertices/1b26172f3a0200c0b67596e53d4b13f3",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 63,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3e641a9a2b281b1af2e1323264d4d952",
+      "_from": "vertices/4c7f9e337ce1ff2b56404b92de2e678d",
+      "_to": "vertices/f4e6b19b89bb178782bd80847257787e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41401a7cd31a987822a8474d01113dcf",
+      "_from": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "_to": "vertices/c3974ba5e8a066668202f84e2225a0c4",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 357,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "43b93269d9d8009ab573d3961bdb8bc4",
+      "_from": "vertices/d2d1b2b674764fd993dc985bd35a6033",
+      "_to": "vertices/1f9edba246a03a5ae2459d7469da88b4",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4436bd5ca373bfb2f8b367298696c62d",
+      "_from": "vertices/0e9eacb74e36c646492bc0d3dbc2765c",
+      "_to": "vertices/feba09a1e7f055c560c76c3c278ccf90",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "444ad3e39ad570c38153e4a4c602a64e",
+      "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
+      "_to": "vertices/22bea404c1576c7398e25672b7c7866f",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 42,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "451065bdf5df7152c5b2d68a05185b1b",
+      "_from": "vertices/f45e1fac13883706af7c32413a63a715",
+      "_to": "vertices/49d94cf02c24bb7d75ed373039b5e121",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "48e7602c5840187eddcc5c7a158554b1",
+      "_from": "vertices/0387739a797064f4d4da9d3b90764e33",
+      "_to": "vertices/2145a9d0a677287d7f9eae607b77e798",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 70,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4996079fd1d4f46c81e9e0302be9d850",
+      "_from": "vertices/e5edf320345e0e468cb00b1e6310d316",
+      "_to": "vertices/cebe41443e212dd5d2fa75d4d4a3f212",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5558fb50517fc68e46debf0f28817e7f",
+      "_from": "vertices/9dd5ffff7597e3fc1fe75928f5ed80e6",
+      "_to": "vertices/66388a7a25a148e7fcd7bfeb09f28cfa",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 121,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5571779389bc1ab0f816aac1888bf423",
+      "_from": "vertices/bfb45f208675551e962eeabd798fdfa6",
+      "_to": "vertices/f4e6b19b89bb178782bd80847257787e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 140,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "57cffa433a5955296743ab439942177d",
+      "_from": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "_to": "vertices/8b92c5d22c88f96124e433d1ee71f77c",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 105,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "60e5049f829eee3554299cddf43a3bdb",
+      "_from": "vertices/e2a326271ca6737d23ec5c35bbf49a4e",
+      "_to": "vertices/2145a9d0a677287d7f9eae607b77e798",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 99,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6303d521af3de040f435a1f515a25bd3",
+      "_from": "vertices/66388a7a25a148e7fcd7bfeb09f28cfa",
+      "_to": "vertices/c69835ffc998a9575a71b1f611ea6c57",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 54,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "64153e5a151a09c224854aa6f1a97583",
+      "_from": "vertices/48ebfbeb6690af7eb97a6778f5a87e42",
+      "_to": "vertices/4c7f9e337ce1ff2b56404b92de2e678d",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 167,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "67ff0eaaf91f76da4f7785239e8d61ae",
+      "_from": "vertices/f29bf12a50080e9f95a08884773bc081",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 427,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "683d57597d8b2ff234365bfb1b721422",
+      "_from": "vertices/c2371299799a36437ea965aff982cd90",
+      "_to": "vertices/85d237bba846b57ac1b2dba480863915",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 38,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "69778d36c73fb0fd78d58664fdf8b04f",
+      "_from": "vertices/0c887df3df87deb073cb90d7782e875e",
+      "_to": "vertices/7574c16e4d4391c3b14f2bbe7327c70d",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6b1c9b42619251dc25a3eb74f98f7b79",
+      "_from": "vertices/4eaf9eff77a3e2770c25820cffd825c2",
+      "_to": "vertices/66388a7a25a148e7fcd7bfeb09f28cfa",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 182,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6db1116bed4611789f5799f35ee27f99",
+      "_from": "vertices/8dce107bb02bc1d6f465c9b0f42796af",
+      "_to": "vertices/c2371299799a36437ea965aff982cd90",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7809d755b5493776ac23a9b8f9793724",
+      "_from": "vertices/33f37a13b62db3905122988f25090355",
+      "_to": "vertices/6a0caf098a3c364966f18873d08278b6",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7b24b1e75df2c31275f416f7e08477f6",
+      "_from": "vertices/6a0caf098a3c364966f18873d08278b6",
+      "_to": "vertices/d84d78b05f48ef906551b02e7392cc73",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 123,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "887bd53fb02b66be9d717b76c3396f32",
+      "_from": "vertices/37d992912413a0aaa2247870abc5b035",
+      "_to": "vertices/feba09a1e7f055c560c76c3c278ccf90",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "89d53683c3ea14d1fe65b38c21f3e6b7",
+      "_from": "vertices/2aa3a6fdbdc4d3e1d86b1cdaacf57c29",
+      "_to": "vertices/97d940b8083d102ddf7d669c0924ca99",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 81,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8c7993caf89c2c00b759f1400214acac",
+      "_from": "vertices/1b26172f3a0200c0b67596e53d4b13f3",
+      "_to": "vertices/6f704638ea59ea85f9b2f7f3d9fd785f",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8e52bbed7f754d53a1f3718ab846b877",
+      "_from": "vertices/1b26172f3a0200c0b67596e53d4b13f3",
+      "_to": "vertices/e5ab4228f3196f10dd4b52f801a7fb8e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8f5ecf4b05d35dfe965adcc14b04adac",
+      "_from": "vertices/b9b9420170ee618683d6159a096c27a9",
+      "_to": "vertices/97d940b8083d102ddf7d669c0924ca99",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 113,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8f94a14852cebace6c518c13df0c87bc",
+      "_from": "vertices/54b6d5bc48eee9a8d9c39028916942a3",
+      "_to": "vertices/66388a7a25a148e7fcd7bfeb09f28cfa",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97763fe9094c6e8dadb8a7e6debc72ea",
+      "_from": "vertices/3053c4eb995fce2c248382752cac0ddc",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 461,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9ae25c75e5474ad9dc68347918679195",
+      "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
+      "_to": "vertices/a1ffb6089c936d7d9001ad9547257cc9",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 48,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e8fe7351e30c2278a529efab47ec97a",
+      "_from": "vertices/532f28c2035f51222e1c693de921b99f",
+      "_to": "vertices/66388a7a25a148e7fcd7bfeb09f28cfa",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 149,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a17d19db41481741bc03eaebd3c3d473",
+      "_from": "vertices/36f05f48ec3ecd33eac31f08e8460704",
+      "_to": "vertices/c80d985129359ec591a8fc837ce953b6",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 254,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a7618dd10a8ba43cb782aef73b1e851d",
+      "_from": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "_to": "vertices/8b92c5d22c88f96124e433d1ee71f77c",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a7f7a21044af6a4dc76dffb185354714",
+      "_from": "vertices/8dce107bb02bc1d6f465c9b0f42796af",
+      "_to": "vertices/1b26172f3a0200c0b67596e53d4b13f3",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aa77ed5780134c13e9969128e2111fe6",
+      "_from": "vertices/feba09a1e7f055c560c76c3c278ccf90",
+      "_to": "vertices/c695538df27597b83c59083e2f45393d",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 59,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aa925a0602f96f22eb0fcad858a552bb",
+      "_from": "vertices/4eaf9eff77a3e2770c25820cffd825c2",
+      "_to": "vertices/0c887df3df87deb073cb90d7782e875e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 181,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "aac4dc9b7bfd3793a2e85dbbe76bdb06",
+      "_from": "vertices/36f05f48ec3ecd33eac31f08e8460704",
+      "_to": "vertices/33f37a13b62db3905122988f25090355",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 253,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ac4b424c2b2c6a0a9645ae941d73e2a3",
+      "_from": "vertices/6f704638ea59ea85f9b2f7f3d9fd785f",
+      "_to": "vertices/85d237bba846b57ac1b2dba480863915",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 21,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b6683adf48fcaa546a68c65cef7b35fc",
+      "_from": "vertices/b24616774c5a26501d08c3d617f102af",
+      "_to": "vertices/7574c16e4d4391c3b14f2bbe7327c70d",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 587,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b7f26f98529bf0a839d0b21f3789c270",
+      "_from": "vertices/f4e6b19b89bb178782bd80847257787e",
+      "_to": "vertices/6428a8c92815def49cbe8dfc57bc1e32",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 65,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bd3e57268c2ad8ae422a2fdbbd0e045a",
+      "_from": "vertices/3e9b42ca8957a30903066325cb8b90e8",
+      "_to": "vertices/4aa9836981c69ba7eb2593b15f5d0a3b",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c475e5c25c8fff6123a3ccc4291238a6",
+      "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
+      "_to": "vertices/c38ac0ffc6e15d1d4d332933b3da259e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c4a6a6303101a08f35db5de3170c7ffd",
+      "_from": "vertices/532f28c2035f51222e1c693de921b99f",
+      "_to": "vertices/0c887df3df87deb073cb90d7782e875e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ca9b0e43f967eeb3a07564c4d741aad4",
+      "_from": "vertices/46c8a0c87287d19fa73ac2568daa6dd1",
+      "_to": "vertices/a8ee148d525bd69bed39c34b4f94c377",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 172,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d35bc16ac3d4849b7a23277123ce46f7",
+      "_from": "vertices/e2a326271ca6737d23ec5c35bbf49a4e",
+      "_to": "vertices/4aa9836981c69ba7eb2593b15f5d0a3b",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 101,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d58e4bf77624575f086aac391a159b92",
+      "_from": "vertices/baa2b5f4572abe19ddd2f04720a80ce7",
+      "_to": "vertices/a8ee148d525bd69bed39c34b4f94c377",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 223,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d6685b8fc413854b9fcf3baca1a73ab0",
+      "_from": "vertices/13bf29d15cddf7b9e1d2b09e4b5ccb62",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 492,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dba61784db3369ff1e10bd16933ca293",
+      "_from": "vertices/c80d985129359ec591a8fc837ce953b6",
+      "_to": "vertices/6a0caf098a3c364966f18873d08278b6",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 156,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dcfe8c89e1924c2985b2d252b557db33",
+      "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
+      "_to": "vertices/a1ffb6089c936d7d9001ad9547257cc9",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 46,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e0861d193374cf0146acb916261ab3df",
+      "_from": "vertices/54b6d5bc48eee9a8d9c39028916942a3",
+      "_to": "vertices/0c887df3df87deb073cb90d7782e875e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e63429bfc6a92bf09b25411efd80c835",
+      "_from": "vertices/b9b9420170ee618683d6159a096c27a9",
+      "_to": "vertices/1f9edba246a03a5ae2459d7469da88b4",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 131,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e8710684903f6ce228d9cb67cefb64a8",
+      "_from": "vertices/32d46c0c6a1554507be12b5ebe27bb45",
+      "_to": "vertices/c38ac0ffc6e15d1d4d332933b3da259e",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 47,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e9e9cc26eeda08e98791be1c22b7575d",
+      "_from": "vertices/2145a9d0a677287d7f9eae607b77e798",
+      "_to": "vertices/c540938cf2bee1e9e2c1429d1ff433f5",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 44,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eb478c239d7b3b5eaf1efd8188ce1c65",
+      "_from": "vertices/c2371299799a36437ea965aff982cd90",
+      "_to": "vertices/85d237bba846b57ac1b2dba480863915",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 36,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "efa6cb879fcc328f75df30931f0839e2",
+      "_from": "vertices/3e9b42ca8957a30903066325cb8b90e8",
+      "_to": "vertices/2145a9d0a677287d7f9eae607b77e798",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f0e3643e1e57c0caa840c0a572e403b1",
+      "_from": "vertices/cb9ffc016121bb2ab5552933df451847",
+      "_to": "vertices/8df4d54a860a9b4de5f2b52e8ebde209",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 447,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f5ccb666fb0dd2df2ac34a3606eb8869",
+      "_from": "vertices/0576f77e959c5294a4e2d16b7747944a",
+      "_to": "vertices/c2371299799a36437ea965aff982cd90",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f70986b545fd7dfb58909d806217bf65",
+      "_from": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "_to": "vertices/a8ee148d525bd69bed39c34b4f94c377",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 102,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fb82909901b6928a44c4c77bea04eace",
+      "_from": "vertices/6f704638ea59ea85f9b2f7f3d9fd785f",
+      "_to": "vertices/a5bb3f795a4e20ab9a9246f5f6941afc",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 24,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fd1a1f4c366e2df439245e44abcf875d",
+      "_from": "vertices/46c8a0c87287d19fa73ac2568daa6dd1",
+      "_to": "vertices/d7cb9920fb876910fbd10224ca7da6cd",
+      "type": "has-type",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 174,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ff879d1370a2802798cc5ffb9cecd4dd",
+      "_from": "vertices/1fa2e90c672132b3a71e5748c20d0647",
+      "_to": "vertices/d84d78b05f48ef906551b02e7392cc73",
+      "type": "calls",
+      "concept": "global-stores",
+      "crosses_concept": false,
+      "line": 103,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/global-stores/SKILL.md",
+    "body": "---\nname: global-stores\ndescription: \"Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two.\"\nmetadata:\n  type: concept-skill\n  version: \"2.0\"\n  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c\n---\n\n# Global stores\n\nSix modules in `apps/maestro/src/core` share one mechanism: a `node:sqlite` database under\n`~/.claude`, one store per machine, read by every project the app opens. They are the deliberate\ncounterweight to [`maestro-config-model`](../maestro-config-model/SKILL.md) — state that is\nexplicitly _not_ per-project.\n\n| Store                                         | File                    | Keyed by                            |\n| --------------------------------------------- | ----------------------- | ------------------------------------ |\n| `~/.claude/maestro-skill-tags.sqlite`         | `skill-tags.ts`         | skill id                            |\n| `~/.claude/maestro-agent-types.sqlite`        | `agent-types.ts`        | `(project_root, agent_name)` (`030`) |\n| `~/.claude/maestro-agent-project-tags.sqlite` | `agent-project-tags.ts` | `(project_root, agent_name)` (`030`) |\n| `~/.claude/maestro-report-defaults.sqlite`    | `report-defaults.ts`    | agent name → report id              |\n| `~/.claude/maestro-handoff-defaults.sqlite`   | `handoff-defaults.ts`   | `\"<sender>/<receiver>\"` (`033`)      |\n| `~/.claude/maestro-avatars.sqlite`            | `avatar-store.ts`       | `(project_root, agent_name)` (`030`) |\n\nEach exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the\nreal machine's store.\n\nA seventh sqlite file sits beside them but is a catalog, not a per-thing store:\n`~/.claude/maestro-project-tags.sqlite` (`project-tags.ts`: `readAllProjectTags`, `addProjectTag`,\n`removeProjectTag`), the vocabulary skill tags and agent project tags key against — see\n[Agent types and project tags](sub-concepts/agent-classification.md). `skill-lists.ts` (also mapped\nhere) is **not** a store: it is the pure, `unknown`-tolerant reader of `maestro.json`'s start/end skill\nlists, shared by the app and the runtime scripts via `lib/maestro-skill-lists.cjs`.\n\n## Keyed by project, not just agent name (`030`)\n\nThe three per-agent stores — types, project tags, avatars — widened their primary key from\n`agent_name` alone to `(project_root, agent_name)`, `project_root = ''` meaning \"global\". This\nmatters only for a `project`-tier agent: two unrelated projects that each define\n`.claude/agents/reviewer.md` no longer share one avatar/type/tag row. `user`/`maestro`/plugin-tier\nagents are unaffected — they're the same agent everywhere, so they still key on `''` (global).\n\nEvery read/write function on these three takes an optional trailing `projectRoot?: string`:\n\n- **Omitted** → touches the GLOBAL row only. This is what `/templates` and the plugin's\n  install-time reader do, unchanged from before `030`.\n- **Passed on a bulk read** (`readAllAgentTypes`, `readAllAgentProjectTags`, `readAllAvatars`) →\n  one SQL query returns the global rows unioned with `projectRoot`'s own rows; a later row for the\n  same agent name overwrites the earlier one as the result map is built, because `''` collates\n  before any real path — so a project's own override wins over the global default for that project\n  only.\n- **Passed on a write** (`setAgentType`, `setAgentProjectTag`, `setAvatar`) → targets that\n  project's own row exclusively.\n\n**No migration.** Each store's `openDb()` calls a `dropLegacySchema()` helper that `DROP TABLE`s a\npre-`030` shape (no `project_root` column) before the `CREATE TABLE IF NOT EXISTS`/`seedIfEmpty`\nthat follows — a deliberate, one-time data loss, acceptable because Maestro wasn't installed\nanywhere that mattered yet.\n\n`report-defaults.ts` was deliberately **not** touched — it's already the global fallback tier by\ndefinition (see below), a different kind of thing from these three's per-instance metadata.\n\n## Why global — the reasons are not the same\n\nDo not collapse these into one rationale; the modules' own headers distinguish them:\n\n- **Skill tags and avatars** are global because _the thing is the same thing everywhere_: a skill is\n  the same skill wherever it is used, an agent of the same name should look the same everywhere.\n- **Report defaults and handoff defaults** are global for a different reason: they are the\n  **fallback tier** a project falls back to when it has no opinion of its own, and the thing\n  install/update syncs a project's `.claude/reports/*.md` and `.claude/handoffs/**.md` _from_.\n\n**These two are the only stores a HOOK reads, and since `035` it reads them from the project's own\ncopy too.** Their generated bundles (`lib/maestro-report-defaults.cjs`,\n`lib/maestro-handoff-defaults.cjs`) are in `install.ts`'s `STATIC_ASSETS`, so\n`maestro-inject-agent-context` resolves both tiers whether it runs from the marketplace cache or\nfrom `<project>/.claude/scripts/`. Before `035` the project copy's `require` resolved nothing, its\ntry/catch swallowed the failure, and the tier silently did not exist: no output format at all for an\nagent whose report is only global (reports have **no** seed tier), and the shipped seed instead of\nthe user's global row for a handoff. So a store these hooks read must keep a bundle safe under a\nbare, possibly old `node`, and `require`ing a *third* store from the hook means adding its bundle to\n`STATIC_ASSETS` in **both** install implementations. See `installing-maestro`'s manifest\nsub-concept.\n\n## `handoff-defaults.ts` is not a copy of `report-defaults.ts` (`033`)\n\nSame argument for being global, deliberately different shape: one table instead of two, a\npath-shaped id, a sqlite-free seed module, and two editing surfaces since `034`. All of it is in\n[Handoff defaults](sub-concepts/handoff-defaults.md).\n\n## The exception: a description is not a store\n\n`/agents` also edits an agent's **description**, and that one deliberately does *not* get a store:\n`src/core/agent-descriptions.ts` writes it back into the agent's own `.md` frontmatter over the\n`agent:describe` channel. That is the test to apply before adding another store — type, project\ntag and avatar are **Maestro's own metadata**, meaningless to a Claude session, so a machine-wide\ncopy is the truth; a description is the line **Claude Code itself reads** to decide when to dispatch\nthe agent, so a copy beside the app would make the page show one sentence while every run used\nanother.\n\nTwo guards bound the write, and both are about not lying to the user:\n\n- `EDITABLE_AGENT_SOURCES` (`contracts.ts`) is `[\"project\"]` (narrowed from `[\"project\", \"user\",\n  \"maestro\"]` in `029` — the `maestro` entry was editable by accident: bundled agents are ordinary\n  files in a repo checkout but live inside `app.asar` in a packaged build). Every non-project tier is\n  refused: `user`-tier agents belong to no project and are shared by every project on the machine;\n  `maestro`/an **installed plugin's** agents live in a version-keyed marketplace cache that the next\n  plugin update overwrites, so an edit there is discarded, not merely unowned.\n  `describeUneditableSource` gives each its own message — see `agents-view`. `contracts.ts` is\n  otherwise interfaces-only; this is a deliberate value export (alongside `GLOBAL_TAG` /\n  `AVATAR_CATEGORIES` / `AGENT_TYPES`) so the renderer can decide from `source` alone with no round\n  trip. (`034`'s `BUNDLED_AGENT_NAMES` used to join this list; `043` removed it once the Handoffs\n  tab's pair roster moved to a picked project's own `agents_available` — see `handoff-defaults.md`.)\n- `setAgentDescription` additionally `fs.access(W_OK)`-checks the file, so a packaged build's\n  read-only bundled agents report why instead of appearing to save.\n\n`replaceDescriptionInFrontmatter` **refuses** a YAML block scalar (`|`, `>`) or a value continued on\nthe next line rather than flattening it: `parseFrontmatter` already misreads those, and rewriting\nonly the first line would leave the continuation dangling as garbage keys.\n\n## A fourth writer, on a fork\n\n`agent-fork.ts`'s `copyAgentAttributeRows(fromName, toName, projectRoot, dbPaths?)` (`029`, rekeyed\n`030`) is a new consumer of three of these six stores — avatar, agent type, project tag — called\nonly for a **renamed** fork on `/agents`. The read side stays name-only/global (a fork's source is\nalways a global-tier template), but the write side passes `projectRoot` — the new fork's own\nproject — since the copy always lands on a project-tier agent, and after `030`'s rekey landing it on\nthe global row would leak into every other project. A same-name fork needs no copy at all: the\nshadowing row *is* the template's own global row. See `agents-view`.\n\n**This writer is why `agent-fork.ts` was split in two (`031`).** It touches three sqlite stores, so\n`agent-fork.ts` transitively imports `node:sqlite` — and `031`'s fork-staleness check reaches the\nplugin's hook scripts through a generated bundle that runs under a bare `node` which may predate\nthat module (the same constraint `maestro-skill-tags.cjs` lives with). So the sidecar and the\nfrontmatter arithmetic moved to **`agent-fork-record.ts`** (`agentForksPath`, `readAgentForks`,\n`writeAgentForkRecord`, `removeAgentFork`, `bodyForHashing`, `hashAgentBody`, `mergeForkBody`,\n`renameAgentInFrontmatter`), which imports no store; `agent-fork.ts` keeps `forkAgent` and\n`copyAgentAttributeRows` and re-exports the rest, so every existing import still resolves. The\nproperty to preserve: `grep -c \"node:sqlite\" plugins/maestro/scripts/lib/maestro-agent-sync.cjs`\nmust stay **0**. Adding a store import to `agent-fork-record.ts` breaks that silently — the bundle\nstill builds, and only a bare-`node` run notices.\n\n## Why `node:sqlite`\n\nNo native module, and therefore no `electron-rebuild` step. `skill-tags.ts`'s header carries the\nfull argument — the other five cite it rather than restating it. A new store should use the same\nmechanism for the same reason.\n\n**The version floor is not the app's, it's whatever `node` is on the session's PATH.** Electron 40\nbundles Node 24, where `node:sqlite` loads fine (with the standard experimental-feature warning). The\ntest suite or `maestro-install.js` running under an older *system* `node` needs at least **22.5** for\nthe module to exist at all — which is why `maestro-install.js` wraps its\n`require(\"./lib/maestro-skill-tags.cjs\")` in try/catch: an old `node` degrades to the pre-tags, fully\nClaude-driven best-fit flow instead of failing the install. That degradation only works because the\nbundler keeps `node:sqlite` as a real `require()` rather than inlining a shim — see\n[`plugin-libs-parity`](../plugin-libs-parity/SKILL.md).\n\n## Skill tags, and the trap: `SKILL_TAGS` is gone\n\n`skill-tags.ts` stores a user's manual annotation once per skill id in\n`~/.claude/maestro-skill-tags.sqlite`, shared across every project. It has **two** dimensions:\n\n- **`projectTags`** — which `project-tags.ts` catalog entries the skill applies to, plus `GLOBAL_TAG`\n  for \"regardless of project tag\".\n- **`agentTypes`** — which of `agent-types.ts`'s closed vocabulary the skill applies to, plus\n  `GLOBAL_TAG` for \"regardless of agent type\".\n\nBoth are edited together in one Skills-tab row and always read together — `skillMapFromTags` is\nwhere they combine to decide which skills a given seeded agent instance receives. Routing is by\n_what kind of agent and what kind of project_, never by agent name. Edited from the `/skills` route;\nsee also `plugins/maestro/skills/update-skill-tags`.\n\nThe old single-dimension `SKILL_TAGS` was literally the seven built-in agent _names_, matched 1:1\nagainst an agent's name. It conflated \"which kind of project\" with \"which kind of agent\" into one\nflat list and could only route a skill to an agent whose name it already knew. The two dimensions\nmatch instead against a seeded agent _instance's_ own stored attributes, which is what decouples\nMaestro from a fixed agent roster. Any code or doc still routing by agent name is working from the\nretired model.\n\n## Relationships\n\n- [`agent-fork-sync`](../agent-fork-sync/SKILL.md) — why the sidecar and the frontmatter helpers had\n  to leave `agent-fork.ts`: its `copyAgentAttributeRows` writes three of these stores, so it drags\n  `node:sqlite` into any bundle that imports it. Also `syncProjectHandoffs`, `decideSync`'s third\n  caller, which syncs `.claude/handoffs/` from this store the way `report-sync.ts` syncs\n  `.claude/reports/`.\n- [`maestro-config-model`](../maestro-config-model/SKILL.md) — the per-project counterpart; the\n  `reports` and `handoffs` slices are what override the `report-defaults` and `handoff-defaults`\n  tiers.\n- `maestro-architecture` (at the repo root `.claude/skills`) — the `SubagentStart` hook resolves a\n  report *and* a per-route handoff protocol across these tiers at dispatch time.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — five of these six have a generated CJS\n  twin under `plugins/maestro/scripts/lib/` so hooks can read them without `node_modules` (every one\n  but `avatar-store.ts`).\n- [`agents-view`](../agents-view/SKILL.md) — the fourth writer above, and the \"Fork into this\n  project\" button that triggers it.\n\n## Sub-concepts\n\n- [Agent types and project tags](sub-concepts/agent-classification.md) — the per-agent half of the\n  two-dimensional match above.\n- [Report defaults](sub-concepts/report-defaults.md) — the global fallback tier and its two tables.\n- [Handoff defaults](sub-concepts/handoff-defaults.md) — the one-table twin, its path-shaped id, and\n  the sqlite-free seed module that keeps the floor alive on an old `node`.\n- [Avatars](sub-concepts/avatars.md) — cosmetic, layered, keyed by agent name.\n",
+    "contentHash": "sha256:ffd10cc411b12f2e3b91505b8430a081507a82ed536b71574901d8b1b40aaa00"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.21",
+    "extracted_at": "2026-10-21T19:03:38.085Z",
+    "files": {
+      "apps/maestro/src/core/agent-project-tags.ts": "sha256:f85eba64471a0c2cf29b7d2f0085bd70d8114700b46844497b80f0f8ad19db0c",
+      "apps/maestro/src/core/agent-types.ts": "sha256:27a118dfadf30099855371796a61f5e1f47f9f12c24a37f84c4623c7d0f661c3",
+      "apps/maestro/src/core/avatar-store.ts": "sha256:8d037cfc7aab0e180f6fcea32b652525f41597edfff181a55451e1d17468b58f",
+      "apps/maestro/src/core/handoff-defaults.ts": "sha256:c600746fa9a55f74322d779e596f8bcd74ef779fea68e7c55f4e8facc6ce7811",
+      "apps/maestro/src/core/handoff-seeds.ts": "sha256:f20102c7c4a81d15859c7146bf7a6570f2bb50915c87e44b88fa18cd84bd7524",
+      "apps/maestro/src/core/project-tags.ts": "sha256:3fea889f4f272a834a6ebcf144913de57154889c9b4227b01c459b568d373b06",
+      "apps/maestro/src/core/report-defaults.ts": "sha256:1a64f45dae11a8644cf60f6d3a9df7efeca61a79f33708b3a09e7703123a72eb",
+      "apps/maestro/src/core/skill-lists.ts": "sha256:207f5463739b24ff8367948362be3e5bd7f20af4ff9378793d6db5e6cf3ec6f0",
+      "apps/maestro/src/core/skill-tags.ts": "sha256:bee4976107be303aa9899d5cc9d9d5ff17f42db1ea6f5bf4335ae29db28b1f61",
+      "apps/maestro/src/main/project-store.ts": "sha256:515390f1bb2ca284e7be283ede46e3af3287f00157ae0b81feb86b23ca7895c4"
+    }
+  }
+}

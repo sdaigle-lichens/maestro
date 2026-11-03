@@ -1,0 +1,116 @@
+{
+  "concept": "maestro-architecture",
+  "vertices": [
+    {
+      "_key": "19f30baef430b5724ebb59fc12cbed96",
+      "purpose": "The four handoff problems a SubagentStop can flag: a missing line, a contradiction, a missing payload, or a label no condition edge handles.",
+      "inputs": [],
+      "outputs": [
+        "string union of issue kinds"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "handoff-contract"
+      ],
+      "sig_seen": "export type HandoffIssueKind = \"missing\" | \"contradiction\" | \"missing_payload\" | \"unrouted\";",
+      "hash_seen": "b7e36f3044f2492cb0e626e4de59db9325f67f4520ce2761d4b392fcb45f51d7"
+    },
+    {
+      "_key": "7767864fdfa65ab49f8f0979fd41fed7",
+      "purpose": "Tells whether the sender wrote the receiver's channel file, or one of its own gap reports in that lane, at or after the run start.",
+      "inputs": [
+        "projectDir",
+        "route: sender and receiver",
+        "sinceMs: run start, or null"
+      ],
+      "outputs": [
+        "true when a payload was written since sinceMs"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "channels",
+        "missing-payload",
+        "scribe-lane"
+      ],
+      "sig_seen": "function payloadWrittenSince(projectDir: string, route: PayloadRoute, sinceMs: number | null): boolean",
+      "hash_seen": "b7e10ea14a7b5b2973a50b64297fa02cc53c286d9c4c02edb5e0100acef9e4ed"
+    },
+    {
+      "_key": "852b8f82f2f5f34c946476d2c5f8927f",
+      "purpose": "Chooses the design check skill a fresh seed names: the first of DESIGN_CHECK_CANDIDATES that the project can invoke, or no design check when none resolves.",
+      "inputs": [
+        "projectRoot: project whose skill sources are read; empty returns {}",
+        "homeDir: optional home directory override"
+      ],
+      "outputs": [
+        "SeedSkills with designCheck set to the plugin-namespaced id, or an empty object"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "design-check",
+        "seed",
+        "skill-availability"
+      ],
+      "sig_seen": "function seedSkillsFor(projectRoot: string, homeDir?: string): SeedSkills",
+      "hash_seen": "927dfb7249ed763cf78c6174cf0c51ea1b944fcab4622677186857c8698266be"
+    },
+    {
+      "_key": "b55eba7071c0a4dda52de26f1b8d4bcf",
+      "purpose": "Stamps every unstamped channel file a sender wrote with the session run_id, skipping meeting leftovers, and moves a scribe gap report off the write slot to the next free lane file.",
+      "inputs": [
+        "projectDir",
+        "sender: bare agent whose own SubagentStop calls it",
+        "runId: the session's run_id",
+        "opts.skip: meeting leftovers to leave unstamped"
+      ],
+      "outputs": [
+        "absolute paths it stamped"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "channels",
+        "run-id-stamp",
+        "scribe-lane"
+      ],
+      "sig_seen": "function writeStamp(projectDir: string, sender: string, runId: string, opts: { skip?: readonly ChannelFileMark[] | null } = {}): string[]",
+      "hash_seen": "143c8e41e680a1ab330eb2a1d3baf5668230f8782c4005d63a684f0ac24d975b"
+    },
+    {
+      "_key": "faa62810753e9585f748b9928a285b6c",
+      "purpose": "Builds the hints telling a project with scribe.config.json or a legacy concept-skills list to install and enable the code-graph plugin, with the exact marketplace-add and install commands.",
+      "inputs": [
+        "projectRoot",
+        "sources: the enabled plugins"
+      ],
+      "outputs": [
+        "hint sentences"
+      ],
+      "cross_concept_refs": [],
+      "document_ref": null,
+      "tags": [
+        "code-graph",
+        "skill-availability"
+      ],
+      "sig_seen": "function pluginSuggestions(projectRoot: string, sources: SkillSources): string[]",
+      "hash_seen": "52b2ae60f014878ba76ac3857f8d152a510f413fe69a9be3bb71fad4927ef5bf"
+    }
+  ],
+  "edges": [
+    {
+      "_key": "55ad32838e89d52e741a81b1aa116615",
+      "reason": "Declares the SeedSkills result shape."
+    },
+    {
+      "_key": "58e27c8289a87c57fe468b7ad51b32ff",
+      "reason": "Picks the first design check candidate that resolves."
+    },
+    {
+      "_key": "82073761db6358413c154d9cf3a9da8b",
+      "reason": "Reads which skills the project can invoke before choosing."
+    }
+  ]
+}

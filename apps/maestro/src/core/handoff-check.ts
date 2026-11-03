@@ -7,7 +7,7 @@
 
 import { lastHandoffLabel } from "./handoff-label.js";
 
-export type HandoffIssueKind = "missing" | "contradiction" | "missing_payload";
+export type HandoffIssueKind = "missing" | "contradiction" | "missing_payload" | "unrouted";
 
 export interface HandoffIssue {
   kind: HandoffIssueKind;
@@ -72,6 +72,36 @@ export function checkHandoff(msg: unknown): HandoffIssue | null {
     };
   }
   return null;
+}
+
+/**
+ * A condition label the active workflow has no edge for (`108`). A docs-only run whose scribe
+ * stopped at `HANDOFF: partial` had nowhere to go, nothing flagged it, and the orchestrator
+ * improvised an off-workflow dispatch. Null for `success` (the last node of a path has no success
+ * edge either), for a missing line (`checkHandoff`'s job), or when a route with that label exists.
+ * `routes` must be the sender's routes in the ACTIVE workflow only — the caller skips this check
+ * when the workflow fell back to a guess, where an absent edge proves nothing.
+ */
+export function checkRoute(msg: unknown, routes: { label: string }[], workflow: string): HandoffIssue | null {
+  const label = lastHandoffLabel(msg);
+  if (label === null || label.toLowerCase() === "success") return null;
+  const want = label.toLowerCase();
+  if (routes.some((r) => r.label.toLowerCase() === want)) return null;
+  const known = routes.filter((r) => r.label.toLowerCase() !== "success").map((r) => r.label);
+  return {
+    kind: "unrouted",
+    verdict: reportVerdict(msg),
+    label,
+    message:
+      "The subagent ended HANDOFF: " +
+      label +
+      ', which no condition edge in workflow "' +
+      workflow +
+      '" handles (its conditions: ' +
+      (known.length ? known.join(", ") : "none") +
+      "). Stop: tell the user what the agent could not do and let them choose (switch workflow, dispatch an agent outside it, or stop). " +
+      "Do not dispatch another agent on your own.",
+  };
 }
 
 /**

@@ -1,0 +1,2257 @@
+{
+  "concept": "agent-fork-sync",
+  "vertices": [
+    {
+      "_key": "002803e706bc1a8654582f67eafea008",
+      "displayKey": "agent-fork-sync::function::projectAgentsDir",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "projectAgentsDir",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 86,
+      "end_line": 88,
+      "signature": "function projectAgentsDir(projectRoot: string): string",
+      "contentHash": "5bb593daf431ea0b7d785c0eca6fef321332312922ede1e4ed8fba8f579a1a15",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0464683e31354275a64e5c4d27e14289",
+      "displayKey": "agent-fork-sync::function::sha256",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "sha256",
+      "filepath": "apps/maestro/src/core/report-sync.ts",
+      "start_line": 53,
+      "end_line": 55,
+      "signature": "function sha256(s: string): string",
+      "contentHash": "d5c2e4226327fc7842d8b7badffba630187f022e60aae7762443a09a53ad46bb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "0718d586c3b6e9518babd390bd159e6d",
+      "displayKey": "agent-fork-sync::function::verdictLine",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "verdictLine",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 37,
+      "end_line": 62,
+      "signature": "function verdictLine(entry: AgentSyncEntry): { tone: \"ok\" | \"warn\" | \"info\"; text: string; }",
+      "contentHash": "dc5d2467490b4e2dd84b2a592eb270421c5c39619871d714a39073c325b97198",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1496be54902f6b518632961e18971703",
+      "displayKey": "agent-fork-sync::type-def::ResolvedTemplate",
+      "concept": "agent-fork-sync",
+      "type": "type-def",
+      "name": "ResolvedTemplate",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 78,
+      "end_line": 84,
+      "signature": "interface ResolvedTemplate {",
+      "contentHash": "d034d6938f458319e3cb8189a24180c0f181c2396a4ff20fcfac483883520821",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1d9c7edcab3d1dee473e0332fc27c607",
+      "displayKey": "agent-fork-sync::component::AgentForkReview",
+      "concept": "agent-fork-sync",
+      "type": "component",
+      "name": "AgentForkReview",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 130,
+      "end_line": 221,
+      "signature": "function AgentForkReview({\n  entry,\n  busy,\n  onAction,\n}: {\n  entry: AgentSyncEntry;\n  busy: boolean;\n  onAction: (action: AgentSyncAction) => void;\n}): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "acb64f974a15de359e4c351db7ba34a1ca9d55e9942140c6ca2c7c294556bbbe",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "1eb68970e872a662792e56aff596b776",
+      "displayKey": "agent-fork-sync::function::forkAgent",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "forkAgent",
+      "filepath": "apps/maestro/src/core/agent-fork.ts",
+      "start_line": 100,
+      "end_line": 146,
+      "signature": "function forkAgent(projectRoot: string, bundledDir: string | null, bundledPluginVersion: string | null, agentName: string, newName?: string, storeDbPaths?: { avatar?: string; agentTypes?: string; agentProjectTags?: string }): Promise<AgentForkResult>",
+      "contentHash": "007b7f48311bd7cd639921482b07ac5b5b4834a5dcd666b0cfa97f1b0c70b361",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "20cc51fe56a045342b343394f581d94b",
+      "displayKey": "agent-fork-sync::function::templateNameOf",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "templateNameOf",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 95,
+      "end_line": 103,
+      "signature": "function templateNameOf(record: AgentForkRecord): string",
+      "contentHash": "50b0c6055f87820b6e86cefe6c34852279cd572c39811dd84bb832985c948d5e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "277af29aa25a07b5c02b281494296307",
+      "displayKey": "agent-fork-sync::function::hasTemplateAdvanced",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "hasTemplateAdvanced",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 159,
+      "end_line": 182,
+      "signature": "function hasTemplateAdvanced(record: AgentForkRecord, template: ResolvedTemplate | null): boolean",
+      "contentHash": "608052caa73b17a83c80ae9c802fa8558fc7ec6960123be381f2dc37b0eb6fbb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "298063798f19da9f455de2bd7e9f76a3",
+      "displayKey": "agent-fork-sync::function::buildEntry",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "buildEntry",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 184,
+      "end_line": 225,
+      "signature": "function buildEntry(projectRoot: string, record: AgentForkRecord, options: AgentSyncOptions): Promise<{ entry: AgentSyncEntry; verdict: SyncVerdict; }>",
+      "contentHash": "0a7e1aba0a649dcc80df488187aff646c42d07ca2405e7cd92475e7dbfade9de",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "298871e6823320833d91d1d930e204fe",
+      "displayKey": "agent-fork-sync::function::reportsDir",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "reportsDir",
+      "filepath": "apps/maestro/src/core/report-sync.ts",
+      "start_line": 41,
+      "end_line": 43,
+      "signature": "function reportsDir(projectRoot: string): string",
+      "contentHash": "3bee7e7948221924f809beec5b87879c24c28fb0237489ee335c3c1927b0e602",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "2a2fdeeb767a7a0758a8a97eb48c41a2",
+      "displayKey": "agent-fork-sync::type-def::SyncVerdict",
+      "concept": "agent-fork-sync",
+      "type": "type-def",
+      "name": "SyncVerdict",
+      "filepath": "apps/maestro/src/core/sync-decision.ts",
+      "start_line": 43,
+      "end_line": 63,
+      "signature": "export type SyncVerdict =",
+      "contentHash": "1311a0bbdd2c45b6ae8239c752bd53ed84416f4dbe7484ad86857af62f62af16",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "350d9841d96f1fa2de387e18276ae536",
+      "displayKey": "agent-fork-sync::type-def::SyncDecisionInput",
+      "concept": "agent-fork-sync",
+      "type": "type-def",
+      "name": "SyncDecisionInput",
+      "filepath": "apps/maestro/src/core/sync-decision.ts",
+      "start_line": 65,
+      "end_line": 91,
+      "signature": "export interface SyncDecisionInput {",
+      "contentHash": "a63a1b8caf036fa6b61eb6d9aae705023e3ba05f94f113d634659bda5f6213e1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "36203687ca756fb36737ec643f8f2942",
+      "displayKey": "agent-fork-sync::function::trackedState",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "trackedState",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 155,
+      "end_line": 157,
+      "signature": "function trackedState(record: AgentForkRecord): { pluginVersion: string | null; templateBodyHash: string; }",
+      "contentHash": "4d1ea35bdde2df1ca9a51734a02e5a5f2e9ef004de36c15802ea4fb6b7ee61a2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "37ce458d0a98d165e18fa63896949301",
+      "displayKey": "agent-fork-sync::function::mergeForkBody",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "mergeForkBody",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 170,
+      "end_line": 192,
+      "signature": "function mergeForkBody(templateContents: string, forkContents: string): string",
+      "contentHash": "40f66e2c5a21af2cfddae44f54ab598fca2f8758f426f80bd4be065e2f2f85fa",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3943fd90258be68e8d596fd0bd710544",
+      "displayKey": "agent-fork-sync::function::isUsableRecord",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "isUsableRecord",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 32,
+      "end_line": 41,
+      "signature": "function isUsableRecord(value: unknown): boolean",
+      "contentHash": "963fce239f3c6999a69cdef9f746ebb52b84576d4b2db207b664ca99e6a1c4d9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "3d8d27fd4c5ef6c8a1bc704b52db6e28",
+      "displayKey": "agent-fork-sync::function::decideSync",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "decideSync",
+      "filepath": "apps/maestro/src/core/sync-decision.ts",
+      "start_line": 98,
+      "end_line": 114,
+      "signature": "function decideSync({\n  tracking,\n  localHash,\n  hasTemplate,\n  templateAdvanced,\n  matchesKnownVersion,\n}: SyncDecisionInput): SyncVerdict",
+      "contentHash": "2dbc8d45971be606d1aff6a0ace1cc8d9f45b1d18d10cf68b2a0c6333cc94454",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "4022f09dd91a88e2aa4587459e3d86d0",
+      "displayKey": "agent-fork-sync::function::agentForksPath",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "agentForksPath",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 21,
+      "end_line": 23,
+      "signature": "function agentForksPath(projectRoot: string): string",
+      "contentHash": "c09d3803ba0ad5f470650527cf7f0c205d43d45566b5de508c383ee26a827319",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "459229df587eaddc1681dd0f4b22bcef",
+      "displayKey": "agent-fork-sync::function::writeAgentForkRecord",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "writeAgentForkRecord",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 79,
+      "end_line": 83,
+      "signature": "function writeAgentForkRecord(projectRoot: string, record: AgentForkRecord): void",
+      "contentHash": "61452829db9545bca7bc83a575c070d6223272bdde3242a9149144f9027ec3b3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "53c79848057a2de94d9904dfe604e70b",
+      "displayKey": "agent-fork-sync::function::renameAgentInFrontmatter",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "renameAgentInFrontmatter",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 199,
+      "end_line": 207,
+      "signature": "function renameAgentInFrontmatter(contents: string, name: string): string",
+      "contentHash": "f6b938bb969187e6e04c9f43c657f8e12cddea554c663cb583d67e097cee15e2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5436558974155d8df992bddf00a3474a",
+      "displayKey": "agent-fork-sync::component::DescriptionPair",
+      "concept": "agent-fork-sync",
+      "type": "component",
+      "name": "DescriptionPair",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 64,
+      "end_line": 85,
+      "signature": "function DescriptionPair({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "bd39060cc6af48b5a78a53291584db953fb3c89aea1ac9c63ab49061c89792d1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5490cdbc11ca566a6d3b33562e77d45a",
+      "displayKey": "agent-fork-sync::function::hashAgentBody",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "hashAgentBody",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 154,
+      "end_line": 156,
+      "signature": "function hashAgentBody(contents: string): string",
+      "contentHash": "5387eb50c8a56ee22a68620f158b0aa45c1064dc285ed69dfabe65daa1f85939",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5b0f9bdbc5e05ce9846c9e8ae3410cd6",
+      "displayKey": "agent-fork-sync::function::writeAllForks",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "writeAllForks",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 68,
+      "end_line": 72,
+      "signature": "function writeAllForks(projectRoot: string, all: Record<string, AgentForkRecord>): void",
+      "contentHash": "ff2e1982d5ea245c275c68255164f529a4c1afbab218bb3ab1f58fa77c6ca82c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "displayKey": "agent-fork-sync::function::resolveTemplate",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "resolveTemplate",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 130,
+      "end_line": 152,
+      "signature": "function resolveTemplate(record: AgentForkRecord, options: AgentSyncOptions): Promise<ResolvedTemplate | null>",
+      "contentHash": "9956289dd8a4e91ffc02b70bd2d485154b201a5554873dc6485fffa7ba1d99c9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "62035e896fe860e8060e62d4c011a745",
+      "displayKey": "agent-fork-sync::function::reportFilePath",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "reportFilePath",
+      "filepath": "apps/maestro/src/core/report-sync.ts",
+      "start_line": 45,
+      "end_line": 51,
+      "signature": "function reportFilePath(projectRoot: string, reportId: string): string",
+      "contentHash": "9cdb5970a4140e28f651680275a0dda3bbdeef155d10cf3c7a33406e17e5d3b3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "6a0bac3128df2cc68c29369791c5c0d1",
+      "displayKey": "agent-fork-sync::function::pluginVersionFor",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "pluginVersionFor",
+      "filepath": "apps/maestro/src/core/agent-fork.ts",
+      "start_line": 47,
+      "end_line": 52,
+      "signature": "function pluginVersionFor(source: string, bundledPluginVersion: string | null): Promise<string | null>",
+      "contentHash": "d210358cb6d456946acd04d68a1bb3b1baf41c9e87fcc6c53ed43b054d62acfb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7580424d53b346363a42aa32bbd6d6dc",
+      "displayKey": "agent-fork-sync::function::splitFrontmatter",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "splitFrontmatter",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 100,
+      "end_line": 104,
+      "signature": "function splitFrontmatter(contents: string): { lines: string[]; body: string; } | null",
+      "contentHash": "e7cc6ae53a389759f2d082bbd458ad0bebe8a5f89e3264fd4b90a1e6a69542b9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7712785f27095cc288f426bf045b4cba",
+      "displayKey": "agent-fork-sync::function::computeAgentSync",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "computeAgentSync",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 245,
+      "end_line": 274,
+      "signature": "function computeAgentSync(projectRoot: string, options: AgentSyncOptions = {}): Promise<AgentSyncSummary>",
+      "contentHash": "f76d88c9156ca3661afeb0c27c10d0a5e3c29754657aa4499aae75ff41602f8c",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7cdde8107f5c2f04ca1aa1f4e80849bc",
+      "displayKey": "agent-fork-sync::component::DiffBlock",
+      "concept": "agent-fork-sync",
+      "type": "component",
+      "name": "DiffBlock",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 87,
+      "end_line": 128,
+      "signature": "function DiffBlock({ entry }: { entry: AgentSyncEntry }): import(\"react/jsx-runtime\").JSX.Element",
+      "contentHash": "1bf08a6627fd30cad2418265d276fdc0cc1d74abb54e9588b63c706486aba454",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "836a243c84c3d31b6c1d0dff4319962e",
+      "displayKey": "agent-fork-sync::type-def::AgentSyncOptions",
+      "concept": "agent-fork-sync",
+      "type": "type-def",
+      "name": "AgentSyncOptions",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 65,
+      "end_line": 76,
+      "signature": "export interface AgentSyncOptions {",
+      "contentHash": "48619a91f5d39d602880bc51c21f40d8d831cb34cb3b552c97a267773980f01b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9c3c704218dba0b66413750c6cb81214",
+      "displayKey": "agent-fork-sync::function::installedPluginSources",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "installedPluginSources",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 106,
+      "end_line": 115,
+      "signature": "function installedPluginSources(): Promise<Record<string, PluginTemplateSource>>",
+      "contentHash": "15754e982e0d416f71329ea980e722461ec60d013eaf7c0e6d5f992bef4583e1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a2b65b7031ef64d729ee033063b98d07",
+      "displayKey": "agent-fork-sync::function::syncProjectHandoffs",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "syncProjectHandoffs",
+      "filepath": "apps/maestro/src/core/handoff-sync.ts",
+      "start_line": 49,
+      "end_line": 145,
+      "signature": "function syncProjectHandoffs(projectRoot: string, dbPath: string = DEFAULT_HANDOFF_DEFAULTS_DB_PATH): HandoffSyncSummary",
+      "contentHash": "fe6fb9018bfea0ece3302699bc44032fb7c1f9350106facbe52cffb7c229ba0e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a45e95a89fd0041d4121638aec4f7add",
+      "displayKey": "agent-fork-sync::function::sha256",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "sha256",
+      "filepath": "apps/maestro/src/core/handoff-sync.ts",
+      "start_line": 44,
+      "end_line": 46,
+      "signature": "function sha256(s: string): string",
+      "contentHash": "d5c2e4226327fc7842d8b7badffba630187f022e60aae7762443a09a53ad46bb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a6c87ce1063f115ee0a82c3afd1b94dd",
+      "displayKey": "agent-fork-sync::type-def::PluginTemplateSource",
+      "concept": "agent-fork-sync",
+      "type": "type-def",
+      "name": "PluginTemplateSource",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 60,
+      "end_line": 63,
+      "signature": "export interface PluginTemplateSource {",
+      "contentHash": "c032529d9553ae6babeb035110d724d197800b160b9f14b8468b117e7f84b4d9",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "a7776700fd7ddf1102c7776a6ebb2b89",
+      "displayKey": "agent-fork-sync::function::writeReportFile",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "writeReportFile",
+      "filepath": "apps/maestro/src/core/report-sync.ts",
+      "start_line": 57,
+      "end_line": 60,
+      "signature": "function writeReportFile(projectRoot: string, reportId: string, content: string): void",
+      "contentHash": "aab4d10b9397eafc86f724a5d96efca395aef549162c402f36d11c782c413f0e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "b18825cf13315ef87a3dfee33dc78825",
+      "displayKey": "agent-fork-sync::function::readAgentForks",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "readAgentForks",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 53,
+      "end_line": 66,
+      "signature": "function readAgentForks(projectRoot: string): Record<string, AgentForkRecord>",
+      "contentHash": "130bad12e9cf4d10bc2570cfa49cfd02ac3cf98cf026e0690ea6a549ea6d2619",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "c4523bcf9863894cdd9782b00e121da0",
+      "displayKey": "agent-fork-sync::function::handoffFilePath",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "handoffFilePath",
+      "filepath": "apps/maestro/src/core/handoff-sync.ts",
+      "start_line": 38,
+      "end_line": 42,
+      "signature": "function handoffFilePath(projectRoot: string, handoffId: string): string",
+      "contentHash": "b53771a1769371092c1fb2e7561e6f9024dca04c46f1e780b71c135465dfc213",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ca45bb7825ee37699fbd59193c896948",
+      "displayKey": "agent-fork-sync::function::removeAgentFork",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "removeAgentFork",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 91,
+      "end_line": 97,
+      "signature": "function removeAgentFork(projectRoot: string, agentName: string): boolean",
+      "contentHash": "7ea0b80a6c63dfb3f9b8015572807f9a1b02ebd3d6c0076dd7506df2a44e37f1",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d145fd28bb17c44af2cce6723d04a21c",
+      "displayKey": "agent-fork-sync::function::applyAgentSync",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "applyAgentSync",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 286,
+      "end_line": 344,
+      "signature": "function applyAgentSync(projectRoot: string, agentName: string, action: AgentSyncAction, options: AgentSyncOptions = {}): Promise<AgentSyncApplyResult>",
+      "contentHash": "aa9e552b8778d6bdedf4e33f812c1f362513de80971adce1ceacc902e615b3cd",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d929b22a96aa5bdddff3fecc1f3fe963",
+      "displayKey": "agent-fork-sync::function::bodyForHashing",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "bodyForHashing",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 141,
+      "end_line": 152,
+      "signature": "function bodyForHashing(contents: string): string",
+      "contentHash": "26028cb5c376cbc33eb3c303f21917b75ef72c10ed8e54a2e7e51ca66a5d1c98",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "d94f81c08b550da2899a9c307664f6db",
+      "displayKey": "agent-fork-sync::function::fieldSpan",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "fieldSpan",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 115,
+      "end_line": 121,
+      "signature": "function fieldSpan(lines: string[], key: string): { start: number; end: number; } | null",
+      "contentHash": "d62fdc59184c5d0e4f04ed0c766a289faa62ee0d0d5e22cc39f1c5344bdc5e79",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "db3308eee82848ecab5b97068dbaee65",
+      "displayKey": "agent-fork-sync::type-def::SyncTracking",
+      "concept": "agent-fork-sync",
+      "type": "type-def",
+      "name": "SyncTracking",
+      "filepath": "apps/maestro/src/core/sync-decision.ts",
+      "start_line": 41,
+      "end_line": 41,
+      "signature": "export type SyncTracking = { kind: \"tracked\"; hash: string } | { kind: \"detached\" } | { kind: \"untracked\" };",
+      "contentHash": "d3577501b9368d3e5144d54677f4d650a7bdffb767fb98cf383eb8bd8fa0d94e",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "e5668fcf05ff2e89877d7371507a8cdf",
+      "displayKey": "agent-fork-sync::function::originLine",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "originLine",
+      "filepath": "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx",
+      "start_line": 21,
+      "end_line": 31,
+      "signature": "function originLine(entry: AgentSyncEntry): string",
+      "contentHash": "c7e3b0e3a0fc67bc30394d7c80c0f018815adf0437d1f1271db8334d1a0cbe06",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ebeb9a43366240c62b989351d17f73af",
+      "displayKey": "agent-fork-sync::function::syncProjectReports",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "syncProjectReports",
+      "filepath": "apps/maestro/src/core/report-sync.ts",
+      "start_line": 63,
+      "end_line": 146,
+      "signature": "function syncProjectReports(projectRoot: string, dbPath: string = DEFAULT_REPORT_DEFAULTS_DB_PATH): ReportSyncSummary",
+      "contentHash": "8f6de43d209d6c7a0799e484f5906f50dd7b09f6d41acc6b73b9cb14cd3bd949",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ec11150436bcd98fdfe3045bb8e47355",
+      "displayKey": "agent-fork-sync::function::readAgentFrom",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "readAgentFrom",
+      "filepath": "apps/maestro/src/core/agent-sync.ts",
+      "start_line": 118,
+      "end_line": 122,
+      "signature": "function readAgentFrom(dir: string | null, name: string): Promise<{ file: string; description: string; } | null>",
+      "contentHash": "609b0540a03cc0ebfd7b728198e7f265a8366013937a7b2c81cf32db6f14ae34",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f6acc4e986105e0a25f7fdc70a0e40b1",
+      "displayKey": "agent-fork-sync::function::joinFrontmatter",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "joinFrontmatter",
+      "filepath": "apps/maestro/src/core/agent-fork-record.ts",
+      "start_line": 106,
+      "end_line": 108,
+      "signature": "function joinFrontmatter(lines: string[], body: string): string",
+      "contentHash": "38efde7847f83a49aef8232c13067588c103b8b20cb5532fae1f346fe72da6d6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "f78776a12dff2253241e704586e76809",
+      "displayKey": "agent-fork-sync::function::copyAgentAttributeRows",
+      "concept": "agent-fork-sync",
+      "type": "function",
+      "name": "copyAgentAttributeRows",
+      "filepath": "apps/maestro/src/core/agent-fork.ts",
+      "start_line": 72,
+      "end_line": 86,
+      "signature": "function copyAgentAttributeRows(fromName: string, toName: string, projectRoot: string, dbPaths: { avatar?: string; agentTypes?: string; agentProjectTags?: string } = {}): void",
+      "contentHash": "2fea13a7158c19c73ea6a696e4a2b539bea04c115433d07c4e4a826e8dac47f2",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    }
+  ],
+  "edges": [
+    {
+      "_key": "00bad9f52d5309af638ecdc05d2ffe03",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/0e9eacb74e36c646492bc0d3dbc2765c",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0407bac96b7d75eafc846453645fe04b",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/836a243c84c3d31b6c1d0dff4319962e",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 290,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "052ad00dd9e8c0e2447f4c8ea5467512",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 60,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "08689264c7417253e5051098433e0cd7",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 143,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0975466641473aff34a060a2b0ab64ab",
+      "_from": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "_to": "vertices/1c022fce3bbcc4f9cdeed0f4db4f07be",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 120,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0ca781deedbb3ef75d9977566b1dc336",
+      "_from": "vertices/7712785f27095cc288f426bf045b4cba",
+      "_to": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 259,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "15d0971b1dcc9a18343c202df71eaefc",
+      "_from": "vertices/a7776700fd7ddf1102c7776a6ebb2b89",
+      "_to": "vertices/298871e6823320833d91d1d930e204fe",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 58,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "15fcfe558340451eeda7115f2de9e445",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/c4523bcf9863894cdd9782b00e121da0",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 75,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "18ef6191378981d85f13a32b86c7bc99",
+      "_from": "vertices/6a0bac3128df2cc68c29369791c5c0d1",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "193c77423317adbfb96b59c30e4c53a8",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/1496be54902f6b518632961e18971703",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 130,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1c879935dc5b7d243fe5c691e730859f",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/bfb45f208675551e962eeabd798fdfa6",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 85,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e3d4fad94421d8bc7a76f5b6c0d4236",
+      "_from": "vertices/37ce458d0a98d165e18fa63896949301",
+      "_to": "vertices/d94f81c08b550da2899a9c307664f6db",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 186,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "211d6540081331c3df83c277e4750d39",
+      "_from": "vertices/37ce458d0a98d165e18fa63896949301",
+      "_to": "vertices/7580424d53b346363a42aa32bbd6d6dc",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 172,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2202f4ce42f3acbde7c76c3b6d460e51",
+      "_from": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "_to": "vertices/f1780510e3d0f7bf0e10e00a76ac2604",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "23bbfeab568cd3b43e25d0ae770db22b",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/b18825cf13315ef87a3dfee33dc78825",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 293,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "24ab012290665546cd07b212314adaf2",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/ca45bb7825ee37699fbd59193c896948",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 297,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "27aa754b879022312e8da6e6375150c0",
+      "_from": "vertices/37ce458d0a98d165e18fa63896949301",
+      "_to": "vertices/f6acc4e986105e0a25f7fdc70a0e40b1",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 191,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2cb5b41c96ea2d38f58f08b0b9a3b893",
+      "_from": "vertices/62035e896fe860e8060e62d4c011a745",
+      "_to": "vertices/298871e6823320833d91d1d930e204fe",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "32d66f5382b58569510dbf192a4aa3ea",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 318,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "35c18a0438801554b5a6048397d1e7a0",
+      "_from": "vertices/1d9c7edcab3d1dee473e0332fc27c607",
+      "_to": "vertices/5436558974155d8df992bddf00a3474a",
+      "type": "mounts",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "36c3c10bfb451a158c0d60fbd2a59083",
+      "_from": "vertices/b18825cf13315ef87a3dfee33dc78825",
+      "_to": "vertices/3943fd90258be68e8d596fd0bd710544",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 63,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "373bcbc565dc60e052a1e08f1dca8b51",
+      "_from": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "_to": "vertices/a6c87ce1063f115ee0a82c3afd1b94dd",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 106,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "388690b4121503a5e536b7abb454478b",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 74,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "391c468595751b557edf2d60547f1376",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 144,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "39fc7c44a49e22ff7905274670950f61",
+      "_from": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "_to": "vertices/f4af348f8ba8feae667dc7af20f85a83",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b0988cf13fc3c47425e1462d54e6c5b",
+      "_from": "vertices/62035e896fe860e8060e62d4c011a745",
+      "_to": "vertices/5b4d085440f083d0831f97f8a64a4f4d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 49,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3e2405e1c761c8a1c1780ed272de4837",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/459229df587eaddc1681dd0f4b22bcef",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 143,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3e51ae13646f1736f5b73756527921e5",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 191,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3ec340fc2dffa46d61d5e057599fa46a",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/344392dce815444fee2f3d2e58557c4b",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 78,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3f1f8d0491060f74849dedcc4fd5dfd4",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/62035e896fe860e8060e62d4c011a745",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 90,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "41d80d2a98873d86e00fcff17583ab8c",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/db3308eee82848ecab5b97068dbaee65",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 98,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "44c07fe7371b71fae7eea7b93116b661",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/a45e95a89fd0041d4121638aec4f7add",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "469f210a17ddda13393bf5bfb89d3ea1",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/002803e706bc1a8654582f67eafea008",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 218,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "477ad44f9ece6c213c004ed8ecb40c3e",
+      "_from": "vertices/459229df587eaddc1681dd0f4b22bcef",
+      "_to": "vertices/5b0f9bdbc5e05ce9846c9e8ae3410cd6",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b1842bbb6796fdd737b0150c9025377",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/279f8ee9522682ead77b097a8618f16f",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4b449d21c4845b82657daa2ff184ba0f",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/2a2fdeeb767a7a0758a8a97eb48c41a2",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 188,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4d68def5b5df5683cafb22ccdcd3871c",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/5490cdbc11ca566a6d3b33562e77d45a",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 312,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4dd359c3f0f677b14f60317237f46f4b",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 135,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "4e27100e26c295fbf4a1e3deaea3d295",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 189,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "50ba007be1c7c855fdce3fad849473f2",
+      "_from": "vertices/d929b22a96aa5bdddff3fecc1f3fe963",
+      "_to": "vertices/f6acc4e986105e0a25f7fdc70a0e40b1",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 151,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "520310312c616f51294ca377d0135d56",
+      "_from": "vertices/5b0f9bdbc5e05ce9846c9e8ae3410cd6",
+      "_to": "vertices/4022f09dd91a88e2aa4587459e3d86d0",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 69,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "522cae13ba9f003025577b18d216de59",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/c702ab00d65d319b646688e854b27ff8",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 79,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5630d6d8c5228db2214b49344ead53ac",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/0464683e31354275a64e5c4d27e14289",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 92,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "59614cf44b43f1ed45aa924b32a7fae1",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/6a0bac3128df2cc68c29369791c5c0d1",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 138,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5a1d752d84ede03fa582820b41fddd11",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/002803e706bc1a8654582f67eafea008",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 318,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5a2589bc5838ad166d537525fa88fcea",
+      "_from": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "_to": "vertices/a6c87ce1063f115ee0a82c3afd1b94dd",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 107,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5d935f6359a9542f35191f504d575c97",
+      "_from": "vertices/37ce458d0a98d165e18fa63896949301",
+      "_to": "vertices/d94f81c08b550da2899a9c307664f6db",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 177,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5e386ae7ddac9267f4a41e4da9e1cbda",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/002803e706bc1a8654582f67eafea008",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 189,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "627fd54bbaa57fdf6fe730d0e11cabe7",
+      "_from": "vertices/37ce458d0a98d165e18fa63896949301",
+      "_to": "vertices/d94f81c08b550da2899a9c307664f6db",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 180,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6392a044b8abf424cd710d410f09c6cf",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/55c0ac48f563ecb11e68a3e7f88b1449",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 222,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "67c88a1dfce3fe8d19fc6bccef213724",
+      "_from": "vertices/ca45bb7825ee37699fbd59193c896948",
+      "_to": "vertices/5b0f9bdbc5e05ce9846c9e8ae3410cd6",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 95,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "67d1256184241e8b69283514e0284300",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/16392c2398b71c8f480e7086b03b11b6",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 88,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6a3fe339b9b46715bee5ea1836dbc4b7",
+      "_from": "vertices/277af29aa25a07b5c02b281494296307",
+      "_to": "vertices/5490cdbc11ca566a6d3b33562e77d45a",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 162,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "773d25638045dfb61af4e0d4870f2a31",
+      "_from": "vertices/d929b22a96aa5bdddff3fecc1f3fe963",
+      "_to": "vertices/7580424d53b346363a42aa32bbd6d6dc",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 142,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "80b3403845d0124ad5804641900b34d2",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/4c7f9e337ce1ff2b56404b92de2e678d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 84,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8924e37917ccd5347a069cae37232c04",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/db3308eee82848ecab5b97068dbaee65",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 84,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8e6ece5888dfb436628ab39c2b617fdd",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 96,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "91a4c47214fa42be51a06fbe5c363151",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/36203687ca756fb36737ec643f8f2942",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 215,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9398d1be7848f8e0c5aba76d5e56db85",
+      "_from": "vertices/459229df587eaddc1681dd0f4b22bcef",
+      "_to": "vertices/b18825cf13315ef87a3dfee33dc78825",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 80,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "952b31310e54f1d0d013398587f5e1db",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/37ce458d0a98d165e18fa63896949301",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 323,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "97a4473023b74662fbb392d1995cc595",
+      "_from": "vertices/ca45bb7825ee37699fbd59193c896948",
+      "_to": "vertices/b18825cf13315ef87a3dfee33dc78825",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 92,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9b80a4e37cda4e96f5e2d4fbc1c1c9ba",
+      "_from": "vertices/277af29aa25a07b5c02b281494296307",
+      "_to": "vertices/1496be54902f6b518632961e18971703",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 159,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9b94b56790d8a19bcaa60c431b02630d",
+      "_from": "vertices/37ce458d0a98d165e18fa63896949301",
+      "_to": "vertices/7580424d53b346363a42aa32bbd6d6dc",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 171,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9ded7c7dbfb5084157a2396f3a37eecb",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/20cc51fe56a045342b343394f581d94b",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 131,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9e25b33612a4c05fa6a52aafb053c148",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/0464683e31354275a64e5c4d27e14289",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 128,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a12997602482ddf2bcd879a2150db9c7",
+      "_from": "vertices/7712785f27095cc288f426bf045b4cba",
+      "_to": "vertices/836a243c84c3d31b6c1d0dff4319962e",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 245,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a549e7ed901f0729567dbe224b80029a",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/9b979db004714ae05249b619e2a5c91c",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a83aa998034c056fbf0334382438d1a2",
+      "_from": "vertices/53c79848057a2de94d9904dfe604e70b",
+      "_to": "vertices/d94f81c08b550da2899a9c307664f6db",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 202,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a8a125b39a3a48a05d214cde11c64510",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "acccb2553b10b7481b79a78cc71e7930",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 150,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b17f0e9e39c4646347ca990b10194adf",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/277af29aa25a07b5c02b281494296307",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 192,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b1cda321fd167a91cbc697445a44c7a0",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/37ce458d0a98d165e18fa63896949301",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 206,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b5c2c1739ce3bba330fd2ca6fc5fbabf",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/836a243c84c3d31b6c1d0dff4319962e",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 187,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b881003ae83335ce8ebeeae5dbc4ea81",
+      "_from": "vertices/a7776700fd7ddf1102c7776a6ebb2b89",
+      "_to": "vertices/62035e896fe860e8060e62d4c011a745",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 59,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b9b1befa827a1f82f55a2e84425ab0dc",
+      "_from": "vertices/277af29aa25a07b5c02b281494296307",
+      "_to": "vertices/36203687ca756fb36737ec643f8f2942",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bac05d824e39bc11380bbbe34a033bc4",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/a45e95a89fd0041d4121638aec4f7add",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 77,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bdda1072cac901a20186d368450c7200",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/53c79848057a2de94d9904dfe604e70b",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bfdbaeb1681492b869ab5a1778cd45da",
+      "_from": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
+      "_to": "vertices/350d9841d96f1fa2de387e18276ae536",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 104,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c10e9f443d2cc8179895b2ba55484e5c",
+      "_from": "vertices/1d9c7edcab3d1dee473e0332fc27c607",
+      "_to": "vertices/e5668fcf05ff2e89877d7371507a8cdf",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 161,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c3b34a3daefd56ec105c6dce80d046f3",
+      "_from": "vertices/5490cdbc11ca566a6d3b33562e77d45a",
+      "_to": "vertices/d929b22a96aa5bdddff3fecc1f3fe963",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 155,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c591db5572af2a8e95c17a7e9a46e720",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/9c3c704218dba0b66413750c6cb81214",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 147,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c8c8c8140c54b107d9cf8f7872d79e36",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/ec11150436bcd98fdfe3045bb8e47355",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 142,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c8f7c1bdb83e472fbb2623da60ec7bb4",
+      "_from": "vertices/b18825cf13315ef87a3dfee33dc78825",
+      "_to": "vertices/4022f09dd91a88e2aa4587459e3d86d0",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 56,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ca1cd9b627e5eec7cd36199f8d0905b0",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/5490cdbc11ca566a6d3b33562e77d45a",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 139,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cbb5146efc77bde067d3992087327b95",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/a7776700fd7ddf1102c7776a6ebb2b89",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 127,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "cc2a83b0d4c52beb3d287feecabe82b1",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/459229df587eaddc1681dd0f4b22bcef",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 314,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ccc554837172fd581d517b2e5e1ce3e4",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/5490cdbc11ca566a6d3b33562e77d45a",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 338,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d014c9f57ea2cd2045a85cb70951fdd8",
+      "_from": "vertices/1d9c7edcab3d1dee473e0332fc27c607",
+      "_to": "vertices/7cdde8107f5c2f04ca1aa1f4e80849bc",
+      "type": "mounts",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 181,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d301e7c737085ecd9adf1119620d7417",
+      "_from": "vertices/1d9c7edcab3d1dee473e0332fc27c607",
+      "_to": "vertices/0718d586c3b6e9518babd390bd159e6d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 143,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d39d4ae3877c9bb6c390a02473c52054",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/944e45decbac4f89e031b658076d29c9",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 108,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "db36d1cc395cefa9d65f8405fa2b8e37",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 194,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dc20b8bfb83a4bd99a49cbc96905bb8e",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 301,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dd25396804e5ab2fe48384820b39dc5b",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/53c79848057a2de94d9904dfe604e70b",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 325,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e1d0d6b14bc20e4a33b3c0b5ba19e2e1",
+      "_from": "vertices/298063798f19da9f455de2bd7e9f76a3",
+      "_to": "vertices/5490cdbc11ca566a6d3b33562e77d45a",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 199,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e22fef93b18868d8e8c3b9428587aea6",
+      "_from": "vertices/53c79848057a2de94d9904dfe604e70b",
+      "_to": "vertices/f6acc4e986105e0a25f7fdc70a0e40b1",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 206,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e4a19211be61c6b47ecb22b52138d226",
+      "_from": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
+      "_to": "vertices/2a2fdeeb767a7a0758a8a97eb48c41a2",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 104,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e55b45fefe1a5ad9d0ffb36a432e956d",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/459229df587eaddc1681dd0f4b22bcef",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 342,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e64bbbaafa53093263ef142e632b503a",
+      "_from": "vertices/7712785f27095cc288f426bf045b4cba",
+      "_to": "vertices/b18825cf13315ef87a3dfee33dc78825",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 247,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "e98876a23bb65aa2eb871a5d48a4e009",
+      "_from": "vertices/c4523bcf9863894cdd9782b00e121da0",
+      "_to": "vertices/63c36a6d4bf97574985bd98246b72e9c",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 39,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "eb9012a61f3223ab15428b715a258844",
+      "_from": "vertices/1eb68970e872a662792e56aff596b776",
+      "_to": "vertices/f78776a12dff2253241e704586e76809",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 132,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ed7cc2160683d15391b48d2f4c7a2707",
+      "_from": "vertices/ebeb9a43366240c62b989351d17f73af",
+      "_to": "vertices/5b4d085440f083d0831f97f8a64a4f4d",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 87,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f019a99f362bed1258ae19f7866b3883",
+      "_from": "vertices/f78776a12dff2253241e704586e76809",
+      "_to": "vertices/37d992912413a0aaa2247870abc5b035",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 81,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f0f5da553c4fc781b1d82543387b5f9e",
+      "_from": "vertices/d145fd28bb17c44af2cce6723d04a21c",
+      "_to": "vertices/002803e706bc1a8654582f67eafea008",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 331,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f6b0da9796d3fba04728074cf7dbfff2",
+      "_from": "vertices/53c79848057a2de94d9904dfe604e70b",
+      "_to": "vertices/7580424d53b346363a42aa32bbd6d6dc",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 200,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f8aa98755ca584ea9c8045fecc7dfea3",
+      "_from": "vertices/5d667bc8bfa2b4a1363563ef8dc9bd73",
+      "_to": "vertices/836a243c84c3d31b6c1d0dff4319962e",
+      "type": "has-type",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 130,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f8dd28e8681bdc9b21373a8a5639e38a",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/9b9933180dea860455840206d51a6335",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 73,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fafbcfb02f4159add524cd4299a80f66",
+      "_from": "vertices/a2b65b7031ef64d729ee033063b98d07",
+      "_to": "vertices/f42c6ec785267f1f7ae2e01ff46767f8",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": true,
+      "line": 64,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "fc1f30c6b06e82c34c4e49c950447ed5",
+      "_from": "vertices/d929b22a96aa5bdddff3fecc1f3fe963",
+      "_to": "vertices/d94f81c08b550da2899a9c307664f6db",
+      "type": "calls",
+      "concept": "agent-fork-sync",
+      "crosses_concept": false,
+      "line": 146,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    }
+  ],
+  "skill": {
+    "path": "apps/maestro/.claude/skills/agent-fork-sync/SKILL.md",
+    "body": "---\nname: agent-fork-sync\ndescription: \"Explains how a project-local copy of a global template is kept in step with it: the one shared fs-free decision function (sync-decision.ts) that its three callers — the report sync, the forked-agent sync and (since 033) the handoff sync — all call so they can never drift, why a plugin-tier fork is checked by VERSION STRING while a user-tier one is checked by content hash, what the agent-forks.json provenance record holds and what detaching removes, why computing the summary writes nothing, and the two surfaces (the /agents review card, and the terminal side — the maestro-step0 hook plus /maestro-update's CLI) that must always reach the same verdict. Use when changing report-sync.ts, agent-sync.ts or handoff-sync.ts, adding a fourth caller of decideSync, wondering why a forked agent is or isn't reported as behind its template, why a plugin edit reports 'no update available', why a fork's description never counts as a change, or why the terminal and the app disagree (they shouldn't — that's a bug in one of them).\"\nmetadata:\n  type: concept-skill\n  version: \"2.0\"\n  last-update: 5dd6034b3d6ad0c8c3543ac1fa572e0d2f4a486c\n---\n\n# Keeping a copy in step with the thing it was copied from\n\nTwo things in this repo are a **project-local copy of a moving global template**:\n\n- a **report** — `.claude/reports/<agent>.md`, copied from the global report-defaults store;\n- a **forked agent** — `.claude/agents/<name>.md`, copied from a `user`- or plugin-tier agent by\n  `/agents`' \"Fork into this project\" (`029`), with its provenance recorded in a sidecar.\n\nThey look nothing alike and they age identically. Both can be untouched-and-behind, both can be\nedited-by-the-user, both can have had their template deleted out from under them, and in every one\nof those states the right answer is the same. That answer is written down **once**, in\n`src/core/sync-decision.ts`, and this skill exists to keep it that way.\n\n```\n              ┌──────────────────────────────────────────────┐\n              │  sync-decision.ts  ·  decideSync()           │   pure. no fs. knows nothing\n              │  detached / no-template / materialize /      │   about reports, handoffs\n              │  adopt / stale-customized / refresh /        │   or agents.\n              │  unchanged                                   │\n              └──┬───────────────────┬─────────────────────┬─┘\n                 │                   │                     │\n        ┌────────┴────────┐ ┌────────┴────────┐ ┌──────────┴───────────────────┐\n        │ report-sync.ts  │ │ handoff-sync.ts │ │ agent-sync.ts                │\n        │ per AGENT       │ │ per ROUTE PAIR  │ │ per FORKED AGENT             │\n        │ WRITES on inst. │ │ WRITES on inst. │ │ WRITES NOTHING (read-only)   │\n        └─────────────────┘ └─────────────────┘ └───┬──────────────────────┬───┘\n                                                    │                      │\n                                            /agents review card    maestro-step0.js (hook)\n                                            (+ /maestro count)     maestro-agent-forks.cjs\n                                                                   (maestro-update)\n```\n\n**Why one function and not two implementations that agree today.** The failure mode is not a wrong\nanswer, it is *two* answers, each correct for the surface that produced it, diverging silently over a\nyear — the same argument `resolveReport` makes for the hook and the app. `031` lifted these branches\nout of `report-sync.ts` rather than paraphrasing them, preserving the order exactly: the report\nsync's tests passed unmodified, which is the evidence that nothing moved.\n\n## The seven verdicts\n\n`decideSync` answers with one of `detached` / `no-template` / `materialize` / `adopt` /\n`stale-customized` / `refresh` / `unchanged`, and **the branch order is the contract**: `detached` is\nchecked first, so \"the user owns this\" outranks everything, and `stale-customized` is decided\n**before** `templateAdvanced` is consulted, so the user's edit outranks whether an update exists.\nBoth orderings are asserted directly in `test/core/sync-decision.test.ts`, because a reordering would\nstill pass every other test in the repo.\n\nThe two things that genuinely differ between callers arrive **already answered**, as `localHash` and\n`templateAdvanced`. Adding a caller means answering those two questions for it — not adding a branch\nhere. `033` proved the cost: `handoff-sync.ts` became the **third** caller and reused both of\n`report-sync.ts`'s answers verbatim, so it added no branch and no test to `sync-decision.test.ts`.\nOnly its candidate set is new.\n\nSee [the shared decision](sub-concepts/the-shared-decision.md) for the branches in order, the three\n`SyncTracking` states, what each caller passes, and the rule for adding a fourth.\n\n## The two triggers, and why they are not the same question\n\nThis is the part that looks like an inconsistency and is not.\n\n**Plugin tier → the `version` STRING must differ AND the body hash must differ.** Both halves, each\nruling out the opposite mistake, and both directions pinned by a test:\n\n- The **version** half makes the check *necessary*. A plugin's files come from a per-VERSION\n  marketplace cache that `autoUpdate` re-pulls only when `plugin.json`'s `version` changes (see\n  `updating-maestro`, at the repo root `.claude/skills`), so a plugin agent's content *cannot* reach\n  a machine without a bump. An edit shipped without one has reached nobody: *no update available* is\n  the correct answer, and reporting otherwise would promise a refresh no delivery path can deliver.\n- The **body** half makes it *sufficient*. A bump says the PLUGIN moved, not that this agent did —\n  and this repo bumps `plugin.json` for every change under `plugins/`, almost none of which touch\n  `agents/`. On the version alone, every release lit the `/maestro` banner for every fork on the\n  machine and sent the user to a review card that then told them the body was identical to the\n  template's.\n\n**`user` tier → compare template content hashes alone.** `~/.claude/agents/*.md` are hand-edited\nfiles with no version anywhere; nothing but the bytes can notice.\n\n`report-sync.ts` is a third answer to the same question: the global store's integer `version`, with\n`>` rather than `!==`, because that number only ever goes up. `handoff-sync.ts` uses that same answer\nagainst `maestro-handoff-defaults.sqlite`, so there are three definitions of \"the template moved\",\nnot four.\n\n## The description does not track — and neither does the name\n\n**A fork's `description:` never counts as a change, and neither does its `name:`.** `hashAgentBody`\n(in `agent-fork-record.ts`) hashes the file with both frontmatter lines — and any continuation lines\nunder them — normalised out, because both are *expected* to diverge: the description is the one field\n`/agents` lets you edit after forking (`029`), and the name is rewritten by `forkAgent` itself on a\nrenamed fork. Hashing either puts a fork permanently in `stale-customized`, so the refresh branch\nnever fires for it — `029` shipped exactly that bug for renamed forks and `031` fixed it.\n`mergeForkBody` is the exact inverse: the two fields that hash out are the two that carry over on an\nupdate, giving the tested property `hashAgentBody(mergeForkBody(t, f)) === hashAgentBody(t)`.\n\nSee [the fork record](sub-concepts/the-fork-record.md) for the normalisation, the tests that pin both\nhalves, and `mergeForkBody`'s verbatim carry-over.\n\n## Computing writes nothing. Applying writes one agent.\n\n`computeAgentSync` runs on **project selection** (`InstallProvider`), from the `maestro-step0` hook,\nand from `/maestro-update`. It stats and reads and writes nothing at all — no file, no sidecar, no directory. Those\n`.claude/agents/*.md` are usually committed, and a diff nobody asked for is hard to explain. A test\nasserts it on mtimes *and* bytes across two consecutive calls.\n\n`applyAgentSync(projectRoot, agentName, action)` is the only writer, one agent per explicit answer:\n**`update`** runs `mergeForkBody`, renames back to the fork's own name, re-stamps `pluginVersion` /\n`templateBodyHash` / `templateBody` and clears `acknowledgedFrom`; **`keep`** writes only\n`acknowledgedFrom`; **`detach`** deletes the provenance record and touches no file, leaving the agent\non `decideSync`'s `detached` verdict. What the last two write, and why `keep` is a real choice rather\nthan a no-op, is in [the fork record](sub-concepts/the-fork-record.md).\n\n## Forking has two entry points now, one mechanism (`041`)\n\n`forkAgent` and this skill's decision function are unchanged; what's new is a **second UI call\nsite**, `/workflows`' `InstancePicker`, reached from the all-placed dead end (a workflow can't place\ntwo instances on one bare agent), alongside `/agents`' \"Fork into this project\". Both go through the\nidentical `forkAgent(...)` → `agent-forks.json` path — a renamed fork writes the same provenance\nrecord and hashes the same way regardless of caller. See `agents-view` and `workflow-view` for what\neach does with the result.\n\n**A third entry point, the terminal (`081`).** `plugins/maestro/scripts/maestro-agent-fork.cjs` calls\nthe same `forkAgent` (bundled as `lib/maestro-agent-fork.cjs`), passing the plugin's own `agents/`\ndirectory and `plugin.json` version where the app's main process passes its bundled ones. So a CLI\nfork of a `maestro`-tier agent records the same `sourceTier`, `sourcePlugin` and `pluginVersion` as an\napp fork and reaches the same `computeAgentSync` verdict. The `maestro-team-meeting` skill uses it to\napply an approved `agent.fork` proposal. It is plugin-only and never added to the copied\n`maestro-agent-forks.cjs`.\n\n## Traps\n\n- **`summary.diverged` is not `refreshed + staleCustomized`.** Because `stale-customized` is decided\n  before `templateAdvanced`, counting every customized fork would leave `/maestro`'s count lit\n  forever for any fork anyone ever edited. `diverged` is `refresh` ∪ (`stale-customized` **and**\n  `templateAdvanced`) — an update exists that cannot be applied automatically.\n- **`materialized` means something else on the agent side.** Nothing is ever materialized there; the\n  bucket holds forks whose own `.md` has gone missing while the record remains. The whole summary's\n  past tense is aspirational for agents: `refreshed` means \"would refresh if asked\".\n- **Template resolution must not go through `findAgentFile`.** It resolves in `discoverAgents`' tier\n  order and hands back the fork itself — a same-name fork shadows its own template by design.\n  `agent-sync.ts` consults only the tier the record names, and recovers the *template's* name from\n  `record.templateBody`'s frontmatter, since a renamed fork is keyed by its own name.\n- **An agent with no record is invisible here, and that is the feature.** Hand-authored project\n  agents and detached forks are the project's own answer. There is no scan that could recover what\n  an unrecorded fork came from, which is why `forkAgent` writes the sidecar unconditionally.\n- **`agent-fork.ts` and `agent-fork-record.ts` are split for a reason that is not tidiness.**\n  `copyAgentAttributeRows` writes three sqlite stores, so `agent-fork.ts` transitively imports\n  `node:sqlite`; the generated bundle the skills call must run under a bare `node` that may predate\n  it. `grep -c \"node:sqlite\"` on `plugins/maestro/scripts/lib/maestro-agent-sync.cjs` must stay `0`.\n- **The two surfaces reaching different verdicts is a bug in one of them, never a difference of\n  opinion.** They run the same compiled code over the same files. See\n  [the two surfaces](sub-concepts/the-two-surfaces.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `apps/maestro/src/core/sync-decision.ts` | `decideSync` — the one rule. Pure, no `fs`. |\n| `apps/maestro/src/core/report-sync.ts` | Caller 1: reports, on install/update. Writes. |\n| `apps/maestro/src/core/agent-sync.ts` | Caller 2: forked agents. `computeAgentSync` reads, `applyAgentSync` writes. |\n| `apps/maestro/src/core/handoff-sync.ts` | Caller 3 (`033`): handoff protocols, on install/update. Writes. Candidates come from the workflow graph, not from a list of agents. |\n| `apps/maestro/src/core/agent-fork-record.ts` | The `agent-forks.json` sidecar, `hashAgentBody`, `mergeForkBody`, `renameAgentInFrontmatter`. No sqlite. |\n| `apps/maestro/src/core/agent-fork.ts` | `forkAgent` + `copyAgentAttributeRows`; re-exports the above. |\n| `apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx` | The `/agents` review card (diff, Update / Keep as fork / Detach). |\n| `apps/maestro/src/core/diff.ts` | The line diff both surfaces render. Pure. |\n| `apps/maestro/src/core/plugin-entries/maestro-agent-sync.ts` | Bundle entry → `plugins/maestro/scripts/lib/maestro-agent-sync.cjs`. |\n| `plugins/maestro/scripts/maestro-agent-forks.cjs` | The CLI: `list` / `diff` / `update` / `keep` / `detach`. Driven by `/maestro-update`. |\n| `plugins/maestro/scripts/maestro-step0.js` | The readiness hook. Calls `computeAgentSync` from the bundle directly — no CLI spawn; read-only, never blocks, speaks only when something diverged. |\n| `apps/maestro/test/core/sync-decision.test.ts` | The branch table, incl. the two ordering guarantees. |\n| `apps/maestro/test/core/agent-sync.test.ts` | One case per `031` acceptance criterion. |\n| `apps/maestro/test/core/diff.test.ts` | The diff and its elision. |\n\n## Relationships\n\n- [`agents-view`](../agents-view/SKILL.md) — the review card, the diverged banner, and why the block\n  renders below the card rather than inside it.\n- [`global-stores`](../global-stores/SKILL.md) — `copyAgentAttributeRows`, the fourth writer of three\n  of those stores, and the sqlite dependency this concept's bundle must avoid.\n- [`plugin-libs-parity`](../plugin-libs-parity/SKILL.md) — how `agent-sync.ts` reaches the CLI.\n- `updating-maestro` (repo root) — why a version-string comparison is the correct trigger for a\n  plugin-tier fork, and why the fork check itself reaches installed projects only on a re-pull.\n- `installing-maestro` (repo root) — the two runtime assets `031` added to the copied manifest.\n\n## Sub-concepts\n\n- [The shared decision](sub-concepts/the-shared-decision.md) — the verdicts in branch order, what each\n  caller passes, and the rule for adding a fourth.\n- [The fork record](sub-concepts/the-fork-record.md) — `agent-forks.json`, the hashing\n  normalisation, and what `keep` and `detach` actually write.\n- [The two surfaces](sub-concepts/the-two-surfaces.md) — the app and the CLI, and why neither may\n  grow its own copy of the rule.\n",
+    "contentHash": "sha256:fdb440296f39619b0b1737462c344dfcc60f66e86cd123876f346fc9cc668bce"
+  },
+  "meta": {
+    "extractor_version": "code-graph@0.3.27",
+    "extracted_at": "2026-10-26T18:40:49.598Z",
+    "files": {
+      "apps/maestro/src/core/agent-fork-record.ts": "sha256:e54e516c54b51adfa14dcc8dd841dae8f8216c10dc86432ee106663d091631cd",
+      "apps/maestro/src/core/agent-fork.ts": "sha256:3b591d48d078ff533a31995aa8c3d2ccc9f782881bf85e8967e7495c23f65747",
+      "apps/maestro/src/core/agent-sync.ts": "sha256:af989b7c44b8b7452e592136fe11f686f8f907b65967eb827b9e0e70844ba3cf",
+      "apps/maestro/src/core/handoff-sync.ts": "sha256:01dacd6cab4007e5b4b05db291a16342212ea454a7f02dded244abd23dfb4a65",
+      "apps/maestro/src/core/report-sync.ts": "sha256:3c3a4f5f65c98576bf0f4c492d373f7349d8a4769d14f256fabc9a350c9c246d",
+      "apps/maestro/src/core/sync-decision.ts": "sha256:e2bc983e25bc29cc4b2e87b97c9f3ddc777dd3840946b7f400de325d35247bfb",
+      "apps/maestro/src/renderer/src/components/agents/agent-fork-review.tsx": "sha256:a7078870e61a9d1a662291cfbef7e3f4a27066c2d234e30b01ac44051451a506"
+    }
+  }
+}

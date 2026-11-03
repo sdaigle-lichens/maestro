@@ -15,6 +15,7 @@ import type {
   MaestroProjectTagsSlice,
   MaestroRulesSlice,
   MaestroTaskRoutingSlice,
+  MaestroWorkerModelSlice,
   MaestroWorkflowsSlice,
 } from "./types.js";
 
@@ -91,7 +92,21 @@ export type ConfigSlice =
   | { sliceType: "rules"; slice: MaestroRulesSlice }
   | { sliceType: "project-tags"; slice: MaestroProjectTagsSlice }
   | { sliceType: "skill-lists"; slice: MaestroSkillListsSlice }
-  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice };
+  | { sliceType: "task-routing"; slice: MaestroTaskRoutingSlice }
+  | { sliceType: "worker-model"; slice: MaestroWorkerModelSlice };
+
+/**
+ * The one reader of `worker_model`: the trimmed string, or `undefined` when the field is absent,
+ * blank or not a string (nothing else is ever a model). A null or wrong-version config is
+ * `undefined` too.
+ */
+export function resolveWorkerModel(cfg: MaestroConfigV3 | null): string | undefined {
+  if (!cfg || cfg.version !== 3) return undefined;
+  const v = cfg.worker_model;
+  if (typeof v !== "string") return undefined;
+  const t = v.trim();
+  return t === "" ? undefined : t;
+}
 
 /**
  * The one reader of `use_maestro_tasks`. Strict `=== true` comparison: an
@@ -144,6 +159,10 @@ export function mergeSlice(current: MaestroConfigV3, input: ConfigSlice): Maestr
     next.end_skills = input.slice.end_skills;
   } else if (input.sliceType === "task-routing") {
     next.use_maestro_tasks = input.slice.use_maestro_tasks;
+  } else if (input.sliceType === "worker-model") {
+    const model = resolveWorkerModel({ version: 3, worker_model: input.slice.worker_model } as MaestroConfigV3);
+    if (model === undefined) delete next.worker_model;
+    else next.worker_model = model;
   }
   return next;
 }

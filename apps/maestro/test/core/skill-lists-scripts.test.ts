@@ -81,14 +81,14 @@ describe("plugin copy of maestro-step1-gates.cjs", () => {
     const root = project(
       v3({
         start_skills: {
-          maestro: ["concept-skills:use-code-architecture-design-check", "zeta", "alpha"],
+          maestro: ["code-graph:use-code-architecture-design-check", "zeta", "alpha"],
           to_maestro_tasks: ["beta", "alpha"],
         },
       })
     );
     const m = run(STEP1, root);
     expectContract(m, "maestro");
-    expectOrdered(m.stdout, ["concept-skills:use-code-architecture-design-check", "zeta", "alpha"], "maestro");
+    expectOrdered(m.stdout, ["code-graph:use-code-architecture-design-check", "zeta", "alpha"], "maestro");
     expect(m.stdout).not.toContain("beta");
     const t = run(STEP1, root, ["--for", "to_maestro_tasks"]);
     expectContract(t, "tasks");
@@ -176,7 +176,7 @@ describe("plugin copy of maestro-step1-gates.cjs", () => {
 
 describe("plugin copy of maestro-end-skills.cjs", () => {
   it("names the configured end skills in order, namespaced ids intact", () => {
-    const ids = ["concept-skills:wrap-up", "second", "third"];
+    const ids = ["code-graph:wrap-up", "second", "third"];
     const res = run(END, project(v3({ end_skills: { maestro: ids } })));
     expectContract(res, "end");
     expectOrdered(res.stdout, ids, "end");

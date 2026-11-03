@@ -62,9 +62,10 @@ by `"<sender>/<receiver>"`.
   entry has its own auto-growing textarea (the pane scrolls, the boxes don't) and its own pencil,
   and every pencil starts the **card's one** edit session.
 - **Since `037`, each entry with a receiver also names the file its template writes to** — a small
-  `→ .claude/channels/<receiver>/<sender>.1.md` line below the tier note, computed inline in
+  `→ .claude/channels/<scope>/<receiver>/<sender>.1.md` line below the tier note, computed inline in
   `interactions-pane.tsx` from `route.sender`/`route.receiver` (both already on
-  `ResolvedHandoffRoute`). This is a label only: `036` moved the payload itself off the orchestrator's
+  `ResolvedHandoffRoute`). `<scope>` (`144`) stays a literal placeholder: the hooks resolve it per
+  session (`task-<NNN>` or `session-<id8>`), which the app cannot know for a route. This is a label only: `036` moved the payload itself off the orchestrator's
   context and onto that file, and this pane's editor still edits the resolved `handoff_details`
   *template*, not the file — nothing here reads or writes the channel file. Null for the Main Session
   report entry and for a route whose edge reaches no agent (`receiver: null`).

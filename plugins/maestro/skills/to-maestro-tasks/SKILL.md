@@ -64,9 +64,22 @@ For more than one, present the proposed breakdown as a numbered list. For each t
 
 Iterate until the user approves the breakdown.
 
+**Parallel-safety check (more than one task).** Before writing, list each task's **touched surfaces**: the files it will likely touch, plus the shared surfaces: version files, generated files (bundles, lockfiles, rendered output), shared docs, and any new shared helper. Then compare every pair of tasks that is not already ordered by `blockedBy`, directly or transitively. For each pair that overlaps, do exactly one of:
+
+- add a `blockedBy` edge;
+- merge the two tasks;
+- record `parallel OK, merge order X then Y, Y rebases` in the later task's touched-surfaces list.
+
+**Version files and generated files always count as overlap**, even when the tasks edit different lines: every merge after the first needs a rebuild or a rebase. Name **one owner** for any new helper two tasks would both need (the others depend on it or reuse it). Name who bumps shared version files (one task, or "whoever merges bumps"), so versions are never handed out ad hoc. Show the user the overlaps and how each was resolved with the breakdown.
+
 ### 4. Write the task files and sync the tracker
 
 Once approved, prepare one object per approved task — **do not write the markdown files or `status.json` by hand.** Order tasks in the array exactly as the topological order from Step 3 (blockers before dependents; the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild` — choosing the workflow is the orchestrator's job (`maestro.md` Step 1), not the prompt's.
+
+**Make `whatToBuild` name every kind of change the criteria need.** The orchestrator picks the workflow from the description, so a description that sounds like docs gets a docs-only run, even when a criterion needs code.
+- A criterion that reaches across the repo ("no file still points users at X", "every reference renamed") needs the description to say whether **user-facing strings in source** (messages, help text, errors) are in scope. If they are, say "including messages in source code" in the description, not only in the criterion.
+- When the work is mostly docs or skill files but also includes code, tests, version bumps or a build/regenerate step, list those in the description too, in plain words.
+- A criterion that only a later step can meet (e.g. "the ported tests pass") is fine. State it as the end state, not as something the first change must achieve on its own.
 
 ```json
 [
@@ -74,6 +87,7 @@ Once approved, prepare one object per approved task — **do not write the markd
     "title": "Add login form",
     "whatToBuild": "A concise description of this task — the end-to-end behavior, not a layer-by-layer implementation plan. Use the project's domain vocabulary. Avoid specific file paths or code snippets; they go stale fast. Exception: if a precise artifact (state machine, reducer, schema, type shape) encodes a decision better than prose, inline just the decision-rich part.",
     "acceptanceCriteria": ["Criterion 1", "Criterion 2", "Criterion 3"],
+    "touchedSurfaces": ["src/login-form.tsx", "package.json (version)"],
     "blockedBy": []
   },
   {
@@ -86,6 +100,8 @@ Once approved, prepare one object per approved task — **do not write the markd
 ```
 
 (A single-task array is the common case; the second entry above only exists to show how `blockedBy` is spelled.)
+
+**Every task carries `touchedSurfaces`**, even a single task: the script writes it as a `## Touched surfaces` section (one bullet per entry) that sibling tasks and a `maestro-manager` compare against. Entries are strings: file paths, generated files, version files, shared docs, new shared helpers (say who owns it), and any recorded `parallel OK, merge order X then Y, Y rebases` line.
 
 `blockedBy` entries are **indices into this same array** for tasks in this batch (the script hasn't assigned their filenames yet). To depend on a task **already in the queue**, use its filename or its number as a string, e.g. `["083"]` — the script refuses a name that matches no existing task. If a new task depends on queued work, say so here rather than only in `whatToBuild`, so the tracker keeps it blocked. Write the array to a scratch file and run:
 

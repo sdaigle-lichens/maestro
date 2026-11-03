@@ -129,8 +129,9 @@ left alone forever. See `agent-fork-sync`'s shared-decision sub-concept for the 
 
 `purgeTargets()` returns the list **most consequential first**, and that ordering is functional
 rather than cosmetic: it is what the confirmation renders. With `maestro.json` last it would sit
-below the fold of the scroll box — the one file the user cannot get back. The list is far shorter
-than it was (an install writes 17 files, not ~37), but the ordering rule is unchanged.
+below the fold of the scroll box — the one file the user cannot get back. The list is shorter
+than it was before `033` (an install writes 31 files today, none of them the ~23 handoff templates),
+but the ordering rule is unchanged.
 
 **`maestro-uninstall.js` used to re-type both halves of this by hand, and fell behind (`060`).**
 Its hook-script list was a hardcoded array last touched before `maestro-agent-forks.cjs`,

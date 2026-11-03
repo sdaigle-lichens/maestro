@@ -2,8 +2,9 @@
 
 Path 1 delivers by **file copy**, so its manifest — `STATIC_ASSETS` + `HOOK_SCRIPTS`, mirrored by
 hand in `install.ts` and `maestro-install.js` — is the list of what a project physically gets.
-`031`, `0.4.0`, `032`, `033`, `035`, `046` and `047` each moved it. Seven more files now ride path 1
-into every project, and `033` took ~23 away.
+`031`, `0.4.0`, `032`, `033`, `035`, `046` and `047` each moved it, and so did `039`, `061`, `063`,
+`084`, `089` and `113` (the rows below cover the early ones; `installing-maestro`'s manifest
+sub-concept has the full 30-file list). `033` took ~23 away.
 
 | Copied to | From | Why it is copied rather than run from the plugin |
 | --- | --- | --- |
@@ -17,8 +18,7 @@ into every project, and `033` took ~23 away.
 | `.claude/scripts/lib/maestro-report-defaults.cjs` + `lib/maestro-handoff-defaults.cjs` (`035`) | `plugins/maestro/scripts/lib/` | `maestro-inject-agent-context` `require`s both, so `.claude/scripts/` has to hold them or the two global sqlite tiers do not exist for a project on its own copy. **This is the one whose absence is invisible rather than fatal**: both requires sit inside a try/catch, so the resolution failure is swallowed and the plugin's copy — which has the whole `lib/` beside it in the cache — goes on answering, making the arbitration winner decide what an agent is told. |
 
 **`033` removed a whole group.** The ~23 `templates/handoffs/**.md` no longer ride path 1 at all:
-`handoffAssets()` is deleted and `runtimeAssets()` is `STATIC_ASSETS` alone (17 files, 19 since
-`035`). What an install writes in their place is not a copy but a sync —
+`handoffAssets()` is deleted and `runtimeAssets()` is `STATIC_ASSETS` alone (17 files then, 30 now). What an install writes in their place is not a copy but a sync —
 `.claude/handoffs/<sender>/<receiver>.md`, for exactly the routes the workflows wire, tracked by
 `syncedFrom` so a hand-edit survives the next install. The shipped floor rides inside
 `lib/maestro-session.cjs` instead, which is path 1's usual trap in a new place: edit
@@ -27,7 +27,8 @@ protocol, silently.
 
 ## Keeping the two manifests in step
 
-Six of the rows are in `STATIC_ASSETS`; `maestro-step0` and `maestro-enable-task-routing` (`047`)
+Most rows are in `STATIC_ASSETS`; `maestro-step0` and `maestro-enable-task-routing` (`047`) —
+like `maestro-post-mortem-context` and `maestro-session-name` (`113`), which have no row here —
 are in `HOOK_SCRIPTS` — in **both** implementations (`install.ts` and `maestro-install.js`). The
 manifests are mirrored by hand, so a file added to one and not the other is a bug. Two tests now
 catch it:

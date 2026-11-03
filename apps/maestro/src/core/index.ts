@@ -54,6 +54,7 @@ export {
   writeConfig,
   mergeSlice,
   resolveUseMaestroTasks,
+  resolveWorkerModel,
   readAgentsAvailable,
   type ConfigSlice,
 } from "./config.js";
@@ -63,6 +64,9 @@ export {
   seedSkillsFor,
   readSkillSources,
   whyUnavailable,
+  skillDisabledReason,
+  isSkillListed,
+  readDisableRules,
   findStaleSkillRefs,
   type SeedSkills,
   type StaleRefsReport,
@@ -275,12 +279,20 @@ export { syncProjectHandoffs, handoffFilePath } from "./handoff-sync.js";
 export { getResolvedHandoff, saveProjectHandoffOverride, resolvedRoutesFrom } from "./handoffs.js";
 
 export {
+  channelScopeOf,
+  channelScopeFromState,
+  channelRelPath,
+  isChannelScope,
+  NO_SESSION_SCOPE,
+  consumedDir,
   channelDir,
   laneFor,
   writeStamp,
   readLane,
   retire,
   sweep,
+  retireScope,
+  recordActiveTask,
   pendingLanes,
   formatStampedContent,
   parseStampedContent,

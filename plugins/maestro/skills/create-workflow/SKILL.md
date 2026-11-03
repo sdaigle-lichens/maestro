@@ -57,5 +57,12 @@ A **spec** is `{ name, steps, conditions? }`:
 5. **On success** the script prints `{ ok, mode, workflow, createdInstances, issues, render }`.
    Report the workflow created and any newly created instances. If `issues` or `render.issues` is
    non-empty, relay them as warnings — the workflow was written regardless. If `render.ok` is false,
-   the handoff table couldn't be re-rendered (usually the orchestrator isn't installed yet) — suggest
-   the user run `/maestro-install`.
+   the handoff table couldn't be re-rendered:
+   - `render.reason` is `sandbox-blocked`: the sandbox refused the write to
+     `.claude/skills/maestro/SKILL.md`. Run `render.command` once, exactly as printed (it works when
+     the user has allowed it, see
+     [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md)). If
+     that is refused too, give the user `! <render.command>` to run. Never re-run the create, which
+     would fail on the now-existing name.
+   - Any other reason (usually the orchestrator isn't installed yet): suggest the user run
+     `/maestro-install`.

@@ -24,10 +24,13 @@ import type { MaestroConfigV3, MaestroEdgeV3, MaestroInstanceV3, MaestroNodeV3, 
 /** Off-path nodes (a condition endpoint not on the success path) get their own column. */
 const SIDE_COLUMN_X = 360;
 
+/** A manager-review node id: `manager_review-<n>` (the canvas numbers each one it adds). */
+const MANAGER_REVIEW_ID = /^manager_review-\d+$/;
+
 interface ParsedStep {
   /** The node id this step token resolves to — equal to the token itself except for `skill:<id>`. */
   id: string;
-  type: "agent" | "human_review" | "skill";
+  type: "agent" | "human_review" | "manager_review" | "skill";
   /** agent steps only: the `workflow_instances` name this step refers to (== the token). */
   instance?: string;
   /** skill steps only: the bare skill id. */
@@ -44,6 +47,7 @@ interface ParsedStep {
  */
 function parseStep(step: string): ParsedStep {
   if (step === "human_review-1") return { id: step, type: "human_review" };
+  if (MANAGER_REVIEW_ID.test(step)) return { id: step, type: "manager_review" };
   if (step.startsWith("skill:")) {
     const skill = step.slice("skill:".length);
     return { id: skill, type: "skill", skill };
@@ -145,10 +149,10 @@ export function applyWorkflowSpec(
     const already = nodeById.get(parsed.id);
     if (already) return already;
 
-    if (parsed.type === "human_review" || parsed.type === "skill") {
+    if (parsed.type === "human_review" || parsed.type === "manager_review" || parsed.type === "skill") {
       const node: MaestroNodeV3 =
-        parsed.type === "human_review"
-          ? { id: parsed.id, type: "human_review", position: existingPositions.get(parsed.id) ?? { x, y } }
+        parsed.type === "human_review" || parsed.type === "manager_review"
+          ? { id: parsed.id, type: parsed.type, position: existingPositions.get(parsed.id) ?? { x, y } }
           : {
               id: parsed.id,
               type: "skill",
@@ -285,7 +289,7 @@ export function workflowToSpec(wf: MaestroWorkflowV3, _instances: MaestroInstanc
   function tokenFor(nodeId: string): string {
     const node = nodeById.get(nodeId);
     if (!node) return nodeId;
-    if (node.type === "human_review") return node.id;
+    if (node.type === "human_review" || node.type === "manager_review") return node.id;
     if (node.type === "skill") return `skill:${node.skill ?? node.id}`;
     return node.instance ?? node.id;
   }

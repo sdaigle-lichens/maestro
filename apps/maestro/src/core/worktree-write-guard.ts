@@ -14,6 +14,10 @@
 // application source, docs, `.claude/scripts`, `.claude/skills`, `.claude/rules` — is refused with a
 // message naming the worktree path to use instead.
 //
+// Channels are narrowed further (`147`): given the session's `channelScope`, ANY caller — every agent
+// type and the main session, not only the confined reviewer/refactor — may write under a
+// `.claude/channels/` only inside its own `<scope>/`.
+//
 // `fs`/`path` only: the plugin's write-guard hook reaches it through the `maestro-session` bundle.
 // A Bash command that redirects into the main checkout is out of reach of a path check on tool
 // input; this covers the file-writing tools, which is what an agent writes source with.
@@ -21,6 +25,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import type { ChannelWriteVerdict } from "./channel-write-guard.js";
+import { isChannelScope } from "./handoff-channels.js";
 
 /** The `.claude/` subdirectories that stay in the main checkout while a task runs in a worktree. */
 export const MAIN_CHECKOUT_SHARED_DIRS: readonly string[] = ["maestro-tasks", "channels", "maestro_sessions"];
@@ -70,8 +75,14 @@ export function checkWorktreeWrite(input: {
   toolName: string | null | undefined;
   toolInput: Record<string, unknown> | null | undefined;
   worktree: { path?: unknown; main_root?: unknown } | null | undefined;
+  /**
+   * This session's channel scope (`147`, `channelScopeOf`). When given, EVERY caller of a worktree
+   * session — any agent, and the main session — may write under a `.claude/channels/` only inside
+   * `<scope>/`; another scope and the legacy unscoped root are refused. Absent: no channel rule.
+   */
+  channelScope?: string | null;
 }): ChannelWriteVerdict {
-  const { cwd, toolName, toolInput, worktree } = input;
+  const { cwd, toolName, toolInput, worktree, channelScope } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : undefined;
   if (!key || !worktree) return { allow: true };
   if (typeof worktree.path !== "string" || typeof worktree.main_root !== "string") return { allow: true };
@@ -84,6 +95,21 @@ export function checkWorktreeWrite(input: {
   const main = realResolve(worktree.main_root);
   const target = realResolve(path.resolve(cwd || worktree.path, raw));
   if (!wt || !main || !target) return { allow: true };
+
+  if (isChannelScope(channelScope)) {
+    for (const base of [main, wt]) {
+      const channels = realResolve(path.join(base, ".claude", "channels"));
+      if (!channels || !within(target, channels)) continue;
+      if (within(target, path.join(channels, channelScope))) break;
+      return {
+        allow: false,
+        reason:
+          `Blocked: "${raw}" is in a channel scope that is not this session's. This session may write handoff ` +
+          `channel files only under .claude/channels/${channelScope}/ — another task's lanes, and the legacy ` +
+          `unscoped .claude/channels/<receiver>/ layout, are off limits.`,
+      };
+    }
+  }
 
   if (within(target, wt)) return { allow: true };
   if (!within(target, main)) return { allow: true };

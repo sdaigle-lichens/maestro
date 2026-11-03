@@ -1,6 +1,7 @@
 {
   "$schema": "https://turborepo.dev/schema.json",
   "agentGuidance": false,
+  "globalPassThroughEnv": ["TMPDIR"],
   "tasks": {
     "build": {
       "dependsOn": ["^build"],

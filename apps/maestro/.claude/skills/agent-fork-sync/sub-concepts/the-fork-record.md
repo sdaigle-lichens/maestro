@@ -31,12 +31,13 @@ fork as user-modified for doing the thing forks exist to do.
 
 `029` normalised out only the description. Renamed forks therefore hashed as modified **from
 birth**, and the refresh branch could never fire for one; `031` added the `name:` half. Two tests
-pin it: one in `agent-fork.test.ts` on the hash itself, one in `agent-sync.test.ts` end to end.
+pin it: `bodyForHashing / hashAgentBody` in `agent-fork.test.ts` on the hash itself, and
+`agent-sync.test.ts` end to end.
 
 ## Reading it defensively
 
-`agent-forks.json` is a **committed** file — only the three ephemeral session files are gitignored —
-so it arrives through merges and hand-edits, not only through `writeAgentForkRecord`. `readAgentForks`
+`agent-forks.json` is a **committed** file — the installer's gitignore block covers only runtime state
+(sessions, channels, claims, metrics) — so it arrives through merges and hand-edits, not only through `writeAgentForkRecord`. `readAgentForks`
 therefore drops what it cannot use: unparseable JSON (what a merge conflict leaves behind) returns
 `{}`, and an individually malformed record is skipped while its neighbours survive.
 

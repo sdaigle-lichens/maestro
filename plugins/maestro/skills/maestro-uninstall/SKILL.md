@@ -43,6 +43,23 @@ The ephemeral `.claude/maestro_sessions/` the script always deletes is none of t
 
    None of the three delete anything on this first pass. In default mode all three are `null`.
 
+   **Under the sandbox this step always fails** (`EPERM` / "Operation not permitted" on
+   `.claude/settings.json`): Claude Code never lets a sandboxed command write a settings file, and
+   the uninstaller is not one of the commands `maestro-sandbox-allow.cjs` excludes. Don't retry;
+   give the user the same command prefixed with `!` to run themselves, then continue from its output.
+
+   **Then check for sandbox entries Maestro added.** This writes nothing:
+
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-sandbox-allow.cjs . --remove --dry-run
+   ```
+
+   If `removed` is non-empty, tell the user `/maestro-install` or `/maestro-update` added those
+   entries to `.claude/settings.local.json` (see
+   [`../maestro-install/references/sandbox.md`](../maestro-install/references/sandbox.md)), and
+   give them `! <removeCommand>` to take them out. Never run `--remove` yourself: it writes a
+   settings file. If `removed` is empty, say nothing about it.
+
 3. **In `--purge` mode only — ask permission for EACH of the three directories separately, then delete only the ones the user accepts.** The script never deletes any of them on the first pass; deletion is always a separate step, one question per directory, gated on the user's explicit yes. Skip a directory entirely if its `fileCount` (and, for the task queue, `hasStatusJson`) came back empty — an empty or absent directory isn't a question worth asking. Handle the ones that do have something:
 
    - **File-based task queue (`.claude/maestro-tasks/`).** Read `maestroTasks` from the JSON the script already printed in step 2. If nonempty, show the user `maestroTasks.files` and ask whether to delete the whole directory.
@@ -66,7 +83,7 @@ The ephemeral `.claude/maestro_sessions/` the script always deletes is none of t
 
    In default (non-purge) mode, skip this entire step — deletion of any of the four (three directories plus the task list) is purge-only.
 
-4. **Report** to the user: confirm whether the Maestro hooks were removed from `settings.json`, whether session files were cleared, and (if `--purge`) which files were deleted, and — for each of the task queue, materialized reports and materialized handoffs — whether it was deleted, kept because the user declined, or never asked about because it was empty. Also report how many tasks (if any) were removed from Claude Code's task list. Without `--purge`, note that `maestro.json` and the orchestrator skill were kept, so they can re-enable Maestro any time by re-running `/maestro-install` (or `/maestro-update` if the skill is still present). With `--purge`, note that the config is gone too — re-enabling means re-authoring it via `/maestro-install`. After a `--purge` of an ignored install (`removedGitExclude` is `true`), tell the user that the kept `.claude/settings.json`, `reports/` and `handoffs/` now appear as untracked in `git status`, because the exclude line is gone.
+4. **Report** to the user: confirm whether the Maestro hooks were removed from `settings.json`, whether session files were cleared, the sandbox-entries command from step 2 if it found any, and (if `--purge`) which files were deleted, and — for each of the task queue, materialized reports and materialized handoffs — whether it was deleted, kept because the user declined, or never asked about because it was empty. Also report how many tasks (if any) were removed from Claude Code's task list. Without `--purge`, note that `maestro.json` and the orchestrator skill were kept, so they can re-enable Maestro any time by re-running `/maestro-install` (or `/maestro-update` if the skill is still present). With `--purge`, note that the config is gone too — re-enabling means re-authoring it via `/maestro-install`. After a `--purge` of an ignored install (`removedGitExclude` is `true`), tell the user that the kept `.claude/settings.json`, `reports/` and `handoffs/` now appear as untracked in `git status`, because the exclude line is gone.
 
 ## Notes
 

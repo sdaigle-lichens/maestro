@@ -6,14 +6,17 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups — 25 files before `084`, which added two
-more to `STATIC_ASSETS` (and to `maestro-install.js`'s mirror), 27 now: `scripts/maestro-epic.cjs` and
-`scripts/lib/maestro-epic.cjs`, both in the table below.
+Everything lands under `<project>/.claude/`. Three groups, **33 files** today: 12 scripts, 9 libs,
+`maestro-session-cleanup.cjs`, and the 11 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
+`scripts/maestro-epic.cjs` and `scripts/lib/maestro-epic.cjs`; `113` added `maestro-session-name`, and
+the post-mortem hook joined the same list; `121` added `maestro-channel-write-guard`; `130`
+`maestro-human-review-gate`; `141` `maestro-session-heartbeat`.) `test/core/install.test.ts` and `parity.test.ts` pin the
+set; count from `STATIC_ASSETS` in `install.ts`, not from here.
 
 | Group                                               | Destination                        | Note                                                                                                          |
 | --------------------------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------- |
 | Scripts the orchestrator, a hook, or the app invokes | `.claude/scripts/*.cjs`           | `maestro-set-session-workflow`, `maestro-render-orchestrator`, `maestro-task-status`, `maestro-check-runtime` (`require`d by the `maestro-step0` hook), `maestro-agent-forks` (`031`), `maestro-step1-gates` (`032`), `maestro-end-skills` (`089`), `maestro-step4-gate` (`046`), `maestro-resume-target` (`039`), `maestro-resolve-skill-path` (`061`), `maestro-workflow-spec` (`063` — the `create-workflow`/`update-workflow` skills' CLI), `maestro-epic` (`084` — epics and the report inbox) |
-| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`), `maestro-epic` (`084`) |
+| Shared libs the copied scripts `require("./lib/…")` | `.claude/scripts/lib/*.cjs`        | `maestro-session`, `maestro-tasks`, `maestro-skill-regions`, `maestro-agent-sync` (`031`), `maestro-report-defaults` + `maestro-handoff-defaults` (`035`), `maestro-workflow-spec` (`063`), `maestro-epic` (`084`), `maestro-skill-lists` (`089`) |
 | Hook scripts                                        | `.claude/scripts/*.cjs`            | **renamed from `.js`** — see below                                                                            |
 
 **The shared-libs group is a DEPENDENCY LIST, and it fails silently when it is wrong (`035`).** The
@@ -36,12 +39,13 @@ The audit is now enforced rather than written down: `test/core/install.test.ts` 
 `runtimeAssets()` entry's source, regex-scans for relative `require()` specifiers, resolves each
 against the asset's **destination** (the copied layout, not the plugin's), and asserts a manifest
 entry copies it. Static rather than a spawn, precisely because the failing branch sits behind a
-caught exception. (`install.ts`'s comment on the shared-libs block says this test lives in
-`parity.test.ts` — it does not; flagged, not edited here.)
+caught exception.
 
-**The `.js` → `.cjs` rename is load-bearing.** The six `HOOK_SCRIPTS`
+**The `.js` → `.cjs` rename is load-bearing.** The eleven `HOOK_SCRIPTS`
 (`maestro-inject-agent-context`, `maestro-subagent-log`, `maestro-session-log`,
-`maestro-validate-tasks`, `maestro-step0`, `maestro-enable-task-routing` (`047`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
+`maestro-validate-tasks`, `maestro-step0`, `maestro-enable-task-routing` (`047`),
+`maestro-post-mortem-context`, `maestro-session-name` (`113`), `maestro-channel-write-guard` (`121`),
+`maestro-human-review-gate` (`130`), `maestro-session-heartbeat` (`141`)) keep `.js` in the plugin, whose directory has no `package.json` declaring
 a module type. Inside a project the same file may sit under `"type": "module"`, which makes node
 parse their `require()` as ESM and fail the hook **on every tool call**. Scripts already named
 `.cjs` in the plugin are copied under their existing names. Add a hook script to the wrong list and
@@ -55,7 +59,7 @@ them is not an asset copy but a **sync**: `syncProjectHandoffs()` materialises
 `syncedFrom{version,hash}` in `maestro.json`'s `handoffs` slice, and leaves an edited file alone.
 The shipped floor is `SEED_HANDOFFS`, a constant bundled into `lib/maestro-session.cjs`, so it
 needs no file on disk to answer. Consequence for this manifest: an install's file count dropped
-from ~37 to 17 (19 since `035`, 20 since `046`), and adding a handoff pair no longer touches
+from ~37 to 17 (31 today after later additions), and adding a handoff pair no longer touches
 `shippedRuntimeId` — it is a seed edit plus a `build:plugin-libs`.
 
 **`032` added one more `STATIC_ASSET`: `maestro-step1-gates.cjs`.** It is the only copied asset run
@@ -70,7 +74,7 @@ sub-concept.
 **`046` added a sibling, `maestro-step4-gate.cjs`, same shape.** Same harness-invoked,
 exit-0-unconditional, one-line-of-stdout contract, resolving `use_maestro_tasks` instead of `gates`
 and injected by Step 4 instead of Step 1. `maestro-check-runtime.cjs`'s `SKILL_INVOKED_SCRIPTS`
-gained it too, for the same fatal-if-missing reason.
+gained it too, for the same fatal-if-missing reason. (That list is five names: the three gates scripts, `maestro-set-session-workflow.cjs` and `maestro-task-status.cjs`.)
 
 **`089` added a script + lib pair, both `STATIC_ASSET`s: `maestro-end-skills.cjs` and
 `lib/maestro-skill-lists.cjs`** (the lib backs it and `maestro-step1-gates.cjs`). The end-skills
@@ -108,13 +112,14 @@ It is also the one hook script with **no arbitration guard**: since `064` both c
 `resolveSessionId` + `removeSessionState` out of `lib/maestro-session.cjs` (the `.sh` shells into
 `node -e` to do it), so a double fire is unobservable (see the hook-arbitration sub-concept).
 
-> `install.ts`'s asset-manifest comment (around line 155) still claims the `.sh` "also tears down
-> the per-project web-app container". That is stale — flagged, not edited here.
-
 ## Hooks — `HOOK_REGISTRATIONS`
 
-Eleven entries (`047`; nine before it), written into the project's `.claude/settings.json`,
-mirroring the plugin's `hooks.json` one-for-one:
+Seventeen entries (`121`), written into the project's `.claude/settings.json`. They mirror the
+plugin's `hooks.json` one-for-one. `maestro-channel-write-guard` (`PreToolUse`,
+`CHANNEL_GUARD_MATCHER` = `Write|Edit|MultiEdit|NotebookEdit`, `078`/`082`) was missing until `121`:
+a project running a forked or user-tier `reviewer` with the plugin disabled had nothing confining
+its writes, since those agents carry no `disallowedTools`. It is now in `HOOK_SCRIPTS` too; unlike
+the other hooks here the plugin copy does **not** stand down for it (`122`, see hook-arbitration):
 
 | Event                 | Matcher      | Script                             |
 | --------------------- | ------------ | ---------------------------------- |
@@ -122,20 +127,35 @@ mirroring the plugin's `hooks.json` one-for-one:
 | `PreToolUse`          | `Skill`      | `maestro-step0.cjs`                |
 | `UserPromptExpansion` | `to-maestro-tasks` | `maestro-enable-task-routing.cjs` (`047`) |
 | `PreToolUse`          | `Skill`      | `maestro-enable-task-routing.cjs` (`047`) |
+| `UserPromptExpansion` | `maestro-post-mortem` | `maestro-post-mortem-context.cjs` |
+| `PreToolUse`          | `Skill`      | `maestro-post-mortem-context.cjs`  |
+| `UserPromptExpansion` | `^(maestro\|(maestro:)?maestro-manager)$` | `maestro-session-name.cjs` (`113`) |
+| `PreToolUse`          | `Skill`      | `maestro-session-name.cjs` (`113`) |
+| `UserPromptSubmit`    | _(none)_     | `maestro-session-name.cjs` (`113`) |
+| `SessionStart`        | _(none)_     | `maestro-session-name.cjs` (`113`) |
+| `SessionStart`        | _(none)_     | `maestro-session-heartbeat.cjs` (`141`) |
 | `SubagentStart` | `.*`         | `maestro-inject-agent-context.cjs` |
 | `SubagentStart` | `.*`         | `maestro-subagent-log.cjs`         |
 | `SubagentStop`  | `.*`         | `maestro-subagent-log.cjs`         |
 | `PreToolUse`    | `.*`         | `maestro-session-log.cjs`          |
 | `PostToolUse`   | `TaskCreate` | `maestro-validate-tasks.cjs`       |
+| `PreToolUse`    | `Write\|Edit\|MultiEdit\|NotebookEdit` | `maestro-channel-write-guard.cjs` (`121`) |
+| `PreToolUse`    | `AskUserQuestion\|SendMessage` | `maestro-human-review-gate.cjs` (`130`, `132`) |
 | `SessionEnd`    | _(none)_     | `maestro-session-cleanup.cjs`      |
 
-`id` is `<Event>:<script>`, unique because now **three** scripts are registered on two events each
+`id` is `<Event>:<script>`, unique because a script is registered at most once per event
+(`maestro-session-name` on four events since `113`). Several scripts sit on two events each:
 (`maestro-subagent-log` on SubagentStart/Stop, `maestro-step0` and, since `047`,
 `maestro-enable-task-routing` on the two entrances to a skill invocation — a typed slash command, and
 a `Skill` tool call — each keyed by its own matcher on `UserPromptExpansion` but **sharing** the
 `Skill` matcher on `PreToolUse` with `maestro-step0`, two commands under one matcher block). **`SubagentStop`
 is included even though the plan lists four events** — without it the session log has dispatch
 entries with no matching handoff and `/session-log` renders half a conversation.
+
+**`maestro-session-name` has ONE `UserPromptExpansion` entry with a regex matcher** (`113`,
+`SESSION_NAME_EXPANSION_MATCHER`), not one per command: `hasHook` keys on event + script, so a
+second `UserPromptExpansion` entry for the same script reads as already registered and is never
+written. Add another entrance by widening the regex, never by adding a row.
 
 Two properties of how they are written:
 
@@ -149,8 +169,8 @@ Two properties of how they are written:
 strips their `settings.json` entries and deletes the file, and uninstall/purge still match them.
 Today that is `bash-validation.sh`.
 
-**`hooks` is the only key either implementation writes into `settings.json`.** No `permissions`
-block, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
+**`hooks` is the only key either implementation writes into `settings.json`, save one `permissions.allow`
+rule (below).** No other `permissions` entry, no `env`, no `model` — and `032` is the change that had the strongest reason to break that
 and did not. It needed a permission grant for the command Step 1 injects (an injected command whose
 check answers anything but `allow` aborts the invocation), and put it in the orchestrator
 **template's frontmatter** instead:
@@ -168,11 +188,22 @@ with it under `--purge`. See the uninstall sub-concept for what that removal lis
 Keep it that way: a permissions entry is a claim on the user's project-wide configuration that a hook
 registration is not.
 
+**The one exception (`139`): `permissions.allow` gets `Write(/.claude/channels/**)`.** A worktree
+run's subagents write handoff payloads into the main checkout's `.claude/channels/`, and the auto-mode
+classifier intermittently denied it; an allow rule is evaluated first, and `allowed-tools` on a skill
+does not cover a subagent's tool calls, so only settings can carry it. Both installers add it through
+`addChannelAllowRule` (merged into an existing `allow` list, skipped when present, left alone when
+`permissions` or `allow` has the wrong shape) and report it as `permissionsAdded`. The leading single
+slash anchors to the settings file's project root. Both uninstallers remove exactly that rule
+(`removeChannelAllowRule`), dropping `allow`/`permissions` only where they emptied them.
+
 ## The other two writes
 
 **`.gitignore` at the repo root** (found via `git rev-parse --show-toplevel`) gets a `# Maestro`
-section with three `**/.claude/maestro_session*` entries, `**/.claude/channels/` since `036`, and
-`**/.claude/maestro_sessions/` since `064`.
+section (`GITIGNORE_ENTRIES`, seven lines) with three flat `**/.claude/maestro_session*` entries,
+`**/.claude/channels/` since `036`, `**/.claude/maestro_sessions/` since `064`,
+`**/.claude/maestro-tasks/claims/` since `066` and `**/.claude/maestro-metrics/` since `080`.
+`maestro-install.js` mirrors the list.
 
 > **`GITIGNORE_ENTRIES` is not the mechanism that git-ignores `maestro_sessions/`, and must not be
 > read as one.** This list is only ever *appended at install time*, so the new entry reaches a

@@ -23,6 +23,12 @@ interface StatusEntry {
   blockedBy?: string[];
   /** The epic this task belongs to (`084`). Owned by `setTaskEpic`; every other writer preserves it. */
   epic?: string;
+  /**
+   * `146`: set on a done task that ran in a worktree whose branch is not merged yet. Absent means
+   * merged, so entries written before this field need no migration. Only a task inside an epic
+   * waits on it. Every rebuild preserves it; `closeTask` (the UI close) never sets it.
+   */
+  unmerged?: true;
 }
 type StatusMap = Record<string, StatusEntry>;
 
@@ -90,10 +96,13 @@ function writeStatusMap(dir: string, statusMap: StatusMap): void {
 function listTaskFiles(dir: string): string[] {
   try {
     // Numbered files sort lexicographically into their topological run order.
-    return fs
-      .readdirSync(dir)
-      .filter((f) => f.endsWith(".md"))
-      .sort((a, b) => a.localeCompare(b));
+    return (
+      fs
+        .readdirSync(dir)
+        // `130`: `<task>.review.md` files sit beside the tasks but are not tasks.
+        .filter((f) => f.endsWith(".md") && !/\.review(-\d+)?\.md$/.test(f))
+        .sort((a, b) => a.localeCompare(b))
+    );
   } catch {
     return [];
   }
@@ -113,21 +122,45 @@ function readFileSafe(dir: string, filename: string): string {
  */
 function buildStatusMap(dir: string, files: string[], doneSet: Set<string>, previous: StatusMap = {}): StatusMap {
   const fileSet = new Set(files);
+  const unmerged = unmergedSetFrom(previous, doneSet);
   const out: StatusMap = {};
   for (const filename of files) {
     const blockedBy = parseBlockedBy(readFileSafe(dir, filename));
+    const epic = previous[filename]?.epic;
     out[filename] = {
       status: doneSet.has(filename)
         ? "done"
-        : blockedBy.every((b) => doneSet.has(b) || !fileSet.has(b))
+        : blockersSatisfied(blockedBy, epic, doneSet, fileSet, unmerged)
           ? "ready"
           : "blocked",
       blockedBy,
       // `084`: the tracker owns `epic`, the markdown never does, so a rebuild keeps what was linked.
-      ...(previous[filename]?.epic ? { epic: previous[filename].epic } : {}),
+      ...(epic ? { epic } : {}),
+      // `146`: a done task stays unmerged until `merge` / `mark-merged` clears it.
+      ...(doneSet.has(filename) && unmerged.has(filename) ? { unmerged: true as const } : {}),
     };
   }
   return out;
+}
+
+/**
+ * `146`: whether every blocker of a task is satisfied. A blocker is satisfied when its file is gone
+ * or it is done; inside an epic (`epic` set) it must also be merged, because the dependent starts
+ * from a base that needs the blocker's code. Tasks outside an epic keep the plain done-or-gone rule.
+ */
+function blockersSatisfied(
+  blockedBy: string[],
+  epic: string | undefined,
+  doneSet: Set<string>,
+  fileSet: Set<string>,
+  unmerged: Set<string>
+): boolean {
+  return blockedBy.every((b) => !fileSet.has(b) || (doneSet.has(b) && !(epic && unmerged.has(b))));
+}
+
+/** `146`: the done tasks whose tracker entry says `unmerged: true`. */
+function unmergedSetFrom(statusMap: StatusMap, doneSet: Set<string>): Set<string> {
+  return new Set(Object.keys(statusMap).filter((k) => doneSet.has(k) && statusMap[k]?.unmerged === true));
 }
 
 function tasksFromFiles(
@@ -138,6 +171,7 @@ function tasksFromFiles(
 ): MaestroTask[] {
   const fileSet = new Set(files);
   const doneSet = new Set(files.filter((f) => statusMap[f]?.status === "done"));
+  const unmerged = unmergedSetFrom(statusMap, doneSet);
 
   return files.map((filename) => {
     const content = readFileSafe(dir, filename);
@@ -149,8 +183,16 @@ function tasksFromFiles(
     } else if (doneSet.has(filename)) {
       status = "done";
     } else {
-      status = blockedBy.every((b) => doneSet.has(b) || !fileSet.has(b)) ? "ready" : "blocked";
+      status = blockersSatisfied(blockedBy, entry?.epic, doneSet, fileSet, unmerged) ? "ready" : "blocked";
     }
+    // `146`: the blockers an epic task is waiting on only because they are not merged yet.
+    const unmergedBlockers =
+      status !== "done" && entry?.epic
+        ? blockedBy.filter((b) => fileSet.has(b) && doneSet.has(b) && unmerged.has(b))
+        : [];
+    // A tracker `ready` written before the task joined its epic (setTaskEpic does not recompute)
+    // must not outlive an unmerged blocker.
+    if (status === "ready" && unmergedBlockers.length) status = "blocked";
     return {
       filename,
       relativePath: path.posix.join(".claude", "maestro-tasks", filename),
@@ -160,6 +202,7 @@ function tasksFromFiles(
       content,
       claim: claims.get(filename) ?? null,
       ...(entry?.epic ? { epic: entry.epic } : {}),
+      unmergedBlockers,
     };
   });
 }
@@ -237,6 +280,8 @@ export function setTaskEpic(projectRoot: string, filenames: string[], epic: stri
 export interface TrackerEntry {
   status: TaskStatus | undefined;
   epic: string | undefined;
+  /** `146`: done but its work is not merged yet. */
+  unmerged: boolean;
   /** The task's `## Blocked by` references as the tracker recorded them (`085`: cross-epic edges). */
   blockedBy: string[];
 }
@@ -249,6 +294,7 @@ export function readTaskTracker(projectRoot: string): Record<string, TrackerEntr
     out[name] = {
       status: entry?.status,
       epic: entry?.epic,
+      unmerged: entry?.unmerged === true,
       blockedBy: Array.isArray(entry?.blockedBy) ? entry.blockedBy : [],
     };
   return out;

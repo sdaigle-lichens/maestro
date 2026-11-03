@@ -28,7 +28,7 @@ install-time sync.
 ## The payload protocol, resolved across three tiers
 
 The protocol is the JSON shape the sender must **write to its channel file**,
-`.claude/channels/<receiver>/<sender>.1.md` (**`036`**; before it, the shape of a `handoff_details`
+`.claude/channels/<scope>/<receiver>/<sender>.1.md` (**`036`**; `<scope>` since `144`, see `channels.md`; before it, the shape of a `handoff_details`
 field in the final-message JSON, forwarded by the orchestrator — that forwarding is gone). Since
 `033` the shape itself is resolved by one pure `resolveHandoff()` (`src/core/handoff-resolution.ts`)
 that the hook and the app both call:
@@ -83,12 +83,33 @@ returns — it prints and clears the list — and to route deliberately (matchin
 resume the agent for a corrected line) instead of defaulting to success. Agents that map to no workflow
 instance, and meeting participants, are never judged.
 
+**The scribe gets its ending rule from its own report (`114`).** It carries no verdict, so
+`VERDICT_HANDOFF_NOTE` never reached it, and a finished scribe ended `HANDOFF: done` — routed by no
+workflow, so the orchestrator stopped and asked. `SCRIBE_ENDING_NOTE` (appended to the scribe report
+seed) and the scribe agent file's "Ending your run" section now state it: `SKILL_GAPS_HANDLED:` first
+(when gaps were acted on), `HANDOFF:` last; `success` when the docs are done even with skipped steps,
+else a routed condition label or the deliberately unrouted `partial`. The note lives in the report,
+not only in the `SubagentStart` block, because a resumed scribe never sees that block (`088`).
+`checkRoute` is unchanged and still strict.
+
 **The line may arrive in a tool call (`078`, `087`).** Current Claude Code tells every subagent to
 end with a `SubagentHandback({message})` call, and then the `SubagentStop` payload has no
 `last_assistant_message`. The hook recovers the label from the agent's transcript via
 `handbackHandoff` (`core/handoff-label.ts`), which matches every tool in `HANDBACK_TOOLS`
 (`SubagentHandback`, `SendMessage`). Trap: `078` matched `SendMessage` only, so in task 084 every
 agent was flagged `missing` while each had ended `HANDOFF: success`.
+
+**The transcript is read early, so the hook waits for it (`124`).** Even with the tool name right,
+every hand-back agent of task 123 was still flagged `missing`. The parser was fine: Claude Code fires
+`SubagentStop` **before** it flushes the agent's final `SubagentHandback` `tool_use` line to
+`agent_transcript_path` (probed live: the hook read the file one assistant turn short, with no
+hand-back call in it, and the complete file held the line moments later; the payload does carry
+`agent_transcript_path`, just no `last_assistant_message`). So the single read of `087` found nothing.
+`awaitHandback` (`core/handoff-label.ts`) re-reads every `HANDBACK_POLL_MS` (100 ms) for up to
+`HANDBACK_WAIT_MS` (3 s) until a hand-back call appears (`hasHandbackCall`), then judges it as before.
+It stops early once any call is present — a labelless one is a real `missing` — or the file cannot be
+read, so only an agent that ended with plain text and no label pays the full wait. The sleep and read
+are injected; the hook script supplies `fs` and a `setTimeout` promise.
 
 ### A payload route must be written (`087`)
 
@@ -105,24 +126,34 @@ injected block (`payloadRequirement`) states the write as REQUIRED before the `H
 every pass — but a resume never sees it, since Claude Code drops a resume's `additionalContext`
 (`088`, see `agent-resume.md`). Receiving side (`088`): `maestro-resume-target.cjs` records a
 `missing_payload` issue (and prints `missing:`) when a loop-back's expected payload is not in the
-target's lane, whether the target is then resumed or cold.
+target's lane, whether the target is then resumed or cold. `handoff-issues` drops a `missing_payload`
+whose files sit in the lane stamped with this run's id (`139`, see `channels.md`).
 
 **It never sees the payload (`036`).** The sender wrote it straight to the receiver's channel file,
 and the receiver's own `SubagentStart` inlines it (a resumed receiver is instead handed the path, `088`) — the orchestrator's job is routing only. The one
 place the orchestrator still touches a channel file is a **skill step** in the success path: a skill
 node has no `SubagentStart` of its own, so if it needs the upstream payload the orchestrator reads
-`.claude/channels/<downstream receiver>/<upstream sender>.*.md` itself, **without retiring it** —
+`.claude/channels/<scope>/<downstream receiver>/<upstream sender>.*.md` itself, **without retiring it** —
 retiring is `SubagentStart`'s job alone, so a read here starves nobody; the downstream agent still
 gets its own delivery.
 
 **Condition edges from a `human review` node are the exception — orchestrator-driven, not
 HANDOFF-driven.** A human-review node has no subagent, so nothing emits a `HANDOFF:` line for it.
-Instead the orchestrator itself, at the human-review hard stop, reads the user's feedback: on
+Instead the orchestrator itself, at the human-review hard stop, summarises the work and asks with
+`AskUserQuestion` (`Approve` / `Request changes`, corrections through its free-text option; plain
+text when `AskUserQuestion` is unavailable or fails; the review file's path is the FIRST line of both
+the Approve preview digest and the printed summary, and a shortened digest ends by saying the full
+text is in the review file), then reads the user's answer: on
 approval it continues the success path; on a correction request it dispatches the change as a `Task`
 to the agent a `condition` edge points at (e.g. `human requested code corrections` → `@backend`),
 rather than editing code in its own context. The seeded `default`/`tdd` workflows wire these edges
 automatically (`buildWorkflow` in `maestro.ts`: default → impl agent(s), split per-agent for
 fullstack; tdd → `@test`, since the human reviews the test plan before impl runs).
+
+A `manager review` node (`132`) is orchestrator-driven the same way: the verdict comes from the
+epic's manager session (`maestro-epic.cjs review-verdict`), not a `HANDOFF:` line, and a `redirect`
+follows its `manager requested direction change` edge to the producing agent. Mechanism: the
+**Manager review** section of this skill's `SKILL.md`.
 
 ## Things that bite
 

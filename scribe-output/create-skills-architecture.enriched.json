@@ -1,0 +1,28 @@
+{
+  "concept": "create-skills-architecture",
+  "vertices": [
+    {
+      "_key": "a22e814206eb85adf36923616063a839",
+      "purpose": "Turns one request kind into its fixed prompt and the paths it may touch; the four create kinds delegate to buildCreate.",
+      "inputs": [
+        "projectRoot",
+        "request: the ClaudeRequest",
+        "opts: ResolveOptions"
+      ],
+      "outputs": [
+        "BuiltRequest with prompt and targets"
+      ],
+      "cross_concept_refs": [
+        "claude-session-bridge"
+      ],
+      "document_ref": null,
+      "tags": [
+        "preview",
+        "prompt-builder"
+      ],
+      "sig_seen": "function build(projectRoot: string, request: ClaudeRequest, opts: ResolveOptions): Promise<BuiltRequest>",
+      "hash_seen": "ba11255243a3f1ddb72e6f36026beeeb0f43a86b713732a4fae4257473c3a696"
+    }
+  ],
+  "edges": []
+}

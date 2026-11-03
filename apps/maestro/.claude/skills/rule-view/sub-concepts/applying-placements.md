@@ -18,10 +18,11 @@ could do.
 
 `"scope-only"` exists so an assignment can scope a rule to its `paths`/`scope` without forcing a
 `.claude/` to exist somewhere a project's own convention forbids it. It is set from
-`rule-tree.tsx`'s add-picker checkbox or its per-chip toggle. This repo's own `.claude/maestro.json`
-assigns `plugin-publishing` to `plugins/maestro/**` with `placement: "scope-only"`, and the real
-apply step (`maestro-apply-rules.js`) has been run against it for real — no hand-edited workaround
-left behind, no `plugins/maestro/.claude/` on disk.
+`rule-tree.tsx`'s add-picker checkbox or its per-chip toggle. The motivating case is a published
+directory such as `plugins/maestro/` that must not gain a `.claude/`.
+
+A project rule is looked up **before** the placement check, so a scope-only assignment whose file is
+gone is still reported under `missing`, not `unchanged`.
 
 **Removed / unassigned rules are left untouched.** The step **never deletes** rule files; cleanup is
 the user's choice.

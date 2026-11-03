@@ -18,7 +18,7 @@ import { pinnedEnv } from "../helpers/env.js";
 const here = path.dirname(fileURLToPath(import.meta.url));
 const PLUGIN_ROOT = findUpPluginRoot(here)!;
 const INSTALLER = path.join(PLUGIN_ROOT, "scripts", "maestro-install.js");
-const DESIGN = "concept-skills:use-code-architecture-design-check";
+const DESIGN = "code-graph:use-code-architecture-design-check";
 
 type Seeded = { start_skills: boolean; end_skills: boolean; gatesRemoved: boolean } | null;
 interface Result {
@@ -47,7 +47,7 @@ function project(configText: string, withDesign = false): string {
   if (withDesign) {
     fs.writeFileSync(
       path.join(root, ".claude", "settings.json"),
-      JSON.stringify({ enabledPlugins: { "concept-skills@maestro": true } })
+      JSON.stringify({ enabledPlugins: { "code-graph@code-graph": true } })
     );
   }
   return root;

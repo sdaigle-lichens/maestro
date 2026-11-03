@@ -3,8 +3,8 @@ name: electron-shell-invariants
 description: "Explains the invariants of running the Maestro desktop app as an Electron shell over node-side logic, that don't belong to any one view or to the Claude bridge: the router's hash history (and its corollary that no route may use the URL fragment), the renderer's CSP forbidding inline script, the asar/externalizeDepsPlugin packaging trio, the settingSources: [] four-occurrence lockstep rule in agent-sdk.ts, the project-switch invalidation + key={projectRoot} keying pattern shared by every stateful view and tail, the renderer's code-splitting shape and its measurements, and the process-boundary contract test/isolation.test.ts enforces (nodeIntegration/contextIsolation/no src/core barrel outside main). Use when working on apps/maestro's Electron/Vite config, adding state that must survive a project switch, debugging a theme flash or a route that renders blank only in the packaged build, or wondering why an edit silently didn't reach across the renderer/main boundary."
 metadata:
   type: concept-skill
-  version: "1.1"
-  last-update: e583e25c831728794f633d2a502f67e60dcf1f0d
+  version: "2.1"
+  last-update: 1fac55ee297de777db667b61f670fa7e0a08687c
 ---
 
 # Electron shell invariants
@@ -65,6 +65,11 @@ is why the policy has to be satisfied there and not in a route component.
   goes into `rollupOptions.external` directly, where it actually takes effect — including a regex for
   subpath imports, which a bare package name does not cover. The plugin call stays because it is
   harmless and correct in intent; it is simply not what is doing the work.
+- **`electron` itself is externalized by hand too** (`ELECTRON_EXTERNAL`, in main's `external` and the
+  preload's). It is a devDependency, so the plugin's `dependencies`-derived list never covers it, and
+  bundling the npm package inlines a shim that throws "Electron failed to install correctly" at
+  import time. The preload gets only this entry, not `EXTERNAL`, so it can import nothing else.
+  `test/isolation.test.ts` asserts the built bundles import electron (only when `out/` exists).
 - **The Agent SDK's own three packaging failures (must-be-externalized, asar unpacking, the CLI path
   handed over rather than resolved) belong to `claude-session-bridge`** — see its `agent-sdk.md`
   sub-concept. This skill owns only the general externalize/bundle mechanics above.
@@ -108,7 +113,7 @@ invalidation is harmless to `/workflows` (`reconcileWorkflowSlice` decides repla
 depends on the loader result to refetch. See `workflow-view` for the reconcile flow.
 
 **`SkillRefProvider` (`091`, mounted just inside `ConfigWatchProvider`, above `InstallProvider`) is the
-non-router consumer of the same signal: it re-reads `data:skill-refs` on `config:changed`, on a
+non-router consumer of the same signal:** it re-reads `data:skill-refs` on `config:changed`, on a
 project switch, on a debounced (300ms) window `focus`/`visibilitychange`, and on demand, because the report also depends on installed plugins that no file
 watch sees. See `workflow-view`.
 
@@ -127,8 +132,8 @@ project switch are each an instance of this same shape — invalidate the loader
 derived state by `projectRoot` so the re-run can't clobber an edit.
 
 **The deliberate counter-instance: state that must NOT follow the open project.** `log-view`'s worktree
-tabs (`075`) are keyed by their own worktree root, live in a registry (`worktreeTabs`) and a provider
-(`WorktreeLogProvider`) that a project switch never touches, and the provider's list-fold only adds tabs.
+tabs (`075`) are keyed by their own worktree root, live in a main-side registry (`worktreeTabs` in
+`src/main/ipc.ts`) and a provider (`WorktreeLogProvider`) that a project switch never touches, and the provider's list-fold only adds tabs.
 Decide per piece of state which side it is on; routing it through a retargeted/reset channel by habit
 kills it on every switch.
 
@@ -156,9 +161,13 @@ with `dev` alone.
 One test file guards the shell's own security boundary: `nodeIntegration: false`,
 `contextIsolation: true`, one exposed namespace (`window.maestro`), no generic
 `invoke(channel, …)` escape hatch, no node builtins in the built renderer bundle, and — outside
-`src/main/` — no import of the `src/core/index.ts` barrel, `@repo/claude-fs`, or any `node:` builtin.
-These are configuration and convention properties that would all regress silently without an
-assertion; there is no runtime error waiting to catch a renderer that quietly gained a node import.
+`src/main/` (so `shared`, `preload`, `renderer`) — imports from `src/core` limited to an **allow-list
+of three self-contained modules** (`contracts`, `text`, `canvas-layout`; anything else, the `index.ts`
+barrel included, fails; a fourth needs proof it reaches no filesystem), no `@repo/claude-fs`, and no
+`node:` builtin. These are configuration and convention properties that would all regress silently
+without an assertion; there is no runtime error waiting to catch a renderer that quietly gained a
+node import. The `built …` blocks (bundle imports, off-origin CSS, vendored fonts) are `runIf` an
+`out/` build exists, so they assert nothing on a clean checkout.
 
 The same file also pins the Claude bridge's permission-model invariants (no edit pre-acceptance, the
 four `settingSources: []` occurrences, the session pane's single-owner and token-only-write

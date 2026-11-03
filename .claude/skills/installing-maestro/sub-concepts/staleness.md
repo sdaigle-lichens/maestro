@@ -16,7 +16,9 @@ file's bytes or the literal `absent` — so an incomplete install can never hash
 one, and moving a file changes the id. `HOOK_REGISTRATIONS` is folded in too: **adding a hook
 without touching a script still makes every installed project out of date**, which it should.
 
-`installStatus()` reports the pieces separately as well (`scriptsMissing`, `scriptsOutOfDate`,
+The digest is not what decides `stale`: `installStatus()` computes `stale` from the pieces it reports
+(any missing or differing asset, a missing registration, or an out-of-date orchestrator skill), and
+the two `*RuntimeId` strings are the comparable summary of the same facts. `installStatus()` reports the pieces separately as well (`scriptsMissing`, `scriptsOutOfDate`,
 `hooksMissing`, `orchestratorSkillOutOfDate`) so the UI can say _what_ is stale. `stale` is only ever
 true for a project that is `installed` — a project with nothing is not stale, it is absent, and that
 distinction is what keeps the install button from becoming an update button.
@@ -80,9 +82,10 @@ Six checks, cheapest and most fundamental first:
 
 **Check 4 is new and it guards an abort, not a degradation** (`032`). `SKILL_INVOKED_SCRIPTS` is the
 set the orchestrator invokes **by `$CLAUDE_PROJECT_DIR` path** rather than through a hook:
-`maestro-step1-gates.cjs`, `maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`. It is a
-list rather than the one script `032` added because the failure shape is identical for all three and
-one loop costs nothing. The gates script is the sharpest case: its call is an injected
+`maestro-step1-gates.cjs`, `maestro-end-skills.cjs`, `maestro-step4-gate.cjs`,
+`maestro-set-session-workflow.cjs`, `maestro-task-status.cjs`. It is a list rather than the one
+script `032` added because the failure shape is the same for all of them and one loop costs nothing
+(it has grown with `046` and `089`; other copied scripts such as `maestro-epic.cjs` are not on it). The gates script is the sharpest case: its call is an injected
 the `!`-prefixed command-injection syntax with no `|| true`, so `node` on an absent file exits 1 and takes the entire
 `/maestro` invocation with it before the model sees a word. This nag is the only thing standing
 between a half-installed project and that abort — which is also why it must stay an `update` and

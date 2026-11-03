@@ -52,10 +52,11 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
                 <div key={i}>
                   <div className="flex items-center gap-1.5 mb-1">
                     <span className="text-[11px] text-maestro-muted">
-                      Delivered from <span className="font-mono text-maestro-muted">@{stripNamespace(d.sender)}</span>
+                      {d.via === "ack" ? "Acknowledged gap report from " : "Delivered from "}
+                      <span className="font-mono text-maestro-muted">@{stripNamespace(d.sender)}</span>
                     </span>
                     <span className="ml-auto text-[9.5px] font-mono uppercase tracking-wide text-maestro-muted">
-                      {d.via === "resume" ? "channel · resume" : "channel"}
+                      {d.via === "resume" ? "channel · resume" : d.via === "ack" ? "gap · acknowledged" : "channel"}
                     </span>
                   </div>
                   <pre className="whitespace-pre-wrap break-words font-mono text-[11px] m-0 p-2.5 rounded-md bg-(--sunken) border border-maestro">

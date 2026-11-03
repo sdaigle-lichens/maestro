@@ -9,13 +9,17 @@
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { afterAll } from "vitest";
 
 const home = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-test-home-"));
 process.env.HOME = home;
 process.env.USERPROFILE = home;
 delete process.env.CLAUDE_CODE_SESSION_ID;
 
-process.on("exit", () => {
+// Vitest workers are not guaranteed to fire `process.on("exit")`, which used to leave one
+// `maestro-test-home-*` directory behind per test file. `afterAll` runs once per test file, which
+// is exactly the lifetime of this directory.
+afterAll(() => {
   try {
     fs.rmSync(home, { recursive: true, force: true });
   } catch {

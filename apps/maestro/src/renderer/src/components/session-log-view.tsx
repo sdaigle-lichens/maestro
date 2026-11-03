@@ -1,4 +1,4 @@
-import { humanizeLog, unaccountedSkills } from "../utils/session-log";
+import { humanizeLog, receivedCount, unaccountedSkills } from "../utils/session-log";
 import type { Instance } from "../utils/session-log";
 
 interface SessionLogViewProps {
@@ -79,8 +79,8 @@ export default function SessionLogView({
                       )}
                     </span>
                   )}
-                  {inst.delivered.length > 0 && (
-                    <span className="text-[10px] font-mono text-maestro-muted">{inst.delivered.length} delivered</span>
+                  {receivedCount(inst) > 0 && (
+                    <span className="text-[10px] font-mono text-maestro-muted">{receivedCount(inst)} delivered</span>
                   )}
                 </span>
               </div>
