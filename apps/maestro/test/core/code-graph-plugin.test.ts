@@ -73,7 +73,7 @@ describe("first-install seeding: plugin disabled vs enabled", () => {
     expect(JSON.stringify(cfg)).not.toContain("architecture-design");
     expect(skillNodes(cfg)).toEqual([]);
     const refactor = cfg.workflows.find((w) => w.name === "Refactor")!;
-    expect(refactor.nodes.map((n) => n.id)).toEqual(["human_review-1", "refactor"]);
+    expect(refactor.nodes.map((n) => n.id)).toEqual(["manager_review-1", "refactor"]);
     expect(cfg.start_skills!.to_maestro_tasks).toEqual(["confidence-check"]);
     expect(cfg.start_skills!.maestro).toEqual([]);
     expect(cfg.end_skills!.maestro).toEqual([]);

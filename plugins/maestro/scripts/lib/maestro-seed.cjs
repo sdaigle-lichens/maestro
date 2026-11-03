@@ -198,18 +198,20 @@ function sideTracker(nodes) {
 }
 var BASE_STEP = 140;
 var PER_SKILL_STEP = 30;
+var MANAGER_REVIEW_ID = "manager_review-1";
+var HUMAN_REVIEW_ID = "human_review-1";
 function columnNodes(ids, skillCount = () => 0) {
   let y = BASE_STEP;
   return ids.map((id) => {
     const position = { x: 0, y };
-    const node = id === "human_review-1" ? { id, type: "human_review", position } : { id, type: "agent", instance: id, position };
-    const skills = id === "human_review-1" ? 0 : skillCount(id);
+    const node = id === HUMAN_REVIEW_ID ? { id, type: "human_review", position } : id === MANAGER_REVIEW_ID ? { id, type: "manager_review", position } : { id, type: "agent", instance: id, position };
+    const skills = id === HUMAN_REVIEW_ID || id === MANAGER_REVIEW_ID ? 0 : skillCount(id);
     y += BASE_STEP + skills * PER_SKILL_STEP;
     return node;
   });
 }
 function buildWorkflow(name, kind, impl, skillCount = () => 0) {
-  const column = kind === "tdd" ? ["test", "human_review-1", ...impl, "reviewer", "scribe"] : [...impl, "human_review-1", "test", "reviewer", "scribe"];
+  const column = kind === "tdd" ? ["test", MANAGER_REVIEW_ID, ...impl, "reviewer", "scribe"] : [...impl, MANAGER_REVIEW_ID, "test", "reviewer", "scribe"];
   const colNodes = columnNodes(column, skillCount);
   const reviewerY = colNodes.find((n) => n.id === "reviewer")?.position?.y ?? BASE_STEP;
   const nodes = [
@@ -252,11 +254,11 @@ function buildWorkflow(name, kind, impl, skillCount = () => 0) {
     )
   );
   if (kind === "tdd") {
-    edges.push(c("human_review-1", "test", "human requested test corrections"));
+    edges.push(c(MANAGER_REVIEW_ID, "test", "manager requested test corrections"));
   } else if (impl.length === 1) {
-    edges.push(c("human_review-1", impl[0], "human requested code corrections"));
+    edges.push(c(MANAGER_REVIEW_ID, impl[0], "manager requested code corrections"));
   } else {
-    for (const a of impl) edges.push(c("human_review-1", a, `human requested ${a} corrections`));
+    for (const a of impl) edges.push(c(MANAGER_REVIEW_ID, a, `manager requested ${a} corrections`));
   }
   return placeConditionLabels({ name, nodes, edges }, skillCount);
 }
@@ -266,8 +268,10 @@ function linearWorkflow(name, steps, skillCount = () => 0) {
     const position = { x: 0, y };
     let node;
     let skills = 0;
-    if (step === "human_review-1") {
+    if (step === HUMAN_REVIEW_ID) {
       node = { id: step, type: "human_review", position };
+    } else if (step === MANAGER_REVIEW_ID) {
+      node = { id: step, type: "manager_review", position };
     } else if (step.startsWith("skill:")) {
       const skill = step.slice("skill:".length);
       node = { id: skill, type: "skill", skill, position };
@@ -363,7 +367,7 @@ function defaultV3Config(implAgents, skillMap = {}, seedSkills = {}) {
     buildWorkflow("tdd", "tdd", impl, skillCount),
     linearWorkflow(
       "Refactor",
-      [...designCheck ? [`skill:${designCheck}`] : [], "human_review-1", "refactor"],
+      [...designCheck ? [`skill:${designCheck}`] : [], MANAGER_REVIEW_ID, "refactor"],
       skillCount
     ),
     linearWorkflow("Documentation", ["scribe"], skillCount),

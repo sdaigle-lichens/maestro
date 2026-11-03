@@ -62,21 +62,21 @@ describe("save against a really-installed project", () => {
     // The seeded default workflow's happy path, as the orchestrator will read it at runtime.
     expect(res.render.rows).toContainEqual({
       workflow: "default",
-      successPath: "@backend → human review → @test → @reviewer → @scribe",
+      successPath: "@backend → manager review → @test → @reviewer → @scribe",
     });
     expect(res.render.rows).toContainEqual({
       workflow: "tdd",
-      successPath: "@test → human review → @backend → @reviewer → @scribe",
+      successPath: "@test → manager review → @backend → @reviewer → @scribe",
     });
     // The design check is seeded only when its plugin is enabled, which this fixture does not do.
     expect(res.render.rows).toContainEqual({
       workflow: "Refactor",
-      successPath: "human review → @refactor",
+      successPath: "manager review → @refactor",
     });
 
     const table = extractRegion(fs.readFileSync(orchestratorSkillPath(root), "utf8"), "HANDOFFS");
     expect(table).toContain("| Workflow | Success path |");
-    expect(table).toContain("| default | @backend → human review → @test → @reviewer → @scribe |");
+    expect(table).toContain("| default | @backend → manager review → @test → @reviewer → @scribe |");
   });
 
   it("leaves the rest of the installed skill untouched", async () => {

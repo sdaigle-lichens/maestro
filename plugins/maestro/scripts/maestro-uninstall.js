@@ -276,7 +276,11 @@ function purgeTargets(claudeDir) {
 try {
   const claudeDir = path.join(projectDir, ".claude");
 
-  const { removedAgentSetting, removedHooks } = cleanSettings(path.join(claudeDir, "settings.json"));
+  // An `ignored`-mode install registered its hooks in settings.local.json; clean both files.
+  const sharedClean = cleanSettings(path.join(claudeDir, "settings.json"));
+  const localClean = cleanSettings(path.join(claudeDir, "settings.local.json"));
+  const removedAgentSetting = sharedClean.removedAgentSetting || localClean.removedAgentSetting;
+  const removedHooks = sharedClean.removedHooks || localClean.removedHooks;
   // `064`: `maestro_sessions/` is the live per-session state (one directory per Claude Code
   // session, holding its own log.jsonl / session.json / tasks.json); the three flat names after it
   // are the pre-`064` layout, still removed because a project that ran an older runtime has them

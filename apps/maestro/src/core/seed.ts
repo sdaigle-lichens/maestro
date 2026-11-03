@@ -79,13 +79,20 @@ type SkillCount = (instanceName: string) => number;
 // Lay out a vertical column of nodes at x:0, each node's y offset by the cumulative height
 // of the nodes above it (taller when an instance carries skills). `human_review-1` becomes a
 // human_review node; every other id becomes an agent node whose instance == its id.
+const MANAGER_REVIEW_ID = "manager_review-1";
+const HUMAN_REVIEW_ID = "human_review-1";
+
 function columnNodes(ids: string[], skillCount: SkillCount = () => 0): MaestroNodeV3[] {
   let y = BASE_STEP;
   return ids.map((id): MaestroNodeV3 => {
     const position = { x: 0, y };
     const node: MaestroNodeV3 =
-      id === "human_review-1" ? { id, type: "human_review", position } : { id, type: "agent", instance: id, position };
-    const skills = id === "human_review-1" ? 0 : skillCount(id);
+      id === HUMAN_REVIEW_ID
+        ? { id, type: "human_review", position }
+        : id === MANAGER_REVIEW_ID
+          ? { id, type: "manager_review", position }
+          : { id, type: "agent", instance: id, position };
+    const skills = id === HUMAN_REVIEW_ID || id === MANAGER_REVIEW_ID ? 0 : skillCount(id);
     y += BASE_STEP + skills * PER_SKILL_STEP;
     return node;
   });
@@ -105,8 +112,8 @@ export function buildWorkflow(
 ): MaestroWorkflowV3 {
   const column =
     kind === "tdd"
-      ? ["test", "human_review-1", ...impl, "reviewer", "scribe"]
-      : [...impl, "human_review-1", "test", "reviewer", "scribe"];
+      ? ["test", MANAGER_REVIEW_ID, ...impl, "reviewer", "scribe"]
+      : [...impl, MANAGER_REVIEW_ID, "test", "reviewer", "scribe"];
   const colNodes = columnNodes(column, skillCount);
   const reviewerY = colNodes.find((n) => n.id === "reviewer")?.position?.y ?? BASE_STEP;
   const nodes: MaestroNodeV3[] = [
@@ -162,11 +169,11 @@ export function buildWorkflow(
   // per-agent for fullstack). In tdd the human reviews the test plan before any impl
   // runs, so corrections route to @test.
   if (kind === "tdd") {
-    edges.push(c("human_review-1", "test", "human requested test corrections"));
+    edges.push(c(MANAGER_REVIEW_ID, "test", "manager requested test corrections"));
   } else if (impl.length === 1) {
-    edges.push(c("human_review-1", impl[0], "human requested code corrections"));
+    edges.push(c(MANAGER_REVIEW_ID, impl[0], "manager requested code corrections"));
   } else {
-    for (const a of impl) edges.push(c("human_review-1", a, `human requested ${a} corrections`));
+    for (const a of impl) edges.push(c(MANAGER_REVIEW_ID, a, `manager requested ${a} corrections`));
   }
 
   return placeConditionLabels({ name, nodes, edges }, skillCount);
@@ -181,8 +188,10 @@ export function linearWorkflow(name: string, steps: string[], skillCount: SkillC
     const position = { x: 0, y };
     let node: MaestroNodeV3;
     let skills = 0;
-    if (step === "human_review-1") {
+    if (step === HUMAN_REVIEW_ID) {
       node = { id: step, type: "human_review", position };
+    } else if (step === MANAGER_REVIEW_ID) {
+      node = { id: step, type: "manager_review", position };
     } else if (step.startsWith("skill:")) {
       const skill = step.slice("skill:".length);
       node = { id: skill, type: "skill", skill, position };
@@ -349,7 +358,7 @@ export function defaultV3Config(
         buildWorkflow("tdd", "tdd", impl, skillCount),
         linearWorkflow(
           "Refactor",
-          [...(designCheck ? [`skill:${designCheck}`] : []), "human_review-1", "refactor"],
+          [...(designCheck ? [`skill:${designCheck}`] : []), MANAGER_REVIEW_ID, "refactor"],
           skillCount
         ),
         linearWorkflow("Documentation", ["scribe"], skillCount),
