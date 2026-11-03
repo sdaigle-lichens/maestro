@@ -2,8 +2,8 @@
   "slug": "code-graph-cutover",
   "created_at": "2026-10-14T02:02:09.698Z",
   "manager": {
-    "name": "manager-code-graph-merge",
-    "set_at": "2026-10-19T12:36:31.109Z"
+    "name": "maestro-mgr-707859d4",
+    "set_at": "2026-11-02T15:16:10.491Z"
   },
   "workers": [
     {
