@@ -78,6 +78,10 @@ const EXCLUDED = [
     why: "merges a finished worktree back, which can touch .claude/skills and other protected paths",
   },
   {
+    value: "node .claude/scripts/maestro-agent-forks.cjs update *",
+    why: "/maestro-update: rewrites a forked agent's body in .claude/agents (sandbox-protected) after the user chose `update`",
+  },
+  {
     value: `node ${path.join(PLUGIN_ROOT, "scripts", "maestro-install.js")} *`,
     why: "/maestro-install and /maestro-update: writes .claude/settings.json hooks and .claude/skills/maestro/ (rewritten after each plugin update, since the path carries the version)",
   },

@@ -83,6 +83,7 @@ describe("maestro-sandbox-allow.cjs", () => {
       "node .claude/scripts/maestro-task-status.cjs worktree *",
       "node .claude/scripts/maestro-task-status.cjs freeform-check *",
       "node .claude/scripts/maestro-task-status.cjs merge *",
+      "node .claude/scripts/maestro-agent-forks.cjs update *",
       INSTALLER_ENTRY,
     ]);
     expect(s.sandbox.filesystem.denyWrite).toEqual([path.join(root, ".claude", "scripts")]);
@@ -114,7 +115,7 @@ describe("maestro-sandbox-allow.cjs", () => {
     run(root, "--apply");
 
     const preview = run(root, "--remove", "--dry-run");
-    expect(preview.out.removed).toHaveLength(8);
+    expect(preview.out.removed).toHaveLength(9);
     expect(readSettings(settingsPath).permissions.deny).toEqual(["Edit(/.claude/scripts/**)"]);
 
     expect(run(root, "--remove").code).toBe(0);
@@ -394,7 +395,7 @@ describe("maestro-sandbox-allow.cjs --herdr", () => {
     runEnv(hh.env, root, "--apply", "--herdr");
 
     const preview = runEnv(hh.env, root, "--remove", "--dry-run");
-    expect(preview.out.removed).toHaveLength(11); // 8 base + allowWrite, allowRead, allowUnixSockets
+    expect(preview.out.removed).toHaveLength(12); // 9 base + allowWrite, allowRead, allowUnixSockets
 
     expect(runEnv(hh.env, root, "--remove").code).toBe(0);
     expect(readSettings(settingsPath)).toEqual(original);
