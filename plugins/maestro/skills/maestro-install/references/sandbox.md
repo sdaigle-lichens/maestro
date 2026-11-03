@@ -19,6 +19,7 @@ have to write there, or outside the project, so under the sandbox they fail with
 | `node .claude/scripts/maestro-task-status.cjs worktree *` | creates a task worktree beside the project (`<repo>-task-N`) |
 | `node .claude/scripts/maestro-task-status.cjs freeform-check *` | same, for a freeform run while another session is live |
 | `node .claude/scripts/maestro-task-status.cjs merge *` | merges a finished worktree back, which can touch protected paths |
+| `node .claude/scripts/maestro-agent-forks.cjs update *` | `/maestro-update`: rewrites a forked agent's body in `.claude/agents` once you chose `update` |
 | `node <plugin root>/scripts/maestro-install.js *` | `/maestro-install` and `/maestro-update`: writes the hooks into `.claude/settings.json` and the orchestrator skill |
 
 An entry with no `*` matches only that exact text. A trailing ` *` allows any arguments to that
