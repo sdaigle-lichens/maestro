@@ -737,5 +737,10 @@
   "148-ship-the-test-and-scribe-agents-on-haiku-with-stricter-report-defaults.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "149-freebuff-backed-reviewer-bridge-via-herdr.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "freebuff-reviewer"
   }
 }
