@@ -253,8 +253,8 @@ describe("installRuntime", () => {
       const commands = commandsFor(settings, reg.event);
       const command = commands.find((c) => c.includes(reg.script));
       expect(command, `${reg.id} not registered`).toBeDefined();
-      expect(command).toContain('git rev-parse --show-toplevel');
-      expect(command).toContain('/.claude/scripts/');
+      expect(command).toContain("git rev-parse --show-toplevel");
+      expect(command).toContain("/.claude/scripts/");
       // No ${CLAUDE_PLUGIN_ROOT}: that is the marketplace-cache path this milestone retires.
       expect(command).not.toContain("CLAUDE_PLUGIN_ROOT");
       expect(fs.existsSync(path.join(root, ".claude", "scripts", reg.script))).toBe(true);

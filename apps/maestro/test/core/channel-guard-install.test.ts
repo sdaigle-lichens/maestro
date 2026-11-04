@@ -65,7 +65,11 @@ function guardEntries(root: string): Array<[string, string, string]> {
 }
 
 const EXPECTED: Array<[string, string, string]> = [
-  ["PreToolUse", MATCHER, `node "$(git rev-parse --show-toplevel 2>/dev/null || echo "$CLAUDE_PROJECT_DIR")/.claude/scripts/${SCRIPT}.cjs"`],
+  [
+    "PreToolUse",
+    MATCHER,
+    `node "$(git rev-parse --show-toplevel 2>/dev/null || echo "$CLAUDE_PROJECT_DIR")/.claude/scripts/${SCRIPT}.cjs"`,
+  ],
 ];
 
 function payload(cwd: string, file: string) {
