@@ -309,7 +309,16 @@ export interface HookRegistration {
   id: string;
 }
 
-const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
+/**
+ * The scripts dir as a hook command spells it. Claude Code sets `$CLAUDE_PROJECT_DIR` to the
+ * directory it was launched from, which in a monorepo can be a subfolder (apps/web) that has its own
+ * `.claude/settings.json`; the repo-root settings still load, and a command rooted at the subfolder
+ * then points at scripts that only exist at the repo root. The git toplevel is the same directory
+ * everywhere in the repo; outside a git repo it falls back to `$CLAUDE_PROJECT_DIR`.
+ */
+const SCRIPTS_VAR = '$(git rev-parse --show-toplevel 2>/dev/null || echo "$CLAUDE_PROJECT_DIR")/.claude/scripts';
+/** The form earlier releases wrote; a re-install rewrites exactly this, never a user's own command. */
+const LEGACY_SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
 
 /**
  * Hook scripts earlier releases registered and copied that this one no longer ships.
@@ -490,6 +499,28 @@ function updateHookMatchers(settings: Settings, regs: HookRegistration[] = HOOK_
     }
   }
   return moved;
+}
+
+/**
+ * Rewrite our hooks still carrying the legacy `$CLAUDE_PROJECT_DIR` command to the current one, in
+ * place. `addMissingHooks` skips a registered script, so without this a re-install would leave the
+ * subfolder-breaking command forever. Only the exact legacy string is replaced. Returns the ids.
+ */
+function updateHookCommands(settings: Settings, regs: HookRegistration[] = HOOK_REGISTRATIONS): string[] {
+  const updated: string[] = [];
+  for (const reg of regs) {
+    const legacy = `node "${LEGACY_SCRIPTS_VAR}/${reg.script}"`;
+    for (const entry of settings.hooks?.[reg.event] ?? []) {
+      if (!entry || !Array.isArray(entry.hooks)) continue;
+      for (const h of entry.hooks) {
+        if (h && h.command === legacy) {
+          h.command = reg.command;
+          updated.push(reg.id);
+        }
+      }
+    }
+  }
+  return updated;
 }
 
 /**
@@ -846,7 +877,7 @@ export async function installRuntime(
   ensureDir(path.join(projectRoot, ".claude", "scripts"));
 
   const hooksRemoved = removeRetiredHooks(settings);
-  const hooksMoved = updateHookMatchers(settings);
+  const hooksMoved = [...updateHookMatchers(settings), ...updateHookCommands(settings)];
   const hooksAdded = addMissingHooks(settings);
   const permissionsAdded = addChannelAllowRule(settings);
   if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0)

@@ -260,7 +260,11 @@ function ensureGitExclude(projectDir, excludePath) {
   return { wrote: true, excludePath };
 }
 
-const SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
+// Rooted at the git toplevel, not $CLAUDE_PROJECT_DIR: in a monorepo Claude may be launched from a
+// subfolder with its own .claude/, where $CLAUDE_PROJECT_DIR points at a dir without our scripts.
+// Mirrors install.ts's SCRIPTS_VAR; outside a git repo it falls back to $CLAUDE_PROJECT_DIR.
+const SCRIPTS_VAR = '$(git rev-parse --show-toplevel 2>/dev/null || echo "$CLAUDE_PROJECT_DIR")/.claude/scripts';
+const LEGACY_SCRIPTS_VAR = "$CLAUDE_PROJECT_DIR/.claude/scripts";
 
 // Hook scripts earlier releases registered and copied that this one no longer ships. Dropping a
 // script from the manifest only stops NEW installs getting it; a project installed before keeps the
@@ -371,6 +375,27 @@ function updateHookMatchers(settings) {
   return moved;
 }
 
+// Rewrite our hooks still carrying the legacy $CLAUDE_PROJECT_DIR command to the current one, in place
+// (exact legacy string only). Mirrors install.ts's updateHookCommands. Returns the ids updated.
+function updateHookCommands(settings) {
+  const updated = [];
+  for (const reg of HOOK_REGISTRATIONS) {
+    const legacy = `node "${LEGACY_SCRIPTS_VAR}/${reg.script}"`;
+    const entries = settings.hooks && settings.hooks[reg.event];
+    if (!Array.isArray(entries)) continue;
+    for (const entry of entries) {
+      if (!entry || !Array.isArray(entry.hooks)) continue;
+      for (const h of entry.hooks) {
+        if (h && h.command === legacy) {
+          h.command = reg.command;
+          updated.push(reg.id);
+        }
+      }
+    }
+  }
+  return updated;
+}
+
 // Strip every retired script's hook from `settings` in place. Returns the ids removed. A command is
 // ours only if it points into `.claude/scripts/` and names a retired script; an entry or event list
 // is dropped only where WE emptied it.
@@ -448,7 +473,7 @@ function mergeSettings(settingsPath, otherPath) {
   const settings = readSettingsFile(settingsPath);
   const other = otherPath ? readSettingsFile(otherPath) : null;
   const hooksRemoved = removeRetiredHooks(settings);
-  const hooksMoved = updateHookMatchers(settings);
+  const hooksMoved = [...updateHookMatchers(settings), ...updateHookCommands(settings)];
   const hooksAdded = addMissingHooks(settings, other);
   const permissionsAdded = addChannelAllowRule(settings, other);
   if (hooksRemoved.length > 0 || hooksMoved.length > 0 || hooksAdded.length > 0 || permissionsAdded.length > 0) {
