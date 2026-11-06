@@ -15,6 +15,10 @@ export {
   workflowNodeLabels,
 } from "../success-path.js";
 
+// The global handoff tier, read through the separate sqlite bundle with a lazy require (one
+// definition for every hook that resolves a payload route).
+export { readGlobalHandoff } from "../global-handoff.js";
+
 // Hook arbitration: lets the plugin's copy of a hook stand down when the project registers the
 // same hook itself. Required by every hook script the plugin ships, and a no-op in the copy of
 // that same script installed into a project.

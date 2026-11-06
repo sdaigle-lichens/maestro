@@ -161,6 +161,7 @@ __export(maestro_session_exports, {
   processInfo: () => processInfo,
   projectOwnsHook: () => projectOwnsHook,
   promptEntranceRole: () => promptEntranceRole,
+  readGlobalHandoff: () => readGlobalHandoff,
   readJson: () => readJson,
   readLane: () => readLane,
   readLogLines: () => readLogLines,
@@ -310,6 +311,17 @@ function workflowNodeLabels(wf, instances) {
     if (l) labels.add(l);
   }
   return labels;
+}
+
+// src/core/global-handoff.ts
+var SQLITE_BUNDLE = "./maestro-handoff-defaults.cjs";
+function readGlobalHandoff(handoffId2) {
+  try {
+    const lib = require(SQLITE_BUNDLE);
+    return lib.readHandoffDefault(handoffId2);
+  } catch {
+    return null;
+  }
 }
 
 // src/core/hook-arbitration.ts
@@ -3044,6 +3056,7 @@ function meetingNotice(meeting, agentType) {
   processInfo,
   projectOwnsHook,
   promptEntranceRole,
+  readGlobalHandoff,
   readJson,
   readLane,
   readLogLines,

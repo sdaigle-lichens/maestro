@@ -61,6 +61,8 @@ const {
   acknowledgeGaps,
   channelScopeOf,
   resolveSessionId,
+  appendHandoffIssue,
+  readGlobalHandoff,
 } = require("./lib/maestro-session.cjs");
 
 // Resolve the loaded/referenced skills the SubagentStart hook would offer this
@@ -85,15 +87,6 @@ function offeredSkills(claudeDir, agentType, sessionStatePath) {
 
 // `087`: the routes this agent may take whose receiver expects a payload — the same resolution
 // (project file, global sqlite, seed) maestro-inject-agent-context.js told the agent to write.
-function readGlobalHandoff(handoffId) {
-  try {
-    const { readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs");
-    return readHandoffDefault(handoffId);
-  } catch {
-    return null;
-  }
-}
-
 function agentPayloadRoutes(cwd, scope, claudeDir, agentType, sessionStatePath) {
   const cfg = readJson(path.join(claudeDir, "maestro.json"));
   if (!cfg || cfg.version !== 3) return [];
@@ -391,8 +384,8 @@ function parseHandoff(msg) {
         if (issue) {
           try {
             const session = readSession(sess.state);
-            const pending = Array.isArray(session.handoff_issues) ? session.handoff_issues : [];
-            pending.push({
+            // The stop hook can fire twice for one resumed run: appendHandoffIssue lists an issue once.
+            const pending = appendHandoffIssue(session.handoff_issues, {
               ts: new Date().toISOString(),
               agent: agentType,
               agent_id: agentId,

@@ -63,15 +63,6 @@ export function parseLogLines(raw: string): SessionLogEntry[] {
     .filter((e): e is SessionLogEntry => !!e && typeof e.origin === "string");
 }
 
-export function readSessionLog(projectRoot: string): SessionLogEntry[] {
-  if (!projectRoot) return [];
-  try {
-    return parseLogLines(fs.readFileSync(sessionLogFileFor(projectRoot), "utf8"));
-  } catch {
-    return [];
-  }
-}
-
 export interface SessionLogTailEvents {
   /** Full snapshot on subscribe, and again whenever the file reappears. */
   init: (entries: SessionLogEntry[]) => void;

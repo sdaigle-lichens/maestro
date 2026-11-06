@@ -129,13 +129,7 @@ export {
   type ProjectRootsState,
 } from "./session-ipc.js";
 
-export {
-  resolveSessionTitle,
-  resolveSessionTitles,
-  sessionTitleKey,
-  readTranscriptTitle,
-  type SessionTitleRef,
-} from "./session-title.js";
+export { resolveSessionTitle, resolveSessionTitles, sessionTitleKey, readTranscriptTitle } from "./session-title.js";
 
 export { IGNORE_DIRS, MAX_DEPTH, walkDirs, rulesFilesIn, ruleSearchDirs } from "./fs-scan.js";
 
@@ -184,7 +178,6 @@ export { watchConfigFile } from "./config-watch.js";
 
 export {
   parseLogLines,
-  readSessionLog,
   tailSessionLog,
   tailSessionLogs,
   dedupeProjectRoots,

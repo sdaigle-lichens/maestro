@@ -388,7 +388,10 @@ describe("installRuntime", () => {
     // passing over a smaller graph.
     expect(found.length).toBeGreaterThan(5);
     expect(found).toContain(".claude/scripts/lib/maestro-report-defaults.cjs");
-    expect(found).toContain(".claude/scripts/lib/maestro-handoff-defaults.cjs");
+    // The handoff-defaults require is no longer a literal in any script: `readGlobalHandoff` (inside
+    // lib/maestro-session.cjs, src/core/global-handoff.ts) requires it lazily through a variable, so
+    // the scan above cannot see it. Pin the manifest entry directly instead.
+    expect(copied.has(".claude/scripts/lib/maestro-handoff-defaults.cjs")).toBe(true);
   });
 
   it("writes nothing outside the project, including the user's global Claude config", async () => {

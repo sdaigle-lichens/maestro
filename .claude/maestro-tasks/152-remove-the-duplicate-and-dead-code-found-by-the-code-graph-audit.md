@@ -45,3 +45,8 @@ Out of scope, decided by the user or already gone:
 ## Blocked by
 
 - `151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md`
+
+## Post-Mortem
+
+- **Problem:** The user had difficulty viewing the human-review file. The orchestrator pointed at its path and the approval prompt could not show it. The user had to ask for it to be opened, first by Read, then by xdg-open, before they could approve.
+  **Fix:** none
