@@ -57,6 +57,11 @@
       "name": "manager-review-150",
       "task": "150-narrow-the-manager-review-to-a-direction-check.md",
       "added_at": "2026-11-06T01:26:05.450Z"
+    },
+    {
+      "name": "manager-review-151",
+      "task": "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "added_at": "2026-11-06T13:57:48.730Z"
     }
   ],
   "log": [
@@ -367,6 +372,52 @@
       "id": "r013",
       "at": "2026-11-06T02:54:23.658Z",
       "by": "maestro-mgr-2c988c35"
+    },
+    {
+      "kind": "review",
+      "id": "m008",
+      "task": "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.review.md",
+      "at": "2026-11-06T14:06:07.379Z",
+      "from": "manager-review-151"
+    },
+    {
+      "kind": "verdict",
+      "id": "m008",
+      "task": "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-06T14:06:17.396Z",
+      "by": "manager-review-manager"
+    },
+    {
+      "kind": "report",
+      "id": "r014",
+      "task": "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "file": "inbox/r014-151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "at": "2026-11-06T14:18:08.293Z",
+      "from": "manager-review-151"
+    },
+    {
+      "kind": "report",
+      "id": "r015",
+      "task": "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "file": "inbox/r015-151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
+      "at": "2026-11-06T14:20:08.148Z",
+      "from": "manager-review-151"
+    },
+    {
+      "kind": "ack",
+      "id": "r014",
+      "at": "2026-11-06T14:20:19.569Z",
+      "by": "manager-review-manager"
+    },
+    {
+      "kind": "ack",
+      "id": "r015",
+      "at": "2026-11-06T14:20:19.615Z",
+      "by": "manager-review-manager"
     }
   ]
 }

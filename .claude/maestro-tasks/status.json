@@ -749,14 +749,19 @@
     "epic": "manager-review"
   },
   "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
   },
   "152-remove-the-duplicate-and-dead-code-found-by-the-code-graph-audit.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md"
     ]
+  },
+  "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "manager-review"
   }
 }
