@@ -191,6 +191,7 @@ __export(maestro_session_exports, {
   retireScope: () => retireScope,
   reviewFileName: () => reviewFileName,
   routesFrom: () => routesFrom,
+  runProfile: () => runProfile,
   runStartedAt: () => runStartedAt,
   runtimeNeedsRefresh: () => runtimeNeedsRefresh,
   sendMessageHandoff: () => sendMessageHandoff,
@@ -1778,24 +1779,46 @@ function messageText(input) {
   }
   return "";
 }
-function handbackHandoff(transcript) {
-  return scanHandbacks(transcript).text;
+function handbackHandoff(transcript, sinceMs = null) {
+  return scanHandbacks(transcript, sinceMs).text;
 }
-function hasHandbackCall(transcript) {
-  return scanHandbacks(transcript).sawCall;
+function hasHandbackCall(transcript, sinceMs = null) {
+  return scanHandbacks(transcript, sinceMs).sawCall;
 }
-function startsRun(e) {
+var DISPATCH_SLACK_MS = 1e3;
+function startsRun(e, state, sawCall) {
   if (e.type !== "user") return false;
   const content = e.message?.content ?? e.content;
-  if (!Array.isArray(content)) return true;
-  return !(content.length > 0 && content.every((b) => b && b.type === "tool_result"));
+  if (Array.isArray(content) && content.length > 0 && content.every((b) => b && b.type === "tool_result")) {
+    return false;
+  }
+  const opens = e.isMeta !== true || e.origin?.kind === "coordinator";
+  if (typeof e.promptId === "string") {
+    const changed = e.promptId !== state.prompt && (state.prompt !== null || sawCall);
+    state.prompt = e.promptId;
+    return changed && opens;
+  }
+  return opens;
 }
-function scanHandbacks(transcript) {
+function scanHandbacks(transcript, sinceMs = null) {
+  const { text, sawCall } = scanRun(transcript, sinceMs);
+  return { text, sawCall };
+}
+var EDIT_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit"];
+function runProfile(transcript, sinceMs = null) {
+  const { resumed, wroteFiles } = scanRun(transcript, sinceMs);
+  return { resumed, wroteFiles };
+}
+function scanRun(transcript, sinceMs) {
   let found = null;
   let sawCall = false;
+  let resumed = false;
+  let wroteFiles = false;
+  const state = { prompt: null };
   for (const line of transcript.split("\n")) {
     const named = HANDBACK_TOOLS.some((t) => line.includes(t));
-    if (!named && !line.includes('"user"')) continue;
+    const edits = EDIT_TOOLS.some((t) => line.includes(`"${t}"`));
+    if (!named && !edits && !line.includes('"user"')) continue;
     let entry;
     try {
       entry = JSON.parse(line);
@@ -1804,32 +1827,46 @@ function scanHandbacks(transcript) {
     }
     const e = entry;
     if (!e || typeof e !== "object") continue;
-    if (startsRun(e)) {
+    if (startsRun(e, state, sawCall || resumed)) {
+      if (sawCall) resumed = true;
       found = null;
       sawCall = false;
+      wroteFiles = false;
       continue;
+    }
+    if (edits) {
+      const c = e?.message?.content ?? e?.content;
+      const editAt = typeof e.timestamp === "string" ? Date.parse(e.timestamp) : NaN;
+      const earlier = sinceMs !== null && !Number.isNaN(editAt) && editAt < sinceMs - DISPATCH_SLACK_MS;
+      if (!earlier && Array.isArray(c) && c.some((b) => b && b.type === "tool_use" && EDIT_TOOLS.includes(b.name)))
+        wroteFiles = true;
     }
     if (!named) continue;
     const content = e?.message?.content ?? e?.content;
     if (!Array.isArray(content)) continue;
     for (const block of content) {
       if (block && block.type === "tool_use" && HANDBACK_TOOLS.includes(block.name)) {
+        const at = typeof e.timestamp === "string" ? Date.parse(e.timestamp) : NaN;
+        if (sinceMs !== null && !Number.isNaN(at) && at < sinceMs - DISPATCH_SLACK_MS) {
+          resumed = true;
+          continue;
+        }
         sawCall = true;
         const text = messageText(block.input);
         if (text) found = text;
       }
     }
   }
-  return { text: found, sawCall };
+  return { text: found, sawCall, resumed, wroteFiles };
 }
 var HANDBACK_WAIT_MS = 3e3;
 var HANDBACK_POLL_MS = 100;
-async function awaitHandback(read, sleep, waitMs = HANDBACK_WAIT_MS, pollMs = HANDBACK_POLL_MS) {
+async function awaitHandback(read, sleep, waitMs = HANDBACK_WAIT_MS, pollMs = HANDBACK_POLL_MS, sinceMs = null) {
   const attempts = Math.max(1, Math.ceil(waitMs / pollMs) + 1);
   for (let i = 0; i < attempts; i++) {
     const transcript = read();
     if (transcript === null) return null;
-    const scan = scanHandbacks(transcript);
+    const scan = scanHandbacks(transcript, sinceMs);
     if (scan.sawCall) return scan.text;
     if (i < attempts - 1) await sleep(pollMs);
   }
@@ -1968,7 +2005,9 @@ var MTIME_SLACK_MS = 1e3;
 function payloadWrittenSince(projectDir, route, sinceMs) {
   const candidates = [laneFor(projectDir, route.scope, route.sender, route.receiver)];
   for (const entry of readLane(projectDir, route.scope, route.receiver)) {
-    if (entry.sender === route.sender && isGapReport(entry)) candidates.push(entry.path);
+    if (entry.sender === route.sender && (isGapReport(entry) || /\.\d+\.md$/.test(entry.fileName))) {
+      candidates.push(entry.path);
+    }
   }
   return candidates.some((filePath) => writtenSince(filePath, sinceMs));
 }
@@ -3018,6 +3057,7 @@ function meetingNotice(meeting, agentType) {
   retireScope,
   reviewFileName,
   routesFrom,
+  runProfile,
   runStartedAt,
   runtimeNeedsRefresh,
   sendMessageHandoff,

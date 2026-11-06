@@ -120,11 +120,46 @@ prompt; a first run's boundary is its own opening prompt, so it reads as before)
 that boundary `awaitHandback` keeps polling, and on timeout returns null (the hook reports `missing`),
 never the earlier run's message.
 
-Known limits of the boundary (`151`, pinned by `apps/maestro/test/core/handoff-run-boundary-151.test.ts`, probes A and B):
+`151`'s two known limits (an unflushed resume prompt returning the earlier hand-back, and a text user
+entry after the hand-back discarding it) are closed by `153`, below, as far as the log's dispatch time
+and the entries' timestamps allow (pinned by `apps/maestro/test/core/handoff-run-boundary-151.test.ts`,
+probes A and B; the closing rule's limit is stated at the end of the `153` run-boundary paragraph).
+Still true for entries with no `promptId`: empty-content and mixed user entries open a run (probes D and E).
 
-- **An unflushed resume prompt returns the earlier hand-back.** If the transcript holds the previous run's hand-back and no later user entry yet, nothing marks a boundary, so `awaitHandback` returns the old label at once (a stale `FAIL` can be read). No wait happens there, because a call is already present.
-- **A text-bearing user entry after the hand-back discards it.** Any non-`tool_result` user entry opens a run, so a late harness reminder after the current hand-back makes the hook report `missing`.
-- **Empty-content and mixed user entries also open a run** (probes D and E): `content: []`, or `tool_result` blocks mixed with text.
+**A resumed run's payload expectation (`153`).** The payload check is now judged from the run itself.
+`runProfile` (`handoff-label.ts`) reports `resumed` (an earlier run's hand-back precedes the boundary)
+and `wroteFiles` (a `Write`/`Edit`/`MultiEdit`/`NotebookEdit` call in the current run). A resumed run
+that wrote no file only re-verified, so `maestro-subagent-log.js` skips `checkPayload` for it; a resumed
+run that edited files and wrote no payload is still flagged, and a first run is checked as before.
+`payloadWrittenSince` also counts the sender's next-numbered file (`test.2.md`) in the receiver's lane.
+Known limit (accepted): a resumed run that changes files only through Bash (a redirect, `tee`, `sed -i`) counts as re-verify-only, so a payload it skipped is not flagged. Only `Write`/`Edit`/`MultiEdit`/`NotebookEdit` count as writing files (`EDIT_TOOLS`, `handoff-label.ts`).
+
+**The run boundary is a `promptId` change, plus the dispatch time (`153`).** Checked against a real
+resumed subagent's transcript: the resume prompt is a `type:"user"` entry with `isMeta: true`,
+`origin: {kind: "coordinator"}`, plain-string content and a NEW `promptId`; every later `tool_result`
+entry of that run repeats it, and the first run shares the first `promptId`. It is written before the
+SubagentStart attachment and before any assistant reply. Two rules replace `151`'s "last non-tool_result
+user entry":
+
+- A run opens on a non-`tool_result` user entry whose `promptId` differs from the current run's and
+  that is not a bare `isMeta` entry without the coordinator origin. A string `isMeta` reminder after
+  the hand-back (`[handback-send-enforce] ...`) is therefore NOT a boundary and no longer discards it.
+  Entries with no `promptId` (old fixtures) keep the old rule, minus `isMeta`-only entries.
+- A hand-back call whose entry `timestamp` is older than this run's last `kind:"dispatch"` log entry
+  (`runStartedAt`, less 1 s slack) belongs to an earlier run and is ignored, even if the resume prompt
+  is not in the file yet; `awaitHandback` keeps polling and ends `missing`, never on the old label. No
+  known start or no entry timestamp keeps the call (first runs). The same rule applies to a
+  file-writing tool call for `runProfile.wroteFiles`: one older than the dispatch is an earlier run's
+  and does not make the current run an editing one, so a re-verify with no resume prompt yet is still
+  recognised (`resumed` is set by the stale hand-back). The hook passes `runSince` to `awaitHandback`,
+  `runProfile` and the payload check. No SubagentStart baseline is used.
+
+Limit that remains: the timestamp rule needs the log's dispatch time and an entry timestamp. With no
+dispatch entry, or entries lacking a timestamp, an unflushed resume prompt is not detected and an
+earlier run's hand-back or writes are kept, exactly as for a first run.
+
+Fixtures with a hand-back timestamp must be dated after the test's own dispatch (the shared
+`handbackTranscript` uses 2099) or the call reads as an earlier run's.
 
 ### A payload route must be written (`087`)
 

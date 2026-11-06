@@ -224,6 +224,7 @@ export {
   sendMessageHandoff,
   handbackHandoff,
   hasHandbackCall,
+  runProfile,
   awaitHandback,
   HANDBACK_TOOLS,
   HANDBACK_WAIT_MS,

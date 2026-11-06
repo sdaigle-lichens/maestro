@@ -42,3 +42,12 @@ Desired behaviour: on a resumed run the hook records that run's own result or no
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Problem:** The @backend worker could not read `~/.claude/projects`, so it could not check a real resumed transcript. It reported Gap 1 as undecided, and the user had to be asked and steered to a way to produce one. The orchestrator then resumed the finished worker as a dummy and read its own `agent-*.jsonl` with the Read tool.
+  **Fix:** none
+- **Problem:** The first @backend pass let an earlier run's file writes count toward `wroteFiles` when the resume prompt had not flushed. @test caught it and the work looped back to @backend.
+  **Fix:** none
+- **Problem:** @backend and @test each left a runtime mirror stale or a test file unformatted (prettier), so `pnpm refresh:runtime` had to be run twice by the user.
+  **Fix:** none

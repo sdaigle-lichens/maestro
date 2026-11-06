@@ -22,7 +22,7 @@ import {
 import { writeConfig, readConfig } from "../../src/core/config.js";
 import { compareRuntimeVersions, runtimeNeedsRefresh } from "../../src/core/runtime-version.js";
 import { checkPayload } from "../../src/core/handoff-check.js";
-import { handbackHandoff, hasHandbackCall, awaitHandback } from "../../src/core/handoff-label.js";
+import { handbackHandoff, hasHandbackCall, awaitHandback, runProfile } from "../../src/core/handoff-label.js";
 import type { MaestroConfigV3 } from "../../src/core/types.js";
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -557,7 +557,8 @@ function handbackTranscript(report: string): string {
       type: "user",
       isMeta: true,
       uuid: "u1",
-      timestamp: "2026-10-01T10:00:00.000Z",
+      // Dated far ahead so the transcript always reads as written after the hook's own dispatch (153).
+      timestamp: "2099-10-01T10:00:00.000Z",
       message: {
         role: "user",
         content:
@@ -568,7 +569,7 @@ function handbackTranscript(report: string): string {
       ...base,
       type: "assistant",
       uuid: "u2",
-      timestamp: "2026-10-01T10:05:00.000Z",
+      timestamp: "2099-10-01T10:05:00.000Z",
       message: {
         model: "claude-opus-5-5",
         id: "msg_01",
@@ -581,7 +582,7 @@ function handbackTranscript(report: string): string {
       ...base,
       type: "assistant",
       uuid: "u3",
-      timestamp: "2026-10-01T10:05:01.000Z",
+      timestamp: "2099-10-01T10:05:01.000Z",
       message: {
         model: "claude-opus-5-5",
         id: "msg_02",
@@ -595,7 +596,7 @@ function handbackTranscript(report: string): string {
       ...base,
       type: "user",
       uuid: "u4",
-      timestamp: "2026-10-01T10:05:02.000Z",
+      timestamp: "2099-10-01T10:05:02.000Z",
       message: { role: "user", content: [{ type: "tool_result", tool_use_id: "toolu_01", content: "Delivered." }] },
     },
   ];
@@ -867,6 +868,74 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     expect(entry.handoff_issue?.kind).toBe("missing");
   }, 20000);
 
+  // ── 153: payload expectations of a resumed run ────────────────────────────────────────────────
+  const writeCall = JSON.stringify({
+    type: "assistant",
+    message: { content: [{ type: "tool_use", id: "w", name: "Edit", input: { file_path: "a.ts" } }] },
+  });
+  const OK_REPORT = '"verdict": "SUCCESS"\nHANDOFF: success';
+  const resumedReverify =
+    run1 + userLine("Re-verify the commit.") + assistantText("checked") + sendMessageLine(OK_REPORT) + "\n";
+  const resumedEdited = run1 + userLine("Fix it.") + writeCall + "\n" + toolResult + sendMessageLine(OK_REPORT) + "\n";
+
+  it("153: runProfile reads resumed and wroteFiles from the current run only", () => {
+    expect(runProfile(run1)).toEqual({ resumed: false, wroteFiles: false });
+    expect(runProfile(resumedReverify)).toEqual({ resumed: true, wroteFiles: false });
+    expect(runProfile(resumedEdited)).toEqual({ resumed: true, wroteFiles: true });
+    // an edit in the FIRST run does not make a re-verify run an editing one
+    expect(runProfile(writeCall + "\n" + resumedReverify).wroteFiles).toBe(false);
+  });
+
+  it("153: a resumed run that only re-verified raises no missing-payload warning", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-153-reverify.jsonl");
+    fs.writeFileSync(transcript, resumedReverify);
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).not.toContain("missing_payload");
+    expect(handoffEntry(root, "b1").handoff_issue).toBeUndefined();
+  });
+
+  it("153: a resumed run that edited files and skipped its payload is still flagged", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-153-skipped.jsonl");
+    fs.writeFileSync(transcript, resumedEdited);
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).toContain("missing_payload");
+  });
+
+  it("153: a first run that wrote nothing is still flagged (first-run behaviour unchanged)", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-153-first.jsonl");
+    fs.writeFileSync(transcript, handbackTranscript(OK_REPORT));
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).toContain("missing_payload");
+  });
+
+  it("153: a resumed agent that writes the next-numbered payload is not warned about .1.md", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-153-numbered.jsonl");
+    fs.writeFileSync(transcript, resumedEdited);
+    subagentStart(root, "backend", "b1");
+    const f = path.join(root, ".claude", "channels", SCOPE, "test", "backend.2.md");
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, "{}\n");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).not.toContain("missing_payload");
+  });
+
+  it("153: the real hook does not take a hand-back older than this run's dispatch (resume prompt not yet written)", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-153-stale.jsonl");
+    fs.writeFileSync(transcript, full.replaceAll("2099-", "2001-"));
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).toContain("handoff problem (missing)");
+    expect(handoffEntry(root, "b1").handoff_issue?.kind).toBe("missing");
+  }, 20000);
+
   it("the real hook does not delay when the transcript file is unreadable", async () => {
     const root = await installed();
     subagentStart(root, "backend", "b1");
@@ -875,6 +944,158 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     expect(r.code, r.stderr).toBe(0);
     expect(Date.now() - t0).toBeLessThan(2500);
   });
+});
+
+// ── 3c. 153 gaps through the real hook: real resumed-run shape, dated from the live dispatch ──────
+
+describe("153 gaps through the real hook: resumed-run shape (promptId, coordinator resume prompt)", () => {
+  const iso = (ms: number) => new Date(ms).toISOString();
+  const RESUME_ID = "c4e296b9-3189-477b-9139-f806478743ab";
+  const REPORT_FAIL = '"verdict": "FAIL"\nHANDOFF: tests failed';
+  const REPORT_OK = '"verdict": "SUCCESS"\nHANDOFF: success';
+  const user = (promptId: string, content: unknown, extra: Record<string, unknown> = {}) =>
+    JSON.stringify({ type: "user", promptId, message: { role: "user", content }, ...extra }) + "\n";
+  const resumePrompt = (at: number) =>
+    user(
+      RESUME_ID,
+      "The coordinator sent a message while you were working:\nFix it.\n\nAddress this before completing your current task.",
+      { isMeta: true, origin: { kind: "coordinator" }, timestamp: iso(at) }
+    );
+  const toolResultAt = (promptId: string) => user(promptId, [{ type: "tool_result", tool_use_id: "x", content: "ok" }]);
+  const writeAt = (at: number) =>
+    JSON.stringify({
+      type: "assistant",
+      timestamp: iso(at),
+      message: { content: [{ type: "tool_use", id: "w", name: "Write", input: { file_path: "a.ts" } }] },
+    }) + "\n";
+  const handbackAt = (at: number, report: string) =>
+    JSON.stringify({
+      type: "assistant",
+      timestamp: iso(at),
+      message: { content: [{ type: "tool_use", id: "h", name: "SubagentHandback", input: { message: report } }] },
+    }) + "\n";
+  const textAt = (at: number, text: string) =>
+    JSON.stringify({ type: "assistant", timestamp: iso(at), message: { content: [{ type: "text", text }] } }) + "\n";
+
+  // Run 1 (before dispatch): a first prompt, a write, a FAIL hand-back, its tool_result.
+  const run1 = (base: number, writes: boolean) =>
+    user("p-first", "first prompt") +
+    (writes ? writeAt(base - 9 * 60_000) + toolResultAt("p-first") : "") +
+    handbackAt(base - 8 * 60_000, REPORT_FAIL) +
+    toolResultAt("p-first");
+
+  it("a resumed run that only re-verified, resume prompt flushed: no missing-payload warning, its own PASS recorded", async () => {
+    const root = await installed();
+    const base = Date.now();
+    const transcript = path.join(tmp, "agent-153-shape-reverify.jsonl");
+    fs.writeFileSync(
+      transcript,
+      run1(base, true) +
+        resumePrompt(base + 1000) +
+        textAt(base + 1500, "re-verifying the commit") +
+        toolResultAt(RESUME_ID) +
+        handbackAt(base + 2000, REPORT_OK)
+    );
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.code, r.stderr).toBe(0);
+    expect(r.stdout).not.toContain("missing_payload");
+    const entry = handoffEntry(root, "b1");
+    expect(entry).toMatchObject({ status: "success", label: "success" });
+    expect(entry.handoff_issue).toBeUndefined();
+  }, 20000);
+
+  it("a resumed run that edited and skipped its payload, real shape: still flagged missing_payload", async () => {
+    const root = await installed();
+    const base = Date.now();
+    const transcript = path.join(tmp, "agent-153-shape-skipped.jsonl");
+    fs.writeFileSync(
+      transcript,
+      run1(base, false) +
+        resumePrompt(base + 1000) +
+        writeAt(base + 1200) +
+        toolResultAt(RESUME_ID) +
+        handbackAt(base + 2000, REPORT_OK)
+    );
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).toContain("missing_payload");
+    expect(handoffEntry(root, "b1").handoff_issue).toMatchObject({ kind: "missing_payload", label: "success" });
+  }, 20000);
+
+  it("a resumed agent that writes test.2.md, real shape: no missing-payload warning about test.1.md", async () => {
+    const root = await installed();
+    const base = Date.now();
+    const transcript = path.join(tmp, "agent-153-shape-numbered.jsonl");
+    fs.writeFileSync(
+      transcript,
+      run1(base, false) +
+        resumePrompt(base + 1000) +
+        writeAt(base + 1200) +
+        toolResultAt(RESUME_ID) +
+        handbackAt(base + 2000, REPORT_OK)
+    );
+    subagentStart(root, "backend", "b1");
+    const f = path.join(root, ".claude", "channels", SCOPE, "test", "backend.2.md");
+    fs.mkdirSync(path.dirname(f), { recursive: true });
+    fs.writeFileSync(f, "{}\n");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).not.toContain("missing_payload");
+    expect(handoffEntry(root, "b1")).toMatchObject({ status: "success", label: "success" });
+  }, 20000);
+
+  it("a first run that wrote files but no payload is still flagged (first-run behaviour unchanged)", async () => {
+    const root = await installed();
+    const base = Date.now();
+    const transcript = path.join(tmp, "agent-153-shape-first.jsonl");
+    fs.writeFileSync(
+      transcript,
+      user("p-first", "first prompt") +
+        writeAt(base + 500) +
+        toolResultAt("p-first") +
+        handbackAt(base + 2000, REPORT_OK)
+    );
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).toContain("missing_payload");
+  }, 20000);
+
+  // Gap: the resume prompt has not reached the transcript yet, so run 2 still reads as run 1 by
+  // promptId. Run 1's WRITE is older than this run's dispatch and must not count as this run's.
+  it("resume prompt not flushed, earlier run wrote files: a re-verify-only run is not warned about a payload", async () => {
+    const root = await installed();
+    const base = Date.now();
+    const transcript = path.join(tmp, "agent-153-shape-unflushed.jsonl");
+    fs.writeFileSync(
+      transcript,
+      run1(base, true) +
+        textAt(base + 1500, "re-verifying the commit") +
+        toolResultAt("p-first") +
+        handbackAt(base + 2000, REPORT_OK)
+    );
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).not.toContain("missing_payload");
+    expect(handoffEntry(root, "b1").handoff_issue).toBeUndefined();
+  }, 20000);
+
+  it("153: resume prompt not flushed, the current run edited after its dispatch and skipped its payload: still flagged", async () => {
+    const root = await installed();
+    const base = Date.now();
+    const transcript = path.join(tmp, "agent-153-shape-unflushed-edit.jsonl");
+    fs.writeFileSync(
+      transcript,
+      run1(base, true) +
+        textAt(base + 1500, "re-running the fix") +
+        writeAt(base + 1600) +
+        toolResultAt("p-first") +
+        handbackAt(base + 2000, REPORT_OK)
+    );
+    subagentStart(root, "backend", "b1");
+    const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
+    expect(r.stdout).toContain("missing_payload");
+    expect(handoffEntry(root, "b1").handoff_issue).toMatchObject({ kind: "missing_payload" });
+  }, 20000);
 });
 
 // ── 1b. the app's installStatus().appBehind, and every surface agreeing ──────────────────────────

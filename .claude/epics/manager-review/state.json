@@ -3,7 +3,7 @@
   "created_at": "2026-10-28T00:11:56.709Z",
   "manager": {
     "name": "manager-review-manager",
-    "set_at": "2026-11-06T13:57:35.045Z"
+    "set_at": "2026-11-06T14:37:44.052Z"
   },
   "workers": [
     {
@@ -62,6 +62,11 @@
       "name": "manager-review-151",
       "task": "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md",
       "added_at": "2026-11-06T13:57:48.730Z"
+    },
+    {
+      "name": "manager-review-153",
+      "task": "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "added_at": "2026-11-06T14:38:06.079Z"
     }
   ],
   "log": [
@@ -418,6 +423,32 @@
       "id": "r015",
       "at": "2026-11-06T14:20:19.615Z",
       "by": "manager-review-manager"
+    },
+    {
+      "kind": "review",
+      "id": "m009",
+      "task": "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.review.md",
+      "at": "2026-11-06T15:22:17.897Z",
+      "from": "manager-review-153"
+    },
+    {
+      "kind": "verdict",
+      "id": "m009",
+      "task": "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-06T15:22:39.561Z",
+      "by": "manager-review-manager"
+    },
+    {
+      "kind": "report",
+      "id": "r016",
+      "task": "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "file": "inbox/r016-153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "at": "2026-11-06T15:47:56.823Z",
+      "from": "manager-review-153"
     }
   ]
 }

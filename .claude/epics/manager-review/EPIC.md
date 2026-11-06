@@ -88,4 +88,4 @@ Tasks 130 to 139, 150 and 151 are done. Only the open task is listed.
 
 | Merge order | Task | Base branch | Version bump            | Shared surfaces                                                                                                                                                |
 | ----------- | ---- | ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1           | 153  | `main`      | Task 153's worker bumps | `maestro-subagent-log.js`, the generated libs and the version file with standalone task 152: run them one at a time; the second to merge rebases and runs `pnpm refresh:runtime` |
+| 1           | 153  | `feat/manager-review-direction-check` (ships in this epic's PR) | Task 153's worker bumps | `maestro-subagent-log.js`, the generated libs and the version file with standalone task 152: 152 starts after this epic's PR merges, then rebases and runs `pnpm refresh:runtime` |
