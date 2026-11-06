@@ -26,6 +26,8 @@ In:
 - Narrow the manager review to a direction check, from the 2026-11-05 post-mortem on code-graph
   epic haiku-subagents-with-graph (task 150). It changes the Verdicts, Rounds and "never sees the
   diff" decisions below; task 150 updates them.
+- A resumed agent's handoff reads its current hand-back, not its previous run's (task 151; found in
+  the post-mortem of task 150).
 
 Out:
 
@@ -81,8 +83,8 @@ Out:
 
 ## Merge plan
 
-Tasks 130 to 139 are done. Only the open task is listed.
+Tasks 130 to 139 and 150 are done. Only the open task is listed.
 
-| Merge order | Task | Base branch | Version bump           | Shared surfaces                                                                                       |
-| ----------- | ---- | ----------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
-| 1           | 150  | `main`      | Task 150's worker bumps | `.claude/skills/maestro/SKILL.md` (generated) with task 149 in `freebuff-reviewer`: whoever merges second rebases and runs `pnpm refresh:runtime` |
+| Merge order | Task | Base branch | Version bump            | Shared surfaces                                                                 |
+| ----------- | ---- | ----------- | ----------------------- | ------------------------------------------------------------------------------- |
+| 1           | 151  | `main`      | Task 151's worker bumps | None with an open task in this epic; the generated libs always count as shared. |

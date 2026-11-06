@@ -2,8 +2,8 @@
   "slug": "manager-review",
   "created_at": "2026-10-28T00:11:56.709Z",
   "manager": {
-    "name": "maestro-mgr-2c988c35",
-    "set_at": "2026-11-06T01:25:02.994Z"
+    "name": "manager-review-manager",
+    "set_at": "2026-11-06T13:57:35.045Z"
   },
   "workers": [
     {
@@ -347,6 +347,26 @@
       "file": "inbox/r012-150-narrow-the-manager-review-to-a-direction-check.md",
       "at": "2026-11-06T02:16:02.938Z",
       "from": "manager-review-150"
+    },
+    {
+      "kind": "report",
+      "id": "r013",
+      "task": "150-narrow-the-manager-review-to-a-direction-check.md",
+      "file": "inbox/r013-150-narrow-the-manager-review-to-a-direction-check.md",
+      "at": "2026-11-06T02:54:06.613Z",
+      "from": "manager-review-150"
+    },
+    {
+      "kind": "ack",
+      "id": "r012",
+      "at": "2026-11-06T02:54:23.617Z",
+      "by": "maestro-mgr-2c988c35"
+    },
+    {
+      "kind": "ack",
+      "id": "r013",
+      "at": "2026-11-06T02:54:23.658Z",
+      "by": "maestro-mgr-2c988c35"
     }
   ]
 }

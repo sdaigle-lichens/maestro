@@ -87,6 +87,15 @@
       "id": "r005",
       "at": "2026-10-24T18:53:28.669Z",
       "by": "herdr-manager"
+    },
+    {
+      "kind": "note",
+      "id": "n001",
+      "from_epic": "manager-review",
+      "from": "maestro-mgr-2c988c35",
+      "subject": "Manager review is now a direction check (task 150)",
+      "file": "inbox/n001-from-manager-review.md",
+      "at": "2026-11-06T02:54:32.814Z"
     }
   ]
 }
