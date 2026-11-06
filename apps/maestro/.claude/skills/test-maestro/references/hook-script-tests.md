@@ -80,3 +80,24 @@ long-lived** watcher and exits; `test/core/session-heartbeat-cli.test.ts` is the
   set to the main checkout. Read the run_id from the worktree root.
 - **Session ids sharing their first 8 chars share a `session-<id8>` scope.** Give each fixture
   session a distinct 8-char prefix, or two "isolated" sessions collide by construction.
+
+## Date fixtures against the dispatch time (`153`)
+
+The handoff hooks take their run start from the log's last `kind:"dispatch"` entry for the agent
+(written by SubagentStart). Any hand-back or file-write whose transcript `timestamp` is earlier than
+that dispatch minus 1 s is read as an earlier run's and ignored, so a fixture dated before the test's
+own dispatch silently looks stale.
+
+- Date the fixture transcript after the test's dispatch. The shared `handbackTranscript` helper in
+  `test/core/runtime-version-and-payload.test.ts` uses `2099-` timestamps for this reason.
+- For the stale path, rewrite the dates to the past (that file swaps `2099-` to `2001-`), so the
+  call reads as an earlier run's.
+
+## A clean-HEAD baseline from a worktree
+
+To tell whether a failure predates your change, run the unit project on a clean HEAD. From a task
+worktree, `pnpm --filter maestro test` and `pnpm --filter maestro exec` resolve the **main checkout**,
+so they test the wrong code. Run vitest directly instead: point `--root` at the worktree's
+`apps/maestro`, and symlink that worktree's `node_modules` to the main checkout's so the binary and
+its dependencies resolve. The unit project is `vitest run --project unit` (`apps/maestro/package.json`
+`test` script; `vitest.config.ts`). Reported by a test run; not re-run when this was written.

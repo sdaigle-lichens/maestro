@@ -742,5 +742,41 @@
     "status": "ready",
     "blockedBy": [],
     "epic": "freebuff-reviewer"
+  },
+  "150-narrow-the-manager-review-to-a-direction-check.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "152-remove-the-duplicate-and-dead-code-found-by-the-code-graph-audit.md": {
+    "status": "ready",
+    "blockedBy": [
+      "151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md"
+    ]
+  },
+  "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "154-run-the-four-live-checks-left-open-by-the-manager-review-epic.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "155-live-check-the-two-resumed-run-payload-warnings-left-unrun-by-task-154.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
+  },
+  "156-warn-when-a-resumed-agent-edits-files-and-skips-its-required-payload.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
   }
 }

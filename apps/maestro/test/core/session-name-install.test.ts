@@ -79,7 +79,12 @@ function sessionNameEntries(root: string): Array<[string, string, string]> {
 
 const expectedEntries = () =>
   EXPECTED.map(
-    ([e, m]) => [e, m, `node "$CLAUDE_PROJECT_DIR/.claude/scripts/${SCRIPT}.cjs"`] as [string, string, string]
+    ([e, m]) =>
+      [
+        e,
+        m,
+        `node "$(git rev-parse --show-toplevel 2>/dev/null || echo "$CLAUDE_PROJECT_DIR")/.claude/scripts/${SCRIPT}.cjs"`,
+      ] as [string, string, string]
   ).sort();
 
 describe("session-name hook registrations (113)", () => {

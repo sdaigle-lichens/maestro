@@ -277,6 +277,15 @@
       "id": "r018",
       "at": "2026-10-23T19:34:56.863Z",
       "by": "manager-code-graph-merge"
+    },
+    {
+      "kind": "note",
+      "id": "n001",
+      "from_epic": "manager-review",
+      "from": "maestro-mgr-2c988c35",
+      "subject": "Manager review is now a direction check (task 150)",
+      "file": "inbox/n001-from-manager-review.md",
+      "at": "2026-11-06T02:54:33.278Z"
     }
   ]
 }

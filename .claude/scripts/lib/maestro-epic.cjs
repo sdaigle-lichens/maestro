@@ -408,7 +408,7 @@ var LOCK_DIR = ".lock";
 var LOCK_WAIT_MS = 5e3;
 var LOCK_STALE_MS = 15e3;
 var REVIEW_VERDICTS = ["on-track", "redirect", "escalate"];
-var MANAGER_REDIRECT_CAP = 2;
+var MANAGER_REDIRECT_CAP = 1;
 var SLUG = /^[a-z0-9][a-z0-9-]{0,63}$/;
 function isValidEpicSlug(slug) {
   return SLUG.test(slug);

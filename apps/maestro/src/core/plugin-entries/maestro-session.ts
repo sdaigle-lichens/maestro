@@ -224,6 +224,7 @@ export {
   sendMessageHandoff,
   handbackHandoff,
   hasHandbackCall,
+  runProfile,
   awaitHandback,
   HANDBACK_TOOLS,
   HANDBACK_WAIT_MS,
@@ -262,6 +263,7 @@ export {
   expectedLoopbackPayloads,
   missingLoopbackPayload,
   dropResolvedMissingPayloads,
+  channelFileMtime,
   appendHandoffIssue,
   type LatestHandoff,
 } from "../resume-delivery.js";

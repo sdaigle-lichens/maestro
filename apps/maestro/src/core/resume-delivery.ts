@@ -24,6 +24,8 @@
 //
 // `fs`/`path` only: rides in the maestro-session bundle, which must stay free of `node:sqlite`.
 
+import fs from "node:fs";
+import path from "node:path";
 import { channelRelPath, isGapReport, readLane, retire, type ChannelEntry } from "./handoff-channels.js";
 import type { PayloadRoute } from "./handoff-payload.js";
 import { bareAgentName } from "./success-path.js";
@@ -162,19 +164,48 @@ export function missingLoopbackPayload(
   };
 }
 
+/** Slack on the warning's timestamp, as the stop hook's own payload check allows (`MTIME_SLACK_MS`). */
+const RESOLVED_SLACK_MS = 1000;
+
+/** The mtime of a project-relative channel file in ms, or null when it cannot be read. */
+export function channelFileMtime(projectDir: string, file: string): number | null {
+  try {
+    return fs.statSync(path.join(projectDir, ...file.split("/"))).mtimeMs;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * `issues` without each pending `missing_payload` whose files are all now in the lane as current-run
  * files (`present`). The sender wrote them after the warning, so reporting it would send the
  * orchestrator to fix a payload that is already there. Other issues are kept as they are.
+ *
+ * `156`: `present` is keyed on the session run id, which an earlier run of the SAME agent shares, so
+ * a payload written before the warning proves nothing about it (a resumed run that skipped its
+ * payload looked fulfilled by its first run's `test.1.md`). With `writtenAt`, a file resolves an
+ * issue only when it was written at or after the issue's own timestamp (less the hook's 1 s slack);
+ * a file whose time is unknown, or an issue without a parseable timestamp, never resolves it.
  */
 export function dropResolvedMissingPayloads(
   issues: HandoffIssueRecord[] | undefined,
-  present: ResumeDelivery[]
+  present: ResumeDelivery[],
+  writtenAt?: (file: string) => number | null
 ): HandoffIssueRecord[] {
   const list = Array.isArray(issues) ? issues : [];
   const files = new Set(present.map((d) => d.file));
+  const fresh = (file: string, ts: string): boolean => {
+    if (!writtenAt) return true;
+    const warned = Date.parse(ts);
+    const at = writtenAt(file);
+    return Number.isFinite(warned) && at !== null && at >= warned - RESOLVED_SLACK_MS;
+  };
   return list.filter(
-    (i) => i.kind !== "missing_payload" || !i.files || i.files.length === 0 || !i.files.every((f) => files.has(f))
+    (i) =>
+      i.kind !== "missing_payload" ||
+      !i.files ||
+      i.files.length === 0 ||
+      !i.files.every((f) => files.has(f) && fresh(f, i.ts))
   );
 }
 

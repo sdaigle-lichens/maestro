@@ -146,7 +146,10 @@ const MTIME_SLACK_MS = 1000;
 export function payloadWrittenSince(projectDir: string, route: PayloadRoute, sinceMs: number | null): boolean {
   const candidates = [laneFor(projectDir, route.scope, route.sender, route.receiver)];
   for (const entry of readLane(projectDir, route.scope, route.receiver)) {
-    if (entry.sender === route.sender && isGapReport(entry)) candidates.push(entry.path);
+    // `153`: a resumed sender writes its next-numbered file (`test.2.md`) as readily as `test.1.md`.
+    if (entry.sender === route.sender && (isGapReport(entry) || /\.\d+\.md$/.test(entry.fileName))) {
+      candidates.push(entry.path);
+    }
   }
   return candidates.some((filePath) => writtenSince(filePath, sinceMs));
 }

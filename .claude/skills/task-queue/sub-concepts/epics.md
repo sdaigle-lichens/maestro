@@ -86,7 +86,7 @@ through that epic's inbox, never through a message alone.
 - `132`: `EpicInboxEntry` also covers a `review` entry (`mNNN`, `{task, round, file, at, from?}`,
   `file` relative to the main checkout) from `review-request`. It is listed until a `verdict` log
   entry (`{id, task, verdict, effective, capped?}`) names it or a newer request for the same ticket
-  supersedes it; `ack` refuses it. `m` is a third independent counter. The redirect cap and the
+  supersedes it; `ack` refuses it. `m` is a third independent counter. The redirect cap (1 since `150`) and the
   worker's side are in `maestro-architecture`'s **Manager review** section.
 - `show` adds **cross-epic dependencies**: tracker `blockedBy` edges with exactly one end in this
   epic (`blocked by` / `blocks`; the other side is another epic or no epic), blocker not done.

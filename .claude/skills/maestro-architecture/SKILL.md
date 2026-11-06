@@ -133,19 +133,19 @@ To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` 
 **Manager review (`132`).** A `manager review` step is no longer run as a human review, except on escalation or fallback. The worker (orchestrator template Step 3):
 
 1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.
-2. **Brief.** The round's review file as a direction brief: `## Goal`, `## Done`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Verified` (the commit verified and a green full suite on it), `## Questions`. A re-request opens with `Round <N>` and quotes the previous redirect note, each point with how it was addressed.
+2. **Brief.** The round's review file as a short direction brief: `## Goal`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Questions`. No commit or suite result (`150`): the test and reviewer steps own that. On the fallback and escalation paths the stop is a human review, so the worker also adds `## Verified` to the brief. A re-request after a redirect opens with `Round <N>` and quotes the redirect note, each point with how it was addressed; that round checks only that the redirect was addressed.
 3. **Request.** `maestro-epic.cjs review-request --task <t> --file <f>` refuses a file that does not exist or is not that task's review file, logs a `review` inbox entry `mNNN` with its `round` (the ticket's request count + 1), and prints the ONE `SendMessage` line for the manager. The same file again while it waits is a re-send, not a new round. `show`/`reports` list it until a verdict exists or a newer request for the ticket supersedes it; `ack` refuses an `mNNN`.
 4. **Verdict.** `maestro-epic.cjs review-verdict --task <t> <on-track|redirect|escalate>`, run by the manager when it decides and by the worker on the reply; the second caller gets the recorded verdict back. It logs a `verdict` entry with `verdict` and `effective`.
 
 | Effective verdict | Worker does |
 | --- | --- |
 | `on-track` | `plan-step "manager review" done`, continues the success path |
-| `redirect` | follows `manager requested direction change` to the producing agent with the note; the loop-back reset re-runs the stop as the next round. No such edge → `escalate` |
+| `redirect` | follows `manager requested direction change` to the producing agent with the note (which repeats the direction the manager added to the task file); the redirect leaves the stop unfinished, so it re-runs as the next round. No such edge → `escalate` |
 | `escalate` | a `human review` inline at this stop, the manager's note added to the summary |
 
-**The 2-redirect cap counts per ticket, not `plan.loopbacks`** (which counts every loop-back, a test one too). `MANAGER_REDIRECT_CAP = 2` in `epics.ts`; `reviewHistory` counts the ticket's `verdict` entries whose `effective` is `redirect`. With 2 recorded, the next redirect is logged `effective: "escalate"`, `capped: true`. The manager reads the brief, never the diff; a code concern goes only as a `for @reviewer:` line, passed verbatim into @reviewer's dispatch prompt. Code: `writeReviewRequest`, `recordReviewVerdict`, `reviewHistory` in `src/core/epics.ts`, exported through the `maestro-epic` bundle.
+**The 1-redirect cap counts per ticket, not `plan.loopbacks`** (which counts every loop-back, a test one too). `MANAGER_REDIRECT_CAP = 1` in `epics.ts` (`150`, was 2); `reviewHistory` counts the ticket's `verdict` entries whose `effective` is `redirect`. With 1 recorded, the next redirect is logged `effective: "escalate"`, `capped: true`. The manager manages (`150`): it never reads the diff or code and never picks an implementation, redirects only for work contradicting the ticket, an epic decision or a sibling ticket (never style, tests, lint, commits or correctness), and records any direction in the task file. There is no `for @reviewer:` note. **A loop-back from a test or reviewer step does not reopen the check:** `plan-step <label> pending` (`planStepCommand` in `maestro-task-status.cjs`) resets every later step except a `manager review` already done and after the target; a stop named as the target still resets, and a redirect leaves the stop unfinished so it re-runs by itself. `plan.loopbacks` still increments, so review files keep distinct rounds. Code: `writeReviewRequest`, `recordReviewVerdict`, `reviewHistory` in `src/core/epics.ts`, exported through the `maestro-epic` bundle.
 
-**Parallel tasks and the red-suite rule (`145`).** A task file may carry a `## Touched surfaces` section, written by `maestro-write-tasks.cjs` from the optional `touchedSurfaces` slice and placed before `## Blocked by`. An epic's `EPIC.md` holds a merge-plan table that `maestro-manager` records before it spawns workers. Neither is read by a hook. **No review round approves work while the full suite is red**: the human review file's `## Verified`, the manager brief's `## Verified`, and the epic report from Step 6 each name the commit verified and the green suite on it.
+**Parallel tasks and the red-suite rule (`145`).** A task file may carry a `## Touched surfaces` section, written by `maestro-write-tasks.cjs` from the optional `touchedSurfaces` slice and placed before `## Blocked by`. An epic's `EPIC.md` holds a merge-plan table that `maestro-manager` records before it spawns workers. Neither is read by a hook. **No human review or reviewer round approves work while the full suite is red** (the manager review is exempt since `150`: it checks direction only): the human review file's `## Verified` (also added to a manager brief on the fallback and escalation paths) and the epic report from Step 6 each name the commit verified and the green suite on it.
 
 ## Where the detail lives
 
@@ -238,6 +238,99 @@ session (task `137`). Observations, filled in after that run:
   classifier), so the orchestrator wrote it as the worktree procedure describes (reported as an epic
   finding). Expected, by design: the manager recorded the verdict itself, and whoever runs
   `review-verdict` second gets the recorded verdict back ("already recorded").
+
+### Task 154 run (four open checks)
+
+- **AskUserQuestion at a human review (before the review file exists):** observed. At a human
+  review stop with no review file, the orchestrator called `AskUserQuestion`. Claude Code honoured
+  the PreToolUse deny and the question was not shown. The denial said: "Human review round 1: the
+  review file is missing. Write `.claude/maestro-tasks/154-….review.md` first, with the sections
+  `## Changed`, `## Did`, `## Deviations from the ticket` and, on a re-review, `## Corrections since
+  the last round`. Then print the full summary as text above the question … and ask with
+  AskUserQuestion …" (tail abbreviated).
+- **Worktree channel write:** observed, write succeeded. Allow rule in effect: project
+  `.claude/settings.json` `permissions.allow` `Write(/.claude/channels/**)` (no rule was removed; a
+  settings change would be needed to isolate it, and none was made). A worktree agent wrote
+  `.claude/channels/task-154/probe/worktree-probe.1.md`. One clean write is evidence, not proof:
+  the denial is intermittent, so a single success does not show it is gone.
+- **Add-step modal and workflow canvas:** OBSERVED BY THE USER, not the session. The user looked at
+  the real desktop app window and reported yes to each of: the Agent, Skill and Review kinds; Human
+  as the default review with Manager as the alternative; the wider modal; the modal resetting on
+  open; the node actually being added (the user then undid it); and a `manager_review` node on the
+  canvas. The session did not look at the window; it read the code only to know what to expect.
+- **Resume a finished agent (tasks 151 and 153):** partly observed. The orchestrator resumed this
+  finished agent by `agent_id` via `SendMessage` for a read-only re-verify run. (a) The
+  `log.jsonl` handoff entry for the resumed run holds that run's own result (the re-verify text),
+  not the first run's report: handoff record OK (task 153). (c) A re-verify-only run raised no
+  warning: `handoff-issues` printed "no problems recorded". Finding, not fixed: this agent then
+  re-sent its earlier full report as a second handoff entry. The agent did this, not a hook defect,
+  but the latest record for the agent now holds the re-sent old report plus the re-verify note.
+  (b) and (d) were not run here: the Documentation workflow's scribe has no HANDOFF route that
+  expects a channel payload, so neither warning can fire. Both were run under
+  `### Task 155 run (the two resumed-run payload warnings)` below.
+
+### Task 155 run (the two resumed-run payload warnings)
+
+Tests workflow: `@test` to `@reviewer`, payload `.claude/channels/task-155/reviewer/test.N.md`. One
+`@test` agent, dispatched once and resumed twice by `agent_id` via `SendMessage`, with a throwaway
+`probe-155.txt` (deleted, never committed). `handoff-issues` ran after each run. Session log:
+`.claude/maestro_sessions/<session>/log.jsonl`.
+
+- **Case 1, resumed agent writes its next-numbered payload (`test.2.md`):** observed, no warning.
+  Dispatch `16:50:17.978Z kind:dispatch agent:maestro:test`; `Edit(.../probe-155.txt)` 16:50:21;
+  `Write(.../.claude/channels/task-155/reviewer/test.2.md)` 16:50:23; handoff `status:success
+  label:success` 16:50:26. `handoff-issues`: "no problems recorded". Run 1 (`test.1.md`, 16:49:49)
+  was also clean.
+- **Case 2, resumed agent edits a file and skips its payload: NOT warned at the time. Superseded by
+  `### Task 156 run` below: the warning was raised and then dropped, and is fixed (0.13.23).** Dispatch `16:51:07.632Z`; `Edit(.../probe-155.txt)` 16:51:09; `SubagentHandback`
+  16:51:10; handoff `status:success label:success` 16:51:11, output "Deliberately wrote no channel
+  payload." No `Write` to `.claude/channels/`. `handoff-issues` at 16:51:35, and again after the
+  reviewer step, printed "no problems recorded". Expected: a `missing_payload` warning for
+  `.claude/channels/task-155/reviewer/test.N.md`. The unit tests for this check pass; the live run
+  did not.
+- **Cause (hypothesis at the time; resolved by `### Task 156 run`, where cause 1 was confirmed and 2 ruled out):**
+  1. Most plausible: `dropResolvedMissingPayloads` (`resume-delivery.ts`, reached from
+     `handoffIssuesCommand` in `maestro-task-status.cjs`) drops a recorded `missing_payload` when
+     its file is found through `pendingResumeDeliveries`, keyed on the session `run_id` rather than
+     the agent run. Run 1's `test.1.md` carries that run_id, so the missing file looks present.
+     Dropping also deletes `handoff_issues`, which erases the trace.
+  2. `scanRun`/`startsRun` (`handoff-label.ts`) reset `wroteFiles` on a run-boundary misdetection,
+     so the stop hook (`maestro-subagent-log.js`, ~l.272-281) treats the run as re-verify only and
+     skips the check.
+  3. Unlikely: `payloadWrittenSince` counted an earlier file (`test.2.md`, mtime ~16:50:26).
+  The log does not separate these. Decisive probe: rerun case 2 with a debug line recording
+  `reverifyOnly` and `checkPayload`'s result, or check whether `session.json` `handoff_issues` is
+  populated before `handoff-issues` runs. The channel files were retired at 16:52:54, so their
+  mtimes cannot be re-read.
+- The task 154 finding (a resumed agent re-sends its old report on a re-verify) did not recur.
+
+### Task 156 run (the dropped missing-payload warning)
+
+The Task 155 case 2 warning was raised by the stop hook and then dropped by `handoff-issues`. Not a
+run-boundary misread: that suspect was ruled out for this shape.
+
+- **Cause, confirmed:** `dropResolvedMissingPayloads` (`resume-delivery.ts`, called from
+  `handoff-issues` in `maestro-task-status.cjs` and from `maestro-resume-target.cjs`) matched lane
+  files by session `run_id` only. The first run's earlier-numbered `test.1.md` carries that run id,
+  so it counted as proof that `test.N.md` was present. Confirmed first by a fixture that ran the
+  installed hook and CLI scripts, then by the live repeat. The order was the reverse of the ticket's;
+  the manager accepted that (m010).
+- **Fix (plugin 0.13.23):** a lane file resolves a `missing_payload` only when its mtime is at or
+  after the issue's `ts` (1 s slack, as the hook's own check). An unreadable mtime or an unparseable
+  `ts` never resolves it. Both callers pass `writtenAt` built from `channelFileMtime`, exported
+  through the `maestro-session` bundle.
+- **Live repeat** (resumed `@test`, `agent_id` a787bb5d7646cd420, `test.1.md` already in the lane):
+
+  | Resumed run | `handoff-issues` printed |
+  | --- | --- |
+  | edits a file, writes no payload | `NO PAYLOAD written for HANDOFF: success (agent_id a787bb5d7646cd420)` |
+  | edits a file, writes `test.2.md` | `Maestro handoffs: no problems recorded.` |
+  | re-verify only | `Maestro handoffs: no problems recorded.` |
+
+  The probe file was deleted afterwards.
+- **Known, not fixed:** the same warning was listed twice. `maestro-subagent-log.js` (~lines 394-405)
+  appends to `handoff_issues` with no dedup when the stop hook fires twice for one resumed run. The
+  verdict is unaffected; a follow-up.
 
 ## Things that bite
 

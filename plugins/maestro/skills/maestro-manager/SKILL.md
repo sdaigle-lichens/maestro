@@ -151,29 +151,44 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
 A worker at a `manager review` step sends one line: `manager review m004 (round 2) for 087-... is in
 <file>`. `show` and `reports` list every request still waiting for a verdict, with its round and the
 ticket's redirect count. You review **direction only**: is the ticket heading where the epic needs
-it? Code correctness is @reviewer's job and acceptance is the user's.
+it? You manage; you **never read code or diffs and never decide the implementation**. Correctness,
+style, tests, lint and commits are the test and reviewer steps' job and acceptance is the user's.
 
-1. **Read the brief file**, never the diff or the code. Check it against `EPIC.md`'s goal, scope and
+**Direction lives in the ticket.** A ticket written in line with the epic should already hint at the
+right direction. When it needs more, you add that direction to the task file: what to aim for, never
+how to implement it. You can add one outside a review too, for example when the epic changes (then
+tell the affected worker, by name, as in **The loop**, step 4). A redirect always comes with a
+direction added to the task file.
+
+1. **Read the brief file**, never the diff or the code. It is short: goal, deviations, decisions,
+   touches, sibling impact and questions. Check it against the ticket and `EPIC.md`'s goal, scope and
    decisions, and against the sibling tickets (`show <slug>`, their task files). Also check the brief's
    `## Touches` against (a) the paths covered by the project's `.claude/rules/*` (a new file or
    hook a rule forbids is a redirect) and (b) the sibling tickets' `## Touched surfaces` and the
    `EPIC.md` merge plan: an overlap with no recorded merge order, or a helper a sibling owns, is a
-   redirect. The brief must also state the commit verified and a green full suite on it; a red
-   suite is never on-track.
+   redirect. The brief has no commit or suite result and needs none: this check is normally the whole
+   review. The first round after a redirect checks **only that the redirect was addressed**, raises
+   nothing new, and should normally pass.
 2. **Decide one verdict**, then record it:
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" review-verdict --task <task.md> <on-track|redirect|escalate>`.
-   It prints the verdict that stands: after 2 redirects on the same ticket, a redirect is recorded
-   and printed as `escalate` (human review).
+   It prints the verdict that stands: after 1 redirect on the same ticket, a second redirect is
+   recorded and printed as `escalate` (human review). If you are tempted to redirect a second time,
+   escalate to the user instead.
    - **on-track:** the ticket continues its success path. You may rewire sibling tickets it affects
      (see **The loop**, step 3).
-   - **redirect:** a direction note: what is off course against which decision or sibling, and what
-     to aim for instead. The worker loops back to the agent that produced the work and re-requests,
-     stating the round and how each point was addressed.
+   - **redirect:** only for work that contradicts the ticket, an epic decision or a sibling ticket.
+     Style, tests, lint, commits and code correctness are never grounds for one. Add the direction to
+     the task file first, then send a note: what is off course against which decision or sibling, and
+     what to aim for instead. The worker fixes the work and asks again, stating the round and how
+     each point was addressed.
    - **escalate:** the decision is the user's (scope, a conflict between decisions, a trade-off). Say
      what they must decide; the worker runs a human review with your note.
-3. **Reply to the worker** with one message: the printed verdict, then the note. A code-level concern
-   you happened to notice goes only as a line starting `for @reviewer:`, which the worker passes into
-   the reviewer's input. **Never comment on code** otherwise: no fixes, style or correctness remarks.
+3. **Reply to the worker** with one message: the printed verdict, then the note, repeating the
+   direction you added to the task file (a worker in a worktree may not see your edit). **Never
+   comment on code**: no fixes, style or correctness remarks, and no `for @reviewer:` notes.
+4. **Worker questions.** Answer only direction questions, from the ticket and the epic. Anything else
+   (how to implement, which approach, whether code is correct) goes to the reviewer or the user; you
+   never pick an implementation.
 
 A manager's on-track verdict continues the success path only. It is never the user's approval for
 commit, merge, push, or agent/skill/workflow changes.

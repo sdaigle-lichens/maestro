@@ -100,7 +100,7 @@ const HUMAN_SECTIONS =
   "on a re-review, '## Corrections since the last round'";
 
 const BRIEF_SECTIONS =
-  "'## Goal', '## Done', '## Deviations', '## Decisions', '## Touches' (files and modules by name, never a diff), " +
+  "'## Goal', '## Deviations', '## Decisions', '## Touches' (files and modules by name, never a diff), " +
   "'## Sibling impact' and '## Questions'";
 
 /**
