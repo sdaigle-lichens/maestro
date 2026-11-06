@@ -29,6 +29,7 @@ In:
 - A resumed agent's handoff reads its current hand-back, not its previous run's (task 151; found in
   the post-mortem of task 150).
 - The resumed-run gaps task 151 left in the handoff checks (task 153).
+- The four live checks left open by this epic's reports (task 154).
 
 Out:
 
@@ -84,8 +85,9 @@ Out:
 
 ## Merge plan
 
-Tasks 130 to 139, 150 and 151 are done. Only the open task is listed.
+Tasks 130 to 139, 150, 151 and 153 are done. Task 154 is open: it has merge order 1, base
+`feat/manager-review-direction-check`, no version bump, and shares only the maestro-architecture
+skill's Live check section. Tasks 150, 151, 153 and 154 ship together on that branch.
 
-| Merge order | Task | Base branch | Version bump            | Shared surfaces                                                                                                                                                |
-| ----------- | ---- | ----------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1           | 153  | `feat/manager-review-direction-check` (ships in this epic's PR) | Task 153's worker bumps | `maestro-subagent-log.js`, the generated libs and the version file with standalone task 152: 152 starts after this epic's PR merges, then rebases and runs `pnpm refresh:runtime` |
+Standalone task 152 shares `maestro-subagent-log.js`, the generated libs and the version file with
+this branch: it starts after this epic's PR merges, then rebases and runs `pnpm refresh:runtime`.

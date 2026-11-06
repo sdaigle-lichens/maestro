@@ -239,6 +239,37 @@ session (task `137`). Observations, filled in after that run:
   finding). Expected, by design: the manager recorded the verdict itself, and whoever runs
   `review-verdict` second gets the recorded verdict back ("already recorded").
 
+### Task 154 run (four open checks)
+
+- **AskUserQuestion at a human review (before the review file exists):** observed. At a human
+  review stop with no review file, the orchestrator called `AskUserQuestion`. Claude Code honoured
+  the PreToolUse deny and the question was not shown. The denial said: "Human review round 1: the
+  review file is missing. Write `.claude/maestro-tasks/154-….review.md` first, with the sections
+  `## Changed`, `## Did`, `## Deviations from the ticket` and, on a re-review, `## Corrections since
+  the last round`. Then print the full summary as text above the question … and ask with
+  AskUserQuestion …" (tail abbreviated).
+- **Worktree channel write:** observed, write succeeded. Allow rule in effect: project
+  `.claude/settings.json` `permissions.allow` `Write(/.claude/channels/**)` (no rule was removed; a
+  settings change would be needed to isolate it, and none was made). A worktree agent wrote
+  `.claude/channels/task-154/probe/worktree-probe.1.md`. One clean write is evidence, not proof:
+  the denial is intermittent, so a single success does not show it is gone.
+- **Add-step modal and workflow canvas:** OBSERVED BY THE USER, not the session. The user looked at
+  the real desktop app window and reported yes to each of: the Agent, Skill and Review kinds; Human
+  as the default review with Manager as the alternative; the wider modal; the modal resetting on
+  open; the node actually being added (the user then undid it); and a `manager_review` node on the
+  canvas. The session did not look at the window; it read the code only to know what to expect.
+- **Resume a finished agent (tasks 151 and 153):** partly observed. The orchestrator resumed this
+  finished agent by `agent_id` via `SendMessage` for a read-only re-verify run. (a) The
+  `log.jsonl` handoff entry for the resumed run holds that run's own result (the re-verify text),
+  not the first run's report: handoff record OK (task 153). (c) A re-verify-only run raised no
+  warning: `handoff-issues` printed "no problems recorded". Finding, not fixed: this agent then
+  re-sent its earlier full report as a second handoff entry. The agent did this, not a hook defect,
+  but the latest record for the agent now holds the re-sent old report plus the re-verify note.
+  Not run: (b) a next-numbered payload raises no warning, and (d) a run that edits files and skips
+  its payload is still warned. Reason: the Documentation workflow's scribe has no HANDOFF route
+  that expects a channel payload, so neither warning can fire. They need a workflow with a payload
+  route, e.g. Backend: `@backend` to manager review, or Tests: `@test` to `@reviewer`.
+
 ## Things that bite
 
 Each sub-concept carries the traps specific to it. These cut across all of them:

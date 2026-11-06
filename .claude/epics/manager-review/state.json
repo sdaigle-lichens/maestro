@@ -67,6 +67,11 @@
       "name": "manager-review-153",
       "task": "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
       "added_at": "2026-11-06T14:38:06.079Z"
+    },
+    {
+      "name": "manager-review-154",
+      "task": "154-run-the-four-live-checks-left-open-by-the-manager-review-epic.md",
+      "added_at": "2026-11-06T16:03:23.215Z"
     }
   ],
   "log": [
@@ -449,6 +454,34 @@
       "file": "inbox/r016-153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
       "at": "2026-11-06T15:47:56.823Z",
       "from": "manager-review-153"
+    },
+    {
+      "kind": "report",
+      "id": "r017",
+      "task": "153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "file": "inbox/r017-153-close-the-remaining-resumed-run-gaps-in-the-handoff-checks.md",
+      "at": "2026-11-06T15:50:05.221Z",
+      "from": "manager-review-153"
+    },
+    {
+      "kind": "ack",
+      "id": "r016",
+      "at": "2026-11-06T15:50:20.207Z",
+      "by": "manager-review-manager"
+    },
+    {
+      "kind": "ack",
+      "id": "r017",
+      "at": "2026-11-06T15:50:20.537Z",
+      "by": "manager-review-manager"
+    },
+    {
+      "kind": "report",
+      "id": "r018",
+      "task": "154-run-the-four-live-checks-left-open-by-the-manager-review-epic.md",
+      "file": "inbox/r018-154-run-the-four-live-checks-left-open-by-the-manager-review-epic.md",
+      "at": "2026-11-06T16:21:11.562Z",
+      "from": "manager-review-154"
     }
   ]
 }
