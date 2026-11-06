@@ -887,7 +887,8 @@ function planCommand(labels) {
 }
 
 // done: mark the FIRST pending step with that label done. pending: a loop-back — reset the LAST done
-// step with that label AND every step after it, because everything downstream has to run again.
+// step with that label AND every step after it, because everything downstream has to run again
+// (except a manager review that is already done, see below).
 function planStepCommand(label, status) {
   if (!label || (status !== "done" && status !== "pending")) {
     process.stderr.write('maestro-task-status: usage: plan-step "<label>" <done|pending>\n');
@@ -918,7 +919,13 @@ function planStepCommand(label, status) {
   }
   if (status === "done") plan.steps[index].status = "done";
   else {
-    for (let i = index; i < plan.steps.length; i++) plan.steps[i].status = "pending";
+    // `150`: a manager review that already passed (on-track) after the target is NOT reverted — the
+    // manager checks direction once; a test or reviewer loop-back does not reopen it. A redirect
+    // leaves the stop unfinished, so it re-runs by itself. A stop named as the target still resets.
+    for (let i = index; i < plan.steps.length; i++) {
+      if (i > index && plan.steps[i].label === "manager review" && plan.steps[i].status === "done") continue;
+      plan.steps[i].status = "pending";
+    }
     // `130`: each loop-back starts a new human-review round (its own review file).
     plan.loopbacks = (typeof plan.loopbacks === "number" ? plan.loopbacks : 0) + 1;
   }

@@ -1732,7 +1732,7 @@ function bareRecipient(to) {
   return typeof to === "string" ? to.replace(/\s*\[[^\]]*\]\s*$/, "").trim() : "";
 }
 var HUMAN_SECTIONS = "'## Changed' (files and areas), '## Did' (one line per agent), '## Deviations from the ticket' and, on a re-review, '## Corrections since the last round'";
-var BRIEF_SECTIONS = "'## Goal', '## Done', '## Deviations', '## Decisions', '## Touches' (files and modules by name, never a diff), '## Sibling impact' and '## Questions'";
+var BRIEF_SECTIONS = "'## Goal', '## Deviations', '## Decisions', '## Touches' (files and modules by name, never a diff), '## Sibling impact' and '## Questions'";
 function checkHumanReview(input) {
   if (input.toolName !== "AskUserQuestion" && input.toolName !== "SendMessage") return { allow: true };
   const state = input.state;

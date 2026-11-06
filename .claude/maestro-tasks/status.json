@@ -744,7 +744,7 @@
     "epic": "freebuff-reviewer"
   },
   "150-narrow-the-manager-review-to-a-direction-check.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
   }

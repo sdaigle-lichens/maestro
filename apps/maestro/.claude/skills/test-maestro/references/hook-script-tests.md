@@ -80,3 +80,12 @@ long-lived** watcher and exits; `test/core/session-heartbeat-cli.test.ts` is the
   set to the main checkout. Read the run_id from the worktree root.
 - **Session ids sharing their first 8 chars share a `session-<id8>` scope.** Give each fixture
   session a distinct 8-char prefix, or two "isolated" sessions collide by construction.
+
+## A clean-HEAD baseline from a worktree
+
+To tell whether a failure predates your change, run the unit project on a clean HEAD. From a task
+worktree, `pnpm --filter maestro test` and `pnpm --filter maestro exec` resolve the **main checkout**,
+so they test the wrong code. Run vitest directly instead: point `--root` at the worktree's
+`apps/maestro`, and symlink that worktree's `node_modules` to the main checkout's so the binary and
+its dependencies resolve. The unit project is `vitest run --project unit` (`apps/maestro/package.json`
+`test` script; `vitest.config.ts`). Reported by a test run; not re-run when this was written.

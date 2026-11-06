@@ -1,5 +1,5 @@
 // `132`: the manager review protocol. `review-request` records a numbered request per ticket, the
-// verdict counts manager redirects per ticket (not plan.loopbacks) and turns the third redirect into
+// verdict counts manager redirects per ticket (not plan.loopbacks) and turns the second redirect into
 // an escalation, the manager's `show`/`reports` surface open requests, and the review gate also
 // holds a `manager review` stop: AskUserQuestion, and a SendMessage to the epic's manager, wait for
 // that round's review file. Pure module first, then the real installed scripts against a temp
@@ -110,8 +110,22 @@ describe("recordReviewVerdict and the round cap", () => {
       expect(recordReviewVerdict(root, TASK, "redirect")).toMatchObject({ effective: "redirect", capped: false });
     }
     writeReviewRequest(root, TASK, brief(root, MANAGER_REDIRECT_CAP + 1));
-    const third = recordReviewVerdict(root, TASK, "redirect");
-    expect(third).toMatchObject({ verdict: "redirect", effective: "escalate", capped: true, redirects: 2 });
+    const next = recordReviewVerdict(root, TASK, "redirect");
+    expect(next).toMatchObject({
+      verdict: "redirect",
+      effective: "escalate",
+      capped: true,
+      redirects: MANAGER_REDIRECT_CAP,
+    });
+  });
+
+  it("allows exactly one redirect per ticket: the second is an escalation", () => {
+    expect(MANAGER_REDIRECT_CAP).toBe(1);
+    const root = project();
+    writeReviewRequest(root, TASK, brief(root, 1));
+    expect(recordReviewVerdict(root, TASK, "redirect")).toMatchObject({ effective: "redirect", redirects: 1 });
+    writeReviewRequest(root, TASK, brief(root, 2));
+    expect(recordReviewVerdict(root, TASK, "redirect")).toMatchObject({ effective: "escalate", capped: true });
   });
 
   it("counts redirects only, so on-track and escalate never use up the cap", () => {
@@ -149,7 +163,7 @@ describe("show / reports surface open review requests", () => {
     expect(view.unacknowledged).toHaveLength(1);
     expect(view.unacknowledged[0]).toMatchObject({ kind: "review", id: "m001", round: 1, redirects: 0 });
     expect(view.unacknowledged[0].path).toBe(path.join(tasksDir(root), "200-direction.review.md"));
-    expect(formatEpic(view)).toContain("m001  manager review round 1 for 200-direction.md (worker-1)  redirects 0/2");
+    expect(formatEpic(view)).toContain("m001  manager review round 1 for 200-direction.md (worker-1)  redirects 0/1");
     expect(() => acknowledgeReport(root, "billing", "m001")).toThrow(
       "`review-verdict --task 200-direction.md <on-track|redirect|escalate>`, not ack"
     );
@@ -274,7 +288,9 @@ describe("maestro-epic.cjs review-request / review-verdict (installed scripts)",
 // ---------------------------------------------------------------------------------------------
 
 const SID = "sess-132-test";
-const GATE_CMD = 'node "$CLAUDE_PROJECT_DIR/.claude/scripts/maestro-human-review-gate.cjs"';
+// The hook command is rooted at the git toplevel (`45f292e`), falling back to $CLAUDE_PROJECT_DIR outside git.
+const GATE_CMD =
+  'node "$(git rev-parse --show-toplevel 2>/dev/null || echo "$CLAUDE_PROJECT_DIR")/.claude/scripts/maestro-human-review-gate.cjs"';
 const NEW_MATCHER = "AskUserQuestion|SendMessage";
 
 function bareProject(): string {
@@ -353,7 +369,7 @@ describe("maestro-epic.cjs review protocol CLI: fallbacks, re-sends and the cap 
     expect(again).toContain("review request already recorded, still waiting for a verdict: m001, round 1");
     const show = ok(["show", "billing"]);
     expect(show).toContain("unacknowledged reports, notes and review requests (1):");
-    expect(show).toContain(`m001  manager review round 1 for ${TASK} (worker-1)  redirects 0/2  ${file}`);
+    expect(show).toContain(`m001  manager review round 1 for ${TASK} (worker-1)  redirects 0/1  ${file}`);
     expect(ok(["reports", "billing"])).toContain(`m001  manager review round 1 for ${TASK}`);
     const ack = epic(["ack", "billing", "m001"]);
     expect(ack.code).toBe(1);
@@ -395,37 +411,36 @@ describe("maestro-epic.cjs review protocol CLI: fallbacks, re-sends and the cap 
     expect(ok(["review-verdict", "--task", TASK, "redirect", "--by", "boss"])).toContain(": redirect");
     const worker = ok(["review-verdict", "--task", TASK, "on-track"]);
     expect(worker).toContain("was already recorded: redirect. Act on the recorded verdict.");
-    expect(worker).toContain("Manager redirects on this ticket: 1 of 2.");
+    expect(worker).toContain("Manager redirects on this ticket: 1 of 1.");
   });
 
   it("the cap is announced on the capped round's request, and only a redirect is turned into an escalation", () => {
     ok(["create", "billing", "--manager", "boss"]);
     ok(["link", "billing", TASK]);
-    for (let round = 1; round <= 2; round += 1) {
+    for (let round = 1; round <= 1; round += 1) {
       const req = ok(["review-request", "--task", TASK, "--file", review(TASK, round)]);
-      expect(req).toContain(`Manager redirects on this ticket so far: ${round - 1} of 2.`);
+      expect(req).toContain(`Manager redirects on this ticket so far: ${round - 1} of 1.`);
       ok(["review-verdict", "--task", TASK, "redirect"]);
     }
-    const third = ok(["review-request", "--task", TASK, "--file", review(TASK, 3)]);
-    expect(third).toContain("The cap is reached (2 redirects of 2)");
-    expect(ok(["show", "billing"])).toContain("redirects 2/2, a redirect now escalates to human review");
+    const second = ok(["review-request", "--task", TASK, "--file", review(TASK, 2)]);
+    expect(second).toContain("The cap is reached (1 redirects of 1)");
+    expect(ok(["show", "billing"])).toContain("redirects 1/1, a redirect now escalates to human review");
     // On-track at the cap is still on-track: the cap only rewrites a redirect.
     const onTrack = ok(["review-verdict", "--task", TASK, "on-track"]);
     expect(onTrack).toContain(": on-track");
     expect(onTrack).not.toContain("escalate");
-    // A fourth round (another manager review stop later) that redirects escalates, as capped.
-    ok(["review-request", "--task", TASK, "--file", review(TASK, 4)]);
+    // A later round (another manager review stop) that redirects escalates, as capped.
+    ok(["review-request", "--task", TASK, "--file", review(TASK, 3)]);
     expect(ok(["review-verdict", "--task", TASK, "redirect"])).toContain(
-      ": escalate (asked: redirect; 2 redirects were already recorded on this ticket"
+      ": escalate (asked: redirect; 1 redirects were already recorded on this ticket"
     );
     // An escalation asked for directly is not reported as capped.
-    ok(["review-request", "--task", TASK, "--file", review(TASK, 5)]);
+    ok(["review-request", "--task", TASK, "--file", review(TASK, 4)]);
     const esc = ok(["review-verdict", "--task", TASK, "escalate"]);
     expect(esc).toContain(": escalate");
     expect(esc).not.toContain("asked: redirect");
     const state = readEpicState(root, "billing")!;
     expect(reviewHistory(state, TASK).verdicts.map((v) => [v.verdict, v.effective, v.capped === true])).toEqual([
-      ["redirect", "redirect", false],
       ["redirect", "redirect", false],
       ["on-track", "on-track", false],
       ["redirect", "escalate", true],
@@ -436,13 +451,13 @@ describe("maestro-epic.cjs review protocol CLI: fallbacks, re-sends and the cap 
   it("counts redirects per ticket: a sibling's redirects never use up this ticket's cap", () => {
     ok(["create", "billing", "--manager", "boss"]);
     ok(["link", "billing", TASK, "201-sibling.md"]);
-    for (let round = 1; round <= 2; round += 1) {
+    for (let round = 1; round <= 1; round += 1) {
       ok(["review-request", "--task", "201-sibling.md", "--file", review("201-sibling.md", round)]);
       ok(["review-verdict", "--task", "201-sibling.md", "redirect"]);
     }
     const req = ok(["review-request", "--task", TASK, "--file", review(TASK, 1)]);
-    expect(req).toContain("manager review m003 (round 1)");
-    expect(req).toContain("so far: 0 of 2");
+    expect(req).toContain("manager review m002 (round 1)");
+    expect(req).toContain("so far: 0 of 1");
     expect(ok(["review-verdict", "--task", TASK, "redirect"])).toContain(": redirect\n");
   });
 });
@@ -508,6 +523,10 @@ describe.each(["installed", "plugin"] as const)(
       expect(denied?.permissionDecisionReason).toContain("Manager review round 1");
       expect(denied?.permissionDecisionReason).toContain(review(1));
       expect(denied?.permissionDecisionReason).toContain("review-request");
+      // `150`: the short brief, with no `## Done` and no `## Verified`.
+      expect(denied?.permissionDecisionReason).toContain("'## Sibling impact' and '## Questions'");
+      expect(denied?.permissionDecisionReason).not.toContain("## Done");
+      expect(denied?.permissionDecisionReason).not.toContain("## Verified");
       expect(send("boss [3fa9c1]")?.permissionDecision).toBe("deny");
       expect(gate("AskUserQuestion")?.permissionDecision).toBe("deny");
       // Another recipient (a sibling worker, the user's own session) is never held.
@@ -541,6 +560,55 @@ describe.each(["installed", "plugin"] as const)(
       expect(human?.permissionDecisionReason).toContain(review(3));
       // At a human review, SendMessage to the manager is not the review gate's business.
       expect(send("boss")).toBeNull();
+    });
+
+    const stepStatuses = () => {
+      const state = JSON.parse(fs.readFileSync(sessionPathsFor(path.join(root, ".claude"), SID)!.state, "utf8"));
+      return state.plan.steps.map((s: { status: string }) => s.status);
+    };
+
+    it("150: a redirect re-runs the manager review; after on-track a test or reviewer loop-back leaves it done", () => {
+      epic("create", "billing", "--manager", "boss");
+      epic("link", "billing", TASK);
+      status("plan", "@backend", "@test", "manager review", "@reviewer", "human review");
+      status("plan-step", "@backend", "done");
+      status("plan-step", "@test", "done");
+
+      // Round 1, redirected: the producing agent loops back and the stop is unfinished, so it re-runs.
+      fs.writeFileSync(review(1), "## Goal\n");
+      expect(send("boss")).toBeNull();
+      status("plan-step", "@backend", "pending");
+      expect(stepStatuses()).toEqual(["pending", "pending", "pending", "pending", "pending"]);
+      status("plan-step", "@backend", "done");
+      status("plan-step", "@test", "done");
+      expect(send("boss")?.permissionDecisionReason).toContain(review(2));
+      fs.writeFileSync(review(2), "## Goal\n");
+      expect(send("boss")).toBeNull();
+
+      // On-track: done. A later loop-back from the reviewer (or the test step) does not reset it.
+      status("plan-step", "manager review", "done");
+      status("plan-step", "@reviewer", "done");
+      status("plan-step", "@backend", "pending");
+      expect(stepStatuses()).toEqual(["pending", "pending", "done", "pending", "pending"]);
+      status("plan-step", "@backend", "done");
+      status("plan-step", "@test", "done");
+      // The stop is not the current step, so a SendMessage to the manager is no longer gated, and
+      // the next review stop (human review) gets a round of its own, past every earlier file.
+      expect(send("boss")).toBeNull();
+      status("plan-step", "@reviewer", "done");
+      const human = gate("AskUserQuestion");
+      expect(human?.permissionDecisionReason).toContain("Human review round 4");
+      expect(human?.permissionDecisionReason).toContain(review(4));
+    });
+
+    it("150: a stop named as the loop-back target still resets", () => {
+      epic("create", "billing", "--manager", "boss");
+      epic("link", "billing", TASK);
+      status("plan", "@backend", "manager review", "@reviewer");
+      status("plan-step", "@backend", "done");
+      status("plan-step", "manager review", "done");
+      status("plan-step", "manager review", "pending");
+      expect(stepStatuses()).toEqual(["done", "pending", "pending"]);
     });
 
     it("fallback: with no manager recorded, or no epic, SendMessage is ungated but the question still is", () => {

@@ -108,7 +108,7 @@ export const REVIEW_VERDICTS: readonly ReviewVerdict[] = ["on-track", "redirect"
  * Manager redirects allowed per ticket (`132`). With this many already recorded, the next verdict
  * that would redirect is recorded as an escalation to human review instead.
  */
-export const MANAGER_REDIRECT_CAP = 2;
+export const MANAGER_REDIRECT_CAP = 1;
 
 /** The verdict on one review request. `effective` is what the worker acts on (the cap applied). */
 export interface EpicVerdictEntry {

@@ -52,6 +52,11 @@
     {
       "name": "manager-review-139",
       "added_at": "2026-10-28T23:41:57.486Z"
+    },
+    {
+      "name": "manager-review-150",
+      "task": "150-narrow-the-manager-review-to-a-direction-check.md",
+      "added_at": "2026-11-06T01:26:05.450Z"
     }
   ],
   "log": [
@@ -316,6 +321,32 @@
       "id": "r011",
       "at": "2026-10-29T01:03:21.241Z",
       "by": "maestro-mgr-3a4fd839"
+    },
+    {
+      "kind": "review",
+      "id": "m007",
+      "task": "150-narrow-the-manager-review-to-a-direction-check.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/150-narrow-the-manager-review-to-a-direction-check.review.md",
+      "at": "2026-11-06T01:43:53.513Z",
+      "from": "manager-review-150"
+    },
+    {
+      "kind": "verdict",
+      "id": "m007",
+      "task": "150-narrow-the-manager-review-to-a-direction-check.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-06T01:44:15.202Z",
+      "by": "maestro-mgr-2c988c35"
+    },
+    {
+      "kind": "report",
+      "id": "r012",
+      "task": "150-narrow-the-manager-review-to-a-direction-check.md",
+      "file": "inbox/r012-150-narrow-the-manager-review-to-a-direction-check.md",
+      "at": "2026-11-06T02:16:02.938Z",
+      "from": "manager-review-150"
     }
   ]
 }

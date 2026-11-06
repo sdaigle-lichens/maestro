@@ -213,13 +213,26 @@ describe("maestro-write-tasks touchedSurfaces", () => {
 // Task 145: the shipped orchestrator template carries the red-suite / verified-commit rule.
 describe("orchestrator template red-suite rule", () => {
   const tpl = fs.readFileSync(path.join(path.dirname(SCRIPT), "..", "templates", "maestro", "SKILL.md"), "utf8");
-  it("requires a Verified section in the brief and human review file", () => {
+  it("requires a Verified section in the human review file, and in the brief only on the fallback and escalation paths", () => {
     expect(tpl.match(/## Verified/g)?.length).toBeGreaterThanOrEqual(2);
     expect(tpl).toContain("the commit verified");
+    expect(tpl).toContain("in that case, and on an escalation, also add `## Verified` to the brief");
+    // `150`: the manager brief proper has neither `## Done` nor a verified-commit section.
+    expect(tpl).toContain(
+      "`## Goal`, `## Deviations`, `## Decisions`, `## Touches` (files and modules by name, never a diff), `## Sibling impact`, `## Questions`"
+    );
+    expect(tpl).toContain("No commit or suite result is needed");
   });
-  it("forbids approving a red suite, even pending a later test step", () => {
+  it("forbids approving a red suite at a human review, even pending a later test step, but not at the manager check", () => {
     expect(tpl).toContain("Never approve a red suite");
     expect(tpl).toContain("not even pending a later test step");
+    expect(tpl).toContain("The manager review is exempt: it checks direction only.");
+  });
+  it("caps manager redirects at 1, drops the reviewer note and keeps a passed check across loop-backs", () => {
+    expect(tpl).toContain("after 1 redirect on the ticket, a second redirect prints `escalate`");
+    expect(tpl).not.toContain("for @reviewer");
+    expect(tpl).toContain("never reopens it");
+    expect(tpl).toContain("keep the passed manager review completed too");
   });
   it("requires the Step 6 report to state the verified commit and a green suite", () => {
     expect(tpl).toContain("the commit verified and that the full test suite was green on it");

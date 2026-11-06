@@ -150,15 +150,36 @@ describe("maestro-task-status plan with `manager review`", () => {
     expect(r.stderr).toContain('no pending plan step labelled "manager review"');
   });
 
-  it("plan-step pending on @backend loops back past a done manager review", async () => {
+  it("plan-step pending on @backend keeps a manager review that already passed (150)", async () => {
+    const { root, dir } = await installed();
+    run(root, "maestro-task-status.cjs", ["plan", "@backend", "manager review", "@reviewer"]);
+    run(root, "maestro-task-status.cjs", ["plan-step", "@backend", "done"]);
+    run(root, "maestro-task-status.cjs", ["plan-step", "manager review", "done"]);
+    run(root, "maestro-task-status.cjs", ["plan-step", "@reviewer", "done"]);
+    const back = run(root, "maestro-task-status.cjs", ["plan-step", "@backend", "pending"]);
+    expect(back.code, back.stderr).toBe(0);
+    const state = JSON.parse(fs.readFileSync(path.join(dir, "session.json"), "utf8"));
+    expect(state.plan.steps.map((s: { status: string }) => s.status)).toEqual(["pending", "done", "pending"]);
+    expect(state.plan.loopbacks).toBe(1);
+  });
+
+  it("plan-step pending on @backend resets a manager review that is still unfinished (a redirect)", async () => {
+    const { root, dir } = await installed();
+    run(root, "maestro-task-status.cjs", ["plan", "@backend", "manager review"]);
+    run(root, "maestro-task-status.cjs", ["plan-step", "@backend", "done"]);
+    run(root, "maestro-task-status.cjs", ["plan-step", "@backend", "pending"]);
+    const state = JSON.parse(fs.readFileSync(path.join(dir, "session.json"), "utf8"));
+    expect(state.plan.steps.map((s: { status: string }) => s.status)).toEqual(["pending", "pending"]);
+  });
+
+  it("plan-step pending naming the manager review itself still resets it", async () => {
     const { root, dir } = await installed();
     run(root, "maestro-task-status.cjs", ["plan", "@backend", "manager review"]);
     run(root, "maestro-task-status.cjs", ["plan-step", "@backend", "done"]);
     run(root, "maestro-task-status.cjs", ["plan-step", "manager review", "done"]);
-    const back = run(root, "maestro-task-status.cjs", ["plan-step", "@backend", "pending"]);
-    expect(back.code, back.stderr).toBe(0);
+    run(root, "maestro-task-status.cjs", ["plan-step", "manager review", "pending"]);
     const state = JSON.parse(fs.readFileSync(path.join(dir, "session.json"), "utf8"));
-    expect(state.plan.steps.map((s: { status: string }) => s.status)).toEqual(["pending", "pending"]);
+    expect(state.plan.steps.map((s: { status: string }) => s.status)).toEqual(["done", "pending"]);
   });
 });
 
