@@ -88,13 +88,9 @@ Out:
 
 ## Merge plan
 
-Tasks 130 to 139, 150, 151, 153, 154 and 155 are done. Task 156 is open and holds the PR (the
-user's choice): a resumed agent that edits files and skips its required payload gets no warning,
-so task 153's criterion 5 fails live (task 155, r020).
+Tasks 130 to 139, 150, 151 and 153 to 156 are done, and no task is open. They ship together on
+`feat/manager-review-direction-check`.
 
-| Merge order | Task | Base branch                           | Version bump            | Shared surfaces                                                                                                                                          |
-| ----------- | ---- | ------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1           | 156  | `feat/manager-review-direction-check` | Task 156's worker bumps | `maestro-resume-target.cjs`, `maestro-subagent-log.js`, the generated libs and the version file with standalone task 152: 152 starts after this PR merges, then rebases and refreshes |
-
-Standalone task 152 shares `maestro-subagent-log.js`, the generated libs and the version file with
-this branch: it starts after this epic's PR merges, then rebases and runs `pnpm refresh:runtime`.
+Standalone task 152 shares `maestro-resume-target.cjs`, `maestro-subagent-log.js`, the generated
+libs and the version file with this branch: it starts after this epic's PR merges, then rebases and
+runs `pnpm refresh:runtime`.

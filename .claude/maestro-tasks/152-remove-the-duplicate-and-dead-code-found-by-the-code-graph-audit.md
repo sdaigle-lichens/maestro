@@ -13,6 +13,7 @@ In scope:
 3. `SessionTitleRef` (session-title.ts:38) and `SessionRef` (session-sweep.ts:151) are the same two-field interface. Keep one.
 4. `readSessionLog` (session-log.ts:66) has no caller. Remove it, its re-export in the core barrel, and its mention in the log-view skill.
 5. session-sweep.ts repeats the `sessionDirsFor` / `rmSync` removal loop (lines 123 and 180) and the `now` / `idleCapMs` defaulting (lines 110-111, 162-163, 191-192). Share them where that makes the file simpler. The idle cap differs on purpose: sweeping uses `SESSION_SWEEP_IDLE_CAP_MS`, deleting and listing use `SESSION_DELETE_IDLE_CAP_MS`. Keep that.
+6. One small behaviour fix, the exception to this task being behaviour-preserving: task 156's live repeat listed a `missing_payload` warning twice, because the stop hook can fire twice for one resumed run and `maestro-subagent-log.js` pushes into `handoff_issues` with no dedup (around lines 394-405 at commit 6336d24). `appendHandoffIssue` already dedups; that code path does not use it. One issue must be listed once.
 
 Out of scope, decided by the user or already gone:
 - Keep `tailSessionLog` and its tests. It has no production caller, but the log-view skill says it is kept on purpose for differential coverage. Do not remove it.
@@ -27,6 +28,7 @@ Out of scope, decided by the user or already gone:
 - [ ] `readSessionLog` is gone from the source, the barrel and the log-view skill
 - [ ] `tailSessionLog` and its tests are unchanged
 - [ ] session-sweep.ts behaviour is unchanged, including the two different idle caps
+- [ ] When the stop hook fires twice for one resumed run, the missing-payload warning is listed once, and a test covers it
 - [ ] The full suite, lint and typecheck pass; if anything under plugins/ changed, the plugin version is bumped and the parity test passes after the runtime refresh
 
 ## Touched surfaces
@@ -38,6 +40,7 @@ Out of scope, decided by the user or already gone:
 - plugins/maestro/.claude-plugin/plugin.json (version)
 - apps/maestro/.claude/skills/log-view/SKILL.md
 - Overlaps task 151 in maestro-subagent-log.js, the generated libs and the version file: blocked by it
+- Overlaps tasks 153 and 156 in maestro-subagent-log.js, maestro-resume-target.cjs, the generated libs and the version file: starts after the manager-review epic's PR merges, then rebases and runs the runtime refresh
 
 ## Blocked by
 

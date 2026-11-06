@@ -566,6 +566,26 @@
       "file": "inbox/r022-156-warn-when-a-resumed-agent-edits-files-and-skips-its-required-payload.md",
       "at": "2026-11-06T17:30:43.280Z",
       "from": "manager-review-156"
+    },
+    {
+      "kind": "report",
+      "id": "r023",
+      "task": "156-warn-when-a-resumed-agent-edits-files-and-skips-its-required-payload.md",
+      "file": "inbox/r023-156-warn-when-a-resumed-agent-edits-files-and-skips-its-required-payload.md",
+      "at": "2026-11-06T18:25:40.951Z",
+      "from": "manager-review-156"
+    },
+    {
+      "kind": "ack",
+      "id": "r022",
+      "at": "2026-11-06T18:25:53.534Z",
+      "by": "manager-review-manager"
+    },
+    {
+      "kind": "ack",
+      "id": "r023",
+      "at": "2026-11-06T18:25:53.971Z",
+      "by": "manager-review-manager"
     }
   ]
 }
