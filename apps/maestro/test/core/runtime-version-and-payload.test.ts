@@ -786,6 +786,87 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     expect(took).toBeLessThan(9000);
   }, 20000);
 
+  // ── 151: a resumed agent's transcript already holds the previous run's hand-back ───────────────
+  const FAIL_REPORT = '"verdict": "FAIL"\nHANDOFF: tests failed';
+  const PASS_REPORT = '"verdict": "PASS"\nHANDOFF: success';
+  const userLine = (content: unknown) => JSON.stringify({ type: "user", message: { role: "user", content } }) + "\n";
+  const assistantText = (text: string) =>
+    JSON.stringify({ type: "assistant", message: { content: [{ type: "text", text }] } }) + "\n";
+  const toolResult = userLine([{ type: "tool_result", tool_use_id: "x", content: "ok" }]);
+  // run 1 (hand-back FAIL), then the resume prompt, then run 2 so far: only a text turn and a tool_result.
+  const run1 = handbackTranscript(FAIL_REPORT).replace(/\n*$/, "\n");
+  const resumedBehind = run1 + userLine("Fixed it, re-run the checks.") + assistantText("re-running") + toolResult;
+  const resumedDone = resumedBehind + sendMessageLine(PASS_REPORT) + "\n";
+
+  it("151: an earlier run's hand-back is not the current run's (the cause)", () => {
+    expect(hasHandbackCall(run1)).toBe(true);
+    expect(handbackHandoff(run1)).toContain("tests failed");
+    expect(hasHandbackCall(resumedBehind)).toBe(false);
+    expect(handbackHandoff(resumedBehind)).toBeNull();
+    expect(handbackHandoff(resumedDone)).toContain("HANDOFF: success");
+  });
+
+  it("151: a resumed agent keeps waiting past the old hand-back and returns the new one", async () => {
+    let reads = 0;
+    const got = await awaitHandback(() => (++reads < 4 ? resumedBehind : resumedDone), noSleep);
+    expect(got).toContain("HANDOFF: success");
+    expect(got).not.toContain("tests failed");
+    expect(reads).toBe(4);
+  });
+
+  it("151: when the current hand-back never appears, the old message is never returned", async () => {
+    let reads = 0;
+    expect(await awaitHandback(() => (reads++, resumedBehind), noSleep, 300, 100)).toBeNull();
+    expect(reads).toBe(4);
+  });
+
+  it("151: tool_result entries do not start a new run, so a first run still reads its hand-back", () => {
+    const first = full.replace(/\n*$/, "\n") + toolResult;
+    expect(handbackHandoff(first)).toContain("HANDOFF: success");
+    expect(hasHandbackCall(first)).toBe(true);
+  });
+
+  it("151: a resumed test agent that passes after an earlier FAIL is logged success, with no missing-payload warning", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-151-late.jsonl");
+    fs.writeFileSync(transcript, resumedBehind);
+    subagentStart(root, "test", "t1");
+    subagentStart(root, "test", "t1"); // the resume: same agent_id
+    const writer = spawn(
+      process.execPath,
+      [
+        "-e",
+        "setTimeout(() => require('fs').writeFileSync(process.argv[1], process.argv[2]), 600)",
+        transcript,
+        resumedDone,
+      ],
+      { stdio: "ignore" }
+    );
+    const r = subagentStop(root, "test", "t1", { agent_transcript_path: transcript });
+    writer.kill();
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(r.stdout).not.toContain("missing_payload");
+    const entry = handoffEntry(root, "t1");
+    expect(entry).toMatchObject({ status: "success", label: "success" });
+    expect(entry.output).toContain("HANDOFF: success");
+    expect(entry.output).not.toContain("tests failed");
+    expect(entry.handoff_issue).toBeUndefined();
+  });
+
+  it("151: the real hook, current hand-back never landing, does not fall back to the earlier FAIL", async () => {
+    const root = await installed();
+    const transcript = path.join(tmp, "agent-151-never.jsonl");
+    fs.writeFileSync(transcript, resumedBehind);
+    subagentStart(root, "test", "t1");
+    const r = subagentStop(root, "test", "t1", { agent_transcript_path: transcript });
+    expect(r.code, r.stderr).toBe(0);
+    expect(r.stdout).toContain("handoff problem (missing)");
+    const entry = handoffEntry(root, "t1");
+    expect(entry.output ?? "").not.toContain("tests failed");
+    expect(entry.label).not.toBe("tests failed");
+    expect(entry.handoff_issue?.kind).toBe("missing");
+  }, 20000);
+
   it("the real hook does not delay when the transcript file is unreadable", async () => {
     const root = await installed();
     subagentStart(root, "backend", "b1");

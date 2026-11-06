@@ -54,18 +54,42 @@ export function hasHandbackCall(transcript: string): boolean {
   return scanHandbacks(transcript).sawCall;
 }
 
+/**
+ * Whether a parsed transcript entry opens a run: a `user` entry that is not just tool results.
+ * A resumed agent's transcript keeps the earlier run's hand-back call, and the resume prompt is
+ * the next such entry, so only calls AFTER the last one belong to the current run (`151`).
+ */
+function startsRun(e: { type?: unknown; message?: { content?: unknown }; content?: unknown }): boolean {
+  if (e.type !== "user") return false;
+  const content = e.message?.content ?? e.content;
+  if (!Array.isArray(content)) return true;
+  return !(content.length > 0 && content.every((b) => b && b.type === "tool_result"));
+}
+
+/**
+ * Hand-back calls of the CURRENT run only (`151`): everything before the last non-tool_result
+ * `user` entry is ignored. A first run has no earlier hand-back, so it reads as before.
+ */
 function scanHandbacks(transcript: string): { text: string | null; sawCall: boolean } {
   let found: string | null = null;
   let sawCall = false;
   for (const line of transcript.split("\n")) {
-    if (!HANDBACK_TOOLS.some((t) => line.includes(t))) continue;
+    const named = HANDBACK_TOOLS.some((t) => line.includes(t));
+    if (!named && !line.includes('"user"')) continue;
     let entry: unknown;
     try {
       entry = JSON.parse(line);
     } catch {
       continue;
     }
-    const e = entry as { message?: { content?: unknown }; content?: unknown };
+    const e = entry as { type?: unknown; message?: { content?: unknown }; content?: unknown };
+    if (!e || typeof e !== "object") continue;
+    if (startsRun(e)) {
+      found = null;
+      sawCall = false;
+      continue;
+    }
+    if (!named) continue;
     const content = e?.message?.content ?? e?.content;
     if (!Array.isArray(content)) continue;
     for (const block of content) {
@@ -90,7 +114,9 @@ export const HANDBACK_POLL_MS = 100;
  * hand-back call in it), so a single read finds nothing and the agent is flagged `missing` though
  * its report carried `HANDOFF: success`. Re-read until a hand-back call shows up, then judge it as
  * `handbackHandoff` always did. Stops early once a call is present (a labelless one is a real
- * `missing`), when the transcript cannot be read, or after `waitMs`. `read` returns the
+ * `missing`), when the transcript cannot be read, or after `waitMs`. Only calls after the last
+ * non-tool_result user entry count (`151`), so a resumed agent's earlier hand-back never ends the
+ * wait and is never returned. `read` returns the
  * transcript text, or null when unreadable; `sleep` is injected so this stays `fs`-free.
  */
 export async function awaitHandback(

@@ -111,6 +111,21 @@ It stops early once any call is present — a labelless one is a real `missing` 
 read, so only an agent that ended with plain text and no label pays the full wait. The sleep and read
 are injected; the hook script supplies `fs` and a `setTimeout` promise.
 
+**Only the current run's hand-back counts (`151`).** A resumed agent's transcript still holds the
+previous run's hand-back call, so `124`'s "stop once any call is present" ended the wait at once on the
+OLD text: task 150's worker logged a resumed test, reviewer and backend agent as copies of their first
+runs, and a passing reviewer as `FAIL` plus a false missing-payload warning for the FAIL route.
+`scanHandbacks` now ignores every call before the last non-`tool_result` `user` entry (the resume
+prompt; a first run's boundary is its own opening prompt, so it reads as before). With no call after
+that boundary `awaitHandback` keeps polling, and on timeout returns null (the hook reports `missing`),
+never the earlier run's message.
+
+Known limits of the boundary (`151`, pinned by `apps/maestro/test/core/handoff-run-boundary-151.test.ts`, probes A and B):
+
+- **An unflushed resume prompt returns the earlier hand-back.** If the transcript holds the previous run's hand-back and no later user entry yet, nothing marks a boundary, so `awaitHandback` returns the old label at once (a stale `FAIL` can be read). No wait happens there, because a call is already present.
+- **A text-bearing user entry after the hand-back discards it.** Any non-`tool_result` user entry opens a run, so a late harness reminder after the current hand-back makes the hook report `missing`.
+- **Empty-content and mixed user entries also open a run** (probes D and E): `content: []`, or `tool_result` blocks mixed with text.
+
 ### A payload route must be written (`087`)
 
 The third issue kind, `missing_payload` (`checkPayload` in `handoff-check.ts`): the `HANDOFF:` label

@@ -1784,11 +1784,18 @@ function handbackHandoff(transcript) {
 function hasHandbackCall(transcript) {
   return scanHandbacks(transcript).sawCall;
 }
+function startsRun(e) {
+  if (e.type !== "user") return false;
+  const content = e.message?.content ?? e.content;
+  if (!Array.isArray(content)) return true;
+  return !(content.length > 0 && content.every((b) => b && b.type === "tool_result"));
+}
 function scanHandbacks(transcript) {
   let found = null;
   let sawCall = false;
   for (const line of transcript.split("\n")) {
-    if (!HANDBACK_TOOLS.some((t) => line.includes(t))) continue;
+    const named = HANDBACK_TOOLS.some((t) => line.includes(t));
+    if (!named && !line.includes('"user"')) continue;
     let entry;
     try {
       entry = JSON.parse(line);
@@ -1796,6 +1803,13 @@ function scanHandbacks(transcript) {
       continue;
     }
     const e = entry;
+    if (!e || typeof e !== "object") continue;
+    if (startsRun(e)) {
+      found = null;
+      sawCall = false;
+      continue;
+    }
+    if (!named) continue;
     const content = e?.message?.content ?? e?.content;
     if (!Array.isArray(content)) continue;
     for (const block of content) {
