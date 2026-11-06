@@ -59,6 +59,7 @@ const {
   expectedLoopbackPayloads,
   missingLoopbackPayload,
   dropResolvedMissingPayloads,
+  channelFileMtime,
   appendHandoffIssue,
   channelScopeOf,
   resolveSessionId,
@@ -107,7 +108,7 @@ try {
         // A `missing_payload` the sender has since fixed would send the orchestrator after a file
         // that is already there: drop it before checking again.
         const pending = state.handoff_issues || [];
-        const kept = dropResolvedMissingPayloads(pending, deliveries);
+        const kept = dropResolvedMissingPayloads(pending, deliveries, (f) => channelFileMtime(projectDir, f));
         if (kept.length !== pending.length) {
           state = { ...state, handoff_issues: kept };
           if (kept.length === 0) delete state.handoff_issues;

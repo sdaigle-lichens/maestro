@@ -263,6 +263,7 @@ export {
   expectedLoopbackPayloads,
   missingLoopbackPayload,
   dropResolvedMissingPayloads,
+  channelFileMtime,
   appendHandoffIssue,
   type LatestHandoff,
 } from "../resume-delivery.js";

@@ -281,14 +281,14 @@ Tests workflow: `@test` to `@reviewer`, payload `.claude/channels/task-155/revie
   `Write(.../.claude/channels/task-155/reviewer/test.2.md)` 16:50:23; handoff `status:success
   label:success` 16:50:26. `handoff-issues`: "no problems recorded". Run 1 (`test.1.md`, 16:49:49)
   was also clean.
-- **Case 2, resumed agent edits a file and skips its payload: NOT warned. Defect found, not fixed.
-  Not passed.** Dispatch `16:51:07.632Z`; `Edit(.../probe-155.txt)` 16:51:09; `SubagentHandback`
+- **Case 2, resumed agent edits a file and skips its payload: NOT warned at the time. Superseded by
+  `### Task 156 run` below: the warning was raised and then dropped, and is fixed (0.13.23).** Dispatch `16:51:07.632Z`; `Edit(.../probe-155.txt)` 16:51:09; `SubagentHandback`
   16:51:10; handoff `status:success label:success` 16:51:11, output "Deliberately wrote no channel
   payload." No `Write` to `.claude/channels/`. `handoff-issues` at 16:51:35, and again after the
   reviewer step, printed "no problems recorded". Expected: a `missing_payload` warning for
   `.claude/channels/task-155/reviewer/test.N.md`. The unit tests for this check pass; the live run
   did not.
-- **Cause (hypothesis, unproven), ranked by the reviewer:**
+- **Cause (hypothesis at the time; resolved by `### Task 156 run`, where cause 1 was confirmed and 2 ruled out):**
   1. Most plausible: `dropResolvedMissingPayloads` (`resume-delivery.ts`, reached from
      `handoffIssuesCommand` in `maestro-task-status.cjs`) drops a recorded `missing_payload` when
      its file is found through `pendingResumeDeliveries`, keyed on the session `run_id` rather than
@@ -303,6 +303,34 @@ Tests workflow: `@test` to `@reviewer`, payload `.claude/channels/task-155/revie
   populated before `handoff-issues` runs. The channel files were retired at 16:52:54, so their
   mtimes cannot be re-read.
 - The task 154 finding (a resumed agent re-sends its old report on a re-verify) did not recur.
+
+### Task 156 run (the dropped missing-payload warning)
+
+The Task 155 case 2 warning was raised by the stop hook and then dropped by `handoff-issues`. Not a
+run-boundary misread: that suspect was ruled out for this shape.
+
+- **Cause, confirmed:** `dropResolvedMissingPayloads` (`resume-delivery.ts`, called from
+  `handoff-issues` in `maestro-task-status.cjs` and from `maestro-resume-target.cjs`) matched lane
+  files by session `run_id` only. The first run's earlier-numbered `test.1.md` carries that run id,
+  so it counted as proof that `test.N.md` was present. Confirmed first by a fixture that ran the
+  installed hook and CLI scripts, then by the live repeat. The order was the reverse of the ticket's;
+  the manager accepted that (m010).
+- **Fix (plugin 0.13.23):** a lane file resolves a `missing_payload` only when its mtime is at or
+  after the issue's `ts` (1 s slack, as the hook's own check). An unreadable mtime or an unparseable
+  `ts` never resolves it. Both callers pass `writtenAt` built from `channelFileMtime`, exported
+  through the `maestro-session` bundle.
+- **Live repeat** (resumed `@test`, `agent_id` a787bb5d7646cd420, `test.1.md` already in the lane):
+
+  | Resumed run | `handoff-issues` printed |
+  | --- | --- |
+  | edits a file, writes no payload | `NO PAYLOAD written for HANDOFF: success (agent_id a787bb5d7646cd420)` |
+  | edits a file, writes `test.2.md` | `Maestro handoffs: no problems recorded.` |
+  | re-verify only | `Maestro handoffs: no problems recorded.` |
+
+  The probe file was deleted afterwards.
+- **Known, not fixed:** the same warning was listed twice. `maestro-subagent-log.js` (~lines 394-405)
+  appends to `handoff_issues` with no dedup when the stop hook fires twice for one resumed run. The
+  verdict is unaffected; a follow-up.
 
 ## Things that bite
 

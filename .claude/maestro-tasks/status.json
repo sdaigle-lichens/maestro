@@ -773,5 +773,10 @@
     "status": "done",
     "blockedBy": [],
     "epic": "manager-review"
+  },
+  "156-warn-when-a-resumed-agent-edits-files-and-skips-its-required-payload.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "manager-review"
   }
 }

@@ -31,6 +31,8 @@ In:
 - The resumed-run gaps task 151 left in the handoff checks (task 153).
 - The four live checks left open by this epic's reports (task 154), and the two resumed-run payload
   cases it could not run (task 155). The user chose not to isolate the portable channel rule.
+- A resumed agent that edits files and skips its required payload is warned (task 156; found live
+  in task 155).
 
 Out:
 
@@ -86,9 +88,13 @@ Out:
 
 ## Merge plan
 
-Tasks 130 to 139, 150, 151, 153 and 154 are done. Task 155 is open: it has merge order 1, base
-`feat/manager-review-direction-check`, no version bump, and shares only the maestro-architecture
-skill's Live check section. Tasks 150, 151, 153, 154 and 155 ship together on that branch.
+Tasks 130 to 139, 150, 151, 153, 154 and 155 are done. Task 156 is open and holds the PR (the
+user's choice): a resumed agent that edits files and skips its required payload gets no warning,
+so task 153's criterion 5 fails live (task 155, r020).
+
+| Merge order | Task | Base branch                           | Version bump            | Shared surfaces                                                                                                                                          |
+| ----------- | ---- | ------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1           | 156  | `feat/manager-review-direction-check` | Task 156's worker bumps | `maestro-resume-target.cjs`, `maestro-subagent-log.js`, the generated libs and the version file with standalone task 152: 152 starts after this PR merges, then rebases and refreshes |
 
 Standalone task 152 shares `maestro-subagent-log.js`, the generated libs and the version file with
 this branch: it starts after this epic's PR merges, then rebases and runs `pnpm refresh:runtime`.

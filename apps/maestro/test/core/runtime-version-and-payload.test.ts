@@ -926,6 +926,55 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     expect(r.stdout).not.toContain("missing_payload");
   });
 
+  // `156`: the live miss of task 155. The first run's stamped payload is still in the lane (the
+  // receiver was not dispatched in between), so `handoff-issues` took the missing file for present
+  // and dropped the warning the stop hook had recorded.
+  describe("156: a resumed run's skipped payload survives handoff-issues with an earlier payload in the lane", () => {
+    const issuesReport = (root: string) => projectScript(root, "maestro-task-status.cjs", ["handoff-issues"]).stdout;
+
+    async function firstRunThenResume(resumedTranscript: string, writeNext: boolean) {
+      const root = await installed();
+      const first = path.join(tmp, "agent-156-first.jsonl");
+      fs.writeFileSync(first, handbackTranscript(OK_REPORT));
+      subagentStart(root, "backend", "b1");
+      writePayload(root, "test", "backend");
+      const r1 = subagentStop(root, "backend", "b1", { agent_transcript_path: first });
+      expect(r1.stdout).not.toContain("missing_payload");
+      // The first run's file is stamped with the session run id and is old by the resume.
+      const old = new Date(Date.now() - 60_000);
+      fs.utimesSync(lane(root, "test", "backend"), old, old);
+      const second = path.join(tmp, "agent-156-second.jsonl");
+      fs.writeFileSync(second, resumedTranscript);
+      subagentStart(root, "backend", "b1");
+      if (writeNext) {
+        const f = path.join(root, ".claude", "channels", SCOPE, "test", "backend.2.md");
+        fs.writeFileSync(f, "{}\n");
+      }
+      const r2 = subagentStop(root, "backend", "b1", { agent_transcript_path: second });
+      return { root, r2 };
+    }
+
+    it("edited a file, wrote no payload: warned by the hook AND shown by handoff-issues", async () => {
+      const { root, r2 } = await firstRunThenResume(resumedEdited, false);
+      expect(r2.stdout).toContain("missing_payload");
+      // Recorded by the hook, so the loss (before the fix) happened in handoff-issues.
+      expect(readState(root).handoff_issues?.[0]?.kind).toBe("missing_payload");
+      expect(issuesReport(root)).toContain("NO PAYLOAD written");
+    });
+
+    it("wrote the next-numbered payload: no warning", async () => {
+      const { root, r2 } = await firstRunThenResume(resumedEdited, true);
+      expect(r2.stdout).not.toContain("missing_payload");
+      expect(issuesReport(root)).toContain("no problems recorded");
+    });
+
+    it("re-verify only: no warning", async () => {
+      const { root, r2 } = await firstRunThenResume(resumedReverify, false);
+      expect(r2.stdout).not.toContain("missing_payload");
+      expect(issuesReport(root)).toContain("no problems recorded");
+    });
+  });
+
   it("153: the real hook does not take a hand-back older than this run's dispatch (resume prompt not yet written)", async () => {
     const root = await installed();
     const transcript = path.join(tmp, "agent-153-stale.jsonl");

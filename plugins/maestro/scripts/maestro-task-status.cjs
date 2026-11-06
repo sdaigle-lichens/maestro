@@ -122,6 +122,7 @@ const {
   missingDependenciesNotice,
   pendingResumeDeliveries,
   dropResolvedMissingPayloads,
+  channelFileMtime,
   isChannelScope,
   recordActiveTask,
 } = require("./lib/maestro-session.cjs");
@@ -967,7 +968,9 @@ function handoffIssuesCommand() {
       for (const { scope, receiver } of lanes.values()) {
         present.push(...pendingResumeDeliveries(projectDir, scope, receiver, state.run_id));
       }
-      issues = dropResolvedMissingPayloads(recorded, present);
+      // `156`: only a file written after the warning resolves it; an earlier run's file of the
+      // same session carries the same run_id and must not.
+      issues = dropResolvedMissingPayloads(recorded, present, (f) => channelFileMtime(projectDir, f));
     } catch {
       issues = recorded;
     }
