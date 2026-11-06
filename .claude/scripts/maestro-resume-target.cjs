@@ -63,18 +63,8 @@ const {
   appendHandoffIssue,
   channelScopeOf,
   resolveSessionId,
+  readGlobalHandoff,
 } = require("./lib/maestro-session.cjs");
-
-// The global handoff tier, read exactly as the SubagentStart/Stop hooks read it: a separate sqlite
-// bundle, required lazily so an old `node` degrades to the seed tier instead of failing this CLI.
-function readGlobalHandoff(handoffId) {
-  try {
-    const { readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs");
-    return readHandoffDefault(handoffId);
-  } catch {
-    return null;
-  }
-}
 
 try {
   const agentType = process.argv[2] || "";

@@ -31,14 +31,10 @@ import os from "node:os";
 import path from "node:path";
 
 import { isValidSessionId, sessionPathsFor } from "./session-paths.js";
+import type { SessionRef } from "./session-sweep.js";
 
 const TAIL_BYTES = 4 * 1024 * 1024;
 const MAX_TITLE_LEN = 200;
-
-export interface SessionTitleRef {
-  projectRoot: string;
-  sessionId: string;
-}
 
 /** Map key used by `resolveSessionTitles` and the renderer: `${projectRoot}::${sessionId}`. */
 export function sessionTitleKey(projectRoot: string, sessionId: string): string {
@@ -159,7 +155,7 @@ export function resolveSessionTitle(
  * so the caller can tell "resolved to nothing" from "not asked".
  */
 export function resolveSessionTitles(
-  refs: SessionTitleRef[],
+  refs: SessionRef[],
   env: Record<string, string | undefined> = process.env
 ): Record<string, string | null> {
   const out: Record<string, string | null> = {};

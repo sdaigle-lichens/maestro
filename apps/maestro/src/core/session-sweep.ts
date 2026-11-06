@@ -102,15 +102,26 @@ function isAbandoned(dir: string, now: number, idleCapMs: number): boolean {
   return idle > idleCapMs; // negative (future mtime) is never > cap
 }
 
+/** The clock, the idle cap (each caller's own default) and this process's own session id. */
+function resolveOptions(options: SessionSweepOptions, defaultIdleCapMs: number) {
+  return {
+    now: options.now ?? Date.now(),
+    idleCapMs: options.idleCapMs ?? defaultIdleCapMs,
+    ownId: (options.env ?? (process.env as SessionIdEnv))?.[SESSION_ID_ENV],
+  };
+}
+
+/** Delete every state directory of one session. Throws on the first failure, like `fs.rmSync`. */
+function removeSessionDirs(claudeDir: string, sessionId: string): void {
+  for (const d of sessionDirsFor(claudeDir, sessionId)) fs.rmSync(d, { recursive: true, force: true });
+}
+
 /**
  * Remove abandoned session directories from every project in `projectRoots`. Never throws: a
  * failure on one directory or project leaves it in place and moves on.
  */
 export function sweepStaleSessions(projectRoots: string[], options: SessionSweepOptions = {}): SessionSweepResult {
-  const now = options.now ?? Date.now();
-  const idleCapMs = options.idleCapMs ?? SESSION_SWEEP_IDLE_CAP_MS;
-  const env = options.env ?? (process.env as SessionIdEnv);
-  const ownId = env?.[SESSION_ID_ENV];
+  const { now, idleCapMs, ownId } = resolveOptions(options, SESSION_SWEEP_IDLE_CAP_MS);
   const removed: SessionSweepResult["removed"] = [];
 
   for (const projectRoot of [...new Set(projectRoots)]) {
@@ -120,7 +131,7 @@ export function sweepStaleSessions(projectRoots: string[], options: SessionSweep
       const paths = sessionPathsFor(claudeDir, sessionId);
       if (!paths || !isAbandoned(paths.dir, now, idleCapMs)) continue;
       try {
-        for (const d of sessionDirsFor(claudeDir, sessionId)) fs.rmSync(d, { recursive: true, force: true });
+        removeSessionDirs(claudeDir, sessionId);
         removed.push({ projectRoot, sessionId });
       } catch {
         // Cannot delete: it stays, and the next sweep tries again.
@@ -159,9 +170,7 @@ export function deleteSession(
   sessionId: string,
   options: SessionSweepOptions = {}
 ): DeleteSessionResult {
-  const now = options.now ?? Date.now();
-  const idleCapMs = options.idleCapMs ?? SESSION_DELETE_IDLE_CAP_MS;
-  const ownId = (options.env ?? (process.env as SessionIdEnv))?.[SESSION_ID_ENV];
+  const { now, idleCapMs, ownId } = resolveOptions(options, SESSION_DELETE_IDLE_CAP_MS);
   if (!allowedRoots.includes(projectRoot) || !isValidSessionId(sessionId)) {
     return { removed: false, reason: "invalid" };
   }
@@ -177,9 +186,7 @@ export function deleteSession(
   }
   if (!isAbandoned(paths.dir, now, idleCapMs)) return { removed: false, reason: "running" };
   try {
-    for (const d of sessionDirsFor(path.join(projectRoot, ".claude"), sessionId)) {
-      fs.rmSync(d, { recursive: true, force: true });
-    }
+    removeSessionDirs(path.join(projectRoot, ".claude"), sessionId);
     return { removed: true };
   } catch {
     return { removed: false, reason: "failed" };
@@ -188,9 +195,7 @@ export function deleteSession(
 
 /** Sessions on disk that `deleteSession` would currently accept. */
 export function listDeletableSessions(allowedRoots: string[], options: SessionSweepOptions = {}): SessionRef[] {
-  const now = options.now ?? Date.now();
-  const idleCapMs = options.idleCapMs ?? SESSION_DELETE_IDLE_CAP_MS;
-  const ownId = (options.env ?? (process.env as SessionIdEnv))?.[SESSION_ID_ENV];
+  const { now, idleCapMs, ownId } = resolveOptions(options, SESSION_DELETE_IDLE_CAP_MS);
   const out: SessionRef[] = [];
   for (const projectRoot of [...new Set(allowedRoots)]) {
     const claudeDir = path.join(projectRoot, ".claude");

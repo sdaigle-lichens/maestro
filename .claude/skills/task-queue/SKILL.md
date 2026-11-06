@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task."
 metadata:
   type: concept-skill
-  version: "2.6"
-  last-update: beb395d4228873fa5db9c671b3ffbd5be1e82fec
+  version: "2.7"
+  last-update: d5ed7a8aeda17f922babaa06b135015a0bc5cb2e
 ---
 
 # Task queue
@@ -44,7 +44,7 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 | --- | --- |
 | `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |
 | `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |
-| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection`, `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |
+| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection` (cut by the shared `sectionOf`, also used by `parseBlockedBy`), `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |
 | `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |
 | `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |
 | `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |

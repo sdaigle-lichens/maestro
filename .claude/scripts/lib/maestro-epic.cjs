@@ -259,12 +259,16 @@ var STATUS_FILE = "status.json";
 function tasksDirFor(projectRoot) {
   return import_node_path6.default.join(mainCheckoutRoot(projectRoot), TASKS_SUBDIR);
 }
-function parseBlockedBy(content) {
-  const start = content.search(/^##\s+Blocked by\s*$/m);
-  if (start === -1) return [];
+function sectionOf(content, headingPattern) {
+  const start = content.search(headingPattern);
+  if (start === -1) return null;
   const rest = content.slice(start);
   const nextHeading = rest.slice(1).search(/^##\s/m);
-  const body = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
+  return nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
+}
+function parseBlockedBy(content) {
+  const body = sectionOf(content, /^##\s+Blocked by\s*$/m);
+  if (body === null) return [];
   const refs = body.match(/`(\d{3}-[\w-]+\.md)`/g) ?? [];
   return Array.from(new Set(refs.map((r) => r.replace(/`/g, ""))));
 }

@@ -427,6 +427,18 @@ describe("SubagentStop flags a route's missing payload (087 item 2)", () => {
     expect(seen.stdout).toContain(`${CH}/test/backend.1.md`);
   });
 
+  it("the stop hook firing twice for one run lists the missing payload once (152)", async () => {
+    const root = await installed();
+    subagentStart(root, "backend", "b1");
+    const stop = { last_assistant_message: '"verdict": "SUCCESS"\nHANDOFF: success' };
+    expect(subagentStop(root, "backend", "b1", stop).code).toBe(0);
+    expect(subagentStop(root, "backend", "b1", stop).code).toBe(0);
+
+    const issues = readState(root).handoff_issues.filter((i: Record<string, unknown>) => i.kind === "missing_payload");
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toMatchObject({ agent_id: "b1", files: [`${CH}/test/backend.1.md`] });
+  });
+
   it("a condition route expecting a payload is checked too", async () => {
     const root = await installed();
     subagentStart(root, "test", "t1");

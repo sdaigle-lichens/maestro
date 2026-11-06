@@ -45,3 +45,11 @@ Out of scope, decided by the user or already gone:
 ## Blocked by
 
 - `151-read-a-resumed-agent-s-current-hand-back-not-its-previous-run-s.md`
+
+## Post-Mortem
+
+- **Problem:** The user had difficulty viewing the human-review file. The orchestrator pointed at its path and the approval prompt could not show it. The user had to ask for it to be opened, first by Read, then by xdg-open, before they could approve.
+  **Fix:** none needed in the template: Step 3 already says to print the full summary above the question, and the orchestrator skipped it. Follow that rule; print the review file's text in the conversation before asking.
+
+- **Problem:** The backend handed back a red suite: its change broke `install.test.ts` and it believed it could not edit tests beyond its own new one. One extra hand-back and resume.
+  **Fix:** the orchestrator template's agent-step line now tells builders that fixing an existing test their change breaks is part of the change (plugin 0.13.25; needs `! pnpm refresh:runtime`).

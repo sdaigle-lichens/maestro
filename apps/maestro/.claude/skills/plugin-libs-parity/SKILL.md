@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.5"
-  last-update: beb395d4228873fa5db9c671b3ffbd5be1e82fec
+  version: "2.6"
+  last-update: d5ed7a8aeda17f922babaa06b135015a0bc5cb2e
 ---
 
 # Core ↔ plugin parity
@@ -203,8 +203,9 @@ only and every hook already requires this bundle" argument:
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any
 addition. The sqlite tier is a **separate** bundle, `maestro-handoff-defaults`, which
-`maestro-inject-agent-context.js` `require`s inside a try/catch — so on a `node` older than 22.5 the
-sqlite `require` fails and the seed still answers. The trap: `handoff-seeds.ts` imports **nothing**,
+`readGlobalHandoff` (`src/core/global-handoff.ts`, shipped through `maestro-session`) `require`s inside
+a try/catch — the one definition the three hooks that read the global tier share (`152`). On a `node`
+older than 22.5 the sqlite `require` fails and the seed still answers. The trap: `handoff-seeds.ts` imports **nothing**,
 and adding one store import to it moves 24 protocol bodies behind a `node` version check without
 failing a single test.
 

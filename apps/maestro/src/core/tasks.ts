@@ -44,31 +44,35 @@ function parseTitle(content: string, filename: string): string {
 }
 
 /**
+ * The `## <heading>` section of a task file, heading line included, up to the next `## ` heading
+ * (or the end of the file); null when the heading is absent. `maestro-tasks.cjs` carries the same cut.
+ */
+function sectionOf(content: string, headingPattern: RegExp): string | null {
+  const start = content.search(headingPattern);
+  if (start === -1) return null;
+  const rest = content.slice(start);
+  const nextHeading = rest.slice(1).search(/^##\s/m);
+  return nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
+}
+
+/**
  * Pull the sibling filenames referenced in the "## Blocked by" section. The skill writes them
  * backtick-wrapped (e.g. `002-other-slice.md`); "None" → [].
  */
 export function parseBlockedBy(content: string): string[] {
-  const start = content.search(/^##\s+Blocked by\s*$/m);
-  if (start === -1) return [];
-  const rest = content.slice(start);
-  const nextHeading = rest.slice(1).search(/^##\s/m);
-  const body = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
+  const body = sectionOf(content, /^##\s+Blocked by\s*$/m);
+  if (body === null) return [];
   const refs = body.match(/`(\d{3}-[\w-]+\.md)`/g) ?? [];
   return Array.from(new Set(refs.map((r) => r.replace(/`/g, ""))));
 }
 
 /**
  * Pull the "## Post-Mortem" section (heading included) the orchestrator or `/maestro-post-mortem`
- * appended to a task file, if any — the same section-slicing convention as `parseBlockedBy`, kept
- * separate because the two sections mean different things and can both be present.
+ * appended to a task file, if any — cut by the same `sectionOf` as `parseBlockedBy`; the two
+ * sections mean different things and can both be present.
  */
 export function extractPostMortemSection(content: string): string | null {
-  const start = content.search(/^##\s+Post-Mortem\s*$/m);
-  if (start === -1) return null;
-  const rest = content.slice(start);
-  const nextHeading = rest.slice(1).search(/^##\s/m);
-  const body = nextHeading === -1 ? rest : rest.slice(0, nextHeading + 1);
-  return body.trim();
+  return sectionOf(content, /^##\s+Post-Mortem\s*$/m)?.trim() ?? null;
 }
 
 function readStatusMap(dir: string): StatusMap {
