@@ -23,6 +23,9 @@ In:
   wider modal (task 138).
 - Worktree agents writing their channel files without a classifier denial, via a project allow rule
   (task 139; found again in 137).
+- Narrow the manager review to a direction check, from the 2026-11-05 post-mortem on code-graph
+  epic haiku-subagents-with-graph (task 150). It changes the Verdicts, Rounds and "never sees the
+  diff" decisions below; task 150 updates them.
 
 Out:
 
@@ -58,3 +61,11 @@ Out:
   needs one live check.
 - **Placement:** `manager_review` is recommended right after implementation (`default`) or after the
   test plan (`tdd`), before `@reviewer` and `human_review`.
+
+## Merge plan
+
+Tasks 130 to 139 are done. Only the open task is listed.
+
+| Merge order | Task | Base branch | Version bump           | Shared surfaces                                                                                       |
+| ----------- | ---- | ----------- | ---------------------- | ----------------------------------------------------------------------------------------------------- |
+| 1           | 150  | `main`      | Task 150's worker bumps | `.claude/skills/maestro/SKILL.md` (generated) with task 149 in `freebuff-reviewer`: whoever merges second rebases and runs `pnpm refresh:runtime` |
