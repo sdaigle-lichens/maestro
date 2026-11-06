@@ -265,10 +265,44 @@ session (task `137`). Observations, filled in after that run:
   warning: `handoff-issues` printed "no problems recorded". Finding, not fixed: this agent then
   re-sent its earlier full report as a second handoff entry. The agent did this, not a hook defect,
   but the latest record for the agent now holds the re-sent old report plus the re-verify note.
-  Not run: (b) a next-numbered payload raises no warning, and (d) a run that edits files and skips
-  its payload is still warned. Reason: the Documentation workflow's scribe has no HANDOFF route
-  that expects a channel payload, so neither warning can fire. They need a workflow with a payload
-  route, e.g. Backend: `@backend` to manager review, or Tests: `@test` to `@reviewer`.
+  (b) and (d) were not run here: the Documentation workflow's scribe has no HANDOFF route that
+  expects a channel payload, so neither warning can fire. Both were run under
+  `### Task 155 run (the two resumed-run payload warnings)` below.
+
+### Task 155 run (the two resumed-run payload warnings)
+
+Tests workflow: `@test` to `@reviewer`, payload `.claude/channels/task-155/reviewer/test.N.md`. One
+`@test` agent, dispatched once and resumed twice by `agent_id` via `SendMessage`, with a throwaway
+`probe-155.txt` (deleted, never committed). `handoff-issues` ran after each run. Session log:
+`.claude/maestro_sessions/<session>/log.jsonl`.
+
+- **Case 1, resumed agent writes its next-numbered payload (`test.2.md`):** observed, no warning.
+  Dispatch `16:50:17.978Z kind:dispatch agent:maestro:test`; `Edit(.../probe-155.txt)` 16:50:21;
+  `Write(.../.claude/channels/task-155/reviewer/test.2.md)` 16:50:23; handoff `status:success
+  label:success` 16:50:26. `handoff-issues`: "no problems recorded". Run 1 (`test.1.md`, 16:49:49)
+  was also clean.
+- **Case 2, resumed agent edits a file and skips its payload: NOT warned. Defect found, not fixed.
+  Not passed.** Dispatch `16:51:07.632Z`; `Edit(.../probe-155.txt)` 16:51:09; `SubagentHandback`
+  16:51:10; handoff `status:success label:success` 16:51:11, output "Deliberately wrote no channel
+  payload." No `Write` to `.claude/channels/`. `handoff-issues` at 16:51:35, and again after the
+  reviewer step, printed "no problems recorded". Expected: a `missing_payload` warning for
+  `.claude/channels/task-155/reviewer/test.N.md`. The unit tests for this check pass; the live run
+  did not.
+- **Cause (hypothesis, unproven), ranked by the reviewer:**
+  1. Most plausible: `dropResolvedMissingPayloads` (`resume-delivery.ts`, reached from
+     `handoffIssuesCommand` in `maestro-task-status.cjs`) drops a recorded `missing_payload` when
+     its file is found through `pendingResumeDeliveries`, keyed on the session `run_id` rather than
+     the agent run. Run 1's `test.1.md` carries that run_id, so the missing file looks present.
+     Dropping also deletes `handoff_issues`, which erases the trace.
+  2. `scanRun`/`startsRun` (`handoff-label.ts`) reset `wroteFiles` on a run-boundary misdetection,
+     so the stop hook (`maestro-subagent-log.js`, ~l.272-281) treats the run as re-verify only and
+     skips the check.
+  3. Unlikely: `payloadWrittenSince` counted an earlier file (`test.2.md`, mtime ~16:50:26).
+  The log does not separate these. Decisive probe: rerun case 2 with a debug line recording
+  `reverifyOnly` and `checkPayload`'s result, or check whether `session.json` `handoff_issues` is
+  populated before `handoff-issues` runs. The channel files were retired at 16:52:54, so their
+  mtimes cannot be re-read.
+- The task 154 finding (a resumed agent re-sends its old report on a re-verify) did not recur.
 
 ## Things that bite
 
