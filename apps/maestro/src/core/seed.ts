@@ -98,10 +98,17 @@ function columnNodes(ids: string[], skillCount: SkillCount = () => 0): MaestroNo
   });
 }
 
+// @test's own FAIL route back to the implementer (default and Tests workflows). Without it a test
+// that finds a real defect has no route and the run stops for the user (`NO ROUTE for HANDOFF:
+// fail`). Not seeded in tdd: there @test runs before any implementation, so failing tests are the
+// expected output, not a defect to route.
+const TEST_FAIL_LABEL = "FAIL: a test exposes a code defect";
+const testFailLabel = (agent: string): string => `FAIL: ${agent} code (a test exposes a defect)`;
+
 // Build a seeded workflow. `impl` is the implementation-agent chain inserted into the
 // happy path (e.g. ["backend"], ["frontend"], or ["backend","frontend"] for fullstack).
 //   kind "default": impl runs first — main-session → [impl] → human review → test → reviewer → scribe.
-//     Reviewer/refactor code FAILs route to the impl agent(s); split per-agent when impl.length > 1.
+//     Test/reviewer/refactor code FAILs route to the impl agent(s); split per-agent when impl.length > 1.
 //   kind "tdd": tests first — main-session → test → human review → [impl] → reviewer → scribe.
 //     Code FAILs always route to @test (failures drive more tests), so impl never changes the conditions.
 export function buildWorkflow(
@@ -138,6 +145,8 @@ export function buildWorkflow(
   } else if (impl.length === 1) {
     reviewerCode.push(c("reviewer", impl[0], "FAIL: style, data layer, error handling, security, or persistence"));
     refactorCode.push(c("refactor", impl[0], "finding requires code changes"));
+    // @test runs after impl here, so a defect it finds has an owner to go back to.
+    reviewerCode.push(c("test", impl[0], TEST_FAIL_LABEL));
   } else {
     // Fullstack / multi-agent: split the code FAIL and code-change routes per impl agent.
     for (const a of impl) {
@@ -148,6 +157,7 @@ export function buildWorkflow(
     for (const a of impl) {
       refactorCode.push(c("refactor", a, `finding requires ${a} code changes`));
     }
+    for (const a of impl) reviewerCode.push(c("test", a, testFailLabel(a)));
   }
 
   edges.push(
@@ -240,10 +250,12 @@ export function buildTestsWorkflow(name: string, impl: string[], skillCount: Ski
   edges.push(c("reviewer", "refactor", "FAIL: a finding big enough to delegate to the refactor agent"));
 
   if (impl.length === 1) {
+    edges.push(c("test", impl[0], TEST_FAIL_LABEL));
     edges.push(c("reviewer", impl[0], "FAIL: a simple code fix found while testing"));
     edges.push(c("refactor", impl[0], "finding requires code changes"));
     edges.push(c(impl[0], "test", "fix applied; re-run the tests"));
   } else {
+    for (const a of impl) edges.push(c("test", a, testFailLabel(a)));
     for (const a of impl) edges.push(c("reviewer", a, `FAIL: a simple ${a} code fix found while testing`));
     for (const a of impl) edges.push(c("refactor", a, `finding requires ${a} code changes`));
     for (const a of impl) edges.push(c(a, "test", `${a} fix applied; re-run the tests`));

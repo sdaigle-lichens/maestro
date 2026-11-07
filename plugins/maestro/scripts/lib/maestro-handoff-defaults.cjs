@@ -133,6 +133,23 @@ var TEST_TO_REVIEWER_V2 = `\`\`\`json
   "files_touched": ["<list, or 'none'>"]
 }
 \`\`\``;
+var TEST_TO_REVIEWER_V3 = `\`\`\`json
+{
+  "tests_added": ["<test name \u2014 what it verifies>"],
+  "test_origin": {
+    "from_hints": ["<test name>"],
+    "independent": ["<test name> - <source: acceptance criterion | file:line code path | failure mode not in hints>"]
+  },
+  "acceptance_coverage": ["<acceptance criterion> => <test names, or 'untested: <reason>'>"],
+  "hints_skipped": ["<implementer hint> - <reason>, or 'none'"],
+  "results": ["<pass/fail summary>"],
+  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],
+  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or 'not demonstrated'>"],
+  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or 'unit only'>"],
+  "coverage_gaps": ["<behavior still untested, or 'none'>"],
+  "files_touched": ["<list, or 'none'>"]
+}
+\`\`\``;
 var TEST_TO_REVIEWER = `\`\`\`json
 {
   "tests_added": ["<test name \u2014 what it verifies>"],
@@ -147,6 +164,7 @@ var TEST_TO_REVIEWER = `\`\`\`json
   "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or 'not demonstrated'>"],
   "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or 'unit only'>"],
   "coverage_gaps": ["<behavior still untested, or 'none'>"],
+  "known_gaps": ["<issue> - <owner: a later step such as @scribe, or 'after commit'> - <why it is not a failure now>, or 'none'"],
   "files_touched": ["<list, or 'none'>"]
 }
 \`\`\``;
@@ -260,6 +278,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<component/page the frontend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```'
   ],
   "test/reviewer": [
+    TEST_TO_REVIEWER_V3,
     TEST_TO_REVIEWER_V2,
     // `148`: the flat body before commands_run, negative_control and real_path_exercised.
     '```json\n{\n  "tests_added": ["<test name \u2014 what it verifies>"],\n  "results": ["<pass/fail summary>"],\n  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n  "files_touched": ["<list, or \'none\'>"]\n}\n```',

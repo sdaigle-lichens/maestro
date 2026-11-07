@@ -132,7 +132,14 @@ export {
 // `isSeededHandoff` are the floor: the sqlite tier lives in its own bundle the hook requires inside
 // a try/catch, and this is what answers when that require throws. Keep `grep -c "node:sqlite"` on
 // the generated maestro-session.cjs at 0.
-export { handoffRoutes, routesFrom, handoffPairs, testHintRoutes, type HandoffRoute } from "../handoff-routes.js";
+export {
+  handoffRoutes,
+  routesFrom,
+  handoffPairs,
+  testHintRoutes,
+  laterSuccessSteps,
+  type HandoffRoute,
+} from "../handoff-routes.js";
 
 // Config hygiene (`041`) — the collision the canvas already refuses to create (two placed
 // instances on one workflow sharing a bare agent), reported wherever a config a human may have
@@ -244,6 +251,7 @@ export {
   checkRoute,
   checkPayload,
   reportVerdict,
+  BLOCKED_LABEL,
   type HandoffIssue,
   type HandoffIssueKind,
   type PayloadRouteRef,

@@ -106,8 +106,10 @@ describe("hints-only seeds", () => {
   it("test/reviewer carries the origin split, the acceptance mapping and the skipped hints", () => {
     for (const k of ['"test_origin"', '"acceptance_coverage"', '"hints_skipped"'])
       expect(SEED_HANDOFFS["test/reviewer"]).toContain(k);
-    expect(PRIOR_SEEDS["test/reviewer"][0]).toContain('"commands_run"');
-    expect(PRIOR_SEEDS["test/reviewer"][0]).not.toContain('"test_origin"');
+    // The pre-`155` body is still a prior seed (newest first, so behind the pre-known_gaps one).
+    const pre155 = PRIOR_SEEDS["test/reviewer"][1];
+    expect(pre155).toContain('"commands_run"');
+    expect(pre155).not.toContain('"test_origin"');
   });
 
   it("every seeded handoff body is valid JSON inside its fence", () => {

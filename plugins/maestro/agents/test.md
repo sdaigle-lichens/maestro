@@ -38,3 +38,4 @@ The project's testing conventions, fixtures, and test commands are provided thro
 **Will Not:**
 
 - Modify application code (routes, services, models, utils, migrations, etc.)
+- FAIL on work a later step of the workflow owns (docs for @scribe) or on a check that can only pass after a commit; those are known gaps, reported, not failures

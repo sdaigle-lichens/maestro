@@ -33,6 +33,7 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // src/core/plugin-entries/maestro-session.ts
 var maestro_session_exports = {};
 __export(maestro_session_exports, {
+  BLOCKED_LABEL: () => BLOCKED_LABEL,
   CHANNEL_AGE_CAP_MS: () => CHANNEL_AGE_CAP_MS,
   CHANNEL_ONLY_AGENTS: () => CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS: () => CLAIM_IDLE_CAP_MS,
@@ -133,6 +134,7 @@ __export(maestro_session_exports, {
   isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
   lastHandoffLabel: () => lastHandoffLabel,
+  laterSuccessSteps: () => laterSuccessSteps,
   latestWorkflowHandoff: () => latestWorkflowHandoff,
   listSessionIds: () => listSessionIds,
   mainCheckoutRoot: () => mainCheckoutRoot,
@@ -1172,6 +1174,43 @@ function testHintRoutes(workflows, instances) {
   }
   return out;
 }
+function laterSuccessSteps(workflows, instances, agent) {
+  const bare = bareAgentName(agent);
+  const instList = instances ?? [];
+  const label = (node) => {
+    if (node.type === "agent") {
+      const inst = instList.find((i) => i.name === node.instance);
+      return `@${inst ? bareAgentName(inst.agent) : node.instance}`;
+    }
+    if (node.type === "skill") return `skill:${node.skill ?? node.id}`;
+    return node.type;
+  };
+  const out = [];
+  for (const wf of workflows ?? []) {
+    const nodes = wf.nodes ?? [];
+    const edges = wf.edges ?? [];
+    const start = nodes.find((n) => n.type === "agent" && label(n) === `@${bare}`);
+    if (!start) continue;
+    const visited = /* @__PURE__ */ new Set([start.id]);
+    let frontier = [start.id];
+    while (frontier.length) {
+      const next = [];
+      for (const id of frontier) {
+        for (const e of edges) {
+          if (e.from !== id || e.kind !== "success" || visited.has(e.to)) continue;
+          visited.add(e.to);
+          const node = nodes.find((n) => n.id === e.to);
+          if (!node) continue;
+          const name = label(node);
+          if (name !== `@${bare}` && !out.includes(name)) out.push(name);
+          next.push(e.to);
+        }
+      }
+      frontier = next;
+    }
+  }
+  return out;
+}
 function routesFrom(routes, agent) {
   const bare = bareAgentName(agent);
   return routes.filter((r) => r.sender === bare);
@@ -1300,6 +1339,23 @@ var TEST_TO_REVIEWER_V2 = `\`\`\`json
   "files_touched": ["<list, or 'none'>"]
 }
 \`\`\``;
+var TEST_TO_REVIEWER_V3 = `\`\`\`json
+{
+  "tests_added": ["<test name \u2014 what it verifies>"],
+  "test_origin": {
+    "from_hints": ["<test name>"],
+    "independent": ["<test name> - <source: acceptance criterion | file:line code path | failure mode not in hints>"]
+  },
+  "acceptance_coverage": ["<acceptance criterion> => <test names, or 'untested: <reason>'>"],
+  "hints_skipped": ["<implementer hint> - <reason>, or 'none'"],
+  "results": ["<pass/fail summary>"],
+  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],
+  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or 'not demonstrated'>"],
+  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or 'unit only'>"],
+  "coverage_gaps": ["<behavior still untested, or 'none'>"],
+  "files_touched": ["<list, or 'none'>"]
+}
+\`\`\``;
 var TEST_TO_REVIEWER = `\`\`\`json
 {
   "tests_added": ["<test name \u2014 what it verifies>"],
@@ -1314,6 +1370,7 @@ var TEST_TO_REVIEWER = `\`\`\`json
   "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or 'not demonstrated'>"],
   "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or 'unit only'>"],
   "coverage_gaps": ["<behavior still untested, or 'none'>"],
+  "known_gaps": ["<issue> - <owner: a later step such as @scribe, or 'after commit'> - <why it is not a failure now>, or 'none'"],
   "files_touched": ["<list, or 'none'>"]
 }
 \`\`\``;
@@ -1427,6 +1484,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<component/page the frontend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```'
   ],
   "test/reviewer": [
+    TEST_TO_REVIEWER_V3,
     TEST_TO_REVIEWER_V2,
     // `148`: the flat body before commands_run, negative_control and real_path_exercised.
     '```json\n{\n  "tests_added": ["<test name \u2014 what it verifies>"],\n  "results": ["<pass/fail summary>"],\n  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n  "files_touched": ["<list, or \'none\'>"]\n}\n```',
@@ -1979,6 +2037,7 @@ async function awaitHandback(read, sleep, waitMs = HANDBACK_WAIT_MS, pollMs = HA
 var sendMessageHandoff = handbackHandoff;
 
 // src/core/handoff-check.ts
+var BLOCKED_LABEL = "blocked";
 var VERDICT_RE = /verdict["'*]*\s*[:=]\s*["'*]*\s*(SUCCESS|FAIL(?:URE|ED)?|PASS(?:ED)?)\b(?!\s*\|)/gi;
 function reportVerdict(msg) {
   if (typeof msg !== "string") return null;
@@ -2013,6 +2072,14 @@ function checkRoute(msg, routes, workflow) {
   if (label === null || label.toLowerCase() === "success") return null;
   const want = label.toLowerCase();
   if (routes.some((r) => r.label.toLowerCase() === want)) return null;
+  if (want === BLOCKED_LABEL) {
+    return {
+      kind: "blocked",
+      verdict: reportVerdict(msg),
+      label,
+      message: "The subagent stopped on something only the user can fix (setup or environment), not a code defect. Stop: tell the user exactly what it says they must do. Once they confirm it is done, resume the same agent (SendMessage to its agent_id). Do not route to a fix loop and do not dispatch another agent."
+    };
+  }
   const known = routes.filter((r) => r.label.toLowerCase() !== "success").map((r) => r.label);
   return {
     kind: "unrouted",
@@ -3039,6 +3106,7 @@ function meetingNotice(meeting, agentType) {
 }
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
+  BLOCKED_LABEL,
   CHANNEL_AGE_CAP_MS,
   CHANNEL_ONLY_AGENTS,
   CLAIM_IDLE_CAP_MS,
@@ -3139,6 +3207,7 @@ function meetingNotice(meeting, agentType) {
   isValidSessionId,
   laneFor,
   lastHandoffLabel,
+  laterSuccessSteps,
   latestWorkflowHandoff,
   listSessionIds,
   mainCheckoutRoot,

@@ -7,7 +7,15 @@
 
 import { lastHandoffLabel } from "./handoff-label.js";
 
-export type HandoffIssueKind = "missing" | "contradiction" | "missing_payload" | "unrouted";
+export type HandoffIssueKind = "missing" | "contradiction" | "missing_payload" | "unrouted" | "blocked";
+
+/**
+ * The one label any workflow agent may end with when it cannot go on without the user: a setup or
+ * environment problem (a port in use, a service that won't start, missing credentials or a
+ * dependency it cannot install). Not a defect, so no fix loop takes it: with no edge for it the run
+ * stops for the user. A workflow that does wire a `blocked` edge routes it like any other label.
+ */
+export const BLOCKED_LABEL = "blocked";
 
 export interface HandoffIssue {
   kind: HandoffIssueKind;
@@ -87,6 +95,17 @@ export function checkRoute(msg: unknown, routes: { label: string }[], workflow: 
   if (label === null || label.toLowerCase() === "success") return null;
   const want = label.toLowerCase();
   if (routes.some((r) => r.label.toLowerCase() === want)) return null;
+  if (want === BLOCKED_LABEL) {
+    return {
+      kind: "blocked",
+      verdict: reportVerdict(msg),
+      label,
+      message:
+        "The subagent stopped on something only the user can fix (setup or environment), not a code defect. Stop: tell the " +
+        "user exactly what it says they must do. Once they confirm it is done, resume the same agent (SendMessage to its " +
+        "agent_id). Do not route to a fix loop and do not dispatch another agent.",
+    };
+  }
   const known = routes.filter((r) => r.label.toLowerCase() !== "success").map((r) => r.label);
   return {
     kind: "unrouted",

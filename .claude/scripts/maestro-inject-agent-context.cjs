@@ -90,6 +90,7 @@ const {
   payloadRoutes,
   payloadRequirement,
   testHintRoutes,
+  laterSuccessSteps,
   testHintRequirement,
   readLane,
   retire,
@@ -185,6 +186,8 @@ function collect(cfg, sessionPath, agentType) {
   const routes = routesFrom(handoffRoutes(searchList, instances), agentType);
   // `155`: an implementer with `@test` later on its success path but no edge of its own into it.
   const hintRoutes = routesFrom(testHintRoutes(searchList, instances), agentType);
+  // Guarded: an older lib next to this script (a half-refreshed install) has no such export.
+  const laterSteps = typeof laterSuccessSteps === "function" ? laterSuccessSteps(searchList, instances, agentType) : [];
 
   if (matchedInstances.length === 0) return null;
 
@@ -212,6 +215,7 @@ function collect(cfg, sessionPath, agentType) {
     referencedSkills: referencedList,
     routes,
     hintRoutes,
+    laterSteps,
     warning,
   };
 }
@@ -375,9 +379,20 @@ function collectReportContext(cfg, projectDir, agentType) {
       `Handoff routing for the \`${agentType}\` agent. End your final message with exactly one \`HANDOFF:\` line so ` +
         `the orchestrator can route deterministically:\n${lines.join("\n")}` +
         (hasSuccess ? "" : "\n(No success path leaves this node — it only feeds back via the condition above.)") +
+        // Which steps still run after this one: work they own (docs for @scribe) is not a defect here.
+        (result.laterSteps && result.laterSteps.length
+          ? `\n\nStill to run after you on this workflow's success path: ${result.laterSteps.join(" → ")}. ` +
+            "Work one of those steps owns is not your failure: note it in your report, never FAIL on it."
+          : "") +
         "\n\nYour report's verdict and your HANDOFF line must agree. A real defect must end with the matching condition label " +
         "when one is listed above. A report verdict of FAIL with `HANDOFF: success` is invalid, and so is ending with no " +
-        "HANDOFF line at all — the orchestrator is told about both and will not treat either as success."
+        "HANDOFF line at all — the orchestrator is told about both and will not treat either as success." +
+        // Two kinds of failure, two outcomes: a code defect takes its condition route back to the
+        // implementer; a problem only the user can fix stops the run for them.
+        "\n\nIf you cannot go on because of something only the user can fix (setup or environment: a port in use, a " +
+        "service that will not start, missing credentials, a dependency you cannot install), end with " +
+        "`HANDOFF: blocked` and say exactly what the user must do. The run stops for them and resumes you after. " +
+        "Never use it for a code defect."
     );
   }
 
