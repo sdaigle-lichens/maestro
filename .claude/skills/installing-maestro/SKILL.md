@@ -60,8 +60,8 @@ writes `~/.claude`, it just no longer needs to ask the user to. See the hook-arb
 fresh-install defaults, removes a leftover `gates` key, and rewrites the file only if something
 changed. A list already present, even empty, is left alone. `InstallReport.skillListsSeeded`
 (`{start_skills, end_skills, gatesRemoved}` or `null`) and the `maestro-install.js` JSON summary
-carry it so the skill can tell the user what was seeded. `maestro-seed` is not in `STATIC_ASSETS`,
-so it needs no `.claude/scripts/lib` mirror.
+carry it so the skill can tell the user what was seeded. `maestro-seed` is in `STATIC_ASSETS` since
+`162` (it backs `maestro-workflow-drift.cjs`), so it needs its `.claude/scripts/lib` mirror.
 
 **Terminal-only: `--ignore-mode committed|ignored`.** `ignored` writes `.claude/` into the
 clone-local `git rev-parse --git-path info/exclude` (first write of the run) instead of the
@@ -179,7 +179,7 @@ HANDOFFS table), `seed.ts` (`defaultV3Config`), `detect.ts`, `report-sync.ts`, a
   sub-concept.
 - **Changing the asset list makes every installed project stale exactly once.** `031` added two,
   `032` one, `033` **removed ~23**, `035` two, `046` one, and more since (`063`, `084`, `089`, `113`;
-  the manifest is 33 files now, 12 scripts + 9 libs + the cleanup + 11 hook scripts; `121` added the channel guard, `130` the review gate, `141` the heartbeat) — `shippedRuntimeId` moved each time and
+  the manifest is 35 files now, 13 scripts + 10 libs + the cleanup + 11 hook scripts; `121` added the channel guard, `130` the review gate, `141` the heartbeat, `162` the drift script and seed lib) — `shippedRuntimeId` moved each time and
   every project reported stale on its next check and re-copied. Expected, and the only way a runtime
   file ever arrives or leaves, but worth saying out loud because "everything went stale after my
   change" reads like a bug. The digest is over the **manifest**, so this fires whether or not any

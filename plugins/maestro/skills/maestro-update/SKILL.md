@@ -164,10 +164,31 @@ place the refresh procedure is written down.
      With the paths above excluded from the formatter, restore the seed text for them and re-run
      the installer; they then stop reporting stale-customized."* Say it only once.
 
-8. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+8. **Check how far each workflow has drifted from the seed**, after the steps above. This is
+   **read-only**: it writes nothing, never touches `maestro.json`, never re-renders the
+   orchestrator, and always exits 0. It needs no sandbox allow-list entry (a read-only script, like
+   step 4's `list`), so run it in exactly this form, one per call:
+
+   ```bash
+   node .claude/scripts/maestro-workflow-drift.cjs .
+   ```
+
+   It prints one JSON line: `{"checked", "summary", "workflows": [{"name","verdict",...}], "report": [...], "apply"}`.
+   Each `verdict` is `identical`, `differs`, `missing-in-project` or `project-only`; the last two are
+   information, not problems. See `references/workflow-drift.md` for what it compares.
+   - **No workflow is `differs`** (every verdict is `identical`, `project-only` or
+     `missing-in-project`, or `checked` is `false`): add one line to the report, `summary` as
+     printed. Nothing more.
+   - **Any workflow `differs`:** put `report` in the report as written, the detail included, ending
+     with how to apply. Never apply a change yourself and never offer to overwrite: the workflows
+     are the user's graph, changed only through the Maestro app's workflow view or the
+     `update-workflow` skill.
+
+9. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged), any dangling skill references step 5 found, step 6's herdr line if any, and
-   step 1's `! <applyCommand>` if one is still to run.
+   none had diverged), any dangling skill references step 5 found, step 6's herdr line if any,
+   step 7's formatter lines if any, step 8's drift summary, and step 1's `! <applyCommand>` if one
+   is still to run.
 
 ## Notes
 

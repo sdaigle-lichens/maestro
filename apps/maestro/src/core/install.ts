@@ -222,6 +222,10 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   // directly by the orchestrator's done step, `maestro-manager` and `to-maestro-tasks`, so it is a
   // project copy for the same $CLAUDE_PROJECT_DIR reason as every orchestrator-invoked script above.
   { src: "scripts/maestro-epic.cjs", dest: ".claude/scripts/maestro-epic.cjs" },
+  // The read-only workflow drift report (`162`) run by `maestro-update`: compares each project
+  // workflow with the seed workflow of the same name and prints what differs. Writes nothing, exits
+  // 0. A project copy for the same $CLAUDE_PROJECT_DIR reason as every orchestrator-invoked script.
+  { src: "scripts/maestro-workflow-drift.cjs", dest: ".claude/scripts/maestro-workflow-drift.cjs" },
   // Shared libs every copied script requires via `./lib/…`.
   //
   // THE RULE THIS LIST ANSWERS TO: every `require("./lib/…")` reachable from a copied script has
@@ -241,6 +245,8 @@ const STATIC_ASSETS: RuntimeAsset[] = [
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // Backs maestro-epic.cjs above, generated from apps/maestro/src/core/epics.ts (`084`).
   { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
+  // Backs maestro-workflow-drift.cjs above (`162`): the seed builder, generated from seed.ts.
+  { src: "scripts/lib/maestro-seed.cjs", dest: ".claude/scripts/lib/maestro-seed.cjs" },
   // Backs maestro-step1-gates.cjs and maestro-end-skills.cjs above: the one `resolveSkillLists`
   // the desktop app also uses, generated from apps/maestro/src/core/skill-lists.ts.
   { src: "scripts/lib/maestro-skill-lists.cjs", dest: ".claude/scripts/lib/maestro-skill-lists.cjs" },

@@ -643,6 +643,9 @@ const STATIC_ASSETS = [
   { src: "scripts/maestro-workflow-spec.cjs", dest: ".claude/scripts/maestro-workflow-spec.cjs" },
   // The epics CLI (`084`) — see apps/maestro/src/core/install.ts's STATIC_ASSETS.
   { src: "scripts/maestro-epic.cjs", dest: ".claude/scripts/maestro-epic.cjs" },
+  // The read-only workflow drift report run by maestro-update (`162`) — see
+  // apps/maestro/src/core/install.ts's STATIC_ASSETS.
+  { src: "scripts/maestro-workflow-drift.cjs", dest: ".claude/scripts/maestro-workflow-drift.cjs" },
   { src: "scripts/lib/maestro-session.cjs", dest: ".claude/scripts/lib/maestro-session.cjs" },
   { src: "scripts/lib/maestro-tasks.cjs", dest: ".claude/scripts/lib/maestro-tasks.cjs" },
   { src: "scripts/lib/maestro-skill-regions.cjs", dest: ".claude/scripts/lib/maestro-skill-regions.cjs" },
@@ -651,6 +654,8 @@ const STATIC_ASSETS = [
   { src: "scripts/lib/maestro-workflow-spec.cjs", dest: ".claude/scripts/lib/maestro-workflow-spec.cjs" },
   // Backs maestro-epic.cjs above (`084`).
   { src: "scripts/lib/maestro-epic.cjs", dest: ".claude/scripts/lib/maestro-epic.cjs" },
+  // Backs maestro-workflow-drift.cjs above (`162`): the seed builder.
+  { src: "scripts/lib/maestro-seed.cjs", dest: ".claude/scripts/lib/maestro-seed.cjs" },
   // Backs maestro-step1-gates.cjs and maestro-end-skills.cjs above.
   { src: "scripts/lib/maestro-skill-lists.cjs", dest: ".claude/scripts/lib/maestro-skill-lists.cjs" },
   // The two global sqlite tiers maestro-inject-agent-context requires (035) — see
