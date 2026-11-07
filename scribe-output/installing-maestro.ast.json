@@ -5412,8 +5412,8 @@
     "contentHash": "sha256:13b0125d926d95394a7ac12eab4df4da36753ec45bee4eeba79f20d6709ba0c8"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.44",
-    "extracted_at": "2026-11-07T22:14:22.469Z",
+    "extractor_version": "code-graph@0.3.42",
+    "extracted_at": "2026-11-07T22:16:03.379Z",
     "files": {
       "apps/maestro/src/core/detect.ts": "sha256:05047829307f85a0bd19f8bb1a05c94de8366cccb10440a738c869c7a71aae7e",
       "apps/maestro/src/core/hook-arbitration.ts": "sha256:b72fcb953d62be854407e7795be866c3397e6a16360b905dc66b85b4e0f48ab5",

@@ -8013,8 +8013,8 @@
     "contentHash": "sha256:e72a32eb7c41ef0c38ec207d1535fe6c7552bcd67780b7429c21670193ea6c1f"
   },
   "meta": {
-    "extractor_version": "code-graph@0.3.44",
-    "extracted_at": "2026-11-07T22:14:28.136Z",
+    "extractor_version": "code-graph@0.3.42",
+    "extracted_at": "2026-11-07T22:16:04.151Z",
     "files": {
       "apps/maestro/src/core/handoff-channels.ts": "sha256:58812ddcf6bc67c3335a02aeaec63d54687603d6fb0690635538defe8289da15",
       "apps/maestro/src/core/handoff-check.ts": "sha256:cb0b3374378f8eb2236bf4296502aac10c3181dc09960ef2ed20480e478ecbb1",
