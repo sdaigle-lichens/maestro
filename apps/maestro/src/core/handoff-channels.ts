@@ -4,7 +4,8 @@
 // `.claude/maestro-tasks/036-move-handoff-payloads-onto-agent-channels.md` for the design.
 //
 // Scoped lanes (`144`): every channel file belongs to exactly ONE scope, and only the session that
-// owns that scope reads, writes, retires, sweeps (outright), lists as pending, resumes or
+// owns that scope reads, writes, retires, sweeps (outright, on a final SessionEnd only — `159`),
+// lists as pending, resumes or
 // gap-acknowledges it. Before `144` lanes were keyed by receiver and sender alone, so two
 // concurrent sessions (the main checkout and a git worktree, which deliberately shares the main
 // checkout's `.claude/channels/`) injected each other's payloads — task 045's `test/backend.1.md`
@@ -35,7 +36,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { readSession } from "./session-runtime.js";
-import { isValidSessionId, listSessionIds, sessionPathsFor } from "./session-paths.js";
+import { isResumableEnd, isValidSessionId, listSessionIds, sessionPathsFor } from "./session-paths.js";
 import type { PendingLane } from "./contracts.js";
 
 /** How long a lane file may sit unconsumed before `sweep` removes it. */
@@ -430,6 +431,34 @@ export function readLane(
 }
 
 /**
+ * Every file in `receiver`'s `.consumed/` IN `scope` — already delivered. Its `path` is the consumed
+ * copy, not a lane path. Another scope's, and the legacy root `.consumed/`, are never read.
+ */
+export function readConsumed(
+  projectDir: string,
+  scope: string,
+  receiver: string,
+  now: number = Date.now()
+): ChannelEntry[] {
+  if (!isChannelScope(scope)) return [];
+  return readDirEntries(consumedDir(projectDir, scope, receiver), now);
+}
+
+/**
+ * `159`: move a consumed entry (from {@link readConsumed}, same `scope`) back into `receiver`'s live
+ * lane, so the next delivery (cold inline, or a resume's `deliver:` line) hands it over again.
+ * Never overwrites a file already in the lane: that one is the fresher payload. Returns whether it
+ * moved.
+ */
+export function unretire(projectDir: string, scope: string, receiver: string, entry: ChannelEntry): boolean {
+  const dest = path.join(channelDir(projectDir, scope, receiver), entry.fileName);
+  if (fs.existsSync(dest)) return false;
+  fs.mkdirSync(path.dirname(dest), { recursive: true });
+  fs.renameSync(entry.path, dest);
+  return true;
+}
+
+/**
  * Move a delivered entry to `.claude/channels/<scope>/.consumed/<receiver>/` — by rename, never
  * delete, so a delivered-but-then-failed agent's payload is recoverable for `CHANNEL_AGE_CAP_MS`
  * rather than gone. Never call this for an entry `readLane` did not just return for the same
@@ -496,7 +525,10 @@ function sweepConsumed(consumedRoot: string, now: number, ageCapMs: number, all:
 
 /**
  * `SessionEnd`'s replacement for the old flush. With `scope` (the ending session's own, `144`):
- * retire that scope's `.consumed/` outright — never another scope's. Then, across EVERY scope and
+ * retire that scope's `.consumed/` outright — never another scope's — unless `reason` is a
+ * resumable SessionEnd reason (`159`, the `077` rule, {@link isResumableEnd}): a session resumed
+ * under the same id keeps its scope in session state, so its delivered payloads must survive too,
+ * and its `.consumed/` is then only aged out like every other scope's. Then, across EVERY scope and
  * the legacy unscoped layout, age out anything past `ageCapMs` — in a live lane (including a lane
  * nothing has ever drained, the scribe's when no scribe ran) or in a `.consumed/`. Age-out is safe
  * across scopes because it depends on nothing but the file's age. Never touches a lane file inside
@@ -504,13 +536,13 @@ function sweepConsumed(consumedRoot: string, now: number, ageCapMs: number, all:
  */
 export function sweep(
   projectDir: string,
-  opts: { now?: number; ageCapMs?: number; scope?: string | null } = {}
+  opts: { now?: number; ageCapMs?: number; scope?: string | null; reason?: unknown } = {}
 ): SweepResult {
   const now = opts.now ?? Date.now();
   const ageCapMs = opts.ageCapMs ?? CHANNEL_AGE_CAP_MS;
   const removed: string[] = [];
   const root = channelsRoot(projectDir);
-  const own = isChannelScope(opts.scope) ? opts.scope : null;
+  const own = isChannelScope(opts.scope) && !isResumableEnd(opts.reason) ? opts.scope : null;
 
   for (const name of listDirs(root)) {
     const dir = path.join(root, name);

@@ -35,6 +35,10 @@
 //       `missing_payload` whose files are now in the lane is dropped on the next call, so a
 //       payload the sender wrote after the warning isn't reported as missing.
 //
+// `159`: before either check, a payload this run delivered to a target run that never finished (cut
+// off by a restart the session resumed from) is moved back from `.consumed/` into the lane
+// (`restoreInterruptedDeliveries`), so it is a `deliver:` line, or a cold start's inline, again.
+//
 // So "no agent_id" means the first line is not a bare id: output empty, or starting `missing:`.
 //
 // Self-contained on purpose: maestro-install.js copies this file into the project's
@@ -54,6 +58,7 @@ const {
   routesFrom,
   payloadRoutes,
   pendingResumeDeliveries,
+  restoreInterruptedDeliveries,
   recordResumeDeliveries,
   latestWorkflowHandoff,
   expectedLoopbackPayloads,
@@ -94,6 +99,9 @@ try {
         let changed = false;
         // `144`: this session's own channel scope — another session's lane is never delivered.
         const scope = channelScopeOf(projectDir, resolveSessionId());
+        // `159`: a payload delivered to a run a restart cut off goes back into the lane first, so it
+        // is delivered again below and never reported missing.
+        restoreInterruptedDeliveries(projectDir, scope, agentType, runId, lines);
         const deliveries = pendingResumeDeliveries(projectDir, scope, agentType, runId);
         // A `missing_payload` the sender has since fixed would send the orchestrator after a file
         // that is already there: drop it before checking again.

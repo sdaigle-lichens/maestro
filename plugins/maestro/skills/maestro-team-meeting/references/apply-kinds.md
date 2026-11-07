@@ -17,4 +17,4 @@
 | `rule.to-agent` | add the rule's content to the named project agent's file under `## Project rules`, then delete the rule file |
 | `handoff.edit` | edit `.claude/handoffs/<sender>/<receiver>.md` |
 | `report.edit` | edit `.claude/reports/<id>.md`; if `reports` has no entry for the agent, add `{ "id": "<agent>" }` |
-| `gate.change` | set `start_skills.maestro`, `start_skills.to_maestro_tasks`, `end_skills.maestro` (ordered skill ids) or `use_maestro_tasks` |
+| `gate.change` | set `start_skills.maestro`, `start_skills.to_maestro_tasks`, `start_skills.maestro_manager`, `end_skills.maestro`, `end_skills.maestro_manager` (ordered skill ids) or `use_maestro_tasks` |

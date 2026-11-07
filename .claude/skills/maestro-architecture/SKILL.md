@@ -94,7 +94,8 @@ SubagentStart hook  (matcher ".*")  → maestro-inject-agent-context.js
   • REQUIRED-payload block on EVERY pass (`087`, `payloadRequirement`): names the channel file per
     payload route — with shapes on a first/cold run, file names only on a resume
   • if the active workflow can't be resolved → prepends a ⚠️ warning (skills may be unioned/wrong)
-  • cold run: inlines + retires this run's lane files. RESUME (`088`): Claude Code DROPS the whole
+  • cold run: restores a pre-restart delivery after a resumable end first (`159`, see channels.md),
+    then inlines + retires this run's lane files. RESUME (`088`): Claude Code DROPS the whole
     additionalContext, so nothing above reaches it — its lane files go by path in the orchestrator's
     SendMessage (resume-target's `deliver:` lines) and are retired at its own SubagentStop
   • lanes are read only in this session's own scope (`144`, .claude/channels/<scope>/)
@@ -115,10 +116,11 @@ PreToolUse hook (matcher ".*") → maestro-session-log.js → appends one line t
         │
         ▼
 SessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)
-                  → on a FINAL end deletes ONLY THE ENDING SESSION'S directory (a resumable
-                    `reason` keeps it, `077`), sweeps .claude/channels/ (own
-                    scope's .consumed outright, everything else only past 14 days, `144`),
-                    keeps maestro.json and the orchestrator skill.
+                  → on a FINAL end deletes ONLY THE ENDING SESSION'S directory; a resumable
+                    `reason` keeps it and appends one `session_end` line to its log (`077`, `159`)
+                  → sweeps .claude/channels/: a final end retires the own scope's .consumed/
+                    outright, a resumable one only ages it out (`159`); everything else only
+                    past 14 days (`144`). Keeps maestro.json and the orchestrator skill.
 ```
 
 **Review gate (`130`, `132`).** A second `PreToolUse` hook, matcher `AskUserQuestion|SendMessage` (`maestro-human-review-gate.js` in the plugin, `.cjs` project copy), gates both review stops. The current step is the first unfinished step of `plan` in `session.json`. The review file is `.claude/maestro-tasks/<task>.review.md` for round 1 and `<task>.review-N.md` after that. Round = 1 + `plan.loopbacks` + review stops (human or manager) already done (`currentReviewStop`); `plan-step <label> pending` increments the optional numeric `plan.loopbacks` (any loop-back, not only one at a review).
@@ -153,9 +155,9 @@ To learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` 
 | --- | --- |
 | `sub-concepts/hooks.md` | Every hook: event, matcher, script, exact effect. Why the container-era `SessionStart` is gone and what the two current ones (`113` name, `141` heartbeat) do. The two copies of every script and which one wins. The Step 0 traps. |
 | `sub-concepts/session-state.md` | `maestro.json` and the per-session directory (`064`): the file table, `log.jsonl`'s entry kinds, and how a caller resolves which session it is. |
-| `sub-concepts/session-end-reasons.md` | Which SessionEnd `reason` values keep the session directory (resumable) and which remove it, how they were observed, and the one rule both cleanup twins share (`077`). |
+| `sub-concepts/session-end-reasons.md` | Which SessionEnd `reason` values keep the session directory (resumable) and which remove it, how they were observed, the one rule both cleanup twins share (`077`), and the `session_end` log line a resumable end writes (`159`). |
 | `sub-concepts/handoff-contract.md` | The four blocks `SubagentStart` injects, the three-tier `handoff_details` resolution, and what the orchestrator does with a `HANDOFF:` line. |
-| `sub-concepts/channels.md` | `.claude/channels/` (`036`): how a route's payload travels, the per-task/session scope (`144`), the `run_id` stamp, retirement, the scribe lane's kept gap reports (`112`) and the 14-day sweep. |
+| `sub-concepts/channels.md` | `.claude/channels/` (`036`): how a route's payload travels, the per-task/session scope (`144`), the `run_id` stamp, retirement, the scribe lane's kept gap reports (`112`), the 14-day sweep, and the restore of a delivery a restart cut off (`159`). |
 | `sub-concepts/step-gates.md` | Injected context as a third delivery channel: the Step 1 gates (`032`), the Step 4 task-routing nudge (`046`/`047`), and the post-mortem prompt that is NOT part of it (`049`). |
 | `sub-concepts/agent-resume.md` | Why a condition-edge loop-back resumes an agent instead of spawning one (`039`), why a resumed run's injection is five blocks shorter (`040`), and why a resume gets its payload by path because Claude Code drops its `additionalContext` (`088`). |
 | `sub-concepts/team-meeting.md` | Team-meeting mode: the `session.json` `meeting` flag, what participants get and what's withheld, `meeting: true` log entries, the write guard's meeting dir, and how a meeting ends (`closeMeeting`, `meeting_leftovers`). |

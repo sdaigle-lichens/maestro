@@ -393,8 +393,12 @@ function defaultV3Config(implAgents, skillMap = {}, seedSkills = {}) {
 function defaultSkillLists(seedSkills = {}) {
   const designCheck = seedSkills.designCheck;
   return {
-    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...designCheck ? [designCheck] : []] },
-    end_skills: { maestro: [] }
+    start_skills: {
+      maestro: [],
+      to_maestro_tasks: ["confidence-check", ...designCheck ? [designCheck] : []],
+      maestro_manager: []
+    },
+    end_skills: { maestro: [], maestro_manager: [] }
   };
 }
 var isPresent = (v) => typeof v === "object" && v !== null && !Array.isArray(v);

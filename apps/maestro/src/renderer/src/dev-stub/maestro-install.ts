@@ -27,8 +27,9 @@ let skillLists = {
   start_skills: {
     maestro: ["confidence-check"],
     to_maestro_tasks: ["confidence-check"],
+    maestro_manager: [] as string[],
   },
-  end_skills: { maestro: [] as string[] },
+  end_skills: { maestro: [] as string[], maestro_manager: [] as string[] },
 };
 
 const sampleSkill = (id: string, source: string) => ({

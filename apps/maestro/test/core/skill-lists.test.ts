@@ -7,7 +7,7 @@ import { resolveSkillLists } from "../../src/core/skill-lists.js";
 
 const v3 = (extra: Record<string, unknown>) => ({ version: 3, ...extra });
 
-const EMPTY = { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
+const EMPTY = { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [], managerStart: [], managerEnd: [] };
 
 describe("resolveSkillLists — no start_skills", () => {
   it("is empty everywhere, and the old gates booleans are never read", () => {
@@ -26,7 +26,13 @@ describe("resolveSkillLists — start_skills / end_skills", () => {
         end_skills: { maestro: ["z", "y"] },
       })
     );
-    expect(r).toEqual({ maestroStart: ["b", "a"], toMaestroTasksStart: ["c", "d", "e"], maestroEnd: ["z", "y"] });
+    expect(r).toEqual({
+      maestroStart: ["b", "a"],
+      toMaestroTasksStart: ["c", "d", "e"],
+      maestroEnd: ["z", "y"],
+      managerStart: [],
+      managerEnd: [],
+    });
   });
 
   it("passes plugin-namespaced ids through untouched", () => {
@@ -57,6 +63,28 @@ describe("resolveSkillLists — start_skills / end_skills", () => {
     expect(resolveSkillLists(v3({ end_skills: { maestro: ["x", "x", "y"] } })).maestroEnd).toEqual(["x", "y"]);
     expect(resolveSkillLists(v3({ end_skills: "x" })).maestroEnd).toEqual([]);
     expect(resolveSkillLists(v3({ end_skills: { maestro: "x" } })).maestroEnd).toEqual([]);
+  });
+
+  it("reads the maestro_manager lists in order, namespaced ids included, and cleans them the same way", () => {
+    const r = resolveSkillLists(
+      v3({
+        start_skills: { maestro_manager: ["some-plugin:scan", "plain", "plain", "", "a b"] },
+        end_skills: { maestro_manager: ["z", "some-plugin:scan"] },
+      })
+    );
+    expect(r.managerStart).toEqual(["some-plugin:scan", "plain"]);
+    expect(r.managerEnd).toEqual(["z", "some-plugin:scan"]);
+    expect(r.maestroStart).toEqual([]);
+    expect(r.maestroEnd).toEqual([]);
+  });
+
+  it("treats a missing or malformed maestro_manager key as an empty list", () => {
+    const r = resolveSkillLists(v3({ start_skills: { maestro: ["a"] }, end_skills: { maestro: ["b"] } }));
+    expect(r.managerStart).toEqual([]);
+    expect(r.managerEnd).toEqual([]);
+    const bad = resolveSkillLists(v3({ start_skills: { maestro_manager: "a" }, end_skills: "x" }));
+    expect(bad.managerStart).toEqual([]);
+    expect(bad.managerEnd).toEqual([]);
   });
 
   it("reads empty lists when start_skills is not a plain object", () => {

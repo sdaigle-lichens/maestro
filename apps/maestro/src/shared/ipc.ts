@@ -363,10 +363,10 @@ export interface ProjectTagsData {
 }
 
 /**
- * What `/maestro`'s three skill pickers need, and what they write back: the ordered Maestro start,
- * To-maestro-tasks start and Maestro end lists. The app writes `maestro.json.start_skills` /
- * `end_skills` here; `maestro-step1-gates.cjs` and `maestro-end-skills.cjs` read them at invocation
- * time through the SAME `resolveSkillLists`.
+ * What `/maestro`'s skill pickers need, and what they write back: the ordered Maestro start,
+ * To-maestro-tasks start, Maestro end and maestro-manager epic start and end lists. The app writes
+ * `maestro.json.start_skills` / `end_skills` here; `maestro-step1-gates.cjs`, `maestro-end-skills.cjs`
+ * and `maestro-epic.cjs boundary` read them at invocation time through the SAME `resolveSkillLists`.
  */
 export interface SkillListsData {
   /** Resolved, never raw: a project with no `start_skills` reads back as empty lists. */

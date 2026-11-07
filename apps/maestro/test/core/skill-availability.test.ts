@@ -197,6 +197,29 @@ describe("collectSkillRefs", () => {
     expect(refs.size).toBe(7);
   });
 
+  it("collects the maestro_manager lists, each with its own place", () => {
+    const refs = collectSkillRefs({
+      start_skills: { maestro: ["shared"], maestro_manager: ["m1", "shared"] },
+      end_skills: { maestro_manager: ["some-plugin:m2", "shared"] },
+    });
+    expect(refs.get("m1")).toEqual(["start_skills.maestro_manager"]);
+    expect(refs.get("some-plugin:m2")).toEqual(["end_skills.maestro_manager"]);
+    expect(refs.get("shared")).toEqual([
+      "start_skills.maestro",
+      "start_skills.maestro_manager",
+      "end_skills.maestro_manager",
+    ]);
+    expect(refs.size).toBe(3);
+  });
+
+  it("tolerates a missing or malformed maestro_manager list", () => {
+    const refs = collectSkillRefs({
+      start_skills: { maestro: ["s1"], maestro_manager: "m1" },
+      end_skills: { maestro: ["e1"], maestro_manager: [3, null] },
+    });
+    expect([...refs.keys()]).toEqual(["s1", "e1"]);
+  });
+
   it.each([null, undefined, 3, "x", [], {}])("tolerates a non-config input %j", (input) => {
     expect(collectSkillRefs(input).size).toBe(0);
   });

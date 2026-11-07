@@ -23,7 +23,21 @@ call it (the .sh passes `reason` through verbatim from python3-parsed JSON), so 
 
 A final end is the pre-`077` behaviour unchanged: only that session's directory plus the legacy flat
 files. A resumable end removes nothing at all (the legacy files stay too). Channels are still swept
-either way.
+either way, but the two ends differ there too (`159`): a final end retires the own scope's
+`.consumed/` outright, a resumable end only ages it out.
+
+## What a resumable end writes (`159`)
+
+One `session_end` line is appended to the session's `log.jsonl`, by `endSessionState`'s resumable
+branch, and only when the session directory exists (nothing is created):
+
+```json
+{"ts":"…","origin":"main_session","kind":"session_end","reason":"prompt_input_exit","log":"session end (prompt_input_exit, resumable)"}
+```
+
+- A final end writes nothing: it removes the directory instead.
+- The line is how a resumed session knows a restart happened. `restoreInterruptedDeliveries` restores
+  nothing without one, and uses its `ts` as the cut-off for every guard. See `channels.md`.
 
 ## How it was observed (Claude Code 2.1.286)
 

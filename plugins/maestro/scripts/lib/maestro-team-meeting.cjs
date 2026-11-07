@@ -85,11 +85,17 @@ function ids(v) {
 }
 function resolveSkillLists(cfg) {
   if (!isPlainObject(cfg) || cfg.version !== 3) {
-    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
+    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [], managerStart: [], managerEnd: [] };
   }
-  const maestroEnd = isPlainObject(cfg.end_skills) ? ids(cfg.end_skills.maestro) : [];
   const start = isPlainObject(cfg.start_skills) ? cfg.start_skills : {};
-  return { maestroStart: ids(start.maestro), toMaestroTasksStart: ids(start.to_maestro_tasks), maestroEnd };
+  const end = isPlainObject(cfg.end_skills) ? cfg.end_skills : {};
+  return {
+    maestroStart: ids(start.maestro),
+    toMaestroTasksStart: ids(start.to_maestro_tasks),
+    maestroEnd: ids(end.maestro),
+    managerStart: ids(start.maestro_manager),
+    managerEnd: ids(end.maestro_manager)
+  };
 }
 
 // src/core/team-meeting.ts
@@ -456,7 +462,7 @@ function buildCommonBrief(input) {
   const list = (a) => a.length ? a.join(", ") : "none";
   L.push(
     "",
-    `Start skills: maestro=[${list(sl.maestroStart)}], to_maestro_tasks=[${list(sl.toMaestroTasksStart)}]. End skills: maestro=[${list(sl.maestroEnd)}]. use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
+    `Start skills: maestro=[${list(sl.maestroStart)}], to_maestro_tasks=[${list(sl.toMaestroTasksStart)}], maestro_manager=[${list(sl.managerStart)}]. End skills: maestro=[${list(sl.maestroEnd)}], maestro_manager=[${list(sl.managerEnd)}]. use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
     "",
     "## Agents",
     "",

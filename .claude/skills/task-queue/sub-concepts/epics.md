@@ -11,7 +11,7 @@ CLI `plugins/maestro/scripts/maestro-epic.cjs`. One job: epic state, membership 
 
 **Interface:** `create | list [--json] | link | unlink | show [--json] | set-manager | add-worker |
 remove-worker | of | ready | report --task | note | review-request | review-verdict | reports | ack` (`085` added `note` and `list`'s manager and
-backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`). Callers never see the lock, the file layout or the id
+backlog columns; `100` added `of`; `125` added `ready`; `132` added `review-request`/`review-verdict`; `158` added `boundary`). Callers never see the lock, the file layout or the id
 scheme.
 
 **Decisions**
@@ -153,6 +153,48 @@ the rest `[waits for a slot]`. `DEFAULT_SPAWN_CAP` is 5; `--cap` must be an inte
   `maestro-session-name` hook keeps a `claude -n` name (`113`).
 - **`cwd` is `mainCheckoutRoot`**, so run from a worktree it still prints the main checkout as the
   launch directory.
+
+## Epic boundaries: `boundary` (`158`)
+
+`boundary <slug> start|end [--force]` decides whether the epic's start or end skills are due, claims
+the run and writes its scope. Module: `apps/maestro/src/core/epic-boundary.ts` (`runEpicBoundary`,
+`formatBoundary`), shipped in the generated lib `maestro-epic.cjs`. The git calls live there, not in
+`epics.ts`, which keeps its fs/path-only rule; `epics.ts` exports `updateState` for it. Every git call
+is read-only with a 10 s timeout, and a failure means "no git answer", never an error.
+
+**Output:** one line. `nothing to run` (no list for this phase), `not due: <reason>`,
+`already ran at <time>`, or `run <skills>` with the absolute scope file and its path count. The run is
+claimed when the line is printed.
+
+**State:** `state.json` gains `boundaries: { base?, start?: { at }, end?: { at } }`, where `base` is the
+commit recorded at the start moment. Each run gets `.claude/epics/<slug>/boundary/<phase>-<n>/`, one
+past the highest number on disk, so a rerun never overwrites an earlier folder.
+
+| Phase | Due when | Scope |
+| --- | --- | --- |
+| `start` | At least one task, no recorded worker, no live claim, no task done | `## Touched surfaces` of the epic's tasks, existing files only |
+| `end` | At least one task, every task done **and merged**, no unacknowledged report or note | Files changed from `base` to HEAD, existing files only |
+
+- **Once only.** A phase with a claim returns `already ran`. `--force` re-runs it in a new folder. On a
+  phase never claimed it changes nothing, and the due checks still apply. A forced start keeps `base`.
+- **Base commit.** Recorded once at the start moment, even when the start list is empty and only the end
+  list is configured, so the end scope works. Not recorded when the start moment has passed.
+- **End fallback.** No base, an unreachable base or a non-git project uses the Touched surfaces rule.
+- **Touched surfaces.** Only a bare or backticked path counts. Annotations (any whitespace), globs,
+  `~`, absolute paths and `..` add nothing.
+- **Scope paths.** Relative to the git root, or to the project when it is not in a repository. The end
+  diff uses `diff.relative=false` with the `.` pathspec, so a project nested in its repository gets only
+  its own files, and a user's `diff.relative` setting cannot change the paths.
+- **Claim.** The decision, git calls, scope write and record run in one `updateState` callback. A throw
+  records nothing and the retry runs. Concurrent callers: exactly one runs.
+- **Stale claims.** A claim without a live session does not count as running, so it does not block the start.
+
+Tests: `apps/maestro/test/core/epic-boundary-cli.test.ts` runs the installed CLI against temp projects
+with real git: arguments; nothing configured; start due once, on resume, with no tasks, with workers,
+with a live or stale claim, and with a done task; end due only after done, merged and acknowledged, and
+not held by a review request; `--force` on an unclaimed and a claimed start; the scope rules including
+nested and symlinked projects, a linked worktree and a non-git project; the empty-start base; concurrent
+claims; one line per outcome; and that the command, manager skill and core module name no skill.
 
 ## Tests
 

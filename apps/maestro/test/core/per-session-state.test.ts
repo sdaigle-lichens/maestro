@@ -363,7 +363,12 @@ describe("SessionEnd keeps a resumable session's state and removes a final one's
           expect(run(root, { cwd: root, session_id: SESSION_A, reason }, SESSION_B)).toBe(0);
 
           expect(JSON.parse(fs.readFileSync(stateFile(root, SESSION_A), "utf8"))).toEqual(state);
-          expect(readLog(root, SESSION_A).map((e) => e.log)).toEqual([`Read(${SESSION_A}.ts)`]);
+          // `159`: the log is kept, plus the one `session_end` line a resumable end appends.
+          expect(readLog(root, SESSION_A).map((e) => (e.kind === "session_end" ? e.kind : e.log))).toEqual([
+            `Read(${SESSION_A}.ts)`,
+            "session_end",
+          ]);
+          expect(readLog(root, SESSION_A)[1]).toMatchObject({ kind: "session_end", reason });
           expect(isSessionLive(path.join(root, ".claude"), SESSION_A)).toBe(true);
         });
       }
@@ -399,7 +404,11 @@ describe("SessionEnd keeps a resumable session's state and removes a final one's
 
         hook(root, "maestro-session-log.cjs", toolCall(root, "after.ts"), SESSION_A);
 
-        expect(readLog(root, SESSION_A).map((e) => e.log)).toEqual([`Read(${SESSION_A}.ts)`, "Read(after.ts)"]);
+        expect(readLog(root, SESSION_A).map((e) => (e.kind === "session_end" ? e.kind : e.log))).toEqual([
+          `Read(${SESSION_A}.ts)`,
+          "session_end",
+          "Read(after.ts)",
+        ]);
       });
     });
   }

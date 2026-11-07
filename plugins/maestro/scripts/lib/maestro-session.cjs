@@ -133,7 +133,9 @@ __export(maestro_session_exports, {
   isValidHandoffId: () => isValidHandoffId,
   isValidSessionId: () => isValidSessionId,
   laneFor: () => laneFor,
+  lastFinishedRunAt: () => lastFinishedRunAt,
   lastHandoffLabel: () => lastHandoffLabel,
+  lastResumableEndAt: () => lastResumableEndAt,
   laterSuccessSteps: () => laterSuccessSteps,
   latestWorkflowHandoff: () => latestWorkflowHandoff,
   listSessionIds: () => listSessionIds,
@@ -163,6 +165,7 @@ __export(maestro_session_exports, {
   processInfo: () => processInfo,
   projectOwnsHook: () => projectOwnsHook,
   promptEntranceRole: () => promptEntranceRole,
+  readConsumed: () => readConsumed,
   readGlobalHandoff: () => readGlobalHandoff,
   readJson: () => readJson,
   readLane: () => readLane,
@@ -189,6 +192,7 @@ __export(maestro_session_exports, {
   resolveSessionId: () => resolveSessionId,
   resolveSessionPaths: () => resolveSessionPaths,
   resolveWorkflowName: () => resolveWorkflowName,
+  restoreInterruptedDeliveries: () => restoreInterruptedDeliveries,
   resumeTarget: () => resumeTarget,
   retire: () => retire,
   retireResumeDeliveries: () => retireResumeDeliveries,
@@ -215,6 +219,7 @@ __export(maestro_session_exports, {
   testHintRequirement: () => testHintRequirement,
   testHintRoutes: () => testHintRoutes,
   titleFor: () => titleFor,
+  unretire: () => unretire,
   unstampedFilesOf: () => unstampedFilesOf,
   validateConfig: () => validateConfig,
   walkProjectSkillIds: () => walkProjectSkillIds,
@@ -563,10 +568,27 @@ var RESUMABLE_END_REASONS = ["prompt_input_exit", "other", "resume"];
 function isResumableEnd(reason) {
   return typeof reason === "string" && RESUMABLE_END_REASONS.includes(reason);
 }
-function endSessionState(claudeDir, sessionId, reason) {
-  if (isResumableEnd(reason)) return [];
+function endSessionState(claudeDir, sessionId, reason, now = /* @__PURE__ */ new Date()) {
+  if (isResumableEnd(reason)) {
+    const paths = sessionPathsFor(claudeDir, sessionId);
+    try {
+      if (paths && import_node_fs3.default.existsSync(paths.dir)) {
+        const entry = {
+          ts: now.toISOString(),
+          origin: "main_session",
+          kind: SESSION_END_LOG_KIND,
+          reason,
+          log: `session end (${String(reason)}, resumable)`
+        };
+        import_node_fs3.default.appendFileSync(paths.log, JSON.stringify(entry) + "\n");
+      }
+    } catch {
+    }
+    return [];
+  }
   return removeSessionState(claudeDir, sessionId);
 }
+var SESSION_END_LOG_KIND = "session_end";
 
 // src/core/session-runtime.ts
 function readStdin() {
@@ -841,6 +863,17 @@ function readLane(projectDir, scope, receiver, now = Date.now()) {
   if (!isChannelScope(scope)) return [];
   return readDirEntries(channelDir(projectDir, scope, receiver), now);
 }
+function readConsumed(projectDir, scope, receiver, now = Date.now()) {
+  if (!isChannelScope(scope)) return [];
+  return readDirEntries(consumedDir(projectDir, scope, receiver), now);
+}
+function unretire(projectDir, scope, receiver, entry) {
+  const dest = import_node_path3.default.join(channelDir(projectDir, scope, receiver), entry.fileName);
+  if (import_node_fs5.default.existsSync(dest)) return false;
+  import_node_fs5.default.mkdirSync(import_node_path3.default.dirname(dest), { recursive: true });
+  import_node_fs5.default.renameSync(entry.path, dest);
+  return true;
+}
 function retire(projectDir, scope, receiver, entry) {
   const dest = consumedDir(projectDir, scope, receiver);
   import_node_fs5.default.mkdirSync(dest, { recursive: true });
@@ -887,7 +920,7 @@ function sweep(projectDir, opts = {}) {
   const ageCapMs = opts.ageCapMs ?? CHANNEL_AGE_CAP_MS;
   const removed = [];
   const root = channelsRoot(projectDir);
-  const own = isChannelScope(opts.scope) ? opts.scope : null;
+  const own = isChannelScope(opts.scope) && !isResumableEnd(opts.reason) ? opts.scope : null;
   for (const name of listDirs(root)) {
     const dir = import_node_path3.default.join(root, name);
     if (isChannelScope(name)) {
@@ -2222,6 +2255,51 @@ function pendingResumeDeliveries(projectDir, scope, receiver, runId) {
   const bare = bareAgentName(receiver);
   return readLane(projectDir, scope, bare).filter((e) => e.runId === runId).map((e) => ({ file: channelRelPath(scope, bare, e.fileName), sender: e.sender, run_id: runId }));
 }
+function latestAt(lines, match) {
+  let latest = null;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const e = line;
+    if (typeof e.ts !== "string" || !match(e)) continue;
+    const at = Date.parse(e.ts);
+    if (Number.isFinite(at) && (latest === null || at > latest)) latest = at;
+  }
+  return latest;
+}
+function lastResumableEndAt(lines) {
+  return latestAt(lines, (e) => e.kind === SESSION_END_LOG_KIND);
+}
+function lastFinishedRunAt(lines, receiver) {
+  const bare = bareAgentName(receiver);
+  return latestAt(
+    lines,
+    (e) => e.kind === "handoff" && e.meeting !== true && typeof e.label === "string" && e.label !== "" && typeof e.origin === "string" && bareAgentName(e.origin) === bare
+  );
+}
+function restoreInterruptedDeliveries(projectDir, scope, receiver, runId, lines, now = Date.now()) {
+  if (!runId) return [];
+  const endAt = lastResumableEndAt(lines);
+  if (endAt === null) return [];
+  const bare = bareAgentName(receiver);
+  const finishedAt = lastFinishedRunAt(lines, bare);
+  const restored = [];
+  for (const e of readConsumed(projectDir, scope, bare, now)) {
+    if (e.runId !== runId || isGapReport(e)) continue;
+    const writtenAt = now - e.ageMs;
+    if (writtenAt > endAt) continue;
+    if (finishedAt !== null && writtenAt <= finishedAt) continue;
+    const redelivered = latestAt(
+      lines,
+      (l) => l.kind === "channel_delivery" && l.sender === e.sender && l.receiver === bare
+    );
+    if (redelivered !== null && redelivered > endAt) continue;
+    try {
+      if (unretire(projectDir, scope, bare, e)) restored.push(e);
+    } catch {
+    }
+  }
+  return restored;
+}
 function recordResumeDeliveries(session, agentId, deliveries) {
   const all = { ...session.resume_deliveries ?? {} };
   if (deliveries.length > 0) all[agentId] = deliveries;
@@ -3206,7 +3284,9 @@ function meetingNotice(meeting, agentType) {
   isValidHandoffId,
   isValidSessionId,
   laneFor,
+  lastFinishedRunAt,
   lastHandoffLabel,
+  lastResumableEndAt,
   laterSuccessSteps,
   latestWorkflowHandoff,
   listSessionIds,
@@ -3236,6 +3316,7 @@ function meetingNotice(meeting, agentType) {
   processInfo,
   projectOwnsHook,
   promptEntranceRole,
+  readConsumed,
   readGlobalHandoff,
   readJson,
   readLane,
@@ -3262,6 +3343,7 @@ function meetingNotice(meeting, agentType) {
   resolveSessionId,
   resolveSessionPaths,
   resolveWorkflowName,
+  restoreInterruptedDeliveries,
   resumeTarget,
   retire,
   retireResumeDeliveries,
@@ -3288,6 +3370,7 @@ function meetingNotice(meeting, agentType) {
   testHintRequirement,
   testHintRoutes,
   titleFor,
+  unretire,
   unstampedFilesOf,
   validateConfig,
   walkProjectSkillIds,

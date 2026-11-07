@@ -5,7 +5,8 @@
 // `session-paths.ts`, all `fs`/`path` only, so this bundle never pulls in `node:sqlite`.
 // `132` adds the manager review request and verdict (and `human-review-gate.ts`, which imports
 // nothing); `maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from here to learn
-// the manager's name.
+// the manager's name. `epic-boundary.ts` adds `node:child_process` for its read-only git calls:
+// a built-in, so it stays external and the bundle still runs under bare node.
 
 export {
   EPICS_DIR,
@@ -43,3 +44,5 @@ export {
   readyTasks,
   formatReady,
 } from "../epics.js";
+
+export { runEpicBoundary, formatBoundary } from "../epic-boundary.js";

@@ -199,6 +199,12 @@ node has no `SubagentStart` of its own, so if it needs the upstream payload the 
 retiring is `SubagentStart`'s job alone, so a read here starves nobody; the downstream agent still
 gets its own delivery.
 
+**A payload restored after a restart is still the sender's (`159`).** When a resumable end cut a run
+off, `restoreInterruptedDeliveries` moves its delivered payload back into the receiver's lane (guards
+in `channels.md`). The re-run then gets it as usual: inlined on a cold start, printed as `deliver:` on
+a resume. A `missing:` line after a restart means the restore skipped that file or the sender never
+wrote it.
+
 **Condition edges from a `human review` node are the exception — orchestrator-driven, not
 HANDOFF-driven.** A human-review node has no subagent, so nothing emits a `HANDOFF:` line for it.
 Instead the orchestrator itself, at the human-review hard stop, summarises the work and asks with

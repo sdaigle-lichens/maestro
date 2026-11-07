@@ -3,8 +3,8 @@ name: task-queue
 description: "Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task."
 metadata:
   type: concept-skill
-  version: "2.7"
-  last-update: d5ed7a8aeda17f922babaa06b135015a0bc5cb2e
+  version: "2.8"
+  last-update: 3ee11cee6e132881c2cf3d0814d3df0c0a749c93
 ---
 
 # Task queue
@@ -51,6 +51,7 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
 | `apps/maestro/src/core/session-heartbeat.ts` | `141`: `heartbeatVerdict` (the liveness rule `isSessionLive` applies first), `heartbeatTick` and the process probes behind the detached watcher that `plugins/maestro/scripts/maestro-session-heartbeat.js` (SessionStart) spawns. See [Claims](sub-concepts/task-claims.md#the-session-heartbeat-141). |
 | `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |
 | `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`), the manager's spawn list `readyTasks` (`125`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |
+| `apps/maestro/src/core/epic-boundary.ts` | `158`'s `boundary` command: whether an epic's start or end skills are due, the once-only claim, and the scope file; its git calls are read-only. See [Epics](sub-concepts/epics.md#epic-boundaries-boundary-158). |
 | `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |
 | `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`); spawns workers in herdr tabs from `ready` (`125`). |
 | `plugins/maestro/skills/maestro-install/references/herdr.md` | The user-facing herdr setup guide the manager's fallback points to (`125`). |
@@ -89,7 +90,7 @@ on a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-v
   freeform session presence, `freeform-check`, and `103`'s `freeform-<id>` worktree.
 - [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's
   report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between
-  managers and the policy for what affects another epic; `125`: `ready`, the manager's spawn list.
+  managers and the policy for what affects another epic; `125`: `ready`, the manager's spawn list; `158`: `boundary`, the start and end skill boundaries.
 - [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the
   committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.
 - [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and

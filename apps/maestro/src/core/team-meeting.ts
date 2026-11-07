@@ -598,8 +598,10 @@ export function buildCommonBrief(input: BriefInput): string {
   const list = (a: string[]) => (a.length ? a.join(", ") : "none");
   L.push(
     "",
-    `Start skills: maestro=[${list(sl.maestroStart)}], to_maestro_tasks=[${list(sl.toMaestroTasksStart)}]. ` +
-      `End skills: maestro=[${list(sl.maestroEnd)}]. use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
+    `Start skills: maestro=[${list(sl.maestroStart)}], to_maestro_tasks=[${list(sl.toMaestroTasksStart)}], ` +
+      `maestro_manager=[${list(sl.managerStart)}]. ` +
+      `End skills: maestro=[${list(sl.maestroEnd)}], maestro_manager=[${list(sl.managerEnd)}]. ` +
+      `use_maestro_tasks=${cfg.use_maestro_tasks === true}.`,
     "",
     "## Agents",
     "",

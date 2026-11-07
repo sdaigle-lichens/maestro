@@ -94,6 +94,7 @@ const {
   testHintRequirement,
   readLane,
   retire,
+  restoreInterruptedDeliveries,
   isGapReport,
   channelScopeOf,
   channelRelPath,
@@ -436,6 +437,22 @@ function collectReportContext(cfg, projectDir, agentType) {
   // agent's next workflow step is still there when that step runs.
   if (!offWorkflow) {
     const bareAgent = bareAgentName(agentType);
+    // `159`: a cold re-run after a restart the session resumed from — a payload this run delivered
+    // to the cut-off run goes back into the lane, so it is inlined again below instead of lost.
+    // A resume is handled by maestro-resume-target.cjs, which hands its files over by path.
+    if (!isResume && sess) {
+      try {
+        restoreInterruptedDeliveries(
+          projectDir,
+          scope,
+          bareAgent,
+          ensureSessionRunId(sess.state),
+          readLogLines(sess.log)
+        );
+      } catch {
+        // Best-effort — never fail the hook over it; the lane is read as it is.
+      }
+    }
     const entries = readLane(projectDir, scope, bareAgent);
     const laneDir = channelRelPath(scope, bareAgent, "");
     const fileOf = (e) => channelRelPath(scope, bareAgent, e.fileName);

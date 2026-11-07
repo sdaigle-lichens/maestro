@@ -133,6 +133,40 @@ text, and never infers "handled" from a skill re-stamp. `payloadWrittenSince` (t
 payload check) also accepts the sender's renamed gap reports in the receiver's lane, under the same
 mtime rule. Test: `test/core/scribe-gap-retention.test.ts`.
 
+## Restoring deliveries a restart cut off (`159`)
+
+The one exception to deliver-once besides gap reports. A resumable SessionEnd keeps the session's
+directory, so the `.consumed/` copies of what it delivered survive a `claude --resume` under the same
+id. A run that the restart cut off never finished, so its payload would be lost: a cold inline and a
+resume's `deliver:` line both read the live lane only, and the sender would be sent to rewrite a file
+it already wrote (`missing:`, task 075).
+
+`restoreInterruptedDeliveries` (`resume-delivery.ts`) moves such a payload back into the receiver's
+live lane. It runs before the lane is read, in two places: a cold `SubagentStart`
+(`maestro-inject-agent-context.js`, not on a resume) and `maestro-resume-target.cjs`. Once restored, the
+normal paths take over: the cold start inlines it, the resume prints it as `deliver:`.
+
+Nothing is restored unless the session's log holds a `kind:"session_end"` line (see
+`session-end-reasons.md`). Then a consumed file comes back only when none of these holds:
+
+| Guard | The payload is NOT restored when |
+| --- | --- |
+| No resumable end | the log has no `session_end` line. Deliver-once is untouched in an uninterrupted session. |
+| Run stamp | its `run_id` is not this session's. |
+| Gap report | it is a scribe gap report. An acknowledged one stays acknowledged. |
+| Other scope | it sits in another scope's `.consumed/`. Only this session's scope is read. |
+| Same-name lane file | the live lane already holds a file of that name. That one is the fresher payload. |
+| Written after the end | its mtime is later than the `session_end` `ts`. |
+| Receiver finished since | the receiver has a labelled `HANDOFF:` run logged after the payload's mtime. An earlier round already acted on it. |
+| Re-delivered | a `channel_delivery` from that sender to that receiver is logged after the end. It was already handed to the re-run. |
+
+Known limits:
+
+- The receiver-finished guard counts only labelled handoffs. A run that stopped with no `HANDOFF:` line never blocks a restore.
+- The re-delivery guard matches on sender and receiver, not file name.
+- `unretire` refuses only a same-name file in the live lane. `retire`'s `renameSync` still overwrites a same-name copy already in `.consumed/`; that predates `159`.
+- The timestamp checks compare file mtime with log `ts` (in ms), so a write and an end in the same millisecond cannot be ordered.
+
 ## Stamping and lifecycle
 
 `SubagentStop` mints/reads the session's `run_id` (`ensureSessionRunId`, stored in that session's
@@ -173,8 +207,10 @@ A skipped leftover stays in its lane, is reported as unstamped (mentioned, not i
 out by `sweep()` like any other file. `unstampedFilesOf(projectDir, scope, sender)` is the snapshot
 `closeMeeting` takes to build `meeting_leftovers`.
 
-`SessionEnd`'s `sweep({ scope })` retires **only the ending session's own** `<scope>/.consumed/`
-outright (`144`), then, across every scope and the legacy layout, ages out anything past
+`SessionEnd`'s `sweep({ scope, reason })` retires **only the ending session's own** `<scope>/.consumed/`
+outright (`144`) on a final end. On a resumable `reason` (`159`) that `.consumed/` is only aged out
+like every other scope's, because the same session id may come back and restore from it. Then, across
+every scope and the legacy layout, ages out anything past
 `CHANNEL_AGE_CAP_MS` (14 days) — age-out is scope-blind because it depends only on the file's age.
 Empty dirs are pruned after a 1-hour grace. Unlike the per-session files, a lane is **not** deleted at
 `SessionEnd`: an undelivered, in-cap lane file (e.g. the scribe's, when no scribe ran) survives on

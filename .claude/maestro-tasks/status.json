@@ -782,5 +782,17 @@
   "157-add-a-user-steered-plan-review-and-on-demand-plan-view-to-to-maestro-tasks.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "158-run-configured-skills-at-the-start-and-end-of-an-epic.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "159-keep-a-task-s-delivered-channel-payloads-when-its-session-ends-resumably.md": {
+    "status": "done",
+    "blockedBy": []
+  },
+  "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }

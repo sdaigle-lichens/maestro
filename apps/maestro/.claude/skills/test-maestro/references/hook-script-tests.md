@@ -101,3 +101,22 @@ so they test the wrong code. Run vitest directly instead: point `--root` at the 
 `apps/maestro`, and symlink that worktree's `node_modules` to the main checkout's so the binary and
 its dependencies resolve. The unit project is `vitest run --project unit` (`apps/maestro/package.json`
 `test` script; `vitest.config.ts`). Reported by a test run; not re-run when this was written.
+
+## Driving a resume and a gap acknowledgement (`159`)
+
+Both run through the installed hooks, so the fixture feeds each `SubagentStart`/`SubagentStop` the
+payload Claude Code would send. What each outcome needs, read from source:
+
+| To get | Needs | Source |
+| --- | --- | --- |
+| A resume `agent_id` | a `kind:"handoff"` entry for that bare type with `origin` and `agent_id`, from a stop that is not a meeting turn or owner run. **No `HANDOFF:` label needed.** Nothing prints when the workflow maps that type to more than one instance. | `resumeTarget`, `agentRunsFromLog` (`agent-runs.ts`) |
+| A `deliver:` line | the payload in the target's lane stamped with the session's `run_id`. The sender's own `SubagentStop` writes that stamp, so run that stop after the payload write. | `pendingResumeDeliveries`, `writeStamp` |
+| A `missing:` line | the **latest** workflow handoff carries a label, and its route expects that payload from the sender. A label-less stop cannot produce it. | `latestWorkflowHandoff`, `missingLoopbackPayload` (`resume-delivery.ts`) |
+| The resumed run's files retired | its own `SubagentStop`, with or without a `HANDOFF:` line. Logged as `channel_delivery` with `via: "resume"`. | `maestro-subagent-log.js` |
+| A scribe's gap acknowledged | a `SKILL_GAPS_HANDLED: <file>, …` line in that scribe's final message. The line alone is enough: no label, and meeting participants and owner runs are skipped. | `parseGapsHandled`, `acknowledgeGaps` (`handoff-channels.ts`) |
+
+- A scribe stop that ends with only `SKILL_GAPS_HANDLED:` acknowledges its gaps and still counts as a
+  completed run. That is how to cut a scribe off in a test.
+- Restore and age checks compare a file's mtime with the log's `ts`. Write the payload, then run the
+  stop that must follow it, with a gap between the two. A separate spawn is enough in practice; do
+  not write and stop in the same millisecond.

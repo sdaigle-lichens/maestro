@@ -45,6 +45,22 @@ belongs to an epic through the `epic` field of its entry in `.claude/maestro-tas
 4. Handle every unacknowledged report and note, oldest first: reports through the loop below, notes
    as in **Other epics**, review requests (`mNNN`) as in **Manager review requests**.
 5. Run **Spawning workers** below for the tasks no session is working on yet.
+6. Run the end step of **Epic boundaries** below: the epic may have finished while you were away.
+
+## Epic boundaries
+
+A project can configure skills to run once at the start of an epic and once at its end. One command decides everything: whether the step is due, whether it already ran, and what its scope is. Never work those out yourself, and never edit `state.json` to change them.
+
+- **Start:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" boundary <slug> start`
+- **End:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" boundary <slug> end`
+
+It prints one line: nothing to run, not due with the reason, already ran, or the skills to run with a scope file and its path count. Only the last one asks anything of you, and that run is already claimed when the line is printed, so it will not be offered again:
+
+1. **Run the listed skills in order, in your own context**, giving each the absolute path of the scope file, which holds one path per line, relative to the git root (the project root when the project is not in a git repository). If the scope holds 0 paths, skip the skills and say so.
+2. **Save each skill's output beside the scope file**, as `<skill id>.md`, with any `:` in the skill id written as `-`.
+3. **Show the outputs to the user as a backlog to triage.** Nothing in them becomes a task or a hand-back to a worker unless the user says so.
+
+Pass `--force` only when the user asks. It re-runs a boundary that already ran or was interrupted, and it is the only way to run the end skills again after tasks are added to a finished epic. It cannot start a boundary that was never due. Each run gets its own folder, so earlier outputs stay.
 
 ## Spawning workers
 
@@ -52,6 +68,8 @@ You start the epic's worker sessions yourself instead of the user opening one pe
 is a normal named `/maestro` session in its own herdr tab; you start it and record it, nothing more.
 
 0. **Merge plan first.** Before any worker starts, `EPIC.md` must hold a **merge-plan table**, one row per task: merge order, base branch, who bumps shared version files (for example "workers never bump; whoever merges bumps"), and the touched surfaces it shares with siblings (read each task's `## Touched surfaces`; a version or generated file always counts as shared). Build it from the tasks' touched surfaces; where two unordered tasks overlap and no merge order is recorded, add a `blockedBy` edge or a merge order with `to-maestro-tasks` first. Missing or stale table: write it now and show it to the user. Then spawn only according to it: a task whose base is another task's branch waits for that merge, and the table's order decides which `[spawn]` tasks you offer.
+
+   Then run the start step of **Epic boundaries**, after the merge plan and before anything spawns. It is due only just before the first workers; on a resume it prints that it is not due or already ran, and you carry on.
 1. **List what can start:** `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>`
    (add `--cap <n>` only when the user asked for a different limit; the default is 5). It prints the
    ready tasks no session has claimed, oldest first, each with its worker name and exact launch
@@ -145,6 +163,7 @@ For each worker message ("report r003 for 087-... is in <file>") or unacknowledg
    `node "${CLAUDE_SKILL_DIR}/../../scripts/maestro-epic.cjs" ready <slug>` again and, when a task is
    marked `[spawn]`, offer to start it through **Spawning workers** (steps 2 to 5). Only `[spawn]`
    tasks, so the cap still holds; offer, never spawn without the user's yes.
+6. **Check the end boundary.** Run the end step of **Epic boundaries**. It comes last because step 3 may have added tickets. The last acknowledgement normally lands before the last merge, so also run it whenever you learn a merge landed; until then it reports not due.
 
 ## Manager review requests
 

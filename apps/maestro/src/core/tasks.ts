@@ -47,7 +47,7 @@ function parseTitle(content: string, filename: string): string {
  * The `## <heading>` section of a task file, heading line included, up to the next `## ` heading
  * (or the end of the file); null when the heading is absent. `maestro-tasks.cjs` carries the same cut.
  */
-function sectionOf(content: string, headingPattern: RegExp): string | null {
+export function sectionOf(content: string, headingPattern: RegExp): string | null {
   const start = content.search(headingPattern);
   if (start === -1) return null;
   const rest = content.slice(start);

@@ -9,6 +9,10 @@ export interface ResolvedSkillLists {
   maestroStart: string[];
   toMaestroTasksStart: string[];
   maestroEnd: string[];
+  /** `start_skills.maestro_manager`: run once by a maestro-manager at the start of an epic. */
+  managerStart: string[];
+  /** `end_skills.maestro_manager`: run once by a maestro-manager when an epic is finished. */
+  managerEnd: string[];
 }
 
 function isPlainObject(v: unknown): v is Record<string, unknown> {
@@ -32,18 +36,24 @@ function ids(v: unknown): string[] {
 }
 
 /**
- * Resolve the three skill lists.
+ * Resolve the skill lists.
  *
  *  - `start_skills` a plain object: authoritative, a missing key is an empty list.
- *  - `end_skills.maestro` is read the same way; absent is empty.
+ *  - `end_skills` is read the same way; absent is empty.
  *  - Every degenerate input (absent, corrupt, `version !== 3`, wrong types, no `start_skills`)
  *    gives empty lists.
  */
 export function resolveSkillLists(cfg: unknown): ResolvedSkillLists {
   if (!isPlainObject(cfg) || cfg.version !== 3) {
-    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [] };
+    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [], managerStart: [], managerEnd: [] };
   }
-  const maestroEnd = isPlainObject(cfg.end_skills) ? ids(cfg.end_skills.maestro) : [];
   const start = isPlainObject(cfg.start_skills) ? cfg.start_skills : {};
-  return { maestroStart: ids(start.maestro), toMaestroTasksStart: ids(start.to_maestro_tasks), maestroEnd };
+  const end = isPlainObject(cfg.end_skills) ? cfg.end_skills : {};
+  return {
+    maestroStart: ids(start.maestro),
+    toMaestroTasksStart: ids(start.to_maestro_tasks),
+    maestroEnd: ids(end.maestro),
+    managerStart: ids(start.maestro_manager),
+    managerEnd: ids(end.maestro_manager),
+  };
 }
