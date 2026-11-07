@@ -97,6 +97,21 @@ write a missing hints file, or `@test` adding a token "independent" test to sati
 relax the reviewer's Coverage independence FAIL to a note in `plugins/maestro/agents/reviewer.md`
 first. `test_origin` is self-reported; the reviewer's spot-check is the only real verification.
 
+## Known gaps and later steps
+
+`@test` used to end `HANDOFF: fail` on work it did not own, and the run stopped. Two cases came up:
+docs that `@scribe` updates later in the same workflow, and a generated-file check that diffs
+against HEAD, which nothing commits during a run. Both now go in the test report's `knownGaps`
+(`issue`, `owner`, `reason`), never as a FAIL. The test → reviewer handoff carries the same list as
+`known_gaps`, so the reviewer still sees them. The pre-`known_gaps` bodies are prior seeds
+(`TEST_REPORT_V8`, `TEST_TO_REVIEWER_V3`), so an unedited project copy upgrades.
+
+To make "a later step owns it" checkable, SubagentStart appends the steps that still run after the
+agent to its handoff-routing block (`Still to run after you on this workflow's success path: @reviewer
+→ @scribe`). `laterSuccessSteps()` (`handoff-routes.ts`) computes them: success edges only, the same
+rule as `testHintRoutes`, and bounded on a success cycle. The hook guards the call, so a script
+running against an older lib skips the line instead of failing.
+
 ## Scribe-lane gap reports (`112`)
 
 The one exception to deliver-once. A **gap report** (`isGapReport`) is a scribe-lane file whose

@@ -210,6 +210,8 @@ function columnNodes(ids, skillCount = () => 0) {
     return node;
   });
 }
+var TEST_FAIL_LABEL = "FAIL: a test exposes a code defect";
+var testFailLabel = (agent) => `FAIL: ${agent} code (a test exposes a defect)`;
 function buildWorkflow(name, kind, impl, skillCount = () => 0) {
   const column = kind === "tdd" ? ["test", MANAGER_REVIEW_ID, ...impl, "reviewer", "scribe"] : [...impl, MANAGER_REVIEW_ID, "test", "reviewer", "scribe"];
   const colNodes = columnNodes(column, skillCount);
@@ -231,6 +233,7 @@ function buildWorkflow(name, kind, impl, skillCount = () => 0) {
   } else if (impl.length === 1) {
     reviewerCode.push(c("reviewer", impl[0], "FAIL: style, data layer, error handling, security, or persistence"));
     refactorCode.push(c("refactor", impl[0], "finding requires code changes"));
+    reviewerCode.push(c("test", impl[0], TEST_FAIL_LABEL));
   } else {
     for (const a of impl) {
       reviewerCode.push(
@@ -240,6 +243,7 @@ function buildWorkflow(name, kind, impl, skillCount = () => 0) {
     for (const a of impl) {
       refactorCode.push(c("refactor", a, `finding requires ${a} code changes`));
     }
+    for (const a of impl) reviewerCode.push(c("test", a, testFailLabel(a)));
   }
   edges.push(
     c("reviewer", "refactor", "FAIL: code pattern violation or code redundancy"),
@@ -307,10 +311,12 @@ function buildTestsWorkflow(name, impl, skillCount = () => 0) {
   const c = (from, to, label) => cond(from, to, label, side(from, to));
   edges.push(c("reviewer", "refactor", "FAIL: a finding big enough to delegate to the refactor agent"));
   if (impl.length === 1) {
+    edges.push(c("test", impl[0], TEST_FAIL_LABEL));
     edges.push(c("reviewer", impl[0], "FAIL: a simple code fix found while testing"));
     edges.push(c("refactor", impl[0], "finding requires code changes"));
     edges.push(c(impl[0], "test", "fix applied; re-run the tests"));
   } else {
+    for (const a of impl) edges.push(c("test", a, testFailLabel(a)));
     for (const a of impl) edges.push(c("reviewer", a, `FAIL: a simple ${a} code fix found while testing`));
     for (const a of impl) edges.push(c("refactor", a, `finding requires ${a} code changes`));
     for (const a of impl) edges.push(c(a, "test", `${a} fix applied; re-run the tests`));

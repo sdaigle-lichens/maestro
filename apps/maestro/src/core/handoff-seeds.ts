@@ -298,6 +298,28 @@ const TEST_TO_REVIEWER_V2 =
   "```";
 
 // `155`: the reviewer checks from this payload alone that implementer hints did not narrow testing.
+// Before known_gaps.
+const TEST_TO_REVIEWER_V3 =
+  "```json\n" +
+  "{\n" +
+  '  "tests_added": ["<test name — what it verifies>"],\n' +
+  '  "test_origin": {\n' +
+  '    "from_hints": ["<test name>"],\n' +
+  '    "independent": ["<test name> - <source: acceptance criterion | file:line code path | failure mode not in hints>"]\n' +
+  "  },\n" +
+  '  "acceptance_coverage": ["<acceptance criterion> => <test names, or \'untested: <reason>\'>"],\n' +
+  '  "hints_skipped": ["<implementer hint> - <reason>, or \'none\'"],\n' +
+  '  "results": ["<pass/fail summary>"],\n' +
+  '  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],\n' +
+  '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
+  '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
+  '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+  '  "files_touched": ["<list, or \'none\'>"]\n' +
+  "}\n" +
+  "```";
+
+// known_gaps: what @test saw but did not fail on — work a later success-path step owns, or a check
+// that can only pass after a commit. The reviewer sees them instead of a FAIL that had no owner.
 const TEST_TO_REVIEWER =
   "```json\n" +
   "{\n" +
@@ -313,6 +335,7 @@ const TEST_TO_REVIEWER =
   '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
   '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
   '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+  "  \"known_gaps\": [\"<issue> - <owner: a later step such as @scribe, or 'after commit'> - <why it is not a failure now>, or 'none'\"],\n" +
   '  "files_touched": ["<list, or \'none\'>"]\n' +
   "}\n" +
   "```";
@@ -624,6 +647,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "test/reviewer": [
+    TEST_TO_REVIEWER_V3,
     TEST_TO_REVIEWER_V2,
     // `148`: the flat body before commands_run, negative_control and real_path_exercised.
     "```json\n" +

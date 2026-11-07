@@ -170,6 +170,57 @@ export function testHintRoutes(
   return out;
 }
 
+/**
+ * The steps that run AFTER `agent` on the success path of `workflows`, in order, deduplicated:
+ * `@<agent>` for agent nodes, the node type (`manager_review`, `human_review`) or `skill:<id>`
+ * otherwise. Condition edges are not followed, the same rule as `testHintRoutes`. Lets a checking
+ * agent (@test) tell work a later step owns (docs for @scribe) from a defect it must FAIL on.
+ * Empty when the agent is not in these workflows or is the last step.
+ */
+export function laterSuccessSteps(
+  workflows: MaestroWorkflowV3[] | null | undefined,
+  instances: MaestroInstanceV3[] | null | undefined,
+  agent: string
+): string[] {
+  const bare = bareAgentName(agent);
+  const instList = instances ?? [];
+  const label = (node: MaestroNodeV3): string => {
+    if (node.type === "agent") {
+      const inst = instList.find((i) => i.name === node.instance);
+      return `@${inst ? bareAgentName(inst.agent) : node.instance}`;
+    }
+    if (node.type === "skill") return `skill:${node.skill ?? node.id}`;
+    return node.type;
+  };
+
+  const out: string[] = [];
+  for (const wf of workflows ?? []) {
+    const nodes = wf.nodes ?? [];
+    const edges = wf.edges ?? [];
+    const start = nodes.find((n) => n.type === "agent" && label(n) === `@${bare}`);
+    if (!start) continue;
+    // Walk the success chain forward; `visited` bounds a user-authored success cycle.
+    const visited = new Set<string>([start.id]);
+    let frontier = [start.id];
+    while (frontier.length) {
+      const next: string[] = [];
+      for (const id of frontier) {
+        for (const e of edges) {
+          if (e.from !== id || e.kind !== "success" || visited.has(e.to)) continue;
+          visited.add(e.to);
+          const node = nodes.find((n) => n.id === e.to);
+          if (!node) continue;
+          const name = label(node);
+          if (name !== `@${bare}` && !out.includes(name)) out.push(name);
+          next.push(e.to);
+        }
+      }
+      frontier = next;
+    }
+  }
+  return out;
+}
+
 /** The routes leaving one agent — what the SubagentStart hook injects, and what `034`'s UI lists. */
 export function routesFrom(routes: HandoffRoute[], agent: string): HandoffRoute[] {
   const bare = bareAgentName(agent);

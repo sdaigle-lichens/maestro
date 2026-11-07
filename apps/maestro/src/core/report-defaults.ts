@@ -400,7 +400,8 @@ const TEST_REPORT_V7 =
 // `155`: implementer hints (`<sender>/test` in the test lane) never set the scope. The plan comes from
 // the acceptance criteria and the code first; the three new fields make that checkable by the
 // reviewer, through the test -> reviewer handoff that carries the same three.
-const TEST_REPORT =
+// The body before `knownGaps`.
+const TEST_REPORT_V8 =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
   "```json\n" +
@@ -447,6 +448,26 @@ const TEST_REPORT =
   skillGapsChannelNote("test") +
   "\n\n" +
   VERDICT_HANDOFF_NOTE;
+
+// `knownGaps`: @test failed a run for outdated docs a later @scribe owned, and for a generated-file
+// diff against HEAD that nothing commits during a run. Neither had a route, so the run stopped.
+// Built from V8 by two anchored inserts; the report-defaults test asserts both landed.
+const TEST_REPORT = TEST_REPORT_V8.replace(
+  '  "notCaught": [',
+  '  "knownGaps": [{ "issue": "<what is not right yet>", "owner": "<later step, e.g. @scribe, or \'after commit\'>", "reason": "<why it is not a failure of this step>" }],\n' +
+    '  "notCaught": ['
+).replace(
+  "\n\nFor each new test you write",
+  "\n\n" +
+    "FAIL only for a defect in the code or tests this task changed. Two things are never a FAIL, and go in " +
+    "`knownGaps` instead: work a LATER step on the workflow's success path owns (outdated README, CLAUDE.md or " +
+    "docs when @scribe runs after you; a review finding when @reviewer does), and a check that can only pass " +
+    "once the work is committed (for example a generated-file check that diffs against HEAD: compare the " +
+    "regenerated files to the working tree instead, and record the result). Write the same list into the " +
+    "reviewer's handoff as `known_gaps`.\n" +
+    "\n" +
+    "For each new test you write"
+);
 
 /**
  * The exact bodies stripped from
@@ -591,7 +612,16 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     ],
     infra: [backendLikeV3("infra"), backendLikeV4("infra"), backendLikeV5("infra")],
     scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1, SCRIBE_REPORT_V3, SCRIBE_REPORT_V4],
-    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4, TEST_REPORT_V5, TEST_REPORT_V6, TEST_REPORT_V7],
+    test: [
+      testV1,
+      testV2,
+      TEST_REPORT_V3,
+      TEST_REPORT_V4,
+      TEST_REPORT_V5,
+      TEST_REPORT_V6,
+      TEST_REPORT_V7,
+      TEST_REPORT_V8,
+    ],
   };
 })();
 

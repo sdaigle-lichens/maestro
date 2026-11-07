@@ -92,6 +92,18 @@ else a routed condition label or the deliberately unrouted `partial`. The note l
 not only in the `SubagentStart` block, because a resumed scribe never sees that block (`088`).
 `checkRoute` is unchanged and still strict.
 
+**Two kinds of failure, two outcomes.** A code defect takes its condition edge back to the
+implementer: the default and Tests seeds now wire `@test → <impl>` (`FAIL: a test exposes a code
+defect`, split per agent for fullstack; none in tdd, where failing tests come before any code).
+Before that, a test failure printed `NO ROUTE for HANDOFF: fail` and stopped. A problem only the
+user can fix (a port in use, a service that won't start, missing credentials) ends
+`HANDOFF: blocked` (`BLOCKED_LABEL`, `handoff-check.ts`), which every agent learns from the routing
+block. With no `blocked` edge in the workflow, `checkRoute` returns kind `blocked` instead of
+`unrouted`. `handoff-issues` prints `BLOCKED on the user`, and the orchestrator template tells the
+user what to do, then resumes the same agent. A workflow that wires a `blocked` edge routes it
+normally. The seeded FAIL edges only reach a new seed; an existing project adds them with
+`/update-workflow`.
+
 **The line may arrive in a tool call (`078`, `087`).** Current Claude Code tells every subagent to
 end with a `SubagentHandback({message})` call, and then the `SubagentStop` payload has no
 `last_assistant_message`. The hook recovers the label from the agent's transcript via

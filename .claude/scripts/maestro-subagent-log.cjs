@@ -405,7 +405,10 @@ function parseHandoff(msg) {
           // Also visible to the person watching; the orchestrator reads it from session.json.
           process.stdout.write(
             JSON.stringify({
-              systemMessage: `Maestro: ${agentType} handoff problem (${issue.kind}). ${issue.message}`,
+              systemMessage:
+                issue.kind === "blocked"
+                  ? `Maestro: ${agentType} is blocked on you. ${issue.message}`
+                  : `Maestro: ${agentType} handoff problem (${issue.kind}). ${issue.message}`,
             }) + "\n"
           );
         }

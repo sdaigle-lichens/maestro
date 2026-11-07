@@ -280,6 +280,23 @@ describe("maestro-task-status.cjs merge (076) — success and conflict", () => {
     expect(git(remote, "branch", "--list")).toBe("");
   });
 
+  it("brings the session's log back to the main checkout before removing the worktree", async () => {
+    const { root, wt } = await withWorktree();
+    // The worktree now holds session B's state; a later subagent appends to it there.
+    const wtLog = path.join(wt, ".claude", "maestro_sessions", SESSION_B, "log.jsonl");
+    fs.appendFileSync(wtLog, '{"kind":"subagent_start","agent":"test"}\n');
+    finish(wt);
+
+    expect(cli(root, ["merge", "002"], null).code).toBe(0);
+
+    expect(fs.existsSync(wt)).toBe(false);
+    const log = fs.readFileSync(path.join(sessionDir(root, SESSION_B), "log.jsonl"), "utf8");
+    expect(log).toContain('"agent":"test"'); // a post-mortem after the merge still has the timeline
+    const state = JSON.parse(fs.readFileSync(path.join(sessionDir(root, SESSION_B), "session.json"), "utf8"));
+    expect(state.worktree).toBeUndefined(); // no agent is pointed at the removed worktree
+    expect(fs.existsSync(path.join(sessionDir(root, SESSION_B), "worktree.json"))).toBe(false);
+  });
+
   it("also accepts the full filename", async () => {
     const { root, wt } = await withWorktree();
     finish(wt);

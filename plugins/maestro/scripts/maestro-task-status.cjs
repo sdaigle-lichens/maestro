@@ -766,6 +766,10 @@ function mergeWorktreeTask(arg) {
   // Merged. Clean up: the worktree (no --force: git itself refuses if something is left), the
   // branch (-d: only deletes a fully merged branch), and any session pointer aimed at the worktree.
   const notes = [];
+  // `worktree` moved the session's state (log.jsonl included) into the worktree; removing it would
+  // delete the log before SessionEnd, leaving /maestro-post-mortem nothing to read. Bring it home.
+  const restored = restoreSessionsFrom(wtPath);
+  if (restored.error) notes.push(`could not copy session state back from the worktree (${restored.error})`);
   const rm = gitTry(projectDir, ["worktree", "remove", wtPath]);
   if (!rm.ok)
     notes.push(`could not remove worktree ${wtPath} (${rm.err.split("\n")[0]}) — remove it yourself when sure`);
@@ -792,6 +796,38 @@ function mergeWorktreeTask(arg) {
       (notes.length ? `\n  note: ${notes.join("\n  note: ")}` : "") +
       "\n  Nothing was pushed.\n"
   );
+}
+
+// Copy every session directory under the worktree's .claude/maestro_sessions/ back into the main
+// checkout's, over the pointer-only directory `worktree` left there. The copied session.json loses
+// its `worktree` block: that path is about to be removed, and agents are told to work inside it.
+// The pointer itself is dropped by `dropPointersTo` once the removal succeeded.
+function restoreSessionsFrom(wtPath) {
+  const src = path.join(wtPath, ".claude", "maestro_sessions");
+  const dest = path.join(projectDir, ".claude", "maestro_sessions");
+  try {
+    if (!fs.existsSync(src)) return { count: 0 };
+    let count = 0;
+    for (const entry of fs.readdirSync(src, { withFileTypes: true })) {
+      if (!entry.isDirectory()) continue;
+      const to = path.join(dest, entry.name);
+      copyDir(path.join(src, entry.name), to);
+      const stateFile = path.join(to, "session.json");
+      try {
+        const state = JSON.parse(fs.readFileSync(stateFile, "utf8"));
+        if (state && state.worktree && path.resolve(state.worktree.path) === path.resolve(wtPath)) {
+          delete state.worktree;
+          fs.writeFileSync(stateFile, `${JSON.stringify(state, null, 2)}\n`);
+        }
+      } catch {
+        // no session.json, or unreadable: the log is what matters here
+      }
+      count++;
+    }
+    return { count };
+  } catch (err) {
+    return { error: err.message };
+  }
 }
 
 // A session whose worktree.json points at a removed worktree would keep redirecting its state there.
@@ -992,7 +1028,9 @@ function handoffIssuesCommand() {
         ? `NO PAYLOAD written for HANDOFF: ${i.label}${i.agent_id ? ` (agent_id ${i.agent_id})` : ""}`
         : i.kind === "unrouted"
           ? `NO ROUTE for HANDOFF: ${i.label}`
-          : "verdict FAIL but HANDOFF: success";
+          : i.kind === "blocked"
+            ? "BLOCKED on the user (setup or environment)"
+            : "verdict FAIL but HANDOFF: success";
   const lines = issues.map(
     (i) => `  - ${i.agent}: ${what(i)}` + `${i.verdict ? ` (verdict ${i.verdict})` : ""}. ${i.message}`
   );

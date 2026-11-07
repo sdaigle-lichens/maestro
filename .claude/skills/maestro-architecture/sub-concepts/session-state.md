@@ -168,12 +168,17 @@ unreadable or dangling pointer falls back to the given `claudeDir`.
   `sessionDirsFor`, removing both the worktree's and the main checkout's session dir. The worktree
   and branch themselves are **never** removed automatically; only an explicit
   `maestro-task-status.cjs merge` (`076`, run when the user asks after template Step 4's offer)
-  merges and removes them, and deletes the session's `worktree.json` pointer.
+  merges and removes them, and deletes the session's `worktree.json` pointer. Before the removal,
+  `restoreSessionsFrom` copies every session dir under the worktree's `.claude/maestro_sessions/`
+  back into the main checkout's, dropping the `worktree` block from `session.json`. Without it,
+  removing the worktree deleted `log.jsonl` before SessionEnd, and a `/maestro-post-mortem` after
+  Step 8 read an empty log.
 - **SubagentStart** (`maestro-inject-agent-context`) prepends a `Git worktree:` block when
   `session.json` has `worktree`: work only in that path, shared state at the main checkout's
   absolute paths, never merge/push/remove.
 - Trap: a session that "lost" its log may have a worktree pointer — look in the worktree's
-  `.claude/maestro_sessions/`, not just the main checkout's.
+  `.claude/maestro_sessions/`, not just the main checkout's. After a `merge` the log is back in
+  the main checkout.
 
 ## Things that bite
 
