@@ -134,8 +134,8 @@
       "type": "function",
       "name": "handoffPairs",
       "filepath": "apps/maestro/src/core/handoff-routes.ts",
-      "start_line": 117,
-      "end_line": 121,
+      "start_line": 184,
+      "end_line": 188,
       "signature": "function handoffPairs(routes: HandoffRoute[]): string[]",
       "contentHash": "1cadb40b060a39a69072d5f913f3e618ca82b1233196a87d3f8ea74909387bd7",
       "status": "live",
@@ -470,6 +470,24 @@
       }
     },
     {
+      "_key": "3f569698ad78cb7ac4f1e7a5d7f98702",
+      "displayKey": "plugin-libs-parity::function::testHintRoutes",
+      "concept": "plugin-libs-parity",
+      "type": "function",
+      "name": "testHintRoutes",
+      "filepath": "apps/maestro/src/core/handoff-routes.ts",
+      "start_line": 126,
+      "end_line": 171,
+      "signature": "function testHintRoutes(workflows: MaestroWorkflowV3[] | null | undefined, instances: MaestroInstanceV3[] | null | undefined): HandoffRoute[]",
+      "contentHash": "a90e27e709eefa2f8aa9712a073c173eb5e5518ae2cfc331071e23fd48a70814",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "43c85beaffd540a451bc4ea18736dc19",
       "displayKey": "plugin-libs-parity::function::readInstalledPluginSkills",
       "concept": "plugin-libs-parity",
@@ -512,8 +530,8 @@
       "type": "function",
       "name": "routesFrom",
       "filepath": "apps/maestro/src/core/handoff-routes.ts",
-      "start_line": 107,
-      "end_line": 110,
+      "start_line": 174,
+      "end_line": 177,
       "signature": "function routesFrom(routes: HandoffRoute[], agent: string): HandoffRoute[]",
       "contentHash": "7b7d1628b42e7257aff382ee2f2ddcb9afe2fb51d452aff83ac0c2eb22ec6ea2",
       "status": "live",
@@ -1746,6 +1764,19 @@
       }
     },
     {
+      "_key": "23ff5ba6c6faa9d3fb8fefb0d54d19b8",
+      "_from": "vertices/4e3a598c4f5e3231e2aba704a41a8385",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 174,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "24e1940fc8524712eecc048244cdee4a",
       "_from": "vertices/8dec0390a3b2ba9582fb127289cd7f1e",
       "_to": "vertices/29daca6f72378527f19ec0bf39d53a3a",
@@ -1798,6 +1829,19 @@
       }
     },
     {
+      "_key": "2b06d8d1440646c42a69e9f9915a026b",
+      "_from": "vertices/3f569698ad78cb7ac4f1e7a5d7f98702",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 137,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "349f779364f7ccada744468dd4117245",
       "_from": "vertices/72888926b2b59bc9906b9b36886272f5",
       "_to": "vertices/fa09e199005b1e76223eff431a12cdd6",
@@ -1844,19 +1888,6 @@
       "concept": "plugin-libs-parity",
       "crosses_concept": false,
       "line": 274,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "3d3986333970fd19e8d8df59b5a18f7f",
-      "_from": "vertices/19e08475a4db4eb61a450fe88c37bd37",
-      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
-      "type": "has-type",
-      "concept": "plugin-libs-parity",
-      "crosses_concept": false,
-      "line": 117,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2052,19 +2083,6 @@
       "concept": "plugin-libs-parity",
       "crosses_concept": false,
       "line": 415,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5100f062a398d73b50080336152ddc96",
-      "_from": "vertices/4e3a598c4f5e3231e2aba704a41a8385",
-      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
-      "type": "calls",
-      "concept": "plugin-libs-parity",
-      "crosses_concept": true,
-      "line": 108,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2422,19 +2440,6 @@
       }
     },
     {
-      "_key": "7cbdaddc84d65af6ef7883084dd8bff3",
-      "_from": "vertices/4e3a598c4f5e3231e2aba704a41a8385",
-      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
-      "type": "has-type",
-      "concept": "plugin-libs-parity",
-      "crosses_concept": false,
-      "line": 107,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "82ded3232d2414d4fcb36f432a31b4fa",
       "_from": "vertices/9dc87e232419ca2dd72b6cfe1f946693",
       "_to": "vertices/9dc1dc9912ba659049d2b5e406a12a73",
@@ -2546,6 +2551,19 @@
       "concept": "plugin-libs-parity",
       "crosses_concept": false,
       "line": 373,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "8bbdafbb60ddfd4a3fbe79e22c8e7b56",
+      "_from": "vertices/3f569698ad78cb7ac4f1e7a5d7f98702",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 129,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2728,6 +2746,19 @@
       "concept": "plugin-libs-parity",
       "crosses_concept": false,
       "line": 129,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a7ccadd21b630704cd7f3e041ff14118",
+      "_from": "vertices/3f569698ad78cb7ac4f1e7a5d7f98702",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 134,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -2923,6 +2954,19 @@
       "concept": "plugin-libs-parity",
       "crosses_concept": false,
       "line": 374,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bd859565225aa116fc9ad8fb8cfad42b",
+      "_from": "vertices/3f569698ad78cb7ac4f1e7a5d7f98702",
+      "_to": "vertices/54bbea79eb5be170267fc62eca71c0f0",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 140,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3137,6 +3181,19 @@
       }
     },
     {
+      "_key": "d4aabce73713824a7a52358ad0ecc813",
+      "_from": "vertices/19e08475a4db4eb61a450fe88c37bd37",
+      "_to": "vertices/38d9198f7224b5f60068b37718b098ce",
+      "type": "has-type",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": false,
+      "line": 184,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "d4e653cdba0164486ab3a77e33fb032f",
       "_from": "vertices/dc42a24576a8ee631312720d83abbb9c",
       "_to": "vertices/a50c9fa3bc5478d6e4221c420008da9e",
@@ -3196,6 +3253,19 @@
       "concept": "plugin-libs-parity",
       "crosses_concept": false,
       "line": 136,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "dfd2f2010881c0e96f027ca19cf90fc3",
+      "_from": "vertices/4e3a598c4f5e3231e2aba704a41a8385",
+      "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
+      "type": "calls",
+      "concept": "plugin-libs-parity",
+      "crosses_concept": true,
+      "line": 175,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3391,14 +3461,14 @@
   },
   "meta": {
     "extractor_version": "code-graph@0.3.42",
-    "extracted_at": "2026-11-06T20:01:36.852Z",
+    "extracted_at": "2026-11-06T23:05:07.326Z",
     "files": {
       "apps/maestro/src/core/agent-runs.ts": "sha256:3d88951ed3d496e0224e3426f717f00fc3b0ccfb894ec37a1ee4faa3ad4712c5",
       "apps/maestro/src/core/config-usable.ts": "sha256:5c737f4eabdc2bdb4d4caf95cb3016b09ffe2b66c0e1d4654b1314866bee929a",
       "apps/maestro/src/core/config-validate.ts": "sha256:d54d8f25928bba6b14d42d1ff355b882d49c32f638804d58ce8bb2b6d9cd33cb",
       "apps/maestro/src/core/diff.ts": "sha256:7f5850c7edae7ea22c8784e40347eb76183e1d4c955ba62adf88ad1edccdc263",
       "apps/maestro/src/core/handoff-label.ts": "sha256:2725fa68a52df3c02c853d8d172d64a5ae0d17e4a9d641ac67c197406e0e657f",
-      "apps/maestro/src/core/handoff-routes.ts": "sha256:03d66bc4378014b353021442617cf7f1a41c2b42f50c4d3b1f4fafec44d10fc4",
+      "apps/maestro/src/core/handoff-routes.ts": "sha256:42520997bc77d6cefe6d83527a43f259e209a9e200f4d747ce535fcc11a050e6",
       "apps/maestro/src/core/plugin-entries/maestro-agent-fork.ts": "sha256:330c614d51dbc669ae534f554a324f2353e8a3d75ed6d81c2378a887d03cf08a",
       "apps/maestro/src/core/plugin-entries/maestro-agent-project-tags.ts": "sha256:e57208a9681b649257af543dd018e4cac4c53f5af015ffe7febf9de0a18e1795",
       "apps/maestro/src/core/plugin-entries/maestro-agent-sync.ts": "sha256:70737126b642a8e02f47a7d8fadde63714ad9c9183423693b934a3e9c4f75c95",
@@ -3409,7 +3479,7 @@
       "apps/maestro/src/core/plugin-entries/maestro-report-defaults.ts": "sha256:295f29a07bacff12536dcfa55f28c2373a9074b683e919bf08051b1869cff406",
       "apps/maestro/src/core/plugin-entries/maestro-rule-move.ts": "sha256:6414183f2d2db0709b0b7a40a0ed016d0951e9f9cfd50f7a6f9b75ca8a0a4f9d",
       "apps/maestro/src/core/plugin-entries/maestro-seed.ts": "sha256:50a9d6a21a4e4c23a1669d3fced79930b9886ce23636af8f1a349692999f6a5c",
-      "apps/maestro/src/core/plugin-entries/maestro-session.ts": "sha256:f40baf80d1636beb4b26ee3c04b3a201d98088a32939226b2349106c873d7ad1",
+      "apps/maestro/src/core/plugin-entries/maestro-session.ts": "sha256:c05b9fa0bb052e5cb581986bb387c0115b476bd1d13033cb4f3f43b6011c698e",
       "apps/maestro/src/core/plugin-entries/maestro-skill-availability.ts": "sha256:25a53f0e8bee5ad760bd02bcdae8a3c6cf39993ebea91e2e76fed60e9e026d37",
       "apps/maestro/src/core/plugin-entries/maestro-skill-lists.ts": "sha256:062e78c7cdc4fc49153e2124ed5cdb54a264cf240533b654f4fc8e69ebe748fb",
       "apps/maestro/src/core/plugin-entries/maestro-skill-regions.ts": "sha256:8fff00a30208bc85dca630ba604cd286515dfcdfa1d0050f20bced2e70881943",

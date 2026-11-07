@@ -62,6 +62,11 @@
 // (a resumed workflow agent carries its first run's routing in its history; the notice overrides
 // it). The skills blocks stay on a first run: they are what a participant reviews.
 //
+// TEST HINTS (`155`): an implementer (`TEST_HINT_SENDERS` in apps/maestro/src/core/handoff-routes.ts)
+// with `@test` later on its success path but no edge of its own into it is told to write its
+// `<sender>/test` shape to `.claude/channels/<scope>/test/<sender>.1.md` on `HANDOFF: success`. The
+// channel delivery branch above then hands it to `@test` with no further routing.
+//
 // OWNER RUNS (`081`): an agent type listed in session.json's `owner_runs` (a closed meeting's
 // approved change being applied) gets the skills and an owner-run notice, and NO routing, payload
 // protocols, channel delivery or report — it is a normal agent outside the workflow. Not write-confined.
@@ -84,6 +89,8 @@ const {
   routesFrom,
   payloadRoutes,
   payloadRequirement,
+  testHintRoutes,
+  testHintRequirement,
   readLane,
   retire,
   isGapReport,
@@ -176,6 +183,8 @@ function collect(cfg, sessionPath, agentType) {
   // agents (`maestro:test`): the receiver used to be compared and pathed un-bared and resolved no
   // protocol at all, silently.
   const routes = routesFrom(handoffRoutes(searchList, instances), agentType);
+  // `155`: an implementer with `@test` later on its success path but no edge of its own into it.
+  const hintRoutes = routesFrom(testHintRoutes(searchList, instances), agentType);
 
   if (matchedInstances.length === 0) return null;
 
@@ -202,6 +211,7 @@ function collect(cfg, sessionPath, agentType) {
     loadedSkills: loadedList,
     referencedSkills: referencedList,
     routes,
+    hintRoutes,
     warning,
   };
 }
@@ -389,6 +399,14 @@ function collectReportContext(cfg, projectDir, agentType) {
   if (!offWorkflow && result && result.routes.length > 0) {
     const routes = payloadRoutes(projectDir, scope, result.routes, readGlobalHandoff);
     const required = payloadRequirement(routes, { withShapes: !isResume });
+    if (required) parts.push(required);
+  }
+
+  // `155`: test hints for a later `@test` step that no route of this agent reaches. Same three-tier
+  // resolution of the `<sender>/test` shape; on a resume, file names only, like the block above.
+  if (!offWorkflow && result && result.hintRoutes.length > 0) {
+    const hints = payloadRoutes(projectDir, scope, result.hintRoutes, readGlobalHandoff);
+    const required = testHintRequirement(hints, { withShapes: !isResume });
     if (required) parts.push(required);
   }
 

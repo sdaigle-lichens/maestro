@@ -17,6 +17,7 @@ When you are asked for a code review, you will receive a diff of the changed fil
 
 1. **Audit** — Work through the review checklist from the injected skills.
 2. **Validate** — Validate the requirements from the section below.
+   - **Coverage independence** — when a test handoff reached you, FAIL back to the test agent (the condition route your context names for a test defect) if `test_origin.independent` is empty without a stated reason, or if any acceptance criterion in `acceptance_coverage` has no test and no reason. Spot-check one independent test against its cited source. Implementer hints must never have narrowed what was tested.
 3. **Run automated checks** — lint, format, and run tests.
 4. Issue a verdict using the mandatory output format below.
 5. Handoff to the next subagent depending on the verdict. The conditions to choose the correct agent to delegate to is injected in your context at the start of this invocation (from the workflow config).

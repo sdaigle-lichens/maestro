@@ -26,7 +26,7 @@ import path from "node:path";
 import { createHash } from "node:crypto";
 import { readConfig, writeConfig } from "./config.js";
 import { readHandoffDefault, DEFAULT_HANDOFF_DEFAULTS_DB_PATH } from "./handoff-defaults.js";
-import { handoffRoutes, handoffPairs } from "./handoff-routes.js";
+import { handoffRoutes, handoffPairs, testHintRoutes } from "./handoff-routes.js";
 import { isValidHandoffId, PRIOR_SEEDS } from "./handoff-seeds.js";
 import { decideSync, type SyncTracking } from "./sync-decision.js";
 import type { MaestroHandoffsSlice } from "./types.js";
@@ -61,7 +61,12 @@ export function syncProjectHandoffs(
   if (!cfg) return summary;
 
   const handoffs: MaestroHandoffsSlice = { ...(cfg.handoffs ?? {}) };
-  const wired = handoffPairs(handoffRoutes(cfg.workflows, cfg.workflow_instances));
+  // `155`: a test-hint route (backend -> a later @test) is wired too: its payload is written on
+  // every success, so its template gets a project file like any edge's.
+  const wired = handoffPairs([
+    ...handoffRoutes(cfg.workflows, cfg.workflow_instances),
+    ...testHintRoutes(cfg.workflows, cfg.workflow_instances),
+  ]);
   // An id already in the slice that the graph no longer wires stays a candidate: it may still be
   // tracking a global default, and dropping it from the walk would leave a file the user believes
   // is maintained silently frozen.

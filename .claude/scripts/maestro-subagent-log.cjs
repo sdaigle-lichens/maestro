@@ -47,6 +47,7 @@ const {
   checkRoute,
   checkPayload,
   handoffRoutes,
+  testHintRoutes,
   routesFrom,
   payloadRoutes,
   payloadWrittenSince,
@@ -92,7 +93,9 @@ function agentPayloadRoutes(cwd, scope, claudeDir, agentType, sessionStatePath) 
   if (!cfg || cfg.version !== 3) return [];
   const { searchList } = resolveSearchList(cfg, readSession(sessionStatePath));
   const routes = routesFrom(handoffRoutes(searchList, cfg.workflow_instances || []), agentType);
-  return payloadRoutes(cwd, scope, routes, readGlobalHandoff);
+  // `155`: test hints for a later `@test` step, written with `HANDOFF: success` (label "success").
+  const hints = routesFrom(testHintRoutes(searchList, cfg.workflow_instances || []), agentType);
+  return payloadRoutes(cwd, scope, [...routes, ...hints], readGlobalHandoff);
 }
 
 // `108`: this agent's routes in the workflow the orchestrator recorded, or null when none was

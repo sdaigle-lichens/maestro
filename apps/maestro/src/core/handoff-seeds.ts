@@ -68,7 +68,40 @@ const INFRA_TO_REVIEWER =
   "}\n" +
   "```";
 
-const BACKEND_TO_TEST =
+// `155`: an implementer's test payload is HINTS, never the scope. The `hintsOnly` line travels
+// inside the payload so @test reads the framing on every route, a resume included. `edge_cases` is
+// gone: it listed what the implementer already handled; `failureModes` and `notHandled` replace it.
+// The same shape is written on a direct edge to @test and as test hints for a later @test step
+// (`testHintRoutes`). One builder for the three senders on purpose: this framing is a shared
+// contract, unlike the per-pair bodies the comment on `SEED_HANDOFFS` warns against factoring.
+const TEST_HINTS_ONLY =
+  "Implementer hints, not the test scope. Derive your test plan from the ticket's acceptance criteria and the " +
+  "code first, then check these hints against it. They never narrow what you test: this list is biased toward " +
+  "what the implementer already handled, and the gaps are what it did not think of.";
+
+function testHints(behavior: string, failureModes: string): string {
+  return (
+    "```json\n" +
+    "{\n" +
+    `  "hintsOnly": "${TEST_HINTS_ONLY}",\n` +
+    '  "filesChanged": ["<added|removed|renamed|modified> <path>, or \'none\'"],\n' +
+    '  "behaviors": [\n' +
+    "    {\n" +
+    `      "behavior": "<${behavior} — expected behavior>",\n` +
+    `      "failureModes": ["<${failureModes} | ...>"],\n` +
+    '      "files": ["<source files the behavior lives in>"]\n' +
+    "    }\n" +
+    "  ],\n" +
+    '  "notHandled": ["<case the implementation deliberately does not handle or left as an open decision, or \'none\'>"],\n' +
+    '  "howToRun": ["<the project\'s own recipe or script that runs the relevant tests with their environment, never the raw tool under it; or \'none: no tests for this part yet\' — never a test framework, runner or structure to create>"],\n' +
+    '  "preHandoffChecks": [{ "command": "<exact command run>", "result": "pass | fail | n/a" }]\n' +
+    "}\n" +
+    "```"
+  );
+}
+
+// Before `155`.
+const BACKEND_TO_TEST_V2 =
   "```json\n" +
   "{\n" +
   '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
@@ -77,6 +110,11 @@ const BACKEND_TO_TEST =
   '  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
   "}\n" +
   "```";
+
+const BACKEND_TO_TEST = testHints(
+  "function/endpoint/store method",
+  "empty/closed input | missing row | conflict | stale generated copy | edge input"
+);
 
 const FRONTEND_TO_MOBILE =
   "```json\n" +
@@ -98,7 +136,8 @@ const FRONTEND_TO_REVIEWER =
   "}\n" +
   "```";
 
-const FRONTEND_TO_TEST =
+// Before `155`.
+const FRONTEND_TO_TEST_V2 =
   "```json\n" +
   "{\n" +
   '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
@@ -107,6 +146,11 @@ const FRONTEND_TO_TEST =
   '  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
   "}\n" +
   "```";
+
+const FRONTEND_TO_TEST = testHints(
+  "component/page",
+  "empty/loading/error state | invalid input | missing data | edge input"
+);
 
 const MOBILE_TO_FRONTEND =
   "```json\n" +
@@ -128,7 +172,8 @@ const MOBILE_TO_REVIEWER =
   "}\n" +
   "```";
 
-const MOBILE_TO_TEST =
+// Before `155`.
+const MOBILE_TO_TEST_V2 =
   "```json\n" +
   "{\n" +
   '  "files_added_removed_renamed": ["<list, or \'none\'>"],\n' +
@@ -137,6 +182,11 @@ const MOBILE_TO_TEST =
   '  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n' +
   "}\n" +
   "```";
+
+const MOBILE_TO_TEST = testHints(
+  "screen/component",
+  "empty/loading/error state | offline | invalid input | edge input"
+);
 
 const REFACTOR_TO_BACKEND =
   "```json\n" + "{\n" + '  "issues": ["<file:line — description of the problem>"]\n' + "}\n" + "```";
@@ -233,10 +283,31 @@ const TEST_TO_FRONTEND =
   "}\n" +
   "```";
 
+// Before `155` added the origin split, the acceptance mapping and the skipped hints.
+const TEST_TO_REVIEWER_V2 =
+  "```json\n" +
+  "{\n" +
+  '  "tests_added": ["<test name — what it verifies>"],\n' +
+  '  "results": ["<pass/fail summary>"],\n' +
+  '  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],\n' +
+  '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
+  '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
+  '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+  '  "files_touched": ["<list, or \'none\'>"]\n' +
+  "}\n" +
+  "```";
+
+// `155`: the reviewer checks from this payload alone that implementer hints did not narrow testing.
 const TEST_TO_REVIEWER =
   "```json\n" +
   "{\n" +
   '  "tests_added": ["<test name — what it verifies>"],\n' +
+  '  "test_origin": {\n' +
+  '    "from_hints": ["<test name>"],\n' +
+  '    "independent": ["<test name> - <source: acceptance criterion | file:line code path | failure mode not in hints>"]\n' +
+  "  },\n" +
+  '  "acceptance_coverage": ["<acceptance criterion> => <test names, or \'untested: <reason>\'>"],\n' +
+  '  "hints_skipped": ["<implementer hint> - <reason>, or \'none\'"],\n' +
   '  "results": ["<pass/fail summary>"],\n' +
   '  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],\n' +
   '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
@@ -343,6 +414,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "backend/test": [
+    BACKEND_TO_TEST_V2,
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +
@@ -379,6 +451,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "frontend/test": [
+    FRONTEND_TO_TEST_V2,
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +
@@ -415,6 +488,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "mobile/test": [
+    MOBILE_TO_TEST_V2,
     "```json\n" +
       "{\n" +
       '  "handoff_details": {\n' +
@@ -550,6 +624,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "test/reviewer": [
+    TEST_TO_REVIEWER_V2,
     // `148`: the flat body before commands_run, negative_control and real_path_exercised.
     "```json\n" +
       "{\n" +

@@ -103,6 +103,73 @@ export function handoffRoutes(
   return out;
 }
 
+/** The implementers whose test hints reach a later `@test` step that their own edges never route to. */
+export const TEST_HINT_SENDERS: readonly string[] = ["backend", "frontend", "mobile"];
+
+/** The lane test hints are written to. */
+export const TEST_HINT_RECEIVER = "test";
+
+/**
+ * Test-hint routes (`155`): one `{ sender, receiver: "test", label: "success" }` per implementer in
+ * `TEST_HINT_SENDERS` that reaches an `@test` agent node LATER on its success path (through any
+ * node, agents included) without its own success edge already leading to `@test`, which is a normal
+ * route and carries the same payload. The default workflow is the case this exists for:
+ * backend -> frontend -> manager_review -> test, where no backend edge ever reaches the test lane.
+ *
+ * Not a route the orchestrator can take — never merge these into `handoffRoutes()`, whose output is
+ * what a `HANDOFF:` label is checked against. They feed only the payload instruction (SubagentStart),
+ * the missing-payload check on `HANDOFF: success` (SubagentStop) and the install-time sync. The
+ * delivery itself needs nothing new: `@test`'s SubagentStart inlines every same-run file in its lane.
+ *
+ * Condition edges are not followed: a later step means one on the success path, not a fix loop.
+ */
+export function testHintRoutes(
+  workflows: MaestroWorkflowV3[] | null | undefined,
+  instances: MaestroInstanceV3[] | null | undefined
+): HandoffRoute[] {
+  const instList = instances ?? [];
+  const agentOf = (node: MaestroNodeV3 | undefined): string | null => {
+    if (!node || node.type !== "agent") return null;
+    const inst = instList.find((i) => i.name === node.instance);
+    return inst ? bareAgentName(inst.agent) : null;
+  };
+
+  const out: HandoffRoute[] = [];
+  const seen = new Set<string>();
+  const direct = new Set(
+    handoffRoutes(workflows, instances)
+      .filter((r) => r.label === "success" && r.receiver === TEST_HINT_RECEIVER)
+      .map((r) => r.sender)
+  );
+
+  for (const wf of workflows ?? []) {
+    const nodes = wf.nodes ?? [];
+    const edges = wf.edges ?? [];
+    const nodeById = (id: string): MaestroNodeV3 | undefined => nodes.find((n) => n.id === id);
+
+    // Bounded by `visited`: a user-authored success cycle must not recurse forever.
+    const testLater = (fromId: string, visited: Set<string>): boolean => {
+      for (const edge of edges) {
+        if (edge.from !== fromId || edge.kind !== "success" || visited.has(edge.to)) continue;
+        visited.add(edge.to);
+        if (agentOf(nodeById(edge.to)) === TEST_HINT_RECEIVER) return true;
+        if (testLater(edge.to, visited)) return true;
+      }
+      return false;
+    };
+
+    for (const node of nodes) {
+      const sender = agentOf(node);
+      if (!sender || !TEST_HINT_SENDERS.includes(sender) || direct.has(sender) || seen.has(sender)) continue;
+      if (!testLater(node.id, new Set([node.id]))) continue;
+      seen.add(sender);
+      out.push({ sender, receiver: TEST_HINT_RECEIVER, label: "success" });
+    }
+  }
+
+  return out;
+}
+
 /** The routes leaving one agent — what the SubagentStart hook injects, and what `034`'s UI lists. */
 export function routesFrom(routes: HandoffRoute[], agent: string): HandoffRoute[] {
   const bare = bareAgentName(agent);

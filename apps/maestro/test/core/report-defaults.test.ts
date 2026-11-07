@@ -556,12 +556,24 @@ describe("stricter report defaults (148)", () => {
   it("a fresh read returns the stricter test, scribe and backend reports", () => {
     const fresh = path.join(dir, "fresh.sqlite");
     const t = readAgentReportDefault("test", fresh)!.content;
-    for (const k of ['"gates"', '"gatesSkipped"', '"notCaught"']) expect(t).toContain(k);
+    for (const k of [
+      '"gates"',
+      '"gatesSkipped"',
+      '"notCaught"',
+      '"acceptanceCoverage"',
+      '"testOrigin"',
+      '"hintsSkipped"',
+    ])
+      expect(t).toContain(k);
+    expect(t).not.toContain("the minimum, not the scope"); // `155`: hints never set the scope
+    expect(t).toContain("A hint never makes you add a test framework"); // nor a setup the project lacks
     const s = readAgentReportDefault("scribe", fresh)!.content;
     for (const k of ['"verifiedAgainstCode"', '"stampFailures"', '"changelogEntryAdded"', '"intentionallyNotTouched"'])
       expect(s).toContain(k);
     const b = readAgentReportDefault("backend", fresh)!.content;
-    for (const k of ['"testTargets"', '"behaviors"', '"failureModes"', '"preHandoffChecks"']) expect(b).toContain(k);
+    // `155`: the test targets moved off the report into the test-hints channel file.
+    for (const k of ['"preHandoffChecks"', '"testHints"']) expect(b).toContain(k);
+    expect(b).not.toContain('"testTargets"');
     expect(readAgentReportDefault("frontend", fresh)!.content).not.toContain("testTargets");
   });
 
