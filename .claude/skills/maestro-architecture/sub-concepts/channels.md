@@ -92,6 +92,11 @@ acceptance criteria and the code first, reporting `testOrigin` / `acceptanceCove
 `hintsSkipped`), and hints never ask for a test framework, runner or structure the project doesn't
 have (`howToRun: none: no tests for this part yet`; @test puts such a hint in `hintsSkipped`).
 
+Unproven in practice (from one project's team meeting). If runs show implementers resumed only to
+write a missing hints file, or `@test` adding a token "independent" test to satisfy `@reviewer`,
+relax the reviewer's Coverage independence FAIL to a note in `plugins/maestro/agents/reviewer.md`
+first. `test_origin` is self-reported; the reviewer's spot-check is the only real verification.
+
 ## Scribe-lane gap reports (`112`)
 
 The one exception to deliver-once. A **gap report** (`isGapReport`) is a scribe-lane file whose
