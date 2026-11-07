@@ -6,11 +6,12 @@ list — `handoffAssets()` is deleted and `runtimeAssets()` returns `STATIC_ASSE
 
 ## Files — `runtimeAssets()`
 
-Everything lands under `<project>/.claude/`. Three groups, **33 files** today: 12 scripts, 9 libs,
+Everything lands under `<project>/.claude/`. Three groups, **35 files** today: 13 scripts, 10 libs,
 `maestro-session-cleanup.cjs`, and the 11 `HOOK_SCRIPTS` renamed `.cjs`. (`084` added
 `scripts/maestro-epic.cjs` and `scripts/lib/maestro-epic.cjs`; `113` added `maestro-session-name`, and
 the post-mortem hook joined the same list; `121` added `maestro-channel-write-guard`; `130`
-`maestro-human-review-gate`; `141` `maestro-session-heartbeat`.) `test/core/install.test.ts` and `parity.test.ts` pin the
+`maestro-human-review-gate`; `141` `maestro-session-heartbeat`; `162` `scripts/maestro-workflow-drift.cjs`
+and `scripts/lib/maestro-seed.cjs`.) `test/core/install.test.ts` and `parity.test.ts` pin the
 set; count from `STATIC_ASSETS` in `install.ts`, not from here.
 
 | Group                                               | Destination                        | Note                                                                                                          |

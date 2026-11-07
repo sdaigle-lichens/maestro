@@ -147,10 +147,48 @@ place the refresh procedure is written down.
      [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
      commands you run yourself with `!`."*
 
-7. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+7. **Report the formatter step** from step 2's JSON summary, never as a question. The installer
+   appends the managed `.claude/` paths to a `.prettierignore`, `.eslintignore` or `.biomeignore`
+   that already exists, so a formatter does not rewrite files whose hash the sync compares
+   (see [`../maestro-install/references/formatter-ignore.md`](../maestro-install/references/formatter-ignore.md)).
+   - `formatterIgnore` lists added lines: say which file got which lines (a project file to commit).
+   - Nothing added and no failure: say nothing, or "formatter ignore already current".
+   - **`formatterDetected` is `true` but the ignore file could not be edited** (`formatterIgnoreFailed`
+     is non-empty, or `formatterDetected` is `true` while `formatterIgnore` is `{}`, meaning a
+     `format` script, a lint-staged glob or another formatter with no ignore file): print one line,
+     *"A formatter is configured but its ignore file could not be edited. Exclude
+     `<formatterIgnorePaths>` from it, or a reformatted managed file gets a different hash and is
+     reported stale-customized on every update."*
+   - **`reportsSync.staleCustomized` or `handoffsSync.staleCustomized` is non-empty and
+     `formatterDetected` is `true`:** add one hint line: *"Those files may differ only by formatting.
+     With the paths above excluded from the formatter, restore the seed text for them and re-run
+     the installer; they then stop reporting stale-customized."* Say it only once.
+
+8. **Check how far each workflow has drifted from the seed**, after the steps above. This is
+   **read-only**: it writes nothing, never touches `maestro.json`, never re-renders the
+   orchestrator, and always exits 0. It needs no sandbox allow-list entry (a read-only script, like
+   step 4's `list`), so run it in exactly this form, one per call:
+
+   ```bash
+   node .claude/scripts/maestro-workflow-drift.cjs .
+   ```
+
+   It prints one JSON line: `{"checked", "summary", "workflows": [{"name","verdict",...}], "report": [...], "apply"}`.
+   Each `verdict` is `identical`, `differs`, `missing-in-project` or `project-only`; the last two are
+   information, not problems. See `references/workflow-drift.md` for what it compares.
+   - **No workflow is `differs`** (every verdict is `identical`, `project-only` or
+     `missing-in-project`, or `checked` is `false`): add one line to the report, `summary` as
+     printed. Nothing more.
+   - **Any workflow `differs`:** put `report` in the report as written, the detail included, ending
+     with how to apply. Never apply a change yourself and never offer to overwrite: the workflows
+     are the user's graph, changed only through the Maestro app's workflow view or the
+     `update-workflow` skill.
+
+9. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
-   none had diverged), any dangling skill references step 5 found, step 6's herdr line if any, and
-   step 1's `! <applyCommand>` if one is still to run.
+   none had diverged), any dangling skill references step 5 found, step 6's herdr line if any,
+   step 7's formatter lines if any, step 8's drift summary, and step 1's `! <applyCommand>` if one
+   is still to run.
 
 ## Notes
 

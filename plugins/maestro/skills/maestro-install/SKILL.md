@@ -194,7 +194,7 @@ $ARGUMENTS
 
    If the project's `.claude/maestro.json` is not valid JSON or not version 3, the script exits 1 with `{"ok": false, "refused": "config", "reason": ...}` and has written **nothing**. Relay `reason` to the user verbatim (they fix the file by hand or move it aside) and stop; do not retry or delete the file.
 
-   On success it prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `permissionsAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `ignoreMode`, `wroteGitExclude`, `gitExcludePath`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`). It does **not** render the handoff table — that is step 7.
+   On success it prints a JSON summary (`orchestratorSkill`, `installedOrchestratorSkill`, `hooksAdded`, `permissionsAdded`, `hooksRemoved`, `retiredScriptsRemoved`, `wroteRepoGitignore`, `ignoreMode`, `wroteGitExclude`, `gitExcludePath`, `seededConfig`, `skillListsSeeded`, `implAgents`, `projectTags`, `runtimeVersion`, `runtimeVersionUpdated`, `formatterIgnore`, `formatterIgnoreFailed`, `formatterDetected`). It appends the managed `.claude/` paths to any formatter ignore file that already exists (`.prettierignore`, `.eslintignore`, `.biomeignore`), never creating one; see [`references/formatter-ignore.md`](references/formatter-ignore.md) for the paths, the fields and the `--ignore-mode ignored` / tracked-file decision. It does **not** render the handoff table — that is step 7.
 
    `orchestratorSkill.action` says what happened to `SKILL.md`: `installed` (copied whole), `synced` (managed regions refreshed; `.regions` lists which), `unchanged`, or `migrated` — the installed skill predated the region markers, so it was backed up to `SKILL.md.bak` (path in `.backup`) and replaced. On `migrated`, **tell the user** and offer to re-apply any custom prose from the `.bak` file *outside* the managed regions before deleting it.
 
@@ -233,6 +233,7 @@ $ARGUMENTS
    - the rendered success paths from step 7;
    - the sandbox allow-list from step 5, in one line: the `! <applyCommand>` still to run, or nothing when it was up to date or the sandbox is off;
    - the ignore mode (`ignoreMode`): for `ignored`, that `.claude/` is now in the clone-local `gitExcludePath` (`wroteGitExclude` says whether this run added it) and nothing was added to the committed `.gitignore`, so teammates see no Maestro files. The line sits under a `# Maestro (added by maestro-install)` marker, which is what lets `/maestro-uninstall --purge` remove exactly that line later (a `.claude/` entry the user wrote themselves is never touched);
+   - when `formatterIgnore` lists added lines, which ignore file got them (it is a project file the user should commit);
    - that they invoke the orchestrator by running `/maestro`;
    - herdr, from step 8, in one line: found, or the guide at
      [`references/herdr.md`](references/herdr.md) if they want it later;
