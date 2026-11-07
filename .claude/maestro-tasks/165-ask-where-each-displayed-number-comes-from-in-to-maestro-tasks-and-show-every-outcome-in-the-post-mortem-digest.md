@@ -15,7 +15,7 @@ Two authoring and retrospective fixes from the acces-portail-email walking-skele
 
 - [ ] to-maestro-tasks asks for the source of every number or derived value a task displays in a UI, and the written task states it
 - [ ] The wording stays project- and stack-agnostic
-- [ ] The post-mortem digest lists every outcome kind the session log records, including blocked and missing-HANDOFF runs; a test covers a session with all of them
+- [ ] The post-mortem digest lists every outcome kind the session log records, including blocked runs and a missing HANDOFF line on a final stop; an agent's interim stop (task 160's signal) is never counted as a missing HANDOFF; a test covers a session with all of them and with an interim stop
 - [ ] The maestro plugin.json version gets a patch bump; if a mirrored script changed, pnpm refresh:runtime and the parity test pass (a sandboxed run hands the user ! pnpm refresh:runtime), and pnpm verify passes
 
 ## Touched surfaces
@@ -23,7 +23,8 @@ Two authoring and retrospective fixes from the acces-portail-email walking-skele
 - plugins/maestro/skills/to-maestro-tasks/SKILL.md (and maestro-write-tasks.cjs only if the template gains a field)
 - plugins/maestro/scripts/maestro-post-mortem.js / maestro-post-mortem-context.js and their .claude/scripts mirrors
 - plugins/maestro/.claude-plugin/plugin.json (version, shared)
-- parallel OK; merge order: last of the three; rebase, take the next patch version, rebuild generated files instead of hand-merging
+- parallel OK; merge order: last of the three, and after task 160 (whose interim-stop signal the digest must respect); rebase, take the next patch version, rebuild generated files instead of hand-merging
+- plugins/maestro/skills/to-maestro-tasks/SKILL.md is also edited by task 157: whichever merges second rebases onto the other
 
 ## Blocked by
 

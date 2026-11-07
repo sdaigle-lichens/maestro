@@ -32,7 +32,8 @@ First decide how to tell an interim stop from a final one: from the SubagentStop
 - .claude/scripts mirrors (generated)
 - plugins/maestro/.claude-plugin/plugin.json (version)
 - .claude/skills/maestro-architecture/sub-concepts/handoff-contract.md
-- parallel OK with 158 and the channel-payload task, merge order 158, then the channel-payload task, then this task; each later one rebases, rebuilds the libs and re-bumps the version
+- base: current main (0.13.32 or later; 158 and 159 are merged)
+- parallel OK with 163, 164 and 166; merge before 165, whose post-mortem digest must respect this task's interim-stop signal; whichever lands later rebases, takes the next patch version and rebuilds generated files instead of hand-merging
 
 ## Blocked by
 
