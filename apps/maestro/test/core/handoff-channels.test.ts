@@ -225,6 +225,58 @@ describe("sweep", () => {
     expect(sweep(projectDir)).toEqual({ removed: [] });
     expect(sweep(projectDir, { scope: S })).toEqual({ removed: [] });
   });
+
+  describe("with a SessionEnd reason (159)", () => {
+    const RESUMABLE = ["prompt_input_exit", "other", "resume"];
+    const FINAL: unknown[] = ["clear", "logout", "bypass_permissions_disabled", "", 7, null, undefined];
+
+    /** A delivered payload in `scope`'s own .consumed/test/, as a real SubagentStart would leave it. */
+    function consumedIn(scope: string, body = "BODY\n"): string {
+      write("test", "backend", body, scope);
+      retire(projectDir, scope, "test", readLane(projectDir, scope, "test")[0]);
+      return path.join(consumedDir(projectDir, scope, "test"), "backend.1.md");
+    }
+
+    it.each(RESUMABLE)("reason %s keeps the own scope's .consumed inside the age cap", (reason) => {
+      const p = consumedIn(S);
+      expect(sweep(projectDir, { scope: S, reason }).removed).toEqual([]);
+      expect(fs.existsSync(p)).toBe(true);
+    });
+
+    it.each(RESUMABLE)("reason %s still ages the own scope's .consumed out past the cap", (reason) => {
+      const p = consumedIn(S);
+      const { removed } = sweep(projectDir, { scope: S, reason, now: Date.now() + CHANNEL_AGE_CAP_MS + 1000 });
+      expect(removed).toEqual([p]);
+      expect(fs.existsSync(p)).toBe(false);
+    });
+
+    it.each(FINAL)("final reason %j retires the own scope's .consumed outright, regardless of age", (reason) => {
+      const p = consumedIn(S);
+      expect(sweep(projectDir, { scope: S, reason }).removed).toEqual([p]);
+      expect(fs.existsSync(p)).toBe(false);
+    });
+
+    it.each(RESUMABLE)("reason %s never retires another scope's .consumed outright", (reason) => {
+      const a = consumedIn(S);
+      const b = consumedIn("task-002");
+      expect(sweep(projectDir, { scope: S, reason }).removed).toEqual([]);
+      expect(fs.existsSync(a)).toBe(true);
+      expect(fs.existsSync(b)).toBe(true);
+    });
+
+    it.each(RESUMABLE)("reason %s ages another scope's .consumed out past the cap, and its own too", (reason) => {
+      const a = consumedIn(S);
+      const b = consumedIn("task-002");
+      const later = Date.now() + CHANNEL_AGE_CAP_MS + 1000;
+      expect(sweep(projectDir, { scope: S, reason, now: later }).removed.sort()).toEqual([a, b].sort());
+    });
+
+    it("with no scope a resumable reason has nothing of its own to keep or retire", () => {
+      const b = consumedIn("task-002");
+      expect(sweep(projectDir, { reason: "other" }).removed).toEqual([]);
+      expect(fs.existsSync(b)).toBe(true);
+    });
+  });
 });
 
 describe("pendingLanes (037)", () => {

@@ -317,8 +317,37 @@ export function isResumableEnd(reason: unknown): boolean {
  * The ONE SessionEnd decision, called by both the node hook and its bash twin: a resumable end
  * keeps everything (returns `[]`), a final end is {@link removeSessionState}. Returns the paths
  * actually removed.
+ *
+ * `159`: a resumable end also appends one {@link SESSION_END_LOG_KIND} line to the session's
+ * `log.jsonl` (only when its directory exists — nothing is created), so a resumed session can tell
+ * which channel deliveries went to a run the restart cut off (`restoreInterruptedDeliveries`).
  */
-export function endSessionState(claudeDir: string, sessionId: unknown, reason: unknown): string[] {
-  if (isResumableEnd(reason)) return [];
+export function endSessionState(
+  claudeDir: string,
+  sessionId: unknown,
+  reason: unknown,
+  now: Date = new Date()
+): string[] {
+  if (isResumableEnd(reason)) {
+    const paths = sessionPathsFor(claudeDir, sessionId);
+    try {
+      if (paths && fs.existsSync(paths.dir)) {
+        const entry = {
+          ts: now.toISOString(),
+          origin: "main_session",
+          kind: SESSION_END_LOG_KIND,
+          reason,
+          log: `session end (${String(reason)}, resumable)`,
+        };
+        fs.appendFileSync(paths.log, JSON.stringify(entry) + "\n");
+      }
+    } catch {
+      // A log line we cannot write is not worth failing the session's exit over.
+    }
+    return [];
+  }
   return removeSessionState(claudeDir, sessionId);
 }
+
+/** The `log.jsonl` entry kind a resumable SessionEnd appends (`159`). */
+export const SESSION_END_LOG_KIND = "session_end";

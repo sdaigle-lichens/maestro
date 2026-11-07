@@ -22,12 +22,26 @@
 // file from that sender is in the lane. That is recorded as a `missing_payload` handoff issue and
 // printed as `missing: <file>`, whether the target is then resumed or dispatched cold.
 //
+// `159`: a payload delivered to a run that was then cut off by a restart (the session resumed under
+// the same id, its `.consumed/` kept by a resumable SessionEnd) is put back into the lane first
+// (`restoreInterruptedDeliveries`), by this CLI and by a cold SubagentStart alike, so the re-run
+// receives it and it is never reported missing.
+//
 // `fs`/`path` only: rides in the maestro-session bundle, which must stay free of `node:sqlite`.
 
 import fs from "node:fs";
 import path from "node:path";
-import { channelRelPath, isGapReport, readLane, retire, type ChannelEntry } from "./handoff-channels.js";
+import {
+  channelRelPath,
+  isGapReport,
+  readConsumed,
+  readLane,
+  retire,
+  unretire,
+  type ChannelEntry,
+} from "./handoff-channels.js";
 import type { PayloadRoute } from "./handoff-payload.js";
+import { SESSION_END_LOG_KIND } from "./session-paths.js";
 import { bareAgentName } from "./success-path.js";
 import type { HandoffIssueRecord, MaestroSession, ResumeDelivery } from "./types.js";
 
@@ -47,6 +61,92 @@ export function pendingResumeDeliveries(
   return readLane(projectDir, scope, bare)
     .filter((e) => e.runId === runId)
     .map((e) => ({ file: channelRelPath(scope, bare, e.fileName), sender: e.sender, run_id: runId }));
+}
+
+/** The newest entry's time in ms among `lines` that `match`, or null (no match, or no parseable `ts`). */
+function latestAt(lines: unknown[], match: (e: Record<string, unknown>) => boolean): number | null {
+  let latest: number | null = null;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const e = line as Record<string, unknown>;
+    if (typeof e.ts !== "string" || !match(e)) continue;
+    const at = Date.parse(e.ts);
+    if (Number.isFinite(at) && (latest === null || at > latest)) latest = at;
+  }
+  return latest;
+}
+
+/** When this session last ended resumably (`159`, the `session_end` log line), in ms, or null. */
+export function lastResumableEndAt(lines: unknown[]): number | null {
+  return latestAt(lines, (e) => e.kind === SESSION_END_LOG_KIND);
+}
+
+/**
+ * When `receiver` (bare type) last finished a run this session: the newest `kind:"handoff"` entry
+ * for it that carries a `HANDOFF:` label (meeting turns skipped), in ms. A run cut off by a restart
+ * ends with no `HANDOFF:` line, so a stop the hook logged for it does not count as finished. Null
+ * when it never finished one or no timestamp parses.
+ */
+export function lastFinishedRunAt(lines: unknown[], receiver: string): number | null {
+  const bare = bareAgentName(receiver);
+  return latestAt(
+    lines,
+    (e) =>
+      e.kind === "handoff" &&
+      e.meeting !== true &&
+      typeof e.label === "string" &&
+      e.label !== "" &&
+      typeof e.origin === "string" &&
+      bareAgentName(e.origin) === bare
+  );
+}
+
+/**
+ * `159`: put back into `receiver`'s lane IN `scope` (the session's own, `144`) every payload this
+ * run delivered to a run of `receiver` that a restart cut off — the session ended resumably and came
+ * back under the same id, keeping `.consumed/`. Such a payload is otherwise lost to the re-run: the
+ * cold inline and a resume's `deliver:` both read the live lane only, and the resume path reports it
+ * `missing:`, sending the sender to rewrite it (task 075).
+ *
+ * Nothing is put back unless the session has ended resumably ({@link lastResumableEndAt}), so
+ * deliver-once is untouched in an uninterrupted session. A consumed file is then put back only when:
+ * it carries this session's `runId`; it is not a scribe gap report (`112`: an acknowledged one stays
+ * acknowledged); no file of its name is in the lane already; it was written before that end; no run
+ * of `receiver` finished after it was written ({@link lastFinishedRunAt}, so a payload an earlier
+ * round acted on never comes back as this round's); and no delivery from its sender to `receiver`
+ * is logged since that end (it was already handed to the re-run). Returns the entries put back.
+ */
+export function restoreInterruptedDeliveries(
+  projectDir: string,
+  scope: string,
+  receiver: string,
+  runId: string | null | undefined,
+  lines: unknown[],
+  now: number = Date.now()
+): ChannelEntry[] {
+  if (!runId) return [];
+  const endAt = lastResumableEndAt(lines);
+  if (endAt === null) return [];
+  const bare = bareAgentName(receiver);
+  const finishedAt = lastFinishedRunAt(lines, bare);
+  const restored: ChannelEntry[] = [];
+  for (const e of readConsumed(projectDir, scope, bare, now)) {
+    if (e.runId !== runId || isGapReport(e)) continue;
+    const writtenAt = now - e.ageMs;
+    if (writtenAt > endAt) continue;
+    if (finishedAt !== null && writtenAt <= finishedAt) continue;
+    const redelivered = latestAt(
+      lines,
+      (l) => l.kind === "channel_delivery" && l.sender === e.sender && l.receiver === bare
+    );
+    if (redelivered !== null && redelivered > endAt) continue;
+    try {
+      if (unretire(projectDir, scope, bare, e)) restored.push(e);
+    } catch {
+      // Left consumed: still aged out like any other, never worth failing a hook over.
+    }
+  }
+  return restored;
 }
 
 /** `session` with `deliveries` recorded for `agentId` (replacing any earlier record for it). */

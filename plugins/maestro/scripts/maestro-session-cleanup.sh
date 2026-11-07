@@ -12,7 +12,9 @@
 #      a lane the receiving agent hasn't run yet (an abandoned `human review` stop is the routine
 #      case) still has to survive it. Sweeping instead retires THIS session's own scope's
 #      `.claude/channels/<scope>/.consumed/` outright (`144`: never another session's — the scope
-#      is resolved BEFORE step 1 deletes the session.json that names its task) and ages out
+#      is resolved BEFORE step 1 deletes the session.json that names its task) — on a FINAL end
+#      only: a resumable `reason` (`159`, the same `077` rule) leaves it to age out like every
+#      other scope, so a resumed session can still re-deliver its payloads — and ages out
 #      anything past the cap in every scope and in the legacy unscoped layout, via the SAME
 #      `sweep()` every other channel operation goes through — see
 #      apps/maestro/src/core/handoff-channels.ts.
@@ -51,7 +53,7 @@ if [[ -n "$cwd" ]]; then
     let scope = null;
     try { scope = lib.channelScopeOf(cwd, sid); } catch {}
     try { lib.endSessionState(path.join(cwd, ".claude"), sid, reason || null); } catch {}
-    lib.sweep(cwd, { scope });
+    lib.sweep(cwd, { scope, reason: reason || null });
   ' "$script_dir/lib/maestro-session.cjs" "$cwd" "$session_id" "$reason" 2>/dev/null || true
 fi
 

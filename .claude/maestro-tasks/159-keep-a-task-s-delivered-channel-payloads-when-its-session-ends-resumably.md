@@ -38,3 +38,12 @@ Expected: on a resumable end, the session's own consumed folder is only aged out
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Problem:** The ticket assumed the resume path would hand back a kept `.consumed/` payload ("nothing is left for the resume path to hand back"). It does not: resume-target and the cold SubagentStart inject read live lanes only. Round 1 kept the file on disk and passed tests that only checked it existed; the reviewer failed criterion 6, and backend had to add `restoreInterruptedDeliveries` and a `session_end` log line, a larger change than the approved direction review described.
+  **Fix:** none
+- **Problem:** The first @test round wrote a resume test that only asserted the file's existence, so it could not catch the missing re-delivery. The orchestrator's prompt asked for re-delivery but did not say a file-exists check was insufficient.
+  **Fix:** none
+- **Problem:** Each lib change needed the user to run `! pnpm refresh:runtime` (twice this session), because the sandbox can't write `.claude/scripts/`.
+  **Fix:** none
