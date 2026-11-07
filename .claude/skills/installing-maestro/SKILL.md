@@ -3,8 +3,8 @@ name: installing-maestro
 description: "Explains how Maestro's runtime gets into and out of a project: the two implementations that must agree (the app's installRuntime() and the plugin's maestro-install.js), the asset + hook manifest they both write, why the install is project-local rather than global, how staleness is decided, which copy of a hook runs when the plugin and a project-local install are both live, and the two-level uninstall that separates 'stop the hooks' from 'delete my workflow graph'. Use when changing what an install writes, adding a runtime script or a hook, wondering why the plugin's copy of a hook did or didn't fire, wondering why a re-install changed nothing or reported the project stale, why a project's settings.json carries hooks and exactly one permissions rule (the channel Write allow), or what --purge actually deletes."
 metadata:
   type: concept-skill
-  version: "2.7"
-  last-update: beb395d4228873fa5db9c671b3ffbd5be1e82fec
+  version: "2.8"
+  last-update: 5cd6af38041e77106eecebc333499c8ec9c52507
 ---
 
 # Installing Maestro
@@ -71,6 +71,8 @@ writes the block. The exclude line is preceded by a `# Maestro (added by maestro
 orchestrator skill the line hides) removes that marker+line pair, never a user's own `.claude/`
 line. Uninstall never removes the `.gitignore` block. See the manifest, two-implementations and
 uninstall-and-purge sub-concepts.
+
+**Terminal-only: formatter ignore files.** `maestro-install.js` appends the managed `.claude/` paths to each `.prettierignore`, `.eslintignore` or `.biomeignore` that already exists, and never creates one, so a formatter does not rewrite managed files into a hash no seed matches. `installRuntime()` has no equivalent, and `test/core/install-formatter-ignore.test.ts` covers only the script. The paths, the JSON fields and the decisions are in `plugins/maestro/skills/maestro-install/references/formatter-ignore.md`.
 
 Ordering enforces a fourth: **everything that can refuse is checked before the first byte is
 written**, so a rejected install leaves the project exactly as it was. Past that point every step

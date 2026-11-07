@@ -147,7 +147,24 @@ place the refresh procedure is written down.
      [`../maestro-install/references/herdr.md`](../maestro-install/references/herdr.md), whose
      commands you run yourself with `!`."*
 
-7. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
+7. **Report the formatter step** from step 2's JSON summary, never as a question. The installer
+   appends the managed `.claude/` paths to a `.prettierignore`, `.eslintignore` or `.biomeignore`
+   that already exists, so a formatter does not rewrite files whose hash the sync compares
+   (see [`../maestro-install/references/formatter-ignore.md`](../maestro-install/references/formatter-ignore.md)).
+   - `formatterIgnore` lists added lines: say which file got which lines (a project file to commit).
+   - Nothing added and no failure: say nothing, or "formatter ignore already current".
+   - **`formatterDetected` is `true` but the ignore file could not be edited** (`formatterIgnoreFailed`
+     is non-empty, or `formatterDetected` is `true` while `formatterIgnore` is `{}`, meaning a
+     `format` script, a lint-staged glob or another formatter with no ignore file): print one line,
+     *"A formatter is configured but its ignore file could not be edited. Exclude
+     `<formatterIgnorePaths>` from it, or a reformatted managed file gets a different hash and is
+     reported stale-customized on every update."*
+   - **`reportsSync.staleCustomized` or `handoffsSync.staleCustomized` is non-empty and
+     `formatterDetected` is `true`:** add one hint line: *"Those files may differ only by formatting.
+     With the paths above excluded from the formatter, restore the seed text for them and re-run
+     the installer; they then stop reporting stale-customized."* Say it only once.
+
+8. **Report**: scripts refreshed, what happened to the skill body (`orchestratorSkill.action`), the
    workflow → success-path rows now in the table, and the decision for each forked agent (or that
    none had diverged), any dangling skill references step 5 found, step 6's herdr line if any, and
    step 1's `! <applyCommand>` if one is still to run.

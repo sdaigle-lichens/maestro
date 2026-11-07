@@ -78,3 +78,11 @@ storybook-static/
 
 # design plugin: the captured references and index.json are written by capture.mjs and the studio
 design/
+.claude/reports/
+.claude/handoffs/
+.claude/maestro.json
+.claude/maestro_sessions/
+.claude/channels/
+.claude/maestro-tasks/
+.claude/maestro-metrics/
+.claude/skills/maestro/

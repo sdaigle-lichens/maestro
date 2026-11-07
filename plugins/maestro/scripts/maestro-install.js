@@ -260,6 +260,110 @@ function ensureGitExclude(projectDir, excludePath) {
   return { wrote: true, excludePath };
 }
 
+// Formatter ignore files. A formatter (prettier on save, lint-staged, CI) that rewrites a managed
+// file changes its bytes, so its hash matches no seed and the sync reports it stale-customized
+// forever. Append the managed paths to each ignore file that ALREADY exists; never create one.
+const FORMATTER_IGNORE_FILES = [".prettierignore", ".eslintignore", ".biomeignore"];
+const FORMATTER_IGNORE_PATHS = [
+  ".claude/reports/",
+  ".claude/handoffs/",
+  ".claude/maestro.json",
+  ".claude/maestro_sessions/",
+  ".claude/channels/",
+  ".claude/maestro-tasks/",
+  ".claude/maestro-metrics/",
+  ".claude/skills/maestro/",
+];
+// Files whose presence means the project runs a formatter that may touch .claude/.
+const FORMATTER_CONFIG_FILES = [
+  ".prettierrc",
+  ".prettierrc.json",
+  ".prettierrc.yml",
+  ".prettierrc.yaml",
+  ".prettierrc.js",
+  ".prettierrc.cjs",
+  ".prettierrc.mjs",
+  ".prettierrc.toml",
+  "prettier.config.js",
+  "prettier.config.cjs",
+  "prettier.config.mjs",
+  "biome.json",
+  "biome.jsonc",
+  ".lintstagedrc",
+  ".lintstagedrc.json",
+  ".lintstagedrc.js",
+  ".lintstagedrc.cjs",
+  ".lintstagedrc.mjs",
+  ".lintstagedrc.yaml",
+  ".lintstagedrc.yml",
+  "lint-staged.config.js",
+  "lint-staged.config.cjs",
+  "lint-staged.config.mjs",
+];
+
+function normalizeIgnoreLine(line) {
+  return line
+    .trim()
+    .replace(/^\//, "")
+    .replace(/\/\*{0,2}$/, "");
+}
+
+// Is `p` (".claude/reports/") named by an existing line, directly or through a parent directory?
+function ignoreLinesCover(lines, p) {
+  const covered = new Set();
+  for (const raw of lines) {
+    const l = raw.trim();
+    if (!l || l.startsWith("#") || l.startsWith("!")) continue;
+    covered.add(normalizeIgnoreLine(l));
+  }
+  const parts = normalizeIgnoreLine(p).split("/");
+  for (let i = 1; i <= parts.length; i++) {
+    if (covered.has(parts.slice(0, i).join("/"))) return true;
+  }
+  return false;
+}
+
+function projectHasFormatter(projectDir) {
+  if (FORMATTER_CONFIG_FILES.some((f) => fs.existsSync(path.join(projectDir, f)))) return true;
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(projectDir, "package.json"), "utf8"));
+    const scripts = pkg.scripts || {};
+    return Boolean(
+      pkg.prettier || pkg["lint-staged"] || pkg.biome || scripts.format || scripts.prettier || scripts["format:check"]
+    );
+  } catch {
+    return false;
+  }
+}
+
+// Returns { files: { <ignoreFile>: [lines added] }, failed: [{file, reason}], formatterDetected,
+// paths }. `failed` lists existing ignore files that could not be edited. Idempotent.
+function ensureFormatterIgnore(projectDir) {
+  const files = {};
+  const failed = [];
+  let anyIgnoreFile = false;
+  for (const name of FORMATTER_IGNORE_FILES) {
+    const file = path.join(projectDir, name);
+    if (!fs.existsSync(file)) continue;
+    anyIgnoreFile = true;
+    try {
+      const existing = fs.readFileSync(file, "utf8");
+      const lines = existing.split(/\r?\n/);
+      const missing = FORMATTER_IGNORE_PATHS.filter((p) => !ignoreLinesCover(lines, p));
+      files[name] = missing;
+      if (missing.length === 0) continue;
+      const eol = existing.includes("\r\n") ? "\r\n" : "\n";
+      const prefix = existing && !existing.endsWith("\n") ? eol : "";
+      fs.appendFileSync(file, prefix + missing.join(eol) + eol);
+    } catch (err) {
+      files[name] = [];
+      failed.push({ file: name, reason: err.code || err.message });
+    }
+  }
+  const formatterDetected = anyIgnoreFile || projectHasFormatter(projectDir);
+  return { files, failed, formatterDetected, paths: FORMATTER_IGNORE_PATHS };
+}
+
 // Rooted at the git toplevel, not $CLAUDE_PROJECT_DIR: in a monorepo Claude may be launched from a
 // subfolder with its own .claude/, where $CLAUDE_PROJECT_DIR points at a dir without our scripts.
 // Mirrors install.ts's SCRIPTS_VAR; outside a git repo it falls back to $CLAUDE_PROJECT_DIR.
@@ -1057,6 +1161,7 @@ function main() {
 
     const reportsSync = syncProjectReports(configPath, projectDir);
     const handoffsSync = syncProjectHandoffs(configPath, projectDir);
+    const formatterIgnoreResult = ensureFormatterIgnore(projectDir);
 
     process.stdout.write(
       JSON.stringify({
@@ -1080,6 +1185,10 @@ function main() {
         runtimeVersionUpdated,
         reportsSync,
         handoffsSync,
+        formatterIgnore: formatterIgnoreResult.files,
+        formatterIgnoreFailed: formatterIgnoreResult.failed,
+        formatterDetected: formatterIgnoreResult.formatterDetected,
+        formatterIgnorePaths: formatterIgnoreResult.paths,
       }) + "\n"
     );
   } catch (err) {

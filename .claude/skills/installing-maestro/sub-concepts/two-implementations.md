@@ -67,6 +67,9 @@ reports via `priorReportSeeds` from `lib/maestro-report-defaults.cjs`, handoffs 
   `# Maestro (added by maestro-install)` marker; `maestro-uninstall.js --purge` removes the
   marker+line pair (`removedGitExclude`), a plain uninstall and the app's uninstall do not, and a
   user's own `.claude/` line is never touched. Tests: `test/core/install-ignore-mode.test.ts`.
+- **Appends formatter ignore lines** to an existing `.prettierignore`, `.eslintignore` or `.biomeignore`
+  (never creates one). `install.ts` has no counterpart and no differential test covers it; the only
+  test is `test/core/install-formatter-ignore.test.ts`, which runs the script.
 - **Runs as two steps by contract**: scaffold, then `maestro-render-orchestrator.cjs`. The skill
   owns that sequencing; the script deliberately does not render.
 
