@@ -65,7 +65,7 @@ None — can start immediately
   **Fix:** none
 - **Problem:** A backend agent was cut off mid-change when the session ended and couldn't be resumed. A cold agent had to pick up its partial edits.
   **Fix:** none
-- **Problem:** The "verified in a running window" criterion couldn't be met: Electron aborts in the Linux Bash sandbox (SUID chrome-sandbox). The task was marked done with that check left to the user.
-  **Fix:** none
+- **Problem:** The "verified in a running window" criterion couldn't be met at first: Electron aborts in the Linux Bash sandbox (SUID chrome-sandbox), and a sandboxed probe can't reach the host's `127.0.0.1`. The task was marked done with that check pending.
+  **Fix:** After the task was marked done, the user set `chrome-sandbox` to root 4755 and added two exact exclusions, one for the Electron launch and one for a `socat` socket bridge. The CDP probe then passed all 11 checks on both rows: add, reorder, remove, each saved to `maestro.json`, and the reopened project showed what was saved. The Linux steps are now in the test-maestro skill.
 - **Problem:** Each lib change needed the user to run `! pnpm refresh:runtime` (three times this session), because the sandbox can't write `.claude/scripts/`.
   **Fix:** none

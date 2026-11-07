@@ -67,13 +67,32 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
 
    Outside the Bash sandbox (a plain terminal), `withApp` below works as written.
 
-   **The two calls above are macOS only.** On Linux the Bash sandbox is bubblewrap, and Electron
-   aborts inside it with a `FATAL` SUID `chrome-sandbox` error even when `pnpm --filter maestro
-   check:sandbox` passes, so a passing preflight does not mean a window can open. The launch line
-   above was tried there and aborted the same way, so it stayed sandboxed. No Electron entry was
-   in the project's settings, and none has been verified for Linux. Until one is, run the launch
-   from a plain terminal after the one-time fix in `references/electron-sandbox-setup.md`, then
-   attach the probe. Never use `--no-sandbox`, and never widen the exclusion to `electron *`.
+   **On Linux it takes three background calls plus the probe** (verified on task 158). Electron
+   aborts with a `FATAL` SUID `chrome-sandbox` error unless the one-time fix in
+   `references/electron-sandbox-setup.md` is in place. A passing `check:sandbox` does not prove
+   the window can open, so check `ls -l` on `chrome-sandbox` (want `-rwsr-xr-x root root`). The
+   user's `sandbox.excludedCommands` then needs these two exact entries:
+
+   ```
+   apps/maestro/node_modules/.bin/electron apps/maestro --remote-debugging-port=9431 *
+   socat UNIX-LISTEN:/tmp/claude-<uid>/cdp-9431.sock,fork TCP:127.0.0.1:9431
+   ```
+
+   Each sandboxed command gets its own network namespace, so the probe's `127.0.0.1` is not the
+   host's. "ECONNREFUSED" right away means this, and `allowLocalBinding` does not fix it. Only
+   Unix sockets cross the boundary (`allowAllUnixSockets: true`).
+
+   1. **Launch** Electron as above, with `--user-data-dir=/tmp/claude-<uid>/udd-<n>`, in a call
+      with `run_in_background: true`.
+   2. **Bridge** by running the `socat` line alone, also with `run_in_background: true`.
+   3. **Probe** sandboxed. Before `waitForTarget(9431)`, the probe itself opens the inner half:
+      `net.createServer(c => { const u = net.connect(sock); c.pipe(u).pipe(c); }).listen(9431,
+      "127.0.0.1")`. It must live inside the probe process, because a separate sandboxed `socat`
+      call would sit in a different namespace.
+   4. **Stop** the bridge and the app with `TaskStop`.
+
+   Never use `--no-sandbox`, never widen either exclusion (`electron *`, `socat *`), and never
+   exclude a probe script: `/tmp/claude-<uid>` is writable by the agent.
 
 ## Quick start
 

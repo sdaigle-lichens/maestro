@@ -41,7 +41,7 @@ Taken as defaults during design; each is yours to overrule.
 
 ## Questions
 
-1. **Running window.** "Verified in a running window" is not met: Electron aborts in the Bash sandbox. A throwaway test ran the route's real list helpers through the real `resolveSkillLists` and `saveConfig` onto a real `maestro.json`, but not through IPC, the render or the click handlers. To close it, in a plain terminal run `pnpm --filter maestro dev`, then add, reorder and remove in both new rows on `/maestro` in a throwaway project, check `.claude/maestro.json`, and reopen the project.
+1. **Running window: resolved after review.** A CDP probe against the packaged build passed 11 of 11 checks on both new rows: add, reorder, remove, each saved to `maestro.json`, and a reopen showed what was saved. Original note: Electron aborts in the Bash sandbox. A throwaway test ran the route's real list helpers through the real `resolveSkillLists` and `saveConfig` onto a real `maestro.json`, but not through IPC, the render or the click handlers. To close it, in a plain terminal run `pnpm --filter maestro dev`, then add, reorder and remove in both new rows on `/maestro` in a throwaway project, check `.claude/maestro.json`, and reopen the project.
 2. **End scope bookkeeping.** Keep tracked queue files in the end scope, as the ticket says, or filter them out?
 3. **`maestro-manager` is pickable** in the new lists, like every skill except bare `maestro`. Left as is.
 
