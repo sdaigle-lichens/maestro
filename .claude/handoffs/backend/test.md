@@ -4,7 +4,7 @@
   "filesChanged": ["<added|removed|renamed|modified> <path>, or 'none'"],
   "behaviors": [
     {
-      "behavior": "<function/endpoint/store method — expected behavior>",
+      "behavior": "<function/endpoint/store method — expected behavior, tested through the code that consumes it (a file merely existing on disk does not prove it is delivered or used)>",
       "failureModes": ["<empty/closed input | missing row | conflict | stale generated copy | edge input | ...>"],
       "files": ["<source files the behavior lives in>"]
     }

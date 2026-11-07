@@ -52,6 +52,7 @@ Once approved, prepare one object per task — **never write the markdown files 
 - A criterion that reaches across the repo ("every reference renamed") needs the description to say whether **user-facing strings in source** (messages, help text, errors) are in scope; if so, say "including messages in source code" in the description itself.
 - When mostly docs or skill files but also code, tests, version bumps or a build/regenerate step, list those in plain words too.
 - A criterion only a later step can meet ("the ported tests pass") is fine; state it as the end state.
+- When `whatToBuild` relies on existing code doing something ("the resume path then hands it back"), either check that code first or mark the claim **assumed, unverified** in the description, so the builder confirms it before designing around it.
 
 ```json
 [

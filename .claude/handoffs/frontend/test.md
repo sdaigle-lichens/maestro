@@ -4,7 +4,7 @@
   "filesChanged": ["<added|removed|renamed|modified> <path>, or 'none'"],
   "behaviors": [
     {
-      "behavior": "<component/page — expected behavior>",
+      "behavior": "<component/page — expected behavior, tested through the code that consumes it (state merely being written does not prove it is rendered or used)>",
       "failureModes": ["<empty/loading/error state | invalid input | missing data | edge input | ...>"],
       "files": ["<source files the behavior lives in>"]
     }
