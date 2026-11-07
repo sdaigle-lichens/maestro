@@ -66,6 +66,14 @@
 //   node maestro-epic.cjs ack <slug> <id>... [--by "<session name>"]
 //       Record that the manager received a report (rNNN) or a note (nNNN). Cross-session messages
 //       have no delivery receipt, so the acknowledgement lives in the epic's state.
+//   node maestro-epic.cjs boundary <slug> start|end [--force]
+//       Decides whether the epic's start or end step is due, claims it and writes its scope, then
+//       prints one line: nothing configured, not due with the reason, already ran, or the skills to
+//       run (start_skills.maestro_manager / end_skills.maestro_manager) with the absolute path of
+//       the scope file, whose lines are relative to the git root, and its path count. The run is
+//       claimed when the line is printed, so a boundary runs at most once; --force re-runs a claimed
+//       boundary (never one that was not due) and keeps the recorded base commit. Exit 1 on an
+//       unknown epic or a bad phase, otherwise 0.
 //
 // Every write reads the file immediately before writing and changes only its own entries, so the
 // manager and the workers can write at the same time without losing each other's work.
@@ -104,6 +112,7 @@ function parse(args) {
   const flags = {};
   for (let i = 0; i < args.length; i += 1) {
     if (args[i] === "--json") flags.json = true;
+    else if (args[i] === "--force") flags.force = true;
     else if (args[i].startsWith("--") && i + 1 < args.length) {
       flags[args[i].slice(2)] = args[i + 1];
       i += 1;
@@ -345,13 +354,23 @@ try {
       }
       break;
     }
+    case "boundary": {
+      const usage = "boundary <slug> start|end [--force]";
+      const slug = need(positional[0], usage);
+      const phase = need(positional[1], usage);
+      if (phase !== "start" && phase !== "end") fail(`"${phase}" is not a boundary. Usage: ${usage}`);
+      const result = epics.runEpicBoundary(projectDir, slug, phase, { force: flags.force === true });
+      process.stdout.write(`${epics.formatBoundary(result)}\n`);
+      break;
+    }
     default:
       fail(
         "unknown command. Usage:\n  create <slug>\n  list [--json]\n  link <slug> <task.md>...\n  unlink <task.md>...\n  show <slug> [--json]\n  ready <slug> [--cap <n>] [--json]\n" +
           "  set-manager <slug> <name>\n  add-worker <slug> <name>\n  remove-worker <slug> <name>\n  report --task <task.md> [--file <path>|-]\n" +
           "  note <to-slug> --from-epic <slug> [--from <name>] [--subject <text>] --file <path>|-\n" +
           "  review-request --task <task.md> --file <review file> [--from <name>]\n" +
-          "  review-verdict --task <task.md> <on-track|redirect|escalate> [--by <name>]\n  reports <slug>\n  ack <slug> <id>..."
+          "  review-verdict --task <task.md> <on-track|redirect|escalate> [--by <name>]\n  reports <slug>\n  ack <slug> <id>...\n" +
+          "  boundary <slug> start|end [--force]"
       );
   }
 } catch (err) {

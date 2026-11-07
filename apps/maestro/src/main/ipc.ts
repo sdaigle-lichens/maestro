@@ -628,8 +628,12 @@ export function registerIpc(): void {
     const r = resolveSkillLists(projectRoot ? readConfig(projectRoot) : null);
     return {
       skillLists: {
-        start_skills: { maestro: r.maestroStart, to_maestro_tasks: r.toMaestroTasksStart },
-        end_skills: { maestro: r.maestroEnd },
+        start_skills: {
+          maestro: r.maestroStart,
+          to_maestro_tasks: r.toMaestroTasksStart,
+          maestro_manager: r.managerStart,
+        },
+        end_skills: { maestro: r.maestroEnd, maestro_manager: r.managerEnd },
       },
     };
   });
@@ -739,8 +743,12 @@ export function registerIpc(): void {
       end_skills: lists?.end_skills ?? {},
     });
     const resolved: MaestroSkillListsSlice = {
-      start_skills: { maestro: r.maestroStart, to_maestro_tasks: r.toMaestroTasksStart },
-      end_skills: { maestro: r.maestroEnd },
+      start_skills: {
+        maestro: r.maestroStart,
+        to_maestro_tasks: r.toMaestroTasksStart,
+        maestro_manager: r.managerStart,
+      },
+      end_skills: { maestro: r.maestroEnd, maestro_manager: r.managerEnd },
     };
     await saveConfig(projectRoot, { sliceType: "skill-lists", slice: resolved });
     return resolved;

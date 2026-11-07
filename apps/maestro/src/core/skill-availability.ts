@@ -306,9 +306,11 @@ export function collectSkillRefs(cfg: unknown): Map<string, string[]> {
   if (isObject(cfg.start_skills)) {
     for (const id of strings(cfg.start_skills.maestro)) add(id, "start_skills.maestro");
     for (const id of strings(cfg.start_skills.to_maestro_tasks)) add(id, "start_skills.to_maestro_tasks");
+    for (const id of strings(cfg.start_skills.maestro_manager)) add(id, "start_skills.maestro_manager");
   }
   if (isObject(cfg.end_skills)) {
     for (const id of strings(cfg.end_skills.maestro)) add(id, "end_skills.maestro");
+    for (const id of strings(cfg.end_skills.maestro_manager)) add(id, "end_skills.maestro_manager");
   }
   if (Array.isArray(cfg.workflows)) {
     for (const wf of cfg.workflows) {

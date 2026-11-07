@@ -43,6 +43,7 @@ __export(maestro_epic_exports, {
   createEpic: () => createEpic,
   epicDirFor: () => epicDirFor,
   epicOfTask: () => epicOfTask,
+  formatBoundary: () => formatBoundary,
   formatEpic: () => formatEpic,
   formatInboxEntry: () => formatInboxEntry,
   formatReady: () => formatReady,
@@ -58,6 +59,7 @@ __export(maestro_epic_exports, {
   removeWorker: () => removeWorker,
   reportCommandFor: () => reportCommandFor,
   reviewHistory: () => reviewHistory,
+  runEpicBoundary: () => runEpicBoundary,
   setManager: () => setManager,
   showEpic: () => showEpic,
   taskClaimName: () => taskClaimName,
@@ -462,7 +464,8 @@ function readEpicState(projectRoot, slug) {
       created_at: typeof s.created_at === "string" ? s.created_at : "",
       manager: s.manager && typeof s.manager.name === "string" ? s.manager : null,
       workers: Array.isArray(s.workers) ? s.workers : [],
-      log: Array.isArray(s.log) ? s.log : []
+      log: Array.isArray(s.log) ? s.log : [],
+      ...s.boundaries && typeof s.boundaries === "object" ? { boundaries: s.boundaries } : {}
     };
   } catch {
     return null;
@@ -930,6 +933,175 @@ function formatEpic(view) {
   for (const e of view.crossEpic) lines.push(`    ${formatCrossEpicEdge(e)}`);
   return lines.join("\n");
 }
+
+// src/core/epic-boundary.ts
+var import_node_child_process = require("node:child_process");
+var import_node_fs11 = __toESM(require("node:fs"), 1);
+var import_node_path9 = __toESM(require("node:path"), 1);
+
+// src/core/skill-lists.ts
+function isPlainObject(v) {
+  return typeof v === "object" && v !== null && !Array.isArray(v);
+}
+function ids(v) {
+  if (!Array.isArray(v)) return [];
+  const out = [];
+  for (const item of v) {
+    if (typeof item !== "string") continue;
+    const id = item.trim();
+    if (id && !/\s/.test(id) && !out.includes(id)) out.push(id);
+  }
+  return out;
+}
+function resolveSkillLists(cfg) {
+  if (!isPlainObject(cfg) || cfg.version !== 3) {
+    return { maestroStart: [], toMaestroTasksStart: [], maestroEnd: [], managerStart: [], managerEnd: [] };
+  }
+  const start = isPlainObject(cfg.start_skills) ? cfg.start_skills : {};
+  const end = isPlainObject(cfg.end_skills) ? cfg.end_skills : {};
+  return {
+    maestroStart: ids(start.maestro),
+    toMaestroTasksStart: ids(start.to_maestro_tasks),
+    maestroEnd: ids(end.maestro),
+    managerStart: ids(start.maestro_manager),
+    managerEnd: ids(end.maestro_manager)
+  };
+}
+
+// src/core/epic-boundary.ts
+var BOUNDARY_DIR = "boundary";
+var SCOPE_FILE = "scope.txt";
+var GIT_TIMEOUT_MS = 1e4;
+function git(root, args) {
+  try {
+    return (0, import_node_child_process.execFileSync)("git", ["-C", root, ...args], {
+      encoding: "utf8",
+      stdio: ["ignore", "pipe", "ignore"],
+      timeout: GIT_TIMEOUT_MS
+    });
+  } catch {
+    return null;
+  }
+}
+function scopeBase(root) {
+  const real = import_node_fs11.default.realpathSync(root);
+  const base = git(root, ["rev-parse", "--show-toplevel"])?.trim() || real;
+  return { base, prefix: import_node_path9.default.relative(base, real).split(import_node_path9.default.sep).join("/") };
+}
+function changedSince(root, base) {
+  if (!/^[0-9a-f]{7,64}$/.test(base)) return null;
+  const out = git(root, ["-c", "diff.relative=false", "diff", "--name-only", "-z", base, "HEAD", "--", "."]);
+  return out === null ? null : out.split("\0").filter(Boolean);
+}
+function surfacePath(line) {
+  const entry = line.trim().replace(/^[-*+]\s+/, "").replace(/^`([^`]*)`$/, "$1");
+  if (!entry || /[\s`*?{}]/.test(entry) || entry.startsWith("~") || import_node_path9.default.isAbsolute(entry)) return null;
+  if (entry.split("/").includes("..")) return null;
+  return import_node_path9.default.posix.normalize(entry);
+}
+function touchedSurfaces(root, tasks) {
+  const dir = tasksDirFor(root);
+  return tasks.flatMap((task) => {
+    let content;
+    try {
+      content = import_node_fs11.default.readFileSync(import_node_path9.default.join(dir, task), "utf8");
+    } catch {
+      return [];
+    }
+    const section = sectionOf(content, /^##\s+Touched surfaces\s*$/m) ?? "";
+    return section.split("\n").slice(1).flatMap((line) => surfacePath(line) ?? []);
+  });
+}
+function isFile(file) {
+  try {
+    return import_node_fs11.default.statSync(file).isFile();
+  } catch {
+    return false;
+  }
+}
+function scopeEntries(base, paths) {
+  return [...new Set(paths)].filter((p) => isFile(import_node_path9.default.join(base, p))).sort();
+}
+function startBlocker(root, state, tasks, tracker) {
+  if (!tasks.length) return "the epic has no tasks yet";
+  if (state.workers.length) return "the epic already has workers";
+  const claims = readClaims(root, tasksDirFor(root));
+  const running = tasks.filter((t) => claims.get(t)?.live);
+  if (running.length) return `already running: ${running.join(", ")}`;
+  const done = tasks.filter((t) => tracker[t].status === "done");
+  return done.length ? `already done: ${done.join(", ")}` : null;
+}
+function endBlocker(state, tasks, tracker) {
+  if (!tasks.length) return "the epic has no tasks";
+  const open = tasks.filter((t) => tracker[t].status !== "done");
+  if (open.length) return `not done: ${open.join(", ")}`;
+  const unmerged = tasks.filter((t) => tracker[t].unmerged);
+  if (unmerged.length) return `not merged: ${unmerged.join(", ")}`;
+  const waiting = unacknowledgedReports(state).filter((e) => e.kind !== "review");
+  return waiting.length ? `not acknowledged: ${waiting.map((e) => e.id).join(", ")}` : null;
+}
+function nextRunDir(epicDir, phase) {
+  const parent = import_node_path9.default.join(epicDir, BOUNDARY_DIR);
+  const pattern = new RegExp(`^${phase}-(\\d+)$`);
+  let used = [];
+  try {
+    used = import_node_fs11.default.readdirSync(parent).map((name) => Number(pattern.exec(name)?.[1] ?? 0));
+  } catch {
+  }
+  return import_node_path9.default.join(parent, `${phase}-${Math.max(0, ...used) + 1}`);
+}
+function buildScope(root, phase, commit, tasks) {
+  const { base, prefix } = scopeBase(root);
+  const changed = phase === "end" && commit ? changedSince(root, commit) : null;
+  const surfaces = () => touchedSurfaces(root, tasks).map((p) => isFile(import_node_path9.default.join(root, p)) ? import_node_path9.default.posix.join(prefix, p) : p);
+  return scopeEntries(base, changed ?? surfaces());
+}
+function runEpicBoundary(projectRoot, slug, phase, options = {}) {
+  if (phase !== "start" && phase !== "end") throw new Error(`"${String(phase)}" is not a boundary (start or end)`);
+  const absoluteRoot = import_node_path9.default.resolve(projectRoot);
+  const dir = epicDirFor(absoluteRoot, slug);
+  if (!dir || !readEpicState(absoluteRoot, slug)) throw new Error(`no epic "${slug}"`);
+  const root = mainCheckoutRoot(absoluteRoot);
+  const { managerStart, managerEnd } = resolveSkillLists(readConfig(root));
+  const skills = phase === "start" ? managerStart : managerEnd;
+  if (!skills.length && (phase === "end" || !managerEnd.length)) return { outcome: "none" };
+  return updateState(absoluteRoot, slug, (state) => {
+    const claimed = skills.length ? state.boundaries?.[phase] : void 0;
+    if (claimed && !options.force) return { outcome: "already-ran", at: claimed.at };
+    const tracker = readTaskTracker(root);
+    const tasks = Object.keys(tracker).filter((t) => tracker[t].epic === slug).sort();
+    const boundaries = state.boundaries ??= {};
+    if (!claimed) {
+      const reason = phase === "start" ? startBlocker(root, state, tasks, tracker) : endBlocker(state, tasks, tracker);
+      if (reason) return skills.length ? { outcome: "not-due", reason } : { outcome: "none" };
+      if (phase === "start" && !boundaries.base) {
+        const head = git(root, ["rev-parse", "HEAD"])?.trim();
+        if (head) boundaries.base = head;
+      }
+    }
+    if (!skills.length) return { outcome: "none" };
+    const entries = buildScope(root, phase, boundaries.base, tasks);
+    const runDir = nextRunDir(dir, phase);
+    import_node_fs11.default.mkdirSync(runDir, { recursive: true });
+    const scopeFile = import_node_path9.default.join(runDir, SCOPE_FILE);
+    import_node_fs11.default.writeFileSync(scopeFile, entries.length ? `${entries.join("\n")}
+` : "");
+    boundaries[phase] = { at: (/* @__PURE__ */ new Date()).toISOString() };
+    return { outcome: "run", skills, scopeFile, paths: entries.length };
+  });
+}
+function formatBoundary(result) {
+  switch (result.outcome) {
+    case "none":
+      return "Maestro epic: boundary has nothing to run";
+    case "not-due":
+      return `Maestro epic: boundary not due: ${result.reason}`;
+    case "already-ran":
+      return `Maestro epic: boundary already ran at ${result.at}`;
+    case "run":
+      return `Maestro epic: boundary due: run ${result.skills.join(", ")} with scope file ${result.scopeFile} (${result.paths} paths)`;
+  }
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DEFAULT_SPAWN_CAP,
@@ -942,6 +1114,7 @@ function formatEpic(view) {
   createEpic,
   epicDirFor,
   epicOfTask,
+  formatBoundary,
   formatEpic,
   formatInboxEntry,
   formatReady,
@@ -957,6 +1130,7 @@ function formatEpic(view) {
   removeWorker,
   reportCommandFor,
   reviewHistory,
+  runEpicBoundary,
   setManager,
   showEpic,
   taskClaimName,

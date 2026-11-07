@@ -1,15 +1,16 @@
 # Skill-lists slice
 
-`MaestroSkillListsSlice` is `{ start_skills: { maestro: string[]; to_maestro_tasks: string[] }; end_skills: { maestro: string[] } }`
-(`089`) — the ordered skills the orchestrator runs at **Step 1** (start), the ones `/to-maestro-tasks`
-runs before it sizes work, and the ones the orchestrator runs at **Step 7** (end). It replaced the
+`MaestroSkillListsSlice` is `{ start_skills: { maestro: string[]; to_maestro_tasks: string[]; maestro_manager: string[] }; end_skills: { maestro: string[]; maestro_manager: string[] } }`
+(`089`, `158`) — the ordered skills the orchestrator runs at **Step 1** (start), the ones `/to-maestro-tasks`
+runs before it sizes work, and the ones the orchestrator runs at **Step 7** (end). `maestro_manager` (`158`)
+is the list a maestro-manager runs once at an epic's start (`start_skills`) and once at its end (`end_skills`). It replaced the
 `gates` slice and its two checkboxes (`032`); `sliceType` is `"skill-lists"`, the card is
 `SkillListsCard`, the channels are `data:skill-lists` / `project:skill-lists:set`.
 
 ## `resolveSkillLists` is the only reader
 
 `src/core/skill-lists.ts` takes `unknown`, never throws, and returns `{ maestroStart,
-toMaestroTasksStart, maestroEnd }`. The same function runs in the app and (bundled as
+toMaestroTasksStart, maestroEnd, managerStart, managerEnd }`. The same function runs in the app and (bundled as
 `lib/maestro-skill-lists.cjs`) in the runtime scripts, so the two cannot disagree — unlike the old
 `resolveGates`, which had a hand-duplicated twin in the script.
 
@@ -18,6 +19,7 @@ toMaestroTasksStart, maestroEnd }`. The same function runs in the app and (bundl
 | `start_skills` a plain object     | Authoritative. A missing key is an empty list.                                                                                              |
 | no `start_skills`                 | All three start lists empty. The pre-`089` `gates` booleans are no longer read (`090`).                                                     |
 | `end_skills.maestro`              | Read the same way; absent is empty.                                                                                                         |
+| `start_skills`/`end_skills.maestro_manager` | Read the same way (`158`); absent is empty. Resolved as `managerStart` / `managerEnd`. A config that already has the object but no key gets no seeded value. |
 | absent, corrupt, `version !== 3`  | Empty lists.                                                                                                                                |
 
 List entries are kept only if they are non-empty strings with no internal whitespace (it would break
@@ -35,6 +37,8 @@ through `resolveSkillLists` before saving, the same don't-trust-the-renderer dis
 
 `maestro-step1-gates.cjs` prints Step 1 (`--for to_maestro_tasks` selects that list instead) and
 `maestro-end-skills.cjs` prints Step 7 — both exit 0, no stderr, one line. See `maestro-architecture`.
+`maestro-epic.cjs boundary` (`158`) reads `managerStart` / `managerEnd` through `readConfig` and
+`resolveSkillLists` in `src/core/epic-boundary.ts`; an empty list is `nothing to run` for that phase.
 
 ## The barrel rule bites here
 
@@ -42,7 +46,8 @@ through `resolveSkillLists` before saving, the same don't-trust-the-renderer dis
 type barrel (keeps `fs` out of the renderer's type graph). The value `resolveSkillLists` **is** on
 the barrel, because `src/main/` needs it.
 
-Files: `src/core/skill-lists.ts`, `src/core/plugin-entries/maestro-skill-lists.ts`,
+Files: `src/core/skill-lists.ts`, `src/core/epic-boundary.ts` (`158`, the manager reader),
+`src/core/plugin-entries/maestro-skill-lists.ts`,
 `src/core/types.ts`, `src/core/config.ts` (the `skill-lists` arm of `mergeSlice`),
 `src/core/contracts.ts`, `src/core/seed.ts`, `src/shared/ipc.ts`, `src/main/ipc.ts`,
 `src/renderer/src/routes/maestro.tsx` (`SkillListsCard`).

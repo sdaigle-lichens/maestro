@@ -2,10 +2,12 @@
 //
 //   <main checkout>/.claude/epics/<slug>/
 //     EPIC.md          human-readable: goal, scope, decisions. Written once, then edited by hand.
-//     state.json       machine-readable: manager session NAME, worker session NAMES, and a log of
-//                      report, note and acknowledgement entries. Never an address, never a task list.
+//     state.json       machine-readable: manager session NAME, worker session NAMES, a log of
+//                      report, note and acknowledgement entries, and the claimed epic boundaries
+//                      (epic-boundary.ts). Never an address, never a task list.
 //     inbox/rNNN-<task>.md   one durable report per finished task of the epic.
 //     inbox/nNNN-from-<epic>.md   a cross-epic note from another epic's manager (`085`).
+//     boundary/<phase>-<n>/       one epic boundary run: its scope file and the skills' saved output.
 //
 // What the module deliberately does NOT hold:
 //   - A task list. A task belongs to an epic through the `epic` field of its entry in the task
@@ -129,12 +131,22 @@ export type EpicInboxEntry = EpicReportEntry | EpicNoteEntry | EpicReviewEntry;
 
 export type EpicLogEntry = EpicReportEntry | EpicNoteEntry | EpicReviewEntry | EpicAckEntry | EpicVerdictEntry;
 
+/** The claimed start and end boundaries of an epic. Owned by epic-boundary.ts. */
+export interface EpicBoundaries {
+  /** HEAD of the main checkout at the epic's start moment. Never moved once recorded. */
+  base?: string;
+  /** Present once the boundary was claimed; `at` is its latest run. */
+  start?: { at: string };
+  end?: { at: string };
+}
+
 export interface EpicState {
   slug: string;
   created_at: string;
   manager: { name: string; set_at: string } | null;
   workers: EpicWorker[];
   log: EpicLogEntry[];
+  boundaries?: EpicBoundaries;
 }
 
 const SLUG = /^[a-z0-9][a-z0-9-]{0,63}$/;
@@ -196,6 +208,7 @@ export function readEpicState(projectRoot: string, slug: string): EpicState | nu
       manager: s.manager && typeof s.manager.name === "string" ? s.manager : null,
       workers: Array.isArray(s.workers) ? s.workers : [],
       log: Array.isArray(s.log) ? s.log : [],
+      ...(s.boundaries && typeof s.boundaries === "object" ? { boundaries: s.boundaries } : {}),
     };
   } catch {
     return null;
@@ -209,8 +222,11 @@ function writeEpicState(dir: string, state: EpicState): void {
   fs.renameSync(tmp, target);
 }
 
-/** Read-modify-write under the lock: `fn` receives the state as it is on disk right now. */
-function updateState<T>(projectRoot: string, slug: string, fn: (state: EpicState) => T): T {
+/**
+ * Read-modify-write under the lock: `fn` receives the state as it is on disk right now, and a throw
+ * from `fn` writes nothing. Exported for epic-boundary.ts only; not part of the plugin lib.
+ */
+export function updateState<T>(projectRoot: string, slug: string, fn: (state: EpicState) => T): T {
   const dir = epicDirFor(projectRoot, slug);
   if (!dir || !fs.existsSync(path.join(dir, STATE_FILE))) throw new Error(`no epic "${slug}"`);
   return withLock(dir, () => {

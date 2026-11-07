@@ -168,6 +168,12 @@ settings hooks, then the HANDOFFS render) and is idempotent; `parity.test.ts` na
 is stale, and a sandboxed agent hands the user `! pnpm refresh:runtime`. `maestro-render-orchestrator.cjs`
 alone does NOT refresh STEPS (see `.claude/rules/plugin-publishing.md`).
 
+**Not every plugin lib is a project file.** The plugin's own installer and stale-refs CLI `require`
+`lib/maestro-seed.cjs` and `lib/maestro-skill-availability.cjs`, but neither is in `STATIC_ASSETS`, so
+no project receives a copy and `refresh:runtime` never updates a repo mirror. A difference from
+`.claude/scripts/lib/` for those is not staleness, and parity does not check them. A tracked mirror of
+such a lib with no requirer is an orphan to delete, not to refresh.
+
 **`032` is the worked example of forgetting.** It changed `seed.ts` to emit a `gates` block, but
 `seed.ts` is a `plugin-entries` source, so until `build:plugin-libs` was re-run the terminal
 installer went on seeding a config with **no `gates` field** from the stale

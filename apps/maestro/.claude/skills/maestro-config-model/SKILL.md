@@ -3,8 +3,8 @@ name: maestro-config-model
 description: "Explains MaestroConfigV3 — the schema at .claude/maestro.json that the desktop app writes and the runtime reads, the slice-merge discipline that keeps /workflows saves from clobbering /rules assignments, the read-before-write rule when one slice has two writers, why mergeSlice has no else branch and why the reports and handoffs slices deliberately have no arm in it, which fields are machine-owned, and which state deliberately lives outside this file (sessions, code-graph's concept-skill state). Use when working inside apps/maestro or plugins/maestro and adding a config field, wondering why a saved change vanished, which file is authoritative for a given piece of state, or how instances/nodes/edges/rules map onto the canvas."
 metadata:
   type: concept-skill
-  version: "2.3"
-  last-update: beb395d4228873fa5db9c671b3ffbd5be1e82fec
+  version: "2.4"
+  last-update: 3ee11cee6e132881c2cf3d0814d3df0c0a749c93
 ---
 
 # Maestro config model (v3)
@@ -28,7 +28,7 @@ entry point the IPC layer calls.
 | `handoffs?`                             | Per-route `handoff_details` protocol overrides (`033`), keyed `"<sender>/<receiver>"` with **bare** agent names, flat rather than nested. Same absence rule as `reports?`.          |
 | `runtimeVersion?`                       | The plugin version whose runtime bundle was last installed here.                                                                                                                    |
 | `project_tags?`                         | Which Project Tags catalog entries this project belongs to.                                                                                                                         |
-| `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks}`, `end_skills.{maestro}`. Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |
+| `start_skills?` / `end_skills?`         | Ordered skill-id lists (`089`): `start_skills.{maestro,to_maestro_tasks,maestro_manager}`, `end_skills.{maestro,maestro_manager}` (`maestro_manager` added in `158`, the epic boundary lists). Resolved by `resolveSkillLists`; once `start_skills` exists it is authoritative. |
 | `gates`                                 | **Legacy, no longer read** (`092`), and no longer a field of `MaestroConfigV3` — only a leftover key in an old file. The pre-`089` Step 1 booleans; nothing falls back to them. A re-install runs `seedMissingSkillLists` (`seed.ts`), which fills a missing `start_skills`/`end_skills` with `defaultSkillLists` and deletes `gates`; a present list, even an empty one, is never touched. |
 | `metrics?`                              | `{ recent_runs? }` (`080`) — how many finished runs stay as full records in `.claude/maestro-metrics/metrics.json`. Absent or invalid means 10; `recentRunsLimit` in `run-metrics.ts` is the reader. No slice writes it. |
 | `worker_model?`                         | Model epic worker sessions launch with (alias or full id). Trimmed; blank deletes the key. Sole reader `resolveWorkerModel` (`config.ts`); `launchCommandFor` (`epics.ts`) turns it into `--model '<value>'` in `maestro-epic.cjs ready`. Written only by the `worker-model` slice (IPC `data:worker-model` / `project:worker-model:set`, `WorkerModelCard` on `/maestro`). |

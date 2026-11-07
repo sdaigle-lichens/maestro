@@ -450,7 +450,7 @@ function UncatalogedTagsCard({ tags, onDone }: { tags: string[]; onDone: (accept
   );
 }
 
-type ListKey = "maestroStart" | "toMaestroTasksStart" | "maestroEnd";
+type ListKey = "maestroStart" | "toMaestroTasksStart" | "maestroEnd" | "managerStart" | "managerEnd";
 
 const SKILL_LISTS: { key: ListKey; label: string; blurb: React.ReactNode }[] = [
   {
@@ -481,6 +481,28 @@ const SKILL_LISTS: { key: ListKey; label: string; blurb: React.ReactNode }[] = [
       </>
     ),
   },
+  {
+    key: "managerStart",
+    label: "Maestro-manager epic start",
+    blurb: (
+      <>
+        Run in order once by a <span className="font-mono">maestro-manager</span>, just before an epic's first workers
+        are spawned. Each skill gets the path of a file listing the epic's files; its output is saved in the epic's
+        folder and shown to you as a backlog to triage.
+      </>
+    ),
+  },
+  {
+    key: "managerEnd",
+    label: "Maestro-manager epic end",
+    blurb: (
+      <>
+        Run in order once by a <span className="font-mono">maestro-manager</span>, when every task in an epic is done
+        and merged. Each skill gets the path of a file listing the files the epic changed; its output is saved in the
+        epic's folder and shown to you as a backlog to triage.
+      </>
+    ),
+  },
 ];
 
 /** The id a list stores for a discovered skill: plugin skills are namespaced, project/user ones are bare. */
@@ -498,6 +520,8 @@ function listsOf(lists: MaestroSkillListsSlice): Record<ListKey, string[]> {
     maestroStart: lists.start_skills.maestro,
     toMaestroTasksStart: lists.start_skills.to_maestro_tasks,
     maestroEnd: lists.end_skills.maestro,
+    managerStart: lists.start_skills.maestro_manager,
+    managerEnd: lists.end_skills.maestro_manager,
   };
 }
 
@@ -508,7 +532,11 @@ function withList(lists: MaestroSkillListsSlice, key: ListKey, ids: string[]): M
     case "toMaestroTasksStart":
       return { ...lists, start_skills: { ...lists.start_skills, to_maestro_tasks: ids } };
     case "maestroEnd":
-      return { ...lists, end_skills: { maestro: ids } };
+      return { ...lists, end_skills: { ...lists.end_skills, maestro: ids } };
+    case "managerStart":
+      return { ...lists, start_skills: { ...lists.start_skills, maestro_manager: ids } };
+    case "managerEnd":
+      return { ...lists, end_skills: { ...lists.end_skills, maestro_manager: ids } };
   }
 }
 
@@ -627,14 +655,15 @@ function SkillListPicker({
 }
 
 /**
- * The post-install start/end skills section: three ordered pickers over the discovered skills.
+ * The post-install start/end skills section: one ordered picker per list over the discovered skills.
  * Structurally `ProjectTagsCard` above — it writes `maestro.json` on every change with no Save
  * button.
  *
  * What it writes is read by nothing in this app: `maestro-step1-gates.cjs` and
  * `maestro-end-skills.cjs` read the lists at `/maestro` invocation time (and `/to-maestro-tasks`
- * through the plugin's own copy) and print the one line the skill injects. So a change here shows up
- * in the NEXT run, not in anything on screen.
+ * through the plugin's own copy) and print the one line the skill injects; `maestro-epic.cjs boundary`
+ * reads the manager lists when an epic boundary runs. So a change here shows up in the NEXT run, not
+ * in anything on screen.
  */
 function SkillListsCard({ viewedRoot }: { viewedRoot: string }) {
   const [lists, setLists] = useState<MaestroSkillListsSlice | null>(null);
@@ -692,8 +721,8 @@ function SkillListsCard({ viewedRoot }: { viewedRoot: string }) {
         </span>
       </div>
       <p className="text-[12px] text-maestro-muted m-0">
-        Which skills run at the start and end of an orchestration, in the order listed. Any project, user or plugin
-        skill works; plugin skills are saved as <span className="font-mono">plugin:skill</span>. Saved to{" "}
+        Which skills run at the start and end of an orchestration or an epic, in the order listed. Any project, user or
+        plugin skill works; plugin skills are saved as <span className="font-mono">plugin:skill</span>. Saved to{" "}
         <span className="font-mono">.claude/maestro.json</span> on every change and read at the start of the next run.
       </p>
       {SKILL_LISTS.map((row) => (

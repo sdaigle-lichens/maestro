@@ -67,6 +67,14 @@ When you use this skill, end with numbers or a screenshot, not an assurance.
 
    Outside the Bash sandbox (a plain terminal), `withApp` below works as written.
 
+   **The two calls above are macOS only.** On Linux the Bash sandbox is bubblewrap, and Electron
+   aborts inside it with a `FATAL` SUID `chrome-sandbox` error even when `pnpm --filter maestro
+   check:sandbox` passes, so a passing preflight does not mean a window can open. The launch line
+   above was tried there and aborted the same way, so it stayed sandboxed. No Electron entry was
+   in the project's settings, and none has been verified for Linux. Until one is, run the launch
+   from a plain terminal after the one-time fix in `references/electron-sandbox-setup.md`, then
+   attach the probe. Never use `--no-sandbox`, and never widen the exclusion to `electron *`.
+
 ## Quick start
 
 Write the probe in the scratchpad and import the harness by absolute path. It has no dependencies

@@ -452,6 +452,7 @@ describe("the claude bridge across the process boundary", () => {
       "src/core/ccusage.ts", //     usage stats — token-gated, previewed, version-pinned
       "src/core/claude-run.ts", //  the bridge — token-gated
       "src/core/discovery.ts", //   `vibe-rules list`
+      "src/core/epic-boundary.ts", // read-only `git rev-parse` / `git diff --name-only` for an epic's scope
       "src/core/git.ts", //         `git init` + first commit for a new marketplace
       "src/core/install.ts", //     `git` during an install
       "src/core/rules.ts", //       `vibe-rules load`

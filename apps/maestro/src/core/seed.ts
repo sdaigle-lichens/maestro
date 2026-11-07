@@ -390,16 +390,20 @@ export function defaultV3Config(
 
 /**
  * The start/end skill lists a fresh seed writes. Reproduces the pre-`start_skills` defaults: the
- * orchestrator runs no start or end skill (opt in from the maestro page — a small request should
- * not pay for skill invocations it never asked for), while to-maestro-tasks runs its gate skills
+ * orchestrator and a maestro-manager run no start or end skill (opt in from the maestro page — a
+ * small request should not pay for skill invocations it never asked for), while to-maestro-tasks runs its gate skills
  * as it always did — the design check only when the project has one. Shared by `defaultV3Config`
  * and `seedMissingSkillLists` so a re-install fills in exactly what a first install would.
  */
 export function defaultSkillLists(seedSkills: SeedSkills = {}): MaestroSkillListsSlice {
   const designCheck = seedSkills.designCheck;
   return {
-    start_skills: { maestro: [], to_maestro_tasks: ["confidence-check", ...(designCheck ? [designCheck] : [])] },
-    end_skills: { maestro: [] },
+    start_skills: {
+      maestro: [],
+      to_maestro_tasks: ["confidence-check", ...(designCheck ? [designCheck] : [])],
+      maestro_manager: [],
+    },
+    end_skills: { maestro: [], maestro_manager: [] },
   };
 }
 

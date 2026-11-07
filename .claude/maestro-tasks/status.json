@@ -782,5 +782,9 @@
   "157-add-a-user-steered-plan-review-and-on-demand-plan-view-to-to-maestro-tasks.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "158-run-configured-skills-at-the-start-and-end-of-an-epic.md": {
+    "status": "done",
+    "blockedBy": []
   }
 }

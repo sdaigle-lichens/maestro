@@ -110,13 +110,16 @@ export interface MaestroConfigV3 {
   project_tags?: string[];
   /**
    * The ordered skills the orchestrator (`maestro`) and `/to-maestro-tasks` (`to_maestro_tasks`)
-   * run at the START of a run, by skill id (project or plugin-namespaced, e.g.
-   * `some-plugin:some-skill`). A missing key is an empty
-   * list. `resolveSkillLists` in `skill-lists.ts` is the one reader.
+   * run at the START of a run, and a maestro-manager (`maestro_manager`) runs once at the start of
+   * an epic, by skill id (project or plugin-namespaced, e.g. `some-plugin:some-skill`). A missing
+   * key is an empty list. `resolveSkillLists` in `skill-lists.ts` is the one reader.
    */
-  start_skills?: { maestro?: string[]; to_maestro_tasks?: string[] };
-  /** The ordered skills the orchestrator runs once the success path is complete. Absent = none. */
-  end_skills?: { maestro?: string[] };
+  start_skills?: { maestro?: string[]; to_maestro_tasks?: string[]; maestro_manager?: string[] };
+  /**
+   * The ordered skills the orchestrator runs once the success path is complete, and a
+   * maestro-manager (`maestro_manager`) runs once an epic is finished. Absent = none.
+   */
+  end_skills?: { maestro?: string[]; maestro_manager?: string[] };
   /**
    * Whether the orchestrator's Step 4 should suggest running `/to-maestro-tasks` to queue up
    * follow-up work. A SIBLING of `start_skills`, never nested inside it: this is a Step 4 concern with its own
@@ -154,10 +157,10 @@ export interface MaestroProjectTagsSlice {
   project_tags: string[];
 }
 
-/** The three user-chosen ordered skill lists, as stored in `maestro.json`. */
+/** The user-chosen ordered skill lists, as stored in `maestro.json`. */
 export interface MaestroSkillListsSlice {
-  start_skills: { maestro: string[]; to_maestro_tasks: string[] };
-  end_skills: { maestro: string[] };
+  start_skills: { maestro: string[]; to_maestro_tasks: string[]; maestro_manager: string[] };
+  end_skills: { maestro: string[]; maestro_manager: string[] };
 }
 
 export interface MaestroTaskRoutingSlice {

@@ -101,8 +101,8 @@ describe.each(Object.entries(INSTALLERS))("skill-list seeding via %s", (_name, i
     expect(r.seeded).toEqual({ start_skills: true, end_skills: true, gatesRemoved: false });
     expect(body(r.raw)).toEqual({
       ...BASE,
-      start_skills: { maestro: [], to_maestro_tasks: ["confidence-check"] },
-      end_skills: { maestro: [] },
+      start_skills: { maestro: [], to_maestro_tasks: ["confidence-check"], maestro_manager: [] },
+      end_skills: { maestro: [], maestro_manager: [] },
     });
     expect(r.raw.endsWith("\n")).toBe(false);
     expect(r.raw).toBe(JSON.stringify(JSON.parse(r.raw), null, 2));
