@@ -1,0 +1,100 @@
+{
+  "slug": "install-update-hygiene",
+  "created_at": "2026-11-07T16:43:15.728Z",
+  "manager": {
+    "name": "maestro-mgr-505f2630",
+    "set_at": "2026-11-07T16:43:15.732Z"
+  },
+  "workers": [
+    {
+      "name": "install-update-hygiene-161",
+      "task": "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "added_at": "2026-11-07T16:46:40.002Z"
+    },
+    {
+      "name": "install-update-hygiene-162",
+      "task": "162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.md",
+      "added_at": "2026-11-07T16:46:43.232Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "review",
+      "id": "m001",
+      "task": "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.review.md",
+      "at": "2026-11-07T16:54:33.642Z",
+      "from": "install-update-hygiene-161"
+    },
+    {
+      "kind": "verdict",
+      "id": "m001",
+      "task": "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-07T16:54:43.727Z",
+      "by": "maestro-mgr-505f2630"
+    },
+    {
+      "kind": "review",
+      "id": "m002",
+      "task": "162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.review.md",
+      "at": "2026-11-07T16:59:23.843Z",
+      "from": "install-update-hygiene-162"
+    },
+    {
+      "kind": "verdict",
+      "id": "m002",
+      "task": "162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.md",
+      "verdict": "escalate",
+      "effective": "escalate",
+      "at": "2026-11-07T16:59:39.929Z",
+      "by": "maestro-mgr-505f2630"
+    },
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "file": "inbox/r001-161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "at": "2026-11-07T17:11:19.179Z",
+      "from": "install-update-hygiene-161"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "file": "inbox/r002-161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md",
+      "at": "2026-11-07T17:14:32.430Z",
+      "from": "install-update-hygiene-161"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-11-07T17:14:41.074Z",
+      "by": "maestro-mgr-505f2630"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-11-07T17:14:41.119Z",
+      "by": "maestro-mgr-505f2630"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.md",
+      "file": "inbox/r003-162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.md",
+      "at": "2026-11-07T17:35:35.284Z",
+      "from": "install-update-hygiene-162"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "at": "2026-11-07T17:35:45.812Z",
+      "by": "maestro-mgr-505f2630"
+    }
+  ]
+}

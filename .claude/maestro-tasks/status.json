@@ -794,5 +794,35 @@
   "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md": {
     "status": "ready",
     "blockedBy": []
+  },
+  "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "install-update-hygiene"
+  },
+  "162-report-how-far-each-workflow-has-drifted-from-the-seed-in-maestro-update.md": {
+    "status": "done",
+    "blockedBy": [],
+    "epic": "install-update-hygiene"
+  },
+  "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "worktree-handoff-fixes"
+  },
+  "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "worktree-handoff-fixes"
+  },
+  "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "worktree-handoff-fixes"
+  },
+  "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "worktree-handoff-fixes"
   }
 }
