@@ -72,6 +72,26 @@ Claude Code drops a resume's `additionalContext`. Its current-run files are hand
 records them in `session.json` `resume_deliveries` — and retired at that run's own `SubagentStop`,
 logged as `channel_delivery` with `via:"resume"` (see `agent-resume.md`).
 
+## Test hints (`155`)
+
+An implementer (`backend`, `frontend`, `mobile`) whose own success edge does not reach `@test`, but
+which has a `test` agent later on its success path, still writes a `test/<sender>.1.md` file:
+its test hints. `testHintRoutes()` (`handoff-routes.ts`) finds those senders. It is **never** merged
+into `handoffRoutes()`, so the orchestrator can't route by these pairs. Three places consume it:
+
+| Where | What it does |
+|---|---|
+| `handoff-sync.ts` | materializes the `<sender>/test` handoff files for these pairs too |
+| SubagentStart (`maestro-inject-agent-context.js`) | injects `testHintRequirement()` ("write this with `HANDOFF: success`, whatever agent that route goes to") |
+| SubagentStop (`maestro-subagent-log.js`) | adds the pairs to `agentPayloadRoutes`, so a missing hints file is a `missing_payload` issue |
+
+Delivery needs nothing new: the file sits in `@test`'s lane with the run's stamp, so the block above
+inlines it. The shape is hints-only (`hintsOnly`, `notHandled`, `howToRun`). Two rules hold on both
+sides — the instruction and the test report: hints never set @test's scope (it plans from the
+acceptance criteria and the code first, reporting `testOrigin` / `acceptanceCoverage` /
+`hintsSkipped`), and hints never ask for a test framework, runner or structure the project doesn't
+have (`howToRun: none: no tests for this part yet`; @test puts such a hint in `hintsSkipped`).
+
 ## Scribe-lane gap reports (`112`)
 
 The one exception to deliver-once. A **gap report** (`isGapReport`) is a scribe-lane file whose

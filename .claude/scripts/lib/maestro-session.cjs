@@ -210,6 +210,8 @@ __export(maestro_session_exports, {
   successPathSteps: () => successPathSteps,
   sweep: () => sweep,
   taskNumber: () => taskNumber,
+  testHintRequirement: () => testHintRequirement,
+  testHintRoutes: () => testHintRoutes,
   titleFor: () => titleFor,
   unstampedFilesOf: () => unstampedFilesOf,
   validateConfig: () => validateConfig,
@@ -1133,6 +1135,43 @@ function handoffRoutes(workflows, instances) {
   }
   return out;
 }
+var TEST_HINT_SENDERS = ["backend", "frontend", "mobile"];
+var TEST_HINT_RECEIVER = "test";
+function testHintRoutes(workflows, instances) {
+  const instList = instances ?? [];
+  const agentOf = (node) => {
+    if (!node || node.type !== "agent") return null;
+    const inst = instList.find((i) => i.name === node.instance);
+    return inst ? bareAgentName(inst.agent) : null;
+  };
+  const out = [];
+  const seen = /* @__PURE__ */ new Set();
+  const direct = new Set(
+    handoffRoutes(workflows, instances).filter((r) => r.label === "success" && r.receiver === TEST_HINT_RECEIVER).map((r) => r.sender)
+  );
+  for (const wf of workflows ?? []) {
+    const nodes = wf.nodes ?? [];
+    const edges = wf.edges ?? [];
+    const nodeById = (id) => nodes.find((n) => n.id === id);
+    const testLater = (fromId, visited) => {
+      for (const edge of edges) {
+        if (edge.from !== fromId || edge.kind !== "success" || visited.has(edge.to)) continue;
+        visited.add(edge.to);
+        if (agentOf(nodeById(edge.to)) === TEST_HINT_RECEIVER) return true;
+        if (testLater(edge.to, visited)) return true;
+      }
+      return false;
+    };
+    for (const node of nodes) {
+      const sender = agentOf(node);
+      if (!sender || !TEST_HINT_SENDERS.includes(sender) || direct.has(sender) || seen.has(sender)) continue;
+      if (!testLater(node.id, /* @__PURE__ */ new Set([node.id]))) continue;
+      seen.add(sender);
+      out.push({ sender, receiver: TEST_HINT_RECEIVER, label: "success" });
+    }
+  }
+  return out;
+}
 function routesFrom(routes, agent) {
   const bare = bareAgentName(agent);
   return routes.filter((r) => r.sender === bare);
@@ -1180,13 +1219,44 @@ var BACKEND_TO_FRONTEND = '```json\n{\n  "files_added_removed_renamed": ["<list,
 var BACKEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "api_contracts": ["<endpoint \u2014 request/response shape the app consumes>"],\n  "integration_notes": ["<how the mobile app should wire it up, or \'none\'>"],\n  "edge_cases": ["<edge case the app must handle, or \'none\'>"]\n}\n```';
 var BACKEND_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
 var INFRA_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "verification_output": ["<format/validate/lint/plan-diff command \u2014 result summary>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
-var BACKEND_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var TEST_HINTS_ONLY = "Implementer hints, not the test scope. Derive your test plan from the ticket's acceptance criteria and the code first, then check these hints against it. They never narrow what you test: this list is biased toward what the implementer already handled, and the gaps are what it did not think of.";
+function testHints(behavior, failureModes) {
+  return `\`\`\`json
+{
+  "hintsOnly": "${TEST_HINTS_ONLY}",
+  "filesChanged": ["<added|removed|renamed|modified> <path>, or 'none'"],
+  "behaviors": [
+    {
+      "behavior": "<${behavior} \u2014 expected behavior>",
+      "failureModes": ["<${failureModes} | ...>"],
+      "files": ["<source files the behavior lives in>"]
+    }
+  ],
+  "notHandled": ["<case the implementation deliberately does not handle or left as an open decision, or 'none'>"],
+  "howToRun": ["<the project's own recipe or script that runs the relevant tests with their environment, never the raw tool under it; or 'none: no tests for this part yet' \u2014 never a test framework, runner or structure to create>"],
+  "preHandoffChecks": [{ "command": "<exact command run>", "result": "pass | fail | n/a" }]
+}
+\`\`\``;
+}
+var BACKEND_TO_TEST_V2 = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var BACKEND_TO_TEST = testHints(
+  "function/endpoint/store method",
+  "empty/closed input | missing row | conflict | stale generated copy | edge input"
+);
 var FRONTEND_TO_MOBILE = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "component_or_screen": "<the web feature being ported>",\n  "business_logic_to_reuse": ["<shared logic/hook/util the mobile version should reuse, or \'none\'>"],\n  "platform_differences_to_handle": ["<web-only API, layout, or interaction that needs a native equivalent, or \'none\'>"]\n}\n```';
 var FRONTEND_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
-var FRONTEND_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var FRONTEND_TO_TEST_V2 = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var FRONTEND_TO_TEST = testHints(
+  "component/page",
+  "empty/loading/error state | invalid input | missing data | edge input"
+);
 var MOBILE_TO_FRONTEND = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "component_or_screen": "<the mobile feature being ported>",\n  "business_logic_to_reuse": ["<shared logic/hook/util the web version should reuse, or \'none\'>"],\n  "platform_differences_to_handle": ["<native-only API, gesture, or interaction that needs a web equivalent, or \'none\'>"]\n}\n```';
 var MOBILE_TO_REVIEWER = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "what_changed": ["<file:area \u2014 summary of the change>"],\n  "design_decisions": ["<decision and rationale, or \'none\'>"],\n  "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n}\n```';
-var MOBILE_TO_TEST = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var MOBILE_TO_TEST_V2 = '```json\n{\n  "files_added_removed_renamed": ["<list, or \'none\'>"],\n  "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n  "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n  "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n}\n```';
+var MOBILE_TO_TEST = testHints(
+  "screen/component",
+  "empty/loading/error state | offline | invalid input | edge input"
+);
 var REFACTOR_TO_BACKEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REFACTOR_TO_FRONTEND = '```json\n{\n  "issues": ["<file:line \u2014 description of the problem>"]\n}\n```';
 var REFACTOR_TO_REVIEWER = '```json\n{\n  "summary": "<brief summary of what was delegated, for re-review>"\n}\n```';
@@ -1219,9 +1289,26 @@ var REVIEWER_TO_SCRIBE = `\`\`\`json
 var REVIEWER_TO_TEST = '```json\n{\n  "failing_tests": ["<test name \u2014 failure reason>"],\n  "missing_coverage": ["<endpoint or behavior that lacks a test>"]\n}\n```';
 var TEST_TO_BACKEND = '```json\n{\n  "failing_tests": ["<test name \u2014 behavior it expects>"],\n  "test_files_added": ["<list, or \'none\'>"],\n  "implementation_targets": ["<endpoint/function the backend must implement>"],\n  "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n}\n```';
 var TEST_TO_FRONTEND = '```json\n{\n  "failing_tests": ["<test name \u2014 behavior it expects>"],\n  "test_files_added": ["<list, or \'none\'>"],\n  "implementation_targets": ["<component/page the frontend must implement>"],\n  "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n}\n```';
+var TEST_TO_REVIEWER_V2 = `\`\`\`json
+{
+  "tests_added": ["<test name \u2014 what it verifies>"],
+  "results": ["<pass/fail summary>"],
+  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],
+  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or 'not demonstrated'>"],
+  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or 'unit only'>"],
+  "coverage_gaps": ["<behavior still untested, or 'none'>"],
+  "files_touched": ["<list, or 'none'>"]
+}
+\`\`\``;
 var TEST_TO_REVIEWER = `\`\`\`json
 {
   "tests_added": ["<test name \u2014 what it verifies>"],
+  "test_origin": {
+    "from_hints": ["<test name>"],
+    "independent": ["<test name> - <source: acceptance criterion | file:line code path | failure mode not in hints>"]
+  },
+  "acceptance_coverage": ["<acceptance criterion> => <test names, or 'untested: <reason>'>"],
+  "hints_skipped": ["<implementer hint> - <reason>, or 'none'"],
   "results": ["<pass/fail summary>"],
   "commands_run": ["<exact command> => <exit code, N passed / N failed>"],
   "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or 'not demonstrated'>"],
@@ -1267,6 +1354,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```'
   ],
   "backend/test": [
+    BACKEND_TO_TEST_V2,
     '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<endpoint/function \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new code, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```'
   ],
   "frontend/mobile": [
@@ -1276,6 +1364,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```'
   ],
   "frontend/test": [
+    FRONTEND_TO_TEST_V2,
     '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<component/page \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```'
   ],
   "mobile/frontend": [
@@ -1285,6 +1374,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "what_changed": ["<file:area \u2014 summary of the change>"],\n    "design_decisions": ["<decision and rationale, or \'none\'>"],\n    "areas_of_concern": ["<spot the reviewer should scrutinize, or \'none\'>"]\n  }\n}\n```'
   ],
   "mobile/test": [
+    MOBILE_TO_TEST_V2,
     '```json\n{\n  "handoff_details": {\n    "files_added_removed_renamed": ["<list, or \'none\'>"],\n    "behaviors_to_test": ["<screen/component \u2014 expected behavior>"],\n    "how_to_run": ["<command to exercise the new UI, or \'none\'>"],\n    "edge_cases": ["<edge case the implementation handles, or \'none\'>"]\n  }\n}\n```'
   ],
   "refactor/backend": [
@@ -1337,6 +1427,7 @@ var PRIOR_SEEDS = {
     '```json\n{\n  "handoff_details": {\n    "failing_tests": ["<test name \u2014 behavior it expects>"],\n    "test_files_added": ["<list, or \'none\'>"],\n    "implementation_targets": ["<component/page the frontend must implement>"],\n    "how_to_run": ["<command to run the failing tests, or \'none\'>"]\n  }\n}\n```'
   ],
   "test/reviewer": [
+    TEST_TO_REVIEWER_V2,
     // `148`: the flat body before commands_run, negative_control and real_path_exercised.
     '```json\n{\n  "tests_added": ["<test name \u2014 what it verifies>"],\n  "results": ["<pass/fail summary>"],\n  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n  "files_touched": ["<list, or \'none\'>"]\n}\n```',
     '```json\n{\n  "handoff_details": {\n    "tests_added": ["<test name \u2014 what it verifies>"],\n    "results": ["<pass/fail summary>"],\n    "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n    "files_touched": ["<list, or \'none\'>"]\n  }\n}\n```'
@@ -2001,6 +2092,26 @@ ${blocks.join("\n\n")}`;
   return `${head}
 ${lines.join("\n")}
 The shape for each route is the one from your first run.`;
+}
+function testHintRequirement(routes, opts) {
+  if (routes.length === 0) return null;
+  const head = "REQUIRED with `HANDOFF: success`, whatever agent that route goes to: `@test` runs later in this workflow, so write your test hints for it as well. They are hints, not @test's scope: @test plans from the acceptance criteria and the code first. Keep the `hintsOnly` line verbatim, do not try to list everything @test should cover, and do list in `notHandled` every case you deliberately left open. `howToRun` names the project's own test recipe or script, the one that sets up the environment the tests need, never the raw tool under it. Hint only at tests the project's EXISTING test setup can hold: never suggest a test framework, runner, config, folder structure or kind of test the project does not have yet. When this part of the project has no tests, still write the file, with `howToRun` set to `none: no tests for this part yet`. Create it with the Write tool. The stop hook checks it was written during THIS run.";
+  if (opts.withShapes) {
+    const blocks = routes.map(
+      (r) => `Test hints for \`${r.receiver}\` \u2014 write this to \`${r.channelFile}\`:
+
+${r.protocol}`
+    );
+    return `${head}
+
+${blocks.join("\n\n")}`;
+  }
+  const lines = routes.map(
+    (r) => `- with \`HANDOFF: success\` \u2192 also write \`${r.channelFile}\` (test hints for \`${r.receiver}\`)`
+  );
+  return `${head}
+${lines.join("\n")}
+The shape is the one from your first run.`;
 }
 function runStartedAt(lines, agentId) {
   if (!agentId) return null;
@@ -3105,6 +3216,8 @@ function meetingNotice(meeting, agentType) {
   successPathSteps,
   sweep,
   taskNumber,
+  testHintRequirement,
+  testHintRoutes,
   titleFor,
   unstampedFilesOf,
   validateConfig,

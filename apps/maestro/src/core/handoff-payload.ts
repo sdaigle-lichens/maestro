@@ -111,6 +111,36 @@ export function payloadRequirement(routes: PayloadRoute[], opts: { withShapes: b
 }
 
 /**
+ * The test-hints instruction (`155`) for `routes` (resolved from `testHintRoutes()`), or null when
+ * there are none. Separate from `payloadRequirement` because the file is not the payload of the
+ * route the agent takes: it is written on `HANDOFF: success` whatever that route's receiver is, for
+ * an `@test` that runs later. The SubagentStop check holds it to the same rule (missing_payload).
+ */
+export function testHintRequirement(routes: PayloadRoute[], opts: { withShapes: boolean }): string | null {
+  if (routes.length === 0) return null;
+  const head =
+    "REQUIRED with `HANDOFF: success`, whatever agent that route goes to: `@test` runs later in this workflow, so " +
+    "write your test hints for it as well. They are hints, not @test's scope: @test plans from the acceptance " +
+    "criteria and the code first. Keep the `hintsOnly` line verbatim, do not try to list everything @test should " +
+    "cover, and do list in `notHandled` every case you deliberately left open. `howToRun` names the project's own " +
+    "test recipe or script, the one that sets up the environment the tests need, never the raw tool under it. Hint " +
+    "only at tests the project's EXISTING test setup can hold: never suggest a test framework, runner, config, " +
+    "folder structure or kind of test the project does not have yet. When this part of the project has no tests, " +
+    "still write the file, with `howToRun` set to `none: no tests for this part yet`. Create it with the Write tool. " +
+    "The stop hook checks it was written during THIS run.";
+  if (opts.withShapes) {
+    const blocks = routes.map(
+      (r) => `Test hints for \`${r.receiver}\` — write this to \`${r.channelFile}\`:\n\n${r.protocol}`
+    );
+    return `${head}\n\n${blocks.join("\n\n")}`;
+  }
+  const lines = routes.map(
+    (r) => `- with \`HANDOFF: success\` → also write \`${r.channelFile}\` (test hints for \`${r.receiver}\`)`
+  );
+  return `${head}\n${lines.join("\n")}\nThe shape is the one from your first run.`;
+}
+
+/**
  * When this run of `agentId` started: the timestamp of the LAST `kind:"dispatch"` log entry for
  * it (a resume logs a fresh dispatch, so a resumed pass is measured from its own start). Null when
  * the log has none.

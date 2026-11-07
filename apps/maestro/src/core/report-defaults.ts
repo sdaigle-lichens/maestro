@@ -131,7 +131,8 @@ const BACKEND_TEST_TARGETS_NOTE =
   "and mark one `n/a` only when it does not apply to your change. You must run the project's own " +
   "static check yourself before handing off; do not leave it to the test agent.";
 
-function backendReport(): string {
+// The body before `155` moved the test targets off the report into the test-hints channel file.
+function backendReportV7(): string {
   return (
     "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
     "\n" +
@@ -157,6 +158,45 @@ function backendReport(): string {
     "```\n" +
     "\n" +
     BACKEND_TEST_TARGETS_NOTE +
+    "\n\n" +
+    skillGapsChannelNote("backend") +
+    "\n\n" +
+    VERDICT_HANDOFF_NOTE
+  );
+}
+
+// `155`: the orchestrator never forwards a report, so `testTargets` never reached @test. Test hints
+// have one home now, the `backend/test` channel file the SubagentStart hook names (a direct route, or
+// `testHintRoutes` for a later @test step), and the report only records where they went.
+const BACKEND_TEST_HINTS_NOTE =
+  "## Test hints\n" +
+  "\n" +
+  "Test hints never go in this report. When your injected context names a channel file for `test` (a direct " +
+  "route, or test hints because @test runs later in this workflow), write your hints there in the shape it gives " +
+  "and name that path in `testHints`; otherwise `testHints` is `none: no later @test step`. They are hints, not " +
+  "@test's scope: do not try to list everything @test should cover, and do list in `notHandled` every case you " +
+  "deliberately left open.\n" +
+  "\n" +
+  "List every pre-handoff check you ran in `preHandoffChecks`, copied verbatim with its result, and mark one `n/a` " +
+  "only when it does not apply to your change. Run the project's own static check yourself before handing off, " +
+  "through the project's own recipe or script rather than the raw tool under it; do not leave it to the test agent.";
+
+function backendReport(): string {
+  return (
+    "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+    "\n" +
+    "```json\n" +
+    "{\n" +
+    '  "subagent": "backend",\n' +
+    '  "verdict": "SUCCESS | FAIL",\n' +
+    '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+    '  "description": "<summary of what was implemented>",\n' +
+    '  "preHandoffChecks": [{ "command": "<exact command run>", "result": "pass | fail | n/a" }],\n' +
+    '  "testHints": "<channel file you wrote your test hints to, or \'none: no later @test step\'>"\n' +
+    "}\n" +
+    "```\n" +
+    "\n" +
+    BACKEND_TEST_HINTS_NOTE +
     "\n\n" +
     skillGapsChannelNote("backend") +
     "\n\n" +
@@ -325,7 +365,8 @@ const TEST_REPORT_V5 = testReportBody(skillGapsChannelNoteUnscoped("test")) + "\
 const TEST_REPORT_V6 = testReportBody(skillGapsChannelNote("test")) + "\n\n" + VERDICT_HANDOFF_NOTE;
 
 // `148`: checkable evidence. Project-neutral — the agent names the project's own commands.
-const TEST_REPORT =
+// The body before `155` made implementer hints neither the minimum nor the scope.
+const TEST_REPORT_V7 =
   "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
   "\n" +
   "```json\n" +
@@ -348,6 +389,57 @@ const TEST_REPORT =
   "\n" +
   'The implementing agent\'s "Test targets" are the minimum, not the scope: cover every one, then add your own ' +
   "adversarial cases that it did not name, and list in `notCaught` what neither side covered.\n" +
+  "\n" +
+  "For each new test you write, add one line to `notCaught` saying what that test would NOT catch, for example " +
+  "closed or empty input, a copy of a file that no test compares, or a missing feature rather than a wrong one.\n" +
+  "\n" +
+  skillGapsChannelNote("test") +
+  "\n\n" +
+  VERDICT_HANDOFF_NOTE;
+
+// `155`: implementer hints (`<sender>/test` in the test lane) never set the scope. The plan comes from
+// the acceptance criteria and the code first; the three new fields make that checkable by the
+// reviewer, through the test -> reviewer handoff that carries the same three.
+const TEST_REPORT =
+  "Always return a JSON report at the end of your work. Output it as a fenced `json` code block:\n" +
+  "\n" +
+  "```json\n" +
+  "{\n" +
+  '  "subagent": "test",\n' +
+  '  "verdict": "SUCCESS | FAIL",\n' +
+  '  "skillsTriage": { "loaded": ["<skill-id>"], "skipped": [{ "id": "<skill-id>", "reason": "<why skipped>" }] },\n' +
+  '  "testResult": "<N passed, N failed>",\n' +
+  '  "description": "<summary of what was tested>",\n' +
+  '  "gates": [{ "command": "<exact command run>", "result": "<exit code, N passed / N failed>" }],\n' +
+  '  "gatesSkipped": [{ "command": "<command not run>", "reason": "<why>" }],\n' +
+  '  "acceptanceCoverage": [{ "criterion": "<ticket acceptance criterion>", "tests": ["<test name>"], "reason": "<required when tests is empty>" }],\n' +
+  '  "testOrigin": {\n' +
+  '    "fromHints": ["<test name>"],\n' +
+  '    "independent": [{ "test": "<test name>", "source": "<acceptance criterion | file:line code path | failure mode not in hints>" }]\n' +
+  "  },\n" +
+  '  "hintsSkipped": [{ "hint": "<implementer hint>", "reason": "<one line>" }],\n' +
+  '  "notCaught": ["<one line per new test: what this test would NOT catch>"]\n' +
+  "}\n" +
+  "```\n" +
+  "\n" +
+  "`gates` lists the exact verify commands you ran, copied verbatim with their result: the project test suite, " +
+  "lint, static check or typecheck, and any parity or generated-artifact check the change touches. " +
+  "Any of those you did not run goes in `gatesSkipped` with a reason. A verdict of SUCCESS is invalid if any of " +
+  "them was skipped without a stated reason.\n" +
+  "\n" +
+  "Build your test plan from the ticket's acceptance criteria and the code (the diff and the modules it touches) " +
+  "before you read any implementer hints in your channel. The hints are neither the minimum nor the scope, and they " +
+  "never narrow your plan. Then compare: add a hint that names a real behavior, failure mode or `notHandled` case " +
+  "your plan missed; drop one you judge wrong or redundant and list it in `hintsSkipped` with the reason. Run tests " +
+  "through the project's own recipe or script (the hints' `howToRun` names it), never the raw tool under it.\n" +
+  "\n" +
+  "A hint never makes you add a test framework, runner, config, folder structure or kind of test the project does " +
+  "not have yet. Work within the test setup that exists; a hint that only an absent setup could cover goes in " +
+  "`hintsSkipped` with that reason, so the user can decide whether to add one.\n" +
+  "\n" +
+  "`acceptanceCoverage` maps every acceptance criterion to its tests, or gives the reason it has none. `testOrigin` " +
+  "splits your tests between those a hint suggested and those you found yourself, each with its source. Write the " +
+  "same three facts into the reviewer's handoff (`acceptance_coverage`, `test_origin`, `hints_skipped`).\n" +
   "\n" +
   "For each new test you write, add one line to `notCaught` saying what that test would NOT catch, for example " +
   "closed or empty input, a copy of a file that no test compares, or a missing feature rather than a wrong one.\n" +
@@ -481,6 +573,7 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
       backendLikeV4("backend"),
       backendLikeV5("backend"),
       backendLikeV6("backend"),
+      backendReportV7(),
     ],
     frontend: [
       backendLikeV1("frontend"),
@@ -498,7 +591,7 @@ const PRIOR_SEEDS: Record<string, string[]> = (() => {
     ],
     infra: [backendLikeV3("infra"), backendLikeV4("infra"), backendLikeV5("infra")],
     scribe: [SCRIBE_REPORT_V2, SCRIBE_REPORT_V1, SCRIBE_REPORT_V3, SCRIBE_REPORT_V4],
-    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4, TEST_REPORT_V5, TEST_REPORT_V6],
+    test: [testV1, testV2, TEST_REPORT_V3, TEST_REPORT_V4, TEST_REPORT_V5, TEST_REPORT_V6, TEST_REPORT_V7],
   };
 })();
 

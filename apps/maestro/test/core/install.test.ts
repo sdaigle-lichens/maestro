@@ -1195,7 +1195,7 @@ describe("the installed hooks actually run", () => {
 
       const injected = runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" });
       expect(injected).toContain(`${CH}/test/backend.1.md`); // `036`: the channel file to write, not a field
-      expect(injected).toContain("behaviors_to_test"); // the backend -> test protocol
+      expect(injected).toContain("hintsOnly"); // the backend -> test protocol (`155`)
 
       fs.writeFileSync(path.join(root, ".claude", "handoffs", "backend", "test.md"), "MY OWN SHAPE\n");
       expect(runHook(root, "maestro-inject-agent-context.cjs", { cwd: root, agent_type: "backend" })).toContain(
