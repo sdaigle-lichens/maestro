@@ -319,7 +319,7 @@
           "from": "test",
           "to": "backend",
           "kind": "condition",
-          "label": "FAIL: a simple backend code fix found while testing",
+          "label": "FAIL: backend code (a test exposes a defect)",
           "sourceHandle": "left",
           "targetHandle": "top"
         },
@@ -327,7 +327,7 @@
           "from": "test",
           "to": "frontend",
           "kind": "condition",
-          "label": "FAIL: a simple frontend code fix found while testing",
+          "label": "FAIL: frontend code (a test exposes a defect)",
           "sourceHandle": "right",
           "targetHandle": "top"
         }
@@ -784,7 +784,7 @@
           "from": "test",
           "to": "backend",
           "kind": "condition",
-          "label": "FAIL: a simple backend code fix found while testing",
+          "label": "FAIL: backend code (a test exposes a defect)",
           "sourceHandle": "left",
           "targetHandle": "top"
         },
@@ -792,7 +792,7 @@
           "from": "test",
           "to": "frontend",
           "kind": "condition",
-          "label": "FAIL: a simple frontend code fix found while testing",
+          "label": "FAIL: frontend code (a test exposes a defect)",
           "sourceHandle": "right",
           "targetHandle": "top"
         }
@@ -975,7 +975,7 @@
           "from": "test",
           "to": "backend",
           "kind": "condition",
-          "label": "FAIL: a simple backend code fix found while testing",
+          "label": "FAIL: backend code (a test exposes a defect)",
           "sourceHandle": "left",
           "targetHandle": "top"
         }
@@ -1158,7 +1158,7 @@
           "from": "test",
           "to": "frontend",
           "kind": "condition",
-          "label": "FAIL: a simple frontend code fix found while testing",
+          "label": "FAIL: frontend code (a test exposes a defect)",
           "sourceHandle": "right",
           "targetHandle": "top"
         }
