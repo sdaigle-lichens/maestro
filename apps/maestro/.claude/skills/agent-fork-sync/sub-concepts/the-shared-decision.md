@@ -59,7 +59,7 @@ repo.
 | | `report-sync.ts` | `agent-sync.ts` | `handoff-sync.ts` (`033`) |
 | --- | --- | --- | --- |
 | The unit | one agent | one forked agent | one `(sender, receiver)` route pair |
-| Candidates | tracked ids ∪ `agents_available` | the fork records | tracked ids ∪ the pairs `handoffRoutes()` walks out of the graph |
+| Candidates | tracked ids ∪ `agents_available` | the fork records | tracked ids ∪ the pairs `handoffRoutes()` walks out of the graph, plus `testHintRoutes()`' implementer → later @test pairs (`155`: that payload is written on every success, so it gets a project file too) |
 | `localHash` | `sha256` of the whole file | `hashAgentBody` — `name:`/`description:` normalised out | `sha256` of the whole file (a handoff template has no frontmatter to normalise out) |
 | `hasTemplate` | a global report default exists | the template still resolves in its recorded tier | a global handoff default exists for the pair |
 | `templateAdvanced` | `global.version > syncedFrom.version` (integer, monotonic) | plugin: `template.version !== tracked.pluginVersion` **and** body hashes differ · user: body hashes differ | `global.version > syncedFrom.version` (integer, monotonic) |

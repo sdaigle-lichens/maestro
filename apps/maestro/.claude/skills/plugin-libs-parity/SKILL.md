@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.6"
-  last-update: d5ed7a8aeda17f922babaa06b135015a0bc5cb2e
+  version: "2.7"
+  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
 ---
 
 # Core ↔ plugin parity
@@ -93,8 +93,9 @@ inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `w
 `launchCommandFor`, `readyTasks` and `formatReady`; `132`: manager review, adding
 `MANAGER_REDIRECT_CAP`, `REVIEW_VERDICTS`, `isReviewVerdict`, `reviewHistory`, `writeReviewRequest`
 and `recordReviewVerdict`, and pulling in `human-review-gate.ts`, which imports nothing;
-`maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from it; copied into projects,
-fs/path only, no `node:sqlite`).
+`maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from it; `158`: epic
+boundaries, adding `runEpicBoundary` and `formatBoundary` from `epic-boundary.ts`, which imports
+`node:child_process` for read-only git calls; copied into projects, no `node:sqlite`).
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.
@@ -112,7 +113,8 @@ reaches.** `claims.ts` and everything it imports sit in `claude-preview.ts`'s im
 `child_process`) plus `test/core/claude.test.ts`'s "spawns nothing" walk fail the moment one does.
 When a hook needs a process spawn (`141`'s macOS `ps` fallback), put the spawn in the hook script
 under `plugins/maestro/scripts/` and keep a pure parser in core (`parsePsLine`), or pass the
-spawner in as a port.
+spawner in as a port. `epic-boundary.ts` (`158`) is the reviewed exception: nothing on the preview
+path imports it, so it is on the isolation allow-list for its read-only `git` calls.
 
 **Eight of the seventeen are also COPIED into projects, which widens what a rename breaks (`035`).** A
 bundle runs from the marketplace cache _and_, if it is in `install.ts`'s `STATIC_ASSETS`, from
@@ -142,7 +144,9 @@ it stops being 0; the script just starts throwing on machines with an older `nod
 only and every hook already requires this bundle" argument:
 
 - `033` — the handoff seed tier (`SEED_HANDOFFS`, `isSeededHandoff`, `isValidHandoffId`), the pure
-  route walk (`handoffRoutes`, `routesFrom`, `handoffPairs`) and `resolveHandoff`.
+  route walk (`handoffRoutes`, `routesFrom`, `handoffPairs`) and `resolveHandoff`. `155` added
+  `testHintRoutes` and `laterSuccessSteps` to the same walk (`handoff-routes.ts`), and `27e12e8`
+  the `blocked` route check (`BLOCKED_LABEL`, `handoff-check.ts`).
 - `036` — the agent-channel surface from `handoff-channels.ts` (`channelDir`, `laneFor`,
   `writeStamp`, `readLane`, `retire`, `sweep`, `formatStampedContent`/`parseStampedContent`,
   `CHANNEL_AGE_CAP_MS`) and `ensureSessionRunId`, re-exported here rather than given a 13th bundle;

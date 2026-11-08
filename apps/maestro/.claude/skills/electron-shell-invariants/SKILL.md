@@ -3,8 +3,8 @@ name: electron-shell-invariants
 description: "Explains the invariants of running the Maestro desktop app as an Electron shell over node-side logic, that don't belong to any one view or to the Claude bridge: the router's hash history (and its corollary that no route may use the URL fragment), the renderer's CSP forbidding inline script, the asar/externalizeDepsPlugin packaging trio, the settingSources: [] four-occurrence lockstep rule in agent-sdk.ts, the project-switch invalidation + key={projectRoot} keying pattern shared by every stateful view and tail, the renderer's code-splitting shape and its measurements, and the process-boundary contract test/isolation.test.ts enforces (nodeIntegration/contextIsolation/no src/core barrel outside main). Use when working on apps/maestro's Electron/Vite config, adding state that must survive a project switch, debugging a theme flash or a route that renders blank only in the packaged build, or wondering why an edit silently didn't reach across the renderer/main boundary."
 metadata:
   type: concept-skill
-  version: "2.2"
-  last-update: beb395d4228873fa5db9c671b3ffbd5be1e82fec
+  version: "2.3"
+  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
 ---
 
 # Electron shell invariants

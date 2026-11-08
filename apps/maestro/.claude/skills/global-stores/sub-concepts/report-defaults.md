@@ -45,5 +45,15 @@ appended to `PRIOR_SEEDS["test/reviewer"]`. The bundled `test.md` and `scribe.md
 `model: claude-haiku-5-5` in frontmatter. Report bodies stay project-neutral: they tell the agent to
 name the project's own commands, never to run a specific one.
 
+`155` moved test hints off the reports, because the orchestrator never forwards a report:
+`backendReport()` dropped `testTargets` for `BACKEND_TEST_HINTS_NOTE` (where the hints went), so `148`'s
+body is the prior `backendReportV7()`. The hints themselves live in the `<sender>/test` channel
+file, built by `testHints()` in `handoff-seeds.ts` for backend, frontend and mobile alike (one
+builder on purpose: the `hintsOnly` framing is a shared contract). Its pre-`155` bodies are priors
+(`*_TO_TEST_V2`). The test report gained acceptance coverage, test origin and skipped hints
+(`TEST_REPORT_V7` is the prior), then `knownGaps` (`27e12e8`: work a later step owns, or a check
+that only passes after a commit; `TEST_REPORT_V8` is the prior). The `test/reviewer` seed gained
+the same fields and `known_gaps` (`TEST_TO_REVIEWER_V2`/`V3` are priors).
+
 Files: `src/core/report-defaults.ts`, `src/core/report-resolution.ts`, `src/core/report-sync.ts`,
 `src/core/reports.ts`.
