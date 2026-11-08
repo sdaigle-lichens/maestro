@@ -104,7 +104,10 @@ docs that `@scribe` updates later in the same workflow, and a generated-file che
 against HEAD, which nothing commits during a run. Both now go in the test report's `knownGaps`
 (`issue`, `owner`, `reason`), never as a FAIL. The test → reviewer handoff carries the same list as
 `known_gaps`, so the reviewer still sees them. The pre-`known_gaps` bodies are prior seeds
-(`TEST_REPORT_V8`, `TEST_TO_REVIEWER_V3`), so an unedited project copy upgrades.
+(`TEST_REPORT_V8`, `TEST_TO_REVIEWER_V3`). The test → reviewer body also requires the project's own
+format, lint and type checks and the reported tests to run after the tester's last edit, and
+`verified_tree` names the tree they ran on (`164`); its pre-`164` body is `TEST_TO_REVIEWER_V4`. An
+unedited project copy upgrades through these prior seeds.
 
 To make "a later step owns it" checkable, SubagentStart appends the steps that still run after the
 agent to its handoff-routing block (`Still to run after you on this workflow's success path: @reviewer

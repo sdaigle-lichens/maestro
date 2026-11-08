@@ -107,9 +107,67 @@ describe("hints-only seeds", () => {
     for (const k of ['"test_origin"', '"acceptance_coverage"', '"hints_skipped"'])
       expect(SEED_HANDOFFS["test/reviewer"]).toContain(k);
     // The pre-`155` body is still a prior seed (newest first, so behind the pre-known_gaps one).
-    const pre155 = PRIOR_SEEDS["test/reviewer"][1];
+    const pre155 = PRIOR_SEEDS["test/reviewer"][2];
     expect(pre155).toContain('"commands_run"');
     expect(pre155).not.toContain('"test_origin"');
+  });
+
+  it("test/reviewer requires re-running after the last edit and naming the verified tree (164)", () => {
+    const body = SEED_HANDOFFS["test/reviewer"];
+    expect(body).toContain('"verified_tree"');
+    expect(body).toMatch(/format, lint and type checks/);
+    expect(body).toMatch(/AFTER your last edit/);
+    expect(body).not.toMatch(/\b(pnpm|npm|yarn|bun|vitest|eslint|prettier|tsc|jest|make|cargo)\b/);
+    expect(PRIOR_SEEDS["test/reviewer"][0]).not.toContain("verified_tree");
+  });
+
+  // `164`: the template may not name a tool, command or package manager, in any spelling the
+  // project might use. The check above names a few; this one lists the common ones so a future
+  // edit cannot slip a tool name into the template unnoticed.
+  it.each([
+    "git",
+    "npm",
+    "npx",
+    "yarn",
+    "pnpm",
+    "bun",
+    "uv",
+    "poetry",
+    "pip",
+    "cargo",
+    "go",
+    "make",
+    "gradle",
+    "mvn",
+    "dotnet",
+    "tsc",
+    "eslint",
+    "prettier",
+    "biome",
+    "vitest",
+    "jest",
+    "pytest",
+    "mocha",
+    "playwright",
+    "cypress",
+    "electron",
+    "turbo",
+    "ruff",
+    "mypy",
+    "clippy",
+    "rustfmt",
+    "black",
+    "flake8",
+  ])("test/reviewer template does not name the tool %s (164)", (tool) => {
+    expect(SEED_HANDOFFS["test/reviewer"]).not.toMatch(new RegExp(`\\b${tool}\\b`, "i"));
+  });
+
+  // `164`: the rendered copy this repo tracks must be the current seed (or a prior one an unedited
+  // project would still hold). A seed edit without `pnpm refresh:runtime` leaves this stale.
+  it("the tracked .claude/handoffs/test/reviewer.md renders the current test/reviewer seed (164)", () => {
+    const here = path.dirname(fileURLToPath(import.meta.url));
+    const rendered = fs.readFileSync(path.resolve(here, "../../../../.claude/handoffs/test/reviewer.md"), "utf8");
+    expect(rendered.trimEnd()).toBe(SEED_HANDOFFS["test/reviewer"]);
   });
 
   it("every seeded handoff body is valid JSON inside its fence", () => {

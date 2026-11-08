@@ -320,7 +320,8 @@ const TEST_TO_REVIEWER_V3 =
 
 // known_gaps: what @test saw but did not fail on — work a later success-path step owns, or a check
 // that can only pass after a commit. The reviewer sees them instead of a FAIL that had no owner.
-const TEST_TO_REVIEWER =
+// Before `164` added verified_tree and the re-run-after-last-edit rule.
+const TEST_TO_REVIEWER_V4 =
   "```json\n" +
   "{\n" +
   '  "tests_added": ["<test name — what it verifies>"],\n' +
@@ -332,6 +333,29 @@ const TEST_TO_REVIEWER =
   '  "hints_skipped": ["<implementer hint> - <reason>, or \'none\'"],\n' +
   '  "results": ["<pass/fail summary>"],\n' +
   '  "commands_run": ["<exact command> => <exit code, N passed / N failed>"],\n' +
+  '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
+  '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
+  '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
+  "  \"known_gaps\": [\"<issue> - <owner: a later step such as @scribe, or 'after commit'> - <why it is not a failure now>, or 'none'\"],\n" +
+  '  "files_touched": ["<list, or \'none\'>"]\n' +
+  "}\n" +
+  "```";
+
+// `164`: every check and test reported ran AFTER the tester's last edit, and the report names the
+// tree they ran against. No tool, command or package manager is named: the template is project-agnostic.
+const TEST_TO_REVIEWER =
+  "```json\n" +
+  "{\n" +
+  '  "tests_added": ["<test name — what it verifies>"],\n' +
+  '  "test_origin": {\n' +
+  '    "from_hints": ["<test name>"],\n' +
+  '    "independent": ["<test name> - <source: acceptance criterion | file:line code path | failure mode not in hints>"]\n' +
+  "  },\n" +
+  '  "acceptance_coverage": ["<acceptance criterion> => <test names, or \'untested: <reason>\'>"],\n' +
+  '  "hints_skipped": ["<implementer hint> - <reason>, or \'none\'"],\n' +
+  '  "results": ["<pass/fail summary>"],\n' +
+  '  "commands_run": ["<exact command> => <exit code, N passed / N failed>; include the project\'s own format, lint and type checks and the tests you report, every one run AFTER your last edit — re-run them if you edited anything since, never report an earlier run>"],\n' +
+  '  "verified_tree": "<the tree those commands ran against: the commit, or the working tree state (e.g. uncommitted changes on top of a commit) — and confirm no file was edited after the runs>",\n' +
   '  "negative_control": ["<new test> - <how it was shown to fail without the fix or against the broken behaviour, or \'not demonstrated\'>"],\n' +
   '  "real_path_exercised": ["<what ran for real: process, window, filesystem, CLI; or \'unit only\'>"],\n' +
   '  "coverage_gaps": ["<behavior still untested, or \'none\'>"],\n' +
@@ -647,6 +671,7 @@ export const PRIOR_SEEDS: Record<string, string[]> = {
       "```",
   ],
   "test/reviewer": [
+    TEST_TO_REVIEWER_V4,
     TEST_TO_REVIEWER_V3,
     TEST_TO_REVIEWER_V2,
     // `148`: the flat body before commands_run, negative_control and real_path_exercised.

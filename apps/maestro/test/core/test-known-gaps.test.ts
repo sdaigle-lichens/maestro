@@ -105,8 +105,10 @@ describe("knownGaps on the test report and the test -> reviewer handoff", () => 
 
   it("the test -> reviewer seed carries known_gaps, and the previous body is a prior seed", () => {
     expect(SEED_HANDOFFS["test/reviewer"]).toContain('"known_gaps"');
-    expect(PRIOR_SEEDS["test/reviewer"][0]).toContain('"test_origin"');
-    expect(PRIOR_SEEDS["test/reviewer"][0]).not.toContain("known_gaps");
+    // newest first: [0] is the pre-`164` body (has known_gaps), [1] the pre-known_gaps one.
+    expect(PRIOR_SEEDS["test/reviewer"][0]).toContain("known_gaps");
+    expect(PRIOR_SEEDS["test/reviewer"][1]).toContain('"test_origin"');
+    expect(PRIOR_SEEDS["test/reviewer"][1]).not.toContain("known_gaps");
   });
 });
 

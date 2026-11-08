@@ -675,6 +675,41 @@ describe("test/reviewer handoff upgrade (148)", () => {
   });
 });
 
+describe("test/reviewer handoff upgrade (164)", () => {
+  let dir: string;
+  beforeEach(() => {
+    dir = fs.mkdtempSync(path.join(os.tmpdir(), "maestro-handoff-164-"));
+  });
+  afterEach(() => fs.rmSync(dir, { recursive: true, force: true }));
+
+  // The body an unedited install of the previous release holds: the newest prior seed, which
+  // predates verified_tree and the re-run-after-last-edit rule.
+  const PRE_164 = PRIOR_SEEDS["test/reviewer"][0];
+
+  it("the pre-164 body is the newest prior seed and lacks verified_tree", () => {
+    expect(PRE_164).toContain('"known_gaps"');
+    expect(PRE_164).not.toContain("verified_tree");
+    expect(PRE_164).not.toMatch(/AFTER your last edit/);
+  });
+
+  it("a stored pre-164 row upgrades to the current seed, once", () => {
+    const dbPath = path.join(dir, "handoffs.sqlite");
+    writeHandoffDefault("test/reviewer", PRE_164, dbPath);
+    const row = readHandoffDefault("test/reviewer", dbPath)!;
+    expect(row.content).toBe(SEED_HANDOFFS["test/reviewer"]);
+    expect(row.content).toContain('"verified_tree"');
+    const again = readHandoffDefault("test/reviewer", dbPath)!;
+    expect(again.version).toBe(row.version);
+  });
+
+  it("a hand-edited pre-164 row is left alone", () => {
+    const dbPath = path.join(dir, "handoffs.sqlite");
+    const mine = PRE_164.replace("results", "my_results");
+    writeHandoffDefault("test/reviewer", mine, dbPath);
+    expect(readHandoffDefault("test/reviewer", dbPath)!.content).toBe(mine);
+  });
+});
+
 describe("test/reviewer handoff (148)", () => {
   it("carries commands_run, negative_control and real_path_exercised, and keeps the old body as a prior", () => {
     const cur = SEED_HANDOFFS["test/reviewer"];
