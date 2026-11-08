@@ -738,11 +738,6 @@
     "status": "done",
     "blockedBy": []
   },
-  "149-freebuff-backed-reviewer-bridge-via-herdr.md": {
-    "status": "ready",
-    "blockedBy": [],
-    "epic": "freebuff-reviewer"
-  },
   "150-narrow-the-manager-review-to-a-direction-check.md": {
     "status": "done",
     "blockedBy": [],
@@ -780,8 +775,14 @@
     "epic": "manager-review"
   },
   "157-add-a-user-steered-plan-review-and-on-demand-plan-view-to-to-maestro-tasks.md": {
-    "status": "ready",
-    "blockedBy": []
+    "status": "blocked",
+    "blockedBy": [
+      "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
+      "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md"
+    ]
   },
   "158-run-configured-skills-at-the-start-and-end-of-an-epic.md": {
     "status": "done",
@@ -793,7 +794,8 @@
   },
   "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md": {
     "status": "ready",
-    "blockedBy": []
+    "blockedBy": [],
+    "epic": "worktree-handoff-fixes"
   },
   "161-keep-formatters-off-maestro-managed-files-via-maestro-install-and-maestro-update.md": {
     "status": "done",

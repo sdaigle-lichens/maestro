@@ -44,7 +44,12 @@ Plan view: a reference file holds a small HTML skeleton and fill-in rules for a 
 - plugins/maestro/.claude-plugin/plugin.json (version; generated or version file, always counts as overlap)
 - plugin hook sources and .claude/scripts mirrors, only if the hook check requires a change
 - .claude/skills/task-queue, if the skill's documented flow needs updating
+- standalone, after the worktree-handoff-fixes epic (user): start from main once all five of its tasks are merged; 165 also edits to-maestro-tasks/SKILL.md, so this task builds on its version and takes the next version above the epic's last merge
 
 ## Blocked by
 
-None — can start immediately
+- `160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md`
+- `163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md`
+- `164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md`
+- `165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md`
+- `166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md`

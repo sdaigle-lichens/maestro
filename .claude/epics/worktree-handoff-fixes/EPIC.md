@@ -2,17 +2,18 @@
 
 ## Goal
 
-Fix the Maestro plugin gaps found by the acces-portail-email walking-skeleton post-mortems: worktree channel paths, clean-tree check before merge, git-excluded dirs in worktrees (163); testing-step re-verify (164); data source of displayed numbers and a complete post-mortem digest (165). Plus the seed's manager-review label aligned with the app (166).
+Fix the Maestro plugin gaps found by the acces-portail-email walking-skeleton post-mortems: worktree channel paths, clean-tree check before merge, git-excluded dirs in worktrees (163); testing-step re-verify (164); data source of displayed numbers and a complete post-mortem digest (165). Plus the seed's manager-review label aligned with the app (166), and no false hand-off issues on an agent's interim stops (160).
 
 ## Scope
 
 In: items 1, 2, 3, 6, 7 and 8 of the forwarded fixes (epic-01-manager, from the walking-skeleton
-003/004 post-mortems, Maestro 0.13.27), and 166 (from the workflow drift report on this repo).
+003/004 post-mortems, Maestro 0.13.27), 166 (from the workflow drift report on this repo), and 160
+(from the code-graph task 075 post-mortem; it also owns item 4).
 
 Out:
 - Item 5 (ask for dependency installs at claim time): user decision, it is a sandbox matter.
-- Item 4 (a stop with live background work taken as the final report): owned by task 160 (PR #24
-  queued it, not in this epic). 164 was narrowed and retitled to the re-verify fix only.
+- 164's background-work stop half: item 4 (a stop with live background work taken as the final
+  report) belongs to task 160, now in this epic. 164 was narrowed and retitled to the re-verify fix only.
 - The missing payload on a resumed run (task 156 already covers it).
 - Installed dependencies in worktrees (task 135); 163 covers only git-excluded directories.
 - Migrating existing projects' manager-review labels (166 changes the seed only; the drift report
@@ -24,15 +25,16 @@ Out:
 | ----- | ---- | ---- | ------------ | ----------------------------- |
 | 1 | 163 worktree channels, clean-tree check, excluded dirs | `main` (at or after `41b8ce5`, plugin 0.13.32) | Worker bumps patch on its branch | `plugin.json`; `scripts/lib/*.cjs` (generated) and `.claude/scripts` mirrors; the orchestrator template (rendered STEPS/HANDOFFS); `maestro-inject-agent-context.js` (also changed by task 159, already on `main`) |
 | 2 | 164 testing re-verify | same | Worker bumps patch; on rebase, the next patch above the last merge | `plugin.json`; generated libs and mirrors (handoff defaults) |
-| 3 | 165 to-maestro-tasks data source, full post-mortem digest | same | same | `plugin.json`; post-mortem script mirrors |
-| 4 | 166 seed manager-review label | same | same | `plugin.json`; generated `maestro-seed.cjs` and its mirror |
+| 3 | 160 interim-stop hand-off flags | same | same | `plugin.json`; generated `maestro-session.cjs` and its mirror; `maestro-subagent-log.js`; the hand-off concept notes |
+| 4 | 165 to-maestro-tasks data source, full post-mortem digest | same | same | `plugin.json`; post-mortem script mirrors; must merge after 160, whose interim-stop signal its digest respects |
+| 5 | 166 seed manager-review label | same | same | `plugin.json`; generated `maestro-seed.cjs` and its mirror |
 
-All four run in parallel (no `blockedBy`). A later one rebases onto `main` after the earlier one
+All five run in parallel (no `blockedBy`). A later one rebases onto `main` after the earlier one
 merges, takes the next patch version, and rebuilds generated files (`pnpm refresh:runtime`, parity
-test) instead of hand-merging bundle text, then re-runs the full suite on the rebased commit.
+test) instead of hand-merging bundle text, then re-runs the full suite on the rebased commit. The
+only hard order is 160 before 165.
 
-Outside the epic: task 160 (ready, no epic) touches the SubagentStop hook and `plugin.json`. Not
-ordered against this epic; whichever merges later rebases and takes the next patch.
+After the epic: task 157 (no epic, blocked by all five) runs standalone once they are merged.
 
 ## Decisions
 
@@ -46,5 +48,7 @@ ordered against this epic; whichever merges later rebases and takes the next pat
 - 164 narrowed (manager, after PR #24 landed task 160): its background-work stop half duplicated 160.
 - 163's clean-tree check: clean-checkout verification vs a narrower ignored-file check is left to
   that task's design step; a manager review only checks it stays project-agnostic.
+- 160 joined the epic (user, 2026-11-07); 157 runs standalone after it, and task 149 with its
+  freebuff-reviewer epic was cancelled.
 - 166 (user): the seed adopts the app's "manager requested direction change" label, not the other
   way round. This repo's `maestro.json` already uses it.

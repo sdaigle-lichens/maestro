@@ -24,7 +24,7 @@ Two authoring and retrospective fixes from the acces-portail-email walking-skele
 - plugins/maestro/scripts/maestro-post-mortem.js / maestro-post-mortem-context.js and their .claude/scripts mirrors
 - plugins/maestro/.claude-plugin/plugin.json (version, shared)
 - parallel OK; merge order: last of the three, and after task 160 (whose interim-stop signal the digest must respect); rebase, take the next patch version, rebuild generated files instead of hand-merging
-- plugins/maestro/skills/to-maestro-tasks/SKILL.md is also edited by task 157: whichever merges second rebases onto the other
+- plugins/maestro/skills/to-maestro-tasks/SKILL.md is also edited by task 157, which runs after this epic and builds on this task's version
 
 ## Blocked by
 
