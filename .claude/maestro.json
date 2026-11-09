@@ -978,6 +978,18 @@
           "label": "FAIL: backend code (a test exposes a defect)",
           "sourceHandle": "left",
           "targetHandle": "top"
+        },
+        {
+          "from": "test",
+          "to": "refactor",
+          "kind": "condition",
+          "label": "FAIL: same defectClass as the previous two backend rounds of this run; refactor reports whether the defects come from the design",
+          "sourceHandle": "right",
+          "targetHandle": "top",
+          "label_offset": {
+            "x": 110,
+            "y": 0
+          }
         }
       ]
     },
@@ -1183,7 +1195,7 @@
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.13.34",
+  "runtimeVersion": "0.13.36",
   "reports": {
     "backend": {
       "id": "backend",
