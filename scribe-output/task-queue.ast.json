@@ -380,6 +380,24 @@
       }
     },
     {
+      "_key": "1ff2d5d92c08f48214736ba6bcb52263",
+      "displayKey": "task-queue::function::formatIgnoredNotice",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatIgnoredNotice",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 51,
+      "end_line": 64,
+      "signature": "function formatIgnoredNotice(list: string[], wtPath: string): string",
+      "contentHash": "50c74036441d0c96702a9447f294bf0b692d05754dad0902b91cf49815c22bfb",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "222bd41eb5a3a112dc9ed187aafc3fe5",
       "displayKey": "task-queue::type-def::EpicView",
       "concept": "task-queue",
@@ -390,6 +408,24 @@
       "end_line": 706,
       "signature": "export interface EpicView {",
       "contentHash": "920d33050bf8362a08a945058d416ba4e6071ff9aed3f001646a5fc7afd023a6",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "230c1b6cc9685c4332ad08a83825a0c5",
+      "displayKey": "task-queue::function::isBookkeeping",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "isBookkeeping",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 25,
+      "end_line": 26,
+      "signature": "isBookkeeping(rel: string): boolean",
+      "contentHash": "af64dbbf8c79c841250e55dcc49ed1a5dedc564fc9cb4572f0b9ce4d040957c8",
       "status": "live",
       "ast": {},
       "agent": {
@@ -696,6 +732,24 @@
       "end_line": 326,
       "signature": "function removeWorker(projectRoot: string, slug: string, name: string): void",
       "contentHash": "7465f069b0fbe9b499c800fdb8ebcac6ecfbe7a1ba3ab0d6a05a7c191dd9a3ae",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "475e4775e3182171219a42acef70389c",
+      "displayKey": "task-queue::function::provisionExcludedDirs",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "provisionExcludedDirs",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 79,
+      "end_line": 128,
+      "signature": "function provisionExcludedDirs(git: GitRunner, mainRoot: string, wtPath: string): { copied: string[]; warned: string[]; }",
+      "contentHash": "806f452dc13f7c2d7801cdb8ef014c5f6c35b8dcc163013f8f4f73d1302eae0b",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1028,6 +1082,24 @@
       }
     },
     {
+      "_key": "683d730c8650be3d35bb137a7c7bbeca",
+      "displayKey": "task-queue::function::ignoredPaths",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "ignoredPaths",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 29,
+      "end_line": 33,
+      "signature": "function ignoredPaths(git: GitRunner, cwd: string): string[]",
+      "contentHash": "f6d8c6f9ba504b38283fd18d1c52471e4a05d543d2dc740e17fc08c6a565c1f3",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "684768b508e7edb0072b59886126e1c4",
       "displayKey": "task-queue::function::listClaimFiles",
       "concept": "task-queue",
@@ -1200,6 +1272,24 @@
       "end_line": 305,
       "signature": "function readTaskTracker(projectRoot: string): Record<string, TrackerEntry>",
       "contentHash": "0b8d6bd1ffb3241d2bce31b444156bd34d66e9ec87113e899f18a7832de7f8c4",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "7a50eb6fde3ae9a1892a6ee340f591a3",
+      "displayKey": "task-queue::function::nestedClaudeEntry",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "nestedClaudeEntry",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 67,
+      "end_line": 70,
+      "signature": "function nestedClaudeEntry(rel: string): boolean",
+      "contentHash": "ecdf8ce932a2314936b41f6d3b85093d5ae1a4434fdf64baad4bd660c3ea86ae",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1614,6 +1704,24 @@
       "end_line": 521,
       "signature": "export interface ReviewHistory {",
       "contentHash": "0136005a7124b94c131ea4df7efe9761f3de8f8bb8fe91f2c0eb8a83e7e03d75",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "9ec8ec87936555eb9059055ac69a5df8",
+      "displayKey": "task-queue::function::formatExcludedProvision",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "formatExcludedProvision",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 131,
+      "end_line": 145,
+      "signature": "function formatExcludedProvision(r: { copied: string[]; warned: string[] }): string",
+      "contentHash": "be8e6baf35e5af52b084c1b62541df75fc4b94889541194bd697d74703194f1a",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2126,6 +2234,24 @@
       }
     },
     {
+      "_key": "e68ad72597e09d955be3a80a5ff55000",
+      "displayKey": "task-queue::function::ignoredOnlyInWorktree",
+      "concept": "task-queue",
+      "type": "function",
+      "name": "ignoredOnlyInWorktree",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 40,
+      "end_line": 48,
+      "signature": "function ignoredOnlyInWorktree(git: GitRunner, mainRoot: string, wtPath: string): string[]",
+      "contentHash": "8f4615c39a650fe1ee81490bc949a8b346f533fdfb053b165fead94ed9cfab8a",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "eb9e4a907d42e74c60cd24be30db7b84",
       "displayKey": "task-queue::function::showEpic",
       "concept": "task-queue",
@@ -2190,6 +2316,24 @@
       "end_line": 308,
       "signature": "function setManager(projectRoot: string, slug: string, name: string): void",
       "contentHash": "374d86044674cfe2f489a94cfd3ccfb22abda2cf58fad78bbdbcd4547a55e458",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
+      "_key": "ee366fc6aaec21956dcf0fd0ac27990b",
+      "displayKey": "task-queue::type-def::GitRunner",
+      "concept": "task-queue",
+      "type": "type-def",
+      "name": "GitRunner",
+      "filepath": "apps/maestro/src/core/worktree-footprint.ts",
+      "start_line": 20,
+      "end_line": 20,
+      "signature": "export type GitRunner = (cwd: string, args: string[]) => { ok: boolean; out: string };",
+      "contentHash": "aaeccc80e8bfd482dc23e3a35a6e9f6e3d121ddf81bfc58e49e2e6f5e9d680e3",
       "status": "live",
       "ast": {},
       "agent": {
@@ -3629,6 +3773,19 @@
       }
     },
     {
+      "_key": "60a99e6c045e9a1151cbe1e8ec6dee9d",
+      "_from": "vertices/e68ad72597e09d955be3a80a5ff55000",
+      "_to": "vertices/ee366fc6aaec21956dcf0fd0ac27990b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 40,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "60e46b9eed3616913f206c24766583ad",
       "_from": "vertices/85268cf21aea6581c5f58d98d17b7593",
       "_to": "vertices/4e735a1964d429efa4a2d04cf64679e0",
@@ -3636,6 +3793,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 300,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "6117dabd2bdcbea638c71284252c3be6",
+      "_from": "vertices/475e4775e3182171219a42acef70389c",
+      "_to": "vertices/683d730c8650be3d35bb137a7c7bbeca",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 86,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4149,6 +4319,19 @@
       }
     },
     {
+      "_key": "86f635311e2bf1a02d44f80979d6f710",
+      "_from": "vertices/e68ad72597e09d955be3a80a5ff55000",
+      "_to": "vertices/230c1b6cc9685c4332ad08a83825a0c5",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "89796ef84e2caed244f6308adc7b4225",
       "_from": "vertices/8053d1c598cd7b816c1cdc5b1c3fabbf",
       "_to": "vertices/0dc7bd142d696f521309be415905428a",
@@ -4325,6 +4508,19 @@
       "concept": "task-queue",
       "crosses_concept": false,
       "line": 820,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "96c4666c2d38ae7f38d079ae21fb8bee",
+      "_from": "vertices/683d730c8650be3d35bb137a7c7bbeca",
+      "_to": "vertices/ee366fc6aaec21956dcf0fd0ac27990b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 29,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4559,6 +4755,19 @@
       "concept": "task-queue",
       "crosses_concept": true,
       "line": 344,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "afca73d8f3cbfca7574071f14b141da9",
+      "_from": "vertices/475e4775e3182171219a42acef70389c",
+      "_to": "vertices/ee366fc6aaec21956dcf0fd0ac27990b",
+      "type": "has-type",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 80,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5111,6 +5320,19 @@
       }
     },
     {
+      "_key": "e1a644b4bff9f5a3c714b06444c035db",
+      "_from": "vertices/e68ad72597e09d955be3a80a5ff55000",
+      "_to": "vertices/683d730c8650be3d35bb137a7c7bbeca",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 42,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e32df576aaa49b38027228cc160060cd",
       "_from": "vertices/c1d425229745e5c66426684d723ebacf",
       "_to": "vertices/8b4b1c6419a9a355dadaccf9d18fb4d8",
@@ -5462,6 +5684,19 @@
       }
     },
     {
+      "_key": "fd079573c446af600cb9269ac969cd59",
+      "_from": "vertices/475e4775e3182171219a42acef70389c",
+      "_to": "vertices/7a50eb6fde3ae9a1892a6ee340f591a3",
+      "type": "calls",
+      "concept": "task-queue",
+      "crosses_concept": false,
+      "line": 86,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "fe6522d85bc88b590f6e1d762b9dc479",
       "_from": "vertices/250aade7b331dbf112093a1d18c60d3d",
       "_to": "vertices/d35854ae40fa52d09decbb1b4c9fb688",
@@ -5477,17 +5712,18 @@
   ],
   "skill": {
     "path": ".claude/skills/task-queue/SKILL.md",
-    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"2.10\"\n  last-update: ea0a2b08eb316763fc05a1f2fecdba141ab116d6\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection` (cut by the shared `sectionOf`, also used by `parseBlockedBy`), `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |\n| `apps/maestro/src/core/session-heartbeat.ts` | `141`: `heartbeatVerdict` (the liveness rule `isSessionLive` applies first), `heartbeatTick` and the process probes behind the detached watcher that `plugins/maestro/scripts/maestro-session-heartbeat.js` (SessionStart) spawns. See [Claims](sub-concepts/task-claims.md#the-session-heartbeat-141). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`), the manager's spawn list `readyTasks` (`125`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `apps/maestro/src/core/epic-boundary.ts` | `158`'s `boundary` command: whether an epic's start or end skills are due, the once-only claim, and the scope file; its git calls are read-only. See [Epics](sub-concepts/epics.md#epic-boundaries-boundary-158). |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`); spawns workers in herdr tabs from `ready` (`125`). |\n| `plugins/maestro/skills/maestro-install/references/herdr.md` | The user-facing herdr setup guide the manager's fallback points to (`125`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`), `mark-merged <task>` (`146`: clears a done task's `unmerged` flag after a hand merge); `done` for a worktree task sets `unmerged` and prints a \"done but NOT merged\" notice, see [Task files](sub-concepts/task-files.md)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, run `pnpm refresh:runtime` to rebuild the libs and copy them over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. `163`: `merge` also refuses while ignored paths exist only in the worktree (`--accept-ignored` waives it), `done` prints that list, and `worktree`/`freeform-check` copy git-excluded nested `.claude` directories in. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); sibling `worktree-deps.ts` (`135`: lockfile package-manager detection and the missing-dependencies `STOP` notice that `worktree`/`freeform-check` print and `done` refuses on); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `apps/maestro/src/core/worktree-footprint.ts` | `163`: `ignoredOnlyInWorktree` (ignored paths that exist only in the worktree; the list `merge` refuses on and `done` prints) and `provisionExcludedDirs` (copies git-excluded nested `.claude` directories into a new worktree). The git runner is injected; `fs`/`path` only. See [Claims](sub-concepts/task-claims.md#worktree-footprint-163). |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `apps/maestro/src/core/human-review-gate.ts` | `130`'s gate logic; `isReviewFile` and the `.review(-N).md` pattern. `<task>.review.md` and `<task>.review-N.md` sit in `.claude/maestro-tasks/` but are not tasks: `listTaskFiles` in `tasks.ts` (and its twin `maestro-tasks.cjs`) skips them. Any new lister must do the same. |\n| `plugins/maestro/scripts/maestro-human-review-gate.js` | `PreToolUse`/`AskUserQuestion` hook denying the question until the round's review file exists. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view (Open/Closed filter, claim badge, Copy prompt, Run with Claude via `claude.preview` + the confirmation dialog, Close, Delete); owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/renderer/src/utils/maestro-tasks.ts` | Thin `window.maestro.tasks` wrappers: `getMaestroTasks`, `closeMaestroTask`, `deleteMaestroTask` (each close/delete returns the full recomputed list). |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, `103`'s `freeform-<id>` worktree, and `163`'s worktree\n  footprint (ignored-only refusal, nested `.claude` copies).\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic; `125`: `ready`, the manager's spawn list; `158`: `boundary`, the start and end skill boundaries.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
-    "contentHash": "sha256:d0915df3b4120550e88d884c526c12a7a2aaf4740b0536cd31658fd390bc3f7e"
+    "body": "---\nname: task-queue\ndescription: \"Explains the Maestro task queue: the numbered prompt files under .claude/maestro-tasks/, the blockedBy cascade and status.json that decide which are ready, the PostToolUse hook that checks TaskCreate calls against the selected workflow's success path, the two implementations (tasks.ts and maestro-tasks.cjs) that must agree, and the claims subsystem (claims.ts / maestro-task-status.cjs) that lets two concurrent sessions claim different ready tasks. Use when working on /to-maestro-tasks, the /maestro-tasks route or the validation hook, when a task won't unblock, when a close from the UI and one from the orchestrator disagree, or when two sessions might grab the same task.\"\nmetadata:\n  type: concept-skill\n  version: \"2.11\"\n  last-update: 387b1f76417f142f8150772b546914ede48dcc93\n---\n\n# Task queue\n\nA queue of ready-to-run prompts that `/to-maestro-tasks` writes under\n`<project>/.claude/maestro-tasks/`, one numbered markdown file per vertical slice\n(`001-verify-workflow-canvas-interactions.md`). The Maestro orchestrator picks them up, classifies\neach, and runs it; the desktop app's `/maestro-tasks` route shows the same queue.\n\nThe files are workflow-agnostic prompts — a title, what to build, and acceptance criteria — not\ninstructions to a specific agent. Classification is the orchestrator's job at run time. `status.json`\nin the same directory holds `{ status, blockedBy }` per file; `blockedBy` is parsed out of the task\nfile and cascades, so closing one task can make several ready at once — see\n[Task files and the cascade](sub-concepts/task-files.md).\n\n## Two implementations that must agree\n\n`apps/maestro/src/core/tasks.ts` (the app) and `plugins/maestro/scripts/lib/maestro-tasks.cjs` (the\norchestrator) both implement the cascade. **`maestro-tasks.cjs` is the one lib file that is NOT\ngenerated** — it has no `plugin-entries/` source, and is hand-maintained in sync with `tasks.ts`\nprecisely so a close from the UI and one from the orchestrator cannot disagree about which tasks are\nready. Changing the cascade in one place and not the other is the failure mode this arrangement\nexists to prevent.\n\n**A second pair, added by `066`, does the same for claims** — `claims.ts` against hand-written logic\ninside `maestro-task-status.cjs`; see [Claims](sub-concepts/task-claims.md).\n\n## The validation hook\n\n`maestro-validate-tasks.js` is a `PostToolUse` hook on `TaskCreate` that checks each created task\nagainst the selected workflow's success path and warns — **always non-blocking, always advisory** —\non a mismatch or a skipped step. See [TaskCreate validation](sub-concepts/task-validation.md).\n\n## Files\n\n| File | Role |\n| --- | --- |\n| `<project>/.claude/maestro-tasks/NNN-*.md` | The prompts. |\n| `<project>/.claude/maestro-tasks/status.json` | Status + `blockedBy` per file. |\n| `<project>/.claude/maestro-tasks/views/` | Generated plan pages (`.html`, `157`), not tasks. Listers read only the `.md` files directly in `maestro-tasks/`, so a page here is never listed; no hook removes the folder. |\n| `apps/maestro/src/core/tasks.ts` | `tasksDirFor`, `parseBlockedBy`, `listTasks`, `closeTask`, `deleteTask`, `extractPostMortemSection` (cut by the shared `sectionOf`, also used by `parseBlockedBy`), `setTaskEpic`, `readTaskTracker`, `tailTasks` (the live-update tail). |\n| `<project>/.claude/postmortems.log` | Committed history of deleted tickets' `## Post-Mortem` sections. |\n| `plugins/maestro/scripts/lib/maestro-tasks.cjs` | Hand-maintained twin. |\n| `apps/maestro/src/core/claims.ts` | `claimTask`, `releaseTask`, `readClaims`, `isSessionLive`, `ensureClaimsDir`, `claimSessionName`, `deleteClaimIfAny` (`066`); `tasks.ts` re-exports `claimTask`/`releaseTask`/`claimsDirFor`. |\n| `apps/maestro/src/core/session-heartbeat.ts` | `141`: `heartbeatVerdict` (the liveness rule `isSessionLive` applies first), `heartbeatTick` and the process probes behind the detached watcher that `plugins/maestro/scripts/maestro-session-heartbeat.js` (SessionStart) spawns. See [Claims](sub-concepts/task-claims.md#the-session-heartbeat-141). |\n| `<project>/.claude/maestro-tasks/claims/` | Per-task claim files (`066`); git-ignored, deleted on uninstall. |\n| `apps/maestro/src/core/epics.ts` | Epic state, membership (`setTaskEpic` writes the tracker's `epic` field) and the report inbox (`084`), cross-epic notes and dependencies (`085`), the manager's spawn list `readyTasks` (`125`); shipped as generated `lib/maestro-epic.cjs` behind `scripts/maestro-epic.cjs`. |\n| `apps/maestro/src/core/epic-boundary.ts` | `158`'s `boundary` command: whether an epic's start or end skills are due, the once-only claim, and the scope file; its git calls are read-only. See [Epics](sub-concepts/epics.md#epic-boundaries-boundary-158). |\n| `<project>/.claude/epics/<slug>/` | `EPIC.md`, `state.json`, `inbox/rNNN-<task>.md` (`084`), `inbox/nNNN-from-<epic>.md` (`085`). |\n| `plugins/maestro/skills/maestro-manager/` | The published skill that runs one epic and resumes after restarts (`084`); spawns workers in herdr tabs from `ready` (`125`). |\n| `plugins/maestro/skills/maestro-install/references/herdr.md` | The user-facing herdr setup guide the manager's fallback points to (`125`). |\n| `plugins/maestro/scripts/maestro-validate-tasks.js` | The `PostToolUse` hook. |\n| `plugins/maestro/scripts/maestro-task-status.cjs` | Status CLI (`sync`, `done`, `claim`, `release`, `worktree` (`074`), `freeform-check` (`098`: the worktree decision for a freeform run with no task file; sees live freeform sessions via session.json, not claims; `103`: with another live session it creates a `freeform-<id>` worktree, and `merge` accepts that branch name), `merge` (`076`), `mark-merged <task>` (`146`: clears a done task's `unmerged` flag after a hand merge); `done` for a worktree task sets `unmerged` and prints a \"done but NOT merged\" notice, see [Task files](sub-concepts/task-files.md)). When every conflicting file on `merge` is a generated plugin lib or its tracked `.claude/scripts/lib` mirror, it names the resolution (resolve `src/core`, run `pnpm refresh:runtime` to rebuild the libs and copy them over the mirrors, run `parity.test.ts`, commit, merge again) instead of leaving a hand-merge of bundle text; if any other file also conflicts it prints no hint (`082`). `083` added: `plan`/`plan-step`/`plan-show` (the orchestrator's success-path tracker in session.json for when TaskCreate is unavailable — `done` refuses while a recorded plan has an unfinished step), `handoff-issues` (prints and clears the SubagentStop hook's verdict/HANDOFF findings), and to `merge`: a dirty-worktree refusal also prints the worktree path and a suggested commit (the user approves it; never auto-committed), a refusal listing untracked main-checkout files that collide with the branch (each marked identical-to-branch or different), and a `SANDBOX-BLOCKED` report with the exact `!` command when git cannot write into the main checkout. `163`: `merge` also refuses while ignored paths exist only in the worktree (`--accept-ignored` waives it), `done` prints that list, and `worktree`/`freeform-check` copy git-excluded nested `.claude` directories in. |\n| `apps/maestro/src/core/worktree.ts` | `mainCheckoutRoot`, worktree branch/path naming, `WorktreePointer` (`074`); sibling `worktree-deps.ts` (`135`: lockfile package-manager detection and the missing-dependencies `STOP` notice that `worktree`/`freeform-check` print and `done` refuses on); the queue always resolves to the main checkout. In a worktree run (`104`) the orchestrator writes a missing channel file from the agent's returned payload, and worktree subagents are told their shell starts in the main checkout; see maestro-architecture `channels.md`. |\n| `apps/maestro/src/core/worktree-footprint.ts` | `163`: `ignoredOnlyInWorktree` (ignored paths that exist only in the worktree; the list `merge` refuses on and `done` prints) and `provisionExcludedDirs` (copies git-excluded nested `.claude` directories into a new worktree). The git runner is injected; `fs`/`path` only. See [Claims](sub-concepts/task-claims.md#worktree-footprint-163). |\n| `plugins/maestro/scripts/maestro-post-mortem-context.js` | `PreToolUse`/`Skill` hook injecting the active task's `## Post-Mortem` section and `postmortems.log` tail before `/maestro-post-mortem` runs. |\n| `apps/maestro/src/core/human-review-gate.ts` | `130`'s gate logic; `isReviewFile` and the `.review(-N).md` pattern. `<task>.review.md` and `<task>.review-N.md` sit in `.claude/maestro-tasks/` but are not tasks: `listTaskFiles` in `tasks.ts` (and its twin `maestro-tasks.cjs`) skips them. Any new lister must do the same. |\n| `plugins/maestro/scripts/maestro-human-review-gate.js` | `PreToolUse`/`AskUserQuestion` hook denying the question until the round's review file exists. |\n| `plugins/maestro/scripts/maestro-write-tasks.cjs` | Writes a new batch from structured slice JSON, then calls the same `sync()`. Root = nearest ancestor with `.claude/maestro.json`, else git root, else start dir (`071`). |\n| `plugins/maestro/skills/to-maestro-tasks/` | The authoring skill. |\n| `apps/maestro/src/renderer/src/routes/maestro-tasks.tsx` | The app's view (Open/Closed filter, claim badge, Copy prompt, Run with Claude via `claude.preview` + the confirmation dialog, Close, Delete); owns the `tasks:subscribe` call and applies pushed updates over the loader's initial value. |\n| `apps/maestro/src/renderer/src/utils/maestro-tasks.ts` | Thin `window.maestro.tasks` wrappers: `getMaestroTasks`, `closeMaestroTask`, `deleteMaestroTask` (each close/delete returns the full recomputed list). |\n| `apps/maestro/src/main/ipc.ts` | `tailTasks` wiring — `taskTails`/`taskSubscribers`, retargeted on project switch. |\n| `apps/maestro/src/shared/ipc.ts` | The `tasks:subscribe`/`tasks:unsubscribe`/`tasks:init`/`tasks:update` channel contract. |\n| `apps/maestro/src/preload/index.ts` | Exposes `window.maestro.tasks.subscribe`. |\n\n## Relationships\n\n- `maestro-architecture` — the orchestrator that consumes the queue, and the `success-path` the hook\n  validates against.\n- `plugin-libs-parity` (in `apps/maestro/.claude/skills`) — the generation rule this file is the\n  documented exception to.\n- `log-view` (in `apps/maestro/.claude/skills`) — the Session Log tail this queue's live-update\n  pipeline mirrors: main-process poller, subscribe/unsubscribe IPC, single-owner-per-window tail,\n  retargeted on project switch. The two are separate implementations by design, not a shared module\n  — see [Live updates](sub-concepts/live-task-updates.md).\n\n## Sub-concepts\n\n- [Task files and the cascade](sub-concepts/task-files.md) — the format, `blockedBy`, `status.json`,\n  and the batch write via `maestro-write-tasks.cjs`.\n- [TaskCreate validation](sub-concepts/task-validation.md) — the hook, its warnings, its limits.\n- [Claims](sub-concepts/task-claims.md) — `066`'s `claims/` overlay, liveness, reaping, the\n  second parity pair, `074`'s worktree isolation (queue root stays the main checkout), and `098`'s\n  freeform session presence, `freeform-check`, `103`'s `freeform-<id>` worktree, and `163`'s worktree\n  footprint (ignored-only refusal, nested `.claude` copies).\n- [Epics](sub-concepts/epics.md) — `084`: grouping tasks, the `epic` tracker field, the manager's\n  report inbox with acknowledgement, and the design decisions; `085`: cross-epic notes between\n  managers and the policy for what affects another epic; `125`: `ready`, the manager's spawn list; `158`: `boundary`, the start and end skill boundaries.\n- [Delete and `postmortems.log`](sub-concepts/delete-and-postmortems.md) — `deleteTask`, the\n  committed post-mortem history, and the context hook that feeds `/maestro-post-mortem`.\n- [Live updates on the `/maestro-tasks` route](sub-concepts/live-task-updates.md) — `tailTasks` and\n  the `tasks:subscribe` push channel.\n",
+    "contentHash": "sha256:48c67d10318b8856e37a78348aa69baec71e5fdafb040c491ccfa00c17d34e82"
   },
   "meta": {
     "extractor_version": "code-graph@0.3.44",
-    "extracted_at": "2026-11-09T01:26:16.095Z",
+    "extracted_at": "2026-11-09T19:38:59.616Z",
     "files": {
       "apps/maestro/src/core/claims.ts": "sha256:a88b5f2b9a6f9f3996f1e4d2dfca7389c7ca49c1ca2741632f66b4fc0c61aeb1",
       "apps/maestro/src/core/epics.ts": "sha256:21c1bc3ac4629b4be4ce291d774b2081a836139fa73b3956fb7e6ff0526caf0e",
       "apps/maestro/src/core/success-path.ts": "sha256:bbe89e7028c578528928349f6458e68905f314e59d79655da8f0c3427ecbf2aa",
       "apps/maestro/src/core/tasks.ts": "sha256:01465f04f9887dcf68eadd0f5c567f6e491799b60bfd9facabab650f693c4cd6",
+      "apps/maestro/src/core/worktree-footprint.ts": "sha256:ed0dcc612460d89fbdab6f7ebd9874a232e912527ebb34cc897b1a7f5130e2a3",
       "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx": "sha256:5ad139d5e11071c0af4bd89e5256477c846cfc7cac61a152d80901d5ec528d91",
       "apps/maestro/src/renderer/src/utils/maestro-tasks.ts": "sha256:3f8529dd75d4ee76bd5ea4f8634345b50cfdc43c20b3ac65faeecd4071f4d287"
     }

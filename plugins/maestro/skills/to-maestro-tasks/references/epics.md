@@ -22,16 +22,22 @@ Show two checks with the list:
 - **Coverage**: every spec item or design section maps to exactly one epic. Name any item that maps to none or to two.
 - **Shared foundations**: scaffolding, shared schema or helpers, version files and generated files, each with the **one epic that owns it**. Every other epic that touches it depends on the owner.
 
-Iterate until the user approves. Then, for each epic:
+**Gate 1.** Before asking for approval, run Gate 1 of [`plan-review.md`](plan-review.md) on this list. Iterate until the user approves. Then, right after Gate 1, for each epic:
 
 1. `node "<scripts>/maestro-epic.cjs" create <slug> --goal "<goal>"`
 2. Replace the placeholder under `## Scope` in the `EPIC.md` it prints with `Depends on epics:`, `Covers:`, `Owns:` (its shared foundations, if any) and `Expansion: now|deferred — <reason>`. This is the plan's only durable record: nothing else stores epic-to-epic ordering before tasks exist, and the session that later expands a deferred epic reads it from here.
 
-Then expand every `now` epic **in dependency order, in this session**: run SKILL.md Steps 2–4 once per epic, writing with `--epic <slug>`. A later epic's tasks block on the earlier epic's tasks by filename (`["012"]`), because that batch is already written. Block on the specific tasks the work needs, not the whole epic. The tracker enforces these edges across epics: a task is never ready while a blocker in another epic is unfinished. In the parallel-safety check, also compare the batch against the tasks of epics it is *not* ordered after.
+Then expand every `now` epic **in dependency order, in this session**, with **held writes**: no task is written until the last review is finished.
+
+1. **Draft.** Run SKILL.md Steps 2–3 once per epic and keep each approved batch as a draft; do not run Step 4 yet. A draft that needs a task of an earlier epic in this plan names it **by title** in `blockedBy` (`"title: Add login form"`), since that task has no file yet. Block on the specific tasks the work needs, not the whole epic. In the parallel-safety check, also compare the batch against the drafts of epics it is *not* ordered after.
+2. **Gate 2.** Run Gate 2 of [`plan-review.md`](plan-review.md) over all the drafts at once, and apply what the user approves.
+3. **Write in dependency order.** Run SKILL.md Step 4 once per epic, writing with `--epic <slug>`. Before each write, swap every title reference for the real filename (`["012"]`) the writer printed for the earlier epic's batch; a title that matches no written task means the order is wrong, so stop and fix it. `maestro-write-tasks.cjs` itself is unchanged and never sees a title.
+
+The tracker enforces the cross-epic edges: a task is never ready while a blocker in another epic is unfinished.
 
 ## Expanding an epic
 
-Read the epic's `EPIC.md` as the source: `Covers` is the scope, `Decisions` constrains it, and `Depends on epics` becomes `blockedBy`. For each epic named there, `node "<scripts>/maestro-epic.cjs" show <dep>` lists its tasks: block on the ones this work needs, by filename. If a dependency epic has no tasks yet, stop and tell the user to expand it first. Then run SKILL.md Steps 2–5, writing with `--epic <slug>`.
+Read the epic's `EPIC.md` as the source: `Covers` is the scope, `Decisions` constrains it, and `Depends on epics` becomes `blockedBy`. For each epic named there, `node "<scripts>/maestro-epic.cjs" show <dep>` lists its tasks: block on the ones this work needs, by filename. If a dependency epic has no tasks yet, stop and tell the user to expand it first. Then run SKILL.md Steps 2–5, writing with `--epic <slug>`. Gate 2 is opt-in here: offer it once, as one line in the Step 3 quiz, and on a yes run it from [`plan-review.md`](plan-review.md) before Step 4. The same one-line offer applies to a single epic planned on its own whose expansion holds more than three tasks.
 
 ## Report
 

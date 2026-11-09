@@ -1,6 +1,6 @@
 ---
 name: to-maestro-tasks
-description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the project's configured to-maestro-tasks start skills to sharpen intent, sizes the work into as few tasks as it genuinely needs — often one — then writes a numbered, workflow-agnostic prompt file for each, for the Maestro orchestrator to classify and execute. When a design or a list of specs spans several epics, it first agrees the epic list, records each epic's dependencies and coverage, then expands the epics into tasks in dependency order. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, convert a plan/spec/idea into runnable task files, split a design or a set of specs into epics, or expand an existing epic into tasks."
+description: "Turn a plan or idea into a queue of ready-to-run Maestro task prompts saved under .claude/maestro-tasks/. Runs the project's configured to-maestro-tasks start skills to sharpen intent, sizes the work into as few tasks as it genuinely needs — often one — then writes a numbered, workflow-agnostic prompt file for each, for the Maestro orchestrator to classify and execute. When a design or a list of specs spans several epics, it first agrees the epic list, records each epic's dependencies and coverage, then expands the epics into tasks in dependency order; a plan of several epics gets an independent read-only review with the user as third reviewer before anything is written. It also builds a self-contained HTML plan view on request. Use when the user wants to break work into Maestro tasks, queue up prompts for the /maestro skill, convert a plan/spec/idea into runnable task files, split a design or a set of specs into epics, expand an existing epic into tasks, review a plan before its tasks are written, or explain, show or visualize a plan, an epic list or a single task (drafted or already written)."
 allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs" *)
 ---
 
@@ -9,6 +9,10 @@ allowed-tools: Bash(node "${CLAUDE_PLUGIN_ROOT}/scripts/maestro-step1-gates.cjs"
 Convert a plan, spec, or rough idea into **ready-to-run prompt files** under the **repository-root** `.claude/maestro-tasks/` (never `<cwd>/.claude/` or a sub-folder `.claude`; the writer resolves the root as the nearest ancestor with `.claude/maestro.json`, then the git root). Each file is a self-contained, workflow-agnostic prompt the `/maestro` skill classifies and executes end-to-end.
 
 **Epics.** If the user names an epic, you run for a `maestro-manager`, the source is a design or list of specs spanning several epics, or the user asks to expand an existing epic, read [`references/epics.md`](references/epics.md) after Step 1 and follow it alongside the steps below. Its `<scripts>` is `${CLAUDE_PLUGIN_ROOT}/scripts`.
+
+**Plan review.** Read [`references/plan-review.md`](references/plan-review.md) when several epics are planned (automatic), when one large epic or a deferred epic is expanded and the user accepts the one-line offer, or when the user asks for a review (Continue or Fresh) before tasks are written. An ordinary run (no epic) gets no review and no review prompt.
+
+**Plan view.** When the user asks to explain, show or visualize a plan or a task, read [`references/plan-view.md`](references/plan-view.md) and build the page. A request about an already-written task needs only that: skip the Process below.
 
 ## Process
 
@@ -46,7 +50,7 @@ For more than one, present a numbered list with each task's **title**, **blocked
 
 ### 4. Write the task files and sync the tracker
 
-Once approved, prepare one object per task — **never write the markdown files or `status.json` by hand.** Order the array topologically (the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild`; choosing the workflow is the orchestrator's job.
+Once approved (and, when several epics are planned, once the last plan review is finished: writes are held until then, see `references/epics.md`), prepare one object per task — **never write the markdown files or `status.json` by hand.** Order the array topologically (the script rejects a forward reference). **Do not name agents or workflows** in `whatToBuild`; choosing the workflow is the orchestrator's job.
 
 **Make `whatToBuild` name every kind of change the criteria need** — the orchestrator picks the workflow from it, so a description that sounds like docs gets a docs-only run even when a criterion needs code.
 - A criterion that reaches across the repo ("every reference renamed") needs the description to say whether **user-facing strings in source** (messages, help text, errors) are in scope; if so, say "including messages in source code" in the description itself.

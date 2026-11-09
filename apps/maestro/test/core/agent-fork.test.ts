@@ -254,17 +254,18 @@ describe("mergeForkBody", () => {
   });
 });
 
-// `148`: the shipped test and scribe agents declare a Haiku model; no other shipped agent does.
-// A fork copies the template's bytes and a sync takes the template's frontmatter, so the line must
-// survive both.
+// `148`: the shipped test and scribe agents declare a Haiku model; `157`: the plan-reviewer is
+// pinned to Opus; no other shipped agent declares one. A fork copies the template's bytes and a sync
+// takes the template's frontmatter, so the line must survive both.
 describe("shipped model frontmatter (148)", () => {
   const agentsDir = path.resolve(__dirname, "../../../../plugins/maestro/agents");
 
-  it("only the test and scribe agents declare model: claude-haiku-5-5", () => {
+  it("only the test and scribe agents declare model: claude-haiku-5-5, and plan-reviewer model: opus", () => {
     for (const f of fs.readdirSync(agentsDir).filter((n) => n.endsWith(".md"))) {
       const head = fs.readFileSync(path.join(agentsDir, f), "utf8").split("\n---")[0];
       const hasModel = /^model:/m.test(head);
       if (f === "test.md" || f === "scribe.md") expect(head).toMatch(/^model: claude-haiku-5-5$/m);
+      else if (f === "plan-reviewer.md") expect(head).toMatch(/^model: opus$/m);
       else expect(hasModel, f).toBe(false);
     }
   });

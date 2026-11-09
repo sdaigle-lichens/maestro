@@ -775,7 +775,7 @@
     "epic": "manager-review"
   },
   "157-add-a-user-steered-plan-review-and-on-demand-plan-view-to-to-maestro-tasks.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
       "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
