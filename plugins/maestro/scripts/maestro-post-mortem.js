@@ -67,6 +67,26 @@ function parseLog(file) {
   return entries;
 }
 
+// Task 160's marker: the hook writes `interim: true` on a handoff entry for a stop that carried no
+// hand-back yet (absent otherwise, never false). An interim stop that a later stop of the same
+// agent run supersedes is not an outcome. One that is the agent's LAST stop never got its hand-back:
+// 160 settles that as `missing` in session state only (printed by `handoff-issues`, then deleted, and
+// never written to the log), so the digest INFERS the same missing from the log alone.
+function isInterim(h) {
+  return h.interim === true;
+}
+
+const OUTCOME_MISSING = "missing HANDOFF";
+const OUTCOME_NO_RETURN = "no-return";
+const INFERRED_NOTE = "inferred from the log: interim stop never followed by a final stop";
+
+function outcomeKind(s) {
+  if (s.interim) return OUTCOME_MISSING;
+  if (s.status === "unknown") return OUTCOME_MISSING;
+  if (s.status === "no-return") return OUTCOME_NO_RETURN;
+  return (s.label || s.status || "unknown").toLowerCase();
+}
+
 function analyze(entries, session) {
   const toolCalls = entries.filter((e) => !e.kind);
   // Team-meeting turns (`meeting: true`, written by maestro-subagent-log.js) are not workflow
@@ -85,23 +105,42 @@ function analyze(entries, session) {
   }
 
   // correlate dispatch ↔ handoff by agent_id
+  // The LAST handoff per agent_id is the run's final stop; an earlier stop of a resumed run was
+  // interim and is superseded by it.
   const handoffById = {};
   for (const h of handoffs) handoffById[h.agent_id] = h;
-  const subagents = dispatches.map((d) => {
+  // A resume writes a SECOND dispatch entry under the same agent_id: one row per agent_id, from its
+  // first dispatch (the original task input), so a resumed run is one outcome, not two.
+  const seenIds = new Set();
+  const uniqueDispatches = dispatches.filter((d) => {
+    if (!d.agent_id) return true;
+    if (seenIds.has(d.agent_id)) return false;
+    seenIds.add(d.agent_id);
+    return true;
+  });
+  const subagents = uniqueDispatches.map((d) => {
     const h = handoffById[d.agent_id];
     return {
       agent: d.agent || "?",
       agent_id: d.agent_id || "",
       input: clip(d.input, INPUT_CLIP),
       status: h ? h.status : "no-return",
+      interim: h ? isInterim(h) : false,
       label: h ? h.label : null,
       output: h ? clip(h.output, OUTPUT_CLIP) : null,
     };
   });
 
-  // outcome tally
+  // outcome tally: EVERY recorded kind, by the HANDOFF label the agent returned (success, fail,
+  // blocked, any other condition), plus the two ways a run ends with none: a final stop whose
+  // message carried no parseable HANDOFF line (including an interim stop that was never followed by a
+  // final one, flagged `interim` and inferred missing), and an agent that never stopped at all. An
+  // interim stop that was resumed and finished counts only as the final outcome.
   const outcomes = {};
-  for (const s of subagents) outcomes[s.status] = (outcomes[s.status] || 0) + 1;
+  for (const s of subagents) {
+    const k = outcomeKind(s);
+    outcomes[k] = (outcomes[k] || 0) + 1;
+  }
 
   // --- heuristic flags ---
   const flags = [];
@@ -170,13 +209,17 @@ function analyze(entries, session) {
     counts: {
       total: entries.length,
       toolCalls: toolCalls.length,
-      dispatches: dispatches.length,
+      dispatches: subagents.length,
       handoffs: handoffs.length,
       meetingTurns: meetingTurns.length,
       byOrigin,
     },
     meetingAgents,
     outcomes,
+    problems: subagents.filter((s) => {
+      const k = outcomeKind(s);
+      return k !== "success";
+    }),
     subagents,
     flags,
     checks,
@@ -191,7 +234,9 @@ function renderMarkdown(a) {
   L.push(`- **Workflow**: ${a.workflow || "(unknown / not set)"}`);
   L.push(`- **Tool calls**: ${a.counts.toolCalls}`);
   L.push(`- **Subagents dispatched**: ${a.counts.dispatches} (handoffs returned: ${a.counts.handoffs})`);
+  // Problems first: success is listed last so a blocked or missing run is the first thing read.
   const oc = Object.entries(a.outcomes)
+    .sort(([x], [y]) => (x === "success") - (y === "success"))
     .map(([k, v]) => `${k}: ${v}`)
     .join(", ");
   if (oc) L.push(`- **Handoff outcomes**: ${oc}`);
@@ -207,17 +252,26 @@ function renderMarkdown(a) {
   L.push(`- **Activity by origin**: ${bo}`);
   L.push("");
 
+  if (a.problems.length > 0) {
+    L.push("## Problems (non-success outcomes)");
+    for (const s of a.problems) {
+      L.push(`- **${s.agent}** \`${s.agent_id}\` → ${outcomeKind(s)}${s.interim ? ` (${INFERRED_NOTE})` : ""}`);
+    }
+    L.push("");
+  }
+
   L.push("## Subagent timeline");
   if (a.subagents.length === 0) {
     L.push("_No subagents dispatched this session._");
   } else {
     for (const s of a.subagents) {
-      const tag = s.label ? `${s.status} (${s.label})` : s.status;
+      const tag = s.interim ? "interim stop, no final stop" : s.label ? `${s.status} (${s.label})` : s.status;
       L.push(`- **${s.agent}** \`${s.agent_id}\` → ${tag}`);
       if (s.input) L.push(`  - in: ${s.input}`);
       if (s.output) L.push(`  - out: ${s.output}`);
       if (s.status === "no-return") L.push(`  - ⚠️ no handoff recorded — agent never returned a HANDOFF: line`);
-      if (s.status === "unknown") L.push(`  - ⚠️ handoff returned but no parseable HANDOFF: label`);
+      if (s.interim) L.push(`  - ⚠️ missing HANDOFF (${INFERRED_NOTE})`);
+      else if (s.status === "unknown") L.push(`  - ⚠️ handoff returned but no parseable HANDOFF: label`);
     }
   }
   L.push("");
