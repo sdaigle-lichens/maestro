@@ -128,6 +128,11 @@ payload Claude Code would send. What each outcome needs, read from source:
 | The resumed run's files retired | its own `SubagentStop`, with or without a `HANDOFF:` line. Logged as `channel_delivery` with `via: "resume"`. | `maestro-subagent-log.js` |
 | A scribe's gap acknowledged | a `SKILL_GAPS_HANDLED: <file>, …` line in that scribe's final message. The line alone is enough: no label, and meeting participants and owner runs are skipped. | `parseGapsHandled`, `acknowledgeGaps` (`handoff-channels.ts`) |
 
+A resume is **not** one dispatch. Every `SubagentStart` appends its own `kind:"dispatch"` entry
+(`maestro-subagent-log.js`, no dedupe), so a resumed `agent_id` has two: the original and the resume's.
+A fixture that asserts one dispatch per agent hides this; any reader that counts dispatches must
+dedupe by `agent_id`. The post-mortem digest keeps the first dispatch and the last handoff per `agent_id`.
+
 - A scribe stop that ends with only `SKILL_GAPS_HANDLED:` acknowledges its gaps and still counts as a
   completed run. That is how to cut a scribe off in a test.
 - Restore and age checks compare a file's mtime with the log's `ts`. Write the payload, then run the
