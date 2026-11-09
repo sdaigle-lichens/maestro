@@ -95,6 +95,20 @@
 //       (`082`), names the mechanical resolution: rebuild the libs, copy each over its mirror.
 //       Never pushes. No pull-request mode: the branch is an ordinary local branch the user
 //       can `git push` themselves (see .claude/skills/task-queue, "Finishing a worktree task").
+//       `170`: FIRST it refuses unless the main checkout is on the DEFAULT branch (origin/HEAD, else
+//       main, else master) with no tracked changes outside .claude/maestro-tasks/ and .claude/epics/
+//       (untracked files are only noted). A task branch with NO worktree (committed on task-NNN in the
+//       main checkout, then switched back) merges the same way, minus the worktree checks and removal.
+//       After the merge it runs the project's verify command (`verify_command` in .claude/maestro.json,
+//       else package.json `verify`, else `test`, through the lockfile's package manager) and prints
+//       VERIFY PASSED, VERIFY FAILED (exit N; the command exits 1, the merge stays) or VERIFY NOT
+//       CONFIGURED (the merged result is unverified).
+//
+//   node maestro-task-status.cjs switch-back   (`170`)
+//       Return the main checkout to the default branch. Refuses, changing nothing, mid-merge/rebase or
+//       with tracked changes. Checks first that every path the switch rewrites is writable; when one is
+//       not (the sandbox), or `git switch` fails, it prints the exact `! git -C <root> switch <default>`
+//       for the user and never leaves the checkout half-switched without saying how to finish it.
 //
 // All cascade/status logic lives in lib/maestro-tasks.cjs so the app and the
 // orchestrator share one implementation. Claims are derived state, never
@@ -105,7 +119,7 @@
 
 const fs = require("fs");
 const path = require("path");
-const { execFileSync } = require("child_process");
+const { execFileSync, spawnSync } = require("child_process");
 const { sync, markDone, markMerged, tasksDir, mainCheckoutRoot } = require("./lib/maestro-tasks.cjs");
 const {
   resolveSessionPaths,
@@ -147,6 +161,15 @@ const {
   readLogLines,
   resolveSearchList,
   readGlobalHandoff,
+  defaultBranch,
+  currentBranch,
+  dirtyTrackedPaths,
+  checkTargetCheckout,
+  unwritablePaths,
+  pathsChangedBetween,
+  switchCommandFor,
+  resolveVerifyCommand,
+  formatVerifyResult,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -711,51 +734,54 @@ function mergeWorktreeTask(arg) {
   const { filename, status } = freeform ? { filename: path.basename(arg), status: "done" } : resolveTaskName(arg);
   const branch = freeform ? filename : worktreeBranchFor(filename);
   if (!branch) refuse(`"${filename}" has no task number, so it has no task branch`);
+
+  // `170`: the TARGET first. A merge lands in whatever the main checkout has checked out, so it
+  // runs only on the default branch, with no tracked changes beyond Maestro's own state files.
+  const target = checkTargetCheckout(gitTry, projectDir);
+  if (!target.ok) refuse(target.message, targetCheckoutHint(target));
+  const base = { out: target.branch };
+
   if (status !== "done") {
     refuse(
       `"${filename}" is ${status ? `"${status}"` : "not in the queue"}, not "done" — finish the task (and mark it done) first`
     );
   }
   if (!branchExists(branch)) refuse(`branch ${branch} does not exist`);
+  // `170`: a branch with no worktree (the task was committed on task-NNN in the main checkout, then
+  // the checkout switched back) is merged the same way; only the worktree checks and removal are skipped.
   const wtPath = worktreeForBranch(branch);
-  if (!wtPath) refuse(`branch ${branch} has no worktree checked out`);
-  if (path.resolve(wtPath) === path.resolve(projectDir))
+  if (wtPath && path.resolve(wtPath) === path.resolve(projectDir))
     refuse(`branch ${branch} is checked out in the main checkout itself`);
 
-  // Uncommitted work in the worktree would be thrown away by the removal. Untracked
-  // .claude/maestro.json is the copy `worktree` made; everything else gitignored never shows here.
-  const dirty = gitTry(wtPath, ["status", "--porcelain"]);
-  if (!dirty.ok) refuse(`could not read the worktree ${wtPath} (${dirty.err})`);
-  const dirtyLines = dirty.out.split("\n").filter((l) => l && l !== "?? .claude/maestro.json" && l !== "?? .claude/");
-  if (dirtyLines.length) {
-    refuse(
-      `worktree ${wtPath} has uncommitted changes (${dirtyLines.length} path(s), e.g. ${dirtyLines[0].trim()}) — commit or discard them first`,
-      commitSuggestion(
-        freeform ? null : filename,
-        branch,
-        wtPath,
-        dirty.out.split("\n").includes("?? .claude/maestro.json")
-      )
-    );
-  }
-
-  // `163`: ignored paths that exist only in the worktree are not in the commit and die with the
-  // worktree. Stop with the list unless the user waived it (task or freeform branch alike).
-  if (!process.argv.slice(2).includes("--accept-ignored")) {
-    const lost = ignoredOnlyInWorktree(gitTry, projectDir, wtPath);
-    if (lost.length) {
+  if (wtPath) {
+    // Uncommitted work in the worktree would be thrown away by the removal. Untracked
+    // .claude/maestro.json is the copy `worktree` made; everything else gitignored never shows here.
+    const dirty = gitTry(wtPath, ["status", "--porcelain"]);
+    if (!dirty.ok) refuse(`could not read the worktree ${wtPath} (${dirty.err})`);
+    const dirtyLines = dirty.out.split("\n").filter((l) => l && l !== "?? .claude/maestro.json" && l !== "?? .claude/");
+    if (dirtyLines.length) {
       refuse(
-        `${lost.length} ignored path(s) exist only in the worktree ${wtPath} and would be lost`,
-        formatIgnoredNotice(lost, wtPath).trimEnd()
+        `worktree ${wtPath} has uncommitted changes (${dirtyLines.length} path(s), e.g. ${dirtyLines[0].trim()}) — commit or discard them first`,
+        commitSuggestion(
+          freeform ? null : filename,
+          branch,
+          wtPath,
+          dirty.out.split("\n").includes("?? .claude/maestro.json")
+        )
       );
     }
-  }
 
-  const base = gitTry(projectDir, ["symbolic-ref", "--short", "-q", "HEAD"]);
-  if (!base.ok || !base.out)
-    refuse(`the main checkout (${projectDir}) is on a detached HEAD — check out the base branch first`);
-  if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok) {
-    refuse(`the main checkout (${projectDir}) is in the middle of a merge — finish or abort it first`);
+    // `163`: ignored paths that exist only in the worktree are not in the commit and die with the
+    // worktree. Stop with the list unless the user waived it (task or freeform branch alike).
+    if (!process.argv.slice(2).includes("--accept-ignored")) {
+      const lost = ignoredOnlyInWorktree(gitTry, projectDir, wtPath);
+      if (lost.length) {
+        refuse(
+          `${lost.length} ignored path(s) exist only in the worktree ${wtPath} and would be lost`,
+          formatIgnoredNotice(lost, wtPath).trimEnd()
+        );
+      }
+    }
   }
 
   const colliding = collidingUntracked(branch);
@@ -795,14 +821,17 @@ function mergeWorktreeTask(arg) {
     if (mergeStarted) gitTry(projectDir, ["merge", "--abort"]);
     if (conflicts.length) {
       process.stdout.write(
-        `Maestro tasks: merge CONFLICT merging ${branch} into ${base.out}. The merge was aborted; ${base.out} is unchanged, and the worktree (${wtPath}) and branch ${branch} are intact.\n` +
+        `Maestro tasks: merge CONFLICT merging ${branch} into ${base.out}. The merge was aborted; ${base.out} is unchanged, and ${wtPath ? `the worktree (${wtPath}) and ` : ""}branch ${branch} ${wtPath ? "are" : "is"} intact.\n` +
           `Conflicting files:\n${conflicts.map((f) => `  ${f}`).join("\n")}\n` +
-          `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again. Do NOT resolve them for the user without asking.\n` +
+          (wtPath
+            ? `To resolve: in ${wtPath} run \`git merge ${base.out}\`, fix those files, commit, then ask for the merge again.`
+            : `To resolve: switch to ${branch}, run \`git rebase ${base.out}\` (or \`git merge ${base.out}\`), fix those files, commit, switch back, then ask for the merge again.`) +
+          ` Do NOT resolve them for the user without asking.\n` +
           (generatedLibResolution(conflicts) || "")
       );
     } else {
       process.stdout.write(
-        `Maestro tasks: merge of ${branch} into ${base.out} did not complete (${merged.err.split("\n")[0] || "git refused"}); nothing changed, worktree and branch intact.\n`
+        `Maestro tasks: merge of ${branch} into ${base.out} did not complete (${merged.err.split("\n")[0] || "git refused"}); nothing changed, ${wtPath ? "worktree and " : ""}branch intact.\n`
       );
     }
     process.exit(1);
@@ -811,18 +840,25 @@ function mergeWorktreeTask(arg) {
   // Merged. Clean up: the worktree (no --force: git itself refuses if something is left), the
   // branch (-d: only deletes a fully merged branch), and any session pointer aimed at the worktree.
   const notes = [];
-  // `worktree` moved the session's state (log.jsonl included) into the worktree; removing it would
-  // delete the log before SessionEnd, leaving /maestro-post-mortem nothing to read. Bring it home.
-  const restored = restoreSessionsFrom(wtPath);
-  if (restored.error) notes.push(`could not copy session state back from the worktree (${restored.error})`);
-  const rm = gitTry(projectDir, ["worktree", "remove", wtPath]);
-  if (!rm.ok)
-    notes.push(`could not remove worktree ${wtPath} (${rm.err.split("\n")[0]}) — remove it yourself when sure`);
-  else {
+  let rm = { ok: true };
+  if (wtPath) {
+    // `worktree` moved the session's state (log.jsonl included) into the worktree; removing it would
+    // delete the log before SessionEnd, leaving /maestro-post-mortem nothing to read. Bring it home.
+    const restored = restoreSessionsFrom(wtPath);
+    if (restored.error) notes.push(`could not copy session state back from the worktree (${restored.error})`);
+    rm = gitTry(projectDir, ["worktree", "remove", wtPath]);
+    if (!rm.ok)
+      notes.push(`could not remove worktree ${wtPath} (${rm.err.split("\n")[0]}) — remove it yourself when sure`);
+  }
+  if (rm.ok) {
     const del = gitTry(projectDir, ["branch", "-d", branch]);
     if (!del.ok) notes.push(`could not delete branch ${branch} (${del.err.split("\n")[0]})`);
   }
-  if (rm.ok) dropPointersTo(wtPath);
+  if (wtPath && rm.ok) dropPointersTo(wtPath);
+  if (target.untracked.length)
+    notes.push(
+      `the main checkout also holds ${target.untracked.length} untracked path(s) (e.g. ${target.untracked[0]}), so the verified tree is the merge plus those`
+    );
   // `146`: the work is merged now, so clear `unmerged` and recompute the cascade: an epic task that
   // was waiting on this one becomes ready.
   let cascade = "";
@@ -836,11 +872,136 @@ function mergeWorktreeTask(arg) {
   }
   process.stdout.write(
     `Maestro tasks: merged ${branch} into ${base.out}` +
-      (rm.ok ? `; removed worktree ${wtPath} and branch ${branch}.` : ".") +
+      (wtPath && rm.ok
+        ? `; removed worktree ${wtPath} and branch ${branch}.`
+        : rm.ok
+          ? `; deleted branch ${branch}.`
+          : ".") +
       cascade +
       (notes.length ? `\n  note: ${notes.join("\n  note: ")}` : "") +
       "\n  Nothing was pushed.\n"
   );
+  // `170`: the merged result is verified here, with the project's own command, every time.
+  return verifyMerged();
+}
+
+// `170`: run the project's full verification on the merged result (verify_command in maestro.json,
+// else the detected package.json script) and say plainly whether it passed. Never claims a pass it
+// did not see: with no command it says the result is UNVERIFIED. Exit code for the CLI: 1 on a failure.
+function verifyMerged() {
+  const verify = resolveVerifyCommand(projectDir);
+  if (verify.kind === "command") {
+    process.stdout.write(
+      `Maestro tasks: verifying the merged result in ${projectDir}: \`${verify.command}\` (${verify.source})\n`
+    );
+    const run = spawnSync(verify.command, { cwd: projectDir, shell: true, stdio: ["ignore", "inherit", "inherit"] });
+    const code = run.error ? null : run.status;
+    process.stdout.write(`Maestro tasks: ${formatVerifyResult(verify, code)}\n`);
+    return code === 0 ? 0 : 1;
+  }
+  process.stdout.write(`Maestro tasks: ${formatVerifyResult(verify, null)}\n`);
+  return 0;
+}
+
+// `170`: this script as a command the user can run from anywhere (absolute paths; the session's cwd
+// may be a worktree).
+function selfCommand(sub) {
+  return `CLAUDE_PROJECT_DIR=${shellQuote(projectDir)} node ${shellQuote(__filename)} ${sub}`;
+}
+
+const TASK_OR_FREEFORM_BRANCH = /^(?:task-\d+|freeform-[a-z0-9]{1,8})$/;
+
+// What to do about a refused merge target (`170`).
+function targetCheckoutHint(target) {
+  if (target.kind === "not-default") {
+    const committed = TASK_OR_FREEFORM_BRANCH.test(target.branch || "")
+      ? `If ${target.branch} holds a task's work, commit it there first (the user approves the commit). `
+      : "";
+    return (
+      `${committed}Then switch the main checkout back to ${target.defaultBranch}:\n` +
+      `  ${selfCommand("switch-back")}\n` +
+      `It checks first that every path the switch rewrites is writable, and prints the exact \`!\` command for the user when it is not. Then ask for the merge again.`
+    );
+  }
+  if (target.kind === "dirty") {
+    const shown = target.paths.slice(0, 10).map((p) => `  ${p}`);
+    if (target.paths.length > shown.length) shown.push(`  ... and ${target.paths.length - shown.length} more`);
+    return `${shown.join("\n")}\nThese belong to whoever changed them: ask the user before committing, stashing or discarding any of them.`;
+  }
+  if (target.kind === "no-default")
+    return "Set origin/HEAD (`git remote set-head origin --auto`) or create the default branch, then ask again.";
+  return "";
+}
+
+// `170`: return the main checkout to the default branch, without ever stopping halfway.
+//
+// Refuses (changing nothing) on a detached HEAD, a merge or rebase in progress, or tracked changes
+// outside Maestro's state files (they would ride along onto the default branch). Before switching
+// it checks every path the switch rewrites is writable by THIS process: the sandbox mounts some
+// paths read-only (.claude/skills, .claude/scripts, settings), and a `git switch` that hits one
+// stops partway with HEAD moved and files stale. When any is not writable, or the switch fails
+// anyway, it prints the exact `!` command for the user.
+function switchBack() {
+  const def = defaultBranch(gitTry, projectDir);
+  const say = (s) => process.stdout.write(`Maestro tasks: ${s}\n`);
+  const no = (s, extra) => {
+    say(`switch-back REFUSED — ${s}. Nothing was changed.${extra ? `\n${extra}` : ""}`);
+    return 1;
+  };
+  if (!def)
+    return no(`the default branch of ${projectDir} cannot be determined (no origin/HEAD, no local main or master)`);
+  const cur = currentBranch(gitTry, projectDir);
+  if (cur === def) {
+    say(`the main checkout (${projectDir}) is already on ${def}; nothing to do.`);
+    return 0;
+  }
+  if (gitTry(projectDir, ["rev-parse", "-q", "--verify", "MERGE_HEAD"]).ok)
+    return no(`the main checkout (${projectDir}) is in the middle of a merge — finish or abort it first`);
+  for (const p of ["rebase-merge", "rebase-apply"]) {
+    const r = gitTry(projectDir, ["rev-parse", "--git-path", p]);
+    if (r.ok && fs.existsSync(path.resolve(projectDir, r.out)))
+      return no(`the main checkout (${projectDir}) is in the middle of a rebase — finish or abort it first`);
+  }
+  const dirty = dirtyTrackedPaths(gitTry, projectDir);
+  if (dirty === null) return no(`could not read the status of ${projectDir}`);
+  if (dirty.length)
+    return no(
+      `the main checkout (${projectDir}) has uncommitted changes to ${dirty.length} tracked path(s) (e.g. ${dirty[0]}) on ${cur || "a detached HEAD"}`,
+      `Commit them on ${cur || "a branch"} first (the user approves the commit), or ask the user what to do with them, then run switch-back again.`
+    );
+  const manual = switchCommandFor(projectDir, def);
+  const changed = pathsChangedBetween(gitTry, projectDir, "HEAD", def);
+  if (changed === null) return no(`could not compare HEAD with ${def}`);
+  const blocked = unwritablePaths(projectDir, changed);
+  if (blocked.length) {
+    say(
+      `switch-back SANDBOX-BLOCKED — the switch to ${def} rewrites ${blocked.length} path(s) this session cannot write (e.g. ${blocked[0]}). ` +
+        `Nothing was changed and the switch was not attempted. Do NOT retry it from this session; ask the user to run:\n  ${manual}`
+    );
+    return 1;
+  }
+  const r = gitTry(projectDir, ["switch", def]);
+  if (r.ok) {
+    say(`switched the main checkout (${projectDir}) from ${cur || "a detached HEAD"} to ${def}.`);
+    return 0;
+  }
+  const reason = (r.err || "").split("\n")[0] || "git refused";
+  const now = currentBranch(gitTry, projectDir);
+  const after = dirtyTrackedPaths(gitTry, projectDir) || [];
+  if (now === cur && after.length === 0) {
+    say(
+      `switch-back FAILED — \`git switch ${def}\` refused (${reason}); the main checkout is unchanged on ${cur || "a detached HEAD"}. ` +
+        `Do NOT retry it from this session; ask the user to run:\n  ${manual}`
+    );
+    return 1;
+  }
+  say(
+    `switch-back STOPPED PARTWAY — \`git switch ${def}\` failed (${reason}). HEAD is now ${now || "detached"} and ${after.length} tracked path(s) were left half-switched (e.g. ${after[0] || "?"}). ` +
+      `The tree had no tracked changes before the switch, so these should be only the failed switch's. Do not commit, merge, discard or switch from this session. Ask the user to look first:\n` +
+      `  ! git -C ${shellQuote(projectDir)} status\n` +
+      `Only if every listed change is one the switch left (nothing the user wants to keep), finishing the switch is \`git -C ${shellQuote(projectDir)} switch --discard-changes ${shellQuote(def)}\`, which DISCARDS uncommitted changes to tracked files: the user decides and runs it.`
+  );
+  return 1;
 }
 
 // Copy every session directory under the worktree's .claude/maestro_sessions/ back into the main
@@ -1264,6 +1425,22 @@ try {
         // best effort
       }
     }
+    // `170`: a task worked on a branch in the MAIN checkout leaves it off the default branch, where a
+    // later merge would land in the wrong place. Say so now: commit there, then switch back.
+    if (!doneWorktree) {
+      try {
+        const def = defaultBranch(gitTry, projectDir);
+        const cur = currentBranch(gitTry, projectDir);
+        if (def && cur && cur !== def) {
+          process.stdout.write(
+            `  The main checkout (${projectDir}) is on ${cur}, not the default branch ${def}. Commit the task's work on ${cur} (the user approves the commit), then switch back:\n` +
+              `    ${selfCommand("switch-back")}\n`
+          );
+        }
+      } catch {
+        // best effort
+      }
+    }
     process.stdout.write(epicReportCommand(filename, claimedName));
     process.exit(0);
   }
@@ -1358,8 +1535,11 @@ try {
       );
       process.exit(1);
     }
-    mergeWorktreeTask(arg);
-    process.exit(0);
+    process.exit(mergeWorktreeTask(arg) || 0);
+  }
+
+  if (command === "switch-back") {
+    process.exit(switchBack());
   }
 
   if (command === "mark-merged") {
@@ -1414,7 +1594,7 @@ try {
   }
 
   process.stderr.write(
-    "maestro-task-status: unknown command. Usage:\n  maestro-task-status.cjs sync\n  maestro-task-status.cjs done <filename>\n  maestro-task-status.cjs claim <filename>\n  maestro-task-status.cjs release <filename>\n  maestro-task-status.cjs worktree <filename>\n  maestro-task-status.cjs merge <filename|NNN>\n  maestro-task-status.cjs mark-merged <filename|NNN>\n  maestro-task-status.cjs plan <step>...\n  maestro-task-status.cjs plan-step <step> <done|pending>\n  maestro-task-status.cjs plan-show\n  maestro-task-status.cjs handoff-issues\n"
+    "maestro-task-status: unknown command. Usage:\n  maestro-task-status.cjs sync\n  maestro-task-status.cjs done <filename>\n  maestro-task-status.cjs claim <filename>\n  maestro-task-status.cjs release <filename>\n  maestro-task-status.cjs worktree <filename>\n  maestro-task-status.cjs merge <filename|NNN>\n  maestro-task-status.cjs mark-merged <filename|NNN>\n  maestro-task-status.cjs switch-back\n  maestro-task-status.cjs plan <step>...\n  maestro-task-status.cjs plan-step <step> <done|pending>\n  maestro-task-status.cjs plan-show\n  maestro-task-status.cjs handoff-issues\n"
   );
   process.exit(1);
 } catch (err) {

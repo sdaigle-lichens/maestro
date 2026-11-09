@@ -349,6 +349,11 @@ export function epicOfTask(projectRoot: string, filename: string): string | null
   return readTaskTracker(projectRoot)[path.basename(filename)]?.epic ?? null;
 }
 
+/** A task's tracker status (`done`, `ready`, `blocked`, ...), or null when it is not in the tracker (`170`). */
+export function taskStatusOf(projectRoot: string, filename: string): string | null {
+  return readTaskTracker(projectRoot)[path.basename(filename)]?.status ?? null;
+}
+
 const INBOX_PREFIX: Record<EpicInboxEntry["kind"], string> = { report: "r", note: "n", review: "m" };
 
 /** The next id of `kind` in this epic: one past the highest ever used, so an id never repeats. */

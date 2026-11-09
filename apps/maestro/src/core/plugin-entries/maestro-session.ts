@@ -311,6 +311,25 @@ export {
   type GitRunner,
 } from "../worktree-footprint.js";
 
+// Landing guards (`170`): `merge` refuses unless the main checkout is on the default branch with a
+// clean tracked tree (Maestro's tracker and epic state excepted), `switch-back` checks the paths a
+// switch would rewrite are writable before it switches, and the merged result is verified with the
+// project's configured or detected command. Git runner injected; `fs`/`path` only.
+export {
+  defaultBranch,
+  currentBranch,
+  MAESTRO_STATE_DIRS,
+  isMaestroStatePath,
+  dirtyTrackedPaths,
+  untrackedPaths,
+  checkTargetCheckout,
+  unwritablePaths,
+  pathsChangedBetween,
+  switchCommandFor,
+  type TargetCheckoutVerdict,
+} from "../landing-guards.js";
+export { resolveVerifyCommand, formatVerifyResult, type VerifyCommand } from "../verify-command.js";
+
 // Durable per-project run metrics (`080`) — recorded by the SessionEnd hooks before the session
 // directory is removed, read by the team-meeting evidence digest. `fs`/`path` only — keeps
 // `grep -c "node:sqlite"` on maestro-session.cjs at 0.

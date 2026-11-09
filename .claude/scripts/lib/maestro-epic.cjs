@@ -40,7 +40,9 @@ __export(maestro_epic_exports, {
   acknowledgeReport: () => acknowledgeReport,
   addWorker: () => addWorker,
   checkNoteRoute: () => checkNoteRoute,
+  checkReportCommit: () => checkReportCommit,
   createEpic: () => createEpic,
+  declaresDone: () => declaresDone,
   epicDirFor: () => epicDirFor,
   epicOfTask: () => epicOfTask,
   formatBoundary: () => formatBoundary,
@@ -61,8 +63,10 @@ __export(maestro_epic_exports, {
   reviewHistory: () => reviewHistory,
   runEpicBoundary: () => runEpicBoundary,
   setManager: () => setManager,
+  shaCandidates: () => shaCandidates,
   showEpic: () => showEpic,
   taskClaimName: () => taskClaimName,
+  taskStatusOf: () => taskStatusOf,
   unacknowledgedReports: () => unacknowledgedReports,
   unlinkTasks: () => unlinkTasks,
   workerNameFor: () => workerNameFor,
@@ -79,6 +83,14 @@ var import_node_path8 = __toESM(require("node:path"), 1);
 // src/core/worktree.ts
 var import_node_fs = __toESM(require("node:fs"), 1);
 var import_node_path = __toESM(require("node:path"), 1);
+function taskNumber(filename) {
+  const m = /^(\d+)-/.exec(import_node_path.default.basename(filename));
+  return m ? m[1] : null;
+}
+function worktreeBranchFor(filename) {
+  const n = taskNumber(filename);
+  return n ? `task-${n}` : null;
+}
 function mainCheckoutRoot(dir) {
   const gitEntry = import_node_path.default.join(dir, ".git");
   try {
@@ -575,6 +587,9 @@ function taskClaimName(projectRoot, task) {
 }
 function epicOfTask(projectRoot, filename) {
   return readTaskTracker(projectRoot)[import_node_path8.default.basename(filename)]?.epic ?? null;
+}
+function taskStatusOf(projectRoot, filename) {
+  return readTaskTracker(projectRoot)[import_node_path8.default.basename(filename)]?.status ?? null;
 }
 var INBOX_PREFIX = { report: "r", note: "n", review: "m" };
 function nextInboxId(state, kind) {
@@ -1102,6 +1117,101 @@ function formatBoundary(result) {
       return `Maestro epic: boundary due: run ${result.skills.join(", ")} with scope file ${result.scopeFile} (${result.paths} paths)`;
   }
 }
+
+// src/core/landing-guards.ts
+var import_node_fs12 = __toESM(require("node:fs"), 1);
+var import_node_path10 = __toESM(require("node:path"), 1);
+function defaultBranch(git2, root) {
+  const remote = git2(root, ["symbolic-ref", "--quiet", "--short", "refs/remotes/origin/HEAD"]);
+  if (remote.ok && remote.out.trim()) {
+    const name = remote.out.trim().replace(/^origin\//, "");
+    if (name) return name;
+  }
+  for (const name of ["main", "master"]) {
+    if (git2(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${name}`]).ok) return name;
+  }
+  return null;
+}
+var SHA_CANDIDATE = /(?<![0-9A-Za-z_])[0-9a-fA-F]{7,40}(?![0-9A-Za-z_])/g;
+function shaCandidates(body) {
+  return [...new Set((body.match(SHA_CANDIDATE) ?? []).map((c) => c.toLowerCase()))];
+}
+var DONE_LINE = /^[\s>*_#-]*(?:outcome|status)[\s*_]*:[\s*_]*(?:done|complete|completed|finished)\b/im;
+function declaresDone(body) {
+  return DONE_LINE.test(body);
+}
+function isAncestor(git2, root, a, b) {
+  return git2(root, ["merge-base", "--is-ancestor", a, b]).ok;
+}
+function commitsBeyond(git2, root, base, branch) {
+  const r = git2(root, ["rev-list", "--count", `${base}..${branch}`]);
+  const n = r.ok ? Number.parseInt(r.out.trim(), 10) : 0;
+  return Number.isFinite(n) ? n : 0;
+}
+function namesTask(git2, root, sha, branch, file) {
+  const r = git2(root, ["log", "-1", "--format=%B", sha]);
+  if (!r.ok) return false;
+  if (r.out.includes(file)) return true;
+  return branch !== null && new RegExp(`(?<![0-9A-Za-z_-])${branch}(?![0-9A-Za-z_])`).test(r.out);
+}
+function branchExists(git2, root, branch) {
+  return git2(root, ["rev-parse", "--verify", "--quiet", `refs/heads/${branch}`]).ok;
+}
+function checkReportCommit(git2, root, input) {
+  const base = import_node_path10.default.basename(input.task);
+  if (!input.trackerDone && !declaresDone(input.body)) return { ok: true, checked: false };
+  const refuse = (missing, why) => ({
+    ok: false,
+    missing,
+    message: `report REFUSED \u2014 "${base}" is done, but ${why}. A done report must name the commit holding the task's work. Commit it on the task branch first (the user approves the commit), put that commit's SHA in the report, then run this again. Nothing was written.`
+  });
+  const candidates = shaCandidates(input.body);
+  if (candidates.length === 0) return refuse("no-sha", "the report names no commit SHA");
+  const resolved = [];
+  for (const c of candidates) {
+    const r = git2(root, ["rev-parse", "--verify", "--quiet", `${c}^{commit}`]);
+    if (r.ok && r.out.trim()) resolved.push({ short: c, sha: r.out.trim() });
+  }
+  if (resolved.length === 0) {
+    const shown = candidates.slice(0, 3).join(", ");
+    return refuse("no-such-commit", `no commit named in it exists in this repository (checked: ${shown})`);
+  }
+  const branch = worktreeBranchFor(base);
+  const def = defaultBranch(git2, root);
+  const hasBranch = branch !== null && branchExists(git2, root, branch);
+  const ownCommits = hasBranch && (def === null || commitsBeyond(git2, root, def, branch) > 0);
+  let onDefaultOnly = null;
+  for (const { short, sha } of resolved) {
+    if (ownCommits) {
+      if (!isAncestor(git2, root, sha, branch)) continue;
+      if (def !== null && isAncestor(git2, root, sha, def)) {
+        onDefaultOnly = onDefaultOnly ?? short;
+        continue;
+      }
+      return { ok: true, checked: true, sha, on: branch };
+    }
+    if (def !== null && isAncestor(git2, root, sha, def) && namesTask(git2, root, sha, branch, base))
+      return { ok: true, checked: true, sha, on: def };
+  }
+  const named = resolved.map((r) => r.short).join(", ");
+  if (onDefaultOnly)
+    return refuse(
+      "not-on-branch",
+      `commit ${onDefaultOnly} is already on ${def}, so it is what ${branch} started from, not a commit with the task's work`
+    );
+  if (ownCommits) return refuse("not-on-branch", `commit ${named} is not on the task branch ${branch}`);
+  if (def === null)
+    return refuse(
+      "not-on-branch",
+      `there is no task branch ${branch ?? "(the task has no number)"} and no default branch to look on`
+    );
+  const where = hasBranch ? `the task branch ${branch} has no commits of its own beyond ${def}` : `there is no task branch ${branch ?? "(the task has no number)"}`;
+  const proof = branch ? `the \`Merge ${branch}\` commit or a commit whose message names ${branch} or ${base}` : `a commit whose message names ${base}`;
+  return refuse(
+    "not-on-branch",
+    `${where}, and commit ${named} is not ${proof} on ${def} (it could be the commit the task started from)`
+  );
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   DEFAULT_SPAWN_CAP,
@@ -1111,7 +1221,9 @@ function formatBoundary(result) {
   acknowledgeReport,
   addWorker,
   checkNoteRoute,
+  checkReportCommit,
   createEpic,
+  declaresDone,
   epicDirFor,
   epicOfTask,
   formatBoundary,
@@ -1132,8 +1244,10 @@ function formatBoundary(result) {
   reviewHistory,
   runEpicBoundary,
   setManager,
+  shaCandidates,
   showEpic,
   taskClaimName,
+  taskStatusOf,
   unacknowledgedReports,
   unlinkTasks,
   workerNameFor,

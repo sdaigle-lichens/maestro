@@ -109,6 +109,20 @@ export function resolveWorkerModel(cfg: MaestroConfigV3 | null): string | undefi
 }
 
 /**
+ * The one reader of `verify_command` (`170`): `set` with the trimmed command, `absent` when the
+ * field is missing (or the config is null or not v3), and `invalid` when it is present but blank or
+ * not a string — reported by the caller, never silently replaced by a detected command.
+ */
+export function resolveConfiguredVerifyCommand(
+  cfg: MaestroConfigV3 | null
+): { kind: "set"; command: string } | { kind: "absent" } | { kind: "invalid" } {
+  if (!cfg || cfg.version !== 3 || cfg.verify_command === undefined) return { kind: "absent" };
+  const v: unknown = cfg.verify_command;
+  if (typeof v !== "string" || v.trim() === "") return { kind: "invalid" };
+  return { kind: "set", command: v.trim() };
+}
+
+/**
  * The one reader of `use_maestro_tasks`. Strict `=== true` comparison: an
  * absent field, a corrupt/null config, a `version !== 3` config, and a non-boolean value (a
  * string, a number, `null`) all resolve to `false` rather than to something truthy.

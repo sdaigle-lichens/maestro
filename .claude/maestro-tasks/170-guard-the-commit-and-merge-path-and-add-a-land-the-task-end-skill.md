@@ -40,3 +40,14 @@ This needs code in the plugin-entry TypeScript sources and the hand-written plug
 ## Blocked by
 
 None — can start immediately
+
+## Decisions (during the run)
+
+- Report guard with no task-NNN branch: accept a default-branch commit only if it is the `Merge task-NNN` merge commit or its message names task-NNN or the task file (covers a hand-merged squash or fast-forward); refuse anything else, naming what is missing. (User decision, round 1 fix.)
+
+## Post-Mortem
+
+- **Problem:** @backend's first round left three report-guard defects it had itself listed as known gaps (empty task branch accepted the base commit, uppercase SHAs refused, no-branch case checked ancestry only); @test's probes caught them and forced a loop-back, one of which needed a user design decision mid-run.
+  **Fix:** none
+- **Problem:** @test twice ended its run without writing the channel payload its route expects (FAIL payload for @backend, success payload for @reviewer) and had to be resumed to write it.
+  **Fix:** none

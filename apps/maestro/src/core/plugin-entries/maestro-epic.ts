@@ -22,6 +22,7 @@ export {
   linkTasks,
   unlinkTasks,
   epicOfTask,
+  taskStatusOf,
   taskClaimName,
   writeReport,
   reportCommandFor,
@@ -46,3 +47,7 @@ export {
 } from "../epics.js";
 
 export { runEpicBoundary, formatBoundary } from "../epic-boundary.js";
+
+// `170`: `report` refuses a done report that names no commit on the task's branch. The git runner
+// is injected by the CLI; `fs`/`path` only.
+export { checkReportCommit, shaCandidates, declaresDone, type ReportCommitVerdict } from "../landing-guards.js";

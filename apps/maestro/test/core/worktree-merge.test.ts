@@ -199,16 +199,24 @@ describe("maestro-task-status.cjs merge (076) — refusals change nothing", () =
     expect(run.stdout).toContain("does not exist");
   });
 
-  it("refuses when the branch exists but has no worktree", async () => {
+  // `170` replaced the old "no worktree" refusal: a task committed on task-NNN in the main checkout,
+  // then switched back, merges like a worktree task (minus the worktree removal).
+  it("merges a task branch that has no worktree", async () => {
     const root = await installed();
-    git(root, "branch", "task-002");
+    git(root, "switch", "-q", "-c", "task-002");
+    fs.writeFileSync(path.join(root, "work.txt"), "w\n");
+    git(root, "add", "work.txt");
+    git(root, "commit", "-q", "-m", "work");
+    git(root, "switch", "-q", "main");
     expect(cli(root, ["done", "002-b.md"], null).code).toBe(0);
 
     const run = cli(root, ["merge", "002-b.md"], null);
 
-    expect(run.code).toBe(1);
-    expect(run.stdout).toContain("no worktree");
-    expect(git(root, "branch", "--list", "task-002")).toContain("task-002");
+    expect(run.code).toBe(0);
+    expect(run.stdout).toContain("merged task-002 into main; deleted branch task-002");
+    expect(run.stdout).toContain("VERIFY NOT CONFIGURED");
+    expect(git(root, "branch", "--list", "task-002")).toBe("");
+    expect(fs.readFileSync(path.join(root, "work.txt"), "utf8")).toBe("w\n");
   });
 
   it("refuses when the main checkout is on a detached HEAD", async () => {

@@ -276,7 +276,10 @@ describe("boundary end: due once the epic is finished", () => {
 
   it("is not due with an unacknowledged report, and is due after the ack", async () => {
     const root = await finished();
-    expect(cli(root, ["report", "--task", "001-a.md", "--file", "-"], "body").code).toBe(0);
+    // `170`: a done task's report must name its commit; with no task branch, a default-branch commit
+    // whose message names the task.
+    const sha = commitAll(root, "feat: 001-a.md work").slice(0, 10);
+    expect(cli(root, ["report", "--task", "001-a.md", "--file", "-"], `Verified commit ${sha}`).code).toBe(0);
     expect(boundary(root, "end").stdout).toContain("not due: not acknowledged: r001");
     cli(root, ["ack", "e1", "r001"]);
     expect(boundary(root, "end").stdout).toContain("run sweep");

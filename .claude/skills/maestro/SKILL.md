@@ -132,6 +132,7 @@ If the session didn't go cleanly (a major review fix, a mid-task refactor, or th
 Runs only when `done` printed an epic report command, i.e. `active_task` is in an epic. It is not part of the post mortem: it runs on a clean session too, and a clean session still reports. Skip it when `done` printed no such command.
 
 Run the exact command `done` printed, with the report on stdin: outcome, the commit verified and that the full test suite was green on it (a report without both is incomplete), findings, the post-mortem notes (if any), suggested ticket changes. If it then names a manager session, send that session ONE short `SendMessage` line naming the report and its file, never its contents. Then complete the mark-task-done task.
+**On `report REFUSED` because the report names no commit on the task branch**, nothing was written: the work is not committed yet. If an end skill below lands the task (commits, then reports), leave the report and the mark-task-done task to it. Otherwise offer the commit (the user approves it) and run the report again with that SHA.
 
 ### Step 7 — End skills
 
@@ -144,7 +145,7 @@ Runs after the success path is complete, whether or not `active_task` is set. If
 **If working in a worktree that is still unmerged**, ask the user whether to merge it. If yes:
 
 1. Offer to commit any pending work (with an approved message).
-2. run `node .claude/scripts/maestro-task-status.cjs merge "<NNN-filename.md>"` (for a freeform worktree, its branch name: `merge "freeform-<id>"`) from the main checkout and relay its output verbatim. It merges and cleans up, refuses, or lists conflicts and leaves everything intact.
+2. run `node .claude/scripts/maestro-task-status.cjs merge "<NNN-filename.md>"` (for a freeform worktree, its branch name: `merge "freeform-<id>"`) from the main checkout and relay its output verbatim. It merges and cleans up, refuses, or lists conflicts and leaves everything intact. It refuses unless the main checkout is on the default branch with no tracked changes; after a merge it runs the project's verify command and prints `VERIFY PASSED`, `VERIFY FAILED` or `VERIFY NOT CONFIGURED`: relay that line and never call an unverified merge passing. A task committed on its branch in the main checkout (no worktree) merges the same way after `maestro-task-status.cjs switch-back`.
    **On a `REFUSED` that lists ignored paths existing only in the worktree**, git ignores those files, so the commit does not carry them and removing the worktree deletes them. Relay the list and the user's three exits: commit them (`git add -f <path>` in the worktree, then commit; the user approves it), delete them, or waive with `merge "<NNN-filename.md>" --accept-ignored` (only when the user says losing them is intended). Never pass `--accept-ignored`, `git add -f` or delete on your own. `done` prints the same list earlier but does not refuse.
 3. **On `SANDBOX-BLOCKED`**, or "unable to unlink ... Operation not permitted", don't retry: give the user the exact `! ...` command it printed. Never resolve a conflict, push or open a pull request unasked.
 <!-- Maestro:STEPS:END -->

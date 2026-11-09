@@ -157,11 +157,17 @@ worktree only, offers it, never does it). Decided from how worktree tasks behave
 `task-NNN` the CLI already knows, the worktree is a sibling checkout, and `done` has marked the queue
 in the main checkout — so the merge is one `git merge --no-ff` in the main checkout.
 
-- **Refuses, changing nothing:** task not `done` in `status.json`; no branch / no worktree for it
-  (found via `git worktree list`, not a guessed path); uncommitted changes in the worktree (the
-  untracked `.claude/maestro.json` copy `worktree` made is ignored); main checkout on a detached HEAD
-  or mid-merge; ignored paths that exist only in the worktree, unless `--accept-ignored` (`163`, below);
-  or git itself refusing because the merge would overwrite local changes.
+- **Refuses, changing nothing:** task not `done` in `status.json`; no branch for it (found via
+  `git worktree list` or `refs/heads`, not a guessed path); uncommitted changes in the worktree (the
+  untracked `.claude/maestro.json` copy `worktree` made is ignored); ignored paths that exist only in
+  the worktree, unless `--accept-ignored` (`163`, below); or git itself refusing because the merge
+  would overwrite local changes.
+- **Target guard first (`170`, `checkTargetCheckout` in `landing-guards.ts`).** The main checkout must
+  be on the default branch (not detached, not mid-merge), with no tracked changes outside
+  `.claude/maestro-tasks/` and `.claude/epics/`. Untracked files do not refuse; the verify notice names
+  them. A refusal on the wrong branch prints the `switch-back` command (below).
+- **Branch-only merge (`170`).** A task committed on `task-NNN` in the main checkout has no worktree.
+  `merge` merges it the same way and skips only the worktree checks and removal.
 - **Conflict:** the merge is aborted (`merge --abort`) so main is exactly as before, the worktree and
   branch stay, and the conflicting files are listed with how to resolve (merge the base into the
   branch inside the worktree, commit, ask again). The orchestrator never resolves one unasked.
@@ -169,6 +175,31 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
   `worktree.json` pointer aimed at the removed path is deleted. `146`: it then calls `markMerged`
   (not for `freeform-<id>`), clearing the task's `unmerged` flag and printing the cascade summary;
   if that fails it adds a note naming `mark-merged <task>`.
+- **Verify after merge (`170`, `verify-command.ts`).** Once the merge lands, `merge` runs the verify
+  command in the main checkout and prints one line: `VERIFY PASSED` (exit 0), `VERIFY FAILED (exit N)`
+  (the command exits 1 and the merge stays in place), or `VERIFY NOT CONFIGURED` (nothing ran; the
+  result is unverified and never reported as passing). The command is `verify_command` in
+  `.claude/maestro.json`, else a `verify` then `test` script in `package.json` run through the lockfile's
+  package manager (see `maestro-architecture`'s `step-gates.md`). The script never hardcodes a command.
+- **`switch-back` (`170`).** `maestro-task-status.cjs switch-back` returns the main checkout to the
+  default branch. It refuses, changing nothing, while tracked changes remain (the user decides what to
+  do with them). Before switching it checks that this process can write every path the switch rewrites
+  (`unwritablePaths`), because the sandbox's read-only mounts would otherwise stop git halfway. Then:
+  - `SANDBOX-BLOCKED` (a path is unwritable, nothing attempted) or `FAILED` (git refused, checkout
+    unchanged): prints `! git -C <root> switch <default>` for the user to run. The orchestrator does not
+    retry it.
+  - `STOPPED PARTWAY` (HEAD moved and files were left half-switched): prints `! git -C <root> status`, and
+    names `switch --discard-changes` as the user's own decision. It is never run from the session.
+- **`done` notice (`170`).** When `done` marks a main-checkout task whose checkout is on a branch other
+  than the default, it prints the commit-then-switch-back notice. `done` still succeeds (exit 0); the
+  guard that refuses is `merge`.
+- **The landing skill (`170`).** `maestro:land-the-task` (plugin `maestro` 0.15.0) is the one sequenced
+  path through commit, rebase, version, regenerate, verify, report and the approval-gated merge. It calls
+  these guarded commands rather than repeating their checks. It is an end skill, so it is not seeded for
+  new projects.
+- **Trap: the git helper trims its output** (`git()` in `maestro-task-status.cjs` returns `.trim()`ed
+  text). A parser must not depend on leading whitespace: `git status --porcelain` loses the first
+  column of its first line. `landing-guards.ts` reads `git diff --name-only -z` (NUL-separated) instead.
 - **No pull-request mode, deliberately.** A PR needs a remote, a forge CLI and credentials the plugin
   cannot assume, and pushing is the one irreversible step; the branch is an ordinary local branch, so
   `git push -u origin task-NNN` plus the user's own PR flow works at any time before they ask for the

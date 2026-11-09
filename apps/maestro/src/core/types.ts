@@ -140,6 +140,15 @@ export interface MaestroConfigV3 {
    * `resolveWorkerModel` in `config.ts` is the one reader.
    */
   worker_model?: string;
+  /**
+   * The project's full verification command (`170`), run by `maestro-task-status.cjs merge` on the
+   * merged result, as a shell command line in the main checkout (e.g. `pnpm verify`, `make check`).
+   * Absent means "detect it" (`resolveVerifyCommand` in `verify-command.ts`: a package.json `verify`
+   * script, then `test`, run with the lockfile's package manager). Blank or non-string is reported
+   * as invalid and nothing runs. Hand-edited; no slice writes it. `resolveConfiguredVerifyCommand`
+   * in `config.ts` is the one reader.
+   */
+  verify_command?: string;
 }
 
 export interface MaestroWorkflowsSlice {

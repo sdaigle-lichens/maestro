@@ -56,6 +56,13 @@ scheme.
   `report --task <t> --from "<claim session name>" --file -`); nothing is printed for a task in no
   epic. The orchestrator's Step 6 "Report to the epic" runs it (end skills is Step 7, worktree merge
   Step 8). `done` deletes the claim, so the name is read first and baked into the printed `--from`.
+- **The report guard (`170`, `checkReportCommit` in `landing-guards.ts`).** A report that declares the
+  task done (tracker `done`, or an `Outcome:`/`Status:` done line) is REFUSED, exit 1, nothing written,
+  unless it names an existing commit:
+  - while `task-NNN` has commits the default branch lacks: a commit on that branch, not already on the default branch;
+  - otherwise: a default-branch commit whose message names `task-NNN` or the task file (the
+    `Merge task-NNN (...)` commit `merge` writes, or a squash, hand merge or fast-forward naming the task).
+  The refusal says what is missing (no SHA, no such commit, or not on the branch).
 - **Sender fallback.** `report` without `--from` uses the claim's `session_name`
   (`claimSessionName` in `claims.ts`), else leaves the sender unset.
 - **`of <NNN-task.md>`** prints the task's epic slug, or nothing when it is in none (`epicOfTask`);

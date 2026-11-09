@@ -1,5 +1,6 @@
 {
   "version": 3,
+  "verify_command": "pnpm verify",
   "agents_available": [
     "backend",
     "frontend",
@@ -1189,13 +1190,15 @@
     ]
   },
   "end_skills": {
-    "maestro": []
+    "maestro": [
+      "maestro:land-the-task"
+    ]
   },
   "project_tags": [
     "backend",
     "frontend"
   ],
-  "runtimeVersion": "0.14.1",
+  "runtimeVersion": "0.15.0",
   "reports": {
     "backend": {
       "id": "backend",

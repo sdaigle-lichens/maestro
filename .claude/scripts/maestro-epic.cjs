@@ -44,6 +44,11 @@
 //       omitted) into the inbox of the epic the task belongs to and logs it. Prints the report file
 //       path and, when the epic has a manager recorded, the name to message. A task that belongs
 //       to no epic prints a single line and exits 0: nothing else happens.
+//       `170`: a report for a task that is done (tracker status `done`, or an `Outcome: done` /
+//       `Status: done` line in the body) is REFUSED, exit 1 and nothing written, unless it names a
+//       commit SHA that exists and is on the task branch task-NNN (and not already on the default
+//       branch while task-NNN is unmerged) or, with no task-NNN branch, on the default branch.
+//       The refusal names what is missing: no SHA, no such commit, or not on the branch.
 //   node maestro-epic.cjs note <to-slug> --from-epic <slug> [--from "<session name>"] [--subject "<text>"] --file <path>|-
 //       A manager's cross-epic note (`085`). Writes the body (a file, or stdin for "-") into the
 //       OTHER epic's inbox as nNNN-from-<slug>.md and logs it, both before printing. Prints the
@@ -80,6 +85,7 @@
 
 const fs = require("fs");
 const path = require("path");
+const { execFileSync } = require("child_process");
 const epics = require("./lib/maestro-epic.cjs");
 const { resolveSessionId, storedSessionName } = require("./lib/maestro-session.cjs");
 
@@ -137,6 +143,16 @@ function sendFailedHint(kind) {
     `  If that SendMessage fails, run ListAgents. If exactly one session plausibly matches the manager, ask the user before messaging it. ` +
     `Never conclude the manager is gone from one failed send: the saved ${kind} file is the real delivery, and the manager sees it as unacknowledged on its next check.\n`
   );
+}
+
+// `170`: the git runner the report guard is given (a core module never spawns git itself).
+function gitRunner(cwd, args) {
+  try {
+    const out = execFileSync("git", args, { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "ignore"] });
+    return { ok: true, out: out.trim() };
+  } catch (err) {
+    return { ok: false, out: String((err && err.stdout) || "").trim() };
+  }
 }
 
 function readBody(file) {
@@ -256,8 +272,16 @@ try {
         process.stdout.write(`Maestro epic: "${path.basename(task)}" belongs to no epic — no report written\n`);
         break;
       }
+      const body = readBody(flags.file);
+      // `170`: a report for a done task must name a commit that exists and holds the task's work.
+      const guard = epics.checkReportCommit(gitRunner, projectDir, {
+        task,
+        body,
+        trackerDone: epics.taskStatusOf(projectDir, task) === "done",
+      });
+      if (!guard.ok) fail(guard.message);
       // The reporting session's stored name wins over --from (`113`).
-      const r = epics.writeReport(projectDir, task, readBody(flags.file), preferOwn(flags.from));
+      const r = epics.writeReport(projectDir, task, body, preferOwn(flags.from));
       process.stdout.write(
         `Maestro epic: report ${r.id} for "${path.basename(task)}" written to ${r.file}\n` +
           (r.manager

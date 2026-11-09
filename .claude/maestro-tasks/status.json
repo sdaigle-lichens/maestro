@@ -848,7 +848,7 @@
     ]
   },
   "170-guard-the-commit-and-merge-path-and-add-a-land-the-task-end-skill.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "171-give-epic-reports-unique-ids-and-stop-a-worktree-refresh-picking-up-another-branch-s-generated-files.md": {

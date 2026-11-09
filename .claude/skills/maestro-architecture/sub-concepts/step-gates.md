@@ -78,6 +78,31 @@ printed an epic report command, and it is why the mark-task-done node's subject 
 to the epic <slug>" and stays open until the report is written); Step 7 runs the end skills (offering
 a commit if none of them commits); Step 8 merges the worktree.
 
+**When the end-skill line is expanded (`170`).** The `!` line expands when `/maestro` is invoked,
+before Step 2 creates any worktree. Its project is `CLAUDE_PROJECT_DIR`, else the process cwd, so a run
+started in the main checkout and one that creates a worktree read the same `end_skills.maestro`. Only a
+session started *inside* a worktree directory reads that worktree's `maestro.json`.
+
+**Landing a finished task (`170`).** Steps 6 to 8 are the landing path, and each step's guard is a
+script refusal, not prose:
+
+| Step | Guard | Refuses with |
+| --- | --- | --- |
+| 6 report | a done report must name an existing commit on `task-NNN` (or, with no branch, a default-branch commit naming the task) | nothing written |
+| 8 merge | the main checkout is on the default branch with no tracked changes outside `.claude/maestro-tasks/` and `.claude/epics/` | the reason and the `switch-back` hand-off |
+| 8 merge, after | runs the verify command on the merged result | `VERIFY PASSED`, `VERIFY FAILED (exit N)` (the merge stays), or `VERIFY NOT CONFIGURED` |
+
+The `land-the-task` end skill (`plugins/maestro/skills/land-the-task/`, published in maestro 0.15.0)
+walks commit, rebase, version, regenerate, verify, report and an approval-gated merge in order, and
+calls those guarded scripts. This repo's `end_skills.maestro` lists `maestro:land-the-task`. It is
+**not** seeded for new projects, because it commits and merges; a project opts in by listing it.
+
+**The verify command (`170`).** `verify_command` in `.claude/maestro.json` wins (a hand-edited string;
+`resolveConfiguredVerifyCommand` in `config.ts` is its one reader, and an app save keeps it). Otherwise
+`verify`, then `test`, in the root `package.json`, run through the lockfile's package manager. With
+neither, `merge` prints `VERIFY NOT CONFIGURED` and never calls the result passing. This repo sets
+`pnpm verify`; no Maestro code names a command.
+
 **The design gate is a router, and what it routes to is a third bundled skill.**
 `use-code-architecture-design-check` only decides RUN/SKIP; the pass itself is
 `code-graph:code-architecture-design` (deep modules, seams, the Design Brief), which the model
