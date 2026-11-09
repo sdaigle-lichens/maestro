@@ -160,7 +160,8 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
 - **Refuses, changing nothing:** task not `done` in `status.json`; no branch / no worktree for it
   (found via `git worktree list`, not a guessed path); uncommitted changes in the worktree (the
   untracked `.claude/maestro.json` copy `worktree` made is ignored); main checkout on a detached HEAD
-  or mid-merge; or git itself refusing because the merge would overwrite local changes.
+  or mid-merge; ignored paths that exist only in the worktree, unless `--accept-ignored` (`163`, below);
+  or git itself refusing because the merge would overwrite local changes.
 - **Conflict:** the merge is aborted (`merge --abort`) so main is exactly as before, the worktree and
   branch stay, and the conflicting files are listed with how to resolve (merge the base into the
   branch inside the worktree, commit, ask again). The orchestrator never resolves one unasked.
@@ -172,3 +173,47 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
   cannot assume, and pushing is the one irreversible step; the branch is an ordinary local branch, so
   `git push -u origin task-NNN` plus the user's own PR flow works at any time before they ask for the
   merge. One local mechanism covers the in-use case; nothing is ever pushed.
+
+## Worktree footprint (`163`)
+
+A fresh worktree holds only tracked files, so two things the main checkout has do not travel.
+`worktree-footprint.ts` owns both. It names no tool, language or file type, takes the git runner as an
+argument (the CLI spawns git) and imports only `fs`/`path`, so it rides in `maestro-session.cjs`.
+
+**1. Ignored files that exist only in the worktree.** Git ignores them, so the commit does not carry
+them, and removing the worktree deletes them. `ignoredOnlyInWorktree` lists the ignored paths of the
+worktree that are absent from the main checkout. A wholly ignored directory collapses to one `dir/`
+entry. Maestro's own `.claude/maestro_sessions`, `.claude/channels` and `.claude/maestro.json` are skipped.
+
+| Command | Behaviour |
+| --- | --- |
+| `done` (task or freeform) | Prints the list with the exits. Never refuses (Step 4 runs before the commit is offered). |
+| `merge <task or freeform-id>` | Refuses (`REFUSED`), changing nothing, while the list is non-empty, unless `--accept-ignored` is passed. |
+
+The notice offers three exits: commit them with `git add -f <path>` in the worktree (the user approves
+the commit), delete them, or waive with `--accept-ignored`. The waiver is the user's decision. The
+orchestrator never passes `--accept-ignored`, never runs `git add -f`, and never deletes these itself.
+
+- **Why compare with the main checkout, not verify a clean checkout.** A clean-checkout check would need
+  a second checkout with installed dependencies, which an agent sandbox cannot install. That work is
+  task 135's scope (the user runs installs). Comparing needs no build knowledge. The price: a path
+  present in both checkouts counts as environment, and its content is not checked.
+- **Over-detection, by design.** Generated output that exists only in the worktree (a build directory,
+  a cache the worktree's run produced) is listed, and `merge` refuses until the user commits or waives it.
+- **One direction only.** A path present in the main checkout and absent from the worktree is never
+  listed. A deleted tracked file is an uncommitted change, which `merge` already refuses. A deleted
+  ignored file is not checked, because `merge` never touches the main checkout's files.
+
+**2. Git-excluded nested `.claude` directories.** A `.claude` directory below the repo root, excluded by
+a `.gitignore` rule (`apps/web/.claude`, project skills), is absent from a new worktree.
+`provisionExcludedDirs` copies each one into the same place at `worktree` and `freeform-check` (both
+inside the shared `provisionWorktree`), and prints what it did.
+
+- **A copy, never a symlink.** A `dir/` ignore rule does not match a symlink, so a link would show up as
+  untracked.
+- **The copy is checked.** `git status` in the worktree must not list anything under it as untracked.
+  If it does (no ignore rule in the worktree covers it), the copy is removed again and printed as
+  `NOT copied`, so nothing is left to clean by hand.
+- Never overwrites content the worktree already has, and never touches the root `.claude`.
+- The copies also exist in the main checkout, so point 1 never lists them. That is why they never make
+  `merge` refuse.

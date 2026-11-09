@@ -98,6 +98,7 @@ const {
   isGapReport,
   channelScopeOf,
   channelRelPath,
+  channelPathFor,
   resolveSessionId,
   ensureSessionPaths,
   hasCompletedRun,
@@ -301,8 +302,11 @@ function collectReportContext(cfg, projectDir, agentType) {
   // on resumed runs too — a subagent that edits the main checkout instead would defeat the isolation.
   const sessionState = sess ? readJson(sess.state) : null;
   const wt = sessionState && sessionState.worktree;
+  // `163`: set in a worktree session; every channel path shown below goes through channelPathFor with it.
+  let worktreeRef = null;
   if (wt && typeof wt.path === "string" && wt.path) {
     const mainRoot = typeof wt.main_root === "string" && wt.main_root ? wt.main_root : projectDir;
+    worktreeRef = { main_root: mainRoot };
     parts.push(
       `Git worktree: this task runs in an isolated worktree, because another Maestro session is working in the main checkout.\n` +
         `- Work ONLY inside ${wt.path} (branch ${wt.branch || "unknown"}). Use that directory as your working directory and absolute paths under it for every read, edit and command.\n` +
@@ -413,7 +417,7 @@ function collectReportContext(cfg, projectDir, agentType) {
   // is how task 086's second @reviewer pass ended without writing its payload — the one
   // instruction that governs the NEW hand-back must not be static.
   if (!offWorkflow && result && result.routes.length > 0) {
-    const routes = payloadRoutes(projectDir, scope, result.routes, readGlobalHandoff);
+    const routes = payloadRoutes(projectDir, scope, result.routes, readGlobalHandoff, worktreeRef);
     const required = payloadRequirement(routes, { withShapes: !isResume });
     if (required) parts.push(required);
   }
@@ -421,7 +425,7 @@ function collectReportContext(cfg, projectDir, agentType) {
   // `155`: test hints for a later `@test` step that no route of this agent reaches. Same three-tier
   // resolution of the `<sender>/test` shape; on a resume, file names only, like the block above.
   if (!offWorkflow && result && result.hintRoutes.length > 0) {
-    const hints = payloadRoutes(projectDir, scope, result.hintRoutes, readGlobalHandoff);
+    const hints = payloadRoutes(projectDir, scope, result.hintRoutes, readGlobalHandoff, worktreeRef);
     const required = testHintRequirement(hints, { withShapes: !isResume });
     if (required) parts.push(required);
   }
@@ -454,8 +458,8 @@ function collectReportContext(cfg, projectDir, agentType) {
       }
     }
     const entries = readLane(projectDir, scope, bareAgent);
-    const laneDir = channelRelPath(scope, bareAgent, "");
-    const fileOf = (e) => channelRelPath(scope, bareAgent, e.fileName);
+    const laneDir = channelPathFor(channelRelPath(scope, bareAgent, ""), worktreeRef);
+    const fileOf = (e) => channelPathFor(channelRelPath(scope, bareAgent, e.fileName), worktreeRef);
     if (entries.length > 0) {
       // `064`: no session directory ⇒ no `run_id` to mint or compare against, so nothing matches
       // and every entry falls into `waiting` — MENTIONED rather than inlined. That is the same
@@ -576,8 +580,8 @@ function collectReportContext(cfg, projectDir, agentType) {
       // `<scope>`, resolved here so the agent never has to work it out.
       parts.push(
         `Channel scope for this session: \`${scope}\`. Every channel file you write goes under ` +
-          `\`.claude/channels/${scope}/\` — a skill-gap report is ` +
-          `\`${channelRelPath(scope, "scribe", `${bareAgentName(agentType)}.1.md`)}\`.`
+          `\`${channelPathFor(`.claude/channels/${scope}/`, worktreeRef)}\` — a skill-gap report is ` +
+          `\`${channelPathFor(channelRelPath(scope, "scribe", `${bareAgentName(agentType)}.1.md`), worktreeRef)}\`.`
       );
     }
   }

@@ -76,6 +76,7 @@ __export(maestro_session_exports, {
   buildRunRecord: () => buildRunRecord,
   channelDir: () => channelDir,
   channelFileMtime: () => channelFileMtime,
+  channelPathFor: () => channelPathFor,
   channelRelPath: () => channelRelPath,
   channelScopeFromState: () => channelScopeFromState,
   channelScopeOf: () => channelScopeOf,
@@ -106,6 +107,8 @@ __export(maestro_session_exports, {
   entranceRoleFor: () => entranceRoleFor,
   expectedLoopbackPayloads: () => expectedLoopbackPayloads,
   foldRun: () => foldRun,
+  formatExcludedProvision: () => formatExcludedProvision,
+  formatIgnoredNotice: () => formatIgnoredNotice,
   formatStampedContent: () => formatStampedContent,
   freeformBranchFor: () => freeformBranchFor,
   freeformWorktreePathFor: () => freeformWorktreePathFor,
@@ -119,6 +122,7 @@ __export(maestro_session_exports, {
   heartbeatTargets: () => heartbeatTargets,
   heartbeatTick: () => heartbeatTick,
   heartbeatVerdict: () => heartbeatVerdict,
+  ignoredOnlyInWorktree: () => ignoredOnlyInWorktree,
   installCommand: () => installCommand,
   isChannelOnlyAgent: () => isChannelOnlyAgent,
   isChannelScope: () => isChannelScope,
@@ -165,6 +169,7 @@ __export(maestro_session_exports, {
   processInfo: () => processInfo,
   projectOwnsHook: () => projectOwnsHook,
   promptEntranceRole: () => promptEntranceRole,
+  provisionExcludedDirs: () => provisionExcludedDirs,
   readConsumed: () => readConsumed,
   readGlobalHandoff: () => readGlobalHandoff,
   readJson: () => readJson,
@@ -702,6 +707,11 @@ function consumedDir(projectDir, scope, receiver) {
 }
 function channelRelPath(scope, receiver, fileName) {
   return `.claude/${CHANNELS_DIR_NAME}/${scope}/${receiver}/${fileName}`;
+}
+function channelPathFor(rel, worktree) {
+  const root = worktree && typeof worktree.main_root === "string" ? worktree.main_root : "";
+  if (!root) return rel;
+  return `${root.replace(/[\\/]+$/, "")}/${rel}`;
 }
 function laneFor(projectDir, scope, sender, receiver) {
   return import_node_path3.default.join(channelDir(projectDir, scope, receiver), `${sender}.1.md`);
@@ -1865,7 +1875,7 @@ function deny(target, scope) {
   };
 }
 function checkChannelWrite(input) {
-  const { cwd, agentType, toolName, toolInput, meetingDir, channelScope } = input;
+  const { cwd, agentType, toolName, toolInput, meetingDir, channelScope, worktreeMainRoot } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : void 0;
   if (meetingDir) {
     if (!key) return { allow: true };
@@ -1884,15 +1894,19 @@ function checkChannelWrite(input) {
   if (!cwd || !isChannelScope(channelScope)) return deny(raw, channelScope);
   if (raw.split(/[\\/]+/).includes("..")) return deny(raw, channelScope);
   const target = realResolve(import_node_path9.default.resolve(cwd, raw));
-  const realCwd = realResolve(cwd);
-  const lane = realResolve(import_node_path9.default.join(cwd, ".claude", "channels"));
-  const scoped = realResolve(import_node_path9.default.join(cwd, ".claude", "channels", channelScope));
-  if (!target || !realCwd || !lane || !scoped) return deny(raw, channelScope);
-  if (lane !== import_node_path9.default.join(realCwd, ".claude", "channels") && !lane.startsWith(realCwd + import_node_path9.default.sep)) {
-    return deny(raw, channelScope);
-  }
-  if (scoped !== import_node_path9.default.join(lane, channelScope)) return deny(raw, channelScope);
-  return target.startsWith(scoped + import_node_path9.default.sep) ? { allow: true } : deny(raw, channelScope);
+  if (!target) return deny(raw, channelScope);
+  const bases = [cwd];
+  if (worktreeMainRoot && import_node_path9.default.resolve(worktreeMainRoot) !== import_node_path9.default.resolve(cwd)) bases.push(worktreeMainRoot);
+  return bases.some((base) => inOwnScope(target, base, channelScope)) ? { allow: true } : deny(raw, channelScope);
+}
+function inOwnScope(target, base, scope) {
+  const realBase = realResolve(base);
+  const lane = realResolve(import_node_path9.default.join(base, ".claude", "channels"));
+  const scoped = realResolve(import_node_path9.default.join(base, ".claude", "channels", scope));
+  if (!realBase || !lane || !scoped) return false;
+  if (lane !== import_node_path9.default.join(realBase, ".claude", "channels") && !lane.startsWith(realBase + import_node_path9.default.sep)) return false;
+  if (scoped !== import_node_path9.default.join(lane, scope)) return false;
+  return target.startsWith(scoped + import_node_path9.default.sep);
 }
 
 // src/core/human-review-gate.ts
@@ -2151,7 +2165,7 @@ function readProjectHandoff(projectDir, handoffId2) {
     return null;
   }
 }
-function payloadRoutes(projectDir, scope, routes, readGlobal) {
+function payloadRoutes(projectDir, scope, routes, readGlobal, worktree) {
   const out = [];
   for (const r of routes) {
     if (!r.receiver) continue;
@@ -2164,23 +2178,29 @@ function payloadRoutes(projectDir, scope, routes, readGlobal) {
     }
     const resolved = resolveHandoff(id, readProjectHandoff(projectDir, id), global);
     if (!resolved.content) continue;
+    const channelFile = channelRelPath(scope, r.receiver, `${r.sender}.1.md`);
+    const presented = channelPathFor(channelFile, worktree);
     out.push({
       label: r.label,
       sender: r.sender,
       receiver: r.receiver,
       scope,
-      channelFile: channelRelPath(scope, r.receiver, `${r.sender}.1.md`),
+      channelFile,
+      ...presented !== channelFile ? { presentedFile: presented } : {},
       protocol: resolved.content
     });
   }
   return out;
+}
+function shown(r) {
+  return r.presentedFile ?? r.channelFile;
 }
 function payloadRequirement(routes, opts) {
   if (routes.length === 0) return null;
   const head = "REQUIRED before your HANDOFF line: write the payload for the route you take to that route's channel file. This is a step of the handoff, not a recommendation \u2014 the receiving agent starts from that file, and the stop hook checks it was written during THIS run. A missing payload is not skipped: the orchestrator resumes you to write it before the next agent is dispatched. When nothing applies, still write the file, containing an empty JSON object (`{}`). Create the file with the Write tool, which creates the folder too; do not run mkdir in Bash.";
   if (opts.withShapes) {
     const blocks = routes.map(
-      (r) => `Route \`HANDOFF: ${r.label}\` \u2192 \`${r.receiver}\` \u2014 write this to \`${r.channelFile}\`:
+      (r) => `Route \`HANDOFF: ${r.label}\` \u2192 \`${r.receiver}\` \u2014 write this to \`${shown(r)}\`:
 
 ${r.protocol}`
     );
@@ -2188,7 +2208,7 @@ ${r.protocol}`
 
 ${blocks.join("\n\n")}`;
   }
-  const lines = routes.map((r) => `- \`HANDOFF: ${r.label}\` \u2192 write \`${r.channelFile}\` (for \`${r.receiver}\`)`);
+  const lines = routes.map((r) => `- \`HANDOFF: ${r.label}\` \u2192 write \`${shown(r)}\` (for \`${r.receiver}\`)`);
   return `${head}
 ${lines.join("\n")}
 The shape for each route is the one from your first run.`;
@@ -2198,7 +2218,7 @@ function testHintRequirement(routes, opts) {
   const head = "REQUIRED with `HANDOFF: success`, whatever agent that route goes to: `@test` runs later in this workflow, so write your test hints for it as well. They are hints, not @test's scope: @test plans from the acceptance criteria and the code first. Keep the `hintsOnly` line verbatim, do not try to list everything @test should cover, and do list in `notHandled` every case you deliberately left open. `howToRun` names the project's own test recipe or script, the one that sets up the environment the tests need, never the raw tool under it. Hint only at tests the project's EXISTING test setup can hold: never suggest a test framework, runner, config, folder structure or kind of test the project does not have yet. When this part of the project has no tests, still write the file, with `howToRun` set to `none: no tests for this part yet`. Create it with the Write tool. The stop hook checks it was written during THIS run.";
   if (opts.withShapes) {
     const blocks = routes.map(
-      (r) => `Test hints for \`${r.receiver}\` \u2014 write this to \`${r.channelFile}\`:
+      (r) => `Test hints for \`${r.receiver}\` \u2014 write this to \`${shown(r)}\`:
 
 ${r.protocol}`
     );
@@ -2207,7 +2227,7 @@ ${r.protocol}`
 ${blocks.join("\n\n")}`;
   }
   const lines = routes.map(
-    (r) => `- with \`HANDOFF: success\` \u2192 also write \`${r.channelFile}\` (test hints for \`${r.receiver}\`)`
+    (r) => `- with \`HANDOFF: success\` \u2192 also write \`${shown(r)}\` (test hints for \`${r.receiver}\`)`
   );
   return `${head}
 ${lines.join("\n")}
@@ -2496,9 +2516,98 @@ function checkWorktreeWrite(input) {
   };
 }
 
-// src/core/run-metrics.ts
+// src/core/worktree-footprint.ts
 var import_node_fs15 = __toESM(require("node:fs"), 1);
 var import_node_path13 = __toESM(require("node:path"), 1);
+var BOOKKEEPING = [".claude/maestro_sessions", ".claude/channels", ".claude/maestro.json"];
+var isBookkeeping = (rel) => BOOKKEEPING.some((b) => rel === b || rel === `${b}/` || rel.startsWith(`${b}/`));
+function ignoredPaths(git, cwd) {
+  const r = git(cwd, ["ls-files", "--others", "--ignored", "--exclude-standard", "--directory", "-z"]);
+  if (!r.ok) return [];
+  return r.out.split("\0").filter((p) => p !== "");
+}
+function ignoredOnlyInWorktree(git, mainRoot, wtPath) {
+  const out = [];
+  for (const rel of ignoredPaths(git, wtPath)) {
+    if (isBookkeeping(rel)) continue;
+    if (import_node_fs15.default.existsSync(import_node_path13.default.join(mainRoot, rel))) continue;
+    out.push(rel);
+  }
+  return out;
+}
+function formatIgnoredNotice(list, wtPath) {
+  if (list.length === 0) return "";
+  const shown2 = list.slice(0, 20).map((p) => `  ${p}`);
+  if (list.length > shown2.length) shown2.push(`  ... and ${list.length - shown2.length} more`);
+  return `Maestro tasks: ${list.length} ignored path(s) exist ONLY in the worktree ${wtPath}. Git ignores them, so the commit does not carry them: whatever depended on them passed here but will not on the merged branch, and they are deleted with the worktree.
+${shown2.join("\n")}
+Pick one for each:
+  1. commit them: \`git add -f <path>\` in the worktree, then commit (the user approves the commit);
+  2. delete them if nothing needs them;
+  3. waive the check with \`merge <task> --accept-ignored\` if losing them is intended.
+`;
+}
+function nestedClaudeEntry(rel) {
+  const parts = rel.replace(/\/$/, "").split("/");
+  return parts.length > 1 && parts.slice(1).includes(".claude");
+}
+function provisionExcludedDirs(git, mainRoot, wtPath) {
+  const copied = [];
+  const warned = [];
+  const candidates = ignoredPaths(git, mainRoot).filter((rel) => nestedClaudeEntry(rel));
+  const done = [];
+  for (const rel of candidates) {
+    const clean = rel.replace(/\/$/, "");
+    const src = import_node_path13.default.join(mainRoot, clean);
+    const dest = import_node_path13.default.join(wtPath, clean);
+    if (done.some((d) => clean === d || clean.startsWith(`${d}/`))) continue;
+    if (import_node_fs15.default.existsSync(dest)) continue;
+    try {
+      import_node_fs15.default.mkdirSync(import_node_path13.default.dirname(dest), { recursive: true });
+      import_node_fs15.default.cpSync(src, dest, { recursive: true, force: false, errorOnExist: false, dereference: false });
+      done.push(clean);
+      copied.push(clean);
+    } catch {
+      warned.push(clean);
+      try {
+        import_node_fs15.default.rmSync(dest, { recursive: true, force: true });
+      } catch {
+      }
+    }
+  }
+  if (copied.length === 0) return { copied, warned };
+  const status = git(wtPath, ["status", "--porcelain", "--untracked-files=all", "-z"]);
+  const untracked = status.ok ? status.out.split("\0").filter((l) => l.startsWith("?? ")).map((l) => l.slice(3)) : [];
+  for (const entry of [...copied]) {
+    if (!untracked.some((u) => u === entry || u.startsWith(`${entry}/`))) continue;
+    try {
+      import_node_fs15.default.rmSync(import_node_path13.default.join(wtPath, entry), { recursive: true, force: true });
+    } catch {
+    }
+    copied.splice(copied.indexOf(entry), 1);
+    warned.push(entry);
+  }
+  return { copied, warned };
+}
+function formatExcludedProvision(r) {
+  const lines = [];
+  if (r.copied.length) {
+    lines.push(
+      `Maestro tasks: copied git-excluded director${r.copied.length === 1 ? "y" : "ies"} from the main checkout into the worktree (ignored there too, so they never reach a commit): ${r.copied.join(", ")}.`
+    );
+  }
+  if (r.warned.length) {
+    lines.push(
+      `Maestro tasks: NOT copied (the copy would show up as untracked in the worktree, or could not be written): ${r.warned.join(", ")}. Agents in the worktree run without them; tell the user.`
+    );
+  }
+  return lines.length ? `${lines.join("\n")}
+` : "";
+}
+
+// src/core/run-metrics.ts
+var import_node_fs16 = __toESM(require("node:fs"), 1);
+var import_node_path14 = __toESM(require("node:path"), 1);
 var METRICS_DIR_NAME = "maestro-metrics";
 var METRICS_FILE_NAME = "metrics.json";
 var DEFAULT_RECENT_RUNS = 10;
@@ -2508,10 +2617,10 @@ function emptyMetrics() {
   return { version: 1, runs: [], totals: { by_workflow: {}, by_agent: {} } };
 }
 function metricsDirFor(projectRoot) {
-  return import_node_path13.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
+  return import_node_path14.default.join(mainCheckoutRoot(projectRoot), ".claude", METRICS_DIR_NAME);
 }
 function metricsFileFor(projectRoot) {
-  return import_node_path13.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
+  return import_node_path14.default.join(metricsDirFor(projectRoot), METRICS_FILE_NAME);
 }
 function day(ts) {
   return typeof ts === "string" ? ts.slice(0, 10) : "";
@@ -2708,7 +2817,7 @@ function buildRunRecord(entries, session, cfg, sessionId) {
   return {
     id: session?.run_id || sessionId,
     workflow,
-    task: session?.active_task ? import_node_path13.default.basename(session.active_task) : null,
+    task: session?.active_task ? import_node_path14.default.basename(session.active_task) : null,
     started_at,
     ended_at,
     duration_ms,
@@ -2726,20 +2835,20 @@ function sleepSync(ms) {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 function withLock(dir, fn) {
-  import_node_fs15.default.mkdirSync(dir, { recursive: true });
-  const lock = import_node_path13.default.join(dir, "lock");
+  import_node_fs16.default.mkdirSync(dir, { recursive: true });
+  const lock = import_node_path14.default.join(dir, "lock");
   const deadline = Date.now() + LOCK_WAIT_MS;
   let held = false;
   for (; ; ) {
     try {
-      import_node_fs15.default.mkdirSync(lock);
+      import_node_fs16.default.mkdirSync(lock);
       held = true;
       break;
     } catch (err) {
       if (err.code !== "EEXIST") break;
       try {
-        if (Date.now() - import_node_fs15.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
-          import_node_fs15.default.rmSync(lock, { recursive: true, force: true });
+        if (Date.now() - import_node_fs16.default.statSync(lock).mtimeMs > LOCK_STALE_MS) {
+          import_node_fs16.default.rmSync(lock, { recursive: true, force: true });
           continue;
         }
       } catch {
@@ -2752,12 +2861,12 @@ function withLock(dir, fn) {
   try {
     return fn();
   } finally {
-    if (held) import_node_fs15.default.rmSync(lock, { recursive: true, force: true });
+    if (held) import_node_fs16.default.rmSync(lock, { recursive: true, force: true });
   }
 }
 function readMetrics(projectRoot) {
   try {
-    const v = JSON.parse(import_node_fs15.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
+    const v = JSON.parse(import_node_fs16.default.readFileSync(metricsFileFor(projectRoot), "utf8"));
     if (v && v.version === 1 && Array.isArray(v.runs) && v.totals?.by_workflow && v.totals?.by_agent) return v;
   } catch {
   }
@@ -2770,25 +2879,25 @@ function recentRunsLimit(cfg) {
 function recordRun(projectRoot, run, keep = DEFAULT_RECENT_RUNS) {
   const dir = metricsDirFor(projectRoot);
   withLock(dir, () => {
-    const gi = import_node_path13.default.join(dir, ".gitignore");
-    if (!import_node_fs15.default.existsSync(gi)) import_node_fs15.default.writeFileSync(gi, "*\n");
+    const gi = import_node_path14.default.join(dir, ".gitignore");
+    if (!import_node_fs16.default.existsSync(gi)) import_node_fs16.default.writeFileSync(gi, "*\n");
     const file = readMetrics(projectRoot);
     const runs = file.runs.filter((r) => r.id !== run.id);
     runs.push(run);
     const next = compact({ ...file, runs }, keep);
     const target = metricsFileFor(projectRoot);
     const tmp = `${target}.${process.pid}.${Date.now()}.tmp`;
-    import_node_fs15.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
-    import_node_fs15.default.renameSync(tmp, target);
+    import_node_fs16.default.writeFileSync(tmp, JSON.stringify(next, null, 2));
+    import_node_fs16.default.renameSync(tmp, target);
   });
 }
 function recordSessionRun(projectRoot, sessionId) {
-  const claudeDir = import_node_path13.default.join(projectRoot, ".claude");
+  const claudeDir = import_node_path14.default.join(projectRoot, ".claude");
   const paths = sessionPathsFor(claudeDir, sessionId);
   if (!paths) return false;
   let raw;
   try {
-    raw = import_node_fs15.default.readFileSync(paths.log, "utf8");
+    raw = import_node_fs16.default.readFileSync(paths.log, "utf8");
   } catch {
     return false;
   }
@@ -2802,12 +2911,12 @@ function recordSessionRun(projectRoot, sessionId) {
   }
   const readJson2 = (p) => {
     try {
-      return JSON.parse(import_node_fs15.default.readFileSync(p, "utf8"));
+      return JSON.parse(import_node_fs16.default.readFileSync(p, "utf8"));
     } catch {
       return null;
     }
   };
-  const cfg = readJson2(import_node_path13.default.join(claudeDir, "maestro.json"));
+  const cfg = readJson2(import_node_path14.default.join(claudeDir, "maestro.json"));
   const run = buildRunRecord(entries, readJson2(paths.state), cfg, paths.id);
   if (!run) return false;
   recordRun(projectRoot, run, recentRunsLimit(cfg));
@@ -2855,15 +2964,15 @@ function renderMetricsDigest(file) {
 }
 
 // src/core/session-name.ts
-var import_node_fs17 = __toESM(require("node:fs"), 1);
-var import_node_path15 = __toESM(require("node:path"), 1);
+var import_node_fs18 = __toESM(require("node:fs"), 1);
+var import_node_path16 = __toESM(require("node:path"), 1);
 
 // src/core/claims.ts
-var import_node_fs16 = __toESM(require("node:fs"), 1);
-var import_node_path14 = __toESM(require("node:path"), 1);
+var import_node_fs17 = __toESM(require("node:fs"), 1);
+var import_node_path15 = __toESM(require("node:path"), 1);
 var CLAIMS_DIR_NAME = "claims";
 function claimsDirFor(tasksDir) {
-  return import_node_path14.default.join(tasksDir, CLAIMS_DIR_NAME);
+  return import_node_path15.default.join(tasksDir, CLAIMS_DIR_NAME);
 }
 
 // src/core/session-name.ts
@@ -2888,7 +2997,7 @@ function promptEntranceRole(prompt) {
 }
 function hasMaestroConfig(claudeDir) {
   try {
-    return import_node_fs17.default.statSync(import_node_path15.default.join(claudeDir, "maestro.json")).isFile();
+    return import_node_fs18.default.statSync(import_node_path16.default.join(claudeDir, "maestro.json")).isFile();
   } catch {
     return false;
   }
@@ -2928,14 +3037,14 @@ function noteEntrance(claudeDir, sessionId, role) {
 }
 function listJson(dir) {
   try {
-    return import_node_fs17.default.readdirSync(dir).filter((f) => f.endsWith(".json"));
+    return import_node_fs18.default.readdirSync(dir).filter((f) => f.endsWith(".json"));
   } catch {
     return [];
   }
 }
 function listDirs2(dir) {
   try {
-    return import_node_fs17.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
+    return import_node_fs18.default.readdirSync(dir, { withFileTypes: true }).filter((d) => d.isDirectory()).map((d) => d.name);
   } catch {
     return [];
   }
@@ -2945,10 +3054,10 @@ function roleOfName(name) {
 }
 function rederiveSessionName(claudeDir, sessionId) {
   if (!isValidSessionId(sessionId)) return null;
-  const root = mainCheckoutRoot(import_node_path15.default.dirname(claudeDir));
-  const claims = claimsDirFor(import_node_path15.default.join(root, ".claude", "maestro-tasks"));
+  const root = mainCheckoutRoot(import_node_path16.default.dirname(claudeDir));
+  const claims = claimsDirFor(import_node_path16.default.join(root, ".claude", "maestro-tasks"));
   for (const file of listJson(claims)) {
-    const claim = readJson(import_node_path15.default.join(claims, file));
+    const claim = readJson(import_node_path16.default.join(claims, file));
     if (!claim || claim.session_id !== sessionId) continue;
     if (typeof claim.session_name === "string" && claim.session_name.trim()) {
       const name = claim.session_name.trim();
@@ -2957,11 +3066,11 @@ function rederiveSessionName(claudeDir, sessionId) {
   }
   const manager = sessionNameFor(sessionId, "manager");
   const worker = sessionNameFor(sessionId, "worker");
-  const epicsRoot = import_node_path15.default.join(root, ".claude", "epics");
+  const epicsRoot = import_node_path16.default.join(root, ".claude", "epics");
   let asWorker = null;
   for (const slug of listDirs2(epicsRoot)) {
     const state = readJson(
-      import_node_path15.default.join(epicsRoot, slug, "state.json")
+      import_node_path16.default.join(epicsRoot, slug, "state.json")
     );
     if (!state) continue;
     if (manager && state.manager?.name === manager) return { name: manager, role: "manager" };
@@ -3015,13 +3124,13 @@ function titleFor(claudeDir, payload) {
 }
 
 // src/core/meeting-mode.ts
-var import_node_fs18 = __toESM(require("node:fs"), 1);
-var import_node_path16 = __toESM(require("node:path"), 1);
+var import_node_fs19 = __toESM(require("node:fs"), 1);
+var import_node_path17 = __toESM(require("node:path"), 1);
 var MEETING_DIR_NAME = "meeting";
 var MEETING_LEFTOVERS_KEY = "meeting_leftovers";
 var MEETING_MODES = ["review", "post-mortem"];
 function meetingDirFor(sessionDir) {
-  return import_node_path16.default.join(sessionDir, MEETING_DIR_NAME);
+  return import_node_path17.default.join(sessionDir, MEETING_DIR_NAME);
 }
 function readMeeting(session) {
   if (!session || typeof session !== "object") return null;
@@ -3053,22 +3162,22 @@ function withoutMeeting(session) {
 }
 function readRawState(statePath) {
   try {
-    const parsed = JSON.parse(import_node_fs18.default.readFileSync(statePath, "utf8"));
+    const parsed = JSON.parse(import_node_fs19.default.readFileSync(statePath, "utf8"));
     return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
   } catch {
     return {};
   }
 }
 function writeRawState(statePath, state) {
-  import_node_fs18.default.mkdirSync(import_node_path16.default.dirname(statePath), { recursive: true });
+  import_node_fs19.default.mkdirSync(import_node_path17.default.dirname(statePath), { recursive: true });
   const tmp = statePath + ".tmp";
-  import_node_fs18.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
-  import_node_fs18.default.renameSync(tmp, statePath);
+  import_node_fs19.default.writeFileSync(tmp, JSON.stringify(state, null, 2));
+  import_node_fs19.default.renameSync(tmp, statePath);
 }
 function startMeeting(statePath, sessionDir, opts) {
   const now = opts.now ?? /* @__PURE__ */ new Date();
   const dir = meetingDirFor(sessionDir);
-  import_node_fs18.default.mkdirSync(dir, { recursive: true });
+  import_node_fs19.default.mkdirSync(dir, { recursive: true });
   const meeting = {
     id: `m-${now.getTime()}`,
     mode: opts.mode,
@@ -3099,13 +3208,13 @@ function closeMeeting(session, projectDir, scope) {
   return { state, ended: true };
 }
 function projectDirOfState(statePath) {
-  return import_node_path16.default.resolve(statePath, "..", "..", "..", "..");
+  return import_node_path17.default.resolve(statePath, "..", "..", "..", "..");
 }
 function scopeOfState(statePath, state) {
-  return channelScopeFromState(state, import_node_path16.default.basename(import_node_path16.default.dirname(statePath)));
+  return channelScopeFromState(state, import_node_path17.default.basename(import_node_path17.default.dirname(statePath)));
 }
 function endMeeting(statePath, projectDir = projectDirOfState(statePath)) {
-  if (!import_node_fs18.default.existsSync(statePath)) return false;
+  if (!import_node_fs19.default.existsSync(statePath)) return false;
   const raw = readRawState(statePath);
   const { state, ended } = closeMeeting(raw, projectDir, scopeOfState(statePath, raw));
   if (ended) writeRawState(statePath, state);
@@ -3161,7 +3270,7 @@ function closeOwnerRuns(session, projectDir, scope) {
   return { state, ended: true };
 }
 function endOwnerRuns(statePath, projectDir = projectDirOfState(statePath)) {
-  if (!import_node_fs18.default.existsSync(statePath)) return false;
+  if (!import_node_fs19.default.existsSync(statePath)) return false;
   const raw = readRawState(statePath);
   const { state, ended } = closeOwnerRuns(raw, projectDir, scopeOfState(statePath, raw));
   if (ended) writeRawState(statePath, state);
@@ -3227,6 +3336,7 @@ function meetingNotice(meeting, agentType) {
   buildRunRecord,
   channelDir,
   channelFileMtime,
+  channelPathFor,
   channelRelPath,
   channelScopeFromState,
   channelScopeOf,
@@ -3257,6 +3367,8 @@ function meetingNotice(meeting, agentType) {
   entranceRoleFor,
   expectedLoopbackPayloads,
   foldRun,
+  formatExcludedProvision,
+  formatIgnoredNotice,
   formatStampedContent,
   freeformBranchFor,
   freeformWorktreePathFor,
@@ -3270,6 +3382,7 @@ function meetingNotice(meeting, agentType) {
   heartbeatTargets,
   heartbeatTick,
   heartbeatVerdict,
+  ignoredOnlyInWorktree,
   installCommand,
   isChannelOnlyAgent,
   isChannelScope,
@@ -3316,6 +3429,7 @@ function meetingNotice(meeting, agentType) {
   processInfo,
   projectOwnsHook,
   promptEntranceRole,
+  provisionExcludedDirs,
   readConsumed,
   readGlobalHandoff,
   readJson,

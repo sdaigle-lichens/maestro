@@ -38,6 +38,8 @@ node .claude/scripts/maestro-set-session-workflow.cjs "<workflow name>" [--task 
 
    **A freeform request (no task file) goes through the same check:** after recording the workflow, run `node .claude/scripts/maestro-task-status.cjs freeform-check` and follow what it prints. Same rule as a task: with no other live session you work in the main checkout; with another live session it creates a worktree named after your session (`freeform-<id>`), and you handle it exactly like a task worktree (absolute path in every Step 3 dispatch prompt, Step 8 to merge). Never edit the main checkout alongside that session.
 
+   **Git-excluded `.claude` directories are copied into the worktree.** A nested one such as `apps/web/.claude` (project skills) is not in a fresh checkout, so `worktree` and `freeform-check` copy each into the worktree and print what was copied. A copy that git would show as untracked is removed again and printed as NOT copied: tell the user, and do not recreate it by hand. Channel paths your subagents and `deliver:` lines name are absolute main-checkout paths in a worktree run: hand them over exactly as printed.
+
    **While a worktree is active, your working directory is the worktree.** Any command you hand the user (`!`, `git`, `rm`, `node`) must use absolute paths or an explicit `cd` and name the checkout it targets. A relative `rm apps/...` runs in the worktree and deletes the committed copies there.
 
 <!-- Maestro:HANDOFFS:START -->
@@ -134,6 +136,7 @@ Runs after the success path is complete, whether or not `active_task` is set. If
 
 1. Offer to commit any pending work (with an approved message).
 2. run `node .claude/scripts/maestro-task-status.cjs merge "<NNN-filename.md>"` (for a freeform worktree, its branch name: `merge "freeform-<id>"`) from the main checkout and relay its output verbatim. It merges and cleans up, refuses, or lists conflicts and leaves everything intact.
+   **On a `REFUSED` that lists ignored paths existing only in the worktree**, git ignores those files, so the commit does not carry them and removing the worktree deletes them. Relay the list and the user's three exits: commit them (`git add -f <path>` in the worktree, then commit; the user approves it), delete them, or waive with `merge "<NNN-filename.md>" --accept-ignored` (only when the user says losing them is intended). Never pass `--accept-ignored`, `git add -f` or delete on your own. `done` prints the same list earlier but does not refuse.
 3. **On `SANDBOX-BLOCKED`**, or "unable to unlink ... Operation not permitted", don't retry: give the user the exact `! ...` command it printed. Never resolve a conflict, push or open a pull request unasked.
 <!-- Maestro:STEPS:END -->
 

@@ -21,7 +21,7 @@
 
 import fs from "node:fs";
 import path from "node:path";
-import { channelRelPath, isGapReport, laneFor, readLane } from "./handoff-channels.js";
+import { channelPathFor, channelRelPath, isGapReport, laneFor, readLane } from "./handoff-channels.js";
 import { resolveHandoff, type GlobalHandoffInput } from "./handoff-resolution.js";
 import type { HandoffRoute } from "./handoff-routes.js";
 
@@ -36,6 +36,11 @@ export interface PayloadRoute {
   scope: string;
   /** Project-relative channel file, `.claude/channels/<scope>/<receiver>/<sender>.1.md`. */
   channelFile: string;
+  /**
+   * `163`: set only in a worktree session: the absolute main-checkout path the agent is TOLD to
+   * write. `channelFile` stays the relative identity that stored state and checks key on.
+   */
+  presentedFile?: string;
   /** The resolved protocol body (the shape to write). */
   protocol: string;
 }
@@ -61,7 +66,8 @@ export function payloadRoutes(
   projectDir: string,
   scope: string,
   routes: HandoffRoute[],
-  readGlobal: (handoffId: string) => GlobalHandoffInput | null
+  readGlobal: (handoffId: string) => GlobalHandoffInput | null,
+  worktree?: { main_root?: string | null } | null
 ): PayloadRoute[] {
   const out: PayloadRoute[] = [];
   for (const r of routes) {
@@ -75,16 +81,24 @@ export function payloadRoutes(
     }
     const resolved = resolveHandoff(id, readProjectHandoff(projectDir, id), global);
     if (!resolved.content) continue;
+    const channelFile = channelRelPath(scope, r.receiver, `${r.sender}.1.md`);
+    const presented = channelPathFor(channelFile, worktree);
     out.push({
       label: r.label,
       sender: r.sender,
       receiver: r.receiver,
       scope,
-      channelFile: channelRelPath(scope, r.receiver, `${r.sender}.1.md`),
+      channelFile,
+      ...(presented !== channelFile ? { presentedFile: presented } : {}),
       protocol: resolved.content,
     });
   }
   return out;
+}
+
+/** The path an agent is shown for a route: absolute in a worktree session (`163`), else relative. */
+function shown(r: PayloadRoute): string {
+  return r.presentedFile ?? r.channelFile;
 }
 
 /**
@@ -102,11 +116,11 @@ export function payloadRequirement(routes: PayloadRoute[], opts: { withShapes: b
     "JSON object (`{}`). Create the file with the Write tool, which creates the folder too; do not run mkdir in Bash.";
   if (opts.withShapes) {
     const blocks = routes.map(
-      (r) => `Route \`HANDOFF: ${r.label}\` → \`${r.receiver}\` — write this to \`${r.channelFile}\`:\n\n${r.protocol}`
+      (r) => `Route \`HANDOFF: ${r.label}\` → \`${r.receiver}\` — write this to \`${shown(r)}\`:\n\n${r.protocol}`
     );
     return `${head}\n\n${blocks.join("\n\n")}`;
   }
-  const lines = routes.map((r) => `- \`HANDOFF: ${r.label}\` → write \`${r.channelFile}\` (for \`${r.receiver}\`)`);
+  const lines = routes.map((r) => `- \`HANDOFF: ${r.label}\` → write \`${shown(r)}\` (for \`${r.receiver}\`)`);
   return `${head}\n${lines.join("\n")}\nThe shape for each route is the one from your first run.`;
 }
 
@@ -130,12 +144,12 @@ export function testHintRequirement(routes: PayloadRoute[], opts: { withShapes: 
     "The stop hook checks it was written during THIS run.";
   if (opts.withShapes) {
     const blocks = routes.map(
-      (r) => `Test hints for \`${r.receiver}\` — write this to \`${r.channelFile}\`:\n\n${r.protocol}`
+      (r) => `Test hints for \`${r.receiver}\` — write this to \`${shown(r)}\`:\n\n${r.protocol}`
     );
     return `${head}\n\n${blocks.join("\n\n")}`;
   }
   const lines = routes.map(
-    (r) => `- with \`HANDOFF: success\` → also write \`${r.channelFile}\` (test hints for \`${r.receiver}\`)`
+    (r) => `- with \`HANDOFF: success\` → also write \`${shown(r)}\` (test hints for \`${r.receiver}\`)`
   );
   return `${head}\n${lines.join("\n")}\nThe shape is the one from your first run.`;
 }

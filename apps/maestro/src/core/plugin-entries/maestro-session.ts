@@ -96,6 +96,7 @@ export {
   channelScopeOf,
   channelScopeFromState,
   channelRelPath,
+  channelPathFor,
   isChannelScope,
   NO_SESSION_SCOPE,
   consumedDir,
@@ -292,6 +293,17 @@ export { compareRuntimeVersions, runtimeNeedsRefresh, type RuntimeVersionVerdict
 
 // A worktree run may not write into the main checkout (`082`). `fs`/`path` only.
 export { checkWorktreeWrite, MAIN_CHECKOUT_SHARED_DIRS } from "../worktree-write-guard.js";
+
+// What a worktree holds that git does not (`163`): ignored files that would be lost at merge, and
+// the git-excluded nested `.claude` directories copied into a new worktree. The git runner is
+// injected by the CLI. `fs`/`path` only.
+export {
+  ignoredOnlyInWorktree,
+  formatIgnoredNotice,
+  provisionExcludedDirs,
+  formatExcludedProvision,
+  type GitRunner,
+} from "../worktree-footprint.js";
 
 // Durable per-project run metrics (`080`) — recorded by the SessionEnd hooks before the session
 // directory is removed, read by the team-meeting evidence digest. `fs`/`path` only — keeps

@@ -62,8 +62,8 @@
       "type": "function",
       "name": "pendingLanes",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 667,
-      "end_line": 699,
+      "start_line": 681,
+      "end_line": 713,
       "signature": "function pendingLanes(projectDir: string, now: number = Date.now(), opts: { scope?: string | null } = {}): PendingLane[]",
       "contentHash": "10ae61d51ad27d491bd57805f8964eceadbe34967a881ca593dd8633e1ad489d",
       "status": "live",
@@ -116,8 +116,8 @@
       "type": "function",
       "name": "isNonEmptyArray",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 307,
-      "end_line": 309,
+      "start_line": 321,
+      "end_line": 323,
       "signature": "function isNonEmptyArray(value: unknown): boolean",
       "contentHash": "6b79548eb86d0cffca73d6ba34bf8585a88689a247ad409fa695c05d91b96f8d",
       "status": "live",
@@ -134,10 +134,10 @@
       "type": "function",
       "name": "testHintRequirement",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 119,
-      "end_line": 141,
+      "start_line": 133,
+      "end_line": 155,
       "signature": "function testHintRequirement(routes: PayloadRoute[], opts: { withShapes: boolean }): string | null",
-      "contentHash": "5212fc0e4b46aab102eca1277cf55e166547d879fe5f4de4affedb416f34a84a",
+      "contentHash": "09ee5d423423aaa3d7c721a81910334838060c4f6e710320d445d6122548bb2f",
       "status": "live",
       "ast": {},
       "agent": {
@@ -314,8 +314,8 @@
       "type": "function",
       "name": "unstampedFilesOf",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 368,
-      "end_line": 386,
+      "start_line": 382,
+      "end_line": 400,
       "signature": "function unstampedFilesOf(projectDir: string, scope: string, sender: string): ChannelFileMark[]",
       "contentHash": "877f9800338652f17eedfeb078d27f2a4717f5badcfbc38b0f08387e2be94c9a",
       "status": "live",
@@ -440,8 +440,8 @@
       "type": "type-def",
       "name": "SweepResult",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 473,
-      "end_line": 475,
+      "start_line": 487,
+      "end_line": 489,
       "signature": "export interface SweepResult {",
       "contentHash": "f5a947fe2aa9d70a1ddd9fd51fcedb28fa01c9720a606516abecc4d40ac4603c",
       "status": "live",
@@ -566,8 +566,8 @@
       "type": "function",
       "name": "recordActiveTask",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 608,
-      "end_line": 625,
+      "start_line": 622,
+      "end_line": 639,
       "signature": "function recordActiveTask(projectDir: string, sessionId: unknown, task: string): { scope: string; priorScope: string; retired: string[]; } | null",
       "contentHash": "960a7c902aafb207a2da0da7a7bffa2f820db6d61df9c10a8fe49ff6aee7c9c9",
       "status": "live",
@@ -692,8 +692,8 @@
       "type": "function",
       "name": "laneFor",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 156,
-      "end_line": 158,
+      "start_line": 170,
+      "end_line": 172,
       "signature": "function laneFor(projectDir: string, scope: string, sender: string, receiver: string): string",
       "contentHash": "8846b9c1d0782f2357e186e4eb8cd858d1abf7624abfae1eacf2014c0316a18d",
       "status": "live",
@@ -764,10 +764,10 @@
       "type": "function",
       "name": "payloadRoutes",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 60,
-      "end_line": 88,
-      "signature": "function payloadRoutes(projectDir: string, scope: string, routes: HandoffRoute[], readGlobal: (handoffId: string) => GlobalHandoffInput | null): PayloadRoute[]",
-      "contentHash": "526b8469916ae07b307304f059b8987c957c106adc49ee6372b63d24662be757",
+      "start_line": 65,
+      "end_line": 97,
+      "signature": "function payloadRoutes(projectDir: string, scope: string, routes: HandoffRoute[], readGlobal: (handoffId: string) => GlobalHandoffInput | null, worktree?: { main_root?: string | null } | null): PayloadRoute[]",
+      "contentHash": "6956aa22775a913c6ec0ca625d6a5b52e4f8ebbb1256455033d0ea6be4516b64",
       "status": "live",
       "ast": {},
       "agent": {
@@ -872,8 +872,8 @@
       "type": "type-def",
       "name": "ChannelEntry",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 389,
-      "end_line": 398,
+      "start_line": 403,
+      "end_line": 412,
       "signature": "export interface ChannelEntry {",
       "contentHash": "54ec5e2b38cbaabcd2ccfcba26a369881d1ff4b5bca704eb15d0059cac0acddf",
       "status": "live",
@@ -962,8 +962,8 @@
       "type": "function",
       "name": "sweepFiles",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 484,
-      "end_line": 503,
+      "start_line": 498,
+      "end_line": 517,
       "signature": "function sweepFiles(dir: string, now: number, ageCapMs: number, all: boolean, removed: string[]): void",
       "contentHash": "1bea468bae67e428df9c835a60498137874bd9688ef424dd850ad7a13223d7fb",
       "status": "live",
@@ -998,8 +998,8 @@
       "type": "function",
       "name": "readConsumed",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 437,
-      "end_line": 445,
+      "start_line": 451,
+      "end_line": 459,
       "signature": "function readConsumed(projectDir: string, scope: string, receiver: string, now: number = Date.now()): ChannelEntry[]",
       "contentHash": "23cc4ea1bd030a1013d2144c1603d814b044d80fbb7c52653b8b13fa6d34935e",
       "status": "live",
@@ -1124,10 +1124,10 @@
       "type": "function",
       "name": "payloadRequirement",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 95,
-      "end_line": 111,
+      "start_line": 109,
+      "end_line": 125,
       "signature": "function payloadRequirement(routes: PayloadRoute[], opts: { withShapes: boolean }): string | null",
-      "contentHash": "e49bd76ab776f3a8aebc68aa1206385516d6608483d838b8ec9e06a14b0785c3",
+      "contentHash": "6b379a703e972c954ebb7343b76a74a640019e74aeda0f0dbf541099f8ccbe78",
       "status": "live",
       "ast": {},
       "agent": {
@@ -1142,8 +1142,8 @@
       "type": "function",
       "name": "listDirs",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 189,
-      "end_line": 198,
+      "start_line": 203,
+      "end_line": 212,
       "signature": "function listDirs(dir: string): string[]",
       "contentHash": "d7401f891a6409005ece933ede726d16c4bb77b28982ca2a70d42b5e35e98c20",
       "status": "live",
@@ -1160,8 +1160,8 @@
       "type": "function",
       "name": "unretire",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 453,
-      "end_line": 459,
+      "start_line": 467,
+      "end_line": 473,
       "signature": "function unretire(projectDir: string, scope: string, receiver: string, entry: ChannelEntry): boolean",
       "contentHash": "895957c65ffb2e2aceb78ad7bbf1be673d4ad1ebd07eb4220df4073caccebc2f",
       "status": "live",
@@ -1340,8 +1340,8 @@
       "type": "function",
       "name": "senderOf",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 184,
-      "end_line": 187,
+      "start_line": 198,
+      "end_line": 201,
       "signature": "function senderOf(fileName: string): string",
       "contentHash": "a47bf0ca7c67f7829fd01655a944bc7d5daf5d71ddbf9dd8eafd9e0132e35466",
       "status": "live",
@@ -1484,8 +1484,8 @@
       "type": "function",
       "name": "nextFreeLanePath",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 276,
-      "end_line": 281,
+      "start_line": 290,
+      "end_line": 295,
       "signature": "function nextFreeLanePath(dir: string, sender: string): string",
       "contentHash": "71150f875d083152f0a31726bfb0a3c7725e8d7d408fa44eb0bfec2068ab1956",
       "status": "live",
@@ -1520,8 +1520,8 @@
       "type": "function",
       "name": "runStartedAt",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 148,
-      "end_line": 159,
+      "start_line": 162,
+      "end_line": 173,
       "signature": "function runStartedAt(lines: unknown[], agentId: string): number | null",
       "contentHash": "d6950af931119a431fc7f66fab8581014cddd85fa1d18a9ce095bf7c44608aca",
       "status": "live",
@@ -1592,8 +1592,8 @@
       "type": "function",
       "name": "writtenSince",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 187,
-      "end_line": 197,
+      "start_line": 201,
+      "end_line": 211,
       "signature": "function writtenSince(filePath: string, sinceMs: number | null): boolean",
       "contentHash": "cb0fa3f32145068d6ca98d2550c3ccc94154f5e991eb7040c14c470024e4c8b5",
       "status": "live",
@@ -1610,8 +1610,8 @@
       "type": "function",
       "name": "parseStampedContent",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 178,
-      "end_line": 181,
+      "start_line": 192,
+      "end_line": 195,
       "signature": "function parseStampedContent(content: string): { runId: string | null; body: string; }",
       "contentHash": "37a421af7005a8252a1ca26c73ebd7d5205a925533a1d1944ea6d15e703718e1",
       "status": "live",
@@ -1628,8 +1628,8 @@
       "type": "function",
       "name": "payloadWrittenSince",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 176,
-      "end_line": 185,
+      "start_line": 190,
+      "end_line": 199,
       "signature": "function payloadWrittenSince(projectDir: string, route: PayloadRoute, sinceMs: number | null): boolean",
       "contentHash": "2ecd7469e916f0a4168521227a8149a04d1de902d2e35f57cb87d55ac3c2b5ed",
       "status": "live",
@@ -1736,8 +1736,8 @@
       "type": "function",
       "name": "readLane",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 423,
-      "end_line": 431,
+      "start_line": 437,
+      "end_line": 445,
       "signature": "function readLane(projectDir: string, scope: string, receiver: string, now: number = Date.now()): ChannelEntry[]",
       "contentHash": "2305141ce905afbbd9008e3bba6ade034777279763a3df94367e12415b4e930c",
       "status": "live",
@@ -1772,8 +1772,8 @@
       "type": "function",
       "name": "pruneEmptyDir",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 506,
-      "end_line": 514,
+      "start_line": 520,
+      "end_line": 528,
       "signature": "function pruneEmptyDir(dir: string, now: number): void",
       "contentHash": "db4e89aba4a36ed630f1d24f939f04423edc103dd2d15e51fb96e17296c7e964",
       "status": "live",
@@ -1880,8 +1880,8 @@
       "type": "function",
       "name": "acknowledgeGaps",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 344,
-      "end_line": 361,
+      "start_line": 358,
+      "end_line": 375,
       "signature": "function acknowledgeGaps(projectDir: string, scope: string, fileNames: readonly string[]): ChannelEntry[]",
       "contentHash": "2b3397b231ccd1ba96bb348fd79ef34e7e558457dc79a9ac58504794f0b442db",
       "status": "live",
@@ -1928,6 +1928,24 @@
       }
     },
     {
+      "_key": "88de41b114785c0a817d6edd115c0501",
+      "displayKey": "maestro-architecture::function::shown",
+      "concept": "maestro-architecture",
+      "type": "function",
+      "name": "shown",
+      "filepath": "apps/maestro/src/core/handoff-payload.ts",
+      "start_line": 100,
+      "end_line": 102,
+      "signature": "function shown(r: PayloadRoute): string",
+      "contentHash": "7ad23b777799ea2f6eb9034b9392021ecb0b8ecae3499254a98ae451f9f0649b",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "8a0133a53e0d04c9de9e4eebbf1f358c",
       "displayKey": "maestro-architecture::function::writeHandoffDefault",
       "concept": "maestro-architecture",
@@ -1946,14 +1964,32 @@
       }
     },
     {
+      "_key": "8be14db5e58783fdbd140a087bdeafc8",
+      "displayKey": "maestro-architecture::function::channelPathFor",
+      "concept": "maestro-architecture",
+      "type": "function",
+      "name": "channelPathFor",
+      "filepath": "apps/maestro/src/core/handoff-channels.ts",
+      "start_line": 156,
+      "end_line": 160,
+      "signature": "function channelPathFor(rel: string, worktree?: { main_root?: string | null } | null): string",
+      "contentHash": "6805df29090f3757da4b57b91bb8aa8729f413174f494d9e76d886ab3bca1821",
+      "status": "live",
+      "ast": {},
+      "agent": {
+        "authored_by": null,
+        "stale": false
+      }
+    },
+    {
       "_key": "8c11d18b0c4e5ccc8adfa06e1123692b",
       "displayKey": "maestro-architecture::function::readJsonObject",
       "concept": "maestro-architecture",
       "type": "function",
       "name": "readJsonObject",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 627,
-      "end_line": 634,
+      "start_line": 641,
+      "end_line": 648,
       "signature": "function readJsonObject(p: string): Record<string, unknown>",
       "contentHash": "f471a449cb490d96f2cb07c34a54d493e4e507245d6ea8b3fad63aba07c36af0",
       "status": "live",
@@ -1988,8 +2024,8 @@
       "type": "function",
       "name": "parseGapsHandled",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 327,
-      "end_line": 336,
+      "start_line": 341,
+      "end_line": 350,
       "signature": "function parseGapsHandled(finalMessage: string): string[]",
       "contentHash": "f5a25f5dd5c4ff066007f540be873a8fce2b863147ec15f77a9bedd5532d39f4",
       "status": "live",
@@ -2114,8 +2150,8 @@
       "type": "type-def",
       "name": "ChannelFileMark",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 166,
-      "end_line": 170,
+      "start_line": 180,
+      "end_line": 184,
       "signature": "export interface ChannelFileMark {",
       "contentHash": "636d260b09cdc8955279b9e33f1dff59b50a8f80a92f5720d94288d308c05bb0",
       "status": "live",
@@ -2276,8 +2312,8 @@
       "type": "function",
       "name": "sweep",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 537,
-      "end_line": 566,
+      "start_line": 551,
+      "end_line": 580,
       "signature": "function sweep(projectDir: string, opts: { now?: number; ageCapMs?: number; scope?: string | null; reason?: unknown } = {}): SweepResult",
       "contentHash": "2f52f937e0116a919538df9cc187cc823f891b9742038d12bc9986b13cafc001",
       "status": "live",
@@ -2294,8 +2330,8 @@
       "type": "function",
       "name": "retireScope",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 578,
-      "end_line": 599,
+      "start_line": 592,
+      "end_line": 613,
       "signature": "function retireScope(projectDir: string, scope: string, ownSessionId: unknown): string[]",
       "contentHash": "537bddd88cfe462efce0a663a68cd3e39c0ba6b50e1bc33bc1d1024d22e345aa",
       "status": "live",
@@ -2366,8 +2402,8 @@
       "type": "function",
       "name": "listFiles",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 200,
-      "end_line": 209,
+      "start_line": 214,
+      "end_line": 223,
       "signature": "function listFiles(dir: string): string[]",
       "contentHash": "0aebe9211183d97147de2a3409012a4adbe05c07848e5ff2325927cd73fb4c25",
       "status": "live",
@@ -2403,9 +2439,9 @@
       "name": "PayloadRoute",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
       "start_line": 28,
-      "end_line": 41,
+      "end_line": 46,
       "signature": "export interface PayloadRoute {",
-      "contentHash": "9ab6198463adad20e7148578728c75e30415b966fe60b6f91b2fc84d04d6eaf7",
+      "contentHash": "2107d981499af9241e1dca177b85fd8e37790d22a6dd6db4e07c692adac5f94c",
       "status": "live",
       "ast": {},
       "agent": {
@@ -2438,8 +2474,8 @@
       "type": "function",
       "name": "formatStampedContent",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 173,
-      "end_line": 175,
+      "start_line": 187,
+      "end_line": 189,
       "signature": "function formatStampedContent(body: string, runId: string): string",
       "contentHash": "b6b91fd47d74097b6411b412fa696dd35b4a434c443ff487059dd8dc2ef2095d",
       "status": "live",
@@ -2528,8 +2564,8 @@
       "type": "function",
       "name": "retire",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 467,
-      "end_line": 471,
+      "start_line": 481,
+      "end_line": 485,
       "signature": "function retire(projectDir: string, scope: string, receiver: string, entry: ChannelEntry): void",
       "contentHash": "1eb6de8f23245a3f62d148bdddb5b91d178212560677a6537f1a48c5154daf5e",
       "status": "live",
@@ -2546,8 +2582,8 @@
       "type": "function",
       "name": "writeStamp",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 228,
-      "end_line": 273,
+      "start_line": 242,
+      "end_line": 287,
       "signature": "function writeStamp(projectDir: string, scope: string, sender: string, runId: string, opts: { skip?: readonly ChannelFileMark[] | null } = {}): string[]",
       "contentHash": "13bd8868112644affe01417581a03d5586c90b9c41e4b0a6efc1d69efad2a3db",
       "status": "live",
@@ -2744,8 +2780,8 @@
       "type": "function",
       "name": "sweepConsumed",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 517,
-      "end_line": 524,
+      "start_line": 531,
+      "end_line": 538,
       "signature": "function sweepConsumed(consumedRoot: string, now: number, ageCapMs: number, all: boolean, removed: string[]): void",
       "contentHash": "95447a1142ab7ef3e78da7c4e3ee8f77a6813b8a9bf7bdf2a568f8d92ad5a0e4",
       "status": "live",
@@ -2762,8 +2798,8 @@
       "type": "function",
       "name": "hasGapBlock",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 292,
-      "end_line": 305,
+      "start_line": 306,
+      "end_line": 319,
       "signature": "function hasGapBlock(body: string): boolean",
       "contentHash": "2fea1c34631fa9c2a4c1302fc784e95307d0ceb98890c6b3c2e661ca1c413ba4",
       "status": "live",
@@ -2780,8 +2816,8 @@
       "type": "function",
       "name": "isGapReport",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 317,
-      "end_line": 319,
+      "start_line": 331,
+      "end_line": 333,
       "signature": "function isGapReport(entry: ChannelEntry): boolean",
       "contentHash": "028dda7d8cdc71bad661f4442e9dff267900483a408e05a8bf8118638299b1fb",
       "status": "live",
@@ -2852,8 +2888,8 @@
       "type": "function",
       "name": "liveRunIds",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 642,
-      "end_line": 651,
+      "start_line": 656,
+      "end_line": 665,
       "signature": "function liveRunIds(projectDir: string): Set<string>",
       "contentHash": "52eaa37465b79d4b03bf19a26056e7a82a1906dc2b80f2d099d625605b1534d8",
       "status": "live",
@@ -3068,8 +3104,8 @@
       "type": "function",
       "name": "readDirEntries",
       "filepath": "apps/maestro/src/core/handoff-channels.ts",
-      "start_line": 400,
-      "end_line": 416,
+      "start_line": 414,
+      "end_line": 430,
       "signature": "function readDirEntries(dir: string, now: number): ChannelEntry[]",
       "contentHash": "a3e4bbace44d72b62967759f0698fcfcbb6d357fbdc763138be2061c913d5488",
       "status": "live",
@@ -3230,8 +3266,8 @@
       "type": "function",
       "name": "readProjectHandoff",
       "filepath": "apps/maestro/src/core/handoff-payload.ts",
-      "start_line": 44,
-      "end_line": 52,
+      "start_line": 49,
+      "end_line": 57,
       "signature": "function readProjectHandoff(projectDir: string, handoffId: string): string | null",
       "contentHash": "31fdc5bb46ac8a039147e5eed8fabda1b8569c09febdd1d9a5108b3ff9b98347",
       "status": "live",
@@ -3535,19 +3571,6 @@
       }
     },
     {
-      "_key": "01a95c1be5bc1babb6731b2a753e165c",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 591,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "01e2227851a04eddc3c8cdef4dd6a9c8",
       "_from": "vertices/e2ba87cdc8c57e744f66290826dbed86",
       "_to": "vertices/7d0ed955ccbf1c17e9874447c1de0330",
@@ -3587,13 +3610,13 @@
       }
     },
     {
-      "_key": "034ca01e06f755f7198dbc99f520ad51",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
-      "type": "has-type",
+      "_key": "03d027efed52964c4052a9bc3e054d51",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 65,
+      "line": 252,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3613,39 +3636,104 @@
       }
     },
     {
-      "_key": "04d294193e2d75dfda6c53c4032a36cb",
+      "_key": "04d5d952fbffa20f41b06b0ad89fccc1",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/68b5176ab45bc9c3dc35151ad504343f",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 68,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0570f1c9001a82b35de652e84ff43029",
       "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/e600db8223bb1a44798560053d43dadd",
-      "type": "calls",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 695,
+      "line": 690,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "079fa0f85a92ac8cca61e339ef0d0c77",
-      "_from": "vertices/4970841467aaca2eb43dae36252b8755",
-      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
+      "_key": "08e5d9671de6d211ae20129a1b3c29a5",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/8be14db5e58783fdbd140a087bdeafc8",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 485,
+      "line": 85,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "0afcd2f0a6da7b4813b6194618095e94",
+      "_key": "091027b979aeed2018eae140c05876e4",
+      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
+      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 535,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "093984a337ace106cb7e648be1d05f25",
       "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
-      "_to": "vertices/3563def41f57850d004041039d3b8c21",
+      "_to": "vertices/74f048bfe533328ed084e3ab6419fbac",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 177,
+      "line": 198,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "09ca92fa4d63f255d4e83897b9057cca",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 574,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0a1c66a607b5c5e1b796c87446acaabd",
+      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
+      "_to": "vertices/5e8346e296531287c35b35e17f772023",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 427,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0ca8c9158b54c28e10f7d454c6300523",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 568,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3678,19 +3766,6 @@
       }
     },
     {
-      "_key": "0de52b4588ae398006729825ec1f4ded",
-      "_from": "vertices/863a789fea013a060867670258d9eabb",
-      "_to": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 354,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "0e2558000c05d1605f258079148a274f",
       "_from": "vertices/b89577b99d4a308dccd848c92ec48677",
       "_to": "vertices/9d87c8d04f5a6d44bf470d05c51b2a51",
@@ -3698,6 +3773,32 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 227,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0e39242be98554dc07bb487436f00527",
+      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 704,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "0e822ec3127d6d3ad03f3fcf4d309dbb",
+      "_from": "vertices/863a789fea013a060867670258d9eabb",
+      "_to": "vertices/cb9bd79230c1f31a293738d246d22f77",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 366,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3730,6 +3831,19 @@
       }
     },
     {
+      "_key": "10c0db7aea47380b6a237d5ac657b337",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 387,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "1143b2960335645200addf8808e2338b",
       "_from": "vertices/59ea48872fdd4f6e1192fea407c14bcb",
       "_to": "vertices/e31bc816d00147be24429ebd8fe24791",
@@ -3743,13 +3857,13 @@
       }
     },
     {
-      "_key": "11634167874ad7652e6f8a62d561f259",
-      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "_key": "138432e0c6eb9398ca53e1738ba05121",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 430,
+      "line": 252,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3763,6 +3877,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 93,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1499c2b38852f6f9ecda22ce372f1ff1",
+      "_from": "vertices/863a789fea013a060867670258d9eabb",
+      "_to": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 368,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3808,19 +3935,6 @@
       }
     },
     {
-      "_key": "16623afa261e06da0e940572255ab2ed",
-      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 400,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "17191311ecff28ffb596aa40d7647791",
       "_from": "vertices/faa62810753e9585f748b9928a285b6c",
       "_to": "vertices/41c7f81cdd222c88f31674008613fa42",
@@ -3847,13 +3961,13 @@
       }
     },
     {
-      "_key": "17a6ff468d180c27b4e6d57c0da8d97c",
-      "_from": "vertices/54dea01d0824d41638a18e2b2c4436d0",
-      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
-      "type": "has-type",
+      "_key": "180636a7d0f3f47511c4c2b9567db2af",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
       "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 95,
+      "crosses_concept": true,
+      "line": 597,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3912,6 +4026,32 @@
       }
     },
     {
+      "_key": "1ac6f94af5e0b07865f54565e5633be5",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 386,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1b8d40747963e55cc146de5d8f9e90e0",
+      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_to": "vertices/e600db8223bb1a44798560053d43dadd",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 709,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "1d243d1880650c9e98d716900b395f6f",
       "_from": "vertices/59ea48872fdd4f6e1192fea407c14bcb",
       "_to": "vertices/1b14fff59895f23704423d7b5b43042e",
@@ -3938,6 +4078,45 @@
       }
     },
     {
+      "_key": "1d77775824e905a8a1ceeae254e76b39",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/d99640b9388426fd514610c326f43214",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e8ed98a8aad6a5a8601155de790f75d",
+      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
+      "_to": "vertices/e600db8223bb1a44798560053d43dadd",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 458,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "1e95aea5ffab7585cbde2a7240a19e84",
+      "_from": "vertices/863a789fea013a060867670258d9eabb",
+      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 365,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "1edf99389686422a9612214fd3ecbcb1",
       "_from": "vertices/8a0133a53e0d04c9de9e4eebbf1f358c",
       "_to": "vertices/e3c443f14f3a08accb23115883bba04e",
@@ -3951,13 +4130,13 @@
       }
     },
     {
-      "_key": "20b1a821a968198f0004af7f668b4b2b",
-      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "_key": "201c72cb97a9ff6bc16b37e4af4f0310",
+      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
+      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
       "type": "calls",
       "concept": "maestro-architecture",
-      "crosses_concept": true,
-      "line": 613,
+      "crosses_concept": false,
+      "line": 537,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -3990,58 +4169,6 @@
       }
     },
     {
-      "_key": "229264bc62ad536e328d765d505713d7",
-      "_from": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
-      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": true,
-      "line": 645,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "22f1b83d9e4bfb26dd6e4d8e32a099fe",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/9673b6f6f6813aad6cb82ec384444b4e",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 370,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "2496fcda061fc330f11422703edb93df",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 551,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "24bbeb80f27422b2c3a67b932835a0ac",
-      "_from": "vertices/55ea0f5f3a602c08c2f741fe4a5f7871",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 453,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2544dd9444f9ebd42d4267942d2940d6",
       "_from": "vertices/9bb13c9ca14d3b6c61ea93e4a50f899b",
       "_to": "vertices/3d8d27fd4c5ef6c8a1bc704b52db6e28",
@@ -4049,6 +4176,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 110,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "26ea9087257057965e6a18b6a6973080",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 602,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4068,6 +4208,19 @@
       }
     },
     {
+      "_key": "28893d97b310d230ecbab3f22894342e",
+      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 415,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "2929d46442a06b2ea6c90a19e94c89d9",
       "_from": "vertices/fe568468efe23b2f1bae778df344a610",
       "_to": "vertices/e2ba87cdc8c57e744f66290826dbed86",
@@ -4075,6 +4228,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 70,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2ac7c002d6c70c0c85dee2977416f10d",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 561,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4120,19 +4286,6 @@
       }
     },
     {
-      "_key": "2d299964f1ea129abe5776055cc36e8f",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/3743dd5df2a24b161baf42e803a11d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 584,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "2d57a3680f8a57dd715818d447e7b5ce",
       "_from": "vertices/3fbb37544f55df1c99269aa5f6cdaa27",
       "_to": "vertices/b6ae18423f4b40a2d9ba7959997a39b8",
@@ -4166,6 +4319,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 52,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "2e4118bc6236a5b0c0e71feec922cec1",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 72,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4224,26 +4390,13 @@
       }
     },
     {
-      "_key": "33ceb76fa872b6f8cd044ed2ec4c5c0f",
+      "_key": "33d528994499bc5432ebadc791987aad",
       "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "_to": "vertices/ac49f340b504540608f0a6a7c55a4cef",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 239,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "33df51613aeca76975900a701cbe3027",
-      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 688,
+      "line": 269,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4263,26 +4416,13 @@
       }
     },
     {
-      "_key": "369fee77ce6e0eb809b005fa533b1569",
-      "_from": "vertices/863a789fea013a060867670258d9eabb",
-      "_to": "vertices/cb9bd79230c1f31a293738d246d22f77",
-      "type": "calls",
+      "_key": "3541ecdf077efcc925a8f000075b70e3",
+      "_from": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 352,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "375a6e167bcf83994f2d6fdecdcb2ed7",
-      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
-      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 523,
+      "line": 481,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4296,6 +4436,32 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 401,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "38c8fc6c93c12a5f2b2e0e89b01fa188",
+      "_from": "vertices/4970841467aaca2eb43dae36252b8755",
+      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 499,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "396b0d7a0865d1a6b1d2c6b8efa6f45d",
+      "_from": "vertices/88de41b114785c0a817d6edd115c0501",
+      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 100,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4328,13 +4494,26 @@
       }
     },
     {
-      "_key": "3b8af768afa5145a309ba713f58c690f",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_key": "3ae6df8c2f3abb09bee7f8fd84f77b7d",
+      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
       "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 371,
+      "line": 532,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3b0805af97b6d9ecb3a83240d7da1e93",
+      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
+      "_to": "vertices/3563def41f57850d004041039d3b8c21",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 191,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4367,19 +4546,6 @@
       }
     },
     {
-      "_key": "3cedfccc41c8352ddf2346c67cfaaf94",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/f179403367ed76dfbb17a3b937304958",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 76,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "3d4ed402546fba9242e49e09ecfe9125",
       "_from": "vertices/7e7906e5ffd23665732bd2158401c4fb",
       "_to": "vertices/93930fe3e90fa1bfa3f63c65842ada1b",
@@ -4393,26 +4559,52 @@
       }
     },
     {
-      "_key": "3e7d5cb5984d399cb6a56e7c62b3f681",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/5e8346e296531287c35b35e17f772023",
+      "_key": "3de2eb08b78a38601897272401615521",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/726b207d21a4a5e2a5bb2b2cdbca47e6",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 241,
+      "line": 84,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "3f86b29845b8bb8ebc191fa03b09c5d0",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
+      "_key": "3e5dc3d2f9c14655cb19e6254a2e0b97",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/9673b6f6f6813aad6cb82ec384444b4e",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 384,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3f14a586668726448426d35c66de09c4",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 554,
+      "line": 254,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "3fdcf952a2136fb2c521e7c112a833f2",
+      "_from": "vertices/0b0ed609417506d67d38c1ae960f5cd6",
+      "_to": "vertices/88de41b114785c0a817d6edd115c0501",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 147,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4426,19 +4618,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 206,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "41eb93803cb023bb41a9edb9b26d4110",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/9673b6f6f6813aad6cb82ec384444b4e",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 368,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4471,13 +4650,13 @@
       }
     },
     {
-      "_key": "43d004701dcfeb1078d22414f7cabc36",
-      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
-      "_to": "vertices/b1b61f83e3f87c590c518ea57822fc47",
-      "type": "calls",
+      "_key": "43c3dc496c4ab63cf3ac07c1651834e3",
+      "_from": "vertices/55ea0f5f3a602c08c2f741fe4a5f7871",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 444,
+      "line": 467,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4510,13 +4689,13 @@
       }
     },
     {
-      "_key": "456ab4a0c2383dfb15f58954d62e2089",
-      "_from": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
-      "_to": "vertices/c4375514c878ed2323634363885ade1b",
+      "_key": "476d2dd0d4741d1734a15257ad0ed643",
+      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
+      "_to": "vertices/cb9bd79230c1f31a293738d246d22f77",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 647,
+      "line": 194,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4562,19 +4741,6 @@
       }
     },
     {
-      "_key": "4a2d06205593e30eeb00f6f64f6198a6",
-      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/bd079602a5fa65095efb3c071bdca466",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 673,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4aac6702b68377205a0b7f1d92a816ea",
       "_from": "vertices/156c481b9b002ffa6119330a826228fa",
       "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
@@ -4601,13 +4767,13 @@
       }
     },
     {
-      "_key": "4b51d9f1d8982a800d8d9baec76382c5",
-      "_from": "vertices/863a789fea013a060867670258d9eabb",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
+      "_key": "4c3e93f8a2c5e6fd48c197466962a22b",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/4970841467aaca2eb43dae36252b8755",
+      "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 344,
+      "line": 567,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4666,19 +4832,6 @@
       }
     },
     {
-      "_key": "4e8438b3962d1da5ea4be2607aa27c55",
-      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
-      "_to": "vertices/3743dd5df2a24b161baf42e803a11d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 616,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "4ecc9b1ea58d440e761d88424760e4a3",
       "_from": "vertices/fe568468efe23b2f1bae778df344a610",
       "_to": "vertices/08a355a8c9c746e0100642c0cccb6944",
@@ -4705,6 +4858,19 @@
       }
     },
     {
+      "_key": "4fb8f4600ff996efe553c39cfa146bf4",
+      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
+      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 190,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "4fe1510a0bb13cf69df20fdf6096f713",
       "_from": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
       "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
@@ -4725,6 +4891,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 251,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "5088f08a0267ee81e8d78ab4ec2075d1",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 593,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4783,6 +4962,19 @@
       }
     },
     {
+      "_key": "52efff9d2d7031538d996fa6e1805d4a",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/5e8346e296531287c35b35e17f772023",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 388,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "532a64be0737262fe9ec481435e7264f",
       "_from": "vertices/f7ca59fa801880bc790bda38adb1df0f",
       "_to": "vertices/68b5176ab45bc9c3dc35151ad504343f",
@@ -4809,13 +5001,13 @@
       }
     },
     {
-      "_key": "56ba4148be76269eb2e1203ba5e002cb",
+      "_key": "565a70612879a3f818915d5b2ba5a243",
       "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 690,
+      "line": 702,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -4913,19 +5105,6 @@
       }
     },
     {
-      "_key": "5930bfe49645820ed3a974e8480a184a",
-      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "_to": "vertices/e600db8223bb1a44798560053d43dadd",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 430,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "59ca2577d4d9f385d3d286e035873a07",
       "_from": "vertices/0b8d689d9cb3eea7f9b46e6290b5be5b",
       "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
@@ -4952,19 +5131,6 @@
       }
     },
     {
-      "_key": "5a38816f53477e66b0afdb8ff848afc7",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/4970841467aaca2eb43dae36252b8755",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 553,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "5b23af51b0ae9512658ef23b19f2a5f6",
       "_from": "vertices/faa62810753e9585f748b9928a285b6c",
       "_to": "vertices/3fab294f803c0859f0512ac7b8633058",
@@ -4978,39 +5144,13 @@
       }
     },
     {
-      "_key": "5ba2394ab881420220da7c707982a53f",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/726b207d21a4a5e2a5bb2b2cdbca47e6",
+      "_key": "5c08ba404d32e0617f9afb14e4ea980c",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 83,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5bd50da0e369816dc78e57e43b0f58a7",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/2ffc54ddeb203de990642fe6c3aaad20",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 70,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "5c9118a58dfed7e2a2c11cb5b658f737",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/bd079602a5fa65095efb3c071bdca466",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 544,
+      "line": 601,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5030,13 +5170,13 @@
       }
     },
     {
-      "_key": "5d0410c8d516f4aa2e46378b745171e4",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "_key": "5ef477f48ada550062c9f03311767c3d",
+      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
+      "_to": "vertices/9d125993d78fee3293f3d81d5b63c332",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 235,
+      "line": 637,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5056,13 +5196,39 @@
       }
     },
     {
-      "_key": "60ad3153bcce69e9882f4ab562a3014a",
-      "_from": "vertices/cb9bd79230c1f31a293738d246d22f77",
-      "_to": "vertices/cadff9aef4093eaa45a9c4d5a8a1d0dd",
+      "_key": "6052d3a013b895da67b030f681cc39f5",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 318,
+      "line": 559,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "605382097d687e50da27ee62cc7bba76",
+      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
+      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 192,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "624c567796e66490a4e4240bb2c7ea70",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/2ffc54ddeb203de990642fe6c3aaad20",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 69,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5089,19 +5255,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 139,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "6362d7ef50e183801bc4fcf677cc3c75",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/6c66282d2a162aea08af7874e20002aa",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 260,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5147,13 +5300,13 @@
       }
     },
     {
-      "_key": "65aa5204ec776f083214c539bee9dea9",
-      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
-      "_to": "vertices/cb9bd79230c1f31a293738d246d22f77",
+      "_key": "65afbe05508d4769c0ca75dc41c59ec6",
+      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
+      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 180,
+      "line": 416,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5199,39 +5352,26 @@
       }
     },
     {
-      "_key": "68175d91580297b78fbcb50019a41383",
-      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
-      "_to": "vertices/5e8346e296531287c35b35e17f772023",
+      "_key": "6872db8e3befe7488a8117f7d3d12b9a",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 413,
+      "line": 605,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "69afd093841ccc630dc33ce582d92df4",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "_key": "6c444a8b955486f32065f51520af5a8d",
+      "_from": "vertices/cadff9aef4093eaa45a9c4d5a8a1d0dd",
+      "_to": "vertices/09c96a95db15ac77d9862e6c7029e15d",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 238,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "6c41e1f2887a054c50f2e67567c248df",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/9673b6f6f6813aad6cb82ec384444b4e",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 233,
+      "line": 316,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5251,6 +5391,19 @@
       }
     },
     {
+      "_key": "6dbbd887b82f6f8eb7ae3c954757dbde",
+      "_from": "vertices/54dea01d0824d41638a18e2b2c4436d0",
+      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 109,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "6e2b4eebab1a37dcb0843cf4e8eaa73b",
       "_from": "vertices/9bb13c9ca14d3b6c61ea93e4a50f899b",
       "_to": "vertices/944e45decbac4f89e031b658076d29c9",
@@ -5264,6 +5417,32 @@
       }
     },
     {
+      "_key": "6eb78b63c1ea94d537c724db138bd87d",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/c75ca50f99e01165f9638636ee63090c",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 564,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "70284e142063a13145acc2d65ccb7ab2",
+      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
+      "_to": "vertices/8c11d18b0c4e5ccc8adfa06e1123692b",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 629,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "70b9c6684a82488151e6f6157bc39ac2",
       "_from": "vertices/0c3b74f7adbccfa69b6100b81cb85e43",
       "_to": "vertices/56eb9fa6820e423d1e608c9955659fa2",
@@ -5271,6 +5450,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "70d45959c41195d6133083938f9025e8",
+      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 442,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5297,19 +5489,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 48,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "72f5fe706c52051ce6e3284b25d20cf4",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 587,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5355,32 +5534,6 @@
       }
     },
     {
-      "_key": "746e99ec04b5314e16ca6f509f4cd126",
-      "_from": "vertices/3563def41f57850d004041039d3b8c21",
-      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 157,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "74971ac06beef6c2fe0178d0e1b96b8b",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 371,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "74c5b1cbfdb6951e5e80be9c5371da0e",
       "_from": "vertices/e934472b2663b88bda41393b60b77691",
       "_to": "vertices/31dbb019a95f2ecd4090920afde5258f",
@@ -5388,6 +5541,32 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 229,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "74cf1fb14cce98d54a82daa1117f185a",
+      "_from": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": true,
+      "line": 660,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "7517c00ae15e3e7eb6174a836a0cf445",
+      "_from": "vertices/3563def41f57850d004041039d3b8c21",
+      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 171,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5472,39 +5651,13 @@
       }
     },
     {
-      "_key": "76c29a331fe218a0cf39384ea800180a",
-      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
+      "_key": "7713c9165fd72db0657dff9cc2a2457d",
+      "_from": "vertices/54dea01d0824d41638a18e2b2c4436d0",
+      "_to": "vertices/88de41b114785c0a817d6edd115c0501",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 672,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "77f9ebd43903c6240621116a5bd39508",
-      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
-      "_to": "vertices/771b375af12d565f050e3d400184897f",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 412,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "78728febec259e7ff6df7c672a5bef4e",
-      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
-      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 402,
+      "line": 123,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5518,6 +5671,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 252,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "79b8edfd5cd47eee56a786109b7b65f4",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/cadff9aef4093eaa45a9c4d5a8a1d0dd",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 273,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5589,32 +5755,6 @@
       }
     },
     {
-      "_key": "7d4dea7aa253c4bb6132928be360788b",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 588,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7da2c20ecce4d6214cabee735e5ad486",
-      "_from": "vertices/863a789fea013a060867670258d9eabb",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 350,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "7e6fde0c58d0ad98111ca61c08e760cb",
       "_from": "vertices/0c3b74f7adbccfa69b6100b81cb85e43",
       "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
@@ -5622,19 +5762,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 60,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "7e75f945c7f47b591b16dcb37b3504f6",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": true,
-      "line": 581,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5693,32 +5820,6 @@
       }
     },
     {
-      "_key": "81c718407d54f4f8a56ccee8362957cd",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/cb9bd79230c1f31a293738d246d22f77",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 589,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8225f2df495bf9762c5207cd19484984",
-      "_from": "vertices/cb9bd79230c1f31a293738d246d22f77",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 317,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "822baa907701d31caf72489973b7221d",
       "_from": "vertices/b89577b99d4a308dccd848c92ec48677",
       "_to": "vertices/9d87c8d04f5a6d44bf470d05c51b2a51",
@@ -5771,13 +5872,26 @@
       }
     },
     {
-      "_key": "82e7b7b018bafe02c976a36d0da5519e",
-      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
-      "_to": "vertices/8c11d18b0c4e5ccc8adfa06e1123692b",
+      "_key": "82e77bf70df0b5649d86d1110ec8fe7d",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/f179403367ed76dfbb17a3b937304958",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 615,
+      "line": 82,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "82f4aa8d1759e9bd6a601aa2577ee9b8",
+      "_from": "vertices/cb9bd79230c1f31a293738d246d22f77",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 331,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5791,32 +5905,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 69,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8528aafd90e7d21091275f32e58cb02d",
-      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 401,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "8532baf959f541065cfa18034e28023f",
-      "_from": "vertices/863a789fea013a060867670258d9eabb",
-      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 351,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -5888,32 +5976,6 @@
       }
     },
     {
-      "_key": "874160f783eee90fbf7a03e5ad7863bb",
-      "_from": "vertices/55ea0f5f3a602c08c2f741fe4a5f7871",
-      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 454,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "87956420e1a7bc3608eb741e1c32ee7d",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 238,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "88166e693de53b4313d20b824ce1265a",
       "_from": "vertices/0b8d689d9cb3eea7f9b46e6290b5be5b",
       "_to": "vertices/5b4d085440f083d0831f97f8a64a4f4d",
@@ -5953,19 +6015,6 @@
       }
     },
     {
-      "_key": "8a8d868842dfe1ce98a169ab8c66d49b",
-      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
-      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 178,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "8ae410a5e330906f43f2a6f89929172d",
       "_from": "vertices/e934472b2663b88bda41393b60b77691",
       "_to": "vertices/8366723436181eab2c3edb518ed398f3",
@@ -5992,19 +6041,6 @@
       }
     },
     {
-      "_key": "8c003e250e6d883fe17ee060f6a2dee4",
-      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 428,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "8dc641a85dd7766c4a7b79d26c36f15b",
       "_from": "vertices/962b91a53fd69763fcf81262ab4e64f1",
       "_to": "vertices/c1c1f340ee1a3991d4bc82e7f01d9d8c",
@@ -6018,39 +6054,39 @@
       }
     },
     {
-      "_key": "8e012e564e81ecbd2abaed5e181addd9",
-      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
-      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
-      "type": "has-type",
+      "_key": "8f2d733f66a279ad0fef84d5275155a4",
+      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 176,
+      "line": 457,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "8fda625d0a12cb0f603930c429b85ca8",
-      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_key": "911257a0f15b0fcf3d4389924749c41a",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
       "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 687,
+      "line": 601,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "916155a94160b12a06eb38562563ee72",
-      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
+      "_key": "913db430475d54dc26f7d45ca0ec663e",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/c75ca50f99e01165f9638636ee63090c",
+      "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 676,
+      "line": 577,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6070,26 +6106,26 @@
       }
     },
     {
-      "_key": "92a21a7870d3e3e84c801a1bddebe1ce",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "_key": "92042d90f0682f087e25e6db62629456",
+      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
+      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
       "type": "calls",
       "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 549,
+      "crosses_concept": true,
+      "line": 627,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "9372f40cbf01c2231057eaec6f2e442d",
-      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "_key": "921453c08d45e57438171fa5aa3fcec4",
+      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_to": "vertices/bd079602a5fa65095efb3c071bdca466",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 443,
+      "line": 687,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6103,6 +6139,32 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 43,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9445342050500d65ff19c699a4fdf4ca",
+      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
+      "_to": "vertices/3743dd5df2a24b161baf42e803a11d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 630,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9470a49bd462543e766323584bbf81c7",
+      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "_to": "vertices/e600db8223bb1a44798560053d43dadd",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 444,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6129,6 +6191,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 148,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "9559f0e2a6c5f780da283963186da878",
+      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
+      "_to": "vertices/771b375af12d565f050e3d400184897f",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 426,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6213,26 +6288,26 @@
       }
     },
     {
-      "_key": "98c1ebc099641c0c79d465a15d988130",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "_key": "98f961aa7901398bc71a12bfac2d7d64",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/6c66282d2a162aea08af7874e20002aa",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 579,
+      "line": 274,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "9aa60a59735f176856b5b686879f2f18",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
-      "type": "calls",
+      "_key": "9995d77b4fbb20ac415285d0c278a4cb",
+      "_from": "vertices/863a789fea013a060867670258d9eabb",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 373,
+      "line": 358,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6278,6 +6353,19 @@
       }
     },
     {
+      "_key": "9e73837d22b2cf6db2964c485c14e4d2",
+      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
+      "_to": "vertices/3743dd5df2a24b161baf42e803a11d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 636,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "9e876f519402735bb9e286235ee18e55",
       "_from": "vertices/ab6e60d9bbbd2e1c21b5640e8ff21a6c",
       "_to": "vertices/3fb44e547255052aceaae8bd59e0f013",
@@ -6285,6 +6373,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 41,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a01cb60d4f038448b0388a30c8f41622",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 383,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6317,13 +6418,39 @@
       }
     },
     {
-      "_key": "a3395218941a544b4b328da2953111f5",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/1d6d135fbacc9437168ed4493a5a995a",
+      "_key": "a3b645bbd84555fc3c32d3b2c969a4ac",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/9673b6f6f6813aad6cb82ec384444b4e",
       "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 540,
+      "line": 382,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a3c03038670487d250e960357ba30fe8",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/5e8346e296531287c35b35e17f772023",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 255,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a40a763bb8892481a503ab7386472054",
+      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 443,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6356,6 +6483,45 @@
       }
     },
     {
+      "_key": "a6045011d8bfe525f56b1f168ce060a8",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/1d6d135fbacc9437168ed4493a5a995a",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 554,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a6075ee168c11928afa2d6046ddea2ef",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 563,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "a698735fcb8dea4c5629c9e68ccc111f",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/9673b6f6f6813aad6cb82ec384444b4e",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 247,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "a79783b1ac6c0165f51e55c2eb10d181",
       "_from": "vertices/22b1e6999b5c4d57702aa29d013751c2",
       "_to": "vertices/4f366ac43f093e521c5a451c50ef1015",
@@ -6382,13 +6548,13 @@
       }
     },
     {
-      "_key": "a9553ee114e8bef0c482dec31186e219",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "_key": "a954a4abc433eb78c2e164ee22a8d1e5",
+      "_from": "vertices/0b0ed609417506d67d38c1ae960f5cd6",
+      "_to": "vertices/88de41b114785c0a817d6edd115c0501",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 372,
+      "line": 152,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6421,6 +6587,32 @@
       }
     },
     {
+      "_key": "abc3baa9c806163c274b9f00573eda42",
+      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 701,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "ac78efbbca647f36e3e377e18377b53c",
+      "_from": "vertices/cb9bd79230c1f31a293738d246d22f77",
+      "_to": "vertices/cadff9aef4093eaa45a9c4d5a8a1d0dd",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 332,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ad7071af25b5100bee3773ae4afe7620",
       "_from": "vertices/a9e9abfbb0a1a824326fcfb4fc3517a3",
       "_to": "vertices/8934739e0d84ccbb02a5564ee6c05e51",
@@ -6447,52 +6639,26 @@
       }
     },
     {
-      "_key": "aec00aadf1c6ebd0164d889052a303b0",
-      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
-      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "_key": "adca81644e722ed634d56714194f004c",
+      "_from": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
+      "_to": "vertices/c4375514c878ed2323634363885ade1b",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 518,
+      "line": 661,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "aee86599366755d728f0199fd87045e0",
-      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
+      "_key": "aed76522d183ef9812e2c8937dbec34f",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
       "_to": "vertices/4970841467aaca2eb43dae36252b8755",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 520,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "af24fba9bc36737c604652faf69a3476",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": true,
-      "line": 583,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "af35be7c5363cd250f1e366e3b0267c2",
-      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
-      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 691,
+      "line": 572,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6590,6 +6756,32 @@
       }
     },
     {
+      "_key": "b2304760840076d3e0fd1c4a2e02e417",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 249,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b254e2350e966ed316f9d7a7819d4101",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/3743dd5df2a24b161baf42e803a11d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 598,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "b33d7c8a980ca73ff01beaf0c63e9717",
       "_from": "vertices/504476e553e7592cb630832fdbb450e9",
       "_to": "vertices/8013c74f812a3e7e2f109652f141d8e3",
@@ -6597,6 +6789,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 50,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "b505db1254a699aeebcdc6605306b1a7",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/3fb586421bbb551a7d73abbdad3a1596",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": true,
+      "line": 559,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6616,19 +6821,6 @@
       }
     },
     {
-      "_key": "b6b032c72554171b52e680a309fbf8e8",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 369,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "b781ad209c76672ff8b5913faee448ae",
       "_from": "vertices/962b91a53fd69763fcf81262ab4e64f1",
       "_to": "vertices/c1c1f340ee1a3991d4bc82e7f01d9d8c",
@@ -6636,19 +6828,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 297,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b8e0d92b32d59110999f6c4ca31aa4a2",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/d99640b9388426fd514610c326f43214",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 76,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6675,32 +6854,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 46,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "b9ef5fa6884301413c581d5f04c35ba2",
-      "_from": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
-      "_to": "vertices/b14fe3dba5b514bfcc975055fd5dc904",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": true,
-      "line": 646,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "ba5d0ae075f4111adbdd31bd286db3ec",
-      "_from": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 467,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6746,6 +6899,32 @@
       }
     },
     {
+      "_key": "bc65c995ce302650169c9c7254b85703",
+      "_from": "vertices/863a789fea013a060867670258d9eabb",
+      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 359,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "bca36eac2595d78b882b499452eadeca",
+      "_from": "vertices/55ea0f5f3a602c08c2f741fe4a5f7871",
+      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 468,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "bcc3b56ee30e12b7f635cad2cabc0787",
       "_from": "vertices/00ca2301f8252a5245ae2ddf42151211",
       "_to": "vertices/b41f66b0f7e2419fe5f0cc35971f571d",
@@ -6772,13 +6951,13 @@
       }
     },
     {
-      "_key": "bd363ef50659460b6bde09befcee2113",
-      "_from": "vertices/cadff9aef4093eaa45a9c4d5a8a1d0dd",
-      "_to": "vertices/09c96a95db15ac77d9862e6c7029e15d",
-      "type": "calls",
+      "_key": "bde70e9646e4d760fffd679053ffc40e",
+      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
+      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
+      "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 302,
+      "line": 71,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6850,6 +7029,19 @@
       }
     },
     {
+      "_key": "c13dd07d766bd16694449eba04d82760",
+      "_from": "vertices/863a789fea013a060867670258d9eabb",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 364,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c16167276d4cb07710543497880a9e8f",
       "_from": "vertices/3f2f4aed2d1f15134a42a596d837a046",
       "_to": "vertices/3a9c96cd710737d31f9103604c7ebf3d",
@@ -6876,6 +7068,19 @@
       }
     },
     {
+      "_key": "c224b2378d64379e7c15941d87f7db90",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 385,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "c30bf50d48b0eef5743dae51e790d916",
       "_from": "vertices/faa62810753e9585f748b9928a285b6c",
       "_to": "vertices/41c7f81cdd222c88f31674008613fa42",
@@ -6889,26 +7094,13 @@
       }
     },
     {
-      "_key": "c44f1190b26521f42b9eb7d433ca06d2",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/c4375514c878ed2323634363885ade1b",
+      "_key": "c3d8bf06fd92caf5df2027a57239cdf1",
+      "_from": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
+      "_to": "vertices/b1b61f83e3f87c590c518ea57822fc47",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 584,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c507ac79bdcc07747b4662ea79a4a1f7",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/4970841467aaca2eb43dae36252b8755",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 558,
+      "line": 482,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -6928,26 +7120,13 @@
       }
     },
     {
-      "_key": "c63518ca6cb48ad4b80257529d0504c6",
-      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
-      "_to": "vertices/e600db8223bb1a44798560053d43dadd",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 444,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "c69f800192d0916d36de3c263c5ac74f",
+      "_key": "c67bcc1883510adf56350ad7bf08d0ea",
       "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
+      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 560,
+      "line": 565,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7013,6 +7192,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 124,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "c84c2876e09ceba531d06fd7d801c9ca",
+      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
+      "_to": "vertices/bd079602a5fa65095efb3c071bdca466",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 558,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7097,6 +7289,19 @@
       }
     },
     {
+      "_key": "ce0a5770928a8681cf47670c6dc9210b",
+      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
+      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 253,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "ce67e6a2ed7948ac9fbdd829bafe861a",
       "_from": "vertices/109f622e3504a4cb1a6d2d8c0b3a7047",
       "_to": "vertices/1ad1a4967eaa75535c5b201ca8a595de",
@@ -7110,6 +7315,19 @@
       }
     },
     {
+      "_key": "ce6b294eaedcc882f29827f85c180e26",
+      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_to": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 686,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "cfa5955496376e54541fcbdfd9468e5f",
       "_from": "vertices/f42c6ec785267f1f7ae2e01ff46767f8",
       "_to": "vertices/a6c89c61459988769ef8916fa8639f06",
@@ -7117,32 +7335,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 89,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d0b5841946dd78c5a563dcd33bcba09e",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/cadff9aef4093eaa45a9c4d5a8a1d0dd",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 259,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d142b3694ab0499552280b54efd4f30f",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 66,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7175,13 +7367,13 @@
       }
     },
     {
-      "_key": "d2b72f1f98a31c971b17412d14fa6ca5",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
+      "_key": "d26614efe6e72a03f191c11ceaff5318",
+      "_from": "vertices/54dea01d0824d41638a18e2b2c4436d0",
+      "_to": "vertices/88de41b114785c0a817d6edd115c0501",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 545,
+      "line": 119,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7201,13 +7393,26 @@
       }
     },
     {
-      "_key": "d38a3c316d041df9fc22c07ef72ff824",
+      "_key": "d3b9bea977fc906d42aeffa8dde4ede4",
+      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
+      "_to": "vertices/0e1ad35f1356ecc5084fea0ed9a72034",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 444,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "d46694bdec43a1a9454e713dfaec8403",
       "_from": "vertices/3b2bba301484030df455f837d3a0416e",
       "_to": "vertices/2ffc54ddeb203de990642fe6c3aaad20",
       "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 64,
+      "line": 76,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7221,19 +7426,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 40,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d5d48f00aa82d11ea6ab20560043c498",
-      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
-      "_to": "vertices/7f6b071a0a5579070aec46a6b58bcce2",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 521,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7279,32 +7471,6 @@
       }
     },
     {
-      "_key": "d6c2aee029a9502eb96dcba6ae0c713a",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/c75ca50f99e01165f9638636ee63090c",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 563,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d6dab0d0f767e1950dce5ffd90df0111",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/a35f1c759165ada446af55c05b7de360",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 240,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "d6e03cd4851c0d540d965ba96539abf5",
       "_from": "vertices/109f622e3504a4cb1a6d2d8c0b3a7047",
       "_to": "vertices/86df113eefe57d1a3c0d9227048e9246",
@@ -7325,19 +7491,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 87,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "d865117d1cfd818dde70f02a3c69d5a9",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/55ddfc7a9990df7b7f37d1cb43cbee42",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 547,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7370,39 +7523,26 @@
       }
     },
     {
-      "_key": "d99450ca9affe74c5a52190df2a9b71a",
-      "_from": "vertices/3b2bba301484030df455f837d3a0416e",
-      "_to": "vertices/68b5176ab45bc9c3dc35151ad504343f",
-      "type": "has-type",
+      "_key": "d8f0894a08e581ba748e06d2f5818f50",
+      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
+      "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
+      "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 63,
+      "line": 385,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "da1b450cd3d9de96e40e3ec83d8472d4",
-      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
-      "_to": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_key": "da13ea22c92926a5b703cb76ea77f262",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/c4375514c878ed2323634363885ade1b",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 623,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "da5a55959ea1b905d4b79f0fda2fd899",
-      "_from": "vertices/b55eba7071c0a4dda52de26f1b8d4bcf",
-      "_to": "vertices/ac49f340b504540608f0a6a7c55a4cef",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 255,
+      "line": 598,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7442,19 +7582,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 185,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "deb1c713a6ac551b1054ba1e8cca586f",
-      "_from": "vertices/28cc04cf1c2e4e35046cae140ed7a3c2",
-      "_to": "vertices/3743dd5df2a24b161baf42e803a11d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 622,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7552,6 +7679,19 @@
       }
     },
     {
+      "_key": "e43268b89102313b639c002465ae0638",
+      "_from": "vertices/d2f4dfe01cc9ede4a2788e9fe6de9e61",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": true,
+      "line": 659,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "e54405ff3cf710fb001441a58af2906d",
       "_from": "vertices/e934472b2663b88bda41393b60b77691",
       "_to": "vertices/b2dca5d99e61b356889aa0bba8ff5959",
@@ -7591,19 +7731,6 @@
       }
     },
     {
-      "_key": "e7c78053b2cbd1e56ca3a5fa648a9598",
-      "_from": "vertices/7e574ade7856253324d2c4fdcad2badc",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 429,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "e7ff8bfc2f40815c15be2bd767dc0d53",
       "_from": "vertices/3659ce7bdf5a5f0e6367ee738470a4dd",
       "_to": "vertices/e7591e1953677021cd69636d146a7fde",
@@ -7624,19 +7751,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 125,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "e93021c29b88804356ca8514198929b9",
-      "_from": "vertices/863a789fea013a060867670258d9eabb",
-      "_to": "vertices/fc29cef8616082a26da6a763fb1b2d2a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 345,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7682,13 +7796,13 @@
       }
     },
     {
-      "_key": "ebc1bb97d2662c1cbe0117bde989c37d",
-      "_from": "vertices/171e5d53ec3f897bd2862efbdcc1496e",
-      "_to": "vertices/5e8346e296531287c35b35e17f772023",
-      "type": "calls",
+      "_key": "ec1ef78122143211c69d68e346bed913",
+      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 374,
+      "line": 456,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7747,19 +7861,6 @@
       }
     },
     {
-      "_key": "f0442e0bc2eadbad3cce47f53d6704bd",
-      "_from": "vertices/7767864fdfa65ab49f8f0979fd41fed7",
-      "_to": "vertices/74f048bfe533328ed084e3ab6419fbac",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 184,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "f051f733d975f9737ba4b2ac15ea61c6",
       "_from": "vertices/d5cd5eb63fe517a79c29243426f08349",
       "_to": "vertices/e613252ba2c951c5d30ad459396ff389",
@@ -7767,19 +7868,6 @@
       "concept": "maestro-architecture",
       "crosses_concept": false,
       "line": 136,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "f13fb31e251de19731763eb8eddef3c0",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/c75ca50f99e01165f9638636ee63090c",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 550,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7799,6 +7887,19 @@
       }
     },
     {
+      "_key": "f3c92ce5b7301cf28b16a1c4d44d05ab",
+      "_from": "vertices/e600db8223bb1a44798560053d43dadd",
+      "_to": "vertices/40687f14372bebc709036418f8620eee",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 414,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
       "_key": "f3f40a647a2ab8341253f043a49b81e3",
       "_from": "vertices/1ac12e40e661e661e122b15dfdce98a6",
       "_to": "vertices/c0c2f639302dddb0a0ba5a22078fd636",
@@ -7812,26 +7913,65 @@
       }
     },
     {
-      "_key": "f4b6e75b8838f1c75da343b3251653e0",
-      "_from": "vertices/9cb63817418ae48d730cd19d13ddee0c",
-      "_to": "vertices/3fb586421bbb551a7d73abbdad3a1596",
+      "_key": "f42c9149fd95f82a419f5035b6dfe4ca",
+      "_from": "vertices/06c08609ffff58adec63580da1dbbeda",
+      "_to": "vertices/7e574ade7856253324d2c4fdcad2badc",
       "type": "calls",
       "concept": "maestro-architecture",
-      "crosses_concept": true,
-      "line": 545,
+      "crosses_concept": false,
+      "line": 705,
       "ast": {},
       "agent": {
         "authored_by": null
       }
     },
     {
-      "_key": "f616f9e6c1fcba156009174a5147f2a6",
-      "_from": "vertices/b4e8e4ebee31e8f6f3e9dcff0f4b109a",
+      "_key": "f4b95da3e5a30883f973bbb5034cf1d8",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/54b573bd5a9e2bd39558531f82f68820",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": true,
+      "line": 595,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f4f0de501eb055c10494657423e40f9a",
+      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
+      "_to": "vertices/cb9bd79230c1f31a293738d246d22f77",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 603,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f57d9078175cdca072e01d8dcbe95117",
+      "_from": "vertices/0b0ed609417506d67d38c1ae960f5cd6",
+      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
+      "type": "has-type",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 133,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f5b68466f0cf414f536a3a6578958c48",
+      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
       "_to": "vertices/b1b61f83e3f87c590c518ea57822fc47",
       "type": "calls",
       "concept": "maestro-architecture",
       "crosses_concept": false,
-      "line": 468,
+      "line": 458,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7858,6 +7998,19 @@
       "concept": "maestro-architecture",
       "crosses_concept": true,
       "line": 93,
+      "ast": {},
+      "agent": {
+        "authored_by": null
+      }
+    },
+    {
+      "_key": "f810a34dc52b35754dcb7bdf8954604c",
+      "_from": "vertices/c75ca50f99e01165f9638636ee63090c",
+      "_to": "vertices/4970841467aaca2eb43dae36252b8755",
+      "type": "calls",
+      "concept": "maestro-architecture",
+      "crosses_concept": false,
+      "line": 534,
       "ast": {},
       "agent": {
         "authored_by": null
@@ -7916,19 +8069,6 @@
       }
     },
     {
-      "_key": "f93151172e6f2027bdf250cd15863830",
-      "_from": "vertices/0b0ed609417506d67d38c1ae960f5cd6",
-      "_to": "vertices/aa18d3377f6d9db200d31c2e41425fda",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 119,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "f9aeb0fb3041d1f350fcb45254588785",
       "_from": "vertices/57fd4a749f5684171240d8e773703bbd",
       "_to": "vertices/21e560bbee57f95f28653797f923955d",
@@ -7968,32 +8108,6 @@
       }
     },
     {
-      "_key": "fdde716e067e17f437dc2aa05d2b469e",
-      "_from": "vertices/9d125993d78fee3293f3d81d5b63c332",
-      "_to": "vertices/b74dd8074a7d0c0d62024ab0b2ff997a",
-      "type": "calls",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 587,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
-      "_key": "feae9ff6f74e95ed3d314caf9defd679",
-      "_from": "vertices/4b7d7f316ecdb58052f03e2978cf83ff",
-      "_to": "vertices/40687f14372bebc709036418f8620eee",
-      "type": "has-type",
-      "concept": "maestro-architecture",
-      "crosses_concept": false,
-      "line": 442,
-      "ast": {},
-      "agent": {
-        "authored_by": null
-      }
-    },
-    {
       "_key": "fec36c95c8f4d12a71e07e315504b28f",
       "_from": "vertices/5771b44f3f93a4ba6826a6e3ef6c0dbc",
       "_to": "vertices/e31bc816d00147be24429ebd8fe24791",
@@ -8009,18 +8123,18 @@
   ],
   "skill": {
     "path": ".claude/skills/maestro-architecture/SKILL.md",
-    "body": "---\nname: maestro-architecture\ndescription: \"Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract and the three-tier resolution (project file, global sqlite store, bundled seed) behind each route's handoff_details protocol, how a route's payload travels on an agent channel (`.claude/channels/<scope>/<receiver>/<sender>.1.md`, scoped per task or session since `144`) rather than through the orchestrator's own context, the run_id stamp that guards a delivery's freshness, the orchestrator skill's managed regions and its optional config-driven Step 1 gates and Step 4 task-routing nudge (`046` — both injected dynamic context, the same third delivery channel beside hooks and template prose), the dual-registered hook that auto-enables that nudge on a session's first `/to-maestro-tasks` invocation (`047`), the separate always-on Step 4 prompt asking once about `/maestro-post-mortem` after a rough session (`049` — static template prose, not script-injected, not config-gated), and the config + session state on disk: maestro.json, plus the PER-SESSION directory <project>/.claude/maestro_sessions/<session_id>/{log.jsonl,session.json,tasks.json} (`064`) that replaced the three flat per-project files, and how a caller resolves which session it is (payload session_id -> CLAUDE_CODE_SESSION_ID -> null). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, where a route's handoff_details payload shape comes from and how to add or change one, why a channel payload wasn't delivered or was delivered late, why /maestro ran (or skipped) the confidence and design gates, why a condition-edge loop-back resumed an agent instead of spawning a fresh Task, why a resumed subagent's injected context is five blocks shorter than a first run's (`040`), why a hand-edited config's duplicate agent type is reported as a banner, a `/maestro-update` warning and an install-report line rather than repaired (`041`), why two concurrent Claude Code sessions in the same project no longer overwrite each other's log, active workflow, run_id or task coverage (`064`), how team-meeting mode changes what the hooks do for a participant (the session.json `meeting` flag, meeting_leftovers and the stamp skip), or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill.\"\nmetadata:\n  type: concept-skill\n  version: \"1.32\"\n  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47\n---\n\n# Maestro Runtime Architecture\n\nMaestro turns a project into a multi-agent workflow: the user manually invokes the **`/maestro`** skill, which classifies each request, runs whichever Step 1 gates the project has turned on (by default, none), picks a configured workflow, and dispatches subagents whose skills + handoff rules are injected at runtime from `.claude/maestro.json`.\n\nThis doc covers the **runtime** half — the part that only exists inside a Claude session. The **authoring** half is the Maestro desktop app (`apps/maestro`), documented in the `workflow-view` and `rule-view` skills. The two meet at `.claude/maestro.json` and nowhere else.\n\n```\nauthoring (apps/maestro, no session)     runtime (this doc, session only)\n  /workflows + /rules canvas      ──▶    .claude/maestro.json   ──▶   orchestrator + hooks\n        saveConfig() writes it              (source of truth)          read it every session\n```\n\nThat split is the whole point of the architecture. Everything on the left is deterministic node\ncode — reading files, writing JSON, rendering a table, moving rule files — and needs no model.\nEverything on the right needs a live session because it fires _on session events_. There is no\nlonger any transport between the two: no container, no port, no `/tmp` channel file, no hook that\nblocks waiting for a UI. A save is an IPC call in the desktop app; a hook is a script the session\nruns.\n\n## How the runtime gets there\n\nTwo paths write the same files and end at a rendered orchestrator over a seeded `maestro.json`: the\ndesktop app's `/maestro` route (`installRuntime()` in `src/core`, no session involved, and the path\nto prefer) and `/maestro-install` for a machine without the app. Both copy the runtime scripts into\n`<project>/.claude/scripts/`, register the hooks in the project's own `.claude/settings.json`,\nignore the session files from the repo-root `.gitignore`, and seed `maestro.json` **only when\nabsent**. Rendering is always a separate step afterwards, because the renderer consumes\n`maestro.json` and writes into `maestro/SKILL.md`, so both must already exist — which is all\n`/maestro-update` is.\n\n`/maestro-uninstall` reverses the hook registration and clears the session files; `--purge` also\nremoves the orchestrator skill, the copied scripts and `maestro.json`.\n\n**The full pipeline — the asset and hook manifest, the two implementations that must agree, how\nstaleness is decided, and what a purge deletes — is the `installing-maestro` skill.** What follows\nhere is what those files then *do* inside a session.\n\n**What an install cannot do:** author a graph. It seeds one. Adding a workflow, moving a node,\npromoting a skill from referenced to loaded, or assigning rules is the app's canvas or a hand-edit —\nand the `rules` slice starts empty either way, since placing rule files is `maestro-apply-rules.js`'s\njob.\n\n## Runtime lifecycle (one session)\n\n```\nUser invokes /maestro in a session\n        │\n        ▼\nUserPromptExpansion hook (matcher \"maestro\") → maestro-step0.js\n  • Step 0, before the expanded prompt reaches the model: readiness (maestro-check-runtime) + forked\n    agents (computeAgentSync). Healthy ⇒ silent. Behind ⇒ one instruction as context. Not installed\n    ⇒ exit 2, and the invocation never happens. Versions compare semantically (`087`,\n    `runtime-version.ts`): a project NEWER than the plugin is not behind — `pluginBehind` + one\n    notice (\"update the plugin, never /maestro-update\"), and the session continues.\n        │\n        ▼\nOrchestrator (.claude/skills/maestro/SKILL.md):\n  (no Step 0 — it is not a step any more; the hook above is the whole of it)\n  Step 1  custom checks (OPTIONAL gates). The template holds three lines amounting to \"do what\n          the injected line says\"; the injected `maestro-step1-gates.cjs` line supplies the\n          step itself. A freshly seeded project: \"no gates enabled, continue to Step 2\".\n  Step 2  classify request → node .claude/scripts/maestro-set-session-workflow.cjs \"<workflow>\"\n                              └─ writes { workflow, generated_instances } → THIS session's\n                                 maestro_sessions/<session_id>/session.json, and ends any\n                                 team meeting in it (closeMeeting)\n  Step 3  execute the workflow: the success path from the Maestro:HANDOFFS table,\n          TaskCreate per step, Task() each agent step. No TaskCreate (`083`): the path is\n          recorded with `maestro-task-status.cjs plan` / `plan-step` in session.json, and Step 4's\n          `done` refuses while a planned step (manager and human review included) is unfinished. In a worktree\n          run Step 4 offers a user-approved commit before ever mentioning merge, and every command\n          handed to the user carries absolute paths (the session's cwd IS the worktree). Step 3\n          (`104`): a denied agent channel write is not retried by resuming — the orchestrator writes\n          the file from the agent's returned payload (see `sub-concepts/channels.md`).\n  Step 4  mark the task done (the mark-task-done node; it no longer commits), then the OPTIONAL\n          task-routing nudge (`046`)\n  Step 5  post mortem: notes in the task file, and the always-on /maestro-post-mortem question (`049`)\n  Step 6  report to the epic (only when `done` printed an epic report command, `084`)\n  Step 7  end skills (injected `maestro-end-skills.cjs` line, `089`); Step 8 (worktree only) merge\n        │\n        ▼ (each Task → subagent)\nSubagentStart hook  (matcher \".*\")  → maestro-inject-agent-context.js\n  • reads active workflow from this session's session.json + the instance from maestro.json\n  • FIRST run of this agent_id: injects skills + condition-edge routing + per-route payload\n    protocol + report format;  RESUMED run: one reminder line instead\n  • REQUIRED-payload block on EVERY pass (`087`, `payloadRequirement`): names the channel file per\n    payload route — with shapes on a first/cold run, file names only on a resume\n  • if the active workflow can't be resolved → prepends a ⚠️ warning (skills may be unioned/wrong)\n  • cold run: restores a pre-restart delivery after a resumable end first (`159`, see channels.md),\n    then inlines + retires this run's lane files. RESUME (`088`): Claude Code DROPS the whole\n    additionalContext, so nothing above reaches it — its lane files go by path in the orchestrator's\n    SendMessage (resume-target's `deliver:` lines) and are retired at its own SubagentStop\n  • lanes are read only in this session's own scope (`144`, .claude/channels/<scope>/)\n  • scribe lane (`112`): a skill-gap report is inlined to every same-scope scribe, any run, kept until\n    the scribe's SKILL_GAPS_HANDLED: line (its SubagentStop) or the 14-day sweep retires it\n        │\n        ▼\nSubagent runs, writes its payload, ends with a HANDOFF: line (in its final text, or inside a\nSubagentHandback/SendMessage tool call — the SubagentStop hook recovers it from the transcript)\n        │\n        ▼\nOrchestrator reads HANDOFF:  → `success` continues the success path; a matching label routes back\n                               to that node (resuming that agent when it already ran this session)\n        │\n   (every tool call, all agents)\n        ▼\nPreToolUse hook (matcher \".*\") → maestro-session-log.js → appends one line to this session's log.jsonl\n        │\n        ▼\nSessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)\n                  → on a FINAL end deletes ONLY THE ENDING SESSION'S directory; a resumable\n                    `reason` keeps it and appends one `session_end` line to its log (`077`, `159`)\n                  → sweeps .claude/channels/: a final end retires the own scope's .consumed/\n                    outright, a resumable one only ages it out (`159`); everything else only\n                    past 14 days (`144`). Keeps maestro.json and the orchestrator skill.\n```\n\n**Review gate (`130`, `132`).** A second `PreToolUse` hook, matcher `AskUserQuestion|SendMessage` (`maestro-human-review-gate.js` in the plugin, `.cjs` project copy), gates both review stops. The current step is the first unfinished step of `plan` in `session.json`. The review file is `.claude/maestro-tasks/<task>.review.md` for round 1 and `<task>.review-N.md` after that. Round = 1 + `plan.loopbacks` + review stops (human or manager) already done (`currentReviewStop`); `plan-step <label> pending` increments the optional numeric `plan.loopbacks` (any loop-back, not only one at a review).\n\n| Stop | Denied until the round's review file exists | File sections |\n| --- | --- | --- |\n| `human review` | `AskUserQuestion` | `## Changed`, `## Did`, `## Deviations from the ticket`, on a re-review `## Corrections since the last round` |\n| `manager review` | `AskUserQuestion` (escalation, fallback) and a `SendMessage` whose `to` (minus a trailing `[ref]`) is the active task's epic manager | the direction brief (below) |\n\nTo learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` (`epicOfTask`, `readEpicState`); a missing bundle (older install), no epic or no recorded manager leaves `SendMessage` ungated. The hook fails open: it allows the call when there is no plan, no `active_task`, or an unreadable state, so a session that never records a `plan` is not gated. Logic is in `src/core/human-review-gate.ts`, exported through the `maestro-session` bundle. Orchestrator template Step 3 always records the plan and writes the review file before asking or requesting. An install moves a gate registered under the old `AskUserQuestion` matcher to the new one (`updateHookMatchers`, both installers), since `addMissingHooks` keys on event + script and would keep it.\n\n**Manager review (`132`).** A `manager review` step is no longer run as a human review, except on escalation or fallback. The worker (orchestrator template Step 3):\n\n1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.\n2. **Brief.** The round's review file as a short direction brief: `## Goal`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Questions`. No commit or suite result (`150`): the test and reviewer steps own that. On the fallback and escalation paths the stop is a human review, so the worker also adds `## Verified` to the brief. A re-request after a redirect opens with `Round <N>` and quotes the redirect note, each point with how it was addressed; that round checks only that the redirect was addressed.\n3. **Request.** `maestro-epic.cjs review-request --task <t> --file <f>` refuses a file that does not exist or is not that task's review file, logs a `review` inbox entry `mNNN` with its `round` (the ticket's request count + 1), and prints the ONE `SendMessage` line for the manager. The same file again while it waits is a re-send, not a new round. `show`/`reports` list it until a verdict exists or a newer request for the ticket supersedes it; `ack` refuses an `mNNN`.\n4. **Verdict.** `maestro-epic.cjs review-verdict --task <t> <on-track|redirect|escalate>`, run by the manager when it decides and by the worker on the reply; the second caller gets the recorded verdict back. It logs a `verdict` entry with `verdict` and `effective`.\n\n| Effective verdict | Worker does |\n| --- | --- |\n| `on-track` | `plan-step \"manager review\" done`, continues the success path |\n| `redirect` | follows `manager requested direction change` to the producing agent with the note (which repeats the direction the manager added to the task file); the redirect leaves the stop unfinished, so it re-runs as the next round. No such edge → `escalate` |\n| `escalate` | a `human review` inline at this stop, the manager's note added to the summary |\n\n**The 1-redirect cap counts per ticket, not `plan.loopbacks`** (which counts every loop-back, a test one too). `MANAGER_REDIRECT_CAP = 1` in `epics.ts` (`150`, was 2); `reviewHistory` counts the ticket's `verdict` entries whose `effective` is `redirect`. With 1 recorded, the next redirect is logged `effective: \"escalate\"`, `capped: true`. The manager manages (`150`): it never reads the diff or code and never picks an implementation, redirects only for work contradicting the ticket, an epic decision or a sibling ticket (never style, tests, lint, commits or correctness), and records any direction in the task file. There is no `for @reviewer:` note. **A loop-back from a test or reviewer step does not reopen the check:** `plan-step <label> pending` (`planStepCommand` in `maestro-task-status.cjs`) resets every later step except a `manager review` already done and after the target; a stop named as the target still resets, and a redirect leaves the stop unfinished so it re-runs by itself. `plan.loopbacks` still increments, so review files keep distinct rounds. Code: `writeReviewRequest`, `recordReviewVerdict`, `reviewHistory` in `src/core/epics.ts`, exported through the `maestro-epic` bundle.\n\n**Parallel tasks and the red-suite rule (`145`).** A task file may carry a `## Touched surfaces` section, written by `maestro-write-tasks.cjs` from the optional `touchedSurfaces` slice and placed before `## Blocked by`. An epic's `EPIC.md` holds a merge-plan table that `maestro-manager` records before it spawns workers. Neither is read by a hook. **No human review or reviewer round approves work while the full suite is red** (the manager review is exempt since `150`: it checks direction only): the human review file's `## Verified` (also added to a manager brief on the fallback and escalation paths) and the epic report from Step 6 each name the commit verified and the green suite on it.\n\n## Where the detail lives\n\n| Sub-concept | Covers |\n| --- | --- |\n| `sub-concepts/hooks.md` | Every hook: event, matcher, script, exact effect. Why the container-era `SessionStart` is gone and what the two current ones (`113` name, `141` heartbeat) do. The two copies of every script and which one wins. The Step 0 traps. |\n| `sub-concepts/session-state.md` | `maestro.json` and the per-session directory (`064`): the file table, `log.jsonl`'s entry kinds, and how a caller resolves which session it is. |\n| `sub-concepts/session-end-reasons.md` | Which SessionEnd `reason` values keep the session directory (resumable) and which remove it, how they were observed, the one rule both cleanup twins share (`077`), and the `session_end` log line a resumable end writes (`159`). |\n| `sub-concepts/handoff-contract.md` | The four blocks `SubagentStart` injects, the three-tier `handoff_details` resolution, and what the orchestrator does with a `HANDOFF:` line. |\n| `sub-concepts/channels.md` | `.claude/channels/` (`036`): how a route's payload travels, the per-task/session scope (`144`), the `run_id` stamp, retirement, the scribe lane's kept gap reports (`112`), the 14-day sweep, and the restore of a delivery a restart cut off (`159`). |\n| `sub-concepts/step-gates.md` | Injected context as a third delivery channel: the Step 1 gates (`032`), the Step 4 task-routing nudge (`046`/`047`), and the post-mortem prompt that is NOT part of it (`049`). |\n| `sub-concepts/agent-resume.md` | Why a condition-edge loop-back resumes an agent instead of spawning one (`039`), why a resumed run's injection is five blocks shorter (`040`), and why a resume gets its payload by path because Claude Code drops its `additionalContext` (`088`). |\n| `sub-concepts/team-meeting.md` | Team-meeting mode: the `session.json` `meeting` flag, what participants get and what's withheld, `meeting: true` log entries, the write guard's meeting dir, and how a meeting ends (`closeMeeting`, `meeting_leftovers`). |\n\n## Common questions — where to look\n\n| Question | Look at |\n| --- | --- |\n| Why didn't a subagent get its skills? | active workflow in this session's `maestro_sessions/<id>/session.json` (was `maestro-set-session-workflow.cjs` run?); the instance's `agent` must equal the subagent's `name`; the skill must be a real project skill |\n| Why are the wrong skills injected? | likely no/mismatched active workflow → union across workflows (the injected `⚠️ warning` says so) |\n| How do I change the orchestrator's behavior? | edit `.claude/skills/maestro/SKILL.md` **outside** the `Maestro:*` markers — the `STEPS`/`PRINCIPLES` regions are re-synced from the plugin template on every install/update; to change those for good, edit `templates/maestro/SKILL.md` in the plugin |\n| My edit to the orchestrator's steps disappeared | it was inside a managed region and got re-synced. Move it outside the markers, or change the template |\n| The handoff table is stale | run `/maestro-update` (re-renders from `maestro.json`) |\n| A `loaded_skills` / node / start-skill entry names a skill that no longer exists | `/maestro-update` step 4 runs `maestro-stale-refs.cjs` (backed by `lib/maestro-skill-availability.cjs`) and reports dangling ids (including `skill-disabled` / `bundled-skills-disabled`, `142`: a skill the project switched off via `skillOverrides` \"off\", `enabledPlugins` false or `disableBundledSkills`, merged user < project `settings.json` < `settings.local.json`; one shared decision `skillDisabledReason` in `skill-availability.ts`, which the app's skill lists also use via `isSkillListed`/`readDisableRules`; unreadable settings fall back to \"listed\"); the same pass suggests plugins: a root `scribe.config.json` without `code-graph` enabled gets an enable hint, and a legacy `.claude/concept-skills.json` without `code-graph` enabled gets \"install code-graph from its own marketplace, migrate via `/code-graph-install`\". The design check a fresh seed names (the Step 1 design check: the Refactor workflow's lead and `/to-maestro-tasks`' start skill) is chosen by `seedSkillsFor` (`core/skill-availability.ts`) from `DESIGN_CHECK_CANDIDATES` (first available wins; today only `code-graph:use-code-architecture-design-check`), so a project without the plugin seeds no design check. Maestro itself hard-codes nothing else. |\n| How do I turn Maestro off? | `/maestro-uninstall` (removes the Maestro hooks + session files); `--purge` to also remove the orchestrator skill + scripts |\n| How did this session go / what could have gone better? | `/maestro-post-mortem` — `maestro-post-mortem.js` digests the invoking session's `log.jsonl` (read-only; `--session <id>` picks another, and with no id resolvable it lists the available sessions instead of digesting an arbitrary one) and the skill couples it with the main session's context to flag avoidable work, false checks, bad assumptions, and handoff issues, then proposes fixes. Run mid-session (the log is wiped at `SessionEnd`). |\n| Where's the install logic? | the `installing-maestro` skill — `installRuntime()`/`uninstallRuntime()` in `src/core` for the app, `plugins/maestro/scripts/maestro-{install,uninstall}.js` for the terminal path |\n| How do I edit the graph without a session? | Open the project in the Maestro desktop app (`apps/maestro`) → `/workflows` for the canvas, `/rules` for rule placement. A save renders the orchestrator and applies rules in the same call. |\n| A handoff payload wasn't delivered, or looks stale | check `.claude/channels/<scope>/<receiver>/<sender>.1.md` — undelivered if still there, retired to `.claude/channels/<scope>/.consumed/<receiver>/` if already read. Scope (`144`) is `task-<NNN>` from `session.json` `active_task`, else `session-<id8>`: a file in another scope, or in the legacy unscoped root, is never delivered to this session. Compare its stamped `run_id` (first line) against this session's own `session.json`; a mismatch means it will be *mentioned*, not inlined, until a matching run consumes it. A scribe gap report (`scribe/<sender>.<n>.md`, `112`) is the exception: delivered to every scribe until acknowledged. Full mechanism: `sub-concepts/channels.md`. |\n| Why did a condition edge resume an agent instead of spawning a fresh one? (`039`) | `maestro-resume-target.cjs` found a `kind:\"handoff\"` log entry for that bare agent type this session and printed its `agent_id`. It prints nothing (cold `Task`) when there is no completed run yet, or when the active workflow maps that agent type to more than one distinct instance. |\n| Why did a resumed subagent get so much less injected context than a first run? (`040`) | Working as designed — `hasCompletedRun()` found a `kind:\"handoff\"` entry for that `agent_id` already, so the skills/routing/protocols/report were skipped for a one-line reminder. And since Claude Code drops a resume's `additionalContext` entirely, the agent sees none of it — channel payloads reach a resume by path in the orchestrator's `SendMessage` (`088`). See `sub-concepts/agent-resume.md`. |\n| A resumed agent says its channel file doesn't exist (`088`) | The orchestrator must name every `deliver: <file>` line from `maestro-resume-target.cjs` in its `SendMessage`; the file stays in the lane until that run's `SubagentStop` retires it (`session.json` `resume_deliveries`). A `missing:` line means the sender never wrote it — also queued as a `missing_payload` issue for `handoff-issues`. See `sub-concepts/agent-resume.md`. |\n| A subagent got a \"team meeting in progress\" notice instead of its routing, or a write was blocked outside `meeting/` | this session's `session.json` has a `meeting` listing that agent type. Starting a workflow (`maestro-set-session-workflow.cjs`) or `maestro-team-meeting.cjs end` removes it. See `sub-concepts/team-meeting.md`. |\n| Why does a hand-edited config's duplicate agent type show up as a banner / stderr warning / install report line? (`041`) | `apps/maestro/src/core/config-validate.ts`'s `duplicateAgentTypes(cfg)` — a pure validator reporting two **placed** instances in one workflow sharing a bare agent, run from three call sites (the app's config load, `/maestro-update`, and `install.ts`) and never auto-repairing. See `maestro-config-model` (apps/maestro's `.claude/skills`) for where each call site computes it. |\n\n## Epics and the manager (`084`)\n\nA task can belong to an **epic**: related tasks that several `/maestro` sessions run at once, coordinated\nby a resumable `maestro-manager` session (a published skill, not a hook or an agent). What changes\ninside a worker session, and only for a task that has an epic:\n\n- **Claim records the session name, and the CLI fills it in (`113`).** The `maestro-session-name`\n  hook names every Maestro session from its id (`maestro-<id8>` on the first `/maestro`,\n  `maestro-mgr-<id8>` on the first `/maestro-manager`, or keeps a user-set custom title), stores it\n  in `session.json` and applies it as `sessionTitle`, so it survives `claude --resume` (a fork gets a\n  new id, hence a new name). `claim` and the epic CLI record that stored name in preference to a\n  passed `--name`/`--from`/`--by`; the orchestrator never reads it from `ListAgents`. A nameless\n  claim still works. The manager finds workers by name, never by address. Mechanism:\n  `sub-concepts/session-state.md`.\n- **Step 4's report.** Before the task is marked done, the orchestrator runs\n  `maestro-epic.cjs report --task <active_task> --from <name> --file -` with the report on stdin. It\n  writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator\n  sends ONE short SendMessage line. A task in no epic prints \"belongs to no epic\" and nothing else\n  happens. A report written while no manager runs survives and is listed unacknowledged when a\n  manager resumes; the manager's `ack` is the only delivery proof. If that SendMessage fails, the\n  printed hint says to run ListAgents and ask the user before messaging a plausible match, never to\n  treat one failed send as the manager gone (`102`). Since `113` a restarted manager keeps its name,\n  so it runs `set-manager <slug>` (name optional; the CLI fills it in) only on opening or resuming an\n  epic that may record an older name.\n- **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and\n  the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the\n  user in the worker's own session. **Approval scope (`132`):** both also say a manager's on-track\n  verdict continues the success path only; it is never the user's approval for commit, merge, push,\n  or agent/skill/workflow changes.\n- **Managers notify each other through notes (`085`).** A manager writes `maestro-epic.cjs note`\n  into another epic's inbox first, then sends one SendMessage line; the receiver acks it like a\n  report. Another manager's note is never the user's approval either.\n\nEverything else (the tracker's `epic` field, the inbox, the write discipline, why session names,\nwhat counts as affecting another epic) is in `task-queue`'s `sub-concepts/epics.md`.\n\n## Live check\n\nWhether Claude Code honours the review gate's PreToolUse deny on `SendMessage` and `AskUserQuestion`\nwas covered only by unit tests until the manager review step was run once for real in an epic worker\nsession (task `137`). Observations, filled in after that run:\n\n- **Gate deny:** observed. The gate denied a `SendMessage` to the manager (`maestro-mgr-3a4fd839`)\n  sent before the round's review file existed. The denial named the missing review file path and the\n  exact `review-request` command to run next.\n- **Review-request line:** observed. The line, recorded with `maestro-epic.cjs review-request`\n  (`m001`, round 1), reached the manager's inbox; the send succeeded.\n- **Verdict:** observed. `redirect` (the manager chose it deliberately to exercise round 2). The\n  orchestrator followed the `manager requested direction change` edge back to @backend (resumed by\n  `agent_id`), reset @backend and the manager review stop to pending, and passed the manager's note\n  to @backend.\n- **Redirect loop:** confirmed. The round-2 request said \"Round 2\", quoted the manager's note and\n  used `.review-2.md` as its review file; `m002` got verdict `on-track`.\n- **Surprises:** @backend could not write its channel file from the worktree (permission\n  classifier), so the orchestrator wrote it as the worktree procedure describes (reported as an epic\n  finding). Expected, by design: the manager recorded the verdict itself, and whoever runs\n  `review-verdict` second gets the recorded verdict back (\"already recorded\").\n\n### Task 154 run (four open checks)\n\n- **AskUserQuestion at a human review (before the review file exists):** observed. At a human\n  review stop with no review file, the orchestrator called `AskUserQuestion`. Claude Code honoured\n  the PreToolUse deny and the question was not shown. The denial said: \"Human review round 1: the\n  review file is missing. Write `.claude/maestro-tasks/154-….review.md` first, with the sections\n  `## Changed`, `## Did`, `## Deviations from the ticket` and, on a re-review, `## Corrections since\n  the last round`. Then print the full summary as text above the question … and ask with\n  AskUserQuestion …\" (tail abbreviated).\n- **Worktree channel write:** observed, write succeeded. Allow rule in effect: project\n  `.claude/settings.json` `permissions.allow` `Write(/.claude/channels/**)` (no rule was removed; a\n  settings change would be needed to isolate it, and none was made). A worktree agent wrote\n  `.claude/channels/task-154/probe/worktree-probe.1.md`. One clean write is evidence, not proof:\n  the denial is intermittent, so a single success does not show it is gone.\n- **Add-step modal and workflow canvas:** OBSERVED BY THE USER, not the session. The user looked at\n  the real desktop app window and reported yes to each of: the Agent, Skill and Review kinds; Human\n  as the default review with Manager as the alternative; the wider modal; the modal resetting on\n  open; the node actually being added (the user then undid it); and a `manager_review` node on the\n  canvas. The session did not look at the window; it read the code only to know what to expect.\n- **Resume a finished agent (tasks 151 and 153):** partly observed. The orchestrator resumed this\n  finished agent by `agent_id` via `SendMessage` for a read-only re-verify run. (a) The\n  `log.jsonl` handoff entry for the resumed run holds that run's own result (the re-verify text),\n  not the first run's report: handoff record OK (task 153). (c) A re-verify-only run raised no\n  warning: `handoff-issues` printed \"no problems recorded\". Finding, not fixed: this agent then\n  re-sent its earlier full report as a second handoff entry. The agent did this, not a hook defect,\n  but the latest record for the agent now holds the re-sent old report plus the re-verify note.\n  (b) and (d) were not run here: the Documentation workflow's scribe has no HANDOFF route that\n  expects a channel payload, so neither warning can fire. Both were run under\n  `### Task 155 run (the two resumed-run payload warnings)` below.\n\n### Task 155 run (the two resumed-run payload warnings)\n\nTests workflow: `@test` to `@reviewer`, payload `.claude/channels/task-155/reviewer/test.N.md`. One\n`@test` agent, dispatched once and resumed twice by `agent_id` via `SendMessage`, with a throwaway\n`probe-155.txt` (deleted, never committed). `handoff-issues` ran after each run. Session log:\n`.claude/maestro_sessions/<session>/log.jsonl`.\n\n- **Case 1, resumed agent writes its next-numbered payload (`test.2.md`):** observed, no warning.\n  Dispatch `16:50:17.978Z kind:dispatch agent:maestro:test`; `Edit(.../probe-155.txt)` 16:50:21;\n  `Write(.../.claude/channels/task-155/reviewer/test.2.md)` 16:50:23; handoff `status:success\n  label:success` 16:50:26. `handoff-issues`: \"no problems recorded\". Run 1 (`test.1.md`, 16:49:49)\n  was also clean.\n- **Case 2, resumed agent edits a file and skips its payload: NOT warned at the time. Superseded by\n  `### Task 156 run` below: the warning was raised and then dropped, and is fixed (0.13.23).** Dispatch `16:51:07.632Z`; `Edit(.../probe-155.txt)` 16:51:09; `SubagentHandback`\n  16:51:10; handoff `status:success label:success` 16:51:11, output \"Deliberately wrote no channel\n  payload.\" No `Write` to `.claude/channels/`. `handoff-issues` at 16:51:35, and again after the\n  reviewer step, printed \"no problems recorded\". Expected: a `missing_payload` warning for\n  `.claude/channels/task-155/reviewer/test.N.md`. The unit tests for this check pass; the live run\n  did not.\n- **Cause (hypothesis at the time; resolved by `### Task 156 run`, where cause 1 was confirmed and 2 ruled out):**\n  1. Most plausible: `dropResolvedMissingPayloads` (`resume-delivery.ts`, reached from\n     `handoffIssuesCommand` in `maestro-task-status.cjs`) drops a recorded `missing_payload` when\n     its file is found through `pendingResumeDeliveries`, keyed on the session `run_id` rather than\n     the agent run. Run 1's `test.1.md` carries that run_id, so the missing file looks present.\n     Dropping also deletes `handoff_issues`, which erases the trace.\n  2. `scanRun`/`startsRun` (`handoff-label.ts`) reset `wroteFiles` on a run-boundary misdetection,\n     so the stop hook (`maestro-subagent-log.js`, ~l.272-281) treats the run as re-verify only and\n     skips the check.\n  3. Unlikely: `payloadWrittenSince` counted an earlier file (`test.2.md`, mtime ~16:50:26).\n  The log does not separate these. Decisive probe: rerun case 2 with a debug line recording\n  `reverifyOnly` and `checkPayload`'s result, or check whether `session.json` `handoff_issues` is\n  populated before `handoff-issues` runs. The channel files were retired at 16:52:54, so their\n  mtimes cannot be re-read.\n- The task 154 finding (a resumed agent re-sends its old report on a re-verify) did not recur.\n\n### Task 156 run (the dropped missing-payload warning)\n\nThe Task 155 case 2 warning was raised by the stop hook and then dropped by `handoff-issues`. Not a\nrun-boundary misread: that suspect was ruled out for this shape.\n\n- **Cause, confirmed:** `dropResolvedMissingPayloads` (`resume-delivery.ts`, called from\n  `handoff-issues` in `maestro-task-status.cjs` and from `maestro-resume-target.cjs`) matched lane\n  files by session `run_id` only. The first run's earlier-numbered `test.1.md` carries that run id,\n  so it counted as proof that `test.N.md` was present. Confirmed first by a fixture that ran the\n  installed hook and CLI scripts, then by the live repeat. The order was the reverse of the ticket's;\n  the manager accepted that (m010).\n- **Fix (plugin 0.13.23):** a lane file resolves a `missing_payload` only when its mtime is at or\n  after the issue's `ts` (1 s slack, as the hook's own check). An unreadable mtime or an unparseable\n  `ts` never resolves it. Both callers pass `writtenAt` built from `channelFileMtime`, exported\n  through the `maestro-session` bundle.\n- **Live repeat** (resumed `@test`, `agent_id` a787bb5d7646cd420, `test.1.md` already in the lane):\n\n  | Resumed run | `handoff-issues` printed |\n  | --- | --- |\n  | edits a file, writes no payload | `NO PAYLOAD written for HANDOFF: success (agent_id a787bb5d7646cd420)` |\n  | edits a file, writes `test.2.md` | `Maestro handoffs: no problems recorded.` |\n  | re-verify only | `Maestro handoffs: no problems recorded.` |\n\n  The probe file was deleted afterwards.\n- **Fixed (`152`, plugin 0.13.24):** the same warning was listed twice. `maestro-subagent-log.js`\n  appended to `handoff_issues` with no dedup when the stop hook fired twice for one resumed run. It\n  now appends through `appendHandoffIssue`, which lists an issue once per `kind|agent_id|files`.\n\n## Things that bite\n\nEach sub-concept carries the traps specific to it. These cut across all of them:\n\n- **`maestro.json` is the single source of truth.** Hand-edit it then run `/maestro-update` to\n  re-render the orchestrator.\n- **`maestro/SKILL.md` has managed regions, and they _do_ get overwritten.** `Maestro:STEPS` and\n  `Maestro:PRINCIPLES` are plugin-owned: `/maestro-install` and `/maestro-update` re-sync them from\n  `templates/maestro/SKILL.md` on every run, which is how template improvements reach existing\n  installs. `Maestro:HANDOFFS` is rendered from `maestro.json` and carried across a sync.\n  **Everything outside the markers is yours and never touched** — put customisations there, not\n  inside a region. The corollary: content the template adds **outside** a managed region reaches new\n  installs only. The region list is `MANAGED_REGIONS` in `scripts/lib/maestro-skill-regions.cjs`;\n  widening a region shrinks the space users can customise, so add regions rather than swallowing the\n  whole file.\n- **Pre-regions installs get migrated, not synced.** A `SKILL.md` with no `Maestro:STEPS` marker\n  can't be synced in place (there's nothing to anchor to), so the installer backs it up to\n  `SKILL.md.bak` and writes the template, reporting `orchestratorSkill.action === \"migrated\"`. Both\n  install skills are told to surface that and offer to re-apply prose from the `.bak`. This happens\n  once per project.\n- **A task's own `Skills to use` name can name a skill outside the repository root's\n  `.claude/skills`, and the Skill tool won't find it (`061`).** The orchestrator template's Step 3\n  falls back to `node .claude/scripts/maestro-resolve-skill-path.cjs \"<name>\"`\n  when the Skill tool answers \"Unknown skill\" — it prints the `SKILL.md` path when the id is a\n  project skill living elsewhere in the tree, or nothing when it isn't a project skill at all (a\n  typo, a plugin skill), and the orchestrator is told to `Read` a printed path directly rather than\n  treat empty output as an error. Same resolver `maestro-inject-agent-context.js` uses for\n  `loaded_skills`/`referenced_skills` — see `installing-maestro`'s manifest sub-concept for the\n  shared `skill-resolve.ts` walk behind both.\n",
-    "contentHash": "sha256:d2483997d18a66d1fcec0117d8a65eaea6e726c67173aca7229166ceeec8ebf5"
+    "body": "---\nname: maestro-architecture\ndescription: \"Explains the Maestro runtime end-to-end: how a project goes from maestro.json to a live orchestrator, how the UserPromptExpansion/SubagentStart/PreToolUse/SessionEnd hooks behave at runtime — including the Step 0 readiness check, which is a hook rather than a step the orchestrator executes, and which copy of a hook fires when the plugin and a project-local install both register it, how skills + condition-edge handoffs are injected, the HANDOFF routing contract and the three-tier resolution (project file, global sqlite store, bundled seed) behind each route's handoff_details protocol, how a route's payload travels on an agent channel (`.claude/channels/<scope>/<receiver>/<sender>.1.md`, scoped per task or session since `144`) rather than through the orchestrator's own context, the run_id stamp that guards a delivery's freshness, the orchestrator skill's managed regions and its optional config-driven Step 1 gates and Step 4 task-routing nudge (`046` — both injected dynamic context, the same third delivery channel beside hooks and template prose), the dual-registered hook that auto-enables that nudge on a session's first `/to-maestro-tasks` invocation (`047`), the separate always-on Step 4 prompt asking once about `/maestro-post-mortem` after a rough session (`049` — static template prose, not script-injected, not config-gated), and the config + session state on disk: maestro.json, plus the PER-SESSION directory <project>/.claude/maestro_sessions/<session_id>/{log.jsonl,session.json,tasks.json} (`064`) that replaced the three flat per-project files, and how a caller resolves which session it is (payload session_id -> CLAUDE_CODE_SESSION_ID -> null). Use when the user is working inside apps/maestro or plugins/maestro and asks how Maestro works at runtime, what the orchestrator does, why a subagent did/didn't get its skills, how handoffs route, where a route's handoff_details payload shape comes from and how to add or change one, why a channel payload wasn't delivered or was delivered late, why /maestro ran (or skipped) the confidence and design gates, why a condition-edge loop-back resumed an agent instead of spawning a fresh Task, why a resumed subagent's injected context is five blocks shorter than a first run's (`040`), why a hand-edited config's duplicate agent type is reported as a banner, a `/maestro-update` warning and an install-report line rather than repaired (`041`), why two concurrent Claude Code sessions in the same project no longer overwrite each other's log, active workflow, run_id or task coverage (`064`), how team-meeting mode changes what the hooks do for a participant (the session.json `meeting` flag, meeting_leftovers and the stamp skip), or which maestro file is authoritative. For what the install writes and what a purge deletes, see the installing-maestro skill.\"\nmetadata:\n  type: concept-skill\n  version: \"1.32\"\n  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47\n---\n\n# Maestro Runtime Architecture\n\nMaestro turns a project into a multi-agent workflow: the user manually invokes the **`/maestro`** skill, which classifies each request, runs whichever Step 1 gates the project has turned on (by default, none), picks a configured workflow, and dispatches subagents whose skills + handoff rules are injected at runtime from `.claude/maestro.json`.\n\nThis doc covers the **runtime** half — the part that only exists inside a Claude session. The **authoring** half is the Maestro desktop app (`apps/maestro`), documented in the `workflow-view` and `rule-view` skills. The two meet at `.claude/maestro.json` and nowhere else.\n\n```\nauthoring (apps/maestro, no session)     runtime (this doc, session only)\n  /workflows + /rules canvas      ──▶    .claude/maestro.json   ──▶   orchestrator + hooks\n        saveConfig() writes it              (source of truth)          read it every session\n```\n\nThat split is the whole point of the architecture. Everything on the left is deterministic node\ncode — reading files, writing JSON, rendering a table, moving rule files — and needs no model.\nEverything on the right needs a live session because it fires _on session events_. There is no\nlonger any transport between the two: no container, no port, no `/tmp` channel file, no hook that\nblocks waiting for a UI. A save is an IPC call in the desktop app; a hook is a script the session\nruns.\n\n## How the runtime gets there\n\nTwo paths write the same files and end at a rendered orchestrator over a seeded `maestro.json`: the\ndesktop app's `/maestro` route (`installRuntime()` in `src/core`, no session involved, and the path\nto prefer) and `/maestro-install` for a machine without the app. Both copy the runtime scripts into\n`<project>/.claude/scripts/`, register the hooks in the project's own `.claude/settings.json`,\nignore the session files from the repo-root `.gitignore`, and seed `maestro.json` **only when\nabsent**. Rendering is always a separate step afterwards, because the renderer consumes\n`maestro.json` and writes into `maestro/SKILL.md`, so both must already exist — which is all\n`/maestro-update` is.\n\n`/maestro-uninstall` reverses the hook registration and clears the session files; `--purge` also\nremoves the orchestrator skill, the copied scripts and `maestro.json`.\n\n**The full pipeline — the asset and hook manifest, the two implementations that must agree, how\nstaleness is decided, and what a purge deletes — is the `installing-maestro` skill.** What follows\nhere is what those files then *do* inside a session.\n\n**What an install cannot do:** author a graph. It seeds one. Adding a workflow, moving a node,\npromoting a skill from referenced to loaded, or assigning rules is the app's canvas or a hand-edit —\nand the `rules` slice starts empty either way, since placing rule files is `maestro-apply-rules.js`'s\njob.\n\n## Runtime lifecycle (one session)\n\n```\nUser invokes /maestro in a session\n        │\n        ▼\nUserPromptExpansion hook (matcher \"maestro\") → maestro-step0.js\n  • Step 0, before the expanded prompt reaches the model: readiness (maestro-check-runtime) + forked\n    agents (computeAgentSync). Healthy ⇒ silent. Behind ⇒ one instruction as context. Not installed\n    ⇒ exit 2, and the invocation never happens. Versions compare semantically (`087`,\n    `runtime-version.ts`): a project NEWER than the plugin is not behind — `pluginBehind` + one\n    notice (\"update the plugin, never /maestro-update\"), and the session continues.\n        │\n        ▼\nOrchestrator (.claude/skills/maestro/SKILL.md):\n  (no Step 0 — it is not a step any more; the hook above is the whole of it)\n  Step 1  custom checks (OPTIONAL gates). The template holds three lines amounting to \"do what\n          the injected line says\"; the injected `maestro-step1-gates.cjs` line supplies the\n          step itself. A freshly seeded project: \"no gates enabled, continue to Step 2\".\n  Step 2  classify request → node .claude/scripts/maestro-set-session-workflow.cjs \"<workflow>\"\n                              └─ writes { workflow, generated_instances } → THIS session's\n                                 maestro_sessions/<session_id>/session.json, and ends any\n                                 team meeting in it (closeMeeting)\n  Step 3  execute the workflow: the success path from the Maestro:HANDOFFS table,\n          TaskCreate per step, Task() each agent step. No TaskCreate (`083`): the path is\n          recorded with `maestro-task-status.cjs plan` / `plan-step` in session.json, and Step 4's\n          `done` refuses while a planned step (manager and human review included) is unfinished. In a worktree\n          run Step 4 offers a user-approved commit before ever mentioning merge, and every command\n          handed to the user carries absolute paths (the session's cwd IS the worktree). Step 3\n          (`104`): a denied agent channel write is not retried by resuming — the orchestrator writes\n          the file from the agent's returned payload (see `sub-concepts/channels.md`).\n  Step 4  mark the task done (the mark-task-done node; it no longer commits), then the OPTIONAL\n          task-routing nudge (`046`)\n  Step 5  post mortem: notes in the task file, and the always-on /maestro-post-mortem question (`049`)\n  Step 6  report to the epic (only when `done` printed an epic report command, `084`)\n  Step 7  end skills (injected `maestro-end-skills.cjs` line, `089`); Step 8 (worktree only) merge\n        │\n        ▼ (each Task → subagent)\nSubagentStart hook  (matcher \".*\")  → maestro-inject-agent-context.js\n  • reads active workflow from this session's session.json + the instance from maestro.json\n  • FIRST run of this agent_id: injects skills + condition-edge routing + per-route payload\n    protocol + report format;  RESUMED run: one reminder line instead\n  • REQUIRED-payload block on EVERY pass (`087`, `payloadRequirement`): names the channel file per\n    payload route — with shapes on a first/cold run, file names only on a resume\n  • if the active workflow can't be resolved → prepends a ⚠️ warning (skills may be unioned/wrong)\n  • cold run: restores a pre-restart delivery after a resumable end first (`159`, see channels.md),\n    then inlines + retires this run's lane files. RESUME (`088`): Claude Code DROPS the whole\n    additionalContext, so nothing above reaches it — its lane files go by path in the orchestrator's\n    SendMessage (resume-target's `deliver:` lines) and are retired at its own SubagentStop\n  • lanes are read only in this session's own scope (`144`, .claude/channels/<scope>/)\n  • scribe lane (`112`): a skill-gap report is inlined to every same-scope scribe, any run, kept until\n    the scribe's SKILL_GAPS_HANDLED: line (its SubagentStop) or the 14-day sweep retires it\n        │\n        ▼\nSubagent runs, writes its payload, ends with a HANDOFF: line (in its final text, or inside a\nSubagentHandback/SendMessage tool call — the SubagentStop hook recovers it from the transcript)\n        │\n        ▼\nOrchestrator reads HANDOFF:  → `success` continues the success path; a matching label routes back\n                               to that node (resuming that agent when it already ran this session)\n        │\n   (every tool call, all agents)\n        ▼\nPreToolUse hook (matcher \".*\") → maestro-session-log.js → appends one line to this session's log.jsonl\n        │\n        ▼\nSessionEnd hook → maestro-session-cleanup.sh (plugin) / .cjs (project copy)\n                  → on a FINAL end deletes ONLY THE ENDING SESSION'S directory; a resumable\n                    `reason` keeps it and appends one `session_end` line to its log (`077`, `159`)\n                  → sweeps .claude/channels/: a final end retires the own scope's .consumed/\n                    outright, a resumable one only ages it out (`159`); everything else only\n                    past 14 days (`144`). Keeps maestro.json and the orchestrator skill.\n```\n\n**Review gate (`130`, `132`).** A second `PreToolUse` hook, matcher `AskUserQuestion|SendMessage` (`maestro-human-review-gate.js` in the plugin, `.cjs` project copy), gates both review stops. The current step is the first unfinished step of `plan` in `session.json`. The review file is `.claude/maestro-tasks/<task>.review.md` for round 1 and `<task>.review-N.md` after that. Round = 1 + `plan.loopbacks` + review stops (human or manager) already done (`currentReviewStop`); `plan-step <label> pending` increments the optional numeric `plan.loopbacks` (any loop-back, not only one at a review).\n\n| Stop | Denied until the round's review file exists | File sections |\n| --- | --- | --- |\n| `human review` | `AskUserQuestion` | `## Changed`, `## Did`, `## Deviations from the ticket`, on a re-review `## Corrections since the last round` |\n| `manager review` | `AskUserQuestion` (escalation, fallback) and a `SendMessage` whose `to` (minus a trailing `[ref]`) is the active task's epic manager | the direction brief (below) |\n\nTo learn the manager's name the hook lazily `require`s `./lib/maestro-epic.cjs` (`epicOfTask`, `readEpicState`); a missing bundle (older install), no epic or no recorded manager leaves `SendMessage` ungated. The hook fails open: it allows the call when there is no plan, no `active_task`, or an unreadable state, so a session that never records a `plan` is not gated. Logic is in `src/core/human-review-gate.ts`, exported through the `maestro-session` bundle. Orchestrator template Step 3 always records the plan and writes the review file before asking or requesting. An install moves a gate registered under the old `AskUserQuestion` matcher to the new one (`updateHookMatchers`, both installers), since `addMissingHooks` keys on event + script and would keep it.\n\n**Manager review (`132`).** A `manager review` step is no longer run as a human review, except on escalation or fallback. The worker (orchestrator template Step 3):\n\n1. **Fallback check.** No `active_task`, `maestro-epic.cjs of` prints nothing, or the named manager is not live in `ListAgents` → run the stop as a `human review`, the brief as its review file. `review-request` also prints this fallback for a task in no epic or an epic with no manager recorded, and so does a failed send.\n2. **Brief.** The round's review file as a short direction brief: `## Goal`, `## Deviations`, `## Decisions`, `## Touches` (by name, never a diff), `## Sibling impact`, `## Questions`. No commit or suite result (`150`): the test and reviewer steps own that. On the fallback and escalation paths the stop is a human review, so the worker also adds `## Verified` to the brief. A re-request after a redirect opens with `Round <N>` and quotes the redirect note, each point with how it was addressed; that round checks only that the redirect was addressed.\n3. **Request.** `maestro-epic.cjs review-request --task <t> --file <f>` refuses a file that does not exist or is not that task's review file, logs a `review` inbox entry `mNNN` with its `round` (the ticket's request count + 1), and prints the ONE `SendMessage` line for the manager. The same file again while it waits is a re-send, not a new round. `show`/`reports` list it until a verdict exists or a newer request for the ticket supersedes it; `ack` refuses an `mNNN`.\n4. **Verdict.** `maestro-epic.cjs review-verdict --task <t> <on-track|redirect|escalate>`, run by the manager when it decides and by the worker on the reply; the second caller gets the recorded verdict back. It logs a `verdict` entry with `verdict` and `effective`.\n\n| Effective verdict | Worker does |\n| --- | --- |\n| `on-track` | `plan-step \"manager review\" done`, continues the success path |\n| `redirect` | follows `manager requested direction change` to the producing agent with the note (which repeats the direction the manager added to the task file); the redirect leaves the stop unfinished, so it re-runs as the next round. No such edge → `escalate` |\n| `escalate` | a `human review` inline at this stop, the manager's note added to the summary |\n\n**The 1-redirect cap counts per ticket, not `plan.loopbacks`** (which counts every loop-back, a test one too). `MANAGER_REDIRECT_CAP = 1` in `epics.ts` (`150`, was 2); `reviewHistory` counts the ticket's `verdict` entries whose `effective` is `redirect`. With 1 recorded, the next redirect is logged `effective: \"escalate\"`, `capped: true`. The manager manages (`150`): it never reads the diff or code and never picks an implementation, redirects only for work contradicting the ticket, an epic decision or a sibling ticket (never style, tests, lint, commits or correctness), and records any direction in the task file. There is no `for @reviewer:` note. **A loop-back from a test or reviewer step does not reopen the check:** `plan-step <label> pending` (`planStepCommand` in `maestro-task-status.cjs`) resets every later step except a `manager review` already done and after the target; a stop named as the target still resets, and a redirect leaves the stop unfinished so it re-runs by itself. `plan.loopbacks` still increments, so review files keep distinct rounds. Code: `writeReviewRequest`, `recordReviewVerdict`, `reviewHistory` in `src/core/epics.ts`, exported through the `maestro-epic` bundle.\n\n**Parallel tasks and the red-suite rule (`145`).** A task file may carry a `## Touched surfaces` section, written by `maestro-write-tasks.cjs` from the optional `touchedSurfaces` slice and placed before `## Blocked by`. An epic's `EPIC.md` holds a merge-plan table that `maestro-manager` records before it spawns workers. Neither is read by a hook. **No human review or reviewer round approves work while the full suite is red** (the manager review is exempt since `150`: it checks direction only): the human review file's `## Verified` (also added to a manager brief on the fallback and escalation paths) and the epic report from Step 6 each name the commit verified and the green suite on it.\n\n## Where the detail lives\n\n| Sub-concept | Covers |\n| --- | --- |\n| `sub-concepts/hooks.md` | Every hook: event, matcher, script, exact effect. Why the container-era `SessionStart` is gone and what the two current ones (`113` name, `141` heartbeat) do. The two copies of every script and which one wins. The Step 0 traps. |\n| `sub-concepts/session-state.md` | `maestro.json` and the per-session directory (`064`): the file table, `log.jsonl`'s entry kinds, and how a caller resolves which session it is. |\n| `sub-concepts/session-end-reasons.md` | Which SessionEnd `reason` values keep the session directory (resumable) and which remove it, how they were observed, the one rule both cleanup twins share (`077`), and the `session_end` log line a resumable end writes (`159`). |\n| `sub-concepts/handoff-contract.md` | The four blocks `SubagentStart` injects, the three-tier `handoff_details` resolution, and what the orchestrator does with a `HANDOFF:` line. |\n| `sub-concepts/channels.md` | `.claude/channels/` (`036`): how a route's payload travels, the per-task/session scope (`144`), the `run_id` stamp, retirement, the scribe lane's kept gap reports (`112`), the 14-day sweep, the restore of a delivery a restart cut off (`159`), and the absolute main-checkout paths a worktree session is shown plus the write guard's second base (`163`). |\n| `sub-concepts/step-gates.md` | Injected context as a third delivery channel: the Step 1 gates (`032`), the Step 4 task-routing nudge (`046`/`047`), and the post-mortem prompt that is NOT part of it (`049`). |\n| `sub-concepts/agent-resume.md` | Why a condition-edge loop-back resumes an agent instead of spawning one (`039`), why a resumed run's injection is five blocks shorter (`040`), and why a resume gets its payload by path because Claude Code drops its `additionalContext` (`088`). |\n| `sub-concepts/team-meeting.md` | Team-meeting mode: the `session.json` `meeting` flag, what participants get and what's withheld, `meeting: true` log entries, the write guard's meeting dir, and how a meeting ends (`closeMeeting`, `meeting_leftovers`). |\n\n## Common questions — where to look\n\n| Question | Look at |\n| --- | --- |\n| Why didn't a subagent get its skills? | active workflow in this session's `maestro_sessions/<id>/session.json` (was `maestro-set-session-workflow.cjs` run?); the instance's `agent` must equal the subagent's `name`; the skill must be a real project skill |\n| Why are the wrong skills injected? | likely no/mismatched active workflow → union across workflows (the injected `⚠️ warning` says so) |\n| How do I change the orchestrator's behavior? | edit `.claude/skills/maestro/SKILL.md` **outside** the `Maestro:*` markers — the `STEPS`/`PRINCIPLES` regions are re-synced from the plugin template on every install/update; to change those for good, edit `templates/maestro/SKILL.md` in the plugin |\n| My edit to the orchestrator's steps disappeared | it was inside a managed region and got re-synced. Move it outside the markers, or change the template |\n| The handoff table is stale | run `/maestro-update` (re-renders from `maestro.json`) |\n| A `loaded_skills` / node / start-skill entry names a skill that no longer exists | `/maestro-update` step 4 runs `maestro-stale-refs.cjs` (backed by `lib/maestro-skill-availability.cjs`) and reports dangling ids (including `skill-disabled` / `bundled-skills-disabled`, `142`: a skill the project switched off via `skillOverrides` \"off\", `enabledPlugins` false or `disableBundledSkills`, merged user < project `settings.json` < `settings.local.json`; one shared decision `skillDisabledReason` in `skill-availability.ts`, which the app's skill lists also use via `isSkillListed`/`readDisableRules`; unreadable settings fall back to \"listed\"); the same pass suggests plugins: a root `scribe.config.json` without `code-graph` enabled gets an enable hint, and a legacy `.claude/concept-skills.json` without `code-graph` enabled gets \"install code-graph from its own marketplace, migrate via `/code-graph-install`\". The design check a fresh seed names (the Step 1 design check: the Refactor workflow's lead and `/to-maestro-tasks`' start skill) is chosen by `seedSkillsFor` (`core/skill-availability.ts`) from `DESIGN_CHECK_CANDIDATES` (first available wins; today only `code-graph:use-code-architecture-design-check`), so a project without the plugin seeds no design check. Maestro itself hard-codes nothing else. |\n| How do I turn Maestro off? | `/maestro-uninstall` (removes the Maestro hooks + session files); `--purge` to also remove the orchestrator skill + scripts |\n| How did this session go / what could have gone better? | `/maestro-post-mortem` — `maestro-post-mortem.js` digests the invoking session's `log.jsonl` (read-only; `--session <id>` picks another, and with no id resolvable it lists the available sessions instead of digesting an arbitrary one) and the skill couples it with the main session's context to flag avoidable work, false checks, bad assumptions, and handoff issues, then proposes fixes. Run mid-session (the log is wiped at `SessionEnd`). |\n| Where's the install logic? | the `installing-maestro` skill — `installRuntime()`/`uninstallRuntime()` in `src/core` for the app, `plugins/maestro/scripts/maestro-{install,uninstall}.js` for the terminal path |\n| How do I edit the graph without a session? | Open the project in the Maestro desktop app (`apps/maestro`) → `/workflows` for the canvas, `/rules` for rule placement. A save renders the orchestrator and applies rules in the same call. |\n| A handoff payload wasn't delivered, or looks stale | check `.claude/channels/<scope>/<receiver>/<sender>.1.md` — undelivered if still there, retired to `.claude/channels/<scope>/.consumed/<receiver>/` if already read. Scope (`144`) is `task-<NNN>` from `session.json` `active_task`, else `session-<id8>`: a file in another scope, or in the legacy unscoped root, is never delivered to this session. Compare its stamped `run_id` (first line) against this session's own `session.json`; a mismatch means it will be *mentioned*, not inlined, until a matching run consumes it. A scribe gap report (`scribe/<sender>.<n>.md`, `112`) is the exception: delivered to every scribe until acknowledged. Full mechanism: `sub-concepts/channels.md`. |\n| Why did a condition edge resume an agent instead of spawning a fresh one? (`039`) | `maestro-resume-target.cjs` found a `kind:\"handoff\"` log entry for that bare agent type this session and printed its `agent_id`. It prints nothing (cold `Task`) when there is no completed run yet, or when the active workflow maps that agent type to more than one distinct instance. |\n| Why did a resumed subagent get so much less injected context than a first run? (`040`) | Working as designed — `hasCompletedRun()` found a `kind:\"handoff\"` entry for that `agent_id` already, so the skills/routing/protocols/report were skipped for a one-line reminder. And since Claude Code drops a resume's `additionalContext` entirely, the agent sees none of it — channel payloads reach a resume by path in the orchestrator's `SendMessage` (`088`). See `sub-concepts/agent-resume.md`. |\n| A resumed agent says its channel file doesn't exist (`088`) | The orchestrator must name every `deliver: <file>` line from `maestro-resume-target.cjs` in its `SendMessage`; the file stays in the lane until that run's `SubagentStop` retires it (`session.json` `resume_deliveries`). A `missing:` line means the sender never wrote it — also queued as a `missing_payload` issue for `handoff-issues`. See `sub-concepts/agent-resume.md`. |\n| A subagent got a \"team meeting in progress\" notice instead of its routing, or a write was blocked outside `meeting/` | this session's `session.json` has a `meeting` listing that agent type. Starting a workflow (`maestro-set-session-workflow.cjs`) or `maestro-team-meeting.cjs end` removes it. See `sub-concepts/team-meeting.md`. |\n| Why does a hand-edited config's duplicate agent type show up as a banner / stderr warning / install report line? (`041`) | `apps/maestro/src/core/config-validate.ts`'s `duplicateAgentTypes(cfg)` — a pure validator reporting two **placed** instances in one workflow sharing a bare agent, run from three call sites (the app's config load, `/maestro-update`, and `install.ts`) and never auto-repairing. See `maestro-config-model` (apps/maestro's `.claude/skills`) for where each call site computes it. |\n\n## Epics and the manager (`084`)\n\nA task can belong to an **epic**: related tasks that several `/maestro` sessions run at once, coordinated\nby a resumable `maestro-manager` session (a published skill, not a hook or an agent). What changes\ninside a worker session, and only for a task that has an epic:\n\n- **Claim records the session name, and the CLI fills it in (`113`).** The `maestro-session-name`\n  hook names every Maestro session from its id (`maestro-<id8>` on the first `/maestro`,\n  `maestro-mgr-<id8>` on the first `/maestro-manager`, or keeps a user-set custom title), stores it\n  in `session.json` and applies it as `sessionTitle`, so it survives `claude --resume` (a fork gets a\n  new id, hence a new name). `claim` and the epic CLI record that stored name in preference to a\n  passed `--name`/`--from`/`--by`; the orchestrator never reads it from `ListAgents`. A nameless\n  claim still works. The manager finds workers by name, never by address. Mechanism:\n  `sub-concepts/session-state.md`.\n- **Step 4's report.** Before the task is marked done, the orchestrator runs\n  `maestro-epic.cjs report --task <active_task> --from <name> --file -` with the report on stdin. It\n  writes `.claude/epics/<slug>/inbox/rNNN-<task>.md`, prints the manager's name, and the orchestrator\n  sends ONE short SendMessage line. A task in no epic prints \"belongs to no epic\" and nothing else\n  happens. A report written while no manager runs survives and is listed unacknowledged when a\n  manager resumes; the manager's `ack` is the only delivery proof. If that SendMessage fails, the\n  printed hint says to run ListAgents and ask the user before messaging a plausible match, never to\n  treat one failed send as the manager gone (`102`). Since `113` a restarted manager keeps its name,\n  so it runs `set-manager <slug>` (name optional; the CLI fills it in) only on opening or resuming an\n  epic that may record an older name.\n- **A manager's message is never the user's approval.** The orchestrator template's PRINCIPLES and\n  the `maestro-manager` skill both say so: human review, commits, merges and pushes still prompt the\n  user in the worker's own session. **Approval scope (`132`):** both also say a manager's on-track\n  verdict continues the success path only; it is never the user's approval for commit, merge, push,\n  or agent/skill/workflow changes.\n- **Managers notify each other through notes (`085`).** A manager writes `maestro-epic.cjs note`\n  into another epic's inbox first, then sends one SendMessage line; the receiver acks it like a\n  report. Another manager's note is never the user's approval either.\n\nEverything else (the tracker's `epic` field, the inbox, the write discipline, why session names,\nwhat counts as affecting another epic) is in `task-queue`'s `sub-concepts/epics.md`.\n\n## Live check\n\nWhether Claude Code honours the review gate's PreToolUse deny on `SendMessage` and `AskUserQuestion`\nwas covered only by unit tests until the manager review step was run once for real in an epic worker\nsession (task `137`). Observations, filled in after that run:\n\n- **Gate deny:** observed. The gate denied a `SendMessage` to the manager (`maestro-mgr-3a4fd839`)\n  sent before the round's review file existed. The denial named the missing review file path and the\n  exact `review-request` command to run next.\n- **Review-request line:** observed. The line, recorded with `maestro-epic.cjs review-request`\n  (`m001`, round 1), reached the manager's inbox; the send succeeded.\n- **Verdict:** observed. `redirect` (the manager chose it deliberately to exercise round 2). The\n  orchestrator followed the `manager requested direction change` edge back to @backend (resumed by\n  `agent_id`), reset @backend and the manager review stop to pending, and passed the manager's note\n  to @backend.\n- **Redirect loop:** confirmed. The round-2 request said \"Round 2\", quoted the manager's note and\n  used `.review-2.md` as its review file; `m002` got verdict `on-track`.\n- **Surprises:** @backend could not write its channel file from the worktree (permission\n  classifier), so the orchestrator wrote it as the worktree procedure describes (reported as an epic\n  finding). Expected, by design: the manager recorded the verdict itself, and whoever runs\n  `review-verdict` second gets the recorded verdict back (\"already recorded\").\n\n### Task 154 run (four open checks)\n\n- **AskUserQuestion at a human review (before the review file exists):** observed. At a human\n  review stop with no review file, the orchestrator called `AskUserQuestion`. Claude Code honoured\n  the PreToolUse deny and the question was not shown. The denial said: \"Human review round 1: the\n  review file is missing. Write `.claude/maestro-tasks/154-….review.md` first, with the sections\n  `## Changed`, `## Did`, `## Deviations from the ticket` and, on a re-review, `## Corrections since\n  the last round`. Then print the full summary as text above the question … and ask with\n  AskUserQuestion …\" (tail abbreviated).\n- **Worktree channel write:** observed, write succeeded. Allow rule in effect: project\n  `.claude/settings.json` `permissions.allow` `Write(/.claude/channels/**)` (no rule was removed; a\n  settings change would be needed to isolate it, and none was made). A worktree agent wrote\n  `.claude/channels/task-154/probe/worktree-probe.1.md`. One clean write is evidence, not proof:\n  the denial is intermittent, so a single success does not show it is gone.\n- **Add-step modal and workflow canvas:** OBSERVED BY THE USER, not the session. The user looked at\n  the real desktop app window and reported yes to each of: the Agent, Skill and Review kinds; Human\n  as the default review with Manager as the alternative; the wider modal; the modal resetting on\n  open; the node actually being added (the user then undid it); and a `manager_review` node on the\n  canvas. The session did not look at the window; it read the code only to know what to expect.\n- **Resume a finished agent (tasks 151 and 153):** partly observed. The orchestrator resumed this\n  finished agent by `agent_id` via `SendMessage` for a read-only re-verify run. (a) The\n  `log.jsonl` handoff entry for the resumed run holds that run's own result (the re-verify text),\n  not the first run's report: handoff record OK (task 153). (c) A re-verify-only run raised no\n  warning: `handoff-issues` printed \"no problems recorded\". Finding, not fixed: this agent then\n  re-sent its earlier full report as a second handoff entry. The agent did this, not a hook defect,\n  but the latest record for the agent now holds the re-sent old report plus the re-verify note.\n  (b) and (d) were not run here: the Documentation workflow's scribe has no HANDOFF route that\n  expects a channel payload, so neither warning can fire. Both were run under\n  `### Task 155 run (the two resumed-run payload warnings)` below.\n\n### Task 155 run (the two resumed-run payload warnings)\n\nTests workflow: `@test` to `@reviewer`, payload `.claude/channels/task-155/reviewer/test.N.md`. One\n`@test` agent, dispatched once and resumed twice by `agent_id` via `SendMessage`, with a throwaway\n`probe-155.txt` (deleted, never committed). `handoff-issues` ran after each run. Session log:\n`.claude/maestro_sessions/<session>/log.jsonl`.\n\n- **Case 1, resumed agent writes its next-numbered payload (`test.2.md`):** observed, no warning.\n  Dispatch `16:50:17.978Z kind:dispatch agent:maestro:test`; `Edit(.../probe-155.txt)` 16:50:21;\n  `Write(.../.claude/channels/task-155/reviewer/test.2.md)` 16:50:23; handoff `status:success\n  label:success` 16:50:26. `handoff-issues`: \"no problems recorded\". Run 1 (`test.1.md`, 16:49:49)\n  was also clean.\n- **Case 2, resumed agent edits a file and skips its payload: NOT warned at the time. Superseded by\n  `### Task 156 run` below: the warning was raised and then dropped, and is fixed (0.13.23).** Dispatch `16:51:07.632Z`; `Edit(.../probe-155.txt)` 16:51:09; `SubagentHandback`\n  16:51:10; handoff `status:success label:success` 16:51:11, output \"Deliberately wrote no channel\n  payload.\" No `Write` to `.claude/channels/`. `handoff-issues` at 16:51:35, and again after the\n  reviewer step, printed \"no problems recorded\". Expected: a `missing_payload` warning for\n  `.claude/channels/task-155/reviewer/test.N.md`. The unit tests for this check pass; the live run\n  did not.\n- **Cause (hypothesis at the time; resolved by `### Task 156 run`, where cause 1 was confirmed and 2 ruled out):**\n  1. Most plausible: `dropResolvedMissingPayloads` (`resume-delivery.ts`, reached from\n     `handoffIssuesCommand` in `maestro-task-status.cjs`) drops a recorded `missing_payload` when\n     its file is found through `pendingResumeDeliveries`, keyed on the session `run_id` rather than\n     the agent run. Run 1's `test.1.md` carries that run_id, so the missing file looks present.\n     Dropping also deletes `handoff_issues`, which erases the trace.\n  2. `scanRun`/`startsRun` (`handoff-label.ts`) reset `wroteFiles` on a run-boundary misdetection,\n     so the stop hook (`maestro-subagent-log.js`, ~l.272-281) treats the run as re-verify only and\n     skips the check.\n  3. Unlikely: `payloadWrittenSince` counted an earlier file (`test.2.md`, mtime ~16:50:26).\n  The log does not separate these. Decisive probe: rerun case 2 with a debug line recording\n  `reverifyOnly` and `checkPayload`'s result, or check whether `session.json` `handoff_issues` is\n  populated before `handoff-issues` runs. The channel files were retired at 16:52:54, so their\n  mtimes cannot be re-read.\n- The task 154 finding (a resumed agent re-sends its old report on a re-verify) did not recur.\n\n### Task 156 run (the dropped missing-payload warning)\n\nThe Task 155 case 2 warning was raised by the stop hook and then dropped by `handoff-issues`. Not a\nrun-boundary misread: that suspect was ruled out for this shape.\n\n- **Cause, confirmed:** `dropResolvedMissingPayloads` (`resume-delivery.ts`, called from\n  `handoff-issues` in `maestro-task-status.cjs` and from `maestro-resume-target.cjs`) matched lane\n  files by session `run_id` only. The first run's earlier-numbered `test.1.md` carries that run id,\n  so it counted as proof that `test.N.md` was present. Confirmed first by a fixture that ran the\n  installed hook and CLI scripts, then by the live repeat. The order was the reverse of the ticket's;\n  the manager accepted that (m010).\n- **Fix (plugin 0.13.23):** a lane file resolves a `missing_payload` only when its mtime is at or\n  after the issue's `ts` (1 s slack, as the hook's own check). An unreadable mtime or an unparseable\n  `ts` never resolves it. Both callers pass `writtenAt` built from `channelFileMtime`, exported\n  through the `maestro-session` bundle.\n- **Live repeat** (resumed `@test`, `agent_id` a787bb5d7646cd420, `test.1.md` already in the lane):\n\n  | Resumed run | `handoff-issues` printed |\n  | --- | --- |\n  | edits a file, writes no payload | `NO PAYLOAD written for HANDOFF: success (agent_id a787bb5d7646cd420)` |\n  | edits a file, writes `test.2.md` | `Maestro handoffs: no problems recorded.` |\n  | re-verify only | `Maestro handoffs: no problems recorded.` |\n\n  The probe file was deleted afterwards.\n- **Fixed (`152`, plugin 0.13.24):** the same warning was listed twice. `maestro-subagent-log.js`\n  appended to `handoff_issues` with no dedup when the stop hook fired twice for one resumed run. It\n  now appends through `appendHandoffIssue`, which lists an issue once per `kind|agent_id|files`.\n\n## Things that bite\n\nEach sub-concept carries the traps specific to it. These cut across all of them:\n\n- **`maestro.json` is the single source of truth.** Hand-edit it then run `/maestro-update` to\n  re-render the orchestrator.\n- **`maestro/SKILL.md` has managed regions, and they _do_ get overwritten.** `Maestro:STEPS` and\n  `Maestro:PRINCIPLES` are plugin-owned: `/maestro-install` and `/maestro-update` re-sync them from\n  `templates/maestro/SKILL.md` on every run, which is how template improvements reach existing\n  installs. `Maestro:HANDOFFS` is rendered from `maestro.json` and carried across a sync.\n  **Everything outside the markers is yours and never touched** — put customisations there, not\n  inside a region. The corollary: content the template adds **outside** a managed region reaches new\n  installs only. The region list is `MANAGED_REGIONS` in `scripts/lib/maestro-skill-regions.cjs`;\n  widening a region shrinks the space users can customise, so add regions rather than swallowing the\n  whole file.\n- **Pre-regions installs get migrated, not synced.** A `SKILL.md` with no `Maestro:STEPS` marker\n  can't be synced in place (there's nothing to anchor to), so the installer backs it up to\n  `SKILL.md.bak` and writes the template, reporting `orchestratorSkill.action === \"migrated\"`. Both\n  install skills are told to surface that and offer to re-apply prose from the `.bak`. This happens\n  once per project.\n- **A task's own `Skills to use` name can name a skill outside the repository root's\n  `.claude/skills`, and the Skill tool won't find it (`061`).** The orchestrator template's Step 3\n  falls back to `node .claude/scripts/maestro-resolve-skill-path.cjs \"<name>\"`\n  when the Skill tool answers \"Unknown skill\" — it prints the `SKILL.md` path when the id is a\n  project skill living elsewhere in the tree, or nothing when it isn't a project skill at all (a\n  typo, a plugin skill), and the orchestrator is told to `Read` a printed path directly rather than\n  treat empty output as an error. Same resolver `maestro-inject-agent-context.js` uses for\n  `loaded_skills`/`referenced_skills` — see `installing-maestro`'s manifest sub-concept for the\n  shared `skill-resolve.ts` walk behind both.\n",
+    "contentHash": "sha256:b0a3a75be189ff8205848b88f5a24847c2d929c33650c18490c5bc2c2aff4153"
   },
   "meta": {
     "extractor_version": "code-graph@0.3.44",
-    "extracted_at": "2026-11-07T23:43:31.280Z",
+    "extracted_at": "2026-11-09T01:06:25.205Z",
     "files": {
-      "apps/maestro/src/core/handoff-channels.ts": "sha256:58812ddcf6bc67c3335a02aeaec63d54687603d6fb0690635538defe8289da15",
+      "apps/maestro/src/core/handoff-channels.ts": "sha256:01839fdda5a652859fce3f94c30c86f6068bb982e9a84276081bebb1b2966d9a",
       "apps/maestro/src/core/handoff-check.ts": "sha256:cb0b3374378f8eb2236bf4296502aac10c3181dc09960ef2ed20480e478ecbb1",
       "apps/maestro/src/core/handoff-defaults.ts": "sha256:c600746fa9a55f74322d779e596f8bcd74ef779fea68e7c55f4e8facc6ce7811",
       "apps/maestro/src/core/handoff-label.ts": "sha256:2725fa68a52df3c02c853d8d172d64a5ae0d17e4a9d641ac67c197406e0e657f",
-      "apps/maestro/src/core/handoff-payload.ts": "sha256:09bdc8966b52a7e56371dbddb426d11d916f9abbb89362af768c656151684a85",
+      "apps/maestro/src/core/handoff-payload.ts": "sha256:da47836d7eacbfc2cf232c34168c6709da37202814983993f07afa42fad2cdc9",
       "apps/maestro/src/core/handoff-resolution.ts": "sha256:8606eaba00738ffaf06715002bbd714eda6dd0e9d010f70c935ac4eb40764428",
       "apps/maestro/src/core/handoff-routes.ts": "sha256:fc1fae2440f2f5059858342100740983d8df591a578409f46365c1161905faaa",
       "apps/maestro/src/core/handoff-seeds.ts": "sha256:5665acc1105c1268b2e0e15b3e2500cc68607e5cf1d76b057133413dbbfcbce9",
@@ -8036,7 +8150,7 @@
       "apps/maestro/src/core/plugin-entries/maestro-report-defaults.ts": "sha256:295f29a07bacff12536dcfa55f28c2373a9074b683e919bf08051b1869cff406",
       "apps/maestro/src/core/plugin-entries/maestro-rule-move.ts": "sha256:6414183f2d2db0709b0b7a40a0ed016d0951e9f9cfd50f7a6f9b75ca8a0a4f9d",
       "apps/maestro/src/core/plugin-entries/maestro-seed.ts": "sha256:50a9d6a21a4e4c23a1669d3fced79930b9886ce23636af8f1a349692999f6a5c",
-      "apps/maestro/src/core/plugin-entries/maestro-session.ts": "sha256:476ccdb4ede2b49e8341edee7523b664b17efe2b71201e5d0892fa0a6706fb6a",
+      "apps/maestro/src/core/plugin-entries/maestro-session.ts": "sha256:57b9b9bf254e56fac21430a78f4f5e75712c1d71fa9024a7ac7647ae454e99ca",
       "apps/maestro/src/core/plugin-entries/maestro-skill-availability.ts": "sha256:25a53f0e8bee5ad760bd02bcdae8a3c6cf39993ebea91e2e76fed60e9e026d37",
       "apps/maestro/src/core/plugin-entries/maestro-skill-lists.ts": "sha256:062e78c7cdc4fc49153e2124ed5cdb54a264cf240533b654f4fc8e69ebe748fb",
       "apps/maestro/src/core/plugin-entries/maestro-skill-regions.ts": "sha256:8fff00a30208bc85dca630ba604cd286515dfcdfa1d0050f20bced2e70881943",

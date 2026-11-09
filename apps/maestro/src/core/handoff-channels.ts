@@ -146,6 +146,20 @@ export function channelRelPath(scope: string, receiver: string, fileName: string
 }
 
 /**
+ * The channel path as PRESENTED to an agent or the orchestrator (`163`). In a worktree session the
+ * channels live in the main checkout, and an agent resolves a relative path against its own
+ * worktree, so the text names the absolute `<main_root>/<rel>`. Anywhere else `rel` is returned
+ * unchanged. Stored identity (`resume_deliveries`, `retire`, `missing_payload` files) stays the
+ * relative form: only text shown to a reader goes through here. Callers pass the session's
+ * `worktree.main_root`, never the hook's project dir.
+ */
+export function channelPathFor(rel: string, worktree?: { main_root?: string | null } | null): string {
+  const root = worktree && typeof worktree.main_root === "string" ? worktree.main_root : "";
+  if (!root) return rel;
+  return `${root.replace(/[\\/]+$/, "")}/${rel}`;
+}
+
+/**
  * The path a `sender` writes its payload for `receiver` to, in `scope`. Always `.1.md` — the seed
  * bodies tell an agent to write there literally; there is no multi-file protocol for one
  * sender/receiver pair in this slice, so a second write simply overwrites the first (a stale,
