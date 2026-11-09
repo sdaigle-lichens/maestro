@@ -24,6 +24,7 @@
 // `088` adds two kinds of line AFTER the id, each `<kind>: <project-relative file>`:
 //
 //   deliver: .claude/channels/task-144/backend/reviewer.1.md
+//       (in a worktree session, `163`, the ABSOLUTE main-checkout path: <main_root>/.claude/channels/...)
 //       Resume only. In THIS session's channel scope (`144`), never another session's. A current-run file waiting in the target's lane. A resume never receives
 //       SubagentStart's additionalContext, so the orchestrator names this path in its SendMessage
 //       and the agent Reads it. Recorded in session.json `resume_deliveries[<agent_id>]`; the
@@ -67,6 +68,7 @@ const {
   channelFileMtime,
   appendHandoffIssue,
   channelScopeOf,
+  channelPathFor,
   resolveSessionId,
   readGlobalHandoff,
 } = require("./lib/maestro-session.cjs");
@@ -113,7 +115,9 @@ try {
           changed = true;
         }
         if (id) {
-          for (const d of deliveries) out.push(`deliver: ${d.file}`);
+          // `163`: in a worktree session the line names the absolute main-checkout path (the agent would
+          // otherwise resolve a relative one against its worktree). Stored identity stays relative.
+          for (const d of deliveries) out.push(`deliver: ${channelPathFor(d.file, state.worktree)}`);
           state = recordResumeDeliveries(state, id, deliveries);
           changed = true;
         }
@@ -130,7 +134,8 @@ try {
           const issue = missingLoopbackPayload(latest, expected, deliveries);
           if (issue) {
             for (const r of expected) {
-              if (issue.files.includes(r.channelFile)) out.push(`missing: ${r.channelFile} (from ${r.sender})`);
+              if (issue.files.includes(r.channelFile))
+                out.push(`missing: ${channelPathFor(r.channelFile, state.worktree)} (from ${r.sender})`);
             }
             state = { ...state, handoff_issues: appendHandoffIssue(state.handoff_issues, issue) };
             changed = true;

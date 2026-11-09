@@ -170,6 +170,30 @@ Known limits:
 - `unretire` refuses only a same-name file in the live lane. `retire`'s `renameSync` still overwrites a same-name copy already in `.consumed/`; that predates `159`.
 - The timestamp checks compare file mtime with log `ts` (in ms), so a write and an end in the same millisecond cannot be ordered.
 
+## Worktree runs: the paths shown and the guard (`163`)
+
+A worktree session's lanes live in the MAIN checkout (the queue and the lanes resolve there), but an
+agent resolves a relative path against its own worktree, where the lane does not exist. So any text
+shown to a reader names the absolute `<main_root>/.claude/channels/...` path:
+
+| Kept as | Form | Built by |
+| --- | --- | --- |
+| Route write path, payload read path, skill-gap note, the `Delivered to your channel` heading | absolute in a worktree session | `channelPathFor(rel, state.worktree)` (`handoff-channels.ts`), via `payloadRoutes` → `presentedFile` |
+| `deliver:` and `missing:` lines (`maestro-resume-target.cjs`) | absolute in a worktree session | `channelPathFor` |
+| Stored identity: `resume_deliveries`, `retire`, `missing_payload` files | always relative | unchanged |
+
+- Callers pass the session's `worktree.main_root`, never the project dir the hook was given. Outside a
+  worktree `channelPathFor` returns the relative path unchanged, so that text is byte-identical.
+- **Trap:** a relative route path written by a worktree agent lands in the worktree's own
+  `.claude/channels`, outside the lane the receiver reads.
+- **The write guard has a second base.** `maestro-channel-write-guard.js` reads `worktree.main_root`
+  from `session.json` and passes it as `worktreeMainRoot` to `checkChannelWrite`. The main checkout's
+  own scope directory is accepted next to the cwd's. Both bases use one test (`inOwnScope`): real
+  paths, no symlinked `.claude/channels` or scope directory, target inside `<scope>/`. Still denied:
+  another task's scope, the legacy root layout, the main checkout's other files, and a raw `..`
+  segment even when it resolves into the own scope.
+- Tests: `test/core/worktree-channel-paths.test.ts`; the collision case in `channel-scope-collision.test.ts`.
+
 ## Stamping and lifecycle
 
 `SubagentStop` mints/reads the session's `run_id` (`ensureSessionRunId`, stored in that session's

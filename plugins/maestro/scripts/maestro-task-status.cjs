@@ -81,12 +81,15 @@
 //       dependent stays blocked until the blocker is merged (this command, or `merge` below, which
 //       clears it itself). Refuses a task that is not done. Merging is never done by this command.
 //
-//   node maestro-task-status.cjs merge <filename|NNN|freeform-<id>>
+//   node maestro-task-status.cjs merge <filename|NNN|freeform-<id>> [--accept-ignored]
 //       FINISH a worktree task (`076`) — ONLY ever run because the user explicitly asked for it. Merges
 //       branch task-NNN into the main checkout's current branch (`git merge --no-ff`), then removes the
 //       worktree and deletes the branch. Refuses, changing nothing, when the task is not `done`, the
 //       worktree has uncommitted changes, the branch has no worktree, the main checkout is mid-merge or
-//       on a detached HEAD, or the merge would overwrite local changes. On a CONFLICT it aborts the
+//       on a detached HEAD, or the merge would overwrite local changes. `163`: it also refuses while
+//       ignored paths exist ONLY in the worktree (the commit does not carry them and the removal would
+//       delete them), listing them with the exits (commit with `git add -f`, delete, or waive with
+//       `--accept-ignored`); `done` prints the same list but does not refuse. On a CONFLICT it aborts the
 //       merge (main goes back to how it was), keeps the worktree and branch, and lists the conflicting
 //       files — and, when ALL of them are generated plugin libs or their .claude/scripts/lib mirrors
 //       (`082`), names the mechanical resolution: rebuild the libs, copy each over its mirror.
@@ -125,6 +128,10 @@ const {
   channelFileMtime,
   isChannelScope,
   recordActiveTask,
+  ignoredOnlyInWorktree,
+  formatIgnoredNotice,
+  provisionExcludedDirs,
+  formatExcludedProvision,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -489,6 +496,16 @@ function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointe
     fs.copyFileSync(mainCfg, wtCfg);
   }
 
+  // `163`: git-excluded nested .claude directories (apps/web/.claude) do not exist in a new
+  // worktree. Copy them (never link: a `dir/` ignore rule does not match a symlink); a copy that
+  // would show up as untracked is removed again by the helper and reported, so nothing is left over.
+  let excludedNotice = "";
+  try {
+    excludedNotice = formatExcludedProvision(provisionExcludedDirs(gitTry, projectDir, wtPath));
+  } catch {
+    // best effort: a worktree without these directories is still usable
+  }
+
   // Move this session's gitignored state (session.json, log.jsonl, tasks.json) into the worktree,
   // recording where the main checkout is, then leave only the pointer behind in main.
   const mainSessionDir = path.join(claudeDir, "maestro_sessions", sessionId);
@@ -527,6 +544,7 @@ function provisionWorktree({ sessionId, foreign, branch, wtPath, subject, pointe
       `and never edit the main checkout (${projectDir}). The task queue and this task's .claude/channels/<scope>/ lanes stay in the main checkout (${projectDir}/.claude/...). ` +
       "If edits there are denied, ask the user to allow the worktree directory (/add-dir).\n"
   );
+  if (excludedNotice) process.stdout.write(excludedNotice);
   // `135`: a fresh checkout has no installed dependencies; stop with the user's install command.
   const notice = missingDependenciesNotice(wtPath);
   if (notice) process.stdout.write(notice);
@@ -704,6 +722,18 @@ function mergeWorktreeTask(arg) {
         dirty.out.split("\n").includes("?? .claude/maestro.json")
       )
     );
+  }
+
+  // `163`: ignored paths that exist only in the worktree are not in the commit and die with the
+  // worktree. Stop with the list unless the user waived it (task or freeform branch alike).
+  if (!process.argv.slice(2).includes("--accept-ignored")) {
+    const lost = ignoredOnlyInWorktree(gitTry, projectDir, wtPath);
+    if (lost.length) {
+      refuse(
+        `${lost.length} ignored path(s) exist only in the worktree ${wtPath} and would be lost`,
+        formatIgnoredNotice(lost, wtPath).trimEnd()
+      );
+    }
   }
 
   const base = gitTry(projectDir, ["symbolic-ref", "--short", "-q", "HEAD"]);
@@ -1136,6 +1166,15 @@ try {
       process.stdout.write(
         `  "${filename}" is done but NOT merged: tasks in an epic that depend on it stay blocked until it is merged (ask the user for the merge, or run \`mark-merged ${filename}\` after a hand merge).\n`
       );
+    }
+    // `163`: Step 4 runs before the commit is offered, so this only warns; `merge` is what refuses.
+    if (doneWorktree) {
+      try {
+        const lost = ignoredOnlyInWorktree(gitTry, projectDir, doneWorktree.path);
+        if (lost.length) process.stdout.write(formatIgnoredNotice(lost, doneWorktree.path));
+      } catch {
+        // best effort
+      }
     }
     process.stdout.write(epicReportCommand(filename, claimedName));
     process.exit(0);

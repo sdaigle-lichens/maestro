@@ -293,7 +293,8 @@ describe("the 045/048 collision: a main-checkout session and a worktree session,
     ]);
     expect(resumeTarget(root, B, "backend")).toEqual([
       "048-b1",
-      `deliver: .claude/channels/${B_SCOPE}/backend/test.1.md`,
+      // `163`: B runs in a worktree, so the line names the absolute main-checkout path
+      `deliver: ${root}/.claude/channels/${B_SCOPE}/backend/test.1.md`,
     ]);
 
     // B's resumed backend ends: it retires only B's file; A's loop-back file is still waiting.

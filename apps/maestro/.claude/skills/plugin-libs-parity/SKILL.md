@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.7"
-  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
+  version: "2.8"
+  last-update: ea0a2b08eb316763fc05a1f2fecdba141ab116d6
 ---
 
 # Core ↔ plugin parity
@@ -282,6 +282,13 @@ worktree branch of `maestro-channel-write-guard.js` (a `HOOK_SCRIPTS` entry sinc
 lives at `.claude/scripts/maestro-channel-write-guard.cjs` and `parity.test.ts` checks it), and the worktree helpers from `worktree.ts`
 (`mainCheckoutRoot`, `isLinkedWorktree`, `worktreeBranchFor`, `freeformBranchFor`, …) — all still
 `fs`/`path` only.
+
+`163` adds to `maestro-session`: `channelPathFor` (`handoff-channels.ts`, pure: reads only
+`worktree.main_root`) and the footprint helpers from `worktree-footprint.ts` (`ignoredOnlyInWorktree`,
+`formatIgnoredNotice`, `provisionExcludedDirs`, `formatExcludedProvision`, and the `GitRunner` type).
+The module cannot spawn git itself (a core module on the app's preview path may not import
+`child_process`), so the git runner is injected and the CLI owns the spawn. `grep -c "node:sqlite"` on
+the committed `maestro-session.cjs` is still 0.
 
 ## Why the build is so specific
 

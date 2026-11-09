@@ -140,8 +140,13 @@ export function checkChannelWrite(input: {
    * `.claude/channels/<channelScope>/`; missing or not a scope denies every write.
    */
   channelScope?: string | null;
+  /**
+   * `163`: the main checkout's root when this session runs in a git worktree. Its channel directory
+   * is as valid a base as the cwd's, because injected routes name it by absolute path.
+   */
+  worktreeMainRoot?: string | null;
 }): ChannelWriteVerdict {
-  const { cwd, agentType, toolName, toolInput, meetingDir, channelScope } = input;
+  const { cwd, agentType, toolName, toolInput, meetingDir, channelScope, worktreeMainRoot } = input;
   const key = toolName ? WRITE_TOOL_PATH_KEYS[toolName] : undefined;
 
   if (meetingDir) {
@@ -164,16 +169,25 @@ export function checkChannelWrite(input: {
   if (raw.split(/[\\/]+/).includes("..")) return deny(raw, channelScope);
 
   const target = realResolve(path.resolve(cwd, raw));
-  const realCwd = realResolve(cwd);
-  const lane = realResolve(path.join(cwd, ".claude", "channels"));
-  const scoped = realResolve(path.join(cwd, ".claude", "channels", channelScope));
-  if (!target || !realCwd || !lane || !scoped) return deny(raw, channelScope);
+  if (!target) return deny(raw, channelScope);
+  // `163`: in a worktree session the injected route names the ABSOLUTE main-checkout channel path,
+  // so the main checkout's own scope directory is an accepted base next to the cwd's. The scope
+  // confinement is identical for both bases.
+  const bases = [cwd];
+  if (worktreeMainRoot && path.resolve(worktreeMainRoot) !== path.resolve(cwd)) bases.push(worktreeMainRoot);
+  return bases.some((base) => inOwnScope(target, base, channelScope)) ? { allow: true } : deny(raw, channelScope);
+}
+
+/** Is the real `target` inside `<base>/.claude/channels/<scope>/`, with no symlink steering it elsewhere? */
+function inOwnScope(target: string, base: string, scope: string): boolean {
+  const realBase = realResolve(base);
+  const lane = realResolve(path.join(base, ".claude", "channels"));
+  const scoped = realResolve(path.join(base, ".claude", "channels", scope));
+  if (!realBase || !lane || !scoped) return false;
   // A `.claude/channels` that is itself a symlink out of the project is not a lane.
-  if (lane !== path.join(realCwd, ".claude", "channels") && !lane.startsWith(realCwd + path.sep)) {
-    return deny(raw, channelScope);
-  }
+  if (lane !== path.join(realBase, ".claude", "channels") && !lane.startsWith(realBase + path.sep)) return false;
   // The scope directory must be a real directory of that name inside the lane — a symlink to
   // another scope (or anywhere else) is not this session's scope.
-  if (scoped !== path.join(lane, channelScope)) return deny(raw, channelScope);
-  return target.startsWith(scoped + path.sep) ? { allow: true } : deny(raw, channelScope);
+  if (scoped !== path.join(lane, scope)) return false;
+  return target.startsWith(scoped + path.sep);
 }
