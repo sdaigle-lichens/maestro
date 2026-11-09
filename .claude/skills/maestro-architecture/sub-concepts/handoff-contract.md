@@ -297,9 +297,9 @@ the Approve preview digest and the printed summary, and a shortened digest ends 
 text is in the review file), then reads the user's answer: on
 approval it continues the success path; on a correction request it dispatches the change as a `Task`
 to the agent a `condition` edge points at (e.g. `human requested code corrections` → `@backend`),
-rather than editing code in its own context. The seeded `default`/`tdd` workflows wire these edges
-automatically (`buildWorkflow` in `maestro.ts`: default → impl agent(s), split per-agent for
-fullstack; tdd → `@test`, since the human reviews the test plan before impl runs).
+rather than editing code in its own context. The seeded infra-only `default` workflow wires this edge
+automatically (`buildInfraWorkflow` in `seed.ts`); the seeded `default`/`tdd` workflows carry no human
+review node, only the manager review loop-backs below.
 
 A `manager review` node (`132`) is orchestrator-driven the same way: the verdict comes from the
 epic's manager session (`maestro-epic.cjs review-verdict`), not a `HANDOFF:` line, and a `redirect`

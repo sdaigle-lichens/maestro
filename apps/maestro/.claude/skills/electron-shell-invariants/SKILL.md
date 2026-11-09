@@ -162,8 +162,8 @@ One test file guards the shell's own security boundary: `nodeIntegration: false`
 `contextIsolation: true`, one exposed namespace (`window.maestro`), no generic
 `invoke(channel, …)` escape hatch, no node builtins in the built renderer bundle, and — outside
 `src/main/` (so `shared`, `preload`, `renderer`) — imports from `src/core` limited to an **allow-list
-of three self-contained modules** (`contracts`, `text`, `canvas-layout`; anything else, the `index.ts`
-barrel included, fails; a fourth needs proof it reaches no filesystem), no `@repo/claude-fs`, and no
+of four self-contained modules** (`contracts`, `text`, `canvas-layout`, `manager-review-label`; anything else, the `index.ts`
+barrel included, fails; a fifth needs proof it reaches no filesystem), no `@repo/claude-fs`, and no
 `node:` builtin. These are configuration and convention properties that would all regress silently
 without an assertion; there is no runtime error waiting to catch a renderer that quietly gained a
 node import. The `built …` blocks (bundle imports, off-origin CSS, vendored fonts) are `runIf` an

@@ -161,6 +161,9 @@ function placeConditionLabels(workflow, skillCount = () => 0) {
   return { ...workflow, edges };
 }
 
+// src/core/manager-review-label.ts
+var MANAGER_DIRECTION_CHANGE_LABEL = "manager requested direction change";
+
 // src/core/seed.ts
 var CORE_INSTANCES = [
   { name: "test", agent: "test", loaded_skills: [], referenced_skills: [] },
@@ -258,11 +261,9 @@ function buildWorkflow(name, kind, impl, skillCount = () => 0) {
     )
   );
   if (kind === "tdd") {
-    edges.push(c(MANAGER_REVIEW_ID, "test", "manager requested test corrections"));
-  } else if (impl.length === 1) {
-    edges.push(c(MANAGER_REVIEW_ID, impl[0], "manager requested code corrections"));
+    edges.push(c(MANAGER_REVIEW_ID, "test", MANAGER_DIRECTION_CHANGE_LABEL));
   } else {
-    for (const a of impl) edges.push(c(MANAGER_REVIEW_ID, a, `manager requested ${a} corrections`));
+    for (const a of impl) edges.push(c(MANAGER_REVIEW_ID, a, MANAGER_DIRECTION_CHANGE_LABEL));
   }
   return placeConditionLabels({ name, nodes, edges }, skillCount);
 }

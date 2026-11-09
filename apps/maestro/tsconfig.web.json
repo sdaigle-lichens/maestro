@@ -10,6 +10,7 @@
     // RENDERER_SAFE in test/isolation.test.ts, which fails on the import rather than the type.
     "src/core/canvas-layout.ts",
     "src/core/contracts.ts",
+    "src/core/manager-review-label.ts",
     "src/core/text.ts",
     // Only because `contracts.ts` re-exports the config model from it, and a composite project
     // must list every file in its program. Renderer code imports `contracts`, never this — which
