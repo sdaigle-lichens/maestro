@@ -846,5 +846,17 @@
     "blockedBy": [
       "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md"
     ]
+  },
+  "170-guard-the-commit-and-merge-path-and-add-a-land-the-task-end-skill.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "171-give-epic-reports-unique-ids-and-stop-a-worktree-refresh-picking-up-another-branch-s-generated-files.md": {
+    "status": "ready",
+    "blockedBy": []
+  },
+  "172-treat-agents-on-no-workflow-as-helpers-on-resume-and-in-the-post-mortem-digest-and-keep-plan-pages-out-of-git.md": {
+    "status": "ready",
+    "blockedBy": []
   }
 }
