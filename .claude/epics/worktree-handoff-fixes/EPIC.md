@@ -65,5 +65,10 @@ After the epic: task 157 (no epic, blocked by all five) runs standalone once the
   kept defectClass, the written grammar and a mechanical test→refactor edge; dropped the narrower
   FAIL rule with documentedLimits and the one-probe-file rule; this repo's setup only, plugin seeds a
   separate follow-up.
+- Epic complete (2026-11-09): all seven tasks merged; final `main` at db2ee3c (167), `pnpm verify`
+  green on it (3111 passed, 5 skipped). 167's defect-class comparison uses an append-only ledger
+  (`.claude/channels/<scope>/defect-classes.md`), because retired payloads are overwritten each round;
+  it is enforced by @test's prose only. Left for later: standalone 169 and 157; reports from
+  different tasks can share an id (166 and 167 both got r009), a candidate ticket.
 - 166 (user): the seed adopts the app's "manager requested direction change" label, not the other
   way round. This repo's `maestro.json` already uses it.

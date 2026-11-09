@@ -586,6 +586,15 @@
       "id": "r023",
       "at": "2026-11-06T18:25:53.971Z",
       "by": "manager-review-manager"
+    },
+    {
+      "kind": "note",
+      "id": "n001",
+      "from_epic": "worktree-handoff-fixes",
+      "from": "maestro-mgr-82f98516",
+      "subject": "Task 167 changes this repo's Backend workflow before merge",
+      "file": "inbox/n001-from-worktree-handoff-fixes.md",
+      "at": "2026-11-09T15:27:50.763Z"
     }
   ]
 }

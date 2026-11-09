@@ -775,7 +775,7 @@
     "epic": "manager-review"
   },
   "157-add-a-user-steered-plan-review-and-on-demand-plan-view-to-to-maestro-tasks.md": {
-    "status": "blocked",
+    "status": "ready",
     "blockedBy": [
       "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
       "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
@@ -823,12 +823,12 @@
     "epic": "worktree-handoff-fixes"
   },
   "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "worktree-handoff-fixes"
   },
   "167-cut-the-number-of-backend-test-fix-rounds-in-the-backend-workflow.md": {
-    "status": "blocked",
+    "status": "done",
     "blockedBy": [
       "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
       "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
@@ -837,7 +837,7 @@
     "epic": "worktree-handoff-fixes"
   },
   "168-re-review-and-stamp-the-maestro-architecture-concept-skill-after-tasks-160-and-163.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "worktree-handoff-fixes"
   },
