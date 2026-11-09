@@ -77,6 +77,15 @@ resolves. The directory is deleted at that session's own non-resumable SessionEn
   - **Judges the handoff** (`108`): a defective label, route or payload is attached to the entry as
     `handoff_issue`, appended to session.json's `handoff_issues`, and surfaced as a systemMessage.
     Meeting / owner-run handoffs log `meeting turn` / `owner run` instead and skip judging.
+  - **Defers an interim stop** (`160`): a workflow agent whose readable transcript shows no real
+    hand-back call in the run gets a handoff entry with `interim: true` (field absent otherwise, never
+    `false`), `log: "interim stop (no hand-back yet)"` and no `handoff_issue`. The judgement waits:
+    the stop is recorded in session.json's `pending_interim`, and `handoff-issues` flags it `missing`
+    later if nothing resumed the agent. The log entry itself is never rewritten, so a reader must not
+    take `interim: true` plus no `handoff_issue` as "judged fine".
+    A real hand-back is a `SubagentHandback` call, or a `SendMessage` with an uppercase `HANDOFF: <label>`
+    line at a line start; a malformed whole line (`HANDOFF success`) also counts, and is flagged at once.
+    The payload check of a judged stop measures from the agent's first dispatch (`160`).
   - **Stamps channel files** (`036`): the agent's lane files get a run stamp
     (`ensureSessionRunId` + `writeStamp`), minus meeting/owner-run leftovers.
 - **On SubagentStop with NO `agent_type`** → not a real workflow handoff. Writes a `kind:"transition"`

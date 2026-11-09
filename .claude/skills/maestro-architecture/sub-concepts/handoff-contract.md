@@ -173,13 +173,96 @@ earlier run's hand-back or writes are kept, exactly as for a first run.
 Fixtures with a hand-back timestamp must be dated after the test's own dispatch (the shared
 `handbackTranscript` uses 2099) or the call reads as an earlier run's.
 
+### Interim stops are judged at the run's final stop (`160`)
+
+A workflow agent can stop before it is done (to wait on background work) and be resumed later, so
+one run is several stops. Judging each one flagged false `missing` issues (task 075's backend and
+reviewer) that the orchestrator then had to dismiss by timestamp. But a stop with no hand-back can
+also be the agent's last one, so the judgement is deferred, never dropped.
+
+**What the stop carries.** The `SubagentStop` input has nothing that says "interim": no
+pending-background-task field and no final flag (it carries the ids, `agent_type`,
+`agent_transcript_path` and sometimes `last_assistant_message`). The transcript has the signal that is
+usable: `isInterimStop` (`handoff-label.ts`) is true when the current run (run boundary and dispatch
+time rules of `151`/`153`) made no real hand-back call, after `awaitHandback`'s bounded wait for the
+flush. A real hand-back is a `SubagentHandback` call (any text), or a `SendMessage` whose message carries an
+uppercase `HANDOFF: <label>` line at the start of its line, label on the same line (`077`/`078`;
+case-sensitive and line-anchored for this gate only, so a mid-sentence "I will end with HANDOFF: success"
+or a prose note such as
+`Handoff: waiting on the build` stays interim, while `lastHandoffLabel` itself stays case-insensitive), or a malformed HANDOFF line: a whole line that is `HANDOFF`, an
+optional colon and one word, with trailing punctuation (`. , ; !`), backticks and asterisks tolerated,
+such as `HANDOFF success` or `HANDOFF success.` (`MALFORMED_HANDOFF_LINE_RE`, `handoff-label.ts`). The
+token is case-sensitive uppercase `HANDOFF`, so a prose line such as `Handoff pending` is not one. The malformed one is a final stop flagged `missing` at once, as the pre-160 hook did. Every other
+`SendMessage`, including prose that merely mentions the handoff ("waiting on the handoff", "I will send the
+HANDOFF line later"), is a mid-run progress note and counts for nothing. There is no
+background-task detection: whether work is still pending cannot be read from either source, so the
+verdict waits for what happens next.
+
+**The `interim` log marker (read by task 165).** The `kind:"handoff"` log entry gets the field
+`interim: true` exactly when the stop is an interim one: a workflow agent (it maps to a workflow
+instance; not a meeting or owner run), a readable transcript, and no real hand-back call in the current
+run. The field is absent otherwise, never `false`. Such an entry has no `handoff_issue`, its `log` text is
+`interim stop (no hand-back yet)`, and `status`/`label` stay `unknown`/null. An unreadable or absent
+transcript means "cannot tell": that stop is judged at once, as before, and carries no marker.
+
+**Deferred judgement: `pending_interim` in `session.json`.** An interim stop writes
+`pending_interim[agent_id] = {ts, agent, agent_id, transcript_path, run_since, cwd, scope}`
+(`interim-stop.ts`; the last four are the transcript, the run's dispatch time, and the hook's project dir
+and channel scope, kept for the re-read below), no `handoff_issues` entry and no
+`systemMessage`, and does not stamp channel files (the stamp refreshes mtimes, which would let a stale
+file pass the payload check later). What settles it:
+
+- the agent is resumed: its next `SubagentStart` clears its marker, and every other marker gets
+  `moved_on: true` (another WORKFLOW agent was dispatched since; a generic helper such as Explore, a
+  meeting or an owner-run agent never counts. Limit: a workflow agent started inside another agent's
+  run looks like the orchestrator's own dispatch, so it counts as moving on);
+- a repeat interim stop of the same agent id with no resume between rewrites the marker's `ts`, transcript
+  and run fields but keeps its `moved_on` and `seen` flags, so a never-resumed agent is still flagged;
+- the agent stops again with a judged hand-back (or an immediate judgement): the stop clears the marker
+  and judges itself, so an interim stop that is resumed and ends with a valid hand-back leaves nothing;
+- `maestro-task-status.cjs handoff-issues` first RE-READS each marker's transcript (`landedHandback`,
+  from `run_since`): a hand-back call that was flushed after the stop's 3 s wait settles the marker
+  (a valid line leaves nothing; a missing line or a contradiction is recorded as that issue). Only a marker
+  whose run still has no hand-back call is promoted: with `moved_on` or `seen` it becomes an ordinary
+  `missing` issue (the orchestrator moved on, or this is the second look with no resume between),
+  otherwise it prints a "not flagged yet" note, sets `seen: true` and keeps it.
+
+So a plain-text final with no hand-back call, and an agent that stops once and is never resumed, are
+still flagged `missing`, on the orchestrator's next handoff check after it moves on or looks twice.
+
+**Still flagged immediately at a judged stop.** A hand-back call with no `HANDOFF:` line (`missing`), a
+verdict mismatch (`contradiction`), an unknown route (`unrouted`), and a payload never written in the
+whole run (`missing_payload`). A stop with a `HANDOFF:` line in `last_assistant_message` is judged as
+before.
+
+**Limits.** The flag for a plain-text final comes later than the stop, at `handoff-issues`, and its log
+entry stays `interim: true` with no `handoff_issue` (the promotion writes no log entry). A transcript
+flush slower than the 3 s wait reads as interim, but the promotion re-reads the transcript, so a valid
+hand-back that landed in the meantime is not flagged falsely. The late hand-back goes through the same
+judgement as an on-time one (`judgeLandedHandback`, `maestro-task-status.cjs`: HANDOFF line and verdict,
+route against the active workflow, payload from the agent's first dispatch), so a late unknown route
+(`unrouted`) or unwritten payload (`missing_payload`) is flagged by `handoff-issues`. A hand-back that
+has still not landed at a check is NOT flagged `missing` on the first look: the marker only gets
+`seen: true` and a "not flagged yet" note. It is flagged `missing` on the second look, or at the first
+look after another workflow agent was dispatched (`moved_on`). An agent that
+stops mid-run and is resumed only after the orchestrator has dispatched another agent is flagged in the
+meantime and the flag is stale by then (the orchestrator resumes it anyway).
+
+**The payload is measured from the whole run.** `agentRunStartedAt` (`handoff-payload.ts`) is the
+agent id's FIRST `dispatch` log entry, which `maestro-subagent-log.js` passes to `payloadWrittenSince`,
+so a payload written before a resume counts. A file left from an earlier run of the same agent type
+predates that first dispatch and still does not count. The transcript boundary rules keep using the
+LAST dispatch (`runStartedAt`). Limit: on a loop-back resume of a finished agent, the first run's
+payload would count if it were still in the lane; the receiver's delivery retires it, so in practice
+it is gone.
+
 ### A payload route must be written (`087`)
 
 The third issue kind, `missing_payload` (`checkPayload` in `handoff-check.ts`): the `HANDOFF:` label
 names a route whose pair resolves a protocol (same three-tier resolution as the injector, via
 `payloadRoutes` in `core/handoff-payload.ts`, so the two hooks cannot disagree), and the sender's
 channel file for that receiver was not written **during this run**. "This run" starts at the agent's
-LAST `kind:"dispatch"` log entry (`runStartedAt`, so a resume is measured from its own start), with
+FIRST `kind:"dispatch"` log entry (`agentRunStartedAt`, `160`: a payload written before a resume still counts; the transcript boundary keeps the LAST one, `runStartedAt`), with
 1 s mtime slack (`payloadWrittenSince`); no dispatch entry ⇒ the file merely existing counts. It is
 checked only when `checkHandoff` found nothing, and travels the same way as the other two, plus
 `files[]` on the log entry and `session.json`. The orchestrator **resumes** the sender to write the

@@ -203,6 +203,10 @@ only and every hook already requires this bundle" argument:
   `closeMeeting`, `closeOwnerRuns`) now takes a `scope` argument, so every hook calling one changed
   in the same commit. The export-superset test can't catch a stale call shape — only a rebuild plus
   the hook tests can. `fs`/`path` only; the grep is still `0`.
+- `160` — all of `interim-stop.ts` (`recordInterimStop`, `clearInterimStop`, `noteDispatch`,
+  `settleInterimStops`), read by the SubagentStart/Stop hooks and `maestro-task-status.cjs handoff-issues`.
+  It imports only `handoff-check.ts` and types; `isInterimStop`, `landedHandback` and `runProfile` come
+  from `handoff-label.ts`, `agentRunStartedAt` from `handoff-payload.ts`. `fs`-free; the grep is still `0`.
 
 The argument is sound every time, and it is also how a bundle acquires a sqlite import by accident.
 Re-run `grep -c "node:sqlite" plugins/maestro/scripts/lib/maestro-session.cjs` → `0` after any

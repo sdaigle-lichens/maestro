@@ -785,7 +785,7 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     expect(reads).toBe(1);
   });
 
-  it("the real hook gives up after the cap when the flush never lands, and flags missing", async () => {
+  it("the real hook gives up after the cap when the flush never lands, and treats the stop as interim (160)", async () => {
     const root = await installed();
     const transcript = path.join(tmp, "agent-124-never.jsonl");
     fs.writeFileSync(transcript, partial);
@@ -794,7 +794,8 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
     const took = Date.now() - t0;
     expect(r.code, r.stderr).toBe(0);
-    expect(r.stdout).toContain("handoff problem (missing)");
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(handoffEntry(root, "b1").interim).toBe(true);
     expect(took).toBeGreaterThanOrEqual(2800);
     expect(took).toBeLessThan(9000);
   }, 20000);
@@ -873,11 +874,13 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     subagentStart(root, "test", "t1");
     const r = subagentStop(root, "test", "t1", { agent_transcript_path: transcript });
     expect(r.code, r.stderr).toBe(0);
-    expect(r.stdout).toContain("handoff problem (missing)");
+    // 160: the resumed run has made no hand-back yet, so it is an interim stop, not a `missing`.
+    expect(r.stdout).not.toContain("handoff problem");
     const entry = handoffEntry(root, "t1");
     expect(entry.output ?? "").not.toContain("tests failed");
     expect(entry.label).not.toBe("tests failed");
-    expect(entry.handoff_issue?.kind).toBe("missing");
+    expect(entry.handoff_issue).toBeUndefined();
+    expect(entry.interim).toBe(true);
   }, 20000);
 
   // ── 153: payload expectations of a resumed run ────────────────────────────────────────────────
@@ -993,8 +996,10 @@ describe("a hand-back not yet flushed when SubagentStop fires is waited for (124
     fs.writeFileSync(transcript, full.replaceAll("2099-", "2001-"));
     subagentStart(root, "backend", "b1");
     const r = subagentStop(root, "backend", "b1", { agent_transcript_path: transcript });
-    expect(r.stdout).toContain("handoff problem (missing)");
-    expect(handoffEntry(root, "b1").handoff_issue?.kind).toBe("missing");
+    // 160: no hand-back call in this run, so it is an interim stop: judged at the final stop, not now.
+    expect(r.stdout).not.toContain("handoff problem");
+    expect(handoffEntry(root, "b1").handoff_issue).toBeUndefined();
+    expect(handoffEntry(root, "b1").interim).toBe(true);
   }, 20000);
 
   it("the real hook does not delay when the transcript file is unreadable", async () => {

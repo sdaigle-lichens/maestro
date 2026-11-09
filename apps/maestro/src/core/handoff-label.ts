@@ -14,7 +14,7 @@
 //     agent's report — HANDOFF line included — was invisible to the stop hook and each was
 //     flagged `missing`.
 
-const HANDOFF_RE = /[`*]*HANDOFF:\s*([^\n`*]+)[`*]*/gi;
+const HANDOFF_RE = /[`*]*HANDOFF:[ \t]*([^\n`*]+)[`*]*/gi;
 
 /** Tool names whose `input` carries an agent's hand-back report. */
 export const HANDBACK_TOOLS: readonly string[] = ["SubagentHandback", "SendMessage"];
@@ -35,6 +35,41 @@ function messageText(input: unknown): string {
     if (typeof o[k] === "string" && lastHandoffLabel(o[k])) return o[k] as string;
   }
   return "";
+}
+
+/**
+ * A malformed HANDOFF line (`160`): a whole line that is the UPPERCASE token HANDOFF (case-sensitive,
+ * so prose such as `Handoff pending` is not one), an optional colon and one label-like word, with
+ * trailing punctuation (`. , ; !`) tolerated, as in `HANDOFF success` or `HANDOFF success.`. It sits at
+ * the start of its line (backticks, asterisks and indentation allowed), so a prose mention inside a progress note ("waiting on the
+ * handoff", "I will send the HANDOFF line later") is not one. A well-formed `HANDOFF: x` line is
+ * `lastHandoffLabel`'s job, not this one's.
+ */
+const MALFORMED_HANDOFF_LINE_RE = /^[ \t`*]*HANDOFF[: \t]+[A-Za-z_][\w-]*[ \t`*.,;!]*$/m;
+
+/**
+ * An uppercase `HANDOFF: <label>` line (`SendMessage` only; `lastHandoffLabel` stays case-insensitive):
+ * at the start of its line (indentation, backticks and asterisks allowed) with the label on the same
+ * line, so a mid-sentence mention ("I will end with HANDOFF: success once it lands") is not one.
+ */
+const UPPER_HANDOFF_LABEL_RE = /^[ \t`*]*HANDOFF:[ \t]*[^\s`*]/m;
+
+/** Does this tool input carry a malformed HANDOFF line (a final report whose label cannot be parsed)? */
+function carriesMalformedHandoff(input: unknown): boolean {
+  if (typeof input === "string") return MALFORMED_HANDOFF_LINE_RE.test(input);
+  if (!input || typeof input !== "object") return false;
+  return Object.values(input as Record<string, unknown>).some(
+    (v) => typeof v === "string" && MALFORMED_HANDOFF_LINE_RE.test(v)
+  );
+}
+
+/**
+ * A hand-back of the CURRENT run found in a transcript, or null when there is none (`160`). Used when
+ * a pending interim stop is promoted: a hand-back flushed after the stop's bounded wait settles it.
+ */
+export function landedHandback(transcript: string, sinceMs: number | null = null): { message: string | null } | null {
+  const scan = scanRun(transcript, sinceMs);
+  return scan.sawCall ? { message: scan.text } : null;
 }
 
 /**
@@ -121,6 +156,21 @@ export function runProfile(
   return { resumed, wroteFiles };
 }
 
+/**
+ * Is this stop an interim one (`160`)? True when the current run has made no hand-back call
+ * (`SubagentHandback`/`SendMessage`) in the transcript. The SubagentStop input carries no field that
+ * says "interim" (it has `agent_transcript_path`, `last_assistant_message` and the ids, nothing about
+ * pending background work), so the signal is the transcript: Claude Code tells every subagent to end
+ * with a hand-back call, so a run that stopped without one has not delivered its report yet (it is
+ * waiting on background work, or the harness will remind it) and its HANDOFF line cannot be judged.
+ * Callers must have given the transcript time to flush first (`awaitHandback`, `124`), and must treat
+ * an unreadable transcript as "cannot tell", not as interim. Limit: a run that really ends in plain
+ * text with no hand-back call looks identical, so it is not flagged by this signal.
+ */
+export function isInterimStop(transcript: string, sinceMs: number | null = null): boolean {
+  return !scanRun(transcript, sinceMs).sawCall;
+}
+
 function scanRun(
   transcript: string,
   sinceMs: number | null
@@ -172,8 +222,17 @@ function scanRun(
           resumed = true; // an earlier run's hand-back, ahead of this run's dispatch
           continue;
         }
-        sawCall = true;
         const text = messageText(block.input);
+        // `160`: only `SubagentHandback` is a hand-back by itself. A `SendMessage` is one when it
+        // carries a `HANDOFF:` label (`077`/`078`) or a malformed HANDOFF line such as `HANDOFF
+        // success` on a line of its own, which is a final stop flagged `missing` at once. Any other
+        // `SendMessage`, including prose that mentions the handoff, is a mid-run progress note: it
+        // neither ends the wait nor makes the stop a final one.
+        // The label's token is case-sensitive here: a prose note such as `Handoff: waiting on the
+        // build` is not a hand-back (the contract's form is uppercase `HANDOFF:`).
+        if (block.name === "SendMessage" && !UPPER_HANDOFF_LABEL_RE.test(text) && !carriesMalformedHandoff(block.input))
+          continue;
+        sawCall = true;
         if (text) found = text;
       }
     }

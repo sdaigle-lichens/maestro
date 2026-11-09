@@ -239,6 +239,8 @@ export {
   handbackHandoff,
   hasHandbackCall,
   runProfile,
+  isInterimStop,
+  landedHandback,
   awaitHandback,
   HANDBACK_TOOLS,
   HANDBACK_WAIT_MS,
@@ -266,8 +268,12 @@ export {
   payloadWrittenSince,
   readProjectHandoff,
   runStartedAt,
+  agentRunStartedAt,
   type PayloadRoute,
 } from "../handoff-payload.js";
+
+// Interim stops awaiting their verdict (`160`). Pure.
+export { recordInterimStop, clearInterimStop, noteDispatch, settleInterimStops } from "../interim-stop.js";
 
 // A resumed loop-back target gets its lane by path through the orchestrator's SendMessage, since a
 // resume never receives SubagentStart's additionalContext (`088`). `fs`/`path` only.

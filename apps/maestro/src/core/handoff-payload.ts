@@ -172,6 +172,25 @@ export function runStartedAt(lines: unknown[], agentId: string): number | null {
   return at;
 }
 
+/**
+ * When the WHOLE run of `agentId` started (`160`): the timestamp of its FIRST `kind:"dispatch"` log
+ * entry. A resume reuses the agent id and logs a fresh dispatch, so `runStartedAt` measures the latest
+ * stretch; the payload check wants the whole run, because an agent may write its payload in an earlier
+ * stretch (before an interim stop) and hand back `success` after a later resume. A file from an
+ * earlier RUN of the same agent type has a different agent id, so it still predates this start.
+ */
+export function agentRunStartedAt(lines: unknown[], agentId: string): number | null {
+  if (!agentId) return null;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const e = line as Record<string, unknown>;
+    if (e.kind !== "dispatch" || e.agent_id !== agentId || typeof e.ts !== "string") continue;
+    const t = Date.parse(e.ts);
+    if (!Number.isNaN(t)) return t;
+  }
+  return null;
+}
+
 /** Filesystem mtime granularity and clock slack between the hook's `ts` and the write. */
 const MTIME_SLACK_MS = 1000;
 

@@ -132,6 +132,21 @@ const {
   formatIgnoredNotice,
   provisionExcludedDirs,
   formatExcludedProvision,
+  settleInterimStops,
+  landedHandback,
+  checkHandoff,
+  checkRoute,
+  checkPayload,
+  handoffRoutes,
+  testHintRoutes,
+  routesFrom,
+  payloadRoutes,
+  payloadWrittenSince,
+  agentRunStartedAt,
+  runProfile,
+  readLogLines,
+  resolveSearchList,
+  readGlobalHandoff,
 } = require("./lib/maestro-session.cjs");
 
 // `074`: the QUEUE root is always the main checkout — even if this runs with a worktree as its
@@ -1008,6 +1023,48 @@ function planShowCommand() {
   );
 }
 
+// `160`: the SubagentStop hook's judgement (`maestro-subagent-log.js`) applied to a hand-back that
+// landed after the stop returned: `checkHandoff`, then `checkRoute` against the active workflow, then
+// `checkPayload` measured from the agent's first dispatch. Returns the issue, or null when valid.
+function judgeLandedHandback(stop, message, transcript, runSince, state) {
+  let issue = checkHandoff(message);
+  if (issue) return issue;
+  const claudeDir = path.join(projectDir, ".claude");
+  const cfg = readJsonFile(path.join(claudeDir, "maestro.json"));
+  if (!cfg || cfg.version !== 3) return null;
+  const { searchList, activeWorkflowName } = resolveSearchList(cfg, state);
+  const instances = cfg.workflow_instances || [];
+  if (activeWorkflowName && searchList.length && searchList.every((w) => w.name === activeWorkflowName)) {
+    issue = checkRoute(message, routesFrom(handoffRoutes(searchList, instances), stop.agent), activeWorkflowName);
+    if (issue) return issue;
+  }
+  const cwd = stop.cwd || projectDir;
+  const scope = stop.scope;
+  if (!scope) return null;
+  const sess = resolveSessionPaths(claudeDir);
+  let since = null;
+  try {
+    since = sess ? agentRunStartedAt(readLogLines(sess.log), stop.agent_id) : null;
+  } catch {
+    since = null;
+  }
+  const prof = runProfile(transcript, runSince);
+  if (prof.resumed && !prof.wroteFiles) return null;
+  const routes = routesFrom(handoffRoutes(searchList, instances), stop.agent);
+  const hints = routesFrom(testHintRoutes(searchList, instances), stop.agent);
+  return checkPayload(message, payloadRoutes(cwd, scope, [...routes, ...hints], readGlobalHandoff), (r) =>
+    payloadWrittenSince(cwd, r, since)
+  );
+}
+
+function readJsonFile(file) {
+  try {
+    return JSON.parse(fs.readFileSync(file, "utf8"));
+  } catch {
+    return null;
+  }
+}
+
 // Read-and-clear the handoff problems the SubagentStop hook recorded since the orchestrator last asked.
 function handoffIssuesCommand() {
   const file = sessionStateFile();
@@ -1015,7 +1072,38 @@ function handoffIssuesCommand() {
   // A `missing_payload` whose files are all in their lane now, stamped with THIS run's id, is
   // resolved (a resumed agent's earlier file still exists): reporting it sends the orchestrator after
   // a file that is already there. Same check `maestro-resume-target.cjs` makes (`139`).
-  const recorded = Array.isArray(state.handoff_issues) ? state.handoff_issues : [];
+  // `160`: a stop with no hand-back was not judged when it happened (it may be mid-run). One that
+  // the orchestrator moved on from, or that this command already showed once with no resume since,
+  // was a final stop: it becomes a `missing` issue now. The rest stay pending and are noted below.
+  // A hand-back that reached the transcript after the stop's bounded wait settles the marker instead,
+  // judged like an on-time one: HANDOFF line, route in the active workflow, payload from the whole run.
+  const settled = settleInterimStops(state.pending_interim, new Date().toISOString(), (stop) => {
+    if (!stop.transcript_path) return null;
+    try {
+      const text = fs.readFileSync(stop.transcript_path, "utf8");
+      const runSince = typeof stop.run_since === "number" ? stop.run_since : null;
+      const landed = landedHandback(text, runSince);
+      if (!landed) return null;
+      return { issue: judgeLandedHandback(stop, landed.message, text, runSince, state) };
+    } catch {
+      return null;
+    }
+  });
+  const stillPending = Object.values(settled.pending);
+  const hadPending = state.pending_interim && Object.keys(state.pending_interim).length > 0;
+  if (hadPending) {
+    if (stillPending.length) state.pending_interim = settled.pending;
+    else delete state.pending_interim;
+  }
+  const recorded = [
+    ...(Array.isArray(state.handoff_issues) ? state.handoff_issues : []),
+    ...settled.issues.filter(
+      (s) => !(state.handoff_issues || []).some((i) => i.kind === "missing" && i.agent_id === s.agent_id)
+    ),
+  ];
+  const pendingNote = stillPending.length
+    ? `Maestro handoffs: ${stillPending.map((p) => p.agent).join(", ")} stopped without a HANDOFF line (not flagged yet: it may be waiting on background work). Resume it if so; if the next handoff check still finds it stopped, it is flagged missing.\n`
+    : "";
   let issues = recorded;
   if (recorded.some((i) => i && i.kind === "missing_payload") && typeof state.run_id === "string" && state.run_id) {
     try {
@@ -1042,11 +1130,11 @@ function handoffIssuesCommand() {
     }
   }
   if (!issues.length) {
-    if (recorded.length) {
+    if (recorded.length || hadPending) {
       delete state.handoff_issues;
       writeSessionState(file, state);
     }
-    process.stdout.write("Maestro handoffs: no problems recorded.\n");
+    process.stdout.write(`Maestro handoffs: no problems recorded.\n${pendingNote}`);
     return;
   }
   // `087` adds `missing_payload`: the route taken expects a payload the sender never wrote.
@@ -1083,7 +1171,7 @@ function handoffIssuesCommand() {
   delete state.handoff_issues;
   writeSessionState(file, state);
   process.stdout.write(
-    `Maestro handoffs: ${issues.length} problem(s) — route deliberately, never default to success:\n${lines.join("\n")}\n${worktreeNote}`
+    `Maestro handoffs: ${issues.length} problem(s) — route deliberately, never default to success:\n${lines.join("\n")}\n${worktreeNote}${pendingNote}`
   );
 }
 

@@ -81,6 +81,19 @@ long-lived** watcher and exits; `test/core/session-heartbeat-cli.test.ts` is the
 - **Session ids sharing their first 8 chars share a `session-<id8>` scope.** Give each fixture
   session a distinct 8-char prefix, or two "isolated" sessions collide by construction.
 
+## Route checks need an active workflow (`160`)
+
+The route check (`unrouted`, and `blocked` in place of it) runs only when `activeWorkflowRoutes`
+(`maestro-subagent-log.js`) resolves a workflow: `maestro.json` at `version: 3`, and `session.json`
+naming the active workflow. Without one the check is skipped, so a stop with an unknown label is not
+flagged. A stop is judged at all only when its agent type maps to a workflow instance. Before that
+stop, the fixture needs:
+
+- `node <root>/.claude/scripts/maestro-render-orchestrator.cjs <root>`
+- `node <root>/.claude/scripts/maestro-set-session-workflow.cjs <workflow>`, with the session env set
+
+Worked example: `test/core/interim-stop-160.test.ts`, "an unknown route in the active workflow is flagged unrouted".
+
 ## Date fixtures against the dispatch time (`153`)
 
 The handoff hooks take their run start from the log's last `kind:"dispatch"` entry for the agent

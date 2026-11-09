@@ -261,6 +261,14 @@ export interface MaestroSession {
    */
   handoff_issues?: HandoffIssueRecord[];
   /**
+   * Interim stops awaiting their verdict (`160`), keyed by `agent_id`: a workflow agent stopped with no
+   * hand-back, which may be mid-run (waiting on background work) or may be its final stop. Written by
+   * the SubagentStop hook, cleared when that agent is resumed (SubagentStart) or stops with a judged
+   * hand-back, and promoted to a `missing` issue by `maestro-task-status.cjs handoff-issues` once
+   * the orchestrator has moved on. See `interim-stop.ts`.
+   */
+  pending_interim?: Record<string, PendingInterimStop>;
+  /**
    * Channel files handed to a RESUMED agent by path (`088`), keyed by that agent's `agent_id`.
    * Written by `maestro-resume-target.cjs` (which prints them as `deliver:` lines for the
    * orchestrator's SendMessage), retired and removed by the resumed run's own SubagentStop. A resume
@@ -291,6 +299,24 @@ export interface MaestroOwnerRunsState {
   /** BARE agent names whose runs are owner runs. */
   agents: string[];
   started_at: string;
+}
+
+/** One interim stop not yet resolved (`160`). */
+export interface PendingInterimStop {
+  ts: string;
+  agent: string;
+  agent_id: string;
+  /** Set once another agent was dispatched after this stop: the orchestrator moved on. */
+  moved_on?: boolean;
+  /** Set once `handoff-issues` has shown it once without a resume since. */
+  seen?: boolean;
+  /** The agent's transcript, re-read at promotion to catch a hand-back flushed after the stop's wait. */
+  transcript_path?: string;
+  /** This run's dispatch time (ms), the run boundary for that re-read. */
+  run_since?: number;
+  /** The hook's project dir and channel scope, so the late re-judgement checks the same payload lanes. */
+  cwd?: string;
+  scope?: string;
 }
 
 export interface HandoffIssueRecord {

@@ -81,7 +81,7 @@ is created on disk for a rejected id, which is what makes rejecting cost nothing
 | --- | --- | --- |
 | plain tool call | `{ts, origin, log}` | PreToolUse |
 | `kind:"dispatch"` | `{ts, origin:"main_session", agent, agent_id, input, offered_skills?, log}` | SubagentStart |
-| `kind:"handoff"` | `{ts, origin, agent_id, status, label, output, log}` | SubagentStop **with** an `agent_type` |
+| `kind:"handoff"` | `{ts, origin, agent_id, status, label, output, interim?, handoff_issue?, log}` | SubagentStop **with** an `agent_type`. `interim: true` (`160`) is set only when a workflow agent stopped with a readable transcript and no real hand-back call in the run; absent otherwise. Such an entry carries no `handoff_issue` (see `handoff-contract.md`). |
 | `kind:"transition"` | `{ts, origin:"transition", output, log}` | SubagentStop with **no** `agent_type` — a boundary that isn't a workflow handoff at all, kept neutral instead of masquerading as an `unknown` handoff |
 | `kind:"channel_delivery"` (`036`) | `{ts, origin:"main_session", agent_id, sender, receiver, content, log}` | SubagentStart, by `maestro-inject-agent-context.js` itself the same moment it inlines a channel payload, so the log has a durable record of the delivery |
 | `kind:"phase"` (`064`) | phase marker from the two `!`-injected gate scripts | Step 1 / Step 4 gate resolution |
@@ -94,6 +94,10 @@ keeps it out of resume targets and the post-mortem timeline (see `team-meeting.m
 an ended meeting left unstamped), both from `meeting-mode.ts`, and `resume_deliveries`
 (`agent_id` → `{file, sender, run_id}[]`, lane files a resumed run was handed by path — written by
 `maestro-resume-target.cjs`, cleared at that run's `SubagentStop`, `088`, see `agent-resume.md`).
+Since `160` it carries `pending_interim` (`agent_id` → `{ts, agent, agent_id, moved_on?, seen?, transcript_path?, run_since?, cwd?, scope?}`, `interim-stop.ts`): a
+workflow agent's interim stop awaiting its verdict (the last four are kept for `handoff-issues`' re-read). The SubagentStop hook writes it, the agent's next
+SubagentStart or a judged stop of that agent clears it, and `maestro-task-status.cjs handoff-issues`
+promotes a `moved_on`/`seen` one to a `missing` issue (see `handoff-contract.md`).
 Since `113` it also carries the session's name for cross-session messages: `session_name`
 (`maestro-<id8>`, `maestro-mgr-<id8>`, or the user's custom title), `session_name_role`
 (`worker`/`manager`, the first entrance), `session_name_custom` and `session_name_applied`. Only

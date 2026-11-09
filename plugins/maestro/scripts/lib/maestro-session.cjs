@@ -68,6 +68,7 @@ __export(maestro_session_exports, {
   SESSION_TASKS_NAME: () => SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME: () => SESSION_WORKTREE_NAME,
   acknowledgeGaps: () => acknowledgeGaps,
+  agentRunStartedAt: () => agentRunStartedAt,
   agentRunsFromLog: () => agentRunsFromLog,
   appendHandoffIssue: () => appendHandoffIssue,
   appendSessionLog: () => appendSessionLog,
@@ -86,6 +87,7 @@ __export(maestro_session_exports, {
   checkPayload: () => checkPayload,
   checkRoute: () => checkRoute,
   checkWorktreeWrite: () => checkWorktreeWrite,
+  clearInterimStop: () => clearInterimStop,
   closeMeeting: () => closeMeeting,
   closeOwnerRuns: () => closeOwnerRuns,
   collectAgentSkills: () => collectAgentSkills,
@@ -128,6 +130,7 @@ __export(maestro_session_exports, {
   isChannelScope: () => isChannelScope,
   isFreeformBranch: () => isFreeformBranch,
   isGapReport: () => isGapReport,
+  isInterimStop: () => isInterimStop,
   isLinkedWorktree: () => isLinkedWorktree,
   isProcessAlive: () => isProcessAlive,
   isResumableEnd: () => isResumableEnd,
@@ -136,6 +139,7 @@ __export(maestro_session_exports, {
   isSeededHandoff: () => isSeededHandoff,
   isValidHandoffId: () => isValidHandoffId,
   isValidSessionId: () => isValidSessionId,
+  landedHandback: () => landedHandback,
   laneFor: () => laneFor,
   lastFinishedRunAt: () => lastFinishedRunAt,
   lastHandoffLabel: () => lastHandoffLabel,
@@ -153,6 +157,7 @@ __export(maestro_session_exports, {
   missingDependenciesNotice: () => missingDependenciesNotice,
   missingLoopbackPayload: () => missingLoopbackPayload,
   nodeLabel: () => nodeLabel,
+  noteDispatch: () => noteDispatch,
   noteEntrance: () => noteEntrance,
   ownerRunFor: () => ownerRunFor,
   ownerRunLeftovers: () => ownerRunLeftovers,
@@ -184,6 +189,7 @@ __export(maestro_session_exports, {
   readWorktreePointer: () => readWorktreePointer,
   recentRunsLimit: () => recentRunsLimit,
   recordActiveTask: () => recordActiveTask,
+  recordInterimStop: () => recordInterimStop,
   recordResumeDeliveries: () => recordResumeDeliveries,
   recordRun: () => recordRun,
   recordSessionRun: () => recordSessionRun,
@@ -213,6 +219,7 @@ __export(maestro_session_exports, {
   sessionNameFor: () => sessionNameFor,
   sessionPathsFor: () => sessionPathsFor,
   sessionsRoot: () => sessionsRoot,
+  settleInterimStops: () => settleInterimStops,
   splitHandoffId: () => splitHandoffId,
   startMeeting: () => startMeeting,
   startOwnerRuns: () => startOwnerRuns,
@@ -1991,7 +1998,7 @@ function checkHumanReview(input) {
 }
 
 // src/core/handoff-label.ts
-var HANDOFF_RE = /[`*]*HANDOFF:\s*([^\n`*]+)[`*]*/gi;
+var HANDOFF_RE = /[`*]*HANDOFF:[ \t]*([^\n`*]+)[`*]*/gi;
 var HANDBACK_TOOLS = ["SubagentHandback", "SendMessage"];
 function lastHandoffLabel(msg) {
   if (typeof msg !== "string") return null;
@@ -2007,6 +2014,19 @@ function messageText(input) {
     if (typeof o[k] === "string" && lastHandoffLabel(o[k])) return o[k];
   }
   return "";
+}
+var MALFORMED_HANDOFF_LINE_RE = /^[ \t`*]*HANDOFF[: \t]+[A-Za-z_][\w-]*[ \t`*.,;!]*$/m;
+var UPPER_HANDOFF_LABEL_RE = /^[ \t`*]*HANDOFF:[ \t]*[^\s`*]/m;
+function carriesMalformedHandoff(input) {
+  if (typeof input === "string") return MALFORMED_HANDOFF_LINE_RE.test(input);
+  if (!input || typeof input !== "object") return false;
+  return Object.values(input).some(
+    (v) => typeof v === "string" && MALFORMED_HANDOFF_LINE_RE.test(v)
+  );
+}
+function landedHandback(transcript, sinceMs = null) {
+  const scan = scanRun(transcript, sinceMs);
+  return scan.sawCall ? { message: scan.text } : null;
 }
 function handbackHandoff(transcript, sinceMs = null) {
   return scanHandbacks(transcript, sinceMs).text;
@@ -2037,6 +2057,9 @@ var EDIT_TOOLS = ["Write", "Edit", "MultiEdit", "NotebookEdit"];
 function runProfile(transcript, sinceMs = null) {
   const { resumed, wroteFiles } = scanRun(transcript, sinceMs);
   return { resumed, wroteFiles };
+}
+function isInterimStop(transcript, sinceMs = null) {
+  return !scanRun(transcript, sinceMs).sawCall;
 }
 function scanRun(transcript, sinceMs) {
   let found = null;
@@ -2080,8 +2103,10 @@ function scanRun(transcript, sinceMs) {
           resumed = true;
           continue;
         }
-        sawCall = true;
         const text = messageText(block.input);
+        if (block.name === "SendMessage" && !UPPER_HANDOFF_LABEL_RE.test(text) && !carriesMalformedHandoff(block.input))
+          continue;
+        sawCall = true;
         if (text) found = text;
       }
     }
@@ -2265,6 +2290,17 @@ function runStartedAt(lines, agentId) {
   }
   return at;
 }
+function agentRunStartedAt(lines, agentId) {
+  if (!agentId) return null;
+  for (const line of lines ?? []) {
+    if (!line || typeof line !== "object") continue;
+    const e = line;
+    if (e.kind !== "dispatch" || e.agent_id !== agentId || typeof e.ts !== "string") continue;
+    const t = Date.parse(e.ts);
+    if (!Number.isNaN(t)) return t;
+  }
+  return null;
+}
 var MTIME_SLACK_MS = 1e3;
 function payloadWrittenSince(projectDir, route, sinceMs) {
   const candidates = [laneFor(projectDir, route.scope, route.sender, route.receiver)];
@@ -2285,6 +2321,76 @@ function writtenSince(filePath, sinceMs) {
   if (!stat.isFile()) return false;
   if (sinceMs === null) return true;
   return stat.mtimeMs >= sinceMs - MTIME_SLACK_MS;
+}
+
+// src/core/interim-stop.ts
+function recordInterimStop(pending, stop) {
+  const map = { ...pending ?? {} };
+  if (!stop.agent_id) return map;
+  const prior = map[stop.agent_id];
+  map[stop.agent_id] = {
+    ...prior?.moved_on ? { moved_on: true } : {},
+    ...prior?.seen ? { seen: true } : {},
+    ts: stop.ts,
+    agent: stop.agent,
+    agent_id: stop.agent_id,
+    ...stop.cwd ? { cwd: stop.cwd } : {},
+    ...stop.scope ? { scope: stop.scope } : {},
+    ...stop.transcript_path ? { transcript_path: stop.transcript_path } : {},
+    ...typeof stop.run_since === "number" ? { run_since: stop.run_since } : {}
+  };
+  return map;
+}
+function clearInterimStop(pending, agentId) {
+  const map = { ...pending ?? {} };
+  delete map[agentId];
+  return map;
+}
+function noteDispatch(pending, agentId) {
+  const map = {};
+  for (const [id, p] of Object.entries(pending ?? {})) {
+    if (id === agentId) continue;
+    map[id] = { ...p, moved_on: true };
+  }
+  return map;
+}
+function settleInterimStops(pending, nowIso, recheck) {
+  const issues = [];
+  const left = {};
+  for (const [id, p] of Object.entries(pending ?? {})) {
+    const landed = recheck ? recheck(p) : null;
+    if (landed) {
+      const found = landed.issue;
+      if (found) {
+        issues.push({
+          ts: nowIso,
+          agent: p.agent,
+          agent_id: p.agent_id,
+          kind: found.kind,
+          verdict: found.verdict,
+          label: found.label,
+          message: found.message,
+          ...found.files ? { files: found.files } : {}
+        });
+      }
+      continue;
+    }
+    if (p.moved_on || p.seen) {
+      const base = checkHandoff(null);
+      issues.push({
+        ts: nowIso,
+        agent: p.agent,
+        agent_id: p.agent_id,
+        kind: "missing",
+        verdict: null,
+        label: null,
+        message: `${base.message} It stopped at ${p.ts} and was never resumed, so that stop was its final one.`
+      });
+    } else {
+      left[id] = { ...p, seen: true };
+    }
+  }
+  return { issues, pending: left };
 }
 
 // src/core/resume-delivery.ts
@@ -3348,6 +3454,7 @@ function meetingNotice(meeting, agentType) {
   SESSION_TASKS_NAME,
   SESSION_WORKTREE_NAME,
   acknowledgeGaps,
+  agentRunStartedAt,
   agentRunsFromLog,
   appendHandoffIssue,
   appendSessionLog,
@@ -3366,6 +3473,7 @@ function meetingNotice(meeting, agentType) {
   checkPayload,
   checkRoute,
   checkWorktreeWrite,
+  clearInterimStop,
   closeMeeting,
   closeOwnerRuns,
   collectAgentSkills,
@@ -3408,6 +3516,7 @@ function meetingNotice(meeting, agentType) {
   isChannelScope,
   isFreeformBranch,
   isGapReport,
+  isInterimStop,
   isLinkedWorktree,
   isProcessAlive,
   isResumableEnd,
@@ -3416,6 +3525,7 @@ function meetingNotice(meeting, agentType) {
   isSeededHandoff,
   isValidHandoffId,
   isValidSessionId,
+  landedHandback,
   laneFor,
   lastFinishedRunAt,
   lastHandoffLabel,
@@ -3433,6 +3543,7 @@ function meetingNotice(meeting, agentType) {
   missingDependenciesNotice,
   missingLoopbackPayload,
   nodeLabel,
+  noteDispatch,
   noteEntrance,
   ownerRunFor,
   ownerRunLeftovers,
@@ -3464,6 +3575,7 @@ function meetingNotice(meeting, agentType) {
   readWorktreePointer,
   recentRunsLimit,
   recordActiveTask,
+  recordInterimStop,
   recordResumeDeliveries,
   recordRun,
   recordSessionRun,
@@ -3493,6 +3605,7 @@ function meetingNotice(meeting, agentType) {
   sessionNameFor,
   sessionPathsFor,
   sessionsRoot,
+  settleInterimStops,
   splitHandoffId,
   startMeeting,
   startOwnerRuns,
