@@ -30,4 +30,9 @@ describe("review node helpers", () => {
   it("uses the backend's condition label", () => {
     expect(MANAGER_DIRECTION_CHANGE_LABEL).toBe("manager requested direction change");
   });
+
+  it("re-exports the core seed's constant, so the canvas and the seed read one value", async () => {
+    const core = await import("../../src/core/manager-review-label");
+    expect(MANAGER_DIRECTION_CHANGE_LABEL).toBe(core.MANAGER_DIRECTION_CHANGE_LABEL);
+  });
 });

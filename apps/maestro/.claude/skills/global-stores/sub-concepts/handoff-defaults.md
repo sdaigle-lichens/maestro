@@ -76,7 +76,7 @@ different pages because they answer to different scopes.
 | `/agents` → **Interactions** pane (`components/agents/interactions-pane.tsx`) | this project's `.claude/handoffs/<sender>/<receiver>.md` override | `handoff:routes` → `ResolvedHandoffRoute[]`, `handoff:save` |
 
 **There is no `handoff:get`.** The pane needs the route LIST, and `handoff-routes.ts` is not
-renderer-safe (`test/isolation.test.ts` lets only `contracts.ts` and `text.ts` cross), so the walk
+renderer-safe (`test/isolation.test.ts` lets only the four `RENDERER_SAFE` modules cross: `contracts.ts`, `text.ts`, `canvas-layout.ts`, `manager-review-label.ts`), so the walk
 has to happen in main regardless; `resolvedRoutesFrom` (`handoffs.ts`) returns every route already
 resolved, so a selection costs one round trip instead of 1 + N and one sqlite open instead of N.
 `handoff:routes` takes an **agent name**; every other channel here takes the **`handoffId` string**

@@ -15,8 +15,8 @@ export function nextReviewId(existingIds: readonly string[], type: ReviewNodeTyp
   return `${type}-${n}`;
 }
 
-/** Condition label a manager_review offers back to the producing agent. */
-export const MANAGER_DIRECTION_CHANGE_LABEL = "manager requested direction change";
+/** Condition label a manager_review offers back to the producing agent (shared with the seed, lives in core). */
+export { MANAGER_DIRECTION_CHANGE_LABEL } from "../../../core/manager-review-label.js";
 
 /** Tailwind classes + label for each review node's diamond. Manager is violet, human is amber. */
 export const REVIEW_STYLE: Record<

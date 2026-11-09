@@ -22,8 +22,8 @@ React Flow never remounts nodes.
   buttons (`onAddConditionEdge`), so a human-review step can **source** condition edges — used to
   route a correction back to the agent that produced the work under review (e.g. `human requested
   code corrections` → `@backend`). The orchestrator (not a subagent — a human-review node has no
-  agent) reads the user's feedback and dispatches it to that node; the seeded default/tdd workflows
-  wire this edge automatically (`buildWorkflow` in `src/core/seed.ts`).
+  agent) reads the user's feedback and dispatches it to that node; the seeded infra-only workflow
+  wires this edge automatically (`buildInfraWorkflow` in `src/core/seed.ts`).
 - `managerStep` — the same `HumanStepNode` component as `humanStep` with its own `REVIEW_STYLE`
   entry (`manager_review`, success-path label `manager review`); the node/rf-type mapping and id
   helpers live in `src/renderer/src/utils/review-nodes.ts`. Its condition `+` buttons offer one

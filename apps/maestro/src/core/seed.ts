@@ -6,6 +6,7 @@
 // ["backend"] default with repo detection).
 
 import { placeConditionLabels } from "./label-layout.js";
+import { MANAGER_DIRECTION_CHANGE_LABEL } from "./manager-review-label.js";
 import type { SeedSkills } from "./skill-availability.js";
 import type {
   MaestroConfigV3,
@@ -173,17 +174,13 @@ export function buildWorkflow(
     )
   );
 
-  // Human-review corrections route back to whoever produced the work under review,
-  // so the responsible agent fixes it — not the main session. In the default flow the
-  // implementation agent(s) precede human review, so corrections go to them (split
-  // per-agent for fullstack). In tdd the human reviews the test plan before any impl
-  // runs, so corrections route to @test.
+  // The manager review is a direction-only check, so every loop-back carries the one shared label.
+  // Default flow: one loop-back edge per implementation agent (fullstack: one each). tdd: one edge
+  // to @test, since the manager reviews the test plan before any impl runs.
   if (kind === "tdd") {
-    edges.push(c(MANAGER_REVIEW_ID, "test", "manager requested test corrections"));
-  } else if (impl.length === 1) {
-    edges.push(c(MANAGER_REVIEW_ID, impl[0], "manager requested code corrections"));
+    edges.push(c(MANAGER_REVIEW_ID, "test", MANAGER_DIRECTION_CHANGE_LABEL));
   } else {
-    for (const a of impl) edges.push(c(MANAGER_REVIEW_ID, a, `manager requested ${a} corrections`));
+    for (const a of impl) edges.push(c(MANAGER_REVIEW_ID, a, MANAGER_DIRECTION_CHANGE_LABEL));
   }
 
   return placeConditionLabels({ name, nodes, edges }, skillCount);
