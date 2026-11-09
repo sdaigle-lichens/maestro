@@ -28,6 +28,8 @@ Out:
 | 3 | 160 interim-stop hand-off flags | same | same | `plugin.json`; generated `maestro-session.cjs` and its mirror; `maestro-subagent-log.js`; the hand-off concept notes |
 | 4 | 165 to-maestro-tasks data source, full post-mortem digest | same | same | `plugin.json`; post-mortem script mirrors; must merge after 160, whose interim-stop signal its digest respects |
 | 5 | 166 seed manager-review label | same | same | `plugin.json`; generated `maestro-seed.cjs` and its mirror |
+| 5b | 168 maestro-architecture re-review and stamp | `main` | No bump (docs only) | `.claude/skills/maestro-architecture/` (also 167's and standalone 169's concept notes); before 167 |
+| 6 | 167 Backend workflow: defect class, grammar, test→refactor edge | `main` after 165 and 166 merge (`blockedBy`) | No bump (no `plugins/` change) | this repo's `.claude/maestro.json`, `.claude/handoffs/{backend/test,test/backend}.md`, `.claude/agents/test.md`, rendered orchestrator; changes the shared setup, so other epics' managers get a note before merge |
 
 All five run in parallel (no `blockedBy`). A later one rebases onto `main` after the earlier one
 merges, takes the next patch version, and rebuilds generated files (`pnpm refresh:runtime`, parity
@@ -59,5 +61,9 @@ After the epic: task 157 (no epic, blocked by all five) runs standalone once the
   checkout was left on 164's branch. The user kept it: rebuild the generated files, parity and full
   suite on that branch, then bring `main` up to it as one step under 0.13.33. 160, 165 and 166 rebase
   onto that `main` and take the next patch.
+- 167 joined the epic (user, 2026-11-09), from the team meeting on 160, after a manager review:
+  kept defectClass, the written grammar and a mechanical test→refactor edge; dropped the narrower
+  FAIL rule with documentedLimits and the one-probe-file rule; this repo's setup only, plugin seeds a
+  separate follow-up.
 - 166 (user): the seed adopts the app's "manager requested direction change" label, not the other
   way round. This repo's `maestro.json` already uses it.

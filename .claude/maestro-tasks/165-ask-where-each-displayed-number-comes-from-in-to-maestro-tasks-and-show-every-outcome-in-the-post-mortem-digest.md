@@ -26,6 +26,14 @@ Two authoring and retrospective fixes from the acces-portail-email walking-skele
 - parallel OK; merge order: last of the three, and after task 160 (whose interim-stop signal the digest must respect); rebase, take the next patch version, rebuild generated files instead of hand-merging
 - plugins/maestro/skills/to-maestro-tasks/SKILL.md is also edited by task 157, which runs after this epic and builds on this task's version
 
+## Direction (manager, 2026-11-09)
+
+160 (merged) settles an unresolved interim stop as `missing` in session state and does not write
+that settle to the log. The digest stays within this task: it reads an interim stop that is never
+followed by a final stop of the same agent run as a missing HANDOFF, in line with the epic's
+option 2 decision. This task does not change 160's merged code; a durable settle marker in the log
+would be a separate follow-up.
+
 ## Blocked by
 
 None — can start immediately

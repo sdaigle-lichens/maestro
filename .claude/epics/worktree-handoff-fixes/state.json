@@ -186,6 +186,54 @@
       "id": "r005",
       "at": "2026-11-09T01:26:14.361Z",
       "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "report",
+      "id": "r006",
+      "task": "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "file": "inbox/r006-160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "at": "2026-11-09T03:05:15.074Z",
+      "from": "worktree-handoff-fixes-160"
+    },
+    {
+      "kind": "report",
+      "id": "r007",
+      "task": "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "file": "inbox/r007-160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "at": "2026-11-09T13:27:49.821Z",
+      "from": "worktree-handoff-fixes-160"
+    },
+    {
+      "kind": "ack",
+      "id": "r006",
+      "at": "2026-11-09T13:28:03.611Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "ack",
+      "id": "r007",
+      "at": "2026-11-09T13:28:04.090Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "report",
+      "id": "r008",
+      "task": "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "file": "inbox/r008-165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "at": "2026-11-09T14:24:33.694Z",
+      "from": "worktree-handoff-fixes-165"
+    },
+    {
+      "kind": "ack",
+      "id": "r003",
+      "at": "2026-11-09T14:25:28.246Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "ack",
+      "id": "r008",
+      "at": "2026-11-09T14:25:28.569Z",
+      "by": "maestro-mgr-82f98516"
     }
   ]
 }

@@ -46,3 +46,12 @@ marker and its documentation stay, for task 165.
 ## Blocked by
 
 None — can start immediately
+
+## Post-Mortem
+
+- **Outcome:** done in worktree `maestro-task-160` (branch `task-160`, uncommitted). Full suite 155 files, 3021 passed, 5 skipped; check, typecheck, lint, root lint, parity pass. Plugin 0.13.33.
+- **Steering:** the first design (option 1, "interim" read from the absence of a hand-back call) failed toward no flag. The manager escalated, the user approved, then switched to option 2. The first @backend was also stopped by the user and replaced by a fresh one.
+- **Nine test rounds:** the fix has to tell a real hand-back from prose by reading free text. There was no single written grammar, so each fix patched one rule (case, trailing punctuation, colon-led prose, label anywhere in the message, newline-spanning separators) and @test found the next neighbouring case. Round 6 found two defects at once, so @test was not stopping at the first one. The loop was a design problem, not a test problem.
+- **Idea for the workflow (user):** before a third test-and-fix round, have @test call the refactor agent to check whether the defects come from the design; and hold a team meeting on reducing rounds. Not done in this task.
+- **Smaller notes:** `claude.test.ts` timed out once at 5 s under parallel load (untouched by this task, passed alone). The "154 vs 162 files" count was a double count. Eight overlapping test files could be consolidated. The orchestrator wrote the @test channel payload itself in worktree runs; the stamped file went stale between rounds and had to be re-Read before each overwrite.
+- **Known limits (documented in handoff-contract.md):** a workflow agent started inside another run counts as moving on; markers from before the `scope` field get no late payload check; a malformed label glued to prose or with two words is not recognised; a lowercase malformed line is prose; a `SendMessage` hand-back needs an uppercase `HANDOFF:` at line start.

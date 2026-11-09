@@ -793,7 +793,7 @@
     "blockedBy": []
   },
   "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "worktree-handoff-fixes"
   },
@@ -820,12 +820,31 @@
   "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md": {
     "status": "done",
     "blockedBy": [],
-    "epic": "worktree-handoff-fixes",
-    "unmerged": true
+    "epic": "worktree-handoff-fixes"
   },
   "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md": {
     "status": "ready",
     "blockedBy": [],
     "epic": "worktree-handoff-fixes"
+  },
+  "167-cut-the-number-of-backend-test-fix-rounds-in-the-backend-workflow.md": {
+    "status": "blocked",
+    "blockedBy": [
+      "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
+      "168-re-review-and-stamp-the-maestro-architecture-concept-skill-after-tasks-160-and-163.md"
+    ],
+    "epic": "worktree-handoff-fixes"
+  },
+  "168-re-review-and-stamp-the-maestro-architecture-concept-skill-after-tasks-160-and-163.md": {
+    "status": "ready",
+    "blockedBy": [],
+    "epic": "worktree-handoff-fixes"
+  },
+  "169-write-a-durable-session-log-record-when-an-interim-stop-is-settled-as-missing.md": {
+    "status": "ready",
+    "blockedBy": [
+      "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md"
+    ]
   }
 }
