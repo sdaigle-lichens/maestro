@@ -307,6 +307,31 @@ epic's manager session (`maestro-epic.cjs review-verdict`), not a `HANDOFF:` lin
 follows its `manager requested direction change` edge to the producing agent. Mechanism: the
 **Manager review** section of this skill's `SKILL.md`.
 
+### The Backend workflow's test-fix loop (`167`)
+
+This repository's own `Backend` workflow (`.claude/maestro.json`, not the seed) is tuned to end a
+backend-test-fix loop sooner; task 160 took nine rounds because each fix patched one rule and @test
+then found its neighbour. Three project-local pieces, none of them in the plugin:
+
+- **`test -> backend` carries the class.** `.claude/handoffs/test/backend.md` adds `defectClass` (short
+  name) and `sameClassProbes` (other inputs of that class @test checked or expects to fail); @backend is
+  told to fix the whole class in one round.
+- **`backend -> test` carries a grammar.** `.claude/handoffs/backend/test.md` adds `grammar` (accepted
+  forms, rejected forms, one example of each) when the change classifies free text; @backend writes it
+  before coding and @test derives its edge sweep from it.
+- **A repeating class escalates.** A `test -> refactor` condition edge fires when the new `defectClass`
+  equals the one in each of the previous two backend rounds. The comparison is recorded, not
+  impressionistic: `.claude/agents/test.md` has @test keep its own ledger
+  `.claude/channels/<scope>/defect-classes.md` (one `round <n> | <defectClass>` line per round) and
+  quote the three values in its report. It does not use `.consumed/backend/test.*.md`: every round
+  writes `test.1.md` and `retire` renames by file name, so each round overwrites the previous copy
+  there, and `SessionEnd` can sweep it. @refactor reports whether the defects come from the design;
+  the existing `refactor -> backend` edge sends the fix back. The edge is a condition, so the
+  HANDOFFS success-path table is unchanged. The `test -> refactor` pair has no handoff file, so no
+  payload is required for it.
+- **`runtimeVersion` moved as a side effect.** `.claude/maestro.json` `runtimeVersion` went
+  0.13.34 -> 0.13.36 when the runtime was refreshed; it is not a workflow change.
+
 ## Things that bite
 
 - **Anything `.md` under `agents/` is discovered as an agent.** A frontmatter-less `.md` inside the
