@@ -8,6 +8,7 @@
         "apps/maestro/src/core/claims.ts",
         "apps/maestro/src/core/epics.ts",
         "apps/maestro/src/core/success-path.ts",
+        "apps/maestro/src/core/worktree-footprint.ts",
         "apps/maestro/src/renderer/src/routes/maestro-tasks.tsx",
         "apps/maestro/src/renderer/src/utils/maestro-tasks.ts"
       ],
