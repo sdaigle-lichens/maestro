@@ -214,6 +214,9 @@ const dispatch = (id: string | null, agent: string, input = "go"): Entry => ({
   origin: "main_session",
   agent,
   input,
+  // `172`: what maestro-subagent-log.js stamps on a workflow agent's dispatch; without it the
+  // digest reads the agent as a helper on no workflow.
+  offered_skills: { loaded: [], referenced: [] },
   ...(id === null ? {} : { agent_id: id }),
 });
 const handoff = (id: string | null, agent: string, label: string | null, extra: Entry = {}): Entry => ({

@@ -671,6 +671,9 @@ const GITIGNORE_ENTRIES = [
   // maestro-tasks/ (user-authored, committed content) rather than directly under .claude/, so it
   // needs its own line here rather than reusing that directory's ignore rules.
   "**/.claude/maestro-tasks/claims/",
+  // `172`: the generated HTML plan pages /to-maestro-tasks writes. Regenerated on demand, never
+  // committed; a re-install appends it to an existing block (appendGitignoreEntries is idempotent).
+  "**/.claude/maestro-tasks/views/",
   // `080`: the durable run-metrics directory. recordRun also writes a `*` .gitignore into it, which is
   // the mechanism for a project installed before this line existed.
   "**/.claude/maestro-metrics/",

@@ -856,7 +856,7 @@
     "blockedBy": []
   },
   "172-treat-agents-on-no-workflow-as-helpers-on-resume-and-in-the-post-mortem-digest-and-keep-plan-pages-out-of-git.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   }
 }

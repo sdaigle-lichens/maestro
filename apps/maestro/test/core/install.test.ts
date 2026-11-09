@@ -460,6 +460,58 @@ describe("installRuntime", () => {
     expect(gitignore.match(/maestro_session\.log\.jsonl/g)).toHaveLength(1);
   });
 
+  // 172: the app's installRuntime has no ignored mode, so every app install is the committed path.
+  // Its `# Maestro` block must carry the views/ glob that keeps generated plan pages out of git.
+  describe("172: the committed # Maestro block ignores .claude/maestro-tasks/views/", () => {
+    const HEADER = "# Maestro ephemeral session state — recreated as needed, never committed";
+    const GLOB = "**/.claude/maestro-tasks/views/";
+
+    it("a fresh install writes the glob once under the header, and git ignores a generated page", async () => {
+      const root = makeProject("views-glob");
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      const lines = fs.readFileSync(path.join(root, ".gitignore"), "utf8").split(/\r?\n/);
+      const header = lines.indexOf(HEADER);
+      expect(header).toBeGreaterThan(-1);
+      expect(lines.indexOf(GLOB)).toBeGreaterThan(header);
+      expect(lines.filter((l) => l === GLOB)).toHaveLength(1);
+
+      const page = path.join(root, ".claude", "maestro-tasks", "views", "plan-review.html");
+      fs.mkdirSync(path.dirname(page), { recursive: true });
+      fs.writeFileSync(page, "<html></html>\n");
+      // `check-ignore -q` exits 0 only when git actually ignores the path.
+      expect(spawnSync("git", ["check-ignore", "-q", page], { cwd: root }).status).toBe(0);
+    });
+
+    it("an existing install missing the glob gets it appended once, with no second header, and is then stable", async () => {
+      const root = makeProject("views-existing");
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      const gitignorePath = path.join(root, ".gitignore");
+      fs.writeFileSync(
+        gitignorePath,
+        fs
+          .readFileSync(gitignorePath, "utf8")
+          .split("\n")
+          .filter((l) => l !== GLOB)
+          .join("\n")
+      );
+
+      const again = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      expect(again.gitignoreUpdated).toBe(true);
+      const after = fs.readFileSync(gitignorePath, "utf8").split(/\r?\n/);
+      expect(after.filter((l) => l === GLOB)).toHaveLength(1);
+      expect(after.filter((l) => l === HEADER)).toHaveLength(1);
+
+      const third = await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      expect(third.gitignoreUpdated).toBe(false);
+      expect(
+        fs
+          .readFileSync(gitignorePath, "utf8")
+          .split(/\r?\n/)
+          .filter((l) => l === GLOB)
+      ).toHaveLength(1);
+    });
+  });
+
   it("preserves settings and hooks the app did not put there", async () => {
     const root = makeProject("p");
     fs.mkdirSync(path.join(root, ".claude"), { recursive: true });
@@ -1585,6 +1637,76 @@ describe("the installed hooks actually run", () => {
       const testFirstRun = inject(root, "test", "t1");
       expect(testFirstRun).not.toContain("Resumed run —");
       expect(testFirstRun).toContain("Handoff routing for the `test` agent");
+    });
+
+    // 172: an agent on no workflow (a helper such as Explore) was never given handoff routes, so its
+    // resume must not claim they "still apply"; a workflow agent's resume line is untouched.
+    it("never mentions handoff routes when resuming an agent on no workflow, and keeps a workflow agent's line", async () => {
+      const root = makeProject("resume-helper");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const contextOf = (agentType: string, agentId: string): string => {
+        const out = runHook(root, "maestro-inject-agent-context.cjs", {
+          cwd: root,
+          agent_type: agentType,
+          agent_id: agentId,
+        }).trim();
+        return out ? (JSON.parse(out).hookSpecificOutput.additionalContext as string) : "";
+      };
+
+      for (const helper of ["Explore", "maestro:plan-reviewer"]) {
+        const id = `h-${helper}`;
+        expect(contextOf(helper, id)).not.toContain("Resumed run");
+        stop(root, helper, id, "Here is what I found.");
+        const resumed = contextOf(helper, id);
+        expect(resumed).not.toMatch(/handoff routes/i);
+        expect(resumed).not.toContain("HANDOFF");
+      }
+
+      stop(root, "backend", "b1");
+      expect(contextOf("backend", "b1")).toContain(
+        "Resumed run — the skills, handoff routes and output format from your first run still apply."
+      );
+    });
+
+    // 172: a helper on no workflow that was given a global output format names ONLY that on resume.
+    it("a helper on no workflow with a report default resumes with the output-format line, never a routes line", async () => {
+      const root = makeProject("resume-helper-report");
+      writeConfig(root, defaultish);
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+      writeAgentReportDefault(
+        "docsmith",
+        "REPORT FROM THE GLOBAL STORE",
+        path.join(tmp, ".claude", "maestro-report-defaults.sqlite")
+      );
+
+      expect(inject(root, "docsmith", "d1")).toContain("REPORT FROM THE GLOBAL STORE");
+      stop(root, "docsmith", "d1", "Here is the report.");
+      const resumed = inject(root, "docsmith", "d1");
+      expect(resumed).toContain("Resumed run — the output format from your first run still applies.");
+      expect(resumed).not.toMatch(/handoff routes/i);
+      expect(resumed).not.toContain("Handoff routing for the");
+    });
+
+    // 172: a workflow node with no outgoing routes (the terminal scribe) was never given handoff
+    // routes on its first run either, so its resume names only what it did get: skills and output format.
+    it("resumes a terminal workflow node with no routes without mentioning handoff routes", async () => {
+      const root = makeProject("resume-terminal");
+      writeConfig(root, {
+        ...defaultish,
+        workflow_instances: defaultish.workflow_instances.map((i) =>
+          i.name === "scribe" ? { ...i, loaded_skills: ["tdd"] } : i
+        ),
+      });
+      await installRuntime(root, PLUGIN_ROOT, REPORTS_DB, PROJECT_TAGS_DB, HANDOFFS_DB);
+
+      const first = inject(root, "scribe", "s1");
+      expect(first).not.toContain("Handoff routing for the");
+      stop(root, "scribe", "s1");
+      const resumed = inject(root, "scribe", "s1");
+      expect(resumed).toContain("Resumed run — the skills and output format from your first run still apply.");
+      expect(resumed).not.toMatch(/handoff routes/i);
     });
 
     it("classifies a first run as not-a-resume with no session log on disk at all", async () => {

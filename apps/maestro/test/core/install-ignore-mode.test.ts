@@ -124,6 +124,54 @@ describe("maestro-install.js --ignore-mode", () => {
     }
   });
 
+  // 172: the generated plan pages under .claude/maestro-tasks/views/ never show up as untracked.
+  it("committed: the # Maestro block ignores .claude/maestro-tasks/views/, and git honours it", () => {
+    const root = gitProject();
+    run(root);
+    const gitignore = lines(path.join(root, ".gitignore"));
+    const header = gitignore.indexOf("# Maestro ephemeral session state — recreated as needed, never committed");
+    expect(header).toBeGreaterThan(-1);
+    expect(gitignore.indexOf("**/.claude/maestro-tasks/views/")).toBeGreaterThan(header);
+    expect(gitignore).toContain("**/.claude/maestro-tasks/claims/");
+    const page = path.join(root, ".claude", "maestro-tasks", "views", "plan-review.html");
+    fs.mkdirSync(path.dirname(page), { recursive: true });
+    fs.writeFileSync(page, "<html></html>\n");
+    const status = execFileSync("git", ["status", "--porcelain", "--untracked-files=all"], {
+      cwd: root,
+      encoding: "utf8",
+    });
+    expect(status).not.toContain("maestro-tasks/views");
+  });
+
+  it("a flagless re-run (/maestro-update) adds the views/ glob to an existing install once", () => {
+    const root = gitProject();
+    run(root);
+    const gitignorePath = path.join(root, ".gitignore");
+    // Rewind to an install from before the glob existed.
+    const pre = fs
+      .readFileSync(gitignorePath, "utf8")
+      .split("\n")
+      .filter((l) => l !== "**/.claude/maestro-tasks/views/")
+      .join("\n");
+    fs.writeFileSync(gitignorePath, pre);
+    const update = run(root);
+    expect(update.json.wroteRepoGitignore).toBe(true);
+    const after = lines(gitignorePath);
+    expect(after.filter((l) => l === "**/.claude/maestro-tasks/views/")).toHaveLength(1);
+    expect(after.filter((l) => l.startsWith("# Maestro ephemeral"))).toHaveLength(1);
+    const again = run(root);
+    expect(again.json.wroteRepoGitignore).toBe(false);
+    expect(lines(gitignorePath).filter((l) => l === "**/.claude/maestro-tasks/views/")).toHaveLength(1);
+  });
+
+  it("ignored: writes no views/ glob anywhere", () => {
+    const root = gitProject();
+    run(root, "--ignore-mode", "ignored");
+    run(root);
+    expect(fs.existsSync(path.join(root, ".gitignore"))).toBe(false);
+    expect(fs.readFileSync(exclude(root), "utf8")).not.toContain("maestro-tasks/views");
+  });
+
   it("ignored: git worktree writes to the worktree's own exclude path, not a stale .git/info", () => {
     const main = gitProject();
     const git = (cwd: string, ...a: string[]) =>

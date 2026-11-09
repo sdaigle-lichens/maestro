@@ -20,7 +20,7 @@
 //      of RETIRED_HOOK_SCRIPTS that an earlier release installed.
 //   4. adds an `# Maestro` section to the repo-root .gitignore ignoring every nested
 //      .claude/maestro_session*.{json,jsonl}, .claude/maestro_sessions/ (`064`) AND
-//      .claude/channels/ (`036`) across the repo /
+//      .claude/channels/ (`036`), .claude/maestro-tasks/{claims,views}/ (`066`, `172`) across the repo /
 //      monorepo (the `**/` glob covers root-level .claude/ too, so no per-package .gitignore is
 //      needed)
 //   5. seeds <project>/.claude/maestro.json from defaultV3Config — ONLY when absent. An existing
@@ -205,6 +205,9 @@ function ensureRepoRootGitignore(repoRoot) {
     // rules. `ensureClaimsDir()`'s own `*` .gitignore, written into the directory as it's created,
     // is the mechanism for a project installed before this line existed.
     "**/.claude/maestro-tasks/claims/",
+    // `172`: the generated HTML plan pages /to-maestro-tasks writes (plan-view.md). Regenerated on
+    // demand, so never committed. Appended on a re-install too (`/maestro-update`), idempotently.
+    "**/.claude/maestro-tasks/views/",
     // `080`: durable run metrics; recordRun also writes its own `*` .gitignore into the directory.
     "**/.claude/maestro-metrics/",
   ]);

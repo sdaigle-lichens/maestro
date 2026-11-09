@@ -78,9 +78,13 @@ function isInterim(h) {
 
 const OUTCOME_MISSING = "missing HANDOFF";
 const OUTCOME_NO_RETURN = "no-return";
+// `172`: a helper on no workflow (Explore, general-purpose, plan-reviewer) is never asked for a
+// HANDOFF line, so ending without one is its normal outcome, not a problem.
+const OUTCOME_HELPER = "helper (no HANDOFF expected)";
 const INFERRED_NOTE = "inferred from the log: interim stop never followed by a final stop";
 
 function outcomeKind(s) {
+  if (s.helper && (s.interim || s.status === "unknown")) return OUTCOME_HELPER;
   if (s.interim) return OUTCOME_MISSING;
   if (s.status === "unknown") return OUTCOME_MISSING;
   if (s.status === "no-return") return OUTCOME_NO_RETURN;
@@ -126,6 +130,10 @@ function analyze(entries, session) {
       input: clip(d.input, INPUT_CLIP),
       status: h ? h.status : "no-return",
       interim: h ? isInterim(h) : false,
+      // `172`: maestro-subagent-log.js stamps `offered_skills` on a dispatch exactly when the agent
+      // maps to a workflow instance — the same test its SubagentStop uses to decide whether a
+      // missing HANDOFF line is an issue. No stamp: an agent on no workflow, i.e. a helper.
+      helper: !d.offered_skills,
       label: h ? h.label : null,
       output: h ? clip(h.output, OUTPUT_CLIP) : null,
     };
@@ -218,7 +226,7 @@ function analyze(entries, session) {
     outcomes,
     problems: subagents.filter((s) => {
       const k = outcomeKind(s);
-      return k !== "success";
+      return k !== "success" && k !== OUTCOME_HELPER;
     }),
     subagents,
     flags,
@@ -265,12 +273,20 @@ function renderMarkdown(a) {
     L.push("_No subagents dispatched this session._");
   } else {
     for (const s of a.subagents) {
-      const tag = s.interim ? "interim stop, no final stop" : s.label ? `${s.status} (${s.label})` : s.status;
+      const helper = outcomeKind(s) === OUTCOME_HELPER;
+      const tag = helper
+        ? OUTCOME_HELPER
+        : s.interim
+          ? "interim stop, no final stop"
+          : s.label
+            ? `${s.status} (${s.label})`
+            : s.status;
       L.push(`- **${s.agent}** \`${s.agent_id}\` → ${tag}`);
       if (s.input) L.push(`  - in: ${s.input}`);
       if (s.output) L.push(`  - out: ${s.output}`);
-      if (s.status === "no-return") L.push(`  - ⚠️ no handoff recorded — agent never returned a HANDOFF: line`);
-      if (s.interim) L.push(`  - ⚠️ missing HANDOFF (${INFERRED_NOTE})`);
+      if (s.status === "no-return") L.push(`  - ⚠️ no stop recorded — agent never returned`);
+      if (helper) L.push(`  - helper on no workflow: ends without a HANDOFF line by design`);
+      else if (s.interim) L.push(`  - ⚠️ missing HANDOFF (${INFERRED_NOTE})`);
       else if (s.status === "unknown") L.push(`  - ⚠️ handoff returned but no parseable HANDOFF: label`);
     }
   }

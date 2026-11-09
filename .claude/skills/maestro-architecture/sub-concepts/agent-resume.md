@@ -34,11 +34,13 @@ reading `kind:"handoff"` entries in this session's `log.jsonl`, never `kind:"dis
 (order-independent with the sibling `maestro-subagent-log.js` write for the same run) and never this
 session's `session.json`.
 
-A resumed run gets one line — "Resumed run — the skills, handoff routes and output format from your
-first run still apply." — in place of `loaded_skills`, `referenced_skills`, the `HANDOFF:` routing +
-per-route protocols, and the report — **except the REQUIRED-payload instruction (`087`)**, which a
-resume still gets (`payloadRequirement(..., { withShapes: false })`: the channel file per route, no
-shapes). It governs the hand-back the resumed run is about to make; dropping it with the static
+A resumed run gets one line in place of `loaded_skills`, `referenced_skills`, the `HANDOFF:` routing +
+per-route protocols, and the report. A workflow agent (it has handoff routes) gets "Resumed run — the
+skills, handoff routes and output format from your first run still apply." An agent on no workflow
+(`172`, `resumeLine` in `maestro-inject-agent-context.js`) gets only what its first run had — "skills",
+"output format", or both — and no line at all when it had neither. It never mentions handoff routes.
+**The REQUIRED-payload instruction (`087`) is the exception**: a resume still gets it
+(`payloadRequirement(..., { withShapes: false })`: the channel file per route, no shapes). It governs the hand-back the resumed run is about to make; dropping it with the static
 blocks is how task 086's second @reviewer pass ended without a payload. A missing/unreadable log
 degrades to "not a resume" (full injection), the same safe direction as `resumeTarget`.
 

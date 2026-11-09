@@ -222,6 +222,23 @@ function collect(cfg, sessionPath, agentType) {
   };
 }
 
+// `172`: the one-line reminder a RESUMED run gets in place of the static blocks. A workflow agent
+// (it has handoff routes) keeps the original line byte-for-byte. An agent on no workflow — a helper
+// like Explore or plan-reviewer, or a node with no outgoing route — had no routing block on its
+// first run, so its line must not mention handoff routes; it names only what it was given (skills,
+// an output format), and nothing at all when it was given neither.
+function resumeLine(result, hasReport) {
+  if (result && result.routes.length > 0) {
+    return "Resumed run — the skills, handoff routes and output format from your first run still apply.";
+  }
+  const given = [];
+  if (result && (result.loadedSkills.length > 0 || result.referencedSkills.length > 0)) given.push("skills");
+  if (hasReport) given.push("output format");
+  if (given.length === 0) return null;
+  const verb = given.length === 1 && given[0] === "output format" ? "still applies" : "still apply";
+  return `Resumed run — the ${given.join(" and ")} from your first run ${verb}.`;
+}
+
 // ── report injection — independent of workflow matching ────────────────────
 
 // A project override at .claude/reports/<id>.md, where <id> is whatever the project's `reports`
@@ -369,7 +386,8 @@ function collectReportContext(cfg, projectDir, agentType) {
   } else if (ownerRun) {
     parts.push(ownerRunNotice(ownerRun, agentType));
   } else if (isResume) {
-    parts.push("Resumed run — the skills, handoff routes and output format from your first run still apply.");
+    const line = resumeLine(result, collectReportContext(cfg, projectDir, agentType) != null);
+    if (line) parts.push(line);
   }
 
   if (!offWorkflow && !isResume && result && result.routes.length > 0) {

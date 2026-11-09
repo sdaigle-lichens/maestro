@@ -201,10 +201,12 @@ slash anchors to the settings file's project root. Both uninstallers remove exac
 ## The other two writes
 
 **`.gitignore` at the repo root** (found via `git rev-parse --show-toplevel`) gets a `# Maestro`
-section (`GITIGNORE_ENTRIES`, seven lines) with three flat `**/.claude/maestro_session*` entries,
+section (`GITIGNORE_ENTRIES`, eight lines) with three flat `**/.claude/maestro_session*` entries,
 `**/.claude/channels/` since `036`, `**/.claude/maestro_sessions/` since `064`,
-`**/.claude/maestro-tasks/claims/` since `066` and `**/.claude/maestro-metrics/` since `080`.
-`maestro-install.js` mirrors the list.
+`**/.claude/maestro-tasks/claims/` since `066`, `**/.claude/maestro-tasks/views/` since `172` (the
+generated plan pages `/to-maestro-tasks` writes) and `**/.claude/maestro-metrics/` since `080`.
+`maestro-install.js` mirrors the list. A re-install appends a missing glob to an existing block; the
+update flow does the same for the views glob, and ignored mode never writes the block.
 
 > **`GITIGNORE_ENTRIES` is not the mechanism that git-ignores `maestro_sessions/`, and must not be
 > read as one.** This list is only ever *appended at install time*, so the new entry reaches a

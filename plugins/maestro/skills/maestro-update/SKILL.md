@@ -55,7 +55,8 @@ place the refresh procedure is written down.
    - **`upToDate` and no herdr opt-in chosen:** say nothing about it.
 
 2. **Refresh the runtime scripts and the orchestrator skill body** by re-running the installer
-   (idempotent — skips settings and gitignore if already present):
+   (idempotent — leaves settings that are already present alone, and appends only the `.gitignore`
+   lines that are missing, so a glob added in a newer version reaches an existing install once):
 
    ```bash
    node ${CLAUDE_PLUGIN_ROOT}/scripts/maestro-install.js .

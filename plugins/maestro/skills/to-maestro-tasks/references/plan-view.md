@@ -14,7 +14,7 @@ Write the page to the **repository-root** `.claude/maestro-tasks/views/`:
 - review mode: `<epic-slug or plan-slug>-review.html`;
 - single-task mode: `<task file name without .md>.html`, e.g. `012-add-login-form.html`.
 
-Writing the same name again replaces the page. Do not write it under `.claude/maestro_sessions/<session>/`: the final end of a session deletes that directory, while the user may still have the page open or want it during the next session. `.claude/maestro-tasks/views/` is not removed by any hook, and the task tracker reads only the `.md` files directly in `.claude/maestro-tasks/`, so a page there is never taken for a task. The user deletes the folder when they no longer need it.
+Writing the same name again replaces the page. Do not write it under `.claude/maestro_sessions/<session>/`: the final end of a session deletes that directory, while the user may still have the page open or want it during the next session. `.claude/maestro-tasks/views/` is not removed by any hook, and the task tracker reads only the `.md` files directly in `.claude/maestro-tasks/`, so a page there is never taken for a task. The user deletes the folder when they no longer need it. A committed-mode install ignores it in git (`**/.claude/maestro-tasks/views/` in the `# Maestro` `.gitignore` block), so a page never shows up as an untracked file.
 
 Then print the page's absolute path and nothing else about it: the user opens it in a browser.
 
