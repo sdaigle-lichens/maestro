@@ -81,7 +81,7 @@ is created on disk for a rejected id, which is what makes rejecting cost nothing
 | --- | --- | --- |
 | plain tool call | `{ts, origin, log}` | PreToolUse |
 | `kind:"dispatch"` | `{ts, origin:"main_session", agent, agent_id, input, offered_skills?, log}` | SubagentStart |
-| `kind:"handoff"` | `{ts, origin, agent_id, status, label, output, interim?, handoff_issue?, log}` | SubagentStop **with** an `agent_type`. `interim: true` (`160`) is set only when a workflow agent stopped with a readable transcript and no real hand-back call in the run; absent otherwise. Such an entry carries no `handoff_issue` (see `handoff-contract.md`). |
+| `kind:"handoff"` | `{ts, origin, agent_id, status, label, output, interim?, handoff_issue?, log}` | SubagentStop **with** an `agent_type`. `interim: true` (`160`) is set only when a workflow agent's final message had no `HANDOFF:` line, its transcript was readable, and no real hand-back call is in the run; absent otherwise. Such an entry carries no `handoff_issue` (see `handoff-contract.md`). |
 | `kind:"transition"` | `{ts, origin:"transition", output, log}` | SubagentStop with **no** `agent_type` — a boundary that isn't a workflow handoff at all, kept neutral instead of masquerading as an `unknown` handoff |
 | `kind:"channel_delivery"` (`036`) | `{ts, origin:"main_session", agent_id, sender, receiver, content, log}` | SubagentStart, by `maestro-inject-agent-context.js` itself the same moment it inlines a channel payload, so the log has a durable record of the delivery |
 | `kind:"phase"` (`064`) | phase marker from the two `!`-injected gate scripts | Step 1 / Step 4 gate resolution |
@@ -181,6 +181,9 @@ unreadable or dangling pointer falls back to the given `claudeDir`.
 - **SubagentStart** (`maestro-inject-agent-context`) prepends a `Git worktree:` block when
   `session.json` has `worktree`: work only in that path, shared state at the main checkout's
   absolute paths, never merge/push/remove.
+- **Footprint (`163`, `worktree-footprint.ts`).** Creating the worktree copies in the git-excluded nested
+  `.claude` directories (`provisionExcludedDirs`). `merge` refuses while ignored files exist only in the
+  worktree (`ignoredOnlyInWorktree`) unless `--accept-ignored` is passed; `done` only prints that list.
 - Trap: a session that "lost" its log may have a worktree pointer — look in the worktree's
   `.claude/maestro_sessions/`, not just the main checkout's. After a `merge` the log is back in
   the main checkout.
