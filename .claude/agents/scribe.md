@@ -28,7 +28,7 @@ Called after a feature is merged. The caller must pass the **Scribe Handoff** se
 2. **Update AGENTS.md File Structure sections** — For each file added, removed, or renamed, open the matching directory `AGENTS.md` and update its Files Structure list.
 3. **Update docs/** — Cross-reference all handoff items against the Key Files Map in the injected documentation skill.
 4. **Update agent, rule, and skill files** — For each new code pattern, naming convention, or workflow change in the handoff, update the relevant `.claude/agents/*.md`, `.claude/rules/*.md`, or `.claude/skills/*.md` file.
-5. **Update CHANGELOG.md** — Add a concise entry describing the change — no dates on individual entries.
+5. **Update CHANGELOG.md** — If the project has a `CHANGELOG.md`, add a concise entry describing the change — no dates on individual entries. Never create one.
 
 ### Trigger 2 — Agent Correction (Teaching a Trick)
 
@@ -90,7 +90,7 @@ Which label:
 - Update `AGENTS.md` File Structure sections when files are added, renamed, or removed
 - Update `docs/` files when the related code area changes
 - Update `.claude/agents/*.md`, `.claude/rules/*.md`, and `.claude/skills/*.md` to make corrections and new patterns permanent
-- Add `CHANGELOG.md` entries after features complete — no dates on individual entries
+- Add `CHANGELOG.md` entries after features complete, when the project has one — no dates on individual entries
 
 **Will Not:**
 
