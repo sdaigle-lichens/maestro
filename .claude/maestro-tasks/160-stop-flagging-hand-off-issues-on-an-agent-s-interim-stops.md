@@ -35,6 +35,14 @@ First decide how to tell an interim stop from a final one: from the SubagentStop
 - base: current main (0.13.32 or later; 158 and 159 are merged)
 - parallel OK with 163, 164 and 166; merge before 165, whose post-mortem digest must respect this task's interim-stop signal; whichever lands later rebases, takes the next patch version and rebuilds generated files instead of hand-merging
 
+## Direction (manager, after escalation m004; user decision 2026-11-08)
+
+The user chose option 2: a final stop with no HANDOFF line must still be flagged, including one
+that ends in plain text without a hand-back call and an agent that stops once and is never
+resumed. Interim stops must still not be flagged. How to tell them apart (for example deferring
+the judgement until the run's final stop) is the design step's call. The `interim: true` log
+marker and its documentation stay, for task 165.
+
 ## Blocked by
 
 None — can start immediately

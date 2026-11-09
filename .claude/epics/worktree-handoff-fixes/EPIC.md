@@ -39,9 +39,8 @@ After the epic: task 157 (no epic, blocked by all five) runs standalone once the
 ## Decisions
 
 - Ready to start: PR #25 (161+162) and PR #24 (158–160) are on `main` at `41b8ce5`.
-  No worker was spawned here (user): the epic is handed over to a manager on another machine, which
-  runs `maestro-epic.cjs set-manager worktree-handoff-fixes` first (this file still records
-  `maestro-mgr-505f2630`), then `ready` and Spawning workers as usual.
+  No worker was spawned on the queueing machine (user); the epic was handed over and
+  `maestro-mgr-82f98516` took it as manager on 2026-11-07.
 - Three tickets, not one (user, at queueing): the urgent 163 shouldn't wait on the rest.
 - 164's re-verify requirement stays project-agnostic (user): "the project's own format, lint and
   type checks", no tool or command names.
@@ -50,5 +49,15 @@ After the epic: task 157 (no epic, blocked by all five) runs standalone once the
   that task's design step; a manager review only checks it stays project-agnostic.
 - 160 joined the epic (user, 2026-11-07); 157 runs standalone after it, and task 149 with its
   freebuff-reviewer epic was cancelled.
+- 160's interim signal (user, 2026-11-08, after manager escalation m004): first accepted as is in
+  160's human review, then changed by the user to option 2: a final stop with no HANDOFF line
+  (plain-text end, or never resumed) must still be flagged; only true interim stops go unflagged.
+  The log marks an interim stop `interim: true`, documented in handoff-contract.md,
+  session-state.md and the log-view hook-writers.md; 165's digest reads that field.
+- 163 + 164 land together (user, 2026-11-09): 163 was merged into the checked-out
+  `task-164-testing-step-reverify` branch instead of `main` (merge commit faf8bb6), because the main
+  checkout was left on 164's branch. The user kept it: rebuild the generated files, parity and full
+  suite on that branch, then bring `main` up to it as one step under 0.13.33. 160, 165 and 166 rebase
+  onto that `main` and take the next patch.
 - 166 (user): the seed adopts the app's "manager requested direction change" label, not the other
   way round. This repo's `maestro.json` already uses it.

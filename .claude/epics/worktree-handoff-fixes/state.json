@@ -2,9 +2,190 @@
   "slug": "worktree-handoff-fixes",
   "created_at": "2026-11-07T20:02:51.007Z",
   "manager": {
-    "name": "maestro-mgr-505f2630",
-    "set_at": "2026-11-07T20:02:51.009Z"
+    "name": "maestro-mgr-82f98516",
+    "set_at": "2026-11-08T01:46:37.204Z"
   },
-  "workers": [],
-  "log": []
+  "workers": [
+    {
+      "name": "worktree-handoff-fixes-163",
+      "task": "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
+      "added_at": "2026-11-08T01:47:40.036Z"
+    },
+    {
+      "name": "worktree-handoff-fixes-164",
+      "task": "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "added_at": "2026-11-08T01:47:45.829Z"
+    },
+    {
+      "name": "worktree-handoff-fixes-160",
+      "task": "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "added_at": "2026-11-08T01:47:57.195Z"
+    },
+    {
+      "name": "worktree-handoff-fixes-165",
+      "task": "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "added_at": "2026-11-08T01:48:00.750Z"
+    },
+    {
+      "name": "worktree-handoff-fixes-166",
+      "task": "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
+      "added_at": "2026-11-08T01:48:06.867Z"
+    }
+  ],
+  "log": [
+    {
+      "kind": "review",
+      "id": "m001",
+      "task": "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.review.md",
+      "at": "2026-11-08T01:55:08.803Z",
+      "from": "worktree-handoff-fixes-164"
+    },
+    {
+      "kind": "verdict",
+      "id": "m001",
+      "task": "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-08T01:55:20.400Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "review",
+      "id": "m002",
+      "task": "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.review.md",
+      "at": "2026-11-08T01:59:32.863Z",
+      "from": "worktree-handoff-fixes-165"
+    },
+    {
+      "kind": "verdict",
+      "id": "m002",
+      "task": "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-08T01:59:44.439Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "review",
+      "id": "m003",
+      "task": "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.review.md",
+      "at": "2026-11-08T02:02:25.069Z",
+      "from": "worktree-handoff-fixes-166"
+    },
+    {
+      "kind": "verdict",
+      "id": "m003",
+      "task": "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-08T02:02:37.467Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "review",
+      "id": "m004",
+      "task": "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.review.md",
+      "at": "2026-11-08T02:06:55.206Z",
+      "from": "worktree-handoff-fixes-160"
+    },
+    {
+      "kind": "verdict",
+      "id": "m004",
+      "task": "160-stop-flagging-hand-off-issues-on-an-agent-s-interim-stops.md",
+      "verdict": "escalate",
+      "effective": "escalate",
+      "at": "2026-11-08T02:07:13.538Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "report",
+      "id": "r001",
+      "task": "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "file": "inbox/r001-164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "at": "2026-11-08T02:09:39.234Z",
+      "from": "worktree-handoff-fixes-164"
+    },
+    {
+      "kind": "report",
+      "id": "r002",
+      "task": "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "file": "inbox/r002-164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md",
+      "at": "2026-11-08T03:06:16.859Z",
+      "from": "worktree-handoff-fixes-164"
+    },
+    {
+      "kind": "ack",
+      "id": "r001",
+      "at": "2026-11-08T03:06:27.995Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "ack",
+      "id": "r002",
+      "at": "2026-11-08T03:06:28.564Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "report",
+      "id": "r003",
+      "task": "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "file": "inbox/r003-165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md",
+      "at": "2026-11-08T03:14:19.223Z",
+      "from": "worktree-handoff-fixes-165"
+    },
+    {
+      "kind": "review",
+      "id": "m005",
+      "task": "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
+      "round": 1,
+      "file": ".claude/maestro-tasks/163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.review.md",
+      "at": "2026-11-09T00:47:53.959Z",
+      "from": "worktree-handoff-fixes-163"
+    },
+    {
+      "kind": "verdict",
+      "id": "m005",
+      "task": "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
+      "verdict": "on-track",
+      "effective": "on-track",
+      "at": "2026-11-09T00:48:20.286Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "report",
+      "id": "r004",
+      "task": "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
+      "file": "inbox/r004-166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md",
+      "at": "2026-11-09T01:19:42.804Z",
+      "from": "worktree-handoff-fixes-166"
+    },
+    {
+      "kind": "ack",
+      "id": "r004",
+      "at": "2026-11-09T01:19:58.569Z",
+      "by": "maestro-mgr-82f98516"
+    },
+    {
+      "kind": "report",
+      "id": "r005",
+      "task": "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
+      "file": "inbox/r005-163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md",
+      "at": "2026-11-09T01:25:49.066Z",
+      "from": "worktree-handoff-fixes-163"
+    },
+    {
+      "kind": "ack",
+      "id": "r005",
+      "at": "2026-11-09T01:26:14.361Z",
+      "by": "maestro-mgr-82f98516"
+    }
+  ]
 }

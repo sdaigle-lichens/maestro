@@ -808,19 +808,20 @@
     "epic": "install-update-hygiene"
   },
   "163-make-worktree-runs-write-channels-to-the-main-checkout-and-merge-only-what-was-committed.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "worktree-handoff-fixes"
   },
   "164-make-the-testing-step-re-verify-after-its-last-edit-and-name-the-tree-it-verified.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
     "epic": "worktree-handoff-fixes"
   },
   "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [],
-    "epic": "worktree-handoff-fixes"
+    "epic": "worktree-handoff-fixes",
+    "unmerged": true
   },
   "166-seed-the-manager-review-loop-back-edges-with-the-app-s-direction-change-label.md": {
     "status": "ready",

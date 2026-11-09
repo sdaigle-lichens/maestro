@@ -36,6 +36,13 @@ Three fixes found by the acces-portail-email walking-skeleton post-mortems (Maes
 - parallel OK with the other two tickets from this batch; merge order this one first, then the testing-step ticket, then the authoring ticket; each later one rebases, takes the next patch version and rebuilds generated files instead of hand-merging them
 - base: current main (0.13.32 or later)
 
+## Direction (manager, review m005)
+
+- A waiver that lets `merge` proceed past the ignored-file check is the user's to give: the
+  orchestrator guidance says an agent never uses it on its own initiative.
+- When the ignored-file check only warns before merge (at `done`), the warning reaches the worker's
+  done report, so the manager and the user see it before the merge is offered.
+
 ## Blocked by
 
 None — can start immediately
