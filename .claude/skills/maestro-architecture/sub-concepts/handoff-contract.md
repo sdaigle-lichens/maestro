@@ -199,9 +199,9 @@ background-task detection: whether work is still pending cannot be read from eit
 verdict waits for what happens next.
 
 **The `interim` log marker (read by task 165).** The `kind:"handoff"` log entry gets the field
-`interim: true` exactly when the stop is an interim one: a workflow agent (it maps to a workflow
-instance; not a meeting or owner run), a readable transcript, and no real hand-back call in the current
-run. The field is absent otherwise, never `false`. Such an entry has no `handoff_issue`, its `log` text is
+`interim: true` exactly when the stop is an interim one: its final message carried no `HANDOFF:` line
+(`status` is still `unknown`), it is a workflow agent (it maps to a workflow instance; not a meeting or
+owner run), the transcript is readable, and no real hand-back call is in the current run. The field is absent otherwise, never `false`. Such an entry has no `handoff_issue`, its `log` text is
 `interim stop (no hand-back yet)`, and `status`/`label` stay `unknown`/null. An unreadable or absent
 transcript means "cannot tell": that stop is judged at once, as before, and carries no marker.
 
@@ -263,8 +263,9 @@ names a route whose pair resolves a protocol (same three-tier resolution as the 
 `payloadRoutes` in `core/handoff-payload.ts`, so the two hooks cannot disagree), and the sender's
 channel file for that receiver was not written **during this run**. "This run" starts at the agent's
 FIRST `kind:"dispatch"` log entry (`agentRunStartedAt`, `160`: a payload written before a resume still counts; the transcript boundary keeps the LAST one, `runStartedAt`), with
-1 s mtime slack (`payloadWrittenSince`); no dispatch entry ⇒ the file merely existing counts. It is
-checked only when `checkHandoff` found nothing, and travels the same way as the other two, plus
+1 s mtime slack (`payloadWrittenSince`); no dispatch entry ⇒ the file merely existing counts. It runs only when
+`checkHandoff` and `checkRoute` both found nothing, never for an interim stop, and never for a resumed
+run that wrote no file (`153`); it travels the same way as the other two, plus
 `files[]` on the log entry and `session.json`. The orchestrator **resumes** the sender to write the
 named file, never skips it and never dispatches the receiver without it. Prevention side: the
 injected block (`payloadRequirement`) states the write as REQUIRED before the `HANDOFF:` line on
