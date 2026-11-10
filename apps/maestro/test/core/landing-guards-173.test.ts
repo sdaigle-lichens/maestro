@@ -200,6 +200,55 @@ describe("merge lands a task committed in the main checkout (173)", () => {
     expect(r.out).toContain('not "done"');
     expect(branches(root)).toContain("task-001");
   });
+
+  /**
+   * Task 003 created AND committed on its own branch: main has neither its file nor a tracker entry
+   * for it, so only the branch's tracker knows it is done.
+   */
+  function createdOnBranch(root: string) {
+    git(root, "switch", "-q", "-c", "task-003");
+    const dir = path.join(root, ".claude", "maestro-tasks");
+    fs.writeFileSync(path.join(dir, "003-c.md"), "# C\n\n## Blocked by\n\nNone\n");
+    fs.writeFileSync(path.join(root, "c.txt"), "c\n");
+    expect(status(root, "done", "003-c.md").code).toBe(0);
+    git(root, "add", "-A");
+    git(root, "commit", "-q", "-m", "C (task 003)");
+    const back = status(root, "switch-back");
+    expect(back.code, back.out).toBe(0);
+    expect(fs.existsSync(path.join(dir, "003-c.md"))).toBe(false);
+    expect(tracker(root)["003-c.md"]).toBeUndefined();
+  }
+
+  for (const arg of ["003-c.md", "003"]) {
+    it(`lands a task created on its own branch, unknown to main, named as "${arg}"`, async () => {
+      const root = await project();
+      createdOnBranch(root);
+
+      const r = status(root, "merge", arg);
+
+      expect(r.code, r.out).toBe(0);
+      expect(r.out).toContain("merged task-003 into main");
+      expect(tracker(root)["003-c.md"]?.status).toBe("done");
+      expect(fs.readFileSync(path.join(root, "c.txt"), "utf8")).toBe("c\n");
+      expect(branches(root)).not.toContain("task-003");
+    });
+  }
+
+  it("still refuses a task created on its own branch that is not done there", async () => {
+    const root = await project();
+    git(root, "switch", "-q", "-c", "task-003");
+    fs.writeFileSync(path.join(root, ".claude", "maestro-tasks", "003-c.md"), "# C\n");
+    git(root, "add", "-A");
+    git(root, "commit", "-q", "-m", "wip");
+    git(root, "switch", "-q", "main");
+
+    for (const arg of ["003-c.md", "003"]) {
+      const r = status(root, "merge", arg);
+      expect(r.code, r.out).toBe(1);
+      expect(r.out).toContain('not "done"');
+    }
+    expect(branches(root)).toContain("task-003");
+  });
 });
 
 describe("merge lands a task across the edge cases of the tracker merge (173)", () => {

@@ -652,6 +652,17 @@ function resolveTaskName(arg) {
   if (/^\d+$/.test(base)) {
     const hit = Object.keys(map).filter((k) => k.startsWith(`${base}-`));
     if (hit.length === 1) return { filename: hit[0], status: map[hit[0]].status };
+    // A task created and committed on its own branch is unknown to this checkout's tracker: name it
+    // from the branch's tracker. Its status stays null here; the caller asks the branch whether it
+    // is done.
+    if (!hit.length) {
+      const top = gitTopLevel(gitTry, projectDir);
+      const onBranch = gitTry(top, ["show", `task-${base}:${trackerRelPath(top, projectDir)}`]);
+      const branchHit = onBranch.ok
+        ? Object.keys(parseTracker(onBranch.out)).filter((k) => k.startsWith(`${base}-`))
+        : [];
+      if (branchHit.length === 1) return { filename: branchHit[0], status: null };
+    }
   }
   return { filename: base, status: map[base] ? map[base].status : null };
 }
@@ -902,6 +913,10 @@ function mergeWorktreeTask(arg) {
   const freeform = isFreeformBranch(path.basename(arg));
   const { filename, status } = freeform ? { filename: path.basename(arg), status: "done" } : resolveTaskName(arg);
   const branch = freeform ? filename : worktreeBranchFor(filename);
+  if (!branch && /^\d+$/.test(filename))
+    refuse(
+      `no task numbered ${filename} is in the queue or in branch task-${filename}'s tracker, so it is not "done" — name the task file, or finish the task (and mark it done) first`
+    );
   if (!branch) refuse(`"${filename}" has no task number, so it has no task branch`);
 
   // `170`: the TARGET first. A merge lands in whatever the main checkout has checked out, so it
