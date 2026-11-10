@@ -97,8 +97,20 @@ const INFERRED_NOTE = "inferred from the log: interim stop never followed by a f
 const SETTLED_NOTE = "from the settle record: interim stop settled as missing";
 const LATE_NOTE = "from the settle record: hand-back landed after the stop";
 
+// A judged issue on the run's FINAL outcome — the `handoff_issue` the SubagentStop hook writes on an
+// on-time final stop, or the one a `169` `interim_settled` record carries for a late hand-back — is
+// that run's outcome, tallied and listed under its issue kind (`contradiction`, `unrouted`,
+// `missing_payload`, `blocked`). A `missing` issue is not: a run with no HANDOFF line keeps its own
+// `missing HANDOFF` outcome. An issue on an earlier stop of a resumed run is superseded by the last
+// stop, which is the only one read.
+function judgedKind(s) {
+  return s.handoff_issue && s.handoff_issue !== "missing" ? s.handoff_issue : null;
+}
+
 function outcomeKind(s) {
   if (s.helper && (s.interim || s.status === "unknown")) return OUTCOME_HELPER;
+  const judged = judgedKind(s);
+  if (judged) return judged;
   if (s.settled === "missing") return OUTCOME_MISSING;
   if (s.settled === "late_handback") return s.label ? s.label.toLowerCase() : OUTCOME_MISSING;
   if (s.pending) return OUTCOME_PENDING;
@@ -111,7 +123,7 @@ function outcomeKind(s) {
 // The parenthetical a Problems line carries for a run whose last stop was interim ("" otherwise).
 function interimNote(s) {
   if (s.settled === "missing") return SETTLED_NOTE;
-  if (s.settled === "late_handback") return s.handoff_issue ? `${LATE_NOTE}, judged ${s.handoff_issue}` : LATE_NOTE;
+  if (s.settled === "late_handback") return LATE_NOTE;
   if (s.inferred) return INFERRED_NOTE;
   return "";
 }
@@ -185,9 +197,13 @@ function analyze(entries, session) {
       label: settled === "late_handback" ? (rec.label ?? null) : h ? h.label : null,
       output: h ? clip(h.output, OUTPUT_CLIP) : null,
     };
-    if (rec) {
-      s.settled_at = rec.ts || null;
-      if (rec.handoff_issue) s.handoff_issue = rec.handoff_issue.kind;
+    if (rec) s.settled_at = rec.ts || null;
+    // The judged issue of the run's final outcome, on-time and late alike: the settle record's for a
+    // settled interim stop, else the final stop's own (the hook never judges an interim stop).
+    const issue = rec ? rec.handoff_issue : h && !interim ? h.handoff_issue : null;
+    if (issue && issue.kind) {
+      s.handoff_issue = issue.kind;
+      if (issue.message) s.handoff_issue_message = issue.message;
     }
     return s;
   });
@@ -196,7 +212,8 @@ function analyze(entries, session) {
   // blocked, any other condition), plus the two ways a run ends with none: a final stop whose
   // message carried no parseable HANDOFF line (including an interim stop that was never followed by a
   // final one, flagged `interim` and inferred missing), and an agent that never stopped at all. An
-  // interim stop that was resumed and finished counts only as the final outcome.
+  // interim stop that was resumed and finished counts only as the final outcome. A final outcome the
+  // handoff check judged (see judgedKind) counts under its issue kind, never as the label it carried.
   const outcomes = {};
   for (const s of subagents) {
     const k = outcomeKind(s);
@@ -319,7 +336,8 @@ function renderMarkdown(a) {
     L.push("## Problems (non-success outcomes)");
     for (const s of a.problems) {
       const note = interimNote(s);
-      L.push(`- **${s.agent}** \`${s.agent_id}\` → ${outcomeKind(s)}${note ? ` (${note})` : ""}`);
+      const why = judgedKind(s) && s.handoff_issue_message ? `: ${s.handoff_issue_message}` : "";
+      L.push(`- **${s.agent}** \`${s.agent_id}\` → ${outcomeKind(s)}${note ? ` (${note})` : ""}${why}`);
     }
     L.push("");
   }
@@ -364,6 +382,7 @@ function renderMarkdown(a) {
       else if (s.pending) L.push(`  - interim stop with no settle record yet: a final stop may still follow`);
       else if (s.interim) L.push(`  - ⚠️ missing HANDOFF (${INFERRED_NOTE})`);
       else if (s.status === "unknown") L.push(`  - ⚠️ handoff returned but no parseable HANDOFF: label`);
+      else if (judgedKind(s)) L.push(`  - ⚠️ judged ${s.handoff_issue}`);
     }
   }
   L.push("");

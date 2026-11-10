@@ -862,5 +862,11 @@
   "173-let-the-merge-land-a-main-checkout-task-name-files-rewritten-before-it-and-finish-the-epic-inbox-id-fixes.md": {
     "status": "done",
     "blockedBy": []
+  },
+  "174-show-interim-settled-session-log-entries-as-their-own-row-in-the-desktop-log-view.md": {
+    "status": "ready",
+    "blockedBy": [
+      "169-write-a-durable-session-log-record-when-an-interim-stop-is-settled-as-missing.md"
+    ]
   }
 }

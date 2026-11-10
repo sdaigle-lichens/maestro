@@ -201,3 +201,64 @@ describe("post-mortem digest outcomes", () => {
     expect(a.problems[0].helper).toBe(true);
   });
 });
+
+// A judged issue on a run's FINAL outcome (the hook's `handoff_issue` on an on-time stop, or a late
+// hand-back's `interim_settled` record) is that run's outcome; a `missing` issue keeps the existing
+// `missing HANDOFF` outcome, and an issue on a superseded earlier stop is ignored.
+describe("post-mortem digest: judged issues on the final outcome", () => {
+  const issue = (kind: string, message = `msg-${kind}`): Entry => ({
+    handoff_issue: { kind, verdict: null, label: "success", message },
+  });
+  const settle = (id: string, agent: string, label: string | null, extra: Entry = {}): Entry => ({
+    kind: "interim_settled",
+    origin: "main_session",
+    agent,
+    agent_id: id,
+    settled_as: "late_handback",
+    label,
+    ...extra,
+  });
+
+  it("tallies on-time and late judged runs alike under their issue kind and lists them with the message", () => {
+    const entries: Entry[] = [
+      dispatch("c1", "test"),
+      handoff("c1", "test", "success", issue("contradiction", "verdict FAIL vs success")),
+      dispatch("c2", "test2"),
+      interimStop("c2", "test2"),
+      settle("c2", "test2", "success", issue("contradiction", "verdict FAIL vs success")),
+      dispatch("u1", "scribe"),
+      handoff("u1", "scribe", "partial", issue("unrouted")),
+      dispatch("p1", "backend"),
+      handoff("p1", "backend", "success", issue("missing_payload")),
+      dispatch("ok", "frontend"),
+      handoff("ok", "frontend", "success"),
+    ];
+    const a = JSON.parse(digest(entries));
+    expect(a.outcomes).toEqual({ contradiction: 2, unrouted: 1, missing_payload: 1, success: 1 });
+    expect(a.problems.map((p: { agent_id: string }) => p.agent_id)).toEqual(["c1", "c2", "u1", "p1"]);
+    const md = digest(entries, false);
+    expect(md).toContain("**test** `c1` → contradiction: verdict FAIL vs success");
+    expect(md).toContain(
+      "**test2** `c2` → contradiction (from the settle record: hand-back landed after the stop): verdict FAIL vs success"
+    );
+    expect(md).toContain("**backend** `p1` → missing_payload: msg-missing_payload");
+    const problems = md.slice(md.indexOf("## Problems"), md.indexOf("## Subagent timeline"));
+    expect(problems).not.toContain("`ok`");
+    expect(md).toContain("**test** `c1` → success (success)\n  - in: go\n  - out: done\n  - ⚠️ judged contradiction");
+  });
+
+  it("an issue on a superseded earlier stop does not count; a missing issue keeps missing HANDOFF", () => {
+    const entries: Entry[] = [
+      dispatch("r1", "test"),
+      handoff("r1", "test", "success", issue("contradiction")),
+      handoff("r1", "test", "success"), // resumed, handed back cleanly
+      dispatch("m1", "scribe"),
+      handoff("m1", "scribe", null, issue("missing")),
+    ];
+    const a = JSON.parse(digest(entries));
+    expect(a.outcomes).toEqual({ success: 1, "missing HANDOFF": 1 });
+    const md = digest(entries, false);
+    expect(md).toContain("**scribe** `m1` → missing HANDOFF\n");
+    expect(md).not.toContain("contradiction");
+  });
+});
