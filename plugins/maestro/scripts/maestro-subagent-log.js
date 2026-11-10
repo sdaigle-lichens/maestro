@@ -406,7 +406,9 @@ function parseHandoff(msg) {
             status,
             label,
             output: handoffMsg,
-            ...(interim ? { interim: true } : {}),
+            // `169`: `settles_in_log` says `handoff-issues` will log an `interim_settled` line when it
+            // settles this stop, so a reader (the post-mortem digest) treats "no line yet" as pending.
+            ...(interim ? { interim: true, settles_in_log: true } : {}),
             ...meetingMark,
             ...(issue
               ? {

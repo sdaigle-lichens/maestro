@@ -842,7 +842,7 @@
     "epic": "worktree-handoff-fixes"
   },
   "169-write-a-durable-session-log-record-when-an-interim-stop-is-settled-as-missing.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "165-ask-where-each-displayed-number-comes-from-in-to-maestro-tasks-and-show-every-outcome-in-the-post-mortem-digest.md"
     ]

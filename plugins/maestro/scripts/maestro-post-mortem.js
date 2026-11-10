@@ -69,26 +69,51 @@ function parseLog(file) {
 
 // Task 160's marker: the hook writes `interim: true` on a handoff entry for a stop that carried no
 // hand-back yet (absent otherwise, never false). An interim stop that a later stop of the same
-// agent run supersedes is not an outcome. One that is the agent's LAST stop never got its hand-back:
-// 160 settles that as `missing` in session state only (printed by `handoff-issues`, then deleted, and
-// never written to the log), so the digest INFERS the same missing from the log alone.
+// agent run supersedes is not an outcome. One that is the agent's LAST stop is read in this order:
+//
+//   1. `169`: an `interim_settled` line for that agent_id AFTER the stop is the settlement
+//      `handoff-issues` made — `settled_as: "missing"` is a missing HANDOFF, `"late_handback"` is the
+//      label the late hand-back carried. Taken from the record, never inferred.
+//   2. No such line, but the stop is stamped `settles_in_log: true`, or the log holds any
+//      `interim_settled` line: this log is written by a plugin that records settlements, so no line
+//      means NOT SETTLED YET (still working, or awaiting the next handoff check). Its own outcome,
+//      kept out of Problems.
+//   3. Neither (a log written before `169`): settlements were never logged, so the digest INFERS a
+//      missing HANDOFF from the log alone, exactly as before.
 function isInterim(h) {
   return h.interim === true;
 }
+
+const SETTLED_KIND = "interim_settled";
 
 const OUTCOME_MISSING = "missing HANDOFF";
 const OUTCOME_NO_RETURN = "no-return";
 // `172`: a helper on no workflow (Explore, general-purpose, plan-reviewer) is never asked for a
 // HANDOFF line, so ending without one is its normal outcome, not a problem.
 const OUTCOME_HELPER = "helper (no HANDOFF expected)";
+// `169`: an interim stop the log says is not settled yet; it may still be followed by a final stop.
+const OUTCOME_PENDING = "interim stop, not settled yet";
 const INFERRED_NOTE = "inferred from the log: interim stop never followed by a final stop";
+const SETTLED_NOTE = "from the settle record: interim stop settled as missing";
+const LATE_NOTE = "from the settle record: hand-back landed after the stop";
 
 function outcomeKind(s) {
   if (s.helper && (s.interim || s.status === "unknown")) return OUTCOME_HELPER;
+  if (s.settled === "missing") return OUTCOME_MISSING;
+  if (s.settled === "late_handback") return s.label ? s.label.toLowerCase() : OUTCOME_MISSING;
+  if (s.pending) return OUTCOME_PENDING;
   if (s.interim) return OUTCOME_MISSING;
   if (s.status === "unknown") return OUTCOME_MISSING;
   if (s.status === "no-return") return OUTCOME_NO_RETURN;
   return (s.label || s.status || "unknown").toLowerCase();
+}
+
+// The parenthetical a Problems line carries for a run whose last stop was interim ("" otherwise).
+function interimNote(s) {
+  if (s.settled === "missing") return SETTLED_NOTE;
+  if (s.settled === "late_handback") return s.handoff_issue ? `${LATE_NOTE}, judged ${s.handoff_issue}` : LATE_NOTE;
+  if (s.inferred) return INFERRED_NOTE;
+  return "";
 }
 
 function analyze(entries, session) {
@@ -113,6 +138,17 @@ function analyze(entries, session) {
   // interim and is superseded by it.
   const handoffById = {};
   for (const h of handoffs) handoffById[h.agent_id] = h;
+  // `169`: the settle record that applies to a run is its last `interim_settled` line logged AFTER
+  // its last stop (log order, not timestamps); an older one was overtaken by a resume.
+  const settleById = {};
+  for (const e of entries) {
+    if (e.kind === SETTLED_KIND && e.agent_id) settleById[e.agent_id] = e;
+  }
+  const logsSettlements = entries.some((e) => e.kind === SETTLED_KIND);
+  const settleAfterStop = (h) => {
+    const rec = h && settleById[h.agent_id];
+    return rec && entries.indexOf(rec) > entries.indexOf(h) ? rec : null;
+  };
   // A resume writes a SECOND dispatch entry under the same agent_id: one row per agent_id, from its
   // first dispatch (the original task input), so a resumed run is one outcome, not two.
   const seenIds = new Set();
@@ -124,19 +160,36 @@ function analyze(entries, session) {
   });
   const subagents = uniqueDispatches.map((d) => {
     const h = handoffById[d.agent_id];
-    return {
+    const interim = h ? isInterim(h) : false;
+    const rec = interim ? settleAfterStop(h) : null;
+    const settled = rec ? (rec.settled_as === "late_handback" ? "late_handback" : "missing") : null;
+    const helper = !d.offered_skills;
+    const pending = !helper && interim && !rec && (h.settles_in_log === true || logsSettlements);
+    const s = {
       agent: d.agent || "?",
       agent_id: d.agent_id || "",
       input: clip(d.input, INPUT_CLIP),
       status: h ? h.status : "no-return",
-      interim: h ? isInterim(h) : false,
+      interim,
+      // `169`: how the run's last (interim) stop was settled, from its `interim_settled` record:
+      // "missing" | "late_handback" | null. `pending`: interim, no record, and the log records
+      // settlements, so the run is not settled yet. `inferred`: interim in a log with no settle
+      // records at all, read with the pre-`169` inference.
+      settled,
+      pending,
+      inferred: !helper && interim && !rec && !pending,
       // `172`: maestro-subagent-log.js stamps `offered_skills` on a dispatch exactly when the agent
       // maps to a workflow instance — the same test its SubagentStop uses to decide whether a
       // missing HANDOFF line is an issue. No stamp: an agent on no workflow, i.e. a helper.
-      helper: !d.offered_skills,
-      label: h ? h.label : null,
+      helper,
+      label: settled === "late_handback" ? (rec.label ?? null) : h ? h.label : null,
       output: h ? clip(h.output, OUTPUT_CLIP) : null,
     };
+    if (rec) {
+      s.settled_at = rec.ts || null;
+      if (rec.handoff_issue) s.handoff_issue = rec.handoff_issue.kind;
+    }
+    return s;
   });
 
   // outcome tally: EVERY recorded kind, by the HANDOFF label the agent returned (success, fail,
@@ -226,8 +279,10 @@ function analyze(entries, session) {
     outcomes,
     problems: subagents.filter((s) => {
       const k = outcomeKind(s);
-      return k !== "success" && k !== OUTCOME_HELPER;
+      return k !== "success" && k !== OUTCOME_HELPER && k !== OUTCOME_PENDING;
     }),
+    // `169`: runs whose last stop is interim and not settled yet — not a problem until settled.
+    pending: subagents.filter((s) => outcomeKind(s) === OUTCOME_PENDING),
     subagents,
     flags,
     checks,
@@ -263,7 +318,18 @@ function renderMarkdown(a) {
   if (a.problems.length > 0) {
     L.push("## Problems (non-success outcomes)");
     for (const s of a.problems) {
-      L.push(`- **${s.agent}** \`${s.agent_id}\` → ${outcomeKind(s)}${s.interim ? ` (${INFERRED_NOTE})` : ""}`);
+      const note = interimNote(s);
+      L.push(`- **${s.agent}** \`${s.agent_id}\` → ${outcomeKind(s)}${note ? ` (${note})` : ""}`);
+    }
+    L.push("");
+  }
+
+  if (a.pending.length > 0) {
+    L.push("## Pending (interim stop, not settled yet)");
+    for (const s of a.pending) {
+      L.push(
+        `- **${s.agent}** \`${s.agent_id}\` → ${OUTCOME_PENDING}: may still be working; not counted as missing until the handoff check settles it`
+      );
     }
     L.push("");
   }
@@ -276,16 +342,26 @@ function renderMarkdown(a) {
       const helper = outcomeKind(s) === OUTCOME_HELPER;
       const tag = helper
         ? OUTCOME_HELPER
-        : s.interim
-          ? "interim stop, no final stop"
-          : s.label
-            ? `${s.status} (${s.label})`
-            : s.status;
+        : s.settled === "late_handback"
+          ? `late hand-back${s.label ? ` (${s.label})` : ""}`
+          : s.settled === "missing"
+            ? "interim stop, settled as missing"
+            : s.pending
+              ? OUTCOME_PENDING
+              : s.interim
+                ? "interim stop, no final stop"
+                : s.label
+                  ? `${s.status} (${s.label})`
+                  : s.status;
       L.push(`- **${s.agent}** \`${s.agent_id}\` → ${tag}`);
       if (s.input) L.push(`  - in: ${s.input}`);
       if (s.output) L.push(`  - out: ${s.output}`);
       if (s.status === "no-return") L.push(`  - ⚠️ no stop recorded — agent never returned`);
       if (helper) L.push(`  - helper on no workflow: ends without a HANDOFF line by design`);
+      else if (s.settled === "late_handback")
+        L.push(`  - ${LATE_NOTE}${s.handoff_issue ? ` — ⚠️ judged ${s.handoff_issue}` : ""}`);
+      else if (s.settled === "missing") L.push(`  - ⚠️ missing HANDOFF (${SETTLED_NOTE})`);
+      else if (s.pending) L.push(`  - interim stop with no settle record yet: a final stop may still follow`);
       else if (s.interim) L.push(`  - ⚠️ missing HANDOFF (${INFERRED_NOTE})`);
       else if (s.status === "unknown") L.push(`  - ⚠️ handoff returned but no parseable HANDOFF: label`);
     }
