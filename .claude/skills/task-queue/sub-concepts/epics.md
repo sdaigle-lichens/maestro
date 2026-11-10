@@ -41,6 +41,14 @@ scheme.
   `.claude/epics/<slug>/inbox/rNNN-<task>.md` and a `report` log entry. The manager acknowledges with
   `ack`; the entry is the only delivery proof (cross-session messages have none). A report written
   with no manager survives and is listed unacknowledged on resume. Ids never repeat.
+  - `171`: a new id is one past the highest used in the log AND in the inbox file names, because a
+    git reset of the committed `state.json` can drop a log entry while its file stays. Inbox files are
+    written `wx` (never overwrite), under the epic lock.
+  - `171`: an ack records the entry's `file`, so it covers exactly that entry. An id shared by two
+    entries is refused, listing each entry's handle (`r009-167`), and must be acked by handle or file
+    name. `show`/`reports` print the handle.
+  - `171`: a report or note file no log entry names is listed as an orphan, and `ack` re-logs it first.
+  - `171`: `withLock` writes an owner token and releases only its own lock.
 - **Write discipline.** All `state.json` writes go through `updateState`: mkdir lock (5 s wait, 15 s
   stale), reread fresh, atomic rename. The tracker write is read-then-rename without a lock, so it is
   safe for sequential writers, not for overlapping ones (four simultaneous `link` processes lost
@@ -88,7 +96,7 @@ through that epic's inbox, never through a message alone.
   `inbox/nNNN-from-<epic>.md` and a `note` log entry (`{id, from_epic, from?, subject?, file, at}`) in
   the RECEIVING epic's `state.json`, then prints the manager name to message, or that none is
   recorded and the note waits for a resumed manager.
-- `ack` takes `rNNN` and `nNNN`; `show`/`reports` list unacknowledged reports and notes together,
+- `ack` takes `rNNN` and `nNNN`, or (`171`) a handle (`r009-167`) or file name; `show`/`reports` list unacknowledged reports and notes together,
   oldest first (`unacknowledgedReports` returns both, typed `EpicInboxEntry`).
 - `132`: `EpicInboxEntry` also covers a `review` entry (`mNNN`, `{task, round, file, at, from?}`,
   `file` relative to the main checkout) from `review-request`. It is listed until a `verdict` log

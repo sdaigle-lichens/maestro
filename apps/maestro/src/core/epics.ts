@@ -79,6 +79,11 @@ export interface EpicNoteEntry {
 export interface EpicAckEntry {
   kind: "ack";
   id: string;
+  /**
+   * `171`: the acknowledged entry's own `file`, so an ack addresses exactly one entry even when two
+   * share an id. An ack written before `171` has none; see `ackedEntries` for what it covers.
+   */
+  file?: string;
   at: string;
   by?: string;
 }
@@ -169,13 +174,20 @@ function sleepSync(ms: number): void {
   Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, ms);
 }
 
-/** Run `fn` while holding the epic's lock directory. A lock older than LOCK_STALE_MS is broken. */
+/**
+ * Run `fn` while holding the epic's lock directory. A lock older than LOCK_STALE_MS is broken.
+ * `171`: the lock holds an owner token, and release removes it only while the token is still ours,
+ * so a writer whose lock was broken as stale never deletes the lock the next writer now holds.
+ */
 function withLock<T>(dir: string, fn: () => T): T {
   const lock = path.join(dir, LOCK_DIR);
+  const owner = path.join(lock, "owner");
+  const token = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const start = Date.now();
   for (;;) {
     try {
       fs.mkdirSync(lock);
+      fs.writeFileSync(owner, token);
       break;
     } catch (err) {
       if ((err as NodeJS.ErrnoException).code !== "EEXIST") throw err;
@@ -191,7 +203,13 @@ function withLock<T>(dir: string, fn: () => T): T {
   try {
     return fn();
   } finally {
-    fs.rmSync(lock, { recursive: true, force: true });
+    let mine = false;
+    try {
+      mine = fs.readFileSync(owner, "utf8") === token;
+    } catch {
+      // the lock is gone (broken as stale and released by its next holder): nothing of ours to remove
+    }
+    if (mine) fs.rmSync(lock, { recursive: true, force: true });
   }
 }
 
@@ -297,7 +315,13 @@ export function listEpicSummaries(projectRoot: string): EpicSummary[] {
   return listEpics(projectRoot).flatMap((slug) => {
     const state = readEpicState(projectRoot, slug);
     if (!state) return [];
-    return [{ slug, manager: state.manager?.name ?? null, unacknowledged: unacknowledgedReports(state).length }];
+    return [
+      {
+        slug,
+        manager: state.manager?.name ?? null,
+        unacknowledged: unacknowledgedReports(state, epicDirFor(projectRoot, slug)).length,
+      },
+    ];
   });
 }
 
@@ -356,10 +380,33 @@ export function taskStatusOf(projectRoot: string, filename: string): string | nu
 
 const INBOX_PREFIX: Record<EpicInboxEntry["kind"], string> = { report: "r", note: "n", review: "m" };
 
-/** The next id of `kind` in this epic: one past the highest ever used, so an id never repeats. */
-function nextInboxId(state: EpicState, kind: EpicInboxEntry["kind"]): string {
+/**
+ * The next id of `kind` in this epic: one past the highest ever used, so an id never repeats.
+ *
+ * `171`: "used" counts the inbox FILES as well as the log. The log lives in `state.json`, which this
+ * repo commits, so a git operation in the main checkout (a stash, a checkout, a merge) can put back
+ * an older `state.json` that lacks the latest entry while its untracked report file stays in the
+ * inbox. Counting the log alone then hands the next writer that id again: two `r009` reports in one
+ * epic. The files survive such a reset, so the highest of both is the one that never repeats.
+ * Called under the epic lock, so two writers never read the same highest id.
+ */
+function nextInboxId(state: EpicState, kind: EpicInboxEntry["kind"], inboxDir?: string): string {
+  const prefix = INBOX_PREFIX[kind];
   const used = state.log.filter((e) => e.kind === kind).map((e) => Number(e.id.slice(1)) || 0);
-  return `${INBOX_PREFIX[kind]}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
+  if (inboxDir) {
+    const file = new RegExp(`^${prefix}(\\d+)-`);
+    let names: string[] = [];
+    try {
+      names = fs.readdirSync(inboxDir);
+    } catch {
+      // no inbox yet: the log is the whole history
+    }
+    for (const name of names) {
+      const m = file.exec(name);
+      if (m) used.push(Number(m[1]));
+    }
+  }
+  return `${prefix}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
 }
 
 export interface WrittenReport {
@@ -389,12 +436,13 @@ export function writeReport(projectRoot: string, task: string, body: string, sen
   if (!dir || !readEpicState(projectRoot, slug))
     throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   return updateState(projectRoot, slug, (s) => {
-    const id = nextInboxId(s, "report");
+    const id = nextInboxId(s, "report", path.join(dir, INBOX_DIR));
     const rel = path.posix.join(INBOX_DIR, `${id}-${base.replace(/\.md$/, "")}.md`);
     const at = now();
     const header = `# Report ${id}: ${base}\n\n- Task: ${base}\n- Written: ${at}\n${from ? `- From session: ${from}\n` : ""}\n`;
     fs.mkdirSync(path.join(dir, INBOX_DIR), { recursive: true });
-    fs.writeFileSync(path.join(dir, rel), `${header}${body.trim()}\n`);
+    // `wx`: a fresh id names a file that cannot exist yet; never overwrite one that somehow does.
+    fs.writeFileSync(path.join(dir, rel), `${header}${body.trim()}\n`, { flag: "wx" });
     s.log.push({ kind: "report", id, task: base, file: rel, at, ...(from ? { from } : {}) });
     return { epic: slug, id, file: path.join(dir, rel), manager: s.manager?.name ?? null };
   });
@@ -454,14 +502,14 @@ export function writeNote(projectRoot: string, toSlug: string, body: string, opt
   if (!dir) throw new Error(`no epic "${toSlug}" to send a note to`);
   if (!body.trim()) throw new Error("the note is empty");
   return updateState(projectRoot, toSlug, (s) => {
-    const id = nextInboxId(s, "note");
+    const id = nextInboxId(s, "note", path.join(dir, INBOX_DIR));
     const rel = path.posix.join(INBOX_DIR, `${id}-from-${fromEpic}.md`);
     const at = now();
     const header =
       `# Note ${id} from epic ${fromEpic}\n\n- From epic: ${fromEpic}\n` +
       `${from ? `- From session: ${from}\n` : ""}${subject ? `- Subject: ${subject}\n` : ""}- Written: ${at}\n\n`;
     fs.mkdirSync(path.join(dir, INBOX_DIR), { recursive: true });
-    fs.writeFileSync(path.join(dir, rel), `${header}${body.trim()}\n`);
+    fs.writeFileSync(path.join(dir, rel), `${header}${body.trim()}\n`, { flag: "wx" });
     s.log.push({
       kind: "note",
       id,
@@ -479,39 +527,170 @@ function isInboxEntry(e: EpicLogEntry): e is EpicInboxEntry {
   return e.kind === "report" || e.kind === "note" || e.kind === "review";
 }
 
-/** Records an acknowledgement of a report (`rNNN`) or a note (`nNNN`). Idempotent; an unknown id is an error. */
+/** A report's or note's file name without `.md`: `r009-167-cut-the-number-of...`. */
+function entryStem(entry: EpicInboxEntry): string {
+  return path.posix.basename(entry.file).replace(/\.md$/, "");
+}
+
+/**
+ * `171`: the reports and notes in `state` that have an acknowledgement, one entry each. An ack that
+ * names its entry's `file` covers exactly that entry. An ack written before `171` names only an id;
+ * it covers the latest entry with that id logged BEFORE it (the one the manager had just been told
+ * about) and no other, so an inbox that already holds a duplicate id still lists the other entry.
+ */
+function ackedEntries(state: EpicState): Set<EpicInboxEntry> {
+  const acked = new Set<EpicInboxEntry>();
+  const seen: EpicInboxEntry[] = [];
+  for (const e of state.log) {
+    if (e.kind === "report" || e.kind === "note") seen.push(e);
+    if (e.kind !== "ack") continue;
+    const target = e.file
+      ? seen.find((x) => x.id === e.id && x.file === e.file)
+      : [...seen].reverse().find((x) => x.id === e.id);
+    if (target) acked.add(target);
+  }
+  return acked;
+}
+
+/**
+ * `171`: the inbox entries an `ack` argument names. The argument is an id (`r009`), an id followed
+ * by the start of the rest of its file name (`r009-167`), or the file name itself, with or without
+ * `.md` or the `inbox/` directory. Matching stops at a `-` boundary, so `r009-16` names nothing.
+ */
+function matchInboxEntries(log: readonly EpicLogEntry[], selector: string): EpicInboxEntry[] {
+  const wanted = path.posix.basename(selector.trim()).replace(/\.md$/, "");
+  return log.filter((e): e is EpicInboxEntry => {
+    if (!isInboxEntry(e)) return false;
+    if (e.id === wanted) return true;
+    if (e.kind === "review") return false;
+    const stem = entryStem(e);
+    return wanted.startsWith(`${e.id}-`) && (stem === wanted || stem.startsWith(`${wanted}-`));
+  });
+}
+
+/**
+ * `171`: report and note files in the inbox that no log entry names. A git operation that put back an
+ * older `state.json` (see `nextInboxId`) drops the entry while its file stays, and the manager never
+ * sees it again. Each comes back as the entry its file describes (id and task from the name, time and
+ * sender from the header it was written with), oldest first, so it lists and acks like any other.
+ */
+function orphanInboxEntries(state: EpicState, epicDir: string): Array<EpicReportEntry | EpicNoteEntry> {
+  let names: string[];
+  try {
+    names = fs.readdirSync(path.join(epicDir, INBOX_DIR));
+  } catch {
+    return [];
+  }
+  const named = new Set(state.log.filter(isInboxEntry).map((e) => e.file));
+  const out: Array<EpicReportEntry | EpicNoteEntry> = [];
+  for (const name of names.sort()) {
+    const m = /^([rn])(\d+)-(.+)\.md$/.exec(name);
+    if (!m) continue;
+    const file = path.posix.join(INBOX_DIR, name);
+    if (named.has(file)) continue;
+    let text = "";
+    try {
+      text = fs.readFileSync(path.join(epicDir, INBOX_DIR, name), "utf8");
+    } catch {
+      continue;
+    }
+    const header = (label: string) => new RegExp(`^- ${label}: (.+)$`, "m").exec(text)?.[1]?.trim();
+    const id = `${m[1]}${m[2]}`;
+    const at = header("Written") ?? "";
+    const from = header("From session");
+    const rest = m[3] as string;
+    if (m[1] === "r") out.push({ kind: "report", id, task: `${rest}.md`, file, at, ...(from ? { from } : {}) });
+    else
+      out.push({
+        kind: "note",
+        id,
+        from_epic: header("From epic") ?? rest.replace(/^from-/, ""),
+        file,
+        at,
+        ...(from ? { from } : {}),
+      });
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}
+
+/** The log, plus (`171`) the inbox's orphaned report and note files after it when `epicDir` is given. */
+function inboxLog(state: EpicState, epicDir?: string | null): EpicLogEntry[] {
+  return epicDir ? [...state.log, ...orphanInboxEntries(state, epicDir)] : state.log;
+}
+
+/**
+ * Records an acknowledgement of a report (`rNNN`) or a note (`nNNN`). Idempotent; an unknown id is an
+ * error. `171`: `id` may also be the entry's handle (`r009-167`, see `matchInboxEntries`), and an id
+ * that more than one entry shares is refused, naming each entry's handle, rather than acknowledging
+ * one at random or both: the ack addresses exactly one entry, recorded with its file.
+ */
 export function acknowledgeReport(
   projectRoot: string,
   slug: string,
   id: string,
   by?: string
 ): "acknowledged" | "already" {
+  const dir = epicDirFor(projectRoot, slug);
   return updateState(projectRoot, slug, (s) => {
-    const entry = s.log.find((e) => isInboxEntry(e) && e.id === id);
-    if (!entry) throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    const log = inboxLog(s, dir);
+    const matches = matchInboxEntries(log, id);
+    if (matches.length === 0) throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    if (matches.length > 1) {
+      const inbox = log.filter(isInboxEntry);
+      throw new Error(
+        `"${id}" names ${matches.length} entries in epic "${slug}": ack one of them by its handle (${matches
+          .map((m) => inboxHandle(m, inbox))
+          .join(", ")})`
+      );
+    }
+    const entry = matches[0] as EpicInboxEntry;
     if (entry.kind === "review")
       throw new Error(
         `"${id}" is a manager review request: answer it with \`review-verdict --task ${entry.task} <on-track|redirect|escalate>\`, not ack`
       );
-    if (s.log.some((e) => e.kind === "ack" && e.id === id)) return "already";
-    s.log.push({ kind: "ack", id, at: now(), ...(by ? { by } : {}) });
+    if (ackedEntries(s).has(entry)) return "already";
+    // An orphaned file's entry goes back into the log first, so the ack below has an entry to cover.
+    if (!s.log.includes(entry)) s.log.push(entry);
+    s.log.push({ kind: "ack", id: entry.id, file: entry.file, at: now(), ...(by ? { by } : {}) });
     return "acknowledged";
   });
 }
 
 /**
+ * `171`: what to type after `ack` to name `entry` alone. Its id when no other entry in `inbox` shares
+ * it; otherwise the id plus the first part of the file name that sets it apart (`r009-167`), or the
+ * whole file name when nothing shorter does.
+ */
+export function inboxHandle(entry: EpicInboxEntry, inbox: readonly EpicInboxEntry[]): string {
+  if (entry.kind === "review" || inbox.filter((e) => e.id === entry.id).length < 2) return entry.id;
+  const stem = entryStem(entry);
+  const parts = stem.split("-");
+  for (let n = 2; n < parts.length; n++) {
+    const handle = parts.slice(0, n).join("-");
+    const named = inbox.filter(
+      (e) =>
+        e.kind !== "review" && e.id === entry.id && (entryStem(e) === handle || entryStem(e).startsWith(`${handle}-`))
+    );
+    if (named.length === 1) return handle;
+  }
+  return stem;
+}
+
+/**
  * Reports and notes with no acknowledgement, and review requests still waiting for a verdict, oldest
  * first. A review request a newer request for the same ticket supersedes is no longer waiting.
+ * `171`: given the epic's directory, a report or note file no log entry names is listed too, after
+ * the logged ones (see `orphanInboxEntries`).
  */
-export function unacknowledgedReports(state: EpicState): EpicInboxEntry[] {
-  const acked = new Set(state.log.filter((e) => e.kind === "ack").map((e) => e.id));
+export function unacknowledgedReports(state: EpicState, epicDir?: string | null): EpicInboxEntry[] {
+  const acked = ackedEntries(state);
   const decided = new Set(state.log.filter((e) => e.kind === "verdict").map((e) => e.id));
   const latest = new Map<string, string>();
   for (const e of state.log) if (e.kind === "review") latest.set(e.task, e.id);
-  return state.log.filter((e): e is EpicInboxEntry => {
+  return inboxLog(state, epicDir).filter((e): e is EpicInboxEntry => {
     if (!isInboxEntry(e)) return false;
     if (e.kind === "review") return !decided.has(e.id) && latest.get(e.task) === e.id;
-    return !acked.has(e.id);
+    return !acked.has(e);
   });
 }
 
@@ -696,8 +875,11 @@ export interface CrossEpicEdge {
   direction: "blocked-by-other" | "blocks-other";
 }
 
-/** An inbox entry as `showEpic` lists it: its absolute path, and for a review request the ticket's redirect count. */
-export type EpicInboxView = EpicInboxEntry & { path: string; redirects?: number };
+/**
+ * An inbox entry as `showEpic` lists it: its absolute path, for a review request the ticket's
+ * redirect count, and (`171`) the handle `ack` takes for it, which is its id unless the id is shared.
+ */
+export type EpicInboxView = EpicInboxEntry & { path: string; redirects?: number; handle?: string };
 
 export interface EpicView {
   slug: string;
@@ -760,10 +942,10 @@ export function showEpic(projectRoot: string, slug: string): EpicView {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state).map((r) =>
+    unacknowledged: unacknowledgedReports(state, dir).map((r) =>
       r.kind === "review"
         ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects }
-        : { ...r, path: path.join(dir, r.file) }
+        : { ...r, path: path.join(dir, r.file), handle: inboxHandle(r, inboxLog(state, dir).filter(isInboxEntry)) }
     ),
     crossEpic: crossEpicEdges(tracker, slug),
   };
@@ -913,7 +1095,9 @@ export function formatReady(view: EpicReadyView): string {
 }
 
 /** One unacknowledged inbox line, as `formatEpic` and the CLI's `reports` print it. */
-export function formatInboxEntry(entry: EpicInboxEntry & { path: string; redirects?: number }): string {
+export function formatInboxEntry(
+  entry: EpicInboxEntry & { path: string; redirects?: number; handle?: string }
+): string {
   if (entry.kind === "review") {
     const redirects = entry.redirects ?? 0;
     const capNote = redirects >= MANAGER_REDIRECT_CAP ? ", a redirect now escalates to human review" : "";
@@ -922,9 +1106,10 @@ export function formatInboxEntry(entry: EpicInboxEntry & { path: string; redirec
       `  redirects ${redirects}/${MANAGER_REDIRECT_CAP}${capNote}  ${entry.path}`
     );
   }
+  const handle = entry.handle ?? entry.id;
   if (entry.kind === "note")
-    return `${entry.id}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
-  return `${entry.id}  ${entry.task}  ${entry.path}`;
+    return `${handle}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
+  return `${handle}  ${entry.task}  ${entry.path}`;
 }
 
 function formatCrossEpicEdge(edge: CrossEpicEdge): string {

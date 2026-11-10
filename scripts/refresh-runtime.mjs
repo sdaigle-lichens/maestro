@@ -5,7 +5,13 @@
 //   1. build:plugin-libs      src/core/plugin-entries -> plugins/maestro/scripts/lib/*.cjs
 //   2. maestro-install.js .   copies every runtimeAssets() file over its .claude/scripts mirror, syncs
 //                             the STEPS and PRINCIPLES regions of .claude/skills/maestro/SKILL.md from
-//                             the template, merges the hook registrations into .claude/settings.json
+//                             the template, merges the hook registrations into .claude/settings.json,
+//                             and syncs .claude/handoffs/ and .claude/reports/ with --checkout-seeds
+//                             (`171`): from THIS checkout's own bundled seeds, never the machine-wide
+//                             ~/.claude stores. Those are shared by every checkout and worktree on the
+//                             machine, and any build that opens one moves its rows to ITS seed, so a
+//                             refresh that read them wrote another branch's handoff body (and its
+//                             maestro.json tracking entry) into this checkout.
 //   3. maestro-render-orchestrator.cjs .   re-renders the HANDOFFS table from .claude/maestro.json
 //                             (the install keeps whatever table was there; this alone does NOT refresh
 //                             STEPS, which is why it runs last, not instead)
@@ -27,7 +33,7 @@ export function refreshSteps(root) {
     {
       label: "install runtime mirrors, orchestrator STEPS and settings hooks",
       command: process.execPath,
-      args: [path.join(root, "plugins/maestro/scripts/maestro-install.js"), root],
+      args: [path.join(root, "plugins/maestro/scripts/maestro-install.js"), root, "--checkout-seeds"],
     },
     {
       label: "render orchestrator HANDOFFS",

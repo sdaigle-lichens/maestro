@@ -74,6 +74,13 @@ uninstall-and-purge sub-concepts.
 
 **Terminal-only: formatter ignore files.** `maestro-install.js` appends the managed `.claude/` paths to each `.prettierignore`, `.eslintignore` or `.biomeignore` that already exists, and never creates one, so a formatter does not rewrite managed files into a hash no seed matches. `installRuntime()` has no equivalent, and `test/core/install-formatter-ignore.test.ts` covers only the script. The paths, the JSON fields and the decisions are in `plugins/maestro/skills/maestro-install/references/formatter-ignore.md`.
 
+**Terminal-only: `--checkout-seeds` (`171`).** Syncs `.claude/handoffs/` and `.claude/reports/` from
+this plugin checkout's own bundled seeds and never opens the machine-wide `~/.claude/*.sqlite` stores
+(the first-install tag and catalog reads are skipped too). `pnpm refresh:runtime` passes it. The stores
+are shared by every checkout on the machine, and opening one moves its rows to that build's seed, so a
+store-reading refresh could copy another branch's body into a checkout. The app's `installRuntime()`
+has no equivalent flag.
+
 Ordering enforces a fourth: **everything that can refuse is checked before the first byte is
 written**, so a rejected install leaves the project exactly as it was. Past that point every step
 is a copy or an append that re-running completes.

@@ -710,6 +710,16 @@ export function priorReportSeeds(agentName: string): string[] {
   return PRIOR_SEEDS[agentName] ?? [];
 }
 
+/**
+ * The body THIS build seeds for `agentName`, or null for an agent it seeds nothing for. Read without
+ * opening any store (`171`): `maestro-install.js --checkout-seeds`, which `pnpm refresh:runtime` runs,
+ * syncs a checkout's tracked `.claude/reports/` from this instead of the machine-wide store, whose
+ * rows any other checkout's build moves forward to ITS seed on open.
+ */
+export function seededReportDefault(agentName: string): string | null {
+  return Object.hasOwn(SEED_REPORTS, agentName) ? (SEED_REPORTS[agentName] as string) : null;
+}
+
 /** The global default report for one agent, or null when it has none. */
 export function readAgentReportDefault(
   agentName: string,

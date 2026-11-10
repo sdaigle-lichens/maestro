@@ -71,6 +71,9 @@
 //   node maestro-epic.cjs ack <slug> <id>... [--by "<session name>"]
 //       Record that the manager received a report (rNNN) or a note (nNNN). Cross-session messages
 //       have no delivery receipt, so the acknowledgement lives in the epic's state.
+//       `171`: each ack addresses exactly one entry. An id two entries share (an inbox written
+//       before `171`) is refused with each entry's handle (`r009-167`); `reports` prints that handle
+//       in place of the id, and `ack` takes it, or the report's file name, like an id.
 //   node maestro-epic.cjs boundary <slug> start|end [--force]
 //       Decides whether the epic's start or end step is due, claims it and writes its scope, then
 //       prints one line: nothing configured, not due with the reason, already ran, or the skills to

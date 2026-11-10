@@ -36,7 +36,8 @@ __export(maestro_report_defaults_exports, {
   DEFAULT_REPORT_DEFAULTS_DB_PATH: () => DEFAULT_REPORT_DEFAULTS_DB_PATH,
   priorReportSeeds: () => priorReportSeeds,
   readAgentReportDefault: () => readAgentReportDefault,
-  readAllAgentReportDefaults: () => readAllAgentReportDefaults
+  readAllAgentReportDefaults: () => readAllAgentReportDefaults,
+  seededReportDefault: () => seededReportDefault
 });
 module.exports = __toCommonJS(maestro_report_defaults_exports);
 
@@ -255,6 +256,9 @@ function seedIfEmpty(db) {
 function priorReportSeeds(agentName) {
   return PRIOR_SEEDS[agentName] ?? [];
 }
+function seededReportDefault(agentName) {
+  return Object.hasOwn(SEED_REPORTS, agentName) ? SEED_REPORTS[agentName] : null;
+}
 function readAgentReportDefault(agentName, dbPath = DEFAULT_REPORT_DEFAULTS_DB_PATH) {
   const db = openDb(dbPath);
   try {
@@ -287,5 +291,6 @@ function readAllAgentReportDefaults(dbPath = DEFAULT_REPORT_DEFAULTS_DB_PATH) {
   DEFAULT_REPORT_DEFAULTS_DB_PATH,
   priorReportSeeds,
   readAgentReportDefault,
-  readAllAgentReportDefaults
+  readAllAgentReportDefaults,
+  seededReportDefault
 });

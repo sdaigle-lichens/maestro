@@ -3,8 +3,8 @@ name: global-stores
 description: "Explains Maestro's machine-wide node:sqlite stores under ~/.claude — skill tags, agent types, agent project tags, report defaults, handoff defaults and avatars — why each is global rather than per-project (the reasons differ), why node:sqlite rather than a JSON blob or a native module, why a store whose floor must survive an old `node` keeps its seed in a separate sqlite-free module, and how the two-dimensional skill/agent classification routes a skill to an agent. Use when working inside apps/maestro and adding a store, wondering why a tag survives switching projects, why SKILL_TAGS is gone, where a report or handoff default comes from before the project has an opinion, why handoff-defaults.ts has one table where report-defaults.ts has two, which surface edits which handoff tier and why a shipped pair offers Reset to default rather than Delete, why an agent's description is written back to its own .md instead of a store, or why agent-fork.ts was split in two."
 metadata:
   type: concept-skill
-  version: "2.2"
-  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
+  version: "2.3"
+  last-update: e473388337a3508dc50d93f2204b7b333c16600d
 ---
 
 # Global stores
@@ -25,6 +25,12 @@ explicitly _not_ per-project.
 
 Each exports a `DEFAULT_*_DB_PATH` constant, and each accepts an override so tests never touch the
 real machine's store.
+
+**Shared, not per checkout (`171`).** One file serves every checkout and worktree on the machine, and
+opening the report or handoff store runs a seed refresh that moves rows to the opening build's seed. So
+a script that syncs a checkout's tracked files from these stores can pick up another branch's body.
+`maestro-install.js --checkout-seeds` avoids the stores entirely (see
+[handoff defaults](sub-concepts/handoff-defaults.md)).
 
 A seventh sqlite file sits beside them but is a catalog, not a per-thing store:
 `~/.claude/maestro-project-tags.sqlite` (`project-tags.ts`: `readAllProjectTags`, `addProjectTag`,

@@ -10,6 +10,10 @@ change — nothing in this slice creates that sharing itself.
 
 Resolution order at dispatch: the project's `reports` slice → this global tier → no report at all.
 
+**Shared across checkouts (`171`).** Like the handoff store, this file is machine-wide, and opening it
+moves a superseded seed row to the opening build's seed. `maestro-install.js --checkout-seeds` reads the
+checkout's own `seededReportDefault()` instead, so `pnpm refresh:runtime` never opens it.
+
 **There is no seed tier under it, which is why `035` was a real bug rather than a degradation.** The
 `SubagentStart` hook `require`s `lib/maestro-report-defaults.cjs` inside a try/catch (for a `node`
 older than 22.5), and until `035` that lib was not copied into `.claude/scripts/lib/` — so a project

@@ -42,6 +42,10 @@ that the hook and the app both call:
 The seed tier is a real source, not a synonym for the global one: the sqlite bundle is `require`d in
 a try/catch, so on a `node` older than 22.5 the seed is what still answers.
 
+`171`: the global tier is machine-wide, so a sync that reads it can copy another checkout's body. The
+installer's `--checkout-seeds` flag (`pnpm refresh:runtime` passes it) takes tier 3 for a checkout's
+tracked `.claude/handoffs/` and never opens tier 2.
+
 **A middle tier only exists if its bundle is where the running copy of the hook can `require` it** —
 until `035` neither `lib/maestro-handoff-defaults.cjs` nor `lib/maestro-report-defaults.cjs` was
 copied into `.claude/scripts/lib/`, so the project's own copy of this hook fell past the global row
