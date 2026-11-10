@@ -1,5 +1,6 @@
-import { humanizeLog, receivedCount, unaccountedSkills } from "../utils/session-log";
+import { logRows, receivedCount, unaccountedSkills } from "../utils/session-log";
 import type { Instance } from "../utils/session-log";
+import InterimSettledRow from "./interim-settled-row";
 
 interface SessionLogViewProps {
   instances: Instance[];
@@ -43,7 +44,7 @@ export default function SessionLogView({
       <div className="flex-1 overflow-y-auto px-6 py-4 font-mono text-xs leading-[1.7]">
         {instances.map((inst) => {
           const isActive = inst.id === activeId;
-          const lines = inst.entries.map((e) => humanizeLog(e, cwd)).filter((line): line is string => line !== null);
+          const lines = logRows(inst.entries, cwd);
 
           return (
             <div
@@ -86,14 +87,18 @@ export default function SessionLogView({
               </div>
 
               {lines.length > 0 ? (
-                lines.map((line, i) => (
-                  <div key={i} className="whitespace-pre-wrap break-words text-maestro-muted">
-                    -{" "}
-                    {inst.origin === "main_session" || inst.origin === "transition"
-                      ? line
-                      : `[${inst.displayName}]: ${line}`}
-                  </div>
-                ))
+                lines.map((line, i) =>
+                  typeof line === "string" ? (
+                    <div key={i} className="whitespace-pre-wrap break-words text-maestro-muted">
+                      -{" "}
+                      {inst.origin === "main_session" || inst.origin === "transition"
+                        ? line
+                        : `[${inst.displayName}]: ${line}`}
+                    </div>
+                  ) : (
+                    <InterimSettledRow key={i} row={line} />
+                  )
+                )
               ) : (
                 <div className="text-maestro-muted italic">no tool calls recorded</div>
               )}

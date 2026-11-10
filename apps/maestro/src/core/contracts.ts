@@ -514,12 +514,24 @@ export interface MaestroTask {
   unmergedBlockers: string[];
 }
 
+/** A judged hand-off problem as the log stores it (`108`, `169`) — `HandoffIssue` minus `receivers`. */
+export interface SessionLogHandoffIssue {
+  kind: string;
+  verdict: "SUCCESS" | "FAIL" | null;
+  label: string | null;
+  message: string;
+  files?: string[];
+}
+
 export interface SessionLogEntry {
   ts: string;
   origin: string;
   log: string;
-  /** Set on dispatch/handoff/channel_delivery/phase entries written by the hooks. */
-  kind?: "dispatch" | "handoff" | "transition" | "channel_delivery" | "phase";
+  /**
+   * Set on dispatch/handoff/channel_delivery/phase entries written by the hooks, and on the
+   * `interim_settled` record `handoff-issues` appends when it settles an interim stop (`169`).
+   */
+  kind?: "dispatch" | "handoff" | "transition" | "channel_delivery" | "phase" | "interim_settled";
   /** dispatch: the subagent's agent_type */
   agent?: string;
   /** shared key linking a dispatch↔handoff pair, and (037) a channel_delivery to its receiver's dispatch */
@@ -530,7 +542,7 @@ export interface SessionLogEntry {
   offered_skills?: { loaded: string[]; referenced: string[] };
   /** handoff only */
   status?: "success" | "condition" | "unknown";
-  /** handoff only */
+  /** handoff, and interim_settled (the late hand-back's HANDOFF label, null when `missing`) */
   label?: string | null;
   /** handoff only: full final message (agent → main session) */
   output?: string;
@@ -550,6 +562,15 @@ export interface SessionLogEntry {
   via?: "resume" | "ack";
   /** phase only: which pre-coding orchestration step this marks, e.g. "step1_gates". */
   phase?: string;
+  /** interim_settled only (`169`): when the settled interim stop happened; `ts` is the settle time. */
+  stop_ts?: string;
+  /** interim_settled only (`169`): no hand-back ever came, or one landed after the stop. */
+  settled_as?: "missing" | "late_handback";
+  /**
+   * The issue the hooks judged on this hand-off (`108`): written on a defective `handoff` entry, and
+   * on an `interim_settled` record whose late hand-back was judged wrong (`169`). Absent when fine.
+   */
+  handoff_issue?: SessionLogHandoffIssue;
   /** Best-effort context-window fill percentage at write time. Absent means unknown, never 0. */
   ctx_pct?: number;
   /** Model id `ctx_pct` was computed against. Only meaningful alongside `ctx_pct`. */

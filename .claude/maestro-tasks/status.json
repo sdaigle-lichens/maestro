@@ -864,7 +864,7 @@
     "blockedBy": []
   },
   "174-show-interim-settled-session-log-entries-as-their-own-row-in-the-desktop-log-view.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": [
       "169-write-a-durable-session-log-record-when-an-interim-stop-is-settled-as-missing.md"
     ]

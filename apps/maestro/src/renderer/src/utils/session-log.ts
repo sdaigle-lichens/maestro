@@ -1,6 +1,6 @@
 import { titleFromName, stripNamespace } from "./text";
 import { contextWindowFor } from "../../../core/text.js";
-import type { SessionLogEntry, ChannelDelivery } from "./maestro-session-log";
+import type { SessionLogEntry, SessionLogHandoffIssue, ChannelDelivery } from "./maestro-session-log";
 
 export type { ChannelDelivery };
 
@@ -309,6 +309,14 @@ function relPath(p: string, cwd: string): string {
 }
 
 export function humanizeLog(entry: SessionLogEntry, cwd = ""): string | null {
+  const settled = interimSettledRow(entry);
+  if (settled) {
+    const outcome =
+      settled.settledAs === "missing"
+        ? "missing hand-off"
+        : `late hand-back — ${settled.label ?? "none"}${settled.issue ? ` [${settled.issue.kind}]` : ""}`;
+    return `interim stop settled — \`${settled.agent}\` ${outcome}`;
+  }
   if (entry.kind === "dispatch") {
     return `calling \`${entry.agent}\` agent`;
   }
@@ -360,6 +368,64 @@ export function humanizeLog(entry: SessionLogEntry, cwd = ""): string | null {
   }
 
   return log || null;
+}
+
+/**
+ * What an `interim_settled` row shows (`169`/`174`): the record `handoff-issues` appends when it
+ * settles an agent run's earlier interim stop. Every field is read off that one entry — nothing is
+ * correlated from other entries.
+ */
+export interface InterimSettledRow {
+  agent: string;
+  /** The settled run's agent_id. */
+  agentId: string;
+  /** When the agent stopped. */
+  stopTs: string;
+  /** When the stop was settled (the entry's own `ts`). */
+  settledTs: string;
+  settledAs: "missing" | "late_handback";
+  /** The late hand-back's HANDOFF label; null when `missing` or when the hand-back carried none. */
+  label: string | null;
+  /** The judged problem with a late hand-back, when it had one. */
+  issue: SessionLogHandoffIssue | null;
+}
+
+/**
+ * The row model for an `interim_settled` entry, or null for any other entry — and for one whose
+ * `settled_as` is not a value this view knows, which then renders as a plain line from its `log`.
+ */
+export function interimSettledRow(entry: SessionLogEntry): InterimSettledRow | null {
+  if (entry.kind !== "interim_settled") return null;
+  if (entry.settled_as !== "missing" && entry.settled_as !== "late_handback") return null;
+  const issue = entry.handoff_issue;
+  return {
+    agent: entry.agent ?? "",
+    agentId: entry.agent_id ?? "",
+    stopTs: entry.stop_ts ?? "",
+    settledTs: entry.ts,
+    settledAs: entry.settled_as,
+    label: entry.label ?? null,
+    issue: issue && typeof issue === "object" && typeof issue.message === "string" ? issue : null,
+  };
+}
+
+/**
+ * The displayable rows of a run of entries, in order: an `interim_settled` entry becomes its
+ * structured row, every other entry its `humanizeLog` line (entries it suppresses are dropped). With
+ * no `interim_settled` entry this is exactly the list of `humanizeLog` lines.
+ */
+export function logRows(entries: SessionLogEntry[], cwd = ""): (string | InterimSettledRow)[] {
+  const rows: (string | InterimSettledRow)[] = [];
+  for (const e of entries) {
+    const settled = interimSettledRow(e);
+    if (settled) {
+      rows.push(settled);
+      continue;
+    }
+    const line = humanizeLog(e, cwd);
+    if (line !== null) rows.push(line);
+  }
+  return rows;
 }
 
 /** An agent's most recent known context-window usage — an estimate (see core/session-usage.ts). */

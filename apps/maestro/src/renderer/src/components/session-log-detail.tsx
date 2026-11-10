@@ -1,7 +1,8 @@
-import { humanizeLog, unaccountedSkills } from "../utils/session-log";
+import { logRows, unaccountedSkills } from "../utils/session-log";
 import { stripNamespace } from "../utils/text";
 import type { Instance } from "../utils/session-log";
 import { ContextUsageLine } from "./context-usage";
+import InterimSettledRow from "./interim-settled-row";
 
 interface SessionLogDetailProps {
   instance: Instance | null;
@@ -26,7 +27,7 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
     );
   }
 
-  const processLines = instance.entries.map((e) => humanizeLog(e, cwd)).filter((line): line is string => line !== null);
+  const processLines = logRows(instance.entries, cwd);
 
   const unaccounted = unaccountedSkills(instance);
 
@@ -70,14 +71,20 @@ export default function SessionLogDetail({ instance, cwd }: SessionLogDetailProp
 
         <Section title="Process">
           {processLines.length > 0 ? (
-            processLines.map((line, i) => (
-              <div key={i} className="whitespace-pre-wrap break-words font-mono text-[11px]">
-                -{" "}
-                {instance.origin === "main_session" || instance.origin === "transition"
-                  ? line
-                  : `[${instance.displayName}]: ${line}`}
-              </div>
-            ))
+            processLines.map((line, i) =>
+              typeof line === "string" ? (
+                <div key={i} className="whitespace-pre-wrap break-words font-mono text-[11px]">
+                  -{" "}
+                  {instance.origin === "main_session" || instance.origin === "transition"
+                    ? line
+                    : `[${instance.displayName}]: ${line}`}
+                </div>
+              ) : (
+                <div key={i} className="font-mono text-[11px]">
+                  <InterimSettledRow row={line} />
+                </div>
+              )
+            )
           ) : (
             <span className="text-maestro-muted italic">No tool calls recorded</span>
           )}

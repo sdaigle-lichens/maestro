@@ -51,7 +51,7 @@ interface SessionLogEntry {
 }
 ```
 
-`kind` is `"dispatch" | "handoff" | "transition" | "channel_delivery" | "phase"`. The hooks also write
+`kind` is `"dispatch" | "handoff" | "transition" | "channel_delivery" | "phase" | "interim_settled"` (`interim_settled` is the `169` settlement record, rendered by `InterimSettledRow`). The hooks also write
 fields the interface does **not** type: `meeting: true` / `owner_run: true` marks on dispatch and handoff
 entries of a team-meeting turn or an owner run (`083`/`087`), and a `handoff_issue { kind, verdict,
 label, message, files? }` on a handoff the hook judged defective (`108`). The renderer reads them as

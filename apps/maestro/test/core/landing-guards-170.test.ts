@@ -493,9 +493,17 @@ function commitHere(root: string, file: string, msg: string): string {
   return git(root, "rev-parse", "HEAD");
 }
 
-/** Alternates the case of each hex digit, so the SHA is mixed-case throughout. */
+// Uppercases every second hex letter (digits untouched), so any SHA containing at least one letter
+// comes back different. Positional alternation missed SHAs whose letters all sat at even indexes.
 function mixedCase(sha: string): string {
-  return [...sha].map((c, i) => (i % 2 ? c.toUpperCase() : c.toLowerCase())).join("");
+  let letters = 0;
+  return [...sha]
+    .map((c) => {
+      if (!/[a-f]/i.test(c)) return c;
+      letters += 1;
+      return letters % 2 ? c.toUpperCase() : c.toLowerCase();
+    })
+    .join("");
 }
 
 describe("epic report guard, no-branch and empty-branch rules (170 round 2)", () => {
@@ -627,9 +635,14 @@ describe("epic report guard, no-branch and empty-branch rules (170 round 2)", ()
     workBranch(root, "task-001");
     expect(status(root, "done", "001-a.md").code).toBe(0);
     const baseFull = git(root, "rev-parse", "HEAD");
-    expect(baseFull).toMatch(/[a-f]/);
-    const mixed = mixedCase(baseFull.slice(0, 12));
-    expect(mixed).not.toBe(baseFull.slice(0, 12));
+    // The prefix runs to at least 12 characters and always through the first hex letter, so it
+    // contains a letter for every commit SHA and the mixed-case form genuinely differs.
+    const firstLetter = baseFull.search(/[a-f]/);
+    expect(firstLetter).toBeGreaterThanOrEqual(0);
+    const prefix = baseFull.slice(0, Math.max(12, firstLetter + 1));
+    expect(prefix).toMatch(/[a-f]/);
+    const mixed = mixedCase(prefix);
+    expect(mixed).not.toBe(prefix);
 
     const r = epicWithBody(root, `Outcome: done\nCommit ${mixed}\n`, "report", "--task", "001-a.md", "--file", "-");
 
