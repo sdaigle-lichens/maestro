@@ -7,12 +7,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { createElement } from "react";
 import InterimSettledRow from "../../src/renderer/src/components/interim-settled-row.js";
 import SessionLogView from "../../src/renderer/src/components/session-log-view.js";
-import {
-  buildInstances,
-  humanizeLog,
-  interimSettledRow,
-  logRows,
-} from "../../src/renderer/src/utils/session-log.js";
+import { buildInstances, humanizeLog, interimSettledRow, logRows } from "../../src/renderer/src/utils/session-log.js";
 import type { SessionLogEntry } from "../../src/renderer/src/utils/maestro-session-log.js";
 
 const STOP_TS = "2026-03-04T10:15:00.000Z";
@@ -177,7 +172,16 @@ describe("interimSettledRow — every value comes from the entry", () => {
 
   it("a settlement log does not pull the run id from another run of the same agent", () => {
     const entries: SessionLogEntry[] = [
-      { ts: STOP_TS, origin: "backend", kind: "handoff", agent_id: "other-run", status: "success", label: null, output: "HANDOFF: success", log: "HANDOFF: success" },
+      {
+        ts: STOP_TS,
+        origin: "backend",
+        kind: "handoff",
+        agent_id: "other-run",
+        status: "success",
+        label: null,
+        output: "HANDOFF: success",
+        log: "HANDOFF: success",
+      },
       lateEntry(),
     ];
     const rows = logRows(entries);
@@ -198,7 +202,15 @@ describe("interimSettledRow — every value comes from the entry", () => {
 describe("log view — interim_settled entries", () => {
   it("a missing settlement renders its dedicated row inside the instance that holds it", () => {
     const entries: SessionLogEntry[] = [
-      { ts: STOP_TS, origin: "main_session", kind: "dispatch", agent: "backend", agent_id: RUN_ID, input: "go", log: "→ backend" },
+      {
+        ts: STOP_TS,
+        origin: "main_session",
+        kind: "dispatch",
+        agent: "backend",
+        agent_id: RUN_ID,
+        input: "go",
+        log: "→ backend",
+      },
       missingEntry(),
     ];
     const instances = buildInstances(entries);
@@ -218,9 +230,26 @@ describe("log view — interim_settled entries", () => {
 
   it("a log with no interim_settled entry renders its lines unchanged and no settled row", () => {
     const entries: SessionLogEntry[] = [
-      { ts: STOP_TS, origin: "main_session", kind: "dispatch", agent: "backend", agent_id: "a1", input: "build", log: "→ backend" },
+      {
+        ts: STOP_TS,
+        origin: "main_session",
+        kind: "dispatch",
+        agent: "backend",
+        agent_id: "a1",
+        input: "build",
+        log: "→ backend",
+      },
       { ts: STOP_TS, origin: "backend", log: "Read(/x)" },
-      { ts: STOP_TS, origin: "backend", kind: "handoff", agent_id: "a1", status: "success", label: null, output: "HANDOFF: success", log: "HANDOFF: success" },
+      {
+        ts: STOP_TS,
+        origin: "backend",
+        kind: "handoff",
+        agent_id: "a1",
+        status: "success",
+        label: null,
+        output: "HANDOFF: success",
+        log: "HANDOFF: success",
+      },
     ];
 
     const expectedLines = entries.map((e) => humanizeLog(e, "")).filter((l): l is string => l !== null);
