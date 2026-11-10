@@ -327,6 +327,19 @@ export {
   pathsChangedBetween,
   switchCommandFor,
   type TargetCheckoutVerdict,
+  // `173`: the merge names local changes it would overwrite, and merges the task tracker itself.
+  gitTopLevel,
+  trackerRelPath,
+  locallyModifiedPaths,
+  compareWithBranch,
+  overwrittenByMerge,
+  parseOverwriteError,
+  formatOverwriteRefusal,
+  parseTracker,
+  mergeTaskTrackers,
+  trackerMarksDone,
+  type OverwrittenPath,
+  type TrackerMap,
 } from "../landing-guards.js";
 export { resolveVerifyCommand, formatVerifyResult, type VerifyCommand } from "../verify-command.js";
 

@@ -86,7 +86,7 @@ Orchestrator (.claude/skills/maestro/SKILL.md):
   Step 6  report to the epic (only when `done` printed an epic report command, `084`); a done
           report is REFUSED unless it names an existing commit on the task branch (`170`)
   Step 7  end skills (injected `maestro-end-skills.cjs` line, `089`); Step 8 (worktree only) merge.
-          A main-checkout task merges the same way after `switch-back`; `merge` verifies (`170`)
+          A main-checkout task merges the same way after `switch-back`; `merge` verifies (`170`); `173`: it merges the task tracker itself and refuses, naming files, on other local changes it would overwrite (`task-queue`'s `task-claims.md`)
         │
         ▼ (each Task → subagent)
 SubagentStart hook  (matcher ".*")  → maestro-inject-agent-context.js

@@ -19,7 +19,7 @@ import path from "node:path";
 
 import { readClaims } from "./claims.js";
 import { readConfig } from "./config.js";
-import { epicDirFor, readEpicState, unacknowledgedReports, updateState, type EpicState } from "./epics.js";
+import { epicDirFor, readEpicState, unacknowledgedHandles, updateState, type EpicState } from "./epics.js";
 import { resolveSkillLists } from "./skill-lists.js";
 import { readTaskTracker, sectionOf, tasksDirFor, type TrackerEntry } from "./tasks.js";
 import { mainCheckoutRoot } from "./worktree.js";
@@ -137,15 +137,20 @@ function startBlocker(root: string, state: EpicState, tasks: string[], tracker: 
   return done.length ? `already done: ${done.join(", ")}` : null;
 }
 
-/** Why the epic is not finished, or null when it is. Review requests do not hold it back. */
-function endBlocker(state: EpicState, tasks: string[], tracker: Record<string, TrackerEntry>) {
+/**
+ * Why the epic is not finished, or null when it is. Review requests do not hold it back.
+ * `173`: an unacknowledged report or note FILE in the inbox counts even when the log no longer lists
+ * it (a git operation put back an older `state.json`), and each is named by its handle, so two
+ * entries sharing an id are both named, each the way `ack` takes it.
+ */
+function endBlocker(state: EpicState, epicDir: string, tasks: string[], tracker: Record<string, TrackerEntry>) {
   if (!tasks.length) return "the epic has no tasks";
   const open = tasks.filter((t) => tracker[t].status !== "done");
   if (open.length) return `not done: ${open.join(", ")}`;
   const unmerged = tasks.filter((t) => tracker[t].unmerged);
   if (unmerged.length) return `not merged: ${unmerged.join(", ")}`;
-  const waiting = unacknowledgedReports(state).filter((e) => e.kind !== "review");
-  return waiting.length ? `not acknowledged: ${waiting.map((e) => e.id).join(", ")}` : null;
+  const waiting = unacknowledgedHandles(state, epicDir);
+  return waiting.length ? `not acknowledged: ${waiting.join(", ")}` : null;
 }
 
 /** `<epic dir>/boundary/<phase>-<n>`, one past the highest run on disk. Never reuses a folder. */
@@ -209,7 +214,8 @@ export function runEpicBoundary(
     const boundaries = (state.boundaries ??= {});
 
     if (!claimed) {
-      const reason = phase === "start" ? startBlocker(root, state, tasks, tracker) : endBlocker(state, tasks, tracker);
+      const reason =
+        phase === "start" ? startBlocker(root, state, tasks, tracker) : endBlocker(state, dir, tasks, tracker);
       if (reason) return skills.length ? { outcome: "not-due", reason } : { outcome: "none" };
       if (phase === "start" && !boundaries.base) {
         const head = git(root, ["rev-parse", "HEAD"])?.trim();

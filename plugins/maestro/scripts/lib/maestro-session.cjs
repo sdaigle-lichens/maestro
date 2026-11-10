@@ -95,6 +95,7 @@ __export(maestro_session_exports, {
   collectAgentSkills: () => collectAgentSkills,
   compactMetrics: () => compact,
   compareRuntimeVersions: () => compareRuntimeVersions,
+  compareWithBranch: () => compareWithBranch,
   consumedDir: () => consumedDir,
   currentBranch: () => currentBranch,
   currentReviewRound: () => currentReviewRound,
@@ -116,10 +117,12 @@ __export(maestro_session_exports, {
   foldRun: () => foldRun,
   formatExcludedProvision: () => formatExcludedProvision,
   formatIgnoredNotice: () => formatIgnoredNotice,
+  formatOverwriteRefusal: () => formatOverwriteRefusal,
   formatStampedContent: () => formatStampedContent,
   formatVerifyResult: () => formatVerifyResult,
   freeformBranchFor: () => freeformBranchFor,
   freeformWorktreePathFor: () => freeformWorktreePathFor,
+  gitTopLevel: () => gitTopLevel,
   handbackHandoff: () => handbackHandoff,
   handoffId: () => handoffId,
   handoffPairs: () => handoffPairs,
@@ -154,11 +157,13 @@ __export(maestro_session_exports, {
   laterSuccessSteps: () => laterSuccessSteps,
   latestWorkflowHandoff: () => latestWorkflowHandoff,
   listSessionIds: () => listSessionIds,
+  locallyModifiedPaths: () => locallyModifiedPaths,
   mainCheckoutRoot: () => mainCheckoutRoot,
   meetingDirFor: () => meetingDirFor,
   meetingFor: () => meetingFor,
   meetingLeftovers: () => meetingLeftovers,
   meetingNotice: () => meetingNotice,
+  mergeTaskTrackers: () => mergeTaskTrackers,
   metricsDirFor: () => metricsDirFor,
   metricsFileFor: () => metricsFileFor,
   missingDependenciesNotice: () => missingDependenciesNotice,
@@ -166,13 +171,16 @@ __export(maestro_session_exports, {
   nodeLabel: () => nodeLabel,
   noteDispatch: () => noteDispatch,
   noteEntrance: () => noteEntrance,
+  overwrittenByMerge: () => overwrittenByMerge,
   ownerRunFor: () => ownerRunFor,
   ownerRunLeftovers: () => ownerRunLeftovers,
   ownerRunNotice: () => ownerRunNotice,
   parentProbe: () => parentProbe,
   parseGapsHandled: () => parseGapsHandled,
+  parseOverwriteError: () => parseOverwriteError,
   parsePsLine: () => parsePsLine,
   parseStampedContent: () => parseStampedContent,
+  parseTracker: () => parseTracker,
   pathsChangedBetween: () => pathsChangedBetween,
   payloadRequirement: () => payloadRequirement,
   payloadRoutes: () => payloadRoutes,
@@ -241,6 +249,8 @@ __export(maestro_session_exports, {
   testHintRequirement: () => testHintRequirement,
   testHintRoutes: () => testHintRoutes,
   titleFor: () => titleFor,
+  trackerMarksDone: () => trackerMarksDone,
+  trackerRelPath: () => trackerRelPath,
   unretire: () => unretire,
   unstampedFilesOf: () => unstampedFilesOf,
   untrackedPaths: () => untrackedPaths,
@@ -2762,23 +2772,32 @@ function currentBranch(git, root) {
   return r.ok && r.out.trim() ? r.out.trim() : null;
 }
 var MAESTRO_STATE_DIRS = [".claude/maestro-tasks/", ".claude/epics/"];
-function isMaestroStatePath(rel) {
+function isMaestroStatePath(rel, projectPrefix = "") {
   const p = rel.replace(/\\/g, "/").replace(/^\.\//, "");
-  return MAESTRO_STATE_DIRS.some((d) => p.startsWith(d) || `${p}/` === d);
+  const prefix = projectPrefix.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/*$/, "");
+  const scoped = prefix ? `${prefix}/` : "";
+  return MAESTRO_STATE_DIRS.some((d) => p.startsWith(`${scoped}${d}`) || `${p}/` === `${scoped}${d}`);
 }
+function projectPrefixFor(git, root) {
+  const r = git(root, ["rev-parse", "--show-prefix"]);
+  return r.ok ? r.out.trim() : "";
+}
+var REPO_DIFF_NAMES = ["-c", "diff.relative=false", "diff", "--name-only", "--no-renames", "-z"];
 function dirtyTrackedPaths(git, root) {
-  const r = git(root, ["diff", "--name-only", "--no-renames", "-z", "HEAD"]);
+  const r = git(root, [...REPO_DIFF_NAMES, "HEAD"]);
   if (!r.ok) return null;
+  const prefix = projectPrefixFor(git, root);
   return [
     ...new Set(
       r.out.split("\0").map((rel) => rel.trim()).filter((rel) => rel !== "")
     )
-  ].filter((rel) => !isMaestroStatePath(rel));
+  ].filter((rel) => !isMaestroStatePath(rel, prefix));
 }
 function untrackedPaths(git, root) {
-  const r = git(root, ["ls-files", "--others", "--exclude-standard", "-z"]);
+  const r = git(root, ["ls-files", "--others", "--exclude-standard", "--full-name", "-z"]);
   if (!r.ok) return [];
-  return r.out.split("\0").filter((rel) => rel !== "" && !isMaestroStatePath(rel));
+  const prefix = projectPrefixFor(git, root);
+  return r.out.split("\0").filter((rel) => rel !== "" && !isMaestroStatePath(rel, prefix));
 }
 function checkTargetCheckout(git, root) {
   const branch = currentBranch(git, root);
@@ -2825,10 +2844,10 @@ function writable(abs) {
     return false;
   }
 }
-function unwritablePaths(root, rels) {
+function unwritablePaths(top, rels) {
   const out = [];
   for (const rel of rels) {
-    const abs = import_node_path14.default.join(root, rel);
+    const abs = import_node_path14.default.join(top, rel);
     const exists = import_node_fs16.default.existsSync(abs);
     const dir = exists ? import_node_path14.default.dirname(abs) : nearestExistingDir(abs);
     if (exists && !writable(abs) || !writable(dir)) out.push(rel);
@@ -2836,7 +2855,7 @@ function unwritablePaths(root, rels) {
   return out;
 }
 function pathsChangedBetween(git, root, from, to) {
-  const r = git(root, ["diff", "--name-only", "--no-renames", "-z", from, to]);
+  const r = git(root, [...REPO_DIFF_NAMES, from, to]);
   if (!r.ok) return null;
   return r.out.split("\0").filter((rel) => rel !== "");
 }
@@ -2845,6 +2864,103 @@ function switchCommandFor(root, branch) {
 }
 function shellQuote(s) {
   return /^[A-Za-z0-9_./@:=+-]+$/.test(s) ? s : `'${s.replace(/'/g, `'\\''`)}'`;
+}
+function gitTopLevel(git, root) {
+  const r = git(root, ["rev-parse", "--show-toplevel"]);
+  return r.ok && r.out.trim() ? r.out.trim() : root;
+}
+function trackerRelPath(top, projectRoot) {
+  const real = (p) => {
+    try {
+      return import_node_fs16.default.realpathSync(p);
+    } catch {
+      return import_node_path14.default.resolve(p);
+    }
+  };
+  return import_node_path14.default.relative(real(top), import_node_path14.default.join(real(projectRoot), ".claude", "maestro-tasks", "status.json")).split(import_node_path14.default.sep).join("/");
+}
+function locallyModifiedPaths(git, top) {
+  const r = git(top, [...REPO_DIFF_NAMES, "HEAD"]);
+  if (!r.ok) return null;
+  return [...new Set(r.out.split("\0").filter((rel) => rel !== ""))];
+}
+function workingBlob(git, top, rel) {
+  if (!import_node_fs16.default.existsSync(import_node_path14.default.join(top, rel))) return null;
+  const r = git(top, ["hash-object", "--", rel]);
+  return r.ok ? r.out.trim() : null;
+}
+function branchBlob(git, top, branch, rel) {
+  const r = git(top, ["rev-parse", "--verify", "--quiet", `${branch}:${rel}`]);
+  return r.ok && r.out.trim() ? r.out.trim() : null;
+}
+function compareWithBranch(git, top, branch, rels) {
+  return rels.map((rel) => {
+    const mine = workingBlob(git, top, rel);
+    const theirs = branchBlob(git, top, branch, rel);
+    return { rel, matchesBranch: mine === theirs };
+  });
+}
+function overwrittenByMerge(git, top, branch, except = []) {
+  const local = locallyModifiedPaths(git, top);
+  const theirs = git(top, [...REPO_DIFF_NAMES, `HEAD...${branch}`]);
+  if (local === null || !theirs.ok) return null;
+  const onBranch = new Set(theirs.out.split("\0").filter((rel) => rel !== ""));
+  const hits = local.filter((rel) => onBranch.has(rel) && !except.includes(rel)).sort();
+  return compareWithBranch(git, top, branch, hits);
+}
+function parseOverwriteError(text) {
+  const m = /local changes to the following files would be overwritten[^\n]*\n((?:[ \t]+\S[^\n]*\n?)+)/i.exec(text);
+  if (!m) return [];
+  return m[1].split("\n").map((l) => l.trim()).filter(Boolean);
+}
+function formatOverwriteRefusal(top, branch, files) {
+  const lines = files.map(
+    (f) => `  ${f.rel} \u2014 ${f.matchesBranch ? `identical to ${branch}'s copy (restoring it loses nothing)` : `DIFFERENT from ${branch}'s copy (a change of its own)`}`
+  );
+  const matching = files.filter((f) => f.matchesBranch).map((f) => shellQuote(f.rel));
+  const differ = files.filter((f) => !f.matchesBranch).map((f) => shellQuote(f.rel));
+  const at = `git -C ${shellQuote(top)}`;
+  const steps = [];
+  if (matching.length) steps.push(`  ${at} restore --source=HEAD --staged --worktree -- ${matching.join(" ")}`);
+  if (differ.length)
+    steps.push(`  ${at} stash push -m ${shellQuote(`before merging ${branch}`)} -- ${differ.join(" ")}`);
+  const after = differ.length ? `
+Then ask for the merge again, and after it lands re-apply the stashed change with \`${at} stash pop\` (it may need resolving against the merged copy).` : "\nThen ask for the merge again.";
+  return `${lines.join("\n")}
+To resolve (the user approves; nothing was discarded or stashed by this command):
+${steps.join("\n")}` + after;
+}
+function parseTracker(text) {
+  if (!text) return {};
+  try {
+    const data = JSON.parse(text);
+    return data && typeof data === "object" && !Array.isArray(data) ? data : {};
+  } catch {
+    return {};
+  }
+}
+var sameEntry = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+function mergeTaskTrackers(base, ours, theirs) {
+  const out = {};
+  for (const key of /* @__PURE__ */ new Set([...Object.keys(ours), ...Object.keys(theirs)])) {
+    const o = ours[key];
+    const t = theirs[key];
+    const b = base[key];
+    let entry;
+    if (sameEntry(o, t) || sameEntry(t, b)) entry = o;
+    else if (sameEntry(o, b)) entry = t;
+    else if (!o || !t) entry = o ?? t;
+    else {
+      entry = { ...t, ...o };
+      if (o.status === "done" || t.status === "done") entry.status = "done";
+    }
+    if (entry) out[key] = entry;
+  }
+  return out;
+}
+function trackerMarksDone(git, top, rev, rel, task) {
+  const r = git(top, ["show", `${rev}:${rel}`]);
+  return r.ok && parseTracker(r.out)[task]?.status === "done";
 }
 
 // src/core/verify-command.ts
@@ -3665,6 +3781,7 @@ function meetingNotice(meeting, agentType) {
   collectAgentSkills,
   compactMetrics,
   compareRuntimeVersions,
+  compareWithBranch,
   consumedDir,
   currentBranch,
   currentReviewRound,
@@ -3686,10 +3803,12 @@ function meetingNotice(meeting, agentType) {
   foldRun,
   formatExcludedProvision,
   formatIgnoredNotice,
+  formatOverwriteRefusal,
   formatStampedContent,
   formatVerifyResult,
   freeformBranchFor,
   freeformWorktreePathFor,
+  gitTopLevel,
   handbackHandoff,
   handoffId,
   handoffPairs,
@@ -3724,11 +3843,13 @@ function meetingNotice(meeting, agentType) {
   laterSuccessSteps,
   latestWorkflowHandoff,
   listSessionIds,
+  locallyModifiedPaths,
   mainCheckoutRoot,
   meetingDirFor,
   meetingFor,
   meetingLeftovers,
   meetingNotice,
+  mergeTaskTrackers,
   metricsDirFor,
   metricsFileFor,
   missingDependenciesNotice,
@@ -3736,13 +3857,16 @@ function meetingNotice(meeting, agentType) {
   nodeLabel,
   noteDispatch,
   noteEntrance,
+  overwrittenByMerge,
   ownerRunFor,
   ownerRunLeftovers,
   ownerRunNotice,
   parentProbe,
   parseGapsHandled,
+  parseOverwriteError,
   parsePsLine,
   parseStampedContent,
+  parseTracker,
   pathsChangedBetween,
   payloadRequirement,
   payloadRoutes,
@@ -3811,6 +3935,8 @@ function meetingNotice(meeting, agentType) {
   testHintRequirement,
   testHintRoutes,
   titleFor,
+  trackerMarksDone,
+  trackerRelPath,
   unretire,
   unstampedFilesOf,
   untrackedPaths,

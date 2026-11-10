@@ -3,8 +3,8 @@ name: plugin-libs-parity
 description: "Explains how src/core reaches the plugin's hook scripts: build-plugin-libs.mjs bundles the seventeen plugin-entries modules into committed CJS under plugins/maestro/scripts/lib, why those bundles are committed rather than built at install time, why the build pins its working directory and tsconfig, why each bundle's export surface must stay a superset of what the hook scripts require(), and why maestro-tasks.cjs is the one hand-maintained exception, and which two bundles must stay free of node:sqlite so their hooks still work on an old node. Use before shipping any change to a src/core module a hook depends on, when an edit to src/core isn't reaching a hook, when git diff shows a spurious bundle diff, or when a bundle silently came out non-strict."
 metadata:
   type: concept-skill
-  version: "2.8"
-  last-update: ea0a2b08eb316763fc05a1f2fecdba141ab116d6
+  version: "3.0"
+  last-update: 94595826966a054873a42ac77bb98eceb425855c
 ---
 
 # Core ↔ plugin parity
@@ -83,7 +83,7 @@ callers is probably load-bearing for exactly that reason; check before deleting 
 
 ## The seventeen generated entries
 
-`maestro-session`, `maestro-skill-regions`, `maestro-seed` (also re-exports `maestroConfigRefusal` from `config-usable.ts`, `096` — rebuild after editing that file), `maestro-skill-tags`,
+`maestro-session`, `maestro-skill-regions`, `maestro-seed` (also re-exports `maestroConfigRefusal` from `config-usable.ts`, `096` — rebuild after editing that file; `173`: `seed.ts` imports `manager-review-label.ts`, so an edit there reaches this bundle too), `maestro-skill-tags`,
 `maestro-report-defaults`, `maestro-project-tags`, `maestro-agent-project-tags`,
 `maestro-agent-types`, `maestro-skill-availability` (`090`: seeds and the stale-reference check; `142` adds the disable decision, `skillDisabledReason`/`isSkillListed`/`readDisableRules`, which `discoverSkills` also imports, so an edit here changes the app's skill lists too), `maestro-agent-sync` (`031`),
 `maestro-handoff-defaults` (`033`), `maestro-workflow-spec` (`063`), `maestro-team-meeting`,
@@ -95,7 +95,7 @@ inbox; `085`: cross-epic notes, adding `listEpicSummaries`, `checkNoteRoute`, `w
 and `recordReviewVerdict`, and pulling in `human-review-gate.ts`, which imports nothing;
 `maestro-human-review-gate.js` requires `epicOfTask`/`readEpicState` from it; `158`: epic
 boundaries, adding `runEpicBoundary` and `formatBoundary` from `epic-boundary.ts`, which imports
-`node:child_process` for read-only git calls; copied into projects, no `node:sqlite`).
+`node:child_process` for read-only git calls; copied into projects, no `node:sqlite`). `170`: `maestro-epic` also takes `checkReportCommit`, `shaCandidates`, `declaresDone` and `taskStatusOf` from `landing-guards.ts` (the report's commit guard). `173`: `epics.ts` claims review ids from the inbox, and `epic-boundary.ts`'s end check reads `unacknowledgedHandles`; neither is a new export of the bundle, so the list above is unchanged.
 
 Each `apps/maestro/src/core/plugin-entries/<name>.ts` is a thin re-export naming exactly what the
 plugin's scripts need from `src/core`, mapping 1:1 to a `.cjs` in `plugins/maestro/scripts/lib/`.
@@ -294,6 +294,15 @@ lives at `.claude/scripts/maestro-channel-write-guard.cjs` and `parity.test.ts` 
 The module cannot spawn git itself (a core module on the app's preview path may not import
 `child_process`), so the git runner is injected and the CLI owns the spawn. `grep -c "node:sqlite"` on
 the committed `maestro-session.cjs` is still 0.
+
+`173` adds to `maestro-session`: the merge helpers from `landing-guards.ts` (`gitTopLevel`,
+`trackerRelPath`, `locallyModifiedPaths`, `compareWithBranch`, `overwrittenByMerge`, `parseOverwriteError`,
+`formatOverwriteRefusal`, `parseTracker`, `mergeTaskTrackers`, `trackerMarksDone`), plus `channelPathFor`,
+`agentRunStartedAt`, and `landedHandback`/`isInterimStop` (`160`, from `handoff-label.ts`). The git runner
+is still injected. **Trap:** `landing-guards.ts` has two path bases, repo paths (relative to the git top
+level, forward slashes, `diff.relative=false`) and project paths, and only `projectPrefixFor` converts one
+into the other. Joining a repo path onto a project that sits below the top level checks a path that does
+not exist and passes. Still `fs`/`path` only; the grep stays `0`.
 
 ## Why the build is so specific
 

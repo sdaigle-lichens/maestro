@@ -168,6 +168,33 @@ in the main checkout — so the merge is one `git merge --no-ff` in the main che
   them. A refusal on the wrong branch prints the `switch-back` command (below).
 - **Branch-only merge (`170`).** A task committed on `task-NNN` in the main checkout has no worktree.
   `merge` merges it the same way and skips only the worktree checks and removal.
+- **Main-checkout merge after switch-back (`173`).** `done` is read from the branch's tracker
+  (`trackerMarksDone`), so a task whose `done` is only on its branch lands with no manual `done` first.
+  `status.json` is the one state file Maestro merges itself: when the main checkout and the branch both
+  changed it, the local copy is set aside, the merge runs, and the local changes are re-applied task by
+  task over the merged copy (`mergeTaskTrackers`; a task is never un-done). A conflict in that file alone
+  is resolved the same way; any other conflicting file still aborts. Other locally modified files the
+  merge would overwrite make `merge` refuse before git does, naming each file, whether it matches the
+  branch's copy, and the `git restore` (identical) or `git stash push` (different) command to run.
+  Nothing is restored, stashed or discarded by the CLI.
+  - **Tracker backup (`173`).** The set-aside copy is also written to `maestro-tracker-before-merge.json`
+    in the git directory (`git rev-parse --git-path`; never tracked, never in the work tree). The
+    re-apply runs right after a successful merge, before worktree cleanup, and removes the backup only
+    when it succeeds.
+  - **Exit message.** If the process ends while the backup still exists (a failed re-apply or restore),
+    an exit handler prints its path, the `diff` command, and the never-overwrite rule below.
+  - **Leftover backup refuses (`refuseOverLeftBackup`).** A later `merge` refuses, before changing
+    anything, while that file exists: it may hold the only copy of the earlier merge's local tracker
+    changes. Maestro never deletes or overwrites it.
+  - **Never copy the backup over the tracker.** Both messages say so: the backup predates the merge, so a
+    plain copy undoes tasks the merge already marked done. The user copies back by hand only the entries
+    the tracker lacks or holds in an older state (in practice: tracker not done, backup done), then
+    deletes the backup and asks again.
+  - **Trap: two path bases.** Git output and refusals use repo paths (relative to the git top level,
+    `diff.relative=false`); a project below the top level is converted only through `projectPrefixFor`.
+    Joining a repo path onto the project directory checks a path that does not exist and passes.
+  - **Limits:** other state-file conflicts still abort, and worktree tasks for a nested project (one below
+    the git top level) are not handled.
 - **Conflict:** the merge is aborted (`merge --abort`) so main is exactly as before, the worktree and
   branch stay, and the conflicting files are listed with how to resolve (merge the base into the
   branch inside the worktree, commit, ask again). The orchestrator never resolves one unasked.
