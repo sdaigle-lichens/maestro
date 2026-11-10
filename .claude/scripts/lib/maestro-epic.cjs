@@ -443,10 +443,13 @@ function sleepSync(ms) {
 }
 function withLock(dir, fn) {
   const lock = import_node_path8.default.join(dir, LOCK_DIR);
+  const owner = import_node_path8.default.join(lock, "owner");
+  const token = `${process.pid}-${Date.now()}-${Math.random().toString(36).slice(2)}`;
   const start = Date.now();
   for (; ; ) {
     try {
       import_node_fs10.default.mkdirSync(lock);
+      import_node_fs10.default.writeFileSync(owner, token);
       break;
     } catch (err) {
       if (err.code !== "EEXIST") throw err;
@@ -461,7 +464,12 @@ function withLock(dir, fn) {
   try {
     return fn();
   } finally {
-    import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
+    let mine = false;
+    try {
+      mine = import_node_fs10.default.readFileSync(owner, "utf8") === token;
+    } catch {
+    }
+    if (mine) import_node_fs10.default.rmSync(lock, { recursive: true, force: true });
   }
 }
 function readEpicState(projectRoot, slug) {
@@ -552,7 +560,13 @@ function listEpicSummaries(projectRoot) {
   return listEpics(projectRoot).flatMap((slug) => {
     const state = readEpicState(projectRoot, slug);
     if (!state) return [];
-    return [{ slug, manager: state.manager?.name ?? null, unacknowledged: unacknowledgedReports(state).length }];
+    return [
+      {
+        slug,
+        manager: state.manager?.name ?? null,
+        unacknowledged: unacknowledgedReports(state, epicDirFor(projectRoot, slug)).length
+      }
+    ];
   });
 }
 function setManager(projectRoot, slug, name) {
@@ -592,9 +606,22 @@ function taskStatusOf(projectRoot, filename) {
   return readTaskTracker(projectRoot)[import_node_path8.default.basename(filename)]?.status ?? null;
 }
 var INBOX_PREFIX = { report: "r", note: "n", review: "m" };
-function nextInboxId(state, kind) {
+function nextInboxId(state, kind, inboxDir) {
+  const prefix = INBOX_PREFIX[kind];
   const used = state.log.filter((e) => e.kind === kind).map((e) => Number(e.id.slice(1)) || 0);
-  return `${INBOX_PREFIX[kind]}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
+  if (inboxDir) {
+    const file = new RegExp(`^${prefix}(\\d+)-`);
+    let names = [];
+    try {
+      names = import_node_fs10.default.readdirSync(inboxDir);
+    } catch {
+    }
+    for (const name of names) {
+      const m = file.exec(name);
+      if (m) used.push(Number(m[1]));
+    }
+  }
+  return `${prefix}${String((used.length ? Math.max(...used) : 0) + 1).padStart(3, "0")}`;
 }
 function writeReport(projectRoot, task, body, sender) {
   const base = import_node_path8.default.basename(task);
@@ -606,7 +633,7 @@ function writeReport(projectRoot, task, body, sender) {
   if (!dir || !readEpicState(projectRoot, slug))
     throw new Error(`task "${base}" names epic "${slug}", which does not exist`);
   return updateState(projectRoot, slug, (s) => {
-    const id = nextInboxId(s, "report");
+    const id = nextInboxId(s, "report", import_node_path8.default.join(dir, INBOX_DIR));
     const rel = import_node_path8.default.posix.join(INBOX_DIR, `${id}-${base.replace(/\.md$/, "")}.md`);
     const at = now();
     const header = `# Report ${id}: ${base}
@@ -618,7 +645,7 @@ ${from ? `- From session: ${from}
 `;
     import_node_fs10.default.mkdirSync(import_node_path8.default.join(dir, INBOX_DIR), { recursive: true });
     import_node_fs10.default.writeFileSync(import_node_path8.default.join(dir, rel), `${header}${body.trim()}
-`);
+`, { flag: "wx" });
     s.log.push({ kind: "report", id, task: base, file: rel, at, ...from ? { from } : {} });
     return { epic: slug, id, file: import_node_path8.default.join(dir, rel), manager: s.manager?.name ?? null };
   });
@@ -646,7 +673,7 @@ function writeNote(projectRoot, toSlug, body, options) {
   if (!dir) throw new Error(`no epic "${toSlug}" to send a note to`);
   if (!body.trim()) throw new Error("the note is empty");
   return updateState(projectRoot, toSlug, (s) => {
-    const id = nextInboxId(s, "note");
+    const id = nextInboxId(s, "note", import_node_path8.default.join(dir, INBOX_DIR));
     const rel = import_node_path8.default.posix.join(INBOX_DIR, `${id}-from-${fromEpic}.md`);
     const at = now();
     const header = `# Note ${id} from epic ${fromEpic}
@@ -659,7 +686,7 @@ ${from ? `- From session: ${from}
 `;
     import_node_fs10.default.mkdirSync(import_node_path8.default.join(dir, INBOX_DIR), { recursive: true });
     import_node_fs10.default.writeFileSync(import_node_path8.default.join(dir, rel), `${header}${body.trim()}
-`);
+`, { flag: "wx" });
     s.log.push({
       kind: "note",
       id,
@@ -675,28 +702,116 @@ ${from ? `- From session: ${from}
 function isInboxEntry(e) {
   return e.kind === "report" || e.kind === "note" || e.kind === "review";
 }
+function entryStem(entry) {
+  return import_node_path8.default.posix.basename(entry.file).replace(/\.md$/, "");
+}
+function ackedEntries(state) {
+  const acked = /* @__PURE__ */ new Set();
+  const seen = [];
+  for (const e of state.log) {
+    if (e.kind === "report" || e.kind === "note") seen.push(e);
+    if (e.kind !== "ack") continue;
+    const target = e.file ? seen.find((x) => x.id === e.id && x.file === e.file) : [...seen].reverse().find((x) => x.id === e.id);
+    if (target) acked.add(target);
+  }
+  return acked;
+}
+function matchInboxEntries(log, selector) {
+  const wanted = import_node_path8.default.posix.basename(selector.trim()).replace(/\.md$/, "");
+  return log.filter((e) => {
+    if (!isInboxEntry(e)) return false;
+    if (e.id === wanted) return true;
+    if (e.kind === "review") return false;
+    const stem = entryStem(e);
+    return wanted.startsWith(`${e.id}-`) && (stem === wanted || stem.startsWith(`${wanted}-`));
+  });
+}
+function orphanInboxEntries(state, epicDir) {
+  let names;
+  try {
+    names = import_node_fs10.default.readdirSync(import_node_path8.default.join(epicDir, INBOX_DIR));
+  } catch {
+    return [];
+  }
+  const named = new Set(state.log.filter(isInboxEntry).map((e) => e.file));
+  const out = [];
+  for (const name of names.sort()) {
+    const m = /^([rn])(\d+)-(.+)\.md$/.exec(name);
+    if (!m) continue;
+    const file = import_node_path8.default.posix.join(INBOX_DIR, name);
+    if (named.has(file)) continue;
+    let text = "";
+    try {
+      text = import_node_fs10.default.readFileSync(import_node_path8.default.join(epicDir, INBOX_DIR, name), "utf8");
+    } catch {
+      continue;
+    }
+    const header = (label) => new RegExp(`^- ${label}: (.+)$`, "m").exec(text)?.[1]?.trim();
+    const id = `${m[1]}${m[2]}`;
+    const at = header("Written") ?? "";
+    const from = header("From session");
+    const rest = m[3];
+    if (m[1] === "r") out.push({ kind: "report", id, task: `${rest}.md`, file, at, ...from ? { from } : {} });
+    else
+      out.push({
+        kind: "note",
+        id,
+        from_epic: header("From epic") ?? rest.replace(/^from-/, ""),
+        file,
+        at,
+        ...from ? { from } : {}
+      });
+  }
+  return out.sort((a, b) => a.at.localeCompare(b.at));
+}
+function inboxLog(state, epicDir) {
+  return epicDir ? [...state.log, ...orphanInboxEntries(state, epicDir)] : state.log;
+}
 function acknowledgeReport(projectRoot, slug, id, by) {
+  const dir = epicDirFor(projectRoot, slug);
   return updateState(projectRoot, slug, (s) => {
-    const entry = s.log.find((e) => isInboxEntry(e) && e.id === id);
-    if (!entry) throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    const log = inboxLog(s, dir);
+    const matches = matchInboxEntries(log, id);
+    if (matches.length === 0) throw new Error(`epic "${slug}" has no report or note "${id}"`);
+    if (matches.length > 1) {
+      const inbox = log.filter(isInboxEntry);
+      throw new Error(
+        `"${id}" names ${matches.length} entries in epic "${slug}": ack one of them by its handle (${matches.map((m) => inboxHandle(m, inbox)).join(", ")})`
+      );
+    }
+    const entry = matches[0];
     if (entry.kind === "review")
       throw new Error(
         `"${id}" is a manager review request: answer it with \`review-verdict --task ${entry.task} <on-track|redirect|escalate>\`, not ack`
       );
-    if (s.log.some((e) => e.kind === "ack" && e.id === id)) return "already";
-    s.log.push({ kind: "ack", id, at: now(), ...by ? { by } : {} });
+    if (ackedEntries(s).has(entry)) return "already";
+    if (!s.log.includes(entry)) s.log.push(entry);
+    s.log.push({ kind: "ack", id: entry.id, file: entry.file, at: now(), ...by ? { by } : {} });
     return "acknowledged";
   });
 }
-function unacknowledgedReports(state) {
-  const acked = new Set(state.log.filter((e) => e.kind === "ack").map((e) => e.id));
+function inboxHandle(entry, inbox) {
+  if (entry.kind === "review" || inbox.filter((e) => e.id === entry.id).length < 2) return entry.id;
+  const stem = entryStem(entry);
+  const parts = stem.split("-");
+  for (let n = 2; n < parts.length; n++) {
+    const handle = parts.slice(0, n).join("-");
+    const named = inbox.filter(
+      (e) => e.kind !== "review" && e.id === entry.id && (entryStem(e) === handle || entryStem(e).startsWith(`${handle}-`))
+    );
+    if (named.length === 1) return handle;
+  }
+  return stem;
+}
+function unacknowledgedReports(state, epicDir) {
+  const acked = ackedEntries(state);
   const decided = new Set(state.log.filter((e) => e.kind === "verdict").map((e) => e.id));
   const latest = /* @__PURE__ */ new Map();
   for (const e of state.log) if (e.kind === "review") latest.set(e.task, e.id);
-  return state.log.filter((e) => {
+  return inboxLog(state, epicDir).filter((e) => {
     if (!isInboxEntry(e)) return false;
     if (e.kind === "review") return !decided.has(e.id) && latest.get(e.task) === e.id;
-    return !acked.has(e.id);
+    return !acked.has(e);
   });
 }
 function reviewHistory(state, task) {
@@ -827,8 +942,8 @@ function showEpic(projectRoot, slug) {
     manager: state.manager?.name ?? null,
     workers: state.workers,
     tasks,
-    unacknowledged: unacknowledgedReports(state).map(
-      (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path8.default.join(dir, r.file) }
+    unacknowledged: unacknowledgedReports(state, dir).map(
+      (r) => r.kind === "review" ? { ...r, path: reviewFilePath(root, r.file), redirects: reviewHistory(state, r.task).redirects } : { ...r, path: import_node_path8.default.join(dir, r.file), handle: inboxHandle(r, inboxLog(state, dir).filter(isInboxEntry)) }
     ),
     crossEpic: crossEpicEdges(tracker, slug)
   };
@@ -922,9 +1037,10 @@ function formatInboxEntry(entry) {
     const capNote = redirects >= MANAGER_REDIRECT_CAP ? ", a redirect now escalates to human review" : "";
     return `${entry.id}  manager review round ${entry.round} for ${entry.task}${entry.from ? ` (${entry.from})` : ""}  redirects ${redirects}/${MANAGER_REDIRECT_CAP}${capNote}  ${entry.path}`;
   }
+  const handle = entry.handle ?? entry.id;
   if (entry.kind === "note")
-    return `${entry.id}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
-  return `${entry.id}  ${entry.task}  ${entry.path}`;
+    return `${handle}  from epic ${entry.from_epic}${entry.from ? ` (${entry.from})` : ""}  ${entry.path}`;
+  return `${handle}  ${entry.task}  ${entry.path}`;
 }
 function formatCrossEpicEdge(edge) {
   const other = edge.otherEpic ? `epic ${edge.otherEpic}` : "no epic";

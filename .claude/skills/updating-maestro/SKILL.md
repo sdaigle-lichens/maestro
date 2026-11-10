@@ -3,8 +3,8 @@ name: updating-maestro
 description: "How a change to Maestro's runtime actually reaches a project — there are now two delivery paths with different failure modes. Hooks registered project-locally (by the desktop app's /maestro route or /maestro-install) run from copies in <project>/.claude/scripts/ and are stale until someone re-installs. Hooks registered by the maestro plugin run from a per-VERSION marketplace cache that autoUpdate only re-pulls when plugin.json `version` changes, so any edit to hooks/ or scripts/ shipped without a version bump is invisible. Use when a hook or script change isn't taking effect in another project, a SubagentStart/PreToolUse hook 'isn't firing', both copies seem to be firing at once, or before shipping any plugin change. Also carries which component of the version to bump (major/minor/patch, and why nothing reads its magnitude), why both copies firing at once is now arbitrated rather than warned about and which path wins, and why a change to the orchestrator template's FRONTMATTER reaches an existing project only through a purge-and-reinstall."
 metadata:
   type: concept-skill
-  version: "2.6"
-  last-update: 1acd0bd40e461650007d6468e8e0c2bb9ed7bd47
+  version: "2.7"
+  last-update: e473388337a3508dc50d93f2204b7b333c16600d
 ---
 
 # Getting a Maestro runtime change to actually land
@@ -163,8 +163,10 @@ Every `scripts/lib/*.cjs` except `maestro-tasks.cjs` (`maestro-session`, `maestr
 committed because a project installs them by file copy, so they must exist in the repo. A rebuilt
 lib that is in `STATIC_ASSETS` must also be copied over this repo's own `.claude/scripts/lib/`
 mirror — a second place a change can go stale. `pnpm refresh:runtime` does the whole refresh in
-order (rebuild libs, `maestro-install.js .` for the mirrors, the rendered orchestrator's STEPS and the
-settings hooks, then the HANDOFFS render) and is idempotent; `parity.test.ts` names it when anything
+order (rebuild libs, `maestro-install.js . --checkout-seeds` for the mirrors, the rendered orchestrator's
+STEPS and the settings hooks, then the HANDOFFS render) and is idempotent. `--checkout-seeds` (`171`)
+syncs `.claude/handoffs/` and `.claude/reports/` from this checkout's own bundled seeds and never opens
+the machine-wide `~/.claude/*.sqlite` stores, which every checkout and worktree shares; `parity.test.ts` names it when anything
 is stale, and a sandboxed agent hands the user `! pnpm refresh:runtime`. `maestro-render-orchestrator.cjs`
 alone does NOT refresh STEPS (see `.claude/rules/plugin-publishing.md`).
 

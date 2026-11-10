@@ -852,7 +852,7 @@
     "blockedBy": []
   },
   "171-give-epic-reports-unique-ids-and-stop-a-worktree-refresh-picking-up-another-branch-s-generated-files.md": {
-    "status": "ready",
+    "status": "done",
     "blockedBy": []
   },
   "172-treat-agents-on-no-workflow-as-helpers-on-resume-and-in-the-post-mortem-digest-and-keep-plan-pages-out-of-git.md": {

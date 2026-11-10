@@ -77,6 +77,13 @@
 // is NEWER than this plugin's version is refused before anything is written — JSON
 // `{ ok:false, refused:"downgrade", projectRuntimeVersion, pluginVersion, reason }`, exit 1.
 //
+// `--checkout-seeds` (`171`, a bare flag): sync `.claude/handoffs/` and `.claude/reports/` from THIS
+// plugin checkout's own bundled seeds and never open a machine-wide `~/.claude/*.sqlite` store (the
+// first-install tag and catalog reads are skipped too). The stores are shared by every checkout on
+// the machine, and each one's build moves a store row still holding an older seed forward to ITS
+// seed whenever it opens the store, so a sync read from them hands a checkout another branch's
+// handoff body. `pnpm refresh:runtime`, which regenerates a checkout's TRACKED runtime, passes it.
+//
 // Prints a JSON summary to stdout.
 
 const fs = require("fs");
@@ -694,7 +701,18 @@ function sha256(s) {
   return crypto.createHash("sha256").update(s).digest("hex");
 }
 
-function syncProjectReports(configPath, projectDir) {
+// `171`: the template a `--checkout-seeds` run syncs from, in place of the store row: this
+// checkout's own seed body, numbered the way a store holding it would be. Unchanged from what the
+// project tracks keeps the tracked version (decideSync sees nothing new); a different body is one
+// past it (a refresh, unless the project file was customized). Null when this checkout seeds nothing.
+function checkoutTemplate(content, entry) {
+  if (typeof content !== "string") return null;
+  const synced = entry && entry.syncedFrom;
+  if (!synced) return { content, version: 1 };
+  return { content, version: sha256(content) === synced.hash ? synced.version : synced.version + 1 };
+}
+
+function syncProjectReports(configPath, projectDir, checkoutSeeds = false) {
   const summary = { materialized: [], refreshed: [], adopted: [], staleCustomized: [], unchanged: [] };
   if (!fs.existsSync(configPath)) return summary;
   const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
@@ -702,9 +720,9 @@ function syncProjectReports(configPath, projectDir) {
 
   const { decideSync } = require("./lib/maestro-agent-sync.cjs");
 
-  let readAgentReportDefault, priorReportSeeds;
+  let readAgentReportDefault, priorReportSeeds, seededReportDefault;
   try {
-    ({ readAgentReportDefault, priorReportSeeds } = require("./lib/maestro-report-defaults.cjs"));
+    ({ readAgentReportDefault, priorReportSeeds, seededReportDefault } = require("./lib/maestro-report-defaults.cjs"));
   } catch {
     return summary; // no node:sqlite on this node — degrade to nothing synced
   }
@@ -717,7 +735,9 @@ function syncProjectReports(configPath, projectDir) {
   for (const agentName of candidateAgents) {
     const entry = reports[agentName];
     const reportId = entry ? entry.id : agentName;
-    const global = readAgentReportDefault(agentName);
+    const global = checkoutSeeds
+      ? checkoutTemplate(seededReportDefault(agentName), entry)
+      : readAgentReportDefault(agentName);
 
     const filePath = path.join(reportsDir, `${reportId}.md`);
     const onDisk = fs.existsSync(filePath) ? fs.readFileSync(filePath, "utf8") : null;
@@ -777,20 +797,36 @@ function syncProjectReports(configPath, projectDir) {
 // The store read is the one thing wrapped in its own try/catch: `node:sqlite` may not exist on
 // this session's `node`, and with no global tier there is nothing to sync FROM — the seed still
 // reaches agents through the hook, which requires it out of maestro-session.cjs.
-function syncProjectHandoffs(configPath, projectDir) {
+function syncProjectHandoffs(configPath, projectDir, checkoutSeeds = false) {
   const summary = { materialized: [], refreshed: [], adopted: [], staleCustomized: [], unchanged: [] };
   if (!fs.existsSync(configPath)) return summary;
   const cfg = JSON.parse(fs.readFileSync(configPath, "utf8"));
   if (cfg.version !== 3) return summary;
 
-  const { handoffRoutes, handoffPairs, isValidHandoffId, PRIOR_HANDOFF_SEEDS } = require("./lib/maestro-session.cjs");
+  const {
+    handoffRoutes,
+    handoffPairs,
+    isValidHandoffId,
+    PRIOR_HANDOFF_SEEDS,
+    SEED_HANDOFFS,
+  } = require("./lib/maestro-session.cjs");
   const { decideSync } = require("./lib/maestro-agent-sync.cjs");
 
+  // `171`: --checkout-seeds never loads the store bundle, so the store is never opened (opening it
+  // is what moves its rows to this build's seed, for every other checkout to read).
   let readHandoffDefault;
-  try {
-    ({ readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs"));
-  } catch {
-    return summary; // no node:sqlite on this node — degrade to nothing synced
+  if (checkoutSeeds) {
+    readHandoffDefault = (id) =>
+      checkoutTemplate(
+        Object.prototype.hasOwnProperty.call(SEED_HANDOFFS, id) ? SEED_HANDOFFS[id] : null,
+        handoffs[id]
+      );
+  } else {
+    try {
+      ({ readHandoffDefault } = require("./lib/maestro-handoff-defaults.cjs"));
+    } catch {
+      return summary; // no node:sqlite on this node — degrade to nothing synced
+    }
   }
 
   const handoffs = { ...(cfg.handoffs || {}) };
@@ -829,8 +865,10 @@ function syncProjectHandoffs(configPath, projectDir) {
     // /templates Handoffs tab leaves this project's entry tracking a version that no longer exists
     // and can never advance; the file stays (the project tier is the user's own and wins at the
     // hook either way) and the dead tracking is cleared. Mirrors handoff-sync.ts exactly.
+    // Under --checkout-seeds "no template" only means this checkout seeds no body for the route, not
+    // that a store row was deleted, so the tracking is left exactly as it is.
     if (verdict === "no-template") {
-      if (entry && entry.syncedFrom) {
+      if (!checkoutSeeds && entry && entry.syncedFrom) {
         handoffs[id] = { id };
         changed = true;
       }
@@ -908,6 +946,7 @@ function main() {
   for (let i = 0; i < argv.length; i++) {
     // `--allow-downgrade` is a bare boolean; every other flag takes the next argument as its value.
     if (argv[i] === "--allow-downgrade") flags["allow-downgrade"] = true;
+    else if (argv[i] === "--checkout-seeds") flags["checkout-seeds"] = true;
     else if (argv[i].startsWith("--")) flags[argv[i].slice(2)] = argv[++i] ?? "";
     else positional.push(argv[i]);
   }
@@ -1006,10 +1045,14 @@ function main() {
   // Wrapped in try/catch: an older `node` on this session's PATH (no node:sqlite) or a store that's
   // never been written to just means an empty catalog — the install proceeds with no project_tags
   // recorded, same as omitting the flag entirely.
+  // `171`: --checkout-seeds reads no machine-wide store, this one included.
+  const checkoutSeeds = flags["checkout-seeds"] === true;
   let projectTagsCatalog = [];
   try {
-    const { readAllProjectTags } = require("./lib/maestro-project-tags.cjs");
-    projectTagsCatalog = readAllProjectTags();
+    if (!checkoutSeeds) {
+      const { readAllProjectTags } = require("./lib/maestro-project-tags.cjs");
+      projectTagsCatalog = readAllProjectTags();
+    }
   } catch {
     // node:sqlite unavailable, or the catalog store doesn't exist yet.
   }
@@ -1040,6 +1083,7 @@ function main() {
   // feature existed.
   let tagSkillMap = {};
   try {
+    if (checkoutSeeds) throw new Error("--checkout-seeds: no store reads");
     const { readAllSkillTags, skillMapFromTags } = require("./lib/maestro-skill-tags.cjs");
     const { readAllAgentTypes } = require("./lib/maestro-agent-types.cjs");
     const { readAllAgentProjectTags } = require("./lib/maestro-agent-project-tags.cjs");
@@ -1167,8 +1211,8 @@ function main() {
       }
     }
 
-    const reportsSync = syncProjectReports(configPath, projectDir);
-    const handoffsSync = syncProjectHandoffs(configPath, projectDir);
+    const reportsSync = syncProjectReports(configPath, projectDir, checkoutSeeds);
+    const handoffsSync = syncProjectHandoffs(configPath, projectDir, checkoutSeeds);
     const formatterIgnoreResult = ensureFormatterIgnore(projectDir);
 
     process.stdout.write(
@@ -1191,6 +1235,7 @@ function main() {
         projectTags: seededConfig ? projectTags : undefined,
         runtimeVersion,
         runtimeVersionUpdated,
+        checkoutSeeds,
         reportsSync,
         handoffsSync,
         formatterIgnore: formatterIgnoreResult.files,

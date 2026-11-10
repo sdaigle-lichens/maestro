@@ -251,8 +251,9 @@ This repo's own `.claude/scripts/lib/*.cjs` are **tracked copies** of the plugin
 1. **`pnpm refresh:runtime`** (`scripts/refresh-runtime.mjs`) — one idempotent command that rebuilds
    the libs, runs `maestro-install.js .` (copies every `runtimeAssets()` file over its
    `.claude/scripts/` mirror, re-syncs the STEPS/PRINCIPLES regions of the rendered
-   `.claude/skills/maestro/SKILL.md`, merges the hook registrations into `.claude/settings.json`) and
-   then re-renders the HANDOFFS table. A sandboxed agent cannot write those paths, so it hands the
+   `.claude/skills/maestro/SKILL.md`, merges the hook registrations into `.claude/settings.json`,
+   and (`171`) syncs `.claude/handoffs/` and `.claude/reports/` with `--checkout-seeds`, from this
+   checkout's own seeds and never the shared `~/.claude` stores) and then re-renders the HANDOFFS table. A sandboxed agent cannot write those paths, so it hands the
    user exactly `! pnpm refresh:runtime` instead of hand-built `cp` lines;
 2. `pnpm --filter maestro exec vitest run test/core/parity.test.ts`, before handing off.
 

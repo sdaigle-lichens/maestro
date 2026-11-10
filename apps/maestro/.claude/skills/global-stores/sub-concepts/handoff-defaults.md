@@ -50,7 +50,10 @@ the fall-through is simulated, not a property of the manifest.
 written to, so on any machine that has opened the db, editing `SEED_HANDOFFS` does nothing — the new
 body is in the source and no agent ever sees it. `refreshSupersededSeeds` closes that by moving a
 row still carrying a *previous* seed body forward while leaving a hand-edited row alone; both run on
-every `openDb()`. It holds each id's pre-`036` body (the wrapper-shaped text, 23 ids — `infra/reviewer` arrived
+every `openDb()`. `171`: the store is shared by every checkout and worktree on the machine, so opening
+it from any build moves rows to THAT build's seed for all of them. A refresh that read it leaked
+another branch's body into a checkout. `maestro-install.js --checkout-seeds` (what `pnpm refresh:runtime`
+passes) never opens the store and syncs from the checkout's own `SEED_HANDOFFS`. It holds each id's pre-`036` body (the wrapper-shaped text, 23 ids — `infra/reviewer` arrived
 after `036`, so it has no prior yet) — exported so `059`'s `adopt` check can read it too;
 `report-defaults.ts` kept its equivalent private until `059` needed the same list (see below).
 
