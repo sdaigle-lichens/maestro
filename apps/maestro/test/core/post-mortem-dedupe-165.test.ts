@@ -169,19 +169,23 @@ describe("the digest over the real hook scripts (165)", () => {
     expect(a.problems).toEqual([]);
   });
 
-  it("a never-resumed interim stop settled by handoff-issues is still missing HANDOFF, and the log is untouched", async () => {
+  it("a never-resumed interim stop settled by handoff-issues is missing HANDOFF from its settle record", async () => {
     const root = await installed();
     subagentStart(root, "test", "m1");
     expect(stopWith(root, "test", "m1", interimTranscript(), "m-1.jsonl").code).toBe(0);
-    // 160's second handoff check settles the interim stop as missing in session.json only.
+    // 160's second handoff check settles the interim stop as missing; `169` logs it once.
     expect(handoffIssues(root).stdout).toContain("not flagged yet");
     expect(handoffIssues(root).stdout).toContain("test: NO HANDOFF line");
     expect(handoffIssues(root).stdout).toContain("no problems recorded");
 
     const handoffs = realLog(root).filter((e) => e.kind === "handoff" && e.agent_id === "m1");
     expect(handoffs).toHaveLength(1);
-    expect(handoffs[0]).toMatchObject({ interim: true });
+    expect(handoffs[0]).toMatchObject({ interim: true, settles_in_log: true });
     expect(handoffs[0].handoff_issue).toBeUndefined();
+    const settles = realLog(root).filter((e) => e.kind === "interim_settled");
+    expect(settles).toHaveLength(1);
+    expect(settles[0]).toMatchObject({ agent: "test", agent_id: "m1", settled_as: "missing", label: null });
+    expect(typeof settles[0].stop_ts).toBe("string");
 
     const a = digestLog(root);
     expect(a.outcomes).toEqual({ "missing HANDOFF": 1 });
@@ -200,7 +204,11 @@ describe("the digest over the real hook scripts (165)", () => {
     stopWith(root, "scribe", "f1", finalTranscript("Wrote the docs, no label."), "c-4.jsonl");
 
     const a = digestLog(root);
-    expect(a.outcomes).toEqual({ success: 1, "missing HANDOFF": 2 });
+    // `169`: m1's interim stop was never settled (no handoff check ran) and the hook stamped it
+    // `settles_in_log`, so it is pending, not missing; f1's final stop with no label is missing.
+    expect(a.outcomes).toEqual({ success: 1, "missing HANDOFF": 1, "interim stop, not settled yet": 1 });
+    expect(a.problems.map((p: { agent_id: string }) => p.agent_id)).toEqual(["f1"]);
+    expect(a.pending.map((p: { agent_id: string }) => p.agent_id)).toEqual(["m1"]);
     expect(a.subagents.map((s: { agent_id: string }) => s.agent_id).sort()).toEqual(["a1", "f1", "m1"]);
     expect(a.counts.dispatches).toBe(3);
   });

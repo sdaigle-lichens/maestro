@@ -161,6 +161,8 @@ const {
   provisionExcludedDirs,
   formatExcludedProvision,
   settleInterimStops,
+  interimSettleEntry,
+  appendSessionLog,
   landedHandback,
   checkHandoff,
   checkRoute,
@@ -1484,18 +1486,31 @@ function handoffIssuesCommand() {
   // was a final stop: it becomes a `missing` issue now. The rest stay pending and are noted below.
   // A hand-back that reached the transcript after the stop's bounded wait settles the marker instead,
   // judged like an on-time one: HANDOFF line, route in the active workflow, payload from the whole run.
-  const settled = settleInterimStops(state.pending_interim, new Date().toISOString(), (stop) => {
+  const settledAt = new Date().toISOString();
+  const settled = settleInterimStops(state.pending_interim, settledAt, (stop) => {
     if (!stop.transcript_path) return null;
     try {
       const text = fs.readFileSync(stop.transcript_path, "utf8");
       const runSince = typeof stop.run_since === "number" ? stop.run_since : null;
       const landed = landedHandback(text, runSince);
       if (!landed) return null;
-      return { issue: judgeLandedHandback(stop, landed.message, text, runSince, state) };
+      return { issue: judgeLandedHandback(stop, landed.message, text, runSince, state), message: landed.message };
     } catch {
       return null;
     }
   });
+  // `169`: session state drops a settled marker (and the printed issue below), so the session log
+  // gets one durable `interim_settled` line per settlement, appended once the state write that
+  // removes the marker has happened (a marker is settled, and recorded, exactly once).
+  const logSettlements = () => {
+    for (const s of settled.settled) {
+      try {
+        appendSessionLog(path.join(projectDir, ".claude"), interimSettleEntry(s, settledAt));
+      } catch {
+        // Best-effort: the printed issue still reaches the orchestrator.
+      }
+    }
+  };
   const stillPending = Object.values(settled.pending);
   const hadPending = state.pending_interim && Object.keys(state.pending_interim).length > 0;
   if (hadPending) {
@@ -1540,6 +1555,7 @@ function handoffIssuesCommand() {
     if (recorded.length || hadPending) {
       delete state.handoff_issues;
       writeSessionState(file, state);
+      logSettlements();
     }
     process.stdout.write(`Maestro handoffs: no problems recorded.\n${pendingNote}`);
     return;
@@ -1577,6 +1593,7 @@ function handoffIssuesCommand() {
       : "";
   delete state.handoff_issues;
   writeSessionState(file, state);
+  logSettlements();
   process.stdout.write(
     `Maestro handoffs: ${issues.length} problem(s) — route deliberately, never default to success:\n${lines.join("\n")}\n${worktreeNote}${pendingNote}`
   );

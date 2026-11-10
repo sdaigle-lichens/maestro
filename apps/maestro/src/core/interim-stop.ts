@@ -9,18 +9,77 @@
 //   - the agent's later stop carries a judged hand-back        -> cleared by that stop;
 //   - another agent is dispatched, or `handoff-issues` has
 //     shown the marker once already, with no resume           -> promoted to a `missing` issue.
+//
+// `169`: session state forgets a settlement once `handoff-issues` prints it, so every marker removed
+// by `settleInterimStops` (promoted to missing, or settled by a late hand-back) is also returned in
+// `settled`, and the caller appends one `interim_settled` line per settlement to the session log
+// (`interimSettleEntry`). An interim stop logged since then carries `settles_in_log: true`, telling
+// a reader that no such line yet means "not settled yet", never "missing".
 
 import { checkHandoff, type HandoffIssue } from "./handoff-check.js";
+import { lastHandoffLabel } from "./handoff-label.js";
 import type { HandoffIssueRecord, PendingInterimStop } from "./types.js";
 
 type Pending = Record<string, PendingInterimStop> | undefined;
 
 /**
  * A hand-back that reached the transcript after the stop, already judged by the caller exactly as an
- * on-time one is (HANDOFF line, route, payload): `issue` is null when it is valid.
+ * on-time one is (HANDOFF line, route, payload): `issue` is null when it is valid. `message` is the
+ * hand-back's text, read for its HANDOFF label in the settle record (`169`).
  */
 export interface LandedHandback {
   issue: HandoffIssue | null;
+  message?: string | null;
+}
+
+/**
+ * How one pending interim stop was settled (`169`): `missing` when it was moved on from or already
+ * seen with no hand-back, `late_handback` when a hand-back reached the transcript after the stop
+ * (valid when `issue` is null). The caller writes one log record per settlement
+ * (`interimSettleEntry`), so the session log says durably what session state forgets.
+ */
+export interface InterimSettlement {
+  stop: PendingInterimStop;
+  as: "missing" | "late_handback";
+  label: string | null;
+  issue: HandoffIssue | null;
+}
+
+/** Log `kind` of the settle record. */
+export const INTERIM_SETTLED_KIND = "interim_settled";
+
+/**
+ * The `log.jsonl` line recording one settlement (`169`). `ts` is when it was settled, `stop_ts` when
+ * the interim stop happened; `agent` + `agent_id` name the run. The post-mortem digest reads it in
+ * place of inferring a missing hand-off from an interim stop with no later final stop.
+ */
+export function interimSettleEntry(s: InterimSettlement, nowIso: string): Record<string, unknown> {
+  const what =
+    s.as === "missing"
+      ? "missing HANDOFF"
+      : `late hand-back${s.label ? ` HANDOFF: ${s.label}` : ""}${s.issue ? ` [${s.issue.kind}]` : ""}`;
+  return {
+    ts: nowIso,
+    origin: "main_session",
+    kind: INTERIM_SETTLED_KIND,
+    agent: s.stop.agent,
+    agent_id: s.stop.agent_id,
+    stop_ts: s.stop.ts,
+    settled_as: s.as,
+    label: s.label,
+    ...(s.issue
+      ? {
+          handoff_issue: {
+            kind: s.issue.kind,
+            verdict: s.issue.verdict,
+            label: s.issue.label,
+            message: s.issue.message,
+            ...(s.issue.files ? { files: s.issue.files } : {}),
+          },
+        }
+      : {}),
+    log: `interim stop settled: ${s.stop.agent} ${what}`,
+  };
 }
 
 /** `pending` plus this interim stop (an agent id appears once, a repeat stop keeps the first marker's flags). */
@@ -72,20 +131,23 @@ export function noteDispatch(pending: Pending, agentId: string): Record<string, 
 
 /**
  * What `handoff-issues` reports: markers that were moved on from, or already seen once, become
- * `missing` issues; the rest are kept and marked seen. Returns the issues to add and the markers left.
+ * `missing` issues; the rest are kept and marked seen. Returns the issues to add, the markers left,
+ * and every marker settled this call (`settled`, one per removed marker, for the log record `169`).
  */
 export function settleInterimStops(
   pending: Pending,
   nowIso: string,
   recheck?: (stop: PendingInterimStop) => LandedHandback | null
-): { issues: HandoffIssueRecord[]; pending: Record<string, PendingInterimStop> } {
+): { issues: HandoffIssueRecord[]; pending: Record<string, PendingInterimStop>; settled: InterimSettlement[] } {
   const issues: HandoffIssueRecord[] = [];
   const left: Record<string, PendingInterimStop> = {};
+  const settled: InterimSettlement[] = [];
   for (const [id, p] of Object.entries(pending ?? {})) {
     // A hand-back that reached the transcript after the stop's bounded wait: judge that, never the stop.
     const landed = recheck ? recheck(p) : null;
     if (landed) {
       const found = landed.issue;
+      settled.push({ stop: p, as: "late_handback", label: lastHandoffLabel(landed.message), issue: found });
       if (found) {
         issues.push({
           ts: nowIso,
@@ -102,6 +164,7 @@ export function settleInterimStops(
     }
     if (p.moved_on || p.seen) {
       const base = checkHandoff(null)!;
+      settled.push({ stop: p, as: "missing", label: null, issue: base });
       issues.push({
         ts: nowIso,
         agent: p.agent,
@@ -115,5 +178,5 @@ export function settleInterimStops(
       left[id] = { ...p, seen: true };
     }
   }
-  return { issues, pending: left };
+  return { issues, pending: left, settled };
 }

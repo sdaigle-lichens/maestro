@@ -234,13 +234,40 @@ file pass the payload check later). What settles it:
 So a plain-text final with no hand-back call, and an agent that stops once and is never resumed, are
 still flagged `missing`, on the orchestrator's next handoff check after it moves on or looks twice.
 
+**The settle record (`169`).** `handoff-issues` drops a settled marker from session state, so the
+session log gets its own durable line: one `interim_settled` entry per settlement, appended by
+`maestro-task-status.cjs handoff-issues` (`logSettlements`) after the `session.json` write that removes
+the marker. Built by `interimSettleEntry` (`interim-stop.ts`):
+
+```json
+{ "ts": "…", "origin": "main_session", "kind": "interim_settled", "agent": "backend", "agent_id": "…",
+  "stop_ts": "…", "settled_as": "missing|late_handback", "label": null, "handoff_issue?": {…}, "log": "…" }
+```
+
+- `settled_as: "missing"`: moved on from, or seen twice with no hand-back. `label` is null.
+- `settled_as: "late_handback"`: a hand-back landed after the stop, valid or not, so the digest does
+  not show it as unsettled forever. `label` is its HANDOFF label; `handoff_issue` is present only when
+  the judgement found one.
+
+The SubagentStop hook stamps `settles_in_log: true` next to `interim: true` on every interim handoff
+entry logged from `169` on. That stamp says the log is written by a plugin that records settlements.
+
+**How the post-mortem digest reads an interim last stop (`169`).** Checked in this order, per agent run:
+
+| Order | Log holds | Digest outcome |
+| --- | --- | --- |
+| 1 | an `interim_settled` line for that `agent_id`, logged after the stop (log order, not timestamps) | the record: `missing HANDOFF`, or the late hand-back's label |
+| 2 | no such line, but the stop is stamped `settles_in_log: true`, or the log has any `interim_settled` line | `interim stop, not settled yet`: a Pending row, not a Problem (the agent may still be working) |
+| 3 | neither (a log written before `169`) | the pre-`169` inference: `missing HANDOFF` (`160`) |
+
 **Still flagged immediately at a judged stop.** A hand-back call with no `HANDOFF:` line (`missing`), a
 verdict mismatch (`contradiction`), an unknown route (`unrouted`), and a payload never written in the
 whole run (`missing_payload`). A stop with a `HANDOFF:` line in `last_assistant_message` is judged as
 before.
 
 **Limits.** The flag for a plain-text final comes later than the stop, at `handoff-issues`, and its log
-entry stays `interim: true` with no `handoff_issue` (the promotion writes no log entry). A transcript
+entry stays `interim: true` with no `handoff_issue`; the settlement is recorded as its own
+`interim_settled` line instead (`169`, above). A transcript
 flush slower than the 3 s wait reads as interim, but the promotion re-reads the transcript, so a valid
 hand-back that landed in the meantime is not flagged falsely. The late hand-back goes through the same
 judgement as an on-time one (`judgeLandedHandback`, `maestro-task-status.cjs`: HANDOFF line and verdict,

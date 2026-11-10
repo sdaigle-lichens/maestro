@@ -11,7 +11,8 @@ Active Maestro session
   SubagentStart     → maestro-inject-agent-context.js → channel_delivery entry (kind:"channel_delivery", sender, receiver, agent_id, content) — (`036`/`037`)
   SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"resume", resumed run only, BEFORE its handoff) — (`088`)
   SubagentStop      → maestro-subagent-log.js         → channel_delivery entry (via:"ack", scribe only, per gap file named on SKILL_GAPS_HANDLED:) — (`112`)
-  SubagentStop      → maestro-subagent-log.js         → handoff entry         (kind:"handoff", agent_id, status, label, output)
+  SubagentStop      → maestro-subagent-log.js         → handoff entry         (kind:"handoff", agent_id, status, label, output; `settles_in_log` from `169`)
+  handoff-issues    → maestro-task-status.cjs         → interim_settled entry (kind:"interim_settled", agent_id, settled_as) — (`169`)
   SessionEnd        → maestro-session-cleanup.sh      → record metrics, DELETE this session's directory (unless the end reason is resumable), sweep channels
 ```
 
@@ -82,7 +83,7 @@ resolves. The directory is deleted at that session's own non-resumable SessionEn
     `false`), `log: "interim stop (no hand-back yet)"` and no `handoff_issue`. The judgement waits:
     the stop is recorded in session.json's `pending_interim`, and `handoff-issues` flags it `missing`
     later if nothing resumed the agent. The log entry itself is never rewritten, so a reader must not
-    take `interim: true` plus no `handoff_issue` as "judged fine".
+    take `interim: true` plus no `handoff_issue` as "judged fine". From `169` the entry also carries `settles_in_log: true`, which means a later `interim_settled` line settles it; no such line yet means "not settled yet", never "missing".
     A real hand-back is a `SubagentHandback` call, or a `SendMessage` with an uppercase `HANDOFF: <label>`
     line at a line start; a malformed whole line (`HANDOFF success`) also counts, and is flagged at once.
     The payload check of a judged stop measures from the agent's first dispatch (`160`).
@@ -117,6 +118,23 @@ entries with `via:"resume"`, just before that run's handoff entry.
 and logs it as an ordinary `channel_delivery` each time (log line ends `(gap, kept)`), without
 retiring it. The scribe's own `SubagentStop` retires the files named on its `SKILL_GAPS_HANDLED:`
 line and writes one `channel_delivery` with `via:"ack"` per file.
+
+## `maestro-task-status.cjs handoff-issues` — `interim_settled` entries (`169`)
+
+Not a hook: the orchestrator runs `handoff-issues` after a subagent returns, and that command settles
+the interim markers. Each settlement appends one line through `appendSessionLog`, after the
+`session.json` write that drops the marker:
+
+```json
+{ "ts": "…", "origin": "main_session", "kind": "interim_settled", "agent": "backend", "agent_id": "…",
+  "stop_ts": "…", "settled_as": "missing", "label": null, "log": "interim stop settled: backend missing HANDOFF" }
+```
+
+- `settled_as` is `missing` (no hand-back) or `late_handback` (a hand-back landed after the stop; `label`
+  holds its HANDOFF label, and `handoff_issue` appears only when it was judged wrong).
+- `origin` is `"main_session"`, like a `dispatch` entry, so `buildInstances` correlates it by `agent_id`.
+- **Known gap:** the desktop log view renders `interim_settled` as a generic entry for now. A follow-up
+  task will add a dedicated row, so read the record from its `log` text until then.
 
 ## Hook registration (`hooks.json`)
 

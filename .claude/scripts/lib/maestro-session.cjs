@@ -45,6 +45,7 @@ __export(maestro_session_exports, {
   HEARTBEAT_INTERVAL_MS: () => HEARTBEAT_INTERVAL_MS,
   HEARTBEAT_STALE_MS: () => HEARTBEAT_STALE_MS,
   HUMAN_REVIEW_LABEL: () => HUMAN_REVIEW_LABEL,
+  INTERIM_SETTLED_KIND: () => INTERIM_SETTLED_KIND,
   LEGACY_SESSION_FILES: () => LEGACY_SESSION_FILES,
   MAESTRO_STATE_DIRS: () => MAESTRO_STATE_DIRS,
   MAIN_CHECKOUT_SHARED_DIRS: () => MAIN_CHECKOUT_SHARED_DIRS,
@@ -135,6 +136,7 @@ __export(maestro_session_exports, {
   heartbeatVerdict: () => heartbeatVerdict,
   ignoredOnlyInWorktree: () => ignoredOnlyInWorktree,
   installCommand: () => installCommand,
+  interimSettleEntry: () => interimSettleEntry,
   isChannelOnlyAgent: () => isChannelOnlyAgent,
   isChannelScope: () => isChannelScope,
   isFreeformBranch: () => isFreeformBranch,
@@ -2346,6 +2348,30 @@ function writtenSince(filePath, sinceMs) {
 }
 
 // src/core/interim-stop.ts
+var INTERIM_SETTLED_KIND = "interim_settled";
+function interimSettleEntry(s, nowIso) {
+  const what = s.as === "missing" ? "missing HANDOFF" : `late hand-back${s.label ? ` HANDOFF: ${s.label}` : ""}${s.issue ? ` [${s.issue.kind}]` : ""}`;
+  return {
+    ts: nowIso,
+    origin: "main_session",
+    kind: INTERIM_SETTLED_KIND,
+    agent: s.stop.agent,
+    agent_id: s.stop.agent_id,
+    stop_ts: s.stop.ts,
+    settled_as: s.as,
+    label: s.label,
+    ...s.issue ? {
+      handoff_issue: {
+        kind: s.issue.kind,
+        verdict: s.issue.verdict,
+        label: s.issue.label,
+        message: s.issue.message,
+        ...s.issue.files ? { files: s.issue.files } : {}
+      }
+    } : {},
+    log: `interim stop settled: ${s.stop.agent} ${what}`
+  };
+}
 function recordInterimStop(pending, stop) {
   const map = { ...pending ?? {} };
   if (!stop.agent_id) return map;
@@ -2379,10 +2405,12 @@ function noteDispatch(pending, agentId) {
 function settleInterimStops(pending, nowIso, recheck) {
   const issues = [];
   const left = {};
+  const settled = [];
   for (const [id, p] of Object.entries(pending ?? {})) {
     const landed = recheck ? recheck(p) : null;
     if (landed) {
       const found = landed.issue;
+      settled.push({ stop: p, as: "late_handback", label: lastHandoffLabel(landed.message), issue: found });
       if (found) {
         issues.push({
           ts: nowIso,
@@ -2399,6 +2427,7 @@ function settleInterimStops(pending, nowIso, recheck) {
     }
     if (p.moved_on || p.seen) {
       const base = checkHandoff(null);
+      settled.push({ stop: p, as: "missing", label: null, issue: base });
       issues.push({
         ts: nowIso,
         agent: p.agent,
@@ -2412,7 +2441,7 @@ function settleInterimStops(pending, nowIso, recheck) {
       left[id] = { ...p, seen: true };
     }
   }
-  return { issues, pending: left };
+  return { issues, pending: left, settled };
 }
 
 // src/core/resume-delivery.ts
@@ -3731,6 +3760,7 @@ function meetingNotice(meeting, agentType) {
   HEARTBEAT_INTERVAL_MS,
   HEARTBEAT_STALE_MS,
   HUMAN_REVIEW_LABEL,
+  INTERIM_SETTLED_KIND,
   LEGACY_SESSION_FILES,
   MAESTRO_STATE_DIRS,
   MAIN_CHECKOUT_SHARED_DIRS,
@@ -3821,6 +3851,7 @@ function meetingNotice(meeting, agentType) {
   heartbeatVerdict,
   ignoredOnlyInWorktree,
   installCommand,
+  interimSettleEntry,
   isChannelOnlyAgent,
   isChannelScope,
   isFreeformBranch,
