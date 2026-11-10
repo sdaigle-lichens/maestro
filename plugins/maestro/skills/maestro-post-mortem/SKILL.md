@@ -27,7 +27,7 @@ This is read-and-reason first; it never changes anything until the user opts in.
    - **Redundant work** — files read or edited more than they needed to be (use the digest's repeated-read / edit-churn flags, but only keep the ones that were genuinely avoidable).
    - **False or flaky checks** — typecheck/test/lint runs (listed in the digest) that errored on non-issues, or errored then passed unchanged. Cross-check against what you saw.
    - **Questionable decisions / assumptions** — choices that cost time or headed the wrong way; assumptions that later proved false.
-   - **Handoff issues** — `no-return` or `unknown` handoffs, condition reroutes, or dispatch inputs that were under- or mis-scoped so a subagent worked off the wrong brief.
+   - **Handoff issues** — `no-return` or `unknown` handoffs, runs the digest lists under Problems with a judged issue (`missing HANDOFF`, `contradiction`, `blocked`, `unrouted`, `missing_payload`), condition reroutes, or dispatch inputs that were under- or mis-scoped so a subagent worked off the wrong brief.
 
    For each snag give: **what happened**, **evidence** (a digest line or a moment from context), and **why it was suboptimal**. Fold in whatever step 1 turned up: a snag matching an already-`## Post-Mortem`-flagged problem on the active task, or a prior entry in `postmortems.log`, should say so instead of being presented as freshly discovered.
 

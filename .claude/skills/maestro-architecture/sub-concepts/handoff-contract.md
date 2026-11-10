@@ -256,7 +256,7 @@ entry logged from `169` on. That stamp says the log is written by a plugin that 
 
 | Order | Log holds | Digest outcome |
 | --- | --- | --- |
-| 1 | an `interim_settled` line for that `agent_id`, logged after the stop (log order, not timestamps) | the record: `missing HANDOFF`, or the late hand-back's label |
+| 1 | an `interim_settled` line for that `agent_id`, logged after the stop (log order, not timestamps) | the record: `missing HANDOFF`, the judged kind when the late hand-back carries one, else its label |
 | 2 | no such line, but the stop is stamped `settles_in_log: true`, or the log has any `interim_settled` line | `interim stop, not settled yet`: a Pending row, not a Problem (the agent may still be working) |
 | 3 | neither (a log written before `169`) | the pre-`169` inference: `missing HANDOFF` (`160`) |
 
@@ -264,6 +264,12 @@ entry logged from `169` on. That stamp says the log is written by a plugin that 
 verdict mismatch (`contradiction`), an unknown route (`unrouted`), and a payload never written in the
 whole run (`missing_payload`). A stop with a `HANDOFF:` line in `last_assistant_message` is judged as
 before.
+
+**What the digest tallies from a judged final stop (`169` follow-up).** A judged issue on a run's final
+stop (the `handoff_issue` on an on-time stop, or the one on its `interim_settled` record) is that run's
+outcome: tallied under its kind (`contradiction`, `blocked`, `unrouted`, `missing_payload`) and listed under
+Problems with the issue message. `missing` is the exception and keeps `missing HANDOFF`. Only the last
+stop of a resumed run counts, so a later clean hand-back supersedes an earlier judged stop.
 
 **Limits.** The flag for a plain-text final comes later than the stop, at `handoff-issues`, and its log
 entry stays `interim: true` with no `handoff_issue`; the settlement is recorded as its own

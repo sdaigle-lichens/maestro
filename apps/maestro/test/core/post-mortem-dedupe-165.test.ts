@@ -113,6 +113,14 @@ function stopWith(root: string, agent: string, id: string, transcriptBody: strin
 
 const handoffIssues = (root: string) => projectScript(root, "maestro-task-status.cjs", ["handoff-issues"]);
 
+// backend's success route to test expects a payload: write it, as a real run does, so the stop
+// hook records no `missing_payload` issue (the digest now tallies a judged run under its issue).
+function writePayload(root: string, sender: string, receiver: string) {
+  const dir = path.join(root, ".claude", "channels", `session-${SESS.slice(0, 8)}`, receiver);
+  fs.mkdirSync(dir, { recursive: true });
+  fs.writeFileSync(path.join(dir, `${sender}.1.md`), "{}\n");
+}
+
 const L = (o: unknown) => JSON.stringify(o) + "\n";
 const userPrompt = (ts: string) =>
   L({ type: "user", promptId: "P1", timestamp: ts, message: { role: "user", content: "implement it" } });
@@ -159,6 +167,7 @@ describe("the digest over the real hook scripts (165)", () => {
     expect(subagentStart(root, "backend", "a1").code).toBe(0);
     expect(stopWith(root, "backend", "a1", interimTranscript(), "r-1.jsonl").code).toBe(0);
     subagentStart(root, "backend", "a1"); // the resume: a second dispatch entry, same agent_id
+    writePayload(root, "backend", "test");
     expect(stopWith(root, "backend", "a1", finalTranscript(OK), "r-2.jsonl").code).toBe(0);
 
     expect(realLog(root).filter((e) => e.kind === "dispatch" && e.agent_id === "a1")).toHaveLength(2);
@@ -197,6 +206,7 @@ describe("the digest over the real hook scripts (165)", () => {
     subagentStart(root, "backend", "a1");
     stopWith(root, "backend", "a1", interimTranscript(), "c-1.jsonl");
     subagentStart(root, "backend", "a1");
+    writePayload(root, "backend", "test");
     stopWith(root, "backend", "a1", finalTranscript(OK), "c-2.jsonl");
     subagentStart(root, "test", "m1");
     stopWith(root, "test", "m1", interimTranscript(), "c-3.jsonl");

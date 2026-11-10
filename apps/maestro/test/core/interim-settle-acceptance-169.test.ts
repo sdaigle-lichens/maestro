@@ -232,6 +232,105 @@ describe("a late hand-back settles the stop as late_handback, once (169)", () =>
 
     // The digest's timeline names the judgement on the settled stop.
     expect(digestMarkdown(root)).toContain("judged contradiction");
+    // The judged late hand-back is tallied under its issue kind and listed under Problems.
+    const a = digestLog(root);
+    expect(a.outcomes).toEqual({ contradiction: 1 });
+    expect(a.problems.map((p: { agent_id: string }) => p.agent_id)).toEqual(["L2"]);
+    expect(digestMarkdown(root)).toMatch(
+      /`L2` → contradiction \(from the settle record: [^)]*\): The subagent's report verdict is FAIL/
+    );
+  });
+});
+
+describe("a judged issue on the final outcome is the run's outcome, on time or late (post-mortem)", () => {
+  it("an on-time hand-back the stop hook judges a contradiction is tallied contradiction, not success", async () => {
+    const root = await installed();
+    subagentStart(root, "test", "J1");
+    expect(stopWith(root, "test", "J1", finalTranscript(BAD), "j1.jsonl").code).toBe(0);
+    const h = realLog(root).filter((e) => e.kind === "handoff");
+    expect(h[0].handoff_issue).toMatchObject({ kind: "contradiction" });
+
+    const a = digestLog(root);
+    expect(a.outcomes).toEqual({ contradiction: 1 });
+    expect(a.problems).toHaveLength(1);
+    expect(a.subagents[0]).toMatchObject({ agent_id: "J1", label: "success", handoff_issue: "contradiction" });
+    const md = digestMarkdown(root);
+    expect(md).toMatch(/## Problems[\s\S]*`J1` → contradiction: The subagent's report verdict is FAIL/);
+    expect(md).toContain("⚠️ judged contradiction");
+    expect(md).toMatch(/Handoff outcomes\*\*: .*contradiction: 1/);
+  });
+
+  it("a judged stop resumed to a clean hand-back is superseded: only the final success counts", async () => {
+    const root = await installed();
+    subagentStart(root, "test", "J2");
+    stopWith(root, "test", "J2", finalTranscript(BAD), "j2-a.jsonl");
+    subagentStart(root, "test", "J2");
+    expect(stopWith(root, "test", "J2", finalTranscript(OK), "j2-b.jsonl").code).toBe(0);
+
+    const a = digestLog(root);
+    expect(a.outcomes).toEqual({ success: 1 });
+    expect(a.problems).toEqual([]);
+    expect(a.subagents[0].handoff_issue).toBeUndefined();
+  });
+
+  it("a late judged hand-back the run resumes past cleanly is superseded by the final success", async () => {
+    const root = await installed();
+    subagentStart(root, "test", "L3");
+    stopWith(root, "test", "L3", interimTranscript(), "l3-a.jsonl");
+    appendLateHandback("l3-a.jsonl", BAD);
+    handoffIssues(root);
+    expect(settles(root)).toHaveLength(1);
+    expect(settles(root)[0].handoff_issue).toMatchObject({ kind: "contradiction" });
+
+    subagentStart(root, "test", "L3");
+    expect(stopWith(root, "test", "L3", finalTranscript(OK), "l3-b.jsonl").code).toBe(0);
+
+    const a = digestLog(root);
+    expect(a.outcomes).toEqual({ success: 1 });
+    expect(a.problems).toEqual([]);
+    expect(a.subagents[0].handoff_issue).toBeUndefined();
+    expect(digestMarkdown(root)).not.toContain("contradiction");
+  });
+
+  it("a late hand-back that no condition edge handles settles as unrouted, listed under Problems with its message", async () => {
+    const root = await installed();
+    // The route check needs an active workflow (160): render the orchestrator, then set the session's.
+    execFileSync("node", [path.join(root, ".claude", "scripts", "maestro-render-orchestrator.cjs"), root], {
+      env: { ...process.env, CLAUDE_PROJECT_DIR: root, HOME: home },
+    });
+    const set = projectScript(root, "maestro-set-session-workflow.cjs", ["feature"]);
+    expect(set.code, set.stdout + set.stderr).toBe(0);
+
+    subagentStart(root, "test", "U1");
+    stopWith(root, "test", "U1", interimTranscript(), "u1.jsonl");
+    appendLateHandback("u1.jsonl", '"verdict": "SUCCESS"\nHANDOFF: partial');
+    handoffIssues(root);
+
+    const s = settles(root);
+    expect(s).toHaveLength(1);
+    expect(s[0]).toMatchObject({ agent_id: "U1", settled_as: "late_handback", label: "partial" });
+    expect(s[0].handoff_issue).toMatchObject({ kind: "unrouted", label: "partial" });
+
+    const a = digestLog(root);
+    expect(a.outcomes).toEqual({ unrouted: 1 });
+    expect(a.problems.map((p: { agent_id: string }) => p.agent_id)).toEqual(["U1"]);
+    expect(digestMarkdown(root)).toMatch(
+      /## Problems[\s\S]*`U1` → unrouted \(from the settle record: hand-back landed after the stop\): The subagent ended HANDOFF: partial, which no condition edge in workflow "feature" handles/
+    );
+  });
+
+  it("an on-time success with its payload never written is tallied and listed as missing_payload", async () => {
+    const root = await installed();
+    subagentStart(root, "backend", "P9");
+    // backend's success route to test expects a payload; none is written, so the stop hook judges it.
+    expect(stopWith(root, "backend", "P9", finalTranscript(OK), "p9.jsonl").code).toBe(0);
+    const h = realLog(root).filter((e) => e.kind === "handoff" && e.agent_id === "P9");
+    expect(h[0].handoff_issue).toMatchObject({ kind: "missing_payload" });
+
+    const a = digestLog(root);
+    expect(a.outcomes).toEqual({ missing_payload: 1 });
+    expect(a.problems.map((p: { agent_id: string }) => p.agent_id)).toEqual(["P9"]);
+    expect(digestMarkdown(root)).toMatch(/`P9` → missing_payload: /);
   });
 });
 
@@ -329,6 +428,11 @@ describe("a pre-169 log is read with the existing inference (169)", () => {
     subagentStart(root, "backend", "a1");
     stopWith(root, "backend", "a1", interimTranscript(), "pre-a1-1.jsonl");
     subagentStart(root, "backend", "a1");
+    // backend's success route to test expects a payload: write it as a real run does, so the stop
+    // hook judges no `missing_payload` (the digest tallies a judged run under its issue kind).
+    const lane = path.join(root, ".claude", "channels", `session-${SESS.slice(0, 8)}`, "test");
+    fs.mkdirSync(lane, { recursive: true });
+    fs.writeFileSync(path.join(lane, "backend.1.md"), "{}\n");
     stopWith(root, "backend", "a1", finalTranscript(OK), "pre-a1-2.jsonl");
     subagentStart(root, "test", "m1");
     stopWith(root, "test", "m1", interimTranscript(), "pre-m1.jsonl");
